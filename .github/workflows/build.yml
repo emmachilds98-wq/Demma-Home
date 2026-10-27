@@ -19,7 +19,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 90   # software graphics on a slow runner: the checks alone took 30 min once (27 Oct)
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
