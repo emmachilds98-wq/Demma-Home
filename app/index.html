@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Demma's Home</title>
+<meta name="description" content="Demma's Home: the whole house in 3D, what to measure, the projects, what to buy.">
+<meta name="theme-color" content="#F6F1E7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141A16" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="app/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="app/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Demma's Home">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="app/tokens.css?v=__V__">
+<link rel="stylesheet" href="app/app.css?v=__V__">
+<link rel="preload" href="data/house.json" as="fetch" crossorigin>
+</head>
+<body>
+<a class="sr" href="#page">Skip to the page</a>
+<header class="top">
+  <a class="brand" href="#/home" aria-label="Demma's Home, version __LABEL__, home">Demma's Home <span class="ver">__LABEL__</span></a>
+  <button type="button" class="search-field searchin" data-search aria-label="Find a room, a piece or a job"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><span class="second">Find a room, a piece or a job</span></button>
+  <span class="acts"><button type="button" class="btn" data-share>Share</button><a class="btn main" data-file href="media-wall/out/Demmas_Home___LABEL___Plan.pdf" target="_blank" rel="noopener">Download the plan</a></span>
+  <button type="button" class="icon-btn search-btn" id="search-btn" aria-label="Find a room, a piece or a job"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg></button>
+</header>
+<nav class="rail" id="rail" aria-label="Places and rooms"></nav>
+<main>
+  <div class="stage" id="stage" aria-label="The 3D house"><img class="poster" alt=""><span class="loading">Opening the 3D…</span><div id="stage-over"></div></div>
+  <div class="page" id="page" tabindex="-1"><p class="empty">Loading the house…</p></div>
+  <aside class="picked" id="picked" aria-live="polite"></aside>
+</main>
+<nav class="tabbar" id="tabbar" aria-label="Places"></nav>
+<noscript><p class="empty">Demma's Home needs JavaScript on.</p></noscript>
+<script type="module" src="app/js/app.js?v=__V__"></script>
+</body>
+</html>

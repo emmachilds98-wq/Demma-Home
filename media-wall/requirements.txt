@@ -1,0 +1,6 @@
+# Demma's Home V1: what the build and the checks need (python3 -m pip install -r media-wall/requirements.txt; then python3 -m playwright install chromium)
+playwright>=1.40
+pillow>=10
+pypdf>=4             # house/privacy_check.py reads the PDFs; media-wall/src/qa.py
+markdown             # house/build_report.py
+numpy                # media-wall/src/garden_window.py (the garden's picture, made by hand)

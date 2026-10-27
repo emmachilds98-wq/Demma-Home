@@ -1,0 +1,90 @@
+# Demma's Home V1 (docs/V1_PLAN.md Phases 0.4 and 7): on every pull request, build and check; on main, also publish the site to
+# GitHub Pages; on a version tag (v1.1 ...), also put that version's PDFs on a GitHub Release. Outputs are never committed.
+name: Build, check and publish
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90   # software graphics on a slow runner: the checks alone took 30 min once (27 Oct)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: media-wall/requirements.txt
+      - name: Install
+        run: |
+          sudo apt-get update -q && sudo apt-get install -yq fonts-inter
+          python -m pip install -q -r media-wall/requirements.txt
+          python -m playwright install --with-deps chromium
+      - name: The model's checks (fast, before the build)
+        run: python tools/checks.py --quick
+      - name: Build the site, the stills and the PDFs
+        run: python tools/build.py --stills
+      - name: Every check (the app, the media wall's page, privacy on the built site)
+        run: python tools/checks.py
+      - name: Keep the screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: _shots/
+          retention-days: 14
+      - name: Keep the PDFs
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdfs
+          path: |
+            _site/media-wall/out/*.pdf
+            _site/house/out/*.pdf
+          retention-days: 30
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
+        with:
+          path: _site
+
+  deploy:
+    # Settings → Pages → Build and deployment → Source: GitHub Actions (once, by the repo's owner)
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: pdfs
+          path: pdfs
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: Demma's Home ${{ github.ref_name }}
+          files: pdfs/**/*.pdf

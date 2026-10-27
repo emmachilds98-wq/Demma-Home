@@ -1,0 +1,27 @@
+# Demma's Home V1: everything a build makes stays out of git (tools/build.py makes it; the workflow publishes it)
+__pycache__/
+*.pyc
+.DS_Store
+*.zip
+/_site/
+/_shots/
+# the media wall's renders, diagrams, PDFs and pages (media-wall/src: make_images.py, build_doc.py, build_viewer.py, export3d.py)
+media-wall/out/
+media-wall/src/*.svg
+media-wall/src/*.png
+media-wall/src/plan.html
+media-wall/src/guide.html
+media-wall/src/media_wall_viewer*.html
+media-wall/src/room3d_test.html
+media-wall/src/publish_files.json
+media-wall/src/deck_assets_todo.txt
+media-wall/src/scene3d.json
+media-wall/src/art/art_*.webp
+media-wall/src/art/dims_*.webp
+media-wall/src/art/key_*.webp
+media-wall/src/art/doc_*.webp
+media-wall/src/backups/
+# the house's report, its plan drawings and overlays (house/build_report.py, check_model.py) and the house file (export_house.py)
+house/out/
+house/house.json
+house/evidence/overlay_*.jpg
