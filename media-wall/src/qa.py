@@ -33,7 +33,7 @@ def run(p, w, h):
         (rep["fails"] if kind == "clash" else rep["notes"]).append(f"{kind}: {a} × {b_}: {d}")
     b = __import__("pw").launch(p, ARGS)
     ctx = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1)
-    pg = ctx.new_page()
+    pg = ctx.new_page(); pg.set_default_timeout(120000)   # V1: software graphics on a CI machine: a screenshot can pass 30 s
     localcdn.route(pg)                                   # v34: three.js from THREE_LOCAL, if set
     pg.on("pageerror", lambda e: rep["errors"].append("pageerror: " + str(e)[:200]))
     pg.on("console", lambda m: rep["errors"].append("console: " + m.text[:200]) if m.type == "error" else None)
