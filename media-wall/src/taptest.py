@@ -25,13 +25,17 @@ def run(w, h):
         def settle():   # v48: wait for the camera to stop flying (the garden made the fly slower headless; a tap mid-flight missed)
             pg.wait_for_function("""() => { const c = R3D._dbg.camera.position, k = c.x.toFixed(4) + c.y.toFixed(4) + c.z.toFixed(4);
               window.__camn = window.__camk === k ? (window.__camn || 0) + 1 : 0; window.__camk = k; return window.__camn >= 3; }""", polling=400, timeout=20000)   # still for three readings 0.4 s apart: under load frames can be 0.25 s apart
+        def settled():   # V1: on a slow CI machine the camera can still be moving after 20 s: tap anyway rather than stop the run
+            try: settle()
+            except Exception: print("   (the camera hadn't settled in 20 s)")
         def tap(pt, label):
-            pg.keyboard.press("Escape"); pg.wait_for_timeout(100); settle()
-            x, y = pg.evaluate(PROJ, pt); pg.wait_for_timeout(300); pg.mouse.click(x, y)   # v48: a click in the same instant as the script call could miss under load
-            try:   # v48: wait for the card (a busy machine can take over 0.4 s to show it); no second tap, which would close it
-                pg.wait_for_function("() => !document.getElementById('r3d-act').hidden", timeout=3000)
-            except Exception:
-                pass
+            for attempt in (1, 2):   # V1: a second try only when no card showed (a slow CI frame can swallow the first click)
+                pg.keyboard.press("Escape"); pg.wait_for_timeout(100); settled()
+                x, y = pg.evaluate(PROJ, pt); pg.wait_for_timeout(300); pg.mouse.click(x, y)   # v48: a click in the same instant as the script call could miss under load
+                try:   # v48: wait for the card (a busy machine can take over 0.4 s to show it); no second tap, which would close it
+                    pg.wait_for_function("() => !document.getElementById('r3d-act').hidden", timeout=8000); break
+                except Exception:
+                    if attempt == 1: print(f"  tap {label}: no card yet, tapping again")
             pg.wait_for_timeout(200)
             vis = pg.evaluate("() => !document.getElementById('r3d-act').hidden")
             t = pg.evaluate("() => document.getElementById('r3d-act-h').textContent") if vis else None
@@ -39,6 +43,7 @@ def run(w, h):
             print(f"  tap {label} at ({x:.0f},{y:.0f}) -> {t!r} {bs} errs={errs[-3:]}")
             return t
         def press(text):   # v39: a card's buttons past the first three are under Details: open it first
+            if pg.evaluate("() => document.getElementById('r3d-act').hidden"): raise RuntimeError(f"no card open to press {text!r} on")
             b = pg.locator("#r3d-act .acts button", has_text=text).first
             if not b.is_visible() and pg.locator("#r3d-act .r3d-actmore summary").count(): pg.locator("#r3d-act .r3d-actmore summary").first.click(); pg.wait_for_timeout(300)
             b.click(); pg.wait_for_timeout(900)

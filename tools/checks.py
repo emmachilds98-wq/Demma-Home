@@ -63,7 +63,9 @@ def taps():
     code, out = sh(["taptest.py", SHOTS], SRC, timeout=2400)
     errs = re.findall(r"errors: (\[.*\])", out)
     bad = [e for e in errs if e != "[]"]
-    return code == 0 and not bad and errs, ("taps: " + "; ".join(bad)[:300]) if bad else f"taps on the media wall's pieces: {len(errs)} runs, no errors"
+    if len(errs) < 2:   # a run stopped before its end: say where (the script's last lines)
+        return False, f"taps: {len(errs)} of 2 runs finished: " + " / ".join(out.strip().splitlines()[-6:])[-600:]
+    return code == 0 and not bad, ("taps: " + "; ".join(bad)[:300]) if bad else f"taps on the media wall's pieces: {len(errs)} runs, no errors"
 
 
 def main(argv):
