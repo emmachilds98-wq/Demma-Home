@@ -6,11 +6,16 @@ const subs = {};
 let stage = null, frame = null, ready = false, queue = [], last = null, posterEl = null;
 
 export const viewer = {
+  profile: null,   // the 3D's own read of this device: its graphics, phone or not, quality now
   get ready() { return ready; },
   init(el) {
     stage = el; posterEl = el.querySelector(".poster");
+    // the frame's own size events don't always come when the screen changes it (a phone's Safari): say so whenever the stage changes size
+    let rq = 0;
+    if (window.ResizeObserver) new ResizeObserver(() => { cancelAnimationFrame(rq); rq = requestAnimationFrame(() => { if (ready && stage.offsetWidth) post({ cmd: "resize" }); }); }).observe(stage);
     addEventListener("message", ev => {
       const d = ev.data; if (!d || d.src !== "r3d" || (frame && ev.source !== frame.contentWindow)) return;
+      if (d.type === "ready" || d.type === "profile") viewer.profile = d.profile || viewer.profile;
       if (d.type === "ready") {
         ready = true; stage.classList.add("live");
         if (last) post(last); queue.splice(0).forEach(post);

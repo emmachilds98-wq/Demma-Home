@@ -808,7 +808,26 @@ html, body { margin: 0; height: 100%; background: #e9e4d8; overflow: hidden; }
 
 def embed(path, art="../art/"):
     """V1: the 3D room as its own page for the app's frame (_site/room/index.html): the room and the house, driven by messages (room3d.js,
-    the bridge at its end). The pictures its panels show come from `art`."""
+    the bridge at its end). The pictures its panels show come from `art`.
+    V1 (Phase 4, load in parts): the 3D's data and script are files of their own, named by their contents (scene.<hash>.json,
+    room3d.<hash>.js), so a phone keeps them (the service worker, the browser's cache) until a round changes them: the page itself is
+    small, and a second visit starts without downloading 2 MB again."""
+    import hashlib
+    out = pathlib.Path(path).parent; out.mkdir(parents=True, exist_ok=True)
+    for old in list(out.glob("scene.*.json")) + list(out.glob("room3d.*.js")):
+        old.unlink()
+    data = json.dumps(json.loads((HERE / "scene3d.json").read_text()), separators=(",", ":"))
+    js = (HERE / "room3d.js").read_text()
+    h = lambda s: hashlib.sha256(s.encode()).hexdigest()[:10]
+    scene, script = f"scene.{h(data)}.json", f"room3d.{h(js)}.js"
+    (out / scene).write_text(data); (out / script).write_text(js)
+    body = section()
+    i = body.index('<script type="application/json" id="scene3d-data">'); j = body.index("</script>", i)
+    body = body[:i] + '<script type="application/json" id="scene3d-data">' + body[j:]
+    boot = (f'<script type="module">const r = await fetch({json.dumps(scene)}); document.getElementById("scene3d-data").textContent = await r.text();'
+            f' await import({json.dumps("./" + script)});</script>')
+    i = body.index('<script type="module">'); j = body.index("</script>", i) + len("</script>")
+    body = body[:i] + boot + body[j:]
     head = (f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
             f'<title>Demma\'s Home: the 3D room</title>{IMPORTMAP}'
             '<link rel="preconnect" href="https://fonts.googleapis.com">'
@@ -817,8 +836,7 @@ def embed(path, art="../art/"):
             f'<style>{CSS}{EMBED_CSS}</style>'
             f'<script>function arts(el) {{ if (el) el.querySelectorAll("img[data-art]:not([src])").forEach(im => {{ im.src = {json.dumps(art)} + im.dataset.art + ".webp"; }}); }}'
             'document.addEventListener("DOMContentLoaded", () => arts(document.body));</script></head><body>')
-    pathlib.Path(path).parent.mkdir(parents=True, exist_ok=True)
-    pathlib.Path(path).write_text(head + section().replace('<div class="r3d" id="r3d">', '<div class="r3d embed" id="r3d">', 1) + "</body></html>")
+    pathlib.Path(path).write_text(head + body.replace('<div class="r3d" id="r3d">', '<div class="r3d embed" id="r3d">', 1) + "</body></html>")
     return path
 
 

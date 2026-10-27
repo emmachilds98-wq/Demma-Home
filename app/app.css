@@ -1,6 +1,8 @@
 /* Demma's Home V1: the app's pieces and layout. Colours, type and sizes come from tokens.css only. */
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }
+button, a, input, label, textarea { touch-action: manipulation; }   /* no double-tap zoom on a phone */
+input, textarea, select { font-size: 16px; }                        /* an iPhone zooms into anything smaller */
 body { margin: 0; background: var(--ground); color: var(--ink); font: var(--t-second); font-size: 15px; min-height: 100dvh;
   padding-bottom: calc(var(--tabbar) + env(safe-area-inset-bottom, 0px)); }
 button, input, select, textarea { font: inherit; color: inherit; }
@@ -9,6 +11,7 @@ img { max-width: 100%; display: block; }
 [hidden] { display: none !important; }
 .sr { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 :focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; border-radius: 10px; }
+h1[tabindex="-1"]:focus, h2[tabindex="-1"]:focus { outline: none; }   /* the new screen's title takes focus for screen readers; no ring */
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
 
 /* ---- type */
@@ -85,19 +88,19 @@ main { min-width: 0; }
 .stage .over.ovtop h1 { font: var(--t-screen); }
 .stage .seg { box-shadow: var(--shade); }
 body[data-stage="house"] .stage, body[data-stage="room"] .stage, body[data-stage="edit"] .stage, body[data-stage="project"] .stage { display: block; }
-body[data-stage="house"] .stage { position: fixed; inset: 0 0 calc(var(--tabbar) + env(safe-area-inset-bottom, 0px) + 42vh - 28px) 0; z-index: 1; transition: bottom .25s; }
+body[data-stage="house"] .stage { position: fixed; inset: 0 0 calc(var(--tabbar) + env(safe-area-inset-bottom, 0px) + 42dvh - 28px) 0; z-index: 1; transition: bottom .25s; }
 body[data-stage="house"].sheet-low .stage { bottom: calc(var(--tabbar) + env(safe-area-inset-bottom, 0px) + 40px); }
-body[data-stage="room"] .stage { height: 46vh; min-height: 280px; }
-body[data-stage="project"] .stage { height: 30vh; min-height: 200px; }
-body[data-stage="edit"] .stage { position: fixed; top: calc(60px + env(safe-area-inset-top, 0px)); left: 0; right: 0; bottom: 44vh; z-index: 1; }
+body[data-stage="room"] .stage { height: 46vh; height: 46dvh; min-height: 280px; }
+body[data-stage="project"] .stage { height: 30vh; height: 30dvh; min-height: 200px; }
+body[data-stage="edit"] .stage { position: fixed; top: calc(60px + env(safe-area-inset-top, 0px)); left: 0; right: 0; bottom: 44vh; bottom: 44dvh; z-index: 1; }
 body[data-stage="house"] .top, body[data-stage="room"] .top, body[data-stage="project"] .top, body[data-stage="edit"] .top { display: none; }
 body[data-stage="edit"] { padding-bottom: 0; }
 body[data-stage="edit"] .tabbar { display: none; }
 
 /* ---- sheets */
 .sheet { background: var(--surface); border-radius: var(--r-sheet) var(--r-sheet) 0 0; box-shadow: 0 -10px 30px -18px rgba(29, 42, 34, .5); padding: var(--s2) var(--gutter) var(--s4); }
-.sheet .handle { display: block; width: 64px; height: 24px; margin: -4px auto var(--s1); border: 0; padding: 0; cursor: pointer; background: linear-gradient(var(--line), var(--line)) center / 44px 5px no-repeat; border-radius: 12px; }
-.house-sheet { position: fixed; left: 0; right: 0; bottom: calc(var(--tabbar) + env(safe-area-inset-bottom, 0px)); z-index: 5; height: 42vh; overflow: auto; transition: transform .25s; }
+.sheet .handle { display: block; width: 88px; height: 44px; margin: -12px auto -8px; border: 0; padding: 0; cursor: pointer; background: linear-gradient(var(--line), var(--line)) center / 44px 5px no-repeat; border-radius: 12px; }
+.house-sheet { position: fixed; left: 0; right: 0; bottom: calc(var(--tabbar) + env(safe-area-inset-bottom, 0px)); z-index: 5; height: 42vh; height: 42dvh; overflow: auto; transition: transform .25s; }
 .house-sheet.low { transform: translateY(calc(100% - 64px)); }
 .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s2); }
 .tile { display: grid; gap: 2px; align-content: start; min-height: 72px; padding: var(--s3) var(--s4); border-radius: var(--r-tile); background: var(--tile); border: 0; text-align: left; cursor: pointer; text-decoration: none; color: inherit; }
@@ -106,7 +109,7 @@ body[data-stage="edit"] .tabbar { display: none; }
   background: var(--ink); color: var(--surface); min-height: 60px; }
 .edit-top h1 { flex: 1; text-align: center; font: var(--t-row); font-size: 16px; color: #FFFDF8; }
 .edit-top .btn.tint { min-height: 40px; }
-.edit-sheet { position: fixed; left: 0; right: 0; bottom: 0; height: 44vh; overflow: auto; z-index: 6; padding-bottom: calc(var(--s4) + env(safe-area-inset-bottom, 0px)); }
+.edit-sheet { position: fixed; left: 0; right: 0; bottom: 0; height: 44vh; height: 44dvh; overflow: auto; z-index: 6; padding-bottom: calc(var(--s4) + env(safe-area-inset-bottom, 0px)); }
 .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s2); margin: var(--s3) 0; }
 .field { background: var(--tile); border-radius: var(--r-tile); padding: var(--s2) var(--s3) var(--s3); }
 .field label { display: block; font: var(--t-label); color: var(--muted); margin-bottom: var(--s1); }

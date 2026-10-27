@@ -20,6 +20,8 @@ take one out (to `docs/HISTORY.md`) when they change their mind.
   to best scaling and I'll add better measures later": where a plan size and what they have don't fit, the room gives way until measured.
 - **Every size from a source** (from the start): each item's size cites where it came from; guesses are marked E with what to measure.
 - **Their words stay** (from the start): "face-out", "spine-up", "artisan oak", "tray", "pale mint".
+- **Their devices** (27 Oct 2026): "i use an iphone 15 pro and dave uses an iphone 16 ... my pc on a nvidia 5060 with 32gb of ram and dave
+  on a 3060 with 32gb of ram". The speed targets and the checks' sizes are set for these.
 - **Merge as you go** (21 Oct 2026): "Merge as needed to keep the repo up to date".
 - **No assistant names** in the page, the README or the PDFs (24 Oct 2026, round 42).
 - **Never write the cap's poem out** in code or text (22 Oct 2026, round 31).

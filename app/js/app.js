@@ -41,13 +41,14 @@ function go(hash) { if (location.hash === hash) render(); else location.hash = h
 
 /* ------------------------------------------------------------------ the shell */
 const TABS = [["home", "Home", "home"], ["house", "House", "house"], ["projects", "Projects", "projects"], ["shop", "Shop", "shop"], ["measure", "Measure", "measure"]];
-const TAB_OF = { home: "home", house: "house", room: "house", projects: "projects", project: "projects", shop: "shop", measure: "measure", perf: "home" };
+const TAB_OF = { home: "home", house: "house", room: "house", projects: "projects", project: "projects", shop: "shop", measure: "measure", perf: "home", settings: "home" };
 
 function rail() {
   const byFloor = f => M.rooms().filter(r => r.floor === f && (r.w * r.d >= 5000 || r.id === "living"));
   const sub = f => byFloor(f).map(r => `<a class="sub" href="#/room/${r.id}" data-room="${r.id}">${esc(r.label)}</a>`).join("");
   $("#rail").innerHTML = TABS.map(([k, t]) => `<a href="#/${k}" data-tab="${k}">${t}</a>`).join("")
-    + ["first", "ground", "lower"].map(f => `<span class="label">${M.FLOOR_NAME[f]}</span>${sub(f)}`).join("");
+    + ["first", "ground", "lower"].map(f => `<span class="label">${M.FLOOR_NAME[f]}</span>${sub(f)}`).join("")
+    + `<span class="label">This device</span><a class="sub" href="#/settings" data-tab="settings">Speed and quality</a>`;
   $("#tabbar").innerHTML = TABS.map(([k, t, ic]) => `<a href="#/${k}" data-tab="${k}"><span class="ib">${icon(ic)}</span>${t}</a>`).join("");
 }
 
@@ -63,12 +64,16 @@ function render(soft = false) {
   S.route = r;
   if (!soft) { S.picked = null; viewer.send("select", { box: null }); }
   setCurrent(r);
-  const P = { home: pHome, house: pHouse, room: pRoom, projects: pProjects, project: pProject, shop: pShop, measure: pMeasure, perf: pPerf }[r.name] || pHome;
+  const P = { home: pHome, house: pHouse, room: pRoom, projects: pProjects, project: pProject, shop: pShop, measure: pMeasure, perf: pSettings, settings: pSettings }[r.name] || pHome;
   const keep = soft ? document.activeElement && document.activeElement.id : null, sy = scrollY;
   P(r, soft);
   pickedPanel();
   if (soft) { if (keep && document.getElementById(keep)) document.getElementById(keep).focus(); scrollTo(0, sy); }
-  else { scrollTo(0, 0); const h = page().querySelector("h1, h2"); document.title = (h ? h.textContent + " · " : "") + "Demma's Home"; }
+  else {
+    scrollTo(0, 0); const h = page().querySelector("h1, h2") || document.querySelector("#stage-over h1");
+    document.title = (h ? h.textContent + " · " : "") + "Demma's Home";
+    if (h && prev) { h.tabIndex = -1; h.focus({ preventScroll: true }); }   // a screen reader hears the new screen's name (not on the first load)
+  }
 }
 
 function stage(kind, poster) {
@@ -101,6 +106,7 @@ function pHome() {
     <div class="list">${show.map(roomRow).join("")}</div>
     <div class="sec"><h3>Projects</h3></div>
     <div class="list">${D.projects.map(projectRow).join("")}</div>
+    <p style="margin-top:24px"><a class="btn" href="#/settings">Speed, quality and colours</a></p>
     ${M.edited() ? `<p class="second" style="margin-top:24px">${M.edited()} piece${M.edited() > 1 ? "s" : ""} changed in the app · <a href="#/measure">see what's waiting</a></p>` : ""}`;
 }
 function roomRow(r) {
@@ -307,15 +313,29 @@ function pShop() {
     + M.D.projects.map(pj => `<div class="sec"><h3>${esc(pj.name)}</h3><a href="#/project/${pj.id}/plan">The plan</a></div>${shopList(pj)}`).join("");
 }
 
-/* ------------------------------------------------------------------ Speed (?perf, Phase 4): numbers to send a screenshot of */
-function pPerf() {
+/* ------------------------------------------------------------------ Speed, quality and colours (#/settings; #/perf too: Phases 4 and 8) */
+const pref = { get(k, d) { try { return localStorage.getItem("demma-v1:" + k) || d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem("demma-v1:" + k, v); } catch (e) {} } };
+function applyTheme(v = pref.get("theme", "auto")) { if (v === "auto") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = v; }
+applyTheme();
+function deviceWords(p) {
+  if (!p) return "Open the house once and this says how your device draws it.";
+  const g = p.gpu || "", kind = /apple gpu/i.test(g) ? "an iPhone or iPad (Apple graphics)" : /rtx|geforce|nvidia/i.test(g) ? "an NVIDIA graphics card" : /radeon|amd/i.test(g) ? "an AMD graphics card" : /intel/i.test(g) ? "Intel graphics" : p.small ? "a phone or tablet" : "this computer";
+  const how = p.big ? "It draws sharp, with shadows and soft light, from the start." : p.goodPhone ? "It starts quick and sharpens itself when it can keep up." : "It starts quick; Sharp asks more of it.";
+  return `This is ${kind}. ${how}`;
+}
+function pSettings() {
   stage(null);
-  const n = performance.getEntriesByType("navigation")[0] || {};
-  page().innerHTML = `<h1 style="margin-top:8px">Speed</h1><p class="second">Send a screenshot of this to the plan</p><div class="card perf" style="margin-top:16px"><pre id="perfbox">Page ready ${Math.round(n.domContentLoadedEventEnd || 0)} ms
-Data and first screen ${app.loadMs ? app.loadMs + " ms to the 3D" : "…"}
-${navigator.userAgent}</pre></div><p><a class="btn" href="#/house">Open the house first, then come back</a></p>`;
-  viewer.on("perf", d => { const b = $("#perfbox"); if (b) b.textContent += `\n\n3D built in ${d.buildMs} ms\n` + Object.entries(d.perf).map(([k, v]) => `${k}: ${v}`).join("\n"); });
-  if (viewer.ready) viewer.send("perf");
+  const p = viewer.profile, q = p ? (p.picked ? p.quality : "auto") : "auto", th = pref.get("theme", "auto"), n = performance.getEntriesByType("navigation")[0] || {};
+  const seg = (name, cur, opts) => `<div class="seg full" role="group" aria-label="${name}">${opts.map(([k, t]) => `<button type="button" data-${name.toLowerCase().replace(/ .*/, "")}="${k}" aria-pressed="${cur === k}">${t}</button>`).join("")}</div>`;
+  page().innerHTML = `<h1 style="margin-top:8px">Speed and quality</h1><p class="second">For this device only</p>
+    <div class="sec"><h3>The 3D</h3></div>${seg("Quality", q, [["auto", "Auto"], ["fast", "Quick"], ["hd", "Sharp"]])}
+    <p class="second">${esc(deviceWords(p))}</p>
+    <div class="sec"><h3>Colours</h3></div>${seg("Theme", th, [["auto", "Auto"], ["light", "Light"], ["dark", "Dark"]])}
+    <div class="sec"><h3>The numbers</h3><span class="second">Send a screenshot</span></div>
+    <div class="card perf"><pre id="perfbox">Page ready ${Math.round(n.domContentLoadedEventEnd || 0)} ms · the 3D ${app.loadMs ? `ready ${app.loadMs} ms after the page` : "not opened yet"}
+${p ? `Graphics: ${p.gpu}\nQuality now: ${p.quality === "hd" ? "Sharp" : "Quick"} · drawn at ${p.ratio}×` : ""}
+${navigator.userAgent}</pre></div>${viewer.ready ? "" : `<p><a class="btn" href="#/house">Open the house first, then come back</a></p>`}`;
+  if (viewer.ready) { viewer.send("perf"); app._perfOff && app._perfOff(); app._perfOff = viewer.on("perf", d => { const b = $("#perfbox"); if (b && !b.dataset.done) { b.dataset.done = 1; b.textContent += `\n\n3D built in ${d.buildMs} ms\n` + Object.entries(d.perf).map(([k, v]) => `${k}: ${v}`).join("\n"); } }); }
 }
 
 /* ------------------------------------------------------------------ search: rooms, pieces, jobs */
@@ -382,6 +402,8 @@ async function onClick(e) {
   const t = e.target.closest("button, a, input, [data-sheet]"); if (!t) return;
   const d = t.dataset;
   if (d.floor) { S.houseFloor = d.floor; go(`#/house/${d.floor}`); return; }
+  if (d.quality) { viewer.send("quality", { q: d.quality }); const off = viewer.on("profile", () => { off(); render(true); }); if (!viewer.ready) toast("Open the house once first"); return; }
+  if (d.theme) { pref.set("theme", d.theme); applyTheme(d.theme); render(true); return; }
   if (d.hview) { S.houseView = d.hview; render(true); viewer.go({ house: true, floor: S.houseFloor, fview: S.houseView }); return; }
   if (d.sheet !== undefined && t.classList.contains("handle")) { S.sheetLow = !S.sheetLow; document.body.classList.toggle("sheet-low", S.sheetLow); render(true); return; }
   if (d.mode) { const id = S.route.a; S.mode[id] = d.mode; viewer.go({ room: id, mode: d.mode }); render(true); return; }
@@ -406,6 +428,12 @@ async function onClick(e) {
   }
 }
 document.addEventListener("input", e => { const el = e.target; if (el.dataset && el.dataset.measure) onMeasureInput(el); });
+document.addEventListener("keydown", e => {   // the room's tabs and every switch: the arrow keys move along them
+  const b = e.target.closest && e.target.closest('[role="tab"], .seg button'); if (!b || !["ArrowLeft", "ArrowRight"].includes(e.key)) return;
+  const all = [...b.parentElement.querySelectorAll("button:not([disabled])")], i = all.indexOf(b), n = all[(i + (e.key === "ArrowRight" ? 1 : -1) + all.length) % all.length];
+  e.preventDefault(); const key = n.dataset.rtab || n.dataset.mode || n.dataset.floor; n.click();
+  requestAnimationFrame(() => { const m = document.querySelector(`[data-rtab="${key}"], [data-mode="${key}"], [data-floor="${key}"]`); (m || document.activeElement).focus(); });
+});
 document.addEventListener("change", async e => {
   const el = e.target;
   if (el.dataset.photo) addPhoto(el, el.dataset.photo);

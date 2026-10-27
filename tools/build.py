@@ -86,7 +86,7 @@ def media():
 
 def icons():
     from PIL import Image, ImageDraw
-    for n in (192, 512):
+    for n in (180, 192, 512):                                   # 180: the iPhone home screen
         im = Image.new("RGB", (n, n), "#1D2A22"); d = ImageDraw.Draw(im); s = n / 64
         d.polygon([(14 * s, 31 * s), (32 * s, 16 * s), (50 * s, 31 * s), (50 * s, 50 * s), (38 * s, 50 * s), (38 * s, 38 * s), (26 * s, 38 * s), (26 * s, 50 * s), (14 * s, 50 * s)], fill="#CFF3D9")
         im.save(SITE / "app" / f"icon-{n}.png")

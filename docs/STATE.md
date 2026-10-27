@@ -7,7 +7,7 @@ Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and i
 ## Where it lives
 
 - **The app on GitHub Pages:** https://emmachilds98-wq.github.io/Demma-Home/ (built and published by the workflow on every push to
-  `main`; once, the owner sets Settings → Pages → Source: **GitHub Actions**). On this device, edits stay here and go out as a Share link.
+  `main`; Pages' source is GitHub Actions). On this device, edits stay here and go out as a Share link.
 - **The shared page** (the claude.ai artifact; private until its owner shares it with Dave from its Share menu):
   https://claude.ai/artifact/8M7ZmKP8m1kEDTZnuL3cyK . Its database holds what they do in the app, for both of them: `measurements`,
   `edits`, `notes`, `photos`, `ticks`. The round 82 shared viewer (`71ffwf5PRLhoLj6G5KTvm2`, with its saved `setups`) stays as it was.
@@ -63,16 +63,30 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 `app/**`, `data/**`, `room/index.html`, `stills/*`, `photos/**`, `media-wall/src/art/*` (255 files a call at most: two calls), keeping its
 capabilities (`db`, `user`, `assets`, `downloads`). `artifact.html` is the app page without its outer tags (the shared page adds its own). The PDFs open from GitHub Pages.
 
+## Your devices (the client, 27 Oct 2026)
+
+| Who | Device | How the 3D draws there |
+|---|---|---|
+| Emma | iPhone 15 Pro | Apple graphics: a capable phone. Starts Quick at 2× (its 3× screen capped), sharpens itself to Sharp when its frames are quick (under 18 ms), drops back if slow. Add to Home Screen gives the app its own icon, full screen |
+| Dave | iPhone 16 | The same as the iPhone 15 Pro |
+| Emma | PC, NVIDIA RTX 5060, 32 GB | A real graphics card: Sharp from the start (soft shadows at 2048, ambient occlusion, glow), drawn at 1.5–2× |
+| Dave | PC, NVIDIA RTX 3060, 32 GB | The same as the RTX 5060 |
+
+Speed and quality (`#/settings`, from Home) shows what the device is and lets each person pick Auto, Quick or Sharp and the colours
+(Auto, Light, Dark), for that device only. Its numbers card is the screenshot to send for Phase 4's targets.
+
 ## Numbers (27 Oct, software graphics in a test browser: relative, not a phone's)
 
-- The app's first screen (Home): data and page under 1 s here; the House screen shows its still at once, the 3D 15–25 s later.
+- The app's first screen (Home): data and page under 1 s here; the House screen shows its still at once, the 3D 15–25 s later in
+  software graphics (a phone or a graphics card is many times quicker). The 3D's data and script (2 MB) are kept on the device after
+  the first visit (`room/scene.<hash>.json`, `room/room3d.<hash>.js`), so the next opening starts without downloading them.
 - The 3D (from the round 82 baseline, unchanged in V1): living room about 540 draw calls (fast quality), 18 lights, 36 shader programs.
 - Clone: about 75 MB (DIY: 5.2 GB). Working tree, built files aside: about 75 MB (DIY: 844 MB).
 
 ## Open with the client
 
-1. Turn on GitHub Pages (Settings → Pages → Source: GitHub Actions) and, when happy, archive `DIY` (Settings → Archive).
-2. Their phone's make and model (the speed targets, Phase 4).
+1. When happy, archive `DIY` (Settings → Archive). (GitHub Pages is on: Source, GitHub Actions, 27 Oct.)
+2. A screenshot of Speed and quality (`#/settings`) from each iPhone after opening the house once (Phase 4's real numbers).
 3. Still to measure (all on the Measure screen): the bathroom's ceiling over the toilet and the slope's start, the vanity's width, the
    bath's length; the landing's door widths and the wall between the bedroom doors' frames; the tapestry's drop; the hall radiator;
    the master from the wardrobes to the front wall; the alcove; bedroom 2's length; a stair tread; the meter and bin cupboards; the

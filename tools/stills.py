@@ -39,18 +39,26 @@ def main():
         b = pw.launch(p, pw.GL)
         ctx = b.new_context(viewport={"width": 960, "height": 720}, device_scale_factor=1)
         check_app.route_three(ctx)
-        pg = ctx.new_page()
+        pg = ctx.new_page(); pg.set_default_timeout(120000)    # software graphics on a CI machine: a frame can take a while
         pg.goto(base + "room/index.html?embed")
         pg.wait_for_function("window.R3D && window.R3D.ready", timeout=240000)
+        # Quick quality, always: the same picture every run, and no soft shadows to draw in software (they took a CI frame past 30 s)
+        pg.evaluate("window.postMessage({src: 'demma', cmd: 'quality', q: 'fast'}, '*')")
+        skipped = []
         for name, msg in PLACES + rooms:
-            pg.evaluate("m => window.postMessage(Object.assign({src: 'demma', cmd: 'go', instant: true}, m), '*')", msg)
-            pg.wait_for_timeout(1200)
-            try: pg.wait_for_function(SETTLE, polling=400, timeout=30000)
-            except Exception: pass
-            pg.wait_for_timeout(1500)
-            pg.screenshot(path=str(tmp))
-            Image.open(tmp).convert("RGB").save(out / f"{name}.webp", "WEBP", quality=78, method=5)
-            print("still", name, flush=True)
+            try:
+                pg.evaluate("m => window.postMessage(Object.assign({src: 'demma', cmd: 'go', instant: true}, m), '*')", msg)
+                pg.wait_for_timeout(1200)
+                try: pg.wait_for_function(SETTLE, polling=400, timeout=30000)
+                except Exception: pass
+                pg.wait_for_timeout(1500)
+                pg.screenshot(path=str(tmp))
+                Image.open(tmp).convert("RGB").save(out / f"{name}.webp", "WEBP", quality=78, method=5)
+                print("still", name, flush=True)
+            except Exception as e:                            # noqa: BLE001: the place keeps its fallback picture (tools/build.py)
+                skipped.append(name); print("skipped", name, type(e).__name__, flush=True)
+        if skipped:
+            print(f"{len(skipped)} stills skipped: {', '.join(skipped)} (their evidence pictures stand in)")
         b.close()
     tmp.unlink(missing_ok=True)
     httpd.shutdown()

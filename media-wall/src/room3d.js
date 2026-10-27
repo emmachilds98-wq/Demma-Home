@@ -5714,9 +5714,13 @@ if (EMBED) {
         else if (d.cmd === "perf") post("perf", { perf: perfInfo(), buildMs: window.R3D && window.R3D.buildMs });
         else if (d.cmd === "lift") liftBed(!!d.on);
         else if (d.cmd === "resize") sizeRenderer();
+        else if (d.cmd === "quality") {   // Auto (the speed check decides, as before), or Quick / Sharp kept on this device
+          if (d.q === "auto") { S.picked = false; probe = 3; probeT.length = 0; } else { S.quality = d.q; S.picked = true; }
+          store.set(KEY, S); applyLight(); sizeRenderer(); syncButtons(); post("profile", { profile: profile() }); }
       } catch (err) { post("error", { msg: String(err && err.message || err) }); }
     });
     document.addEventListener("click", e => { if (e.target.closest("[data-tools-toggle]") && root.classList.contains("emb-panel")) setTimeout(() => { if (!(window.DemmaTools && window.DemmaTools.isOpen())) { root.classList.remove("emb-panel"); post("panel", { k: null }); } }, 0); });
-    return { pickable, tap, ready() { post("ready", { buildMs: window.R3D && window.R3D.buildMs, small: SMALL }); } };
+    function profile() { return { gpu: GPU.slice(0, 90), big: BIG_GPU, goodPhone: GOOD_PHONE, small: SMALL, quality: S.quality, picked: !!S.picked, ratio: +gl.getPixelRatio().toFixed(2) }; }
+    return { pickable, tap, ready() { post("ready", { buildMs: window.R3D && window.R3D.buildMs, small: SMALL, profile: profile() }); } };
   })();
 }
