@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "project.schema.json",
+  "title": "Demma's Home: a project",
+  "description": "One room's plan, as the app reads it (projects/README.md). Money in pounds, [low, high].",
+  "type": "object",
+  "required": ["id", "name", "room", "cost", "what", "places", "buy", "phases", "options", "files"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "name": { "type": "string" },
+    "room": { "type": "string", "description": "a room id from the house file (house/export_house.py)" },
+    "version": { "type": "string" },
+    "cost": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+    "what": { "type": "string" },
+    "fit": { "type": "object", "properties": { "fits": { "type": "integer" }, "tight": { "type": "integer" }, "check": { "type": "integer" }, "no": { "type": "integer" } } },
+    "files": { "type": "array", "items": { "type": "object", "required": ["name", "href"] } },
+    "places": {
+      "type": "array",
+      "items": { "type": "object", "required": ["id", "name", "pieces"],
+        "properties": { "pieces": { "type": "array", "items": { "type": "object", "required": ["key", "title", "what", "time", "who", "cost", "buy", "tasks"],
+          "properties": {
+            "tasks": { "type": "array", "items": { "type": "object", "required": ["id", "title", "how"] } },
+            "buy": { "type": "array", "items": { "type": "string" }, "description": "ids of rows in the project's buy list" },
+            "checks": { "type": "array" }, "need": { "type": ["string", "null"] }, "pic": { "type": ["string", "null"] } } } } } }
+    },
+    "buy": { "type": "array", "items": { "type": "object", "required": ["id", "phase", "item", "lo", "hi"] } },
+    "jobs": { "type": "array" },
+    "phases": { "type": "array", "items": { "type": "object", "required": ["n", "name", "lo", "hi"] } },
+    "options": { "type": "array", "items": { "type": "object", "required": ["name", "size", "lo", "hi"] }, "description": "one line each: to look at, never a build" },
+    "moments": { "type": "array", "items": { "type": "object", "required": ["k", "name"] } }
+  }
+}

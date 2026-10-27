@@ -1,0 +1,56 @@
+{
+ "brick": {
+  "asset": "red_brick_03",
+  "size": 1.0,
+  "url": "https://polyhaven.com/a/red_brick_03",
+  "licence": "CC0"
+ },
+ "tile": {
+  "asset": "roof_09",
+  "size": 4.0,
+  "url": "https://polyhaven.com/a/roof_09",
+  "licence": "CC0"
+ },
+ "lawn": {
+  "asset": "sparse_grass",
+  "size": 2.0,
+  "url": "https://polyhaven.com/a/sparse_grass",
+  "licence": "CC0"
+ },
+ "concrete": {
+  "asset": "brushed_concrete",
+  "size": 2.5,
+  "url": "https://polyhaven.com/a/brushed_concrete",
+  "licence": "CC0"
+ },
+ "road": {
+  "asset": "asphalt_02",
+  "size": 3.0,
+  "url": "https://polyhaven.com/a/asphalt_02",
+  "licence": "CC0"
+ },
+ "paving": {
+  "asset": "rectangular_paving",
+  "size": 2.0,
+  "url": "https://polyhaven.com/a/rectangular_paving",
+  "licence": "CC0"
+ },
+ "laminate": {
+  "asset": "laminate_floor_02",
+  "size": 1.7,
+  "url": "https://polyhaven.com/a/laminate_floor_02",
+  "licence": "CC0"
+ },
+ "carpet_grey": {
+  "asset": "Carpet012",
+  "size": 0.5,
+  "url": "https://ambientcg.com/view?id=Carpet012",
+  "licence": "CC0"
+ },
+ "carpet": {
+  "asset": "Carpet012",
+  "size": 0.5,
+  "url": "https://ambientcg.com/view?id=Carpet012",
+  "licence": "CC0"
+ }
+}
