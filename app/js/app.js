@@ -24,6 +24,7 @@ async function start() {
   store.on(col => { if (col === "edits") viewer.send("edits", { edits: M.engineEdits() }); if (S.route && !S.typing) render(true); });
   if (st.fromLink) setTimeout(() => toast("Added what was in the link to this device"), 600);
   rail();
+  document.querySelectorAll("[data-file]").forEach(a => { a.href = M.fileHref(a.getAttribute("href")); });
   addEventListener("hashchange", () => render());
   document.addEventListener("click", onClick);
   document.addEventListener("keydown", e => { if (e.key === "/" && !/input|textarea/i.test(e.target.tagName)) { e.preventDefault(); openSearch(); } if (e.key === "Escape") closeSearch(); });
@@ -262,7 +263,7 @@ function pProject(r, soft) {
   const prog = M.projectProgress(pj);
   let body = "";
   if (tab === "build") {
-    body = `<div class="jobs-head"><span class="row-t">${prog.done} of ${prog.total} jobs done</span><a class="btn" href="${esc(pj.files[1].href)}" target="_blank" rel="noopener">${icon("download")}<span>Build guide</span></a></div>`
+    body = `<div class="jobs-head"><span class="row-t">${prog.done} of ${prog.total} jobs done</span><a class="btn" href="${esc(M.fileHref(pj.files[1].href))}" target="_blank" rel="noopener">${icon("download")}<span>Build guide</span></a></div>`
       + pj.places.map(pl => { const ids = pl.pieces.flatMap(p => p.tasks.map(t => t.id).concat(p.buy)), dn = ids.filter(M.ticked).length;
         return `<div class="sec"><span class="label">${esc(pl.name)} · ${dn} of ${ids.length}</span></div><div class="list">${pl.pieces.map(p => pieceRow(pj, p)).join("")}</div>`; }).join("");
   } else if (tab === "plan") {
@@ -270,7 +271,7 @@ function pProject(r, soft) {
     body = `<p style="margin-top:16px">${esc(pj.what)}</p>
       <div class="chips"><span class="chip mint">${f.fits} fit</span><span class="chip butter">${f.tight} tight</span><span class="chip sky">${f.check} to check on site</span>${f.no ? `<span class="chip plain">${f.no} don't fit</span>` : ""}</div>
       <div class="sec"><h3>The order, and what each costs</h3></div><div class="list">${pj.phases.map(p => `<div class="phase"><span><span class="row-t">${p.n}. ${esc(p.name)}</span><span class="second" style="display:block">${esc(p.biggest)}</span></span><span class="row-t">${p.hi ? gbp(p.lo, p.hi) : "—"}</span></div>`).join("")}</div>
-      <div class="sec"><h3>The files</h3></div><div class="list">${pj.files.map(fl => `<a class="rowc nopic" href="${esc(fl.href)}" target="_blank" rel="noopener"><span class="t">${esc(fl.name)}</span><span class="chev">${icon(fl.href.endsWith(".pdf") ? "download" : "chev")}</span></a>`).join("")}</div>
+      <div class="sec"><h3>The files</h3></div><div class="list">${pj.files.map(fl => `<a class="rowc nopic" href="${esc(M.fileHref(fl.href))}" target="_blank" rel="noopener"><span class="t">${esc(fl.name)}</span><span class="chev">${icon(fl.href.endsWith(".pdf") ? "download" : "chev")}</span></a>`).join("")}</div>
       <div class="sec"><h3>Other ideas, to look at</h3></div><div class="card" style="padding:0 0">${pj.options.map(o => `<div class="opt"><span class="row-t">${esc(o.name)}</span><span class="second" style="display:block">${esc(o.size)} · ${gbp(o.lo, o.hi)}</span></div>`).join("")}</div>`;
   } else {
     body = shopList(pj);
@@ -355,9 +356,9 @@ async function savePicture(d) {
   toast("Saved to your downloads");
 }
 async function share() {
-  const url = store.mode === "shared" ? location.href : store.shareLink();
+  const url = store.mode === "shared" ? "https://claude.ai/artifact/8M7ZmKP8m1kEDTZnuL3cyK" : store.shareLink();   // the shared page's own link
   try { await navigator.clipboard.writeText(url); toast(store.mode === "shared" ? "Link copied" : "Link copied: it carries your changes"); }
-  catch (e) { prompt("Copy this link", url); }
+  catch (e) { toast(url, 8000); }
 }
 async function addPhoto(input, roomId) {
   const f = input.files && input.files[0]; if (!f) return;
@@ -416,7 +417,7 @@ document.addEventListener("change", async e => {
 document.addEventListener("submit", async e => {
   const f = e.target; if (!f.dataset.note) return; e.preventDefault();
   const tx = f.querySelector("textarea").value.trim(); if (!tx) return;
-  await store.add("notes", { room: f.dataset.note, item: S.picked && S.picked.item ? S.picked.item.id : null, text: tx }); toast("Note saved");
+  await store.add("notes", { room: f.dataset.note, item: f.dataset.item || (S.picked && S.picked.item ? S.picked.item.id : null), text: tx }); toast("Note saved");
 });
 
 start();

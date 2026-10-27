@@ -2,6 +2,10 @@
    from media-wall/src/export_project.py), with the client's own edits and numbers laid over them (store.js). */
 import { store } from "./store.js";
 
+/* the PDFs and the media wall's full page live on GitHub Pages; the shared page (the claude.ai artifact) links there */
+export const PAGES = "https://emmachilds98-wq.github.io/Demma-Home/";
+export const fileHref = h => (/^https?:/.test(h) || /github\.io$/.test(location.hostname) || location.protocol === "file:" || /^(localhost|127\.)/.test(location.hostname) ? h : PAGES + h);
+
 export const D = { house: null, projects: [], media: { stills: {}, photos: {} }, next: { decide: [] } };
 
 /* the rooms' names as the client says them (the plans' own are "Bedroom 3", "Store" ...) */

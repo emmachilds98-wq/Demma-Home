@@ -78,6 +78,7 @@ export function renderEdit(rm, itemId, soft) {
         <span class="val"><input id="f-${k}" type="number" inputmode="decimal" step="1" value="${Math.round(c[k] * 10) / 10}" data-field="${k}" ${lock[k] ? "disabled" : ""}><span class="u">cm</span></span>
         <button type="button" data-step="${k}" data-by="1" aria-label="${t} up 1 cm" ${lock[k] ? "disabled" : ""}>+</button></div></div>`).join("")}</div>`}
       <div class="acts3"><button type="button" class="btn" data-enote>Add a note</button><button type="button" class="btn" data-copy>Copy</button><button type="button" class="btn remove" data-remove ${op || c.removed ? "disabled" : ""}>Remove</button></div>
+      <form id="enote" class="notes" data-note="${rm.id}" data-item="${esc(it.id)}" hidden style="margin-top:12px"><label class="sr" for="enote-t">A note about ${esc(it.name.toLowerCase())}</label><textarea id="enote-t" placeholder="A note about ${esc(it.name.toLowerCase())}"></textarea><p><button class="btn main" type="submit">Save the note</button></p></form>
       <p class="second note-line">${store.mode === "shared" ? (store.readOnly ? "You can look; only editors save changes" : "Saves to your shared plan as you go") : "Saves on this device · Share sends it"}${it.measure ? " · its size is a guess: measure it" : ""}</p>
       ${door || op ? `<p class="second note-line">The wall round it moves with it.</p>` : ""}`;
   }
@@ -105,10 +106,7 @@ document.addEventListener("click", async e => {
     try { await navigator.clipboard.writeText(txt); toast("Its sizes are copied"); } catch (er) { toast(txt, 5000); }
     return;
   }
-  if (d.enote !== undefined && it) {
-    const tx = prompt(`A note about ${it.name.toLowerCase()}`); if (!tx) return;
-    await store.add("notes", { room: it.room, item: it.id, text: tx.trim() }); toast("Note saved");
-  }
+  if (d.enote !== undefined && it) { const f = document.getElementById("enote"); if (f) { f.hidden = !f.hidden; if (!f.hidden) f.querySelector("textarea").focus(); } return; }
 });
 document.addEventListener("input", e => {
   const el = e.target; if (!el.dataset || !el.dataset.field || !ST.item) return;

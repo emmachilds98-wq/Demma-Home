@@ -101,6 +101,12 @@ def app():
     sub = lambda t: t.replace("__V__", stamp).replace("__LABEL__", LABEL)
     (SITE / "index.html").write_text(sub((ROOT / "app/index.html").read_text()))
     (SITE / "sw.js").write_text(sub((ROOT / "app/sw.js").read_text()))
+    # the shared page (the claude.ai artifact) wraps the page in its own document: the same page without the outer tags
+    page = sub((ROOT / "app/index.html").read_text())
+    page = re.sub(r"<!doctype html>\s*<html[^>]*>\s*<head>\s*", "", page, flags=re.I)
+    page = re.sub(r'<meta charset="utf-8">\s*<meta name="viewport"[^>]*>\s*', "", page)
+    page = re.sub(r"</head>\s*<body>\s*", "", page).replace("</body>\n</html>", "").replace('<link rel="manifest" href="manifest.webmanifest">\n', "")
+    (SITE / "artifact.html").write_text(page)
     (SITE / "manifest.webmanifest").write_text(json.dumps({
         "name": "Demma's Home", "short_name": "Demma's Home", "description": "The whole house in 3D, what to measure, the projects, what to buy.",
         "start_url": "./", "scope": "./", "display": "standalone", "background_color": "#F6F1E7", "theme_color": "#F6F1E7",

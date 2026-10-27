@@ -8,8 +8,9 @@ Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and i
 
 - **The app on GitHub Pages:** https://emmachilds98-wq.github.io/Demma-Home/ (built and published by the workflow on every push to
   `main`; once, the owner sets Settings → Pages → Source: **GitHub Actions**). On this device, edits stay here and go out as a Share link.
-- **The shared page** (the claude.ai artifact, one link for Emma and Dave): https://claude.ai/artifact/71ffwf5PRLhoLj6G5KTvm2 . Its
-  database holds what they do in the app, for both of them: `measurements`, `edits`, `notes`, `photos`, `ticks` (and the old `setups`).
+- **The shared page** (the claude.ai artifact; private until its owner shares it with Dave from its Share menu):
+  https://claude.ai/artifact/8M7ZmKP8m1kEDTZnuL3cyK . Its database holds what they do in the app, for both of them: `measurements`,
+  `edits`, `notes`, `photos`, `ticks`. The round 82 shared viewer (`71ffwf5PRLhoLj6G5KTvm2`, with its saved `setups`) stays as it was.
 - **The old repo** `DIY` (rounds 1–82, every PR and note): read-only history; archive it on GitHub when you're happy.
 - **The design canvas:** https://claude.ai/artifact/MJNiUDxTXmi7pheHbWvuzi (section 3 of the plan has its tokens in text).
 
@@ -58,9 +59,9 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 3. Change `house/survey_data.py` (sizes with sources) or the media wall's code; `python3 tools/build.py`; `python3 tools/checks.py`.
 4. Rewrite this file, a line in `docs/HISTORY.md`, the board; PR (the template); merge; republish the shared page (below).
 
-**Republish the shared page:** build, then publish `_site/index.html` with the Artifact tool to the link above with `files` for
+**Republish the shared page:** build, then publish `_site/artifact.html` with the Artifact tool to the link above with `files` for
 `app/**`, `data/**`, `room/index.html`, `stills/*`, `photos/**`, `media-wall/src/art/*` (255 files a call at most: two calls), keeping its
-capabilities (`db`, `user`, `assets`, `downloads`). The PDFs open from GitHub Pages.
+capabilities (`db`, `user`, `assets`, `downloads`). `artifact.html` is the app page without its outer tags (the shared page adds its own). The PDFs open from GitHub Pages.
 
 ## Numbers (27 Oct, software graphics in a test browser: relative, not a phone's)
 

@@ -3,7 +3,7 @@
 Emma and Dave's whole house in 3D: every room from their photos and words, what's still to measure, the projects (the artisan oak media
 wall first), and what to buy. Open it, look round, tap a piece, change its size, type in a measurement: it's saved for both of you.
 
-**Open the app:** https://emmachilds98-wq.github.io/Demma-Home/ · **the shared page:** https://claude.ai/artifact/71ffwf5PRLhoLj6G5KTvm2
+**Open the app:** https://emmachilds98-wq.github.io/Demma-Home/ · **the shared page:** https://claude.ai/artifact/8M7ZmKP8m1kEDTZnuL3cyK
 
 | Home | The house | A room | Edit | Measure | A project |
 |---|---|---|---|---|---|
