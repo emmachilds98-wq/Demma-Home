@@ -110,3 +110,6 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V1** (27 Oct 2026): a fresh start in its own repo (DIY's 5.2 GB history left behind): the app rebuilt house first (Home, House,
   Projects, Shop, Measure), the house file with every piece named and sourced, edit and measure in the app, the build and every check in
   the workflow, outputs built not committed. The client: "change the name to Demma's Home V1 and we will start from the beginning".
+- **V1.1** (27 Oct 2026): realism, quality and speed from the living room's engine: CC0 photographed oak, hessian, corduroy, plaster and
+  carpet over the drawn textures (each scaled to the part's own colour), rounded edges on every box, the iPhones' soft shade and glow when
+  their frames are quick, the carpets' shared picture sent once. The client: "i want better realism, quality and speed".

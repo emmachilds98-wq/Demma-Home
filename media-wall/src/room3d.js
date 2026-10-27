@@ -252,14 +252,17 @@ const AO = { c: null, g: null };
 /* v73 (B): if the house still runs under 25 frames a second in HD (the gaps while it moves), it drops its ambient occlusion and draws at
    1× (the living room keeps its HD); once, for this visit (?houselite forces it, for a check) */
 let houseLite = /[?&]houselite\b/.test(location.search);
-const aoLive = () => S.quality === "hd" && (BIG_GPU || /[?&]ao\b/.test(location.search)) && !/[?&]noao\b/.test(location.search) && !(houseLite && R.HOUSE3 && HOUSEV(S.view));   // ?ao tries it anywhere
+/* V1.1, the client's iPhones (15 Pro, 16): a capable phone in HD whose frames are quick (under 14 ms) gets the PCs' shade and glow too
+   (phoneAO, from autoQuality), lighter (8 samples, 2× anti-aliasing); off again for the visit if its frames then pass 30 ms */
+let phoneAO = false, phoneAOoff = false;
+const aoLive = () => S.quality === "hd" && (BIG_GPU || phoneAO || /[?&]ao\b/.test(location.search)) && !/[?&]noao\b/.test(location.search) && !(houseLite && R.HOUSE3 && HOUSEV(S.view));   // ?ao tries it anywhere
 function aoComposer(w, h, pr) {
   if (!AO.c) {
-    const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: SMALL ? 0 : 4 });   // anti-aliased, as on screen
+    const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: SMALL ? (GOOD_PHONE ? 2 : 0) : 4 });   // anti-aliased, as on screen
     AO.c = new EffectComposer(gl, rt); AO.c.addPass(new RenderPass(scene, camera));
     AO.g = new GTAOPass(scene, camera, w, h); AO.g.blendIntensity = 0.9;
-    AO.g.updateGtaoMaterial({ radius: 0.3, distanceExponent: 1.4, thickness: 1.2, scale: 1.1, samples: 16, distanceFallOff: 1 });
-    AO.g.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: 16 });
+    AO.g.updateGtaoMaterial({ radius: 0.3, distanceExponent: 1.4, thickness: 1.2, scale: 1.1, samples: SMALL ? 8 : 16, distanceFallOff: 1 });
+    AO.g.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: SMALL ? 8 : 16 });
     clipMat(AO.g.normalMaterial);                                    // the cutaway cuts the depth it shades from, too
     AO.c.addPass(AO.g);
     // v48 §5, client: "improving the renders graphics and quality": a soft glow round what's brighter than white (the LED strips, the lamp's
@@ -469,6 +472,39 @@ const HESSIAN = canvasTex(256, 256, (g, w, h) => {   // v15: hessian's coarse, o
   for (let j = 0; j < h; j += 4) { g.fillStyle = `rgba(255,248,230,${0.08 + r() * 0.12})`; g.fillRect(0, j, w, 1.4); }
 }, true);
 HESSIAN.repeat.set(3, 9);
+/* V1.1, the client: "i want better realism, quality and speed": CC0 photos (house/textures, house/SOURCES.md; inline in the data, as the
+   house's) take over the drawn textures above as they arrive. The same texture objects, so no material changes and no new shaders. A
+   colour photo is scaled to its drawn texture's average first, so every part keeps its colour (yours, the plan's) and only the grain, the
+   weave and the pile are real. A phone without a capable chip keeps the drawn ones */
+const PHOTO = (R.HOUSE3 && R.HOUSE3.photo_tex) || {};
+for (const t of Object.values(PHOTO)) for (const f of ["map", "nor"]) if (typeof t[f] === "string" && t[f][0] === "@") { const [k, g] = t[f].slice(1).split("."); t[f] = PHOTO[k][g]; }   // a shared picture, sent once
+const PHOTOS = !(SMALL && !GOOD_PHONE) && !!(PHOTO.lr_oak && PHOTO.lr_oak.map);
+function photoInto(tex, src, match = true) {
+  if (!PHOTOS || !src) return;
+  const im = new Image();
+  im.onload = () => {
+    let out = im;
+    if (match && tex.image && tex.image.getContext) {
+      const avg = d => { const t = [0, 0, 0]; for (let i = 0; i < d.length; i += 4) { t[0] += d[i]; t[1] += d[i + 1]; t[2] += d[i + 2]; } return t.map(v => v / (d.length / 4) || 1); };
+      const was = tex.image, want = avg(was.getContext("2d").getImageData(0, 0, was.width, was.height).data);
+      out = document.createElement("canvas"); out.width = im.naturalWidth; out.height = im.naturalHeight;
+      const g = out.getContext("2d"); g.drawImage(im, 0, 0);
+      const px = g.getImageData(0, 0, out.width, out.height), d = px.data, k = avg(d).map((v, i) => want[i] / v);
+      for (let i = 0; i < d.length; i += 4) { d[i] *= k[0]; d[i + 1] *= k[1]; d[i + 2] *= k[2]; }   // clamped at 255 by the array
+      g.putImageData(px, 0, 0);
+    }
+    tex.image = out; tex.needsUpdate = true; dirty();
+  };
+  im.src = src;
+}
+const flatNormal = () => canvasTex(4, 4, (g, w, h) => { g.fillStyle = "#8080ff"; g.fillRect(0, 0, w, h); }, false);
+const OAK_NRM = flatNormal(), CORD_NRM = flatNormal(), PLASTER_NRM = flatNormal();
+CORD_NRM.repeat.set(1.44, 0.6);          // the photo's 100 ribs a copy: 144 across a cushion, as the drawn cord's
+PLASTER_NRM.repeat.set(0.625, 0.625);    // 1.6 m of plaster a copy
+const PH = k => PHOTO[k] || {};
+photoInto(OAK_TEX, PH("lr_oak").map); photoInto(OAK_NRM, PH("lr_oak").nor, false);
+photoInto(HESSIAN, PH("lr_hessian").map); photoInto(CORD_NRM, PH("lr_cord").nor, false); photoInto(PLASTER_NRM, PH("lr_plaster").nor, false);
+photoInto(CARPET, PH("carpet_grey").map); photoInto(OATMEAL, PH("carpet").map);   // the house's Carpet012, in your grey and the oatmeal
 // v16: the client's light box is an IKEA OBEGRÄNSAD: a black panel with a 16 x 16 grid of white LEDs that shows blocky black-and-white
 // pictures, "like pharmacy LED ads". Drawn showing a pixel music note; the unlit LEDs are dark grey dots on the black face.
 // v16: the cap's embroidery. v37: drawn as rows of gold stitching in the shape of the client's cap (four lines on the crown, fourteen
@@ -549,8 +585,9 @@ function paintColour(ratio, ch = "wall") {
 }
 function paintMat(ratio, eggshell, both, ch = "wall") {
   const k = ratio.toFixed(2) + (eggshell ? "e" : "") + (both ? "d" : "") + ch;
+  const relief = eggshell ? {} : PHOTOS ? { normalMap: PLASTER_NRM, normalScale: new THREE.Vector2(0.35, 0.35) } : { bumpMap: WALL_BUMP, bumpScale: 0.6 };   // V1.1: real plaster
   if (!paintMats.has(k)) paintMats.set(k, reg(new THREE.MeshStandardMaterial({ color: paintColour(ratio, ch), roughness: eggshell ? 0.45 : 0.92,
-    bumpMap: eggshell ? null : WALL_BUMP, bumpScale: 0.6, side: both ? THREE.DoubleSide : THREE.FrontSide, userData: { ratio, ch } })));
+    ...relief, side: both ? THREE.DoubleSide : THREE.FrontSide, userData: { ratio, ch } })));
   return paintMats.get(k);
 }
 function repaint() { paintMats.forEach(m => m.color.copy(paintColour(m.userData.ratio, m.userData.ch))); reshadow(); }
@@ -576,14 +613,15 @@ function kindOf(fill, flags, size) {
   if ((flags || "").includes("g") || OAKS.has(fill)) return "oak";
   return o.l < 0.12 ? "dark" : "plain";
 }
+const OAK_RELIEF = () => PHOTOS ? { normalMap: OAK_NRM, normalScale: new THREE.Vector2(0.5, 0.5) } : { bumpMap: OAK_BUMP, bumpScale: 0.35 };   // V1.1: the veneer's own
 function kindMat(kind) {
   if (KIND[kind]) return KIND[kind];
   const m = {
-    oak: () => new THREE.MeshStandardMaterial({ vertexColors: true, map: OAK_TEX, bumpMap: OAK_BUMP, bumpScale: 0.35, roughness: 0.58 }),
-    stairs: () => Object.assign(new THREE.MeshStandardMaterial({ vertexColors: true, map: OAK_TEX, bumpMap: OAK_BUMP, bumpScale: 0.35, roughness: 0.58 }), { userData: { noTint: true } }),
+    oak: () => new THREE.MeshStandardMaterial({ vertexColors: true, map: OAK_TEX, ...OAK_RELIEF(), roughness: 0.58 }),
+    stairs: () => Object.assign(new THREE.MeshStandardMaterial({ vertexColors: true, map: OAK_TEX, ...OAK_RELIEF(), roughness: 0.58 }), { userData: { noTint: true } }),
     plain: () => new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.72 }),
     dark: () => new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.42, metalness: 0.05 }),
-    fabric: () => new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.9, bumpMap: CORD, bumpScale: 0.9, sheen: 0.45, sheenRoughness: 0.6, sheenColor: new THREE.Color("#ffffff") }),   // v48 §4: the cord's soft sheen at the edges
+    fabric: () => new THREE.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.9, ...(PHOTOS ? { normalMap: CORD_NRM, normalScale: new THREE.Vector2(0.9, 0.9) } : { bumpMap: CORD, bumpScale: 0.9 }), sheen: 0.45, sheenRoughness: 0.6, sheenColor: new THREE.Color("#ffffff") }),   // v48 §4: the cord's soft sheen at the edges
     led: () => new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: false }),
     glass: () => new THREE.MeshPhysicalMaterial({ color: "#ffffff", roughness: 0.04, transmission: 0, transparent: true, opacity: 0.16, depthWrite: false }),
     art: () => new THREE.MeshStandardMaterial({ map: ART_TEX, roughness: 0.5 }),
@@ -607,9 +645,41 @@ function softGeo(b) {
   colAttr(g, cols);
   return g;
 }
+/* V1.1: a box with its edges rounded off (EDGE cm, real joinery's arris): each face stops short of its edges, a strip joins each pair
+   of faces and a triangle each corner, and every vertex keeps its own face's normal, so the light rolls round the edge as on a real
+   board instead of stopping at a hard line. 44 triangles (a plain box 12). Faces in BoxGeometry's order (+x, -x, +y, -y, +z, -z) for the
+   colours and the grain; a strip's or a corner's vertex takes the colour and grain of the face it sits on. Sharp on a phone without a
+   capable chip */
+const EDGE = SMALL && !GOOD_PHONE ? 0 : 0.35;
+function bevelBox(H, r) {            // H: half sizes (m); out: positions, normals and each vertex's face, three to a triangle
+  const I = H.map(v => v - r), pos = [], nrm = [], face = [];
+  const tri = (...V) => {             // V: [axis, sign, point]; wound to face out (the summed normals of its corners)
+    const [a, b, c] = V.map(v => v[2]), u = b.map((q, i) => q - a[i]), w = c.map((q, i) => q - a[i]), n = [0, 0, 0];
+    V.forEach(v => { n[v[0]] += v[1]; });
+    const cr = [u[1] * w[2] - u[2] * w[1], u[2] * w[0] - u[0] * w[2], u[0] * w[1] - u[1] * w[0]];
+    if (cr[0] * n[0] + cr[1] * n[1] + cr[2] * n[2] < 0) [V[1], V[2]] = [V[2], V[1]];
+    for (const [ax, sg, p] of V) { pos.push(...p); const q = [0, 0, 0]; q[ax] = sg; nrm.push(...q); face.push(ax * 2 + (sg > 0 ? 0 : 1)); }
+  };
+  const pt = (ax, sg, o) => { const p = o.slice(); p[ax] = sg * H[ax]; return [ax, sg, p]; };   // o: the other two axes set, this one on its face
+  for (let ax = 0; ax < 3; ax++) for (const sg of [1, -1]) {                                    // the faces
+    const [b, c] = [0, 1, 2].filter(k => k !== ax), q = (sb, sc) => { const o = [0, 0, 0]; o[b] = sb * I[b]; o[c] = sc * I[c]; return pt(ax, sg, o); };
+    tri(q(-1, -1), q(1, -1), q(1, 1)); tri(q(-1, -1), q(1, 1), q(-1, 1));
+  }
+  for (let a = 0; a < 3; a++) for (let b = a + 1; b < 3; b++) for (const sa of [1, -1]) for (const sb of [1, -1]) {   // the edges
+    const c = 3 - a - b, on = (ax, sc) => { const o = [0, 0, 0]; o[a] = sa * I[a]; o[b] = sb * I[b]; o[c] = sc * I[c]; return pt(ax, ax === a ? sa : sb, o); };
+    tri(on(a, -1), on(a, 1), on(b, 1)); tri(on(a, -1), on(b, 1), on(b, -1));
+  }
+  for (const sx of [1, -1]) for (const sy of [1, -1]) for (const sz of [1, -1]) {               // the corners
+    const o = [sx * I[0], sy * I[1], sz * I[2]];
+    tri(pt(0, sx, o), pt(1, sy, o), pt(2, sz, o));
+  }
+  return { pos, nrm, face };
+}
 function boxGeo(b) {
   const [, x, y, z, w, h, d, f, t, s] = b;
   if (SOFT.has(f)) return softGeo(b);
+  const r = Math.min(EDGE, Math.min(w, h, d) * 0.2);
+  if (r >= 0.05) return roundGeo(b, r);
   const g = new THREE.BoxGeometry(Math.max(w, 0.05) * M, Math.max(h, 0.05) * M, Math.max(d, 0.05) * M);
   g.translate(-(x + w / 2) * M, (y + h / 2) * M, (z + d / 2) * M);
   const uv = g.attributes.uv, span = [[d, h], [d, h], [w, d], [w, d], [w, h], [w, h]];
@@ -628,6 +698,33 @@ function boxGeo(b) {
   const faceCol = [side, side, top, top, front, front], cols = [];
   for (let face = 0; face < 6; face++) for (let k = 0; k < 4; k++) cols.push(faceCol[face].r, faceCol[face].g, faceCol[face].b);
   colAttr(g, cols);
+  return g;
+}
+function boxLook(b) {                // the faces' colours (+x, -x, +y, -y, +z, -z) and grain (copies a side, offsets), as boxGeo's
+  const [, x, y, z, w, h, d, f, t, s] = b;
+  const front = fillCol(f);
+  const hue = c => { const o = {}; c.getHSL(o); return o; };
+  const differs = c2 => { if (!c2) return false; const a = hue(front), b2 = hue(new THREE.Color(c2)); return Math.abs(a.h - b2.h) > 0.07 || Math.abs(a.s - b2.s) > 0.3; };
+  const top = differs(t) ? new THREE.Color(t) : front, side = differs(s) ? new THREE.Color(s) : front;
+  const span = [[d, h], [d, h], [w, d], [w, d], [w, h], [w, h]];
+  return { cols: [side, side, top, top, front, front], span, off: face => [((x * 7.3 + z * 3.1) % 1), ((y * 5.7 + face) % 1)] };
+}
+function roundGeo(b, r) {             // V1.1: boxGeo's box, its edges rounded (bevelBox), with the same colours and grain
+  const [, x, y, z, w, h, d] = b, W = Math.max(w, 0.05), Hh = Math.max(h, 0.05), D = Math.max(d, 0.05);
+  const H = [W * M / 2, Hh * M / 2, D * M / 2], { pos, nrm, face } = bevelBox(H, r * M), L = boxLook(b);
+  const AX = [[2, 1], [2, 1], [0, 2], [0, 2], [0, 1], [0, 1]], uvs = [], cols = [];   // each face's (u, v) axes, as the spans above
+  for (let i = 0; i < face.length; i++) {
+    const fc = face[i], [ua, va] = AX[fc], tu = (pos[3 * i + ua] + H[ua]) / (2 * H[ua]), tv = (pos[3 * i + va] + H[va]) / (2 * H[va]);
+    const [su, sv] = L.span[fc].map(v => v * M / GRAIN), rot = L.span[fc][1] > L.span[fc][0], [ox, oy] = L.off(fc);
+    if (rot) uvs.push(tv * sv + ox, tu * su + oy); else uvs.push(tu * su + ox, tv * sv + oy);
+    cols.push(L.cols[fc].r, L.cols[fc].g, L.cols[fc].b);
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  g.setAttribute("normal", new THREE.Float32BufferAttribute(nrm, 3));
+  g.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
+  colAttr(g, cols);
+  g.translate(-(x + w / 2) * M, (y + h / 2) * M, (z + d / 2) * M);
   return g;
 }
 function polyGeo(p) {
@@ -4620,6 +4717,10 @@ if (/[?&]perf\b/.test(location.search)) {   // v35: ?perf in the address shows t
 function autoQuality() {
   const ms = probeT.sort((a, b) => a - b)[1];
   if (S.quality === "fast") slowDev = ms > 30;
+  if (S.quality === "hd" && GOOD_PHONE && !BIG_GPU) {   // V1.1: the shade and glow on a quick phone (also when you picked HD), measured again with them on
+    if (phoneAO && ms > 30) { phoneAO = false; phoneAOoff = true; dirty(); return; }
+    if (!phoneAO && !phoneAOoff && ms < 14) { phoneAO = true; dirty(); probe = 3; probeT.length = 0; return; }
+  }
   if (S.picked) return;
   if (S.quality === "fast" && (!SMALL || GOOD_PHONE) && ms < (SMALL ? 18 : 20)) {   // v35: quick in Fast: on to HD, once, while the room is still (v39: capable phones too)
     S.quality = "hd"; applyLight(); syncButtons(); probe = 3; probeT.length = 0;
@@ -5227,7 +5328,7 @@ function houseTex(k) {
   if (k in HTEX) return HTEX[k];
   /* v70 (BUILD_SPEC phase 3): CC0 photo-textures (Poly Haven, house/SOURCES.md) where we have them, inline so the shared page shows them
      too (loading from elsewhere failed there in v50); the drawn ones below stay for everything else and as the fallback */
-  const PT = R.HOUSE3 && R.HOUSE3.photo_tex, pk = PT && PT[{ party: "brick", soldier: "brick" }[k] || k];
+  const PT = PHOTO, pk = PT[{ party: "brick", soldier: "brick" }[k] || k];
   if (pk && pk.map) {
     const img = (src, srgb) => { const t = new THREE.Texture(), im = new Image(); t.image = im; t.wrapS = t.wrapT = THREE.RepeatWrapping;
       t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.anisotropy = 4; im.onload = () => { t.needsUpdate = true; reshadow(); dirty(); }; im.src = src; return t; };
@@ -5416,14 +5517,14 @@ function buildHouse() {
        as a bright hairline up the wall (the landing's, above each door). The faces two square pieces share, from opposite sides: */
     const fkey = (ax, p, a0, a1, b0, b1) => ax + "|" + p + "|" + a0 + "|" + a1 + "|" + b0 + "|" + b1;
     const sharedFaces = F => { const lo = new Set(), hi = new Set();
-      for (const [mk, list] of Object.entries(F.boxes)) { if ((!SMALL && (ROUND[mk] ?? (mk.startsWith("cloth") ? 1.5 : 0))) || mk === "glass" || mk === "contact") continue;
+      for (const [mk, list] of Object.entries(F.boxes)) { if ((!(SMALL && !GOOD_PHONE) && (ROUND[mk] ?? (mk.startsWith("cloth") ? 1.5 : 0))) || mk === "glass" || mk === "contact") continue;
         for (const [x0, y0, z0, x1, y1, z1] of list) {
           lo.add(fkey("x", x0, y0, y1, z0, z1)); hi.add(fkey("x", x1, y0, y1, z0, z1)); lo.add(fkey("y", y0, x0, x1, z0, z1)); hi.add(fkey("y", y1, x0, x1, z0, z1));
           lo.add(fkey("z", z0, x0, x1, y0, y1)); hi.add(fkey("z", z1, x0, x1, y0, y1)); } }
       return new Set([...lo].filter(k => hi.has(k))); };
     let SHARED = new Set();
     const houseBox = (mk, x0, y0, z0, x1, y1, z1) => {
-      const w = x1 - x0, h = y1 - y0, d = z1 - z0, r = SMALL ? 0 : ROUND[mk] ?? (mk.startsWith("cloth") ? 1.5 : 0), c = v3((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
+      const w = x1 - x0, h = y1 - y0, d = z1 - z0, r = SMALL && !GOOD_PHONE ? 0 : ROUND[mk] ?? (mk.startsWith("cloth") ? 1.5 : 0), c = v3((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
       if (!r) {   // v78: from its exact corners, so two pieces that meet share their edge to the bit (a centre ± half missed by a hair: hairline cracks on the walls)
         const b = new THREE.BoxGeometry(1, 1, 1), P = b.attributes.position;
         for (let i = 0; i < P.count; i++) P.setXYZ(i, -(P.getX(i) > 0 ? x0 : x1) * M, (P.getY(i) > 0 ? y1 : y0) * M, (P.getZ(i) > 0 ? z1 : z0) * M);
@@ -5715,7 +5816,7 @@ if (EMBED) {
         else if (d.cmd === "lift") liftBed(!!d.on);
         else if (d.cmd === "resize") sizeRenderer();
         else if (d.cmd === "quality") {   // Auto (the speed check decides, as before), or Quick / Sharp kept on this device
-          if (d.q === "auto") { S.picked = false; probe = 3; probeT.length = 0; } else { S.quality = d.q; S.picked = true; }
+          if (d.q === "auto") { S.picked = false; probe = 3; probeT.length = 0; } else { S.quality = d.q; S.picked = true; probe = 3; probeT.length = 0; }   // V1.1: timed again (a quick phone's shade)
           store.set(KEY, S); applyLight(); sizeRenderer(); syncButtons(); post("profile", { profile: profile() }); }
       } catch (err) { post("error", { msg: String(err && err.message || err) }); }
     });

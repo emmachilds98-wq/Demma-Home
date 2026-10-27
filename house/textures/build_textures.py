@@ -18,6 +18,33 @@ SET = {"brick": ("red_brick_03", 1.0, 1.3, 1.22, 1.12),            # the front p
 TINT = {"carpet_grey": ("Carpet012", 0.5, "#6f6f73"), "carpet": ("Carpet012", 0.5, "#cdbfa6")}
 SRC = {"Carpet012": "https://ambientcg.com/view?id=Carpet012"}
 PX = {}                                                          # sizes other than 512 px (the carpets at 0.5 m are already 1 px a mm)
+# V1.1: the living room's own surfaces, the photo as it is (room3d.js matches each to its drawn texture's average colour as it loads,
+# so the parts keep their colours and only the grain, weave and relief are real): key: (asset, real size m, map px, normal px, turn,
+# relief). The oak is turned a quarter so its grain runs along the boards, as the drawn oak's does; 0 px leaves that picture out. Veneer
+# and smooth plaster have only a hair of relief, gone at 256-512 px: relief scales it so it reads at the room's distance
+PLAIN = {"lr_oak": ("oak_veneer_01", 0.6, 1024, 512, True, 6), "lr_hessian": ("hessian_380", 0.6, 512, 256, False, 1.5),
+         "lr_cord": ("ribbed_corduroy", 0.6, 0, 256, False, 1.5), "lr_plaster": ("white_plaster_02", 1.6, 0, 256, False, 6)}
+
+
+def turn(im, normal):
+    """a quarter turn anticlockwise; a normal map's arrows turn with it (x, y) -> (-y, x)"""
+    im = im.rotate(90, expand=True)
+    if normal:
+        r, g, b = im.split()
+        im = Image.merge("RGB", (g.point(lambda v: 255 - v), r, b))
+    return im
+
+
+def relief(im, k):
+    """a normal map's slopes made k times steeper (x and y scaled, z made up so each arrow stays one long)"""
+    if k == 1:
+        return im
+    import numpy as np
+    a = np.asarray(im, dtype=np.float32) / 127.5 - 1
+    a[..., :2] = (a[..., :2] - a[..., :2].mean((0, 1))) * k   # centred first: a slight lean in the photo would tilt the whole wall's light
+    a[..., 2] = np.sqrt(np.clip(1 - (a[..., :2] ** 2).sum(-1), 0.05, 1))
+    a /= np.linalg.norm(a, axis=-1, keepdims=True)
+    return Image.fromarray(((a + 1) * 127.5).clip(0, 255).astype("uint8"))
 
 
 def tone(im, sat, bri, warm):
@@ -50,6 +77,16 @@ def main(src):
         n = src / f"{aid}_nor.jpg"
         if n.exists():
             Image.open(n).convert("RGB").resize((px, px), Image.LANCZOS).save(HERE / f"{key}_nor.jpg", quality=82, optimize=True)
+        meta[key] = dict(asset=aid, size=size, url=SRC.get(aid, f"https://polyhaven.com/a/{aid}"), licence="CC0")
+    for key, (aid, size, mpx, npx, tq, rk) in PLAIN.items():
+        if not (src / f"{aid}_nor.jpg").exists():
+            continue
+        for kind, px, f in (("map", mpx, f"{aid}_diff.jpg"), ("nor", npx, f"{aid}_nor.jpg")):
+            if not px:
+                (HERE / f"{key}_{kind}.jpg").unlink(missing_ok=True); continue
+            im = Image.open(src / f).convert("RGB").resize((px, px), Image.LANCZOS)
+            im = relief(im, rk) if kind == "nor" else im
+            (turn(im, kind == "nor") if tq else im).save(HERE / f"{key}_{kind}.jpg", quality=76 if kind == "map" else 80, optimize=True)
         meta[key] = dict(asset=aid, size=size, url=SRC.get(aid, f"https://polyhaven.com/a/{aid}"), licence="CC0")
     (HERE / "textures.json").write_text(json.dumps(meta, indent=1))
     print("textures", len(meta))
