@@ -1224,7 +1224,7 @@ def _page(site=False):
 {STYLE_V25}
 <button type="button" class="skip" data-tools-toggle>Open the room's controls</button>
 <div class="brand"><span class="mark" aria-hidden="true"><i style="background:var(--peach)"></i><i style="background:var(--mint)"></i><i style="background:var(--lilac)"></i><i style="background:var(--butter)"></i></span>
-  <span><b>Demma's Home<span class="ver" title="This page is {LABEL}">{LABEL}</span></b><small>The media wall</small></span></div>
+  <span><b>Demma's Home<span class="ver" title="This page is {LABEL}">{LABEL}</span></b><small id="brand-place">The whole house</small></span></div>
 <nav class="hnav" aria-label="The plan">{"".join(f'<button type="button" data-nav="{k}" aria-current="false">{n}</button>' for k, n in (("plan", "Plan"), ("build", "Build"), ("buy", "Buy")))}</nav>
 <main id="room" aria-label="Your room in 3D">{room3d_page.section(gallery3d())}</main>
 {sheet("plan", "Your plan", "map", 300, plan_home + chapters)}
@@ -1396,7 +1396,8 @@ def site():
     return ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
             '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
             # v39, item 13 ("quicker on phones: the room as an installable page, works offline, opens fast"): a manifest, an icon and a service worker
-            '<link rel="manifest" href="manifest.webmanifest">\n<meta name="theme-color" content="#2f4a3c">\n<link rel="apple-touch-icon" href="media-wall/src/art/icon-192.png">\n'
+            '<link rel="manifest" href="manifest.webmanifest">\n<meta name="theme-color" content="#2f4a3c">\n<link rel="apple-touch-icon" href="media-wall/src/art/icon-180.png">\n'
+            '<meta name="apple-mobile-web-app-capable" content="yes">\n<meta name="mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-title" content="Demma\'s Home">\n'
             '<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 rx=%223%22 fill=%22%239a6634%22/%3E%3C/svg%3E">\n'
             + head + "</style>\n</head>\n<body>" + rest
             + "<script>if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});</script>\n"
@@ -1404,10 +1405,11 @@ def site():
 
 
 def pwa_files():
-    """v39, item 13: the installable page's manifest, service worker and icons (GitHub Pages serves them from the repo's root)."""
+    """v39, item 13: the installable page's manifest, service worker and icons (V1.2: into the site, which GitHub Pages serves; 180 px for
+    the iPhone's home screen)."""
     from PIL import Image, ImageDraw
-    root = HERE.parent.parent
-    for size in (192, 512):
+    root = SITE
+    for size in (180, 192, 512):
         im = Image.new("RGBA", (size, size), (0, 0, 0, 0)); d = ImageDraw.Draw(im)
         d.rounded_rectangle((0, 0, size - 1, size - 1), radius=size // 5, fill="#2b2638")
         r, gap = size * 0.16, size * 0.08
@@ -1489,7 +1491,9 @@ if __name__ == "__main__":
     (HERE / "media_wall_viewer.html").write_text(page())
     (HERE / "media_wall_viewer_inline.html").write_text(inline_images(page()))
     SITE.mkdir(parents=True, exist_ok=True)
-    (SITE / "plan.html").write_text(site().replace('<link rel="manifest" href="manifest.webmanifest">', '<link rel="manifest" href="manifest.webmanifest">'))   # V1: the media wall's full page, from the app's Projects
+    for name in ("index.html", "plan.html"):                                  # V1.2: the site's front door again (plan.html for old links)
+        (SITE / name).write_text(site())
+    pwa_files()
     (HERE / "publish_files.json").write_text(json.dumps(publish_files(), indent=1))
     todo = deck_assets_todo()
     print("viewer ok", len(publish_files()), "files;", len(todo), "pictures not yet in the deck's asset store" + (" (inlined)" if todo else ""))

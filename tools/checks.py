@@ -1,7 +1,7 @@
 """Demma's Home V1 (Phase 7): every check, one command, one verdict. The workflow runs it on every push and pull request; run it yourself
 before you push. Exits non-zero if any check fails; prints one line each (the result lines to paste in a PR).
 
-python3 tools/checks.py            the model's checks, flicker, clashes, privacy (repo and site), the app, the media wall's page and taps
+python3 tools/checks.py            the model's checks, flicker, clashes, privacy (repo and site), the front door, the media wall's page and taps
 python3 tools/checks.py --quick    no browser: the model's checks, flicker, clashes, privacy
 
 Needs the site built first (python3 tools/build.py); THREE_LOCAL serves three.js where the CDN is blocked."""
@@ -42,9 +42,9 @@ def privacy():
     return a == 0 and b == 0, out1.strip().splitlines()[-1] + " · site: " + out2.strip().splitlines()[-1]
 
 
-def app():
-    code, out = sh([ROOT / "tools/check_app.py", SITE], timeout=2400)
-    last = [l for l in out.splitlines() if l.startswith("app check") or l.startswith("FAIL")]
+def site():
+    code, out = sh([ROOT / "tools/check_site.py", SITE], timeout=2400)
+    last = [l for l in out.splitlines() if l.startswith("site check") or l.startswith("FAIL")]
     return code == 0, " | ".join(last[-4:]) or out[-300:]
 
 
@@ -70,7 +70,7 @@ def taps():
 
 def main(argv):
     quick = "--quick" in argv
-    checks = [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy)] + ([] if quick else [("app", app), ("page", qa), ("taps", taps)])
+    checks = [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy)] + ([] if quick else [("site", site), ("page", qa), ("taps", taps)])
     fails = 0
     for name, fn in checks:
         t = time.time()

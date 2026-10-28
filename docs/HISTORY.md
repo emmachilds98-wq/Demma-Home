@@ -113,3 +113,6 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V1.1** (27 Oct 2026): realism, quality and speed from the living room's engine: CC0 photographed oak, hessian, corduroy, plaster and
   carpet over the drawn textures (each scaled to the part's own colour), rounded edges on every box, the iPhones' soft shade and glow when
   their frames are quick, the carpets' shared picture sent once. The client: "i want better realism, quality and speed".
+- **V1.2** (28 Oct 2026): the old design back, as the client chose ("i really dislike this design and it doesnt look anything like my old
+  one"): the media wall's page is the site again, opening on the whole house; the brand says where you are; the phone's floor and room
+  pills one row each; Measure in the dock; the V1 app (its lists, menus and tab bar) retired.

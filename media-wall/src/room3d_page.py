@@ -339,6 +339,19 @@ details.r3d-more[open] > summary::before { content: "– "; }
 @media (max-width: 899px) { .r3d-mini { top: max(64px, calc(env(safe-area-inset-top) + 52px)); right: 12px; }
   .r3d .r3d-mini .r3d-minib { width: 40px; height: 40px; min-height: 40px; padding: 0; justify-content: center; }
   .r3d .r3d-mini .r3d-minib .t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } }
+/* V1.2, the client: "too many lists and menus": on a phone the floors and a floor's rooms are one row each, sliding sideways, not blocks */
+@media (max-width: 899px) { .r3d-floors:not(.r3d-rmode) { flex-wrap: nowrap; overflow-x: auto; max-width: calc(100vw - 24px); scrollbar-width: none; justify-content: flex-start; border-radius: 999px; }
+  .r3d-floors:not(.r3d-rmode)::-webkit-scrollbar { display: none; } .r3d-floors button { flex: none; white-space: nowrap; } }
+.ms-row { display: grid; grid-template-columns: minmax(0, 1fr) 84px 44px; gap: 8px; align-items: center; padding: 8px 8px 8px 12px; border-radius: 16px; background: #fff; }
+.ms-row .t { font: 600 14px Figtree, system-ui, sans-serif; color: var(--ink); }
+.ms-row small { display: block; font-weight: 500; font-size: 12.5px; color: var(--mut); }
+.ms-row input[type=number] { box-sizing: border-box; min-width: 0; width: 100%; min-height: 44px; border: 0; border-radius: 12px; padding: 0 10px; background: var(--soft); color: var(--ink); font: 600 16px Figtree, system-ui, sans-serif; text-align: right; }
+.ms-row.done { background: oklch(0.95 0.05 150); }
+.ms-cam { position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--soft); color: var(--ink); cursor: pointer; }
+.ms-cam.has { background: oklch(0.85 0.1 150); }
+.ms-cam input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.ms-go { border: 0; padding: 0; background: none; color: inherit; font: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 2px; }
+.ms-go .ms { font-size: 16px; }
 @keyframes r3dLost { 50% { box-shadow: 0 0 0 6px oklch(0.8 0.12 85 / .55), var(--shade); } }
 .r3d-back { position: absolute; left: 16px; top: max(84px, calc(env(safe-area-inset-top) + 72px)); z-index: 6; display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--cream); color: var(--ink); font: 700 14px Figtree, system-ui, sans-serif; box-shadow: var(--shade); cursor: pointer; }
 .r3d-back[hidden] { display: none; }
@@ -376,7 +389,40 @@ CEIL_PRESETS = [("match", "Same as the walls"), ("#f2f0ea", "White")]
 SKIRT_PRESETS = [("match", "Same as the walls"), ("#ece8dd", "Off-white"), ("#5e6a5b", "Green Smoke")]
 # v25: the five Tools tabs (were v22's drawers): (key, name, icon, hue)
 # v37, client: "Relocate the lights controls so they sit under 'View' in the main buttons menu": four tabs, the lights in Views
-DRAWERS = [("views", "View", "photo_camera", 235), ("room", "Room", "chair", 50), ("look", "Look", "palette", 165)]
+DRAWERS = [("views", "View", "photo_camera", 235), ("room", "Room", "chair", 50), ("look", "Look", "palette", 165),
+           ("measure", "Measure", "straighten", 95)]   # V1.2: what's still a guess, to measure (measure.js saves it)
+ROOM_NAMES = {"bed3": "Office", "airing": "Boiler cupboard", "porch": "Front door", "lower_landing": "Lower landing", "lower_stairs": "Lower stairs",
+              "lower_store": "Store", "kitchen_cupboard": "Kitchen cupboard", "secret": "The secret room", "living": "Living room"}
+WALK_IN = {"living", "kitchen", "bed3", "bed2", "master", "bathroom", "landing", "hall", "garage", "wc"}   # room3d.js ROOM_VIEW: a room with its own view
+
+
+def measure_panel():
+    """V1.2: the sizes still guessed (house/measure.py, through the house file), by room: a number in cm and a photo each. measure.js saves
+    them (the shared page's database, or this device and a link) for tools/pull_edits.py, as the V1 app did; a room's name flies there"""
+    import sys
+    sys.path.insert(0, str(HERE.parents[1] / "house"))
+    import export_house
+    h = export_house.house()
+    names = {r["id"]: ROOM_NAMES.get(r["id"], r["name"]) for r in h["rooms"]}
+    rows = h["measure"]
+    out = [f'<p class="caption">Each one replaces a size guessed from a photo. <b id="ms-count">0 of {len(rows)} measured</b></p>']
+    for room in dict.fromkeys(m["room"] for m in rows):
+        nm = html.escape(names.get(room, room))
+        head = f'<button type="button" class="ms-go" data-hroom="{room}">{nm} <span class="ms" aria-hidden="true">arrow_forward</span></button>' if room in WALK_IN else nm
+        out.append(f'<div class="grp"><span class="label">{head}</span>')
+        for m in rows:
+            if m["room"] != room:
+                continue
+            what = html.escape(m["what"])
+            drawn = f'Drawn {m["drawn"]:g} cm' if m.get("drawn") is not None else "Not drawn yet"
+            out.append(f'<div class="ms-row" data-row="{m["id"]}"><span class="t">{what}<small>{drawn} · {html.escape(m["where"])}</small></span>'
+                       f'<input type="number" inputmode="decimal" min="0" step="0.5" placeholder="cm" data-measure="{m["id"]}" data-what="{what}" aria-label="{what}, in cm">'
+                       f'<label class="ms-cam" title="Add a photo"><span class="ms" aria-hidden="true">photo_camera</span>'
+                       f'<input type="file" accept="image/*" capture="environment" data-mphoto="{m["id"]}" aria-label="A photo of {what.lower()}"></label></div>')
+        out.append("</div>")
+    out.append('<div class="grp"><div class="seg"><button type="button" class="btn primary" id="ms-send"><span class="ms" aria-hidden="true">send</span> Send to the plan</button></div>'
+               '<span class="caption" id="ms-st" aria-live="polite">Saved on this device as you type.</span></div>')
+    return "".join(out)
 # v39 (the redesign the client approved, 23 Oct): four dock buttons, View, Room, Look and Edit. Room holds Layout and Extras, grouped by
 # place; each panel opens on its main choices with everything else under a More fold
 # One Tools button holds every 3D control: the pill (on a laptop) or the bottom bar's Tools button (on a phone, [data-tools-toggle])
@@ -626,6 +672,7 @@ def controls(gallery=""):
             '<div class="seg"><button type="button" class="btn primary" id="r3d-planshare" hidden><span class="ms" aria-hidden="true">ios_share</span> Share</button>'
             '<button type="button" class="btn" id="r3d-plancopy"><span class="ms" aria-hidden="true">content_copy</span> Copy</button>'
             '<button type="button" class="btn" id="r3d-plansave" hidden><span class="ms" aria-hidden="true">cloud_upload</span> Save for us</button></div></div>']),
+        "measure": measure_panel(),
         "look": swatches + '<div class="grp"><span class="label">A feature wall</span><div class="seg" role="group" aria-label="A feature wall">'
                  '<button type="button" data-feature="breast">The breast in Green Smoke</button><button type="button" data-feature="media">The media wall in Green Smoke</button>'
                  '<button type="button" data-feature="none">All one colour</button></div></div>' + decor_main + '<details class="r3d-more r3d-fold"><summary>More: the oak, the floor, cushions, curtains</summary>' + trims + decor_g + '</details>',
@@ -780,6 +827,7 @@ def section(gallery=""):
 <script type="application/json" id="tour-data">{json.dumps(dict(stops=tour(), pages=PAGES_URL), separators=(",", ":"))}</script>
 <script type="application/json" id="hotspots-data">{json.dumps(hotspots(), separators=(",", ":"))}</script>
 <script type="module">{(HERE / "room3d.js").read_text()}</script>
+<script type="module">{(HERE / "measure.js").read_text()}</script>
 <script>{DRAWER_JS}</script>
 <script>setTimeout(() => {{ const r = document.getElementById("r3d"), m = document.getElementById("r3d-msg");
   if (r && !r.classList.contains("ready") && !r.classList.contains("nogl")) m.innerHTML = 'The 3D room needs a moment, or your connection blocked its 3D library. The <a href="#plan" data-go="views">drawn views</a> show every option.'; }}, 20000);</script>"""

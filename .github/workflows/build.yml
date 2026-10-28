@@ -34,9 +34,9 @@ jobs:
           python -m playwright install --with-deps chromium
       - name: The model's checks (fast, before the build)
         run: python tools/checks.py --quick
-      - name: Build the site, the stills and the PDFs
-        run: python tools/build.py --stills
-      - name: Every check (the app, the media wall's page, privacy on the built site)
+      - name: Build the site and the PDFs
+        run: python tools/build.py
+      - name: Every check (the front door, the media wall's page, privacy on the built site)
         run: python tools/checks.py
       - name: Keep the screenshots
         if: always()

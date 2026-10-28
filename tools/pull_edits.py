@@ -57,7 +57,7 @@ def plan(raw, when):
             cur = get(m["path"]); changes.append(dict(path=m["path"], value=[cur[0], round(cur[0] + v, 1)], src=src, what=m["what"]))
         else:
             questions.append(f"{m['what']} ({m['room']}): measured {v} cm (drawn {m['drawn']}): fold it in by hand (house/measure.py)")
-    # edits: per piece, the same arithmetic as the app (app/js/model.js)
+    # edits: per piece, the same arithmetic as the V1 app had (its model.js, in git history)
     items = {i["id"]: i for i in XH.house()["items"]}
     by = {}
     for r in rows_of(raw, "edits").values():

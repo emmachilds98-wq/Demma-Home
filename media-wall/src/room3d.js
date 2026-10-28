@@ -94,6 +94,9 @@ if (!Array.isArray(S.added)) S.added = [];
 if (!(S.plants in R.PLANT_LAYOUTS)) S.plants = DEF.plants;
 S.edit = false;
 if (!S.seen21) { S.view = "room"; S.seen21 = true; }   // v21: everyone starts once on the new whole-room view
+// V1.2, the client (28 Oct 2026): "Old style, rebuilt" and "The whole house in 3D" first: the page opens on the house, not the room it was
+// left in (?room opens the living room; a #look- link opens its look as before)
+if (!/[?&](embed|room)\b/.test(location.search) && !/^#look-/.test(location.hash)) S.view = "house";
 if (!S.seen27) { if (S.site === "B") S.site = "C"; S.seen27 = true; }   // v27: the dining cabinet is the plan now: the old default moves to it once
 if (S.dining === "eight") S.dining = "six";                              // v27: the cabinet seats six (v26 had eight)
 if (!(S.paint in R.PAINTS) && S.paint !== "custom") S.paint = DEF.paint;
@@ -2604,8 +2607,16 @@ function applyFloors() {
           if (bb.copy(g.boundingBox).applyMatrix4(m.matrixWorld).min.x > lim) { m.layers.disable(0); hidLay.push(m); } } }); }); }
     }
   }
-  drawRooms();
+  drawRooms(); brandPlace();
   dirty();
+}
+/* V1.2: the brand's second line says where you are: the whole house, a floor, a room */
+function brandPlace() {
+  const el = document.getElementById("brand-place"); if (!el) return;
+  let t = "The living room";
+  if (S.view === "house") t = { first: "The first floor", ground: "The ground floor", lower: "The lower floor" }[hfloor] || "The whole house";
+  else if (ROOMV()) { const id = VIEW_ROOM[S.view], L = id && id !== "living" && Object.values(R.HOUSE3.floors).flatMap(F => F.labels || []).find(l => l.id === id); t = (L && L.name) || (VIEWS[S.view] || {}).label || t; }
+  el.textContent = t;
 }
 /* v64, client: "by floor individually where you can choose to pick a room to focus on": on a floor, its rooms as buttons; a room with
    its own view goes into it, the others are looked at from above */
@@ -4087,7 +4098,7 @@ function setView(name, instant, dur) {
   if (garden3d) garden3d.visible = HOUSEV(name) && (name !== "house" || !!S.hgarden);   // v64: in The whole house only when Gardens is on                             // v56: the garden ground only with the whole house (in the room's own views it read as a room clipped on) // v54: the whole house, a draft (the garden photo steps aside: the lawn and fences show it)
   qsa("[data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === name)));
   syncRmode();                                                              // v78b: the living room's three too
-  store.set(KEY, S); updateCaption();
+  store.set(KEY, S); updateCaption(); brandPlace();
 }
 /* the camera to an eye and a point to look at (room cm); v32: also a piece's own close look (R3D.set's "aim") */
 function flyTo(e, a, fov, above, instant, dur) {
