@@ -38,7 +38,7 @@ def main():
         for w, h in ((393, 852), (1920, 1080)):
             phone = w < 600
             ctx = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=phone, has_touch=phone, service_workers="block")
-            pg = ctx.new_page(); pg.set_default_timeout(120000); localcdn.route(pg); errs = []
+            pg = ctx.new_page(); pg.set_default_timeout(300000); localcdn.route(pg); errs = []   # V1.5: CI's software graphics draw the whole house at 1920 in ~20 s a frame; a screenshot took over 120 s
             pg.on("pageerror", lambda e: errs.append("pageerror: " + str(e)[:300]))
             pg.on("console", lambda m: errs.append(m.text[:300]) if m.type == "error" and "favicon" not in m.text and "fonts.g" not in m.text else None)
             pg.goto(base + "index.html"); pg.wait_for_function("window.R3D && window.R3D.ready", timeout=240000); pg.wait_for_timeout(3000)
