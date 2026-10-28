@@ -806,6 +806,7 @@ def _house_shell(o, span, gcol):
     o.box("road", x0, dr - 6, RO["s"] + 750, x1, dr - 2, RO["s"] + 1250)
     o.box("lawn", x0, D.LEVELS["lawn"] - 3, RO["n"] - 2500, x1, D.LEVELS["lawn"] - 1, RO["n"])
     o.box("fence", x1 - 2, D.LEVELS["lawn"], RO["n"] - 2500, x1 + 2, D.LEVELS["lawn"] + 180, RO["n"])
+    o.box("fence", x0, D.LEVELS["lawn"], RO["n"] - 2504, x1, D.LEVELS["lawn"] + 180, RO["n"] - 2500)   # V1.4: and its far one, 25 m out
 
 
 def _copy(src, dst, M):

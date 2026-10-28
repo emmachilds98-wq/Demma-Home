@@ -126,7 +126,9 @@ so the cross-origin gotcha below is side-stepped. The rooms' own surfaces stay d
 
 ### Phase 5 · Site and gardens
 
-**V1.3: started.** Ground to the horizon (`room3d.js` `outdoor()`): the street's level in front, the garden's behind, the slope the terrace is built into between them (hidden in the house; by it, the alley's own steps with Gardens on); the lawn tinted to the back photo's green; the fences' boards (`houseTex` `fence`); the cordyline (`survey_data.PLANTS`, `buildPlants`). Next: the far end's trees, the view beyond.
+**V1.3: started.** Ground to the horizon (`room3d.js` `outdoor()`): the street's level in front, the garden's behind, the slope the terrace is built into between them (hidden in the house; by it, the alley's own steps with Gardens on); the lawn tinted to the back photo's green; the fences' boards (`houseTex` `fence`); the cordyline (`survey_data.PLANTS`, `buildPlants`).
+
+**V1.4: the far end and beyond.** The cordyline moved over the fence (next door's, the view from upstairs). The far end's trees (`buildTrees`: a conifer, a clump of tall stems, next door's evergreen; their leaves drawn sprays on instanced cards); the far fences; past them the long low building with grey sheet roofs (with Gardens), the valley's trees and the hill opposite with its houses (with the land, `buildBeyond`, `survey_data.BEYOND`); the land 3 km out, the sky past it, the camera's reach 3 km outside (120 m inside), the haze 40–700 m. Next: the view photos laid on the hill (BUILD_SPEC's backdrop), then out of the living room's window from the model (retire `GARDEN_ON`).
 
 
 - Terrain as a height field: the street level at the front (0), the slope down the alley to the lawn (−260 at the back wall), the back

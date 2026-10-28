@@ -30,12 +30,31 @@ AGENT_OVER = round((4.95 / 4.67 + 3.65 / 3.47) / 2, 3)  # the agent's labels rea
 # Levels (E unless said): the living room's measured 235 ceiling with 25 of floor between storeys; the garage and the drive a step down.
 LEVELS = dict(lower=-260.0, ground=0.0, first=260.0, ceil=235.0, slab=25.0, garage=-15.0, drive=-15.0, lawn=-260.0)
 
-# V1.3: the plants in the gardens (B, E until measured). The cordyline: the back photo (photo_house_rear_24oct.jpg) shows it beside the
-# concrete path near the right-hand (west) fence, about 4.5 m out from the house; nearer the camera than the house, its crown stands to
-# about the living room window's top: about 5.6 m tall, forking at about 2 m into six heads of long narrow leaves (each about 110 long),
-# the crown about 3.8 m across; its trunk about 26 thick at the foot
-PLANTS = [dict(id="cordyline", kind="cordyline", x=370.0, y=-260.0, z=-787.0, h=560.0, fork=200.0, heads=6, spread=380.0, r=13.0, leaf=110.0,
-               src="B: the back photo (photo_house_rear_24oct.jpg), sized against the house (E)")]
+# V1.3: the plants in the gardens (B, E until measured; trees aren't for the tape, so no Measure rows). The cordyline: the back photo
+# (photo_house_rear_24oct.jpg) shows it over the right-hand (west) fence about 4.5 m out from the house, and the view from upstairs
+# (photo_view_full_24oct.jpg) puts it in next door's gravel garden, just over our fence (V1.4; it stood in ours): about 5.6 m tall,
+# forking at about 2 m into six heads of long narrow leaves (each about 110 long), the crown about 3.8 m across, overhanging our side.
+# V1.4, the far end (the view photos, on garden_window.py's fitted camera: the lawn runs to the trees at about 17 m, the far fence at
+# 25): a conifer just right of our garden's middle, about 19 m out, about 11 m tall; behind it to the left a clump of four tall pale
+# stems in leaf by summer (photo_garden_summer_24oct.jpg), about 15 m; next door's (west) dark evergreen at its end, about 7.5 m
+PLANTS = [dict(id="cordyline", kind="cordyline", x=610.0, y=-260.0, z=-787.0, h=560.0, fork=200.0, heads=6, spread=380.0, r=13.0, leaf=110.0,
+               src="B: the back photo (photo_house_rear_24oct.jpg) sized against the house; next door's: the view from upstairs (E)"),
+          dict(id="conifer", kind="conifer", x=190.0, y=-260.0, z=-2240.0, h=1100.0, spread=360.0, r=18.0, leaf=55.0,
+               src="B: the view photos (photo_view_full_24oct.jpg), on the fitted camera (E)"),
+          dict(id="end_trees", kind="broadleaf", x=300.0, y=-260.0, z=-2420.0, h=1500.0, spread=900.0, stems=4, r=14.0, leaf=70.0, cards=1800,
+               src="B: the view photos, in leaf as the summer photo (photo_garden_summer_24oct.jpg) (E)"),
+          dict(id="next_evergreen", kind="broadleaf", x=720.0, y=-260.0, z=-2380.0, h=750.0, spread=620.0, stems=2, r=12.0, leaf=60.0, cards=1300, dark=True,
+               src="B: the view photo, next door's end (E)")]
+
+# V1.4: beyond the far fence (the view photos; E): a long low building with grey sheet roofs just past the fences, standing a little
+# lower than the lawn, its roofs about 3 m over it (they show at the sheds' height from upstairs); then the valley, and the hill
+# opposite with its terraced houses, its top a little above the living room's eye in the middle and right, higher to the left
+BEYOND = dict(building=dict(x=(-2600.0, 1400.0), z=(-3150.0, -5550.0), y0=-480.0, eave=-70.0, ridge=110.0, bays=3,
+                            src="B: the view photos (E)"),
+              hill=dict(cx=233.0, cz=-339.0, r0=9000.0, r1=22000.0, r2=36000.0, a=(-75.0, 75.0), base=-262.0,
+                        top=[(-75.0, 900.0), (-40.0, 1500.0), (-15.0, 2000.0), (0.0, 2600.0), (20.0, 4200.0), (45.0, 6000.0), (75.0, 4500.0)],
+                        src="B: the view photos: the hill opposite, its houses' rows (E)"),
+              trees=dict(r=(5500.0, 11000.0), a=(-80.0, 80.0), n=160, h=(500.0, 1100.0), src="B: the view photos: the valley's trees between (E)"))
 
 WALLS = dict(outer=28.0, inner=10.0, party=15.0)        # E: cavity brick 28; stud and block partitions 10; half the party wall
 
