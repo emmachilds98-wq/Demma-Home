@@ -20,6 +20,10 @@ take one out (to `docs/HISTORY.md`) when they change their mind.
   to best scaling and I'll add better measures later": where a plan size and what they have don't fit, the room gives way until measured.
 - **Every size from a source** (from the start): each item's size cites where it came from; guesses are marked E with what to measure.
 - **Their words stay** (from the start): "face-out", "spine-up", "artisan oak", "tray", "pale mint".
+- **The old design back** (28 Oct 2026): "i really dislike this design and it doesnt look anything like my old one"; picked the old style
+  rebuilt (the 3D is the site, the old pills and panels), the whole house first, and fewer lists and menus. The V1 app is retired.
+- **Projects for every room, in time** (28 Oct 2026): "i'd like it to eventually yes plan projects for every room but for now all we have is
+  the living room so leave room for expansion". Other rooms are reached through the whole house.
 - **Their devices** (27 Oct 2026): "i use an iphone 15 pro and dave uses an iphone 16 ... my pc on a nvidia 5060 with 32gb of ram and dave
   on a 3060 with 32gb of ram". The speed targets and the checks' sizes are set for these.
 - **Merge as you go** (21 Oct 2026): "Merge as needed to keep the repo up to date".
