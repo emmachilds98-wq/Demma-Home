@@ -12,7 +12,8 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { GTAOPass } from "three/addons/postprocessing/GTAOPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
-import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";   // v48 §5: the lights' glow
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { Sky } from "three/addons/objects/Sky.js";   // V1.3: the sky over the whole house   // v48 §5: the lights' glow
 
 const root = document.getElementById("r3d");
 const SC = JSON.parse(document.getElementById("scene3d-data").textContent);
@@ -293,6 +294,7 @@ RectAreaLightUniformsLib.init();
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color("#0d100e");
+scene.fog = new THREE.Fog("#cbd8e3", 1e4, 2e4);   // V1.3: the haze over the whole house (outdoor()); here from the start, so turning it up builds no shaders
 const camera = new THREE.PerspectiveCamera(50, 16 / 9, 0.05, 120);   // v54: far enough for the whole house and the garden
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
@@ -925,8 +927,9 @@ function buildShell() {
       return reg(new THREE.MeshStandardMaterial({ map: tx, roughness: 0.95 })); };   // v59: lawn and concrete, at their size
     flat(x0, x1 - GD.path, zp, z1, y0, texd("lawn", "#55613f", x1 - GD.path - x0, zp - z1));     // the lawn
     flat(x1 - GD.path, x1, zp, z1, y0 + 1, texd("concrete", "#9b958a", GD.path, zp - z1));      // the path down the left (looking out)
-    const fence = mat("#6b5644");
-    box(x0 - 4, x0, y0, y0 + (GD.fence_r || GD.fence), z0 - 100, z1, fence); box(x1, x1 + 4, y0, y0 + GD.fence, z0, z1, fence);   // the right one lower, its gate by the house box(x0 - 4, x1 + 4, y0, y0 + GD.fence, z1, z1 - 4, fence);
+    const fence = h => { const T = R.HOUSE3 && houseTex("fence"); if (!T) return mat("#6b5644"); const tx = T.map.clone(); tx.needsUpdate = true;   // V1.3: boarded, each board 10 wide
+      tx.repeat.set(GD.length / 100 / T.size[0], h / 100 / T.size[1]); return reg(new THREE.MeshStandardMaterial({ map: tx, roughness: 0.9 })); };
+    box(x0 - 4, x0, y0, y0 + (GD.fence_r || GD.fence), z0 - 100, z1, fence(GD.fence_r || GD.fence)); box(x1, x1 + 4, y0, y0 + GD.fence, z0, z1, fence(GD.fence));   // the right one lower, its gate by the house box(x0 - 4, x1 + 4, y0, y0 + GD.fence, z1, z1 - 4, fence);
     if (!R.HOUSE3) box(x0, x1, y0, 0, z0 + 30, z0, mat("#9a5a43"));               // the house's back wall below the room (brick), down to the lawn (v58: the built house has its own)
   }
   sillPlants(wx0, wx1, SL.y, FZ + 2, WZ + SL.nose - 1);
@@ -2607,7 +2610,7 @@ function applyFloors() {
           if (bb.copy(g.boundingBox).applyMatrix4(m.matrixWorld).min.x > lim) { m.layers.disable(0); hidLay.push(m); } } }); }); }
     }
   }
-  drawRooms(); brandPlace();
+  drawRooms(); brandPlace(); outdoor();
   dirty();
 }
 /* V1.2: the brand's second line says where you are: the whole house, a floor, a room */
@@ -2957,6 +2960,34 @@ const hemi = new THREE.HemisphereLight("#e2e0da", "#b39a7c", 0.05); scene.add(he
 // fill and the sun from the south-west over the front (the back faces 14° east of north)
 const skyFill = new THREE.HemisphereLight("#dfe8f1", "#5d5446", 0); scene.add(skyFill);
 const dayLight = new THREE.DirectionalLight("#fff1dc", 0); dayLight.position.copy(v3(700, 1400, 1100)); dayLight.target.position.copy(v3(233, 0, 80)); scene.add(dayLight, dayLight.target);
+/* V1.3, the client: "continue upgrading the 3d model of the house" (BUILD_SPEC phase 4, the start of 5): outside, the house stands under
+   a real sky (three's Sky, its sun where the day light comes from) on ground that runs to a hazy horizon: the street's level in front of
+   the back wall, the garden's behind it, as the land steps down. Only in The whole house from outside (a floor shown keeps its cutaway
+   clear); built the first time */
+const OUT = { sky: null, ground: null };
+function outdoor() {
+  const on = !!(R.HOUSE3 && S.view === "house" && hfloor === "all");
+  if (on && !OUT.sky) {
+    const sky = OUT.sky = new Sky(); sky.scale.setScalar(100); sky.name = "sky";
+    const u = sky.material.uniforms; u.turbidity.value = 3.5; u.rayleigh.value = 1.1; u.mieCoefficient.value = 0.004; u.mieDirectionalG.value = 0.8;
+    u.sunPosition.value.copy(dayLight.position).sub(dayLight.target.position).normalize();
+    sky.raycast = () => {}; scene.add(sky);
+    const H = R.HOUSE3, g = OUT.ground = new THREE.Group(); g.name = "ground";
+    const mat = reg(new THREE.MeshStandardMaterial({ color: "#56633f", roughness: 1, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 4, polygonOffsetUnits: 4 })); mat.clippingPlanes = [];
+    const yt = (H.drive ?? -15) - 2, yb = (H.lawn ?? -260) - 2, A0 = -125, A1 = -28, E = 8000, zf = H.front, zb = H.back;   // the alley (x -125 to -28)
+    const quad = (x0, x1, z0, y0, z1, y1, alley) => {   // a strip of ground from (z0, y0) to (z1, y1), level across x
+      const g2 = new THREE.BufferGeometry(), P = [x0, y0, z0, x1, y0, z0, x1, y1, z1, x0, y1, z1].map((v, i) => i % 3 === 0 ? -v * M : v * M);
+      g2.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); g2.setIndex([0, 1, 2, 0, 2, 3]);
+      g2.setAttribute("normal", new THREE.Float32BufferAttribute([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0], 3));   // lit as level ground: the slope doesn't read as a lighter band
+      const m = new THREE.Mesh(g2, mat); m.receiveShadow = true; m.raycast = () => {}; m.userData.alley = !!alley; g.add(m); };
+    quad(-E, E, -E, yb, zb, yb);                                                                    // the gardens' side, a storey down
+    quad(-E, A0, zb, yb, zf, yt); quad(A0, A1, zb, yb, zf, yt, true); quad(A1, E, zb, yb, zf, yt);   // the slope the terrace is built into (hidden inside the house; by it, the alley's own steps with Gardens on)
+    quad(-E, E, zf, yt, E, yt);                                                                     // the street's side, out to the horizon
+    scene.add(g);
+  }
+  if (OUT.sky) { OUT.sky.visible = on; OUT.ground.visible = on; OUT.ground.children.forEach(m => { if (m.userData.alley) m.visible = !S.hgarden; }); }   // with Gardens on the alley steps down there
+  scene.fog.near = on ? 30 : 1e4; scene.fog.far = on ? 110 : 2e4;
+}
 function area(color, w, h, pos, look) {
   const l = new THREE.RectAreaLight(color, 1, w * M, h * M);
   l.position.copy(v3(...pos)); l.lookAt(v3(...look)); scene.add(l); return l;
@@ -3220,7 +3251,7 @@ function envSoon() {
 }
 function applyLight() {
   placeRoomLights();                                          // v69: a room of the house: its ceiling lights, day or evening
-  const day = S.tod === "day" || (EMBED && S.view === "house"), hd = S.quality === "hd";   // V1: the whole house by day in the app (the design)
+  const day = S.tod === "day" || S.view === "house", hd = S.quality === "hd";   // V1.3: the whole house by day (inside, the rooms keep the time you set)
   const L = {}; LAYERS.forEach(k => L[k] = lvl(k));          // v15: the sliders (a scene button fills them in), times the master
   const warmC = warmColour();                                 // v46: Warmth
   const set = (list, lv) => list.forEach(l => {
@@ -3270,7 +3301,7 @@ function applyLight() {
   envLevels(day); bloomLevels(day);
   if (sun) sun.intensity = day && hd ? SUNCFG.lux : 0;                                   // v48 §6: the sun, by day in HD
   envSoon();
-  gl.toneMappingExposure = day ? 0.4 : 0.58;                                             // v50: cosier, not washed out
+  gl.toneMappingExposure = day ? (HOUSEV(S.view) && R.HOUSE3 ? 0.32 : 0.4) : 0.58;      // v50: cosier, not washed out; V1.3: outside a little lower (mean 153 → in 110–170)
   const outside = HOUSEV(S.view);                                                    // v58: the built house in daylight
   skyFill.intensity = outside ? (day ? 2.6 : 0.5) : 0; dayLight.intensity = outside && day ? 3.2 : 0;
   const inK = !!ROOMV();                                                                // v60: in a room of the house, light off its pale floor and walls,
@@ -5440,6 +5471,13 @@ function houseTex(k) {
   const weave = (g, w, h, base, cols, step, a) => { g.fillStyle = base; g.fillRect(0, 0, w, h);
     for (let k = 0; k < w; k += step) { g.globalAlpha = a; g.fillStyle = cols[(k / step) % cols.length | 0]; g.fillRect(k, 0, step / 2, h); g.fillRect(0, k, w, step / 2); }
     g.globalAlpha = 1; noise(g, w, h, 9000, 0.2, cols); };
+  T.fence = [0.9, 1.8, (g, w, h) => {               // V1.3: the gardens' fences, as the back photo: weathered featheredge boards, 10 wide, a rail's shadow
+    const n = 9, bw = w / n;
+    for (let k = 0; k < n; k++) { const t = rnd(); g.fillStyle = `rgb(${128 + t * 30},${100 + t * 22},${72 + t * 16})`; g.fillRect(k * bw, 0, bw, h);
+      const gr = g.createLinearGradient(k * bw, 0, (k + 1) * bw, 0); gr.addColorStop(0, "rgba(0,0,0,0.28)"); gr.addColorStop(0.18, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(255,240,220,0.08)");
+      g.fillStyle = gr; g.fillRect(k * bw, 0, bw, h); }
+    for (let k = 0; k < 160; k++) { g.fillStyle = `rgba(${rnd() < 0.5 ? "70,55,40" : "200,180,150"},${0.06 + rnd() * 0.1})`; g.fillRect(rnd() * w, rnd() * h, 1 + rnd() * 1.5, 30 + rnd() * 140); }
+    for (const yy of [0.12, 0.88]) { g.fillStyle = "rgba(0,0,0,0.12)"; g.fillRect(0, h * yy, w, 6); } }];
   T.paint = [0.8, 0.8, (g, w, h) => { g.fillStyle = "#f1ede5"; g.fillRect(0, 0, w, h);   // emulsion, a roller's stipple
     for (let i = 0; i < 14; i++) { const x = rnd() * w, y = rnd() * h, r = 40 + rnd() * 90, gr = g.createRadialGradient(x, y, 1, x, y, r);   // v72 (B3): the roller's faint laps
       gr.addColorStop(0, rnd() < 0.5 ? "rgba(255,255,255,0.05)" : "rgba(200,192,178,0.04)"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.fillRect(x - r, y - r, 2 * r, 2 * r); }
@@ -5468,6 +5506,37 @@ function houseTex(k) {
 }
 /* world-sized UVs (metres over the texture's size), by the face's direction: floors and roofs from above, walls from the side; roof
    slopes measured along the slope (35°) so the tile rows keep their gauge */
+/* V1.3: the gardens' plants (survey_data.PLANTS, from the client's photos). A cordyline: a grey-brown trunk forking into heads of long,
+   narrow leaves, the young ones up, the old ones arching out and down; one merged mesh for the trunks, one for the leaves */
+function buildPlants(grp) {
+  const PL = (R.HOUSE3 && R.HOUSE3.plants) || []; if (!PL.length || !grp) return;
+  const bark = reg(new THREE.MeshStandardMaterial({ color: "#6f6253", roughness: 0.95 })), leaf = reg(new THREE.MeshStandardMaterial({ color: "#5b7a38", roughness: 0.6, side: THREE.DoubleSide }));
+  bark.clippingPlanes = []; leaf.clippingPlanes = [];
+  let sd = 4242; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+  const Y = new THREE.Vector3(0, 1, 0);
+  for (const P of PL) {
+    const trunks = [], leaves = [], base = v3(P.x, P.y, P.z);
+    const seg = (a, b, r0, r1) => { const d = b.clone().sub(a), L = d.length(), g = new THREE.CylinderGeometry(r1, r0, L, 8, 1, true);
+      g.translate(0, L / 2, 0); g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(Y, d.normalize())); g.translate(a.x, a.y, a.z); trunks.push(g); };
+    const strip = (o, yaw, pitch, len) => {   // a leaf: five segments bending down as it goes, tapering to a point
+      const pos = [], idx = [], side = new THREE.Vector3(Math.cos(yaw + Math.PI / 2), 0, Math.sin(yaw + Math.PI / 2)), wd = 0.022;
+      let p = o.clone(), a = pitch;
+      for (let i = 0; i <= 5; i++) { const w = wd * (1 - i / 5.5); pos.push(p.x - side.x * w, p.y, p.z - side.z * w, p.x + side.x * w, p.y, p.z + side.z * w);
+        if (i < 5) { const st = len / 5; p = p.clone().add(new THREE.Vector3(Math.cos(yaw) * Math.cos(a) * st, Math.sin(a) * st, Math.sin(yaw) * Math.cos(a) * st)); a -= 0.16 + (1 - Math.max(0, pitch)) * 0.08; } }
+      for (let i = 0; i < 5; i++) idx.push(2 * i, 2 * i + 1, 2 * i + 2, 2 * i + 1, 2 * i + 3, 2 * i + 2);
+      const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals(); leaves.push(g.toNonIndexed()); };
+    const fork = base.clone().add(new THREE.Vector3(0, P.fork * M, 0));
+    seg(base, fork, P.r * M, P.r * 0.8 * M);
+    for (let k = 0; k < P.heads; k++) {
+      const ang = (k + rnd() * 0.5) / P.heads * Math.PI * 2, out = P.spread / 2 * M * (0.22 + rnd() * 0.16), up = (P.h - P.fork - P.leaf * 0.6) * M * (0.7 + rnd() * 0.3);   // short, stout branches
+      const top = fork.clone().add(new THREE.Vector3(Math.cos(ang) * out, up, Math.sin(ang) * out));
+      seg(fork, top, P.r * 0.75 * M, P.r * 0.55 * M);
+      for (let j = 0; j < 110; j++) strip(top, rnd() * Math.PI * 2, -0.9 + rnd() * 2.3, P.leaf * M * (0.6 + rnd() * 0.4));   // a full head, the old leaves hanging
+    }
+    const tm = new THREE.Mesh(mergeGeometries(trunks.map(g => g.index ? g.toNonIndexed() : g)), bark), lm = new THREE.Mesh(mergeGeometries(leaves), leaf);
+    for (const m of [tm, lm]) { m.castShadow = true; m.receiveShadow = true; m.raycast = () => {}; grp.add(m); }
+  }
+}
 function worldUV(geo, k, off) {
   const T = houseTex(k); if (!T) return geo;
   const P = geo.attributes.position, N = geo.attributes.normal, uv = new Float32Array(P.count * 2), [sw, sh] = T.size, ox = off ? off.x : 0, oy = off ? off.y : 0, oz = off ? off.z : 0, sl = 1 / Math.cos(35 * Math.PI / 180);
@@ -5485,7 +5554,7 @@ function buildHouse() {
   const HS = R.HOUSE; if (!HS) return;
   houseG = new THREE.Group(); houseG.visible = false; scene.add(houseG);
   let cur = houseG;                                                               // v55: each floor its own group (the floor picker)
-  const TK = R.HOUSE3 ? { "#5d6a44": "lawn", "#b4afa5": "concrete", "#c9c5bd": "paving", "#5b5b5e": "road", "#a7a299": "paving", "#9a5a43": "brick" } : {};   // v59
+  const TK = R.HOUSE3 ? { "#5d6a44": "lawn", "#b4afa5": "concrete", "#c9c5bd": "paving", "#5b5b5e": "road", "#a7a299": "paving", "#9a5a43": "brick", "#6b5644": "fence" } : {};   // v59; V1.3 the fences' boards
   const mats = {}, mat = c => mats[c] || (mats[c] = (() => { const T = TK[c] && houseTex(TK[c]); const m = reg(new THREE.MeshStandardMaterial({ color: T ? "#ffffff" : c, map: T ? T.map : null, normalMap: T && T.normal || null, roughness: 0.9 })); m.clippingPlanes = []; return m; })());   // v70: and the photo-textures' normals
   const box = (xa, xb, ya, yb, za, zb, c) => { const p = v3((xa + xb) / 2, (ya + yb) / 2, (za + zb) / 2), g = new THREE.BoxGeometry(Math.max(1, Math.abs(xb - xa)) * M, Math.max(1, Math.abs(yb - ya)) * M, Math.max(1, Math.abs(zb - za)) * M);
     if (TK[c]) worldUV(g, TK[c], p);
@@ -5601,6 +5670,7 @@ function buildHouse() {
     label([F.title.split(" · ")[0], F.title.split(" · ")[1] || ""], (Math.min(...xs) + Math.max(...xs)) / 2, F.y + WH + 160, F.zn - 120, 420);
   }
   cur = HFLOOR.out = new THREE.Group(); houseG.add(cur);
+  buildPlants(cur);                                                               // V1.3: the cordyline in the back garden (with Gardens)
   // the front: the drive in front of the garage, the small lawn left of it (from the street) with its low brick wall, a strip of lawn
   // by the neighbour's fence with a young tree, the pavement and the close (house/HOUSE.md, the agent's photo of the front)
   const G0 = HS.find(F => F.id === "ground"), zf = H3 ? H3.front : G0 ? G0.zs + 20 : 530, gar = G0 && G0.rooms.find(r => r.id === "garage"), hall = G0 && G0.rooms.find(r => r.id === "hall");

@@ -8,7 +8,7 @@ the area one copy of the picture covers.
 |---|---|---|---|
 | Brick (front, back, gable, party wall) | [red_brick_03](https://polyhaven.com/a/red_brick_03) | 1.0 m | warmer and brighter (the front photo's orange-red) |
 | Roof tiles | [roof_09](https://polyhaven.com/a/roof_09) | 4.0 m | much darker and browner (the brown concrete tiles) |
-| Lawns | [sparse_grass](https://polyhaven.com/a/sparse_grass) | 2.0 m | brighter |
+| Lawns | [sparse_grass](https://polyhaven.com/a/sparse_grass) | 2.0 m | its light and shade tinted to the back photo's green (#5a7838; V1.3) |
 | The drive | [brushed_concrete](https://polyhaven.com/a/brushed_concrete) | 2.5 m | greyer, brighter |
 | The road | [asphalt_02](https://polyhaven.com/a/asphalt_02) | 3.0 m | — |
 | The pavement | [rectangular_paving](https://polyhaven.com/a/rectangular_paving) | 2.0 m | greyer |

@@ -8,14 +8,14 @@ HERE = pathlib.Path(__file__).resolve().parent
 # key in the viewer: (Poly Haven asset, its real size in m, saturation, brightness, warmth)
 SET = {"brick": ("red_brick_03", 1.0, 1.3, 1.22, 1.12),            # the front photo: orange-red stretchers, light mortar
        "tile": ("roof_09", 4.0, 0.75, 0.58, 1.08),                   # the brown interlocking concrete tiles
-       "lawn": ("sparse_grass", 2.0, 1.15, 1.35, 1.0),
        "concrete": ("brushed_concrete", 2.5, 0.6, 1.25, 1.0),       # the drive
        "road": ("asphalt_02", 3.0, 0.8, 1.0, 1.0),
        "paving": ("rectangular_paving", 2.0, 0.6, 1.15, 1.0),       # the pavement
        "laminate": ("laminate_floor_02", 1.7, 0.25, 0.95, 1.0)}     # the WC's and the lower landing's grey wood-effect
 # v72 (B3): the carpets, from ambientCG (CC0; its _Color and _NormalGL saved as <asset>_diff / _nor): the pile tinted to the
 # photos' colour (the grey of the bedrooms, landing, hall and stairs; the oatmeal elsewhere) so its light and shade stay, the hue is ours
-TINT = {"carpet_grey": ("Carpet012", 0.5, "#6f6f73"), "carpet": ("Carpet012", 0.5, "#cdbfa6")}
+TINT = {"carpet_grey": ("Carpet012", 0.5, "#6f6f73"), "carpet": ("Carpet012", 0.5, "#cdbfa6"),
+        "lawn": ("sparse_grass", 2.0, "#5a7838")}   # V1.3: the lawn's light and shade in the back photo's green (the photo's own grass is mostly dry)
 SRC = {"Carpet012": "https://ambientcg.com/view?id=Carpet012"}
 PX = {}                                                          # sizes other than 512 px (the carpets at 0.5 m are already 1 px a mm)
 # V1.1: the living room's own surfaces, the photo as it is (room3d.js matches each to its drawn texture's average colour as it loads,
