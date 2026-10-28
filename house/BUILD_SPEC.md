@@ -115,6 +115,9 @@ so the cross-origin gotcha below is side-stepped. The rooms' own surfaces stay d
 
 ### Phase 4 · Light and sky
 
+**V1.3: started.** The whole house is always by day (the rooms keep the time set); three's `Sky` over it; the sun that lights it and casts its shadows moved there too (the south-west over the front, 51° up: the back faces 14° east of north, so it's in shade), its shadow box 36 m over house and garden (before, outside was lit by the living room's own low sun, from the north-east at 21°, which bleached the fences and trunk); a haze to the horizon (`scene.fog`, made at start so turning it up builds no shaders); the outside's exposure 0.32, the sun at half the room's (mean 118–154, contrast 32–62 on the stills, inside the targets). Next: the sun from a date and time (`house/sun.py`).
+
+
 - Physical sky (three's `Sky` addon) driven by the sun position (`FACING` 14°, a date/time picker; the NOAA code is `house/sun.py`, easy to port
   to JS); the sun's shadow camera fitted to the whole house; each room's ceiling lights as area or
   point lights, off unless that room is looked at; a reflection probe per room (`roomEnv` per room, captured on demand).
@@ -122,6 +125,9 @@ so the cross-origin gotcha below is side-stepped. The rooms' own surfaces stay d
   110–170, contrast ≥ 40).
 
 ### Phase 5 · Site and gardens
+
+**V1.3: started.** Ground to the horizon (`room3d.js` `outdoor()`): the street's level in front, the garden's behind, the slope the terrace is built into between them (hidden in the house; by it, the alley's own steps with Gardens on); the lawn tinted to the back photo's green; the fences' boards (`houseTex` `fence`); the cordyline (`survey_data.PLANTS`, `buildPlants`). Next: the far end's trees, the view beyond.
+
 
 - Terrain as a height field: the street level at the front (0), the slope down the alley to the lawn (−260 at the back wall), the back
   garden (25 m, width of the plot from the survey), the front drive and lawn; the alley's steps from the survey.

@@ -44,7 +44,8 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
     # v71: each room's outline and floor level (the viewer's From above and On its own views cut the house to it)
     e["rooms"] = {rid: [r["x0"], r["x1"], r["z0"], r["z1"], model.FLOOR_Y[r["floor"]]] for rid, r in model.room_sizes().items()}
     e["ceil"] = model.CEIL
-    e.update(front=model.RO["s"], back=model.RO["n"], garage=[0.0, next(r["x1"] for r in model.rooms("ground") if r["id"] == "garage")], hall=[model.D.WALL_HALL, model.RO["w"]], drive=model.D.LEVELS["drive"])
+    e["plants"] = getattr(model.D, "PLANTS", [])                # V1.3: the gardens' plants (survey_data.PLANTS: where, how big, the source)
+    e.update(front=model.RO["s"], back=model.RO["n"], garage=[0.0, next(r["x1"] for r in model.rooms("ground") if r["id"] == "garage")], hall=[model.D.WALL_HALL, model.RO["w"]], drive=model.D.LEVELS["drive"], lawn=model.D.LEVELS["lawn"])   # V1.3: the ground beyond, at the street's and the garden's levels
     return e
 
 def _fill(f):

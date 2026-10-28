@@ -116,3 +116,5 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V1.2** (28 Oct 2026): the old design back, as the client chose ("i really dislike this design and it doesnt look anything like my old
   one"): the media wall's page is the site again, opening on the whole house; the brand says where you are; the phone's floor and room
   pills one row each; Measure in the dock; the V1 app (its lists, menus and tab bar) retired.
+- **V1.3** (28 Oct 2026): the house outside: always by day under a real sky, ground to a hazy horizon with the slope the terrace is built
+  into, the sun moved to where the sky shows it (it was the living room's low one), the lawn green, the fences boarded, the cordyline from the back photo. The client: "continue upgrading the 3d model of the house".

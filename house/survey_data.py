@@ -30,6 +30,13 @@ AGENT_OVER = round((4.95 / 4.67 + 3.65 / 3.47) / 2, 3)  # the agent's labels rea
 # Levels (E unless said): the living room's measured 235 ceiling with 25 of floor between storeys; the garage and the drive a step down.
 LEVELS = dict(lower=-260.0, ground=0.0, first=260.0, ceil=235.0, slab=25.0, garage=-15.0, drive=-15.0, lawn=-260.0)
 
+# V1.3: the plants in the gardens (B, E until measured). The cordyline: the back photo (photo_house_rear_24oct.jpg) shows it beside the
+# concrete path near the right-hand (west) fence, about 4.5 m out from the house; nearer the camera than the house, its crown stands to
+# about the living room window's top: about 5.6 m tall, forking at about 2 m into six heads of long narrow leaves (each about 110 long),
+# the crown about 3.8 m across; its trunk about 26 thick at the foot
+PLANTS = [dict(id="cordyline", kind="cordyline", x=370.0, y=-260.0, z=-787.0, h=560.0, fork=200.0, heads=6, spread=380.0, r=13.0, leaf=110.0,
+               src="B: the back photo (photo_house_rear_24oct.jpg), sized against the house (E)")]
+
 WALLS = dict(outer=28.0, inner=10.0, party=15.0)        # E: cavity brick 28; stud and block partitions 10; half the party wall
 
 # The roof (F, B, E). Front: the gutter sits just over the first-floor windows, about 480 over the drive (F) → the wall plate at the

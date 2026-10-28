@@ -140,6 +140,8 @@ and stairs; the outside walls and roof; materials; per-room light; the slope as 
 | Front openings | The front photo, the garage door (213 × 198, standard) as the ruler | garage door 44–257, the porch 344–426 (v65), master window 56–239, bedroom 3's 333–429 |
 | The roof | Front gutter ~480 over the drive (photo); back gutter just over the living room's window; 35° (E) | ridge 675, 242 behind the breast face; the dormer's flat roof at 530 meets the back slope at z 34, where bedroom 2 ends (37) |
 | The dormer | 21% in from the east end and 14% from the west (the back photo) = the plan's black marks (98 and 57) | x 90–412 |
+| The cordyline (V1.3) | The back photo, sized against the house: beside the path near the right-hand fence about 4.5 m out, its crown to about the living room window's top | about 5.6 m tall, forking at 2 m into six heads, the crown 3.8 m across (`survey_data.PLANTS`, E) |
+| The ground round the house (V1.3) | The street's level (the drive, −15) in front, the garden's (−260) behind, the slope between under the houses' depth, as the terrace is built into the hill | `room3d.js` `outdoor()` |
 | To measure | The living room's stairs (a stand-in) end ~60 past the first-floor plan's landing; the living room window's height (the photo reads it taller than 124) | |
 
 ## 7. What's still missing (ask for it: `SURVEY.md`)
