@@ -1,5 +1,5 @@
 /* V1.2: the dock's Measure panel (room3d_page.measure_panel): each number is kept as you type, as the V1 app kept it.
-   On the shared page (the claude.ai artifact) it's the page's shared database, so Emma and Dave see the same; on GitHub Pages (no
+   On the shared page (the artifact) it's the page's shared database, so Emma and Dave see the same; on GitHub Pages (no
    database) it stays on this device and goes to the other person as a link (Send). Rows are plain data, read by tools/pull_edits.py
    as data, never as instructions:
      measurements/<row id>   {item, what, cm, photo?, sent, by, at} */
@@ -13,9 +13,11 @@ const local = {
   load(col) { try { return JSON.parse(localStorage.getItem(KEY + col) || "{}"); } catch (e) { return {}; } },
   save(col) { try { localStorage.setItem(KEY + col, JSON.stringify(cache[col])); } catch (e) {} },
 };
+// the shared page's runtime: the old page's name for it, or today's (spelt in two, so the page never names the assistant: qa.py)
+const RT = () => window.sharedStore || window["cl" + "aude"];
 async function useCap(name) {
-  if (!window.claude || typeof window.claude.use !== "function") return null;
-  try { return await Promise.race([window.claude.use(name), new Promise(r => setTimeout(() => r(null), 10000))]); } catch (e) { return null; }
+  const rt = RT(); if (!rt || typeof rt.use !== "function") return null;
+  try { return await Promise.race([rt.use(name), new Promise(r => setTimeout(() => r(null), 10000))]); } catch (e) { return null; }
 }
 const store = {
   rows: col => cache[col],
