@@ -36,6 +36,11 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
     meta = _j.loads((td / "textures.json").read_text()) if (td / "textures.json").exists() else {}
     b64 = lambda f: "data:image/jpeg;base64," + base64.b64encode(f.read_bytes()).decode() if f.exists() else None
     e["photo_tex"] = {k: dict(map=b64(td / f"{k}_map.jpg"), nor=b64(td / f"{k}_nor.jpg"), size=m["size"]) for k, m in meta.items()}
+    seen = {}                                               # V1.1: a picture two keys share (the carpets' pile) goes once; the other says "@key.map"
+    for k, t in e["photo_tex"].items():
+        for f in ("map", "nor"):
+            if t[f] in seen: t[f] = "@" + seen[t[f]]
+            elif t[f]: seen[t[f]] = f"{k}.{f}"
     # v71: each room's outline and floor level (the viewer's From above and On its own views cut the house to it)
     e["rooms"] = {rid: [r["x0"], r["x1"], r["z0"], r["z1"], model.FLOOR_Y[r["floor"]]] for rid, r in model.room_sizes().items()}
     e["ceil"] = model.CEIL

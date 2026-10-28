@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1 (27 Oct 2026)
+**Version:** V1.1 (27 Oct 2026)
 
 ## Where it lives
 
@@ -39,7 +39,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 | `docs/` | `V1_PLAN.md` (the plan), this file, `DECISIONS.md`, `HISTORY.md` |
 | `_site/` (built) | The site: the app, `data/` (house.json, projects, media, next), `room/` (the 3D), `plan.html`, `media-wall/out/` (PDFs), `stills/`, `photos/` |
 
-## The app (V1)
+## The app (V1.1)
 
 - **Five places:** Home (greeting, the house, Next up: measure · decide · buy, rooms, projects) · House (the 3D by floor, Angled or From
   above, the floor's rooms as tiles; tap a room in the 3D to go in) · Projects (the media wall: Plan · Build · Shop, ticks shared) · Shop
@@ -48,6 +48,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Edit:** tap a piece (121 named in the house file) → Width, Height, Up from the floor, Along the wall (− + 1 cm or typed), Add a
   note, Copy, Remove, Undo/Redo. A door or a window moves its wall's hole with it. The living room keeps its own edit (move, turn, add).
 - **The 3D** is one frame (`room/index.html?embed`) the app drives by messages; a still shows first, the 3D fades in over it.
+- **Its look (V1.1):** CC0 photos (`house/textures`, `house/SOURCES.md`) over the drawn textures as they arrive: the oak, the curtains'
+  hessian, the carpets, the sofa's cord and the plaster's relief. Each colour photo is scaled to its part's own colour in the page, so
+  colours stay as planned. Every box has rounded edges (`room3d.js` `bevelBox`). The iPhones get the PCs' soft shade and glow when their
+  frames in Sharp are under 14 ms (off again past 30 ms). A phone without a capable chip keeps the drawn textures and sharp edges.
 - **Links:** `#/home`, `#/house/first`, `#/room/bathroom`, `#/room/bathroom/edit/bath.mirror`, `#/measure`, `#/project/media-wall/build`,
   `#/shop`, `#/perf` (the speed numbers to send a screenshot of). `/` searches.
 
@@ -80,7 +84,8 @@ Speed and quality (`#/settings`, from Home) shows what the device is and lets ea
 - The app's first screen (Home): data and page under 1 s here; the House screen shows its still at once, the 3D 15–25 s later in
   software graphics (a phone or a graphics card is many times quicker). The 3D's data and script (2 MB) are kept on the device after
   the first visit (`room/scene.<hash>.json`, `room/room3d.<hash>.js`), so the next opening starts without downloading them.
-- The 3D (from the round 82 baseline, unchanged in V1): living room about 540 draw calls (fast quality), 18 lights, 36 shader programs.
+- The 3D, the living room in Sharp with the shade on (V1.1): 364 draws, 119k triangles (107k before the rounded edges), 112 shaders.
+  Its data is 1.8 MB, 1.3 MB of it the photos (inline, as the house's since v70): loading them after the first picture is the next speed step.
 - Clone: about 75 MB (DIY: 5.2 GB). Working tree, built files aside: about 75 MB (DIY: 844 MB).
 
 ## Open with the client

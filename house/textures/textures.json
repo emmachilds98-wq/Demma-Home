@@ -52,5 +52,29 @@
   "size": 0.5,
   "url": "https://ambientcg.com/view?id=Carpet012",
   "licence": "CC0"
+ },
+ "lr_oak": {
+  "asset": "oak_veneer_01",
+  "size": 0.6,
+  "url": "https://polyhaven.com/a/oak_veneer_01",
+  "licence": "CC0"
+ },
+ "lr_hessian": {
+  "asset": "hessian_380",
+  "size": 0.6,
+  "url": "https://polyhaven.com/a/hessian_380",
+  "licence": "CC0"
+ },
+ "lr_cord": {
+  "asset": "ribbed_corduroy",
+  "size": 0.6,
+  "url": "https://polyhaven.com/a/ribbed_corduroy",
+  "licence": "CC0"
+ },
+ "lr_plaster": {
+  "asset": "white_plaster_02",
+  "size": 1.6,
+  "url": "https://polyhaven.com/a/white_plaster_02",
+  "licence": "CC0"
  }
 }
