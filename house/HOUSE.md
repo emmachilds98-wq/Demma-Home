@@ -159,7 +159,8 @@ the door to the hall at the west. In mm (the sketch isn't to scale: trust the nu
 ## The garden (left and right as seen from the house)
 
 - A lawn about the width of the house, running away from it; a paved path down the left side.
-- Cordylines (cabbage palms) by the path, a big clump near the house. **No patio across the back** (the agent's photo of the back, 25 Oct):
+- Cordylines (cabbage palms) by the path, a big clump near the house: next door's (west), just over our fence, its crown over our path (the
+  view from upstairs, V1.4). **No patio across the back** (the agent's photo of the back, 25 Oct):
   the lawn runs to the house wall and the concrete path runs down the left (looking out) from the back door to the end; the round
   table and chairs in the view photos stand by the house on that side (to confirm).
 - Fences: close-board, about 180 high, on the left (looking out); a lower slatted fence, about 120, on the right, with a timber gate

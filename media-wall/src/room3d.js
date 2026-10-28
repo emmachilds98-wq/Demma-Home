@@ -927,8 +927,9 @@ function buildShell() {
       return reg(new THREE.MeshStandardMaterial({ map: tx, roughness: 0.95 })); };   // v59: lawn and concrete, at their size
     flat(x0, x1 - GD.path, zp, z1, y0, texd("lawn", "#55613f", x1 - GD.path - x0, zp - z1));     // the lawn
     flat(x1 - GD.path, x1, zp, z1, y0 + 1, texd("concrete", "#9b958a", GD.path, zp - z1));      // the path down the left (looking out)
-    const fence = h => { const T = R.HOUSE3 && houseTex("fence"); if (!T) return mat("#6b5644"); const tx = T.map.clone(); tx.needsUpdate = true;   // V1.3: boarded, each board 10 wide
-      tx.repeat.set(GD.length / 100 / T.size[0], h / 100 / T.size[1]); return reg(new THREE.MeshStandardMaterial({ map: tx, roughness: 0.9 })); };
+    const fence = (h, len = GD.length) => { const T = R.HOUSE3 && houseTex("fence"); if (!T) return mat("#6b5644"); const tx = T.map.clone(); tx.needsUpdate = true;   // V1.3: boarded, each board 10 wide
+      tx.repeat.set(len / 100 / T.size[0], h / 100 / T.size[1]); return reg(new THREE.MeshStandardMaterial({ map: tx, roughness: 0.9 })); };
+    box(x0 - 4, x1 + 4, y0, y0 + GD.fence, z1, z1 - 4, fence(GD.fence, x1 - x0 + 8));   // V1.4: the far fence, 25 m out (the view photos)
     box(x0 - 4, x0, y0, y0 + (GD.fence_r || GD.fence), z0 - 100, z1, fence(GD.fence_r || GD.fence)); box(x1, x1 + 4, y0, y0 + GD.fence, z0, z1, fence(GD.fence));   // the right one lower, its gate by the house box(x0 - 4, x1 + 4, y0, y0 + GD.fence, z1, z1 - 4, fence);
     if (!R.HOUSE3) box(x0, x1, y0, 0, z0 + 30, z0, mat("#9a5a43"));               // the house's back wall below the room (brick), down to the lawn (v58: the built house has its own)
   }
@@ -2969,13 +2970,13 @@ const sunLux = () => S.quality === "hd" && (S.tod === "day" || S.view === "house
 function outdoor() {
   const on = !!(R.HOUSE3 && S.view === "house" && hfloor === "all");
   if (on && !OUT.sky) {
-    const sky = OUT.sky = new Sky(); sky.scale.setScalar(100); sky.name = "sky";
+    const sky = OUT.sky = new Sky(); sky.scale.setScalar(3000); sky.name = "sky";   // V1.4: past the hill (it was 100 m: anything further was behind it)
     const u = sky.material.uniforms; u.turbidity.value = 3.5; u.rayleigh.value = 1.1; u.mieCoefficient.value = 0.004; u.mieDirectionalG.value = 0.8;
     u.sunPosition.value.copy(dayLight.position).sub(dayLight.target.position).normalize();
     sky.raycast = () => {}; scene.add(sky);
     const H = R.HOUSE3, g = OUT.ground = new THREE.Group(); g.name = "ground";
     const mat = reg(new THREE.MeshStandardMaterial({ color: "#56633f", roughness: 1, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 4, polygonOffsetUnits: 4 })); mat.clippingPlanes = [];
-    const yt = (H.drive ?? -15) - 2, yb = (H.lawn ?? -260) - 2, A0 = -125, A1 = -28, E = 8000, zf = H.front, zb = H.back;   // the alley (x -125 to -28)
+    const yt = (H.drive ?? -15) - 2, yb = (H.lawn ?? -260) - 2, A0 = -125, A1 = -28, E = 300000, zf = H.front, zb = H.back;   // V1.4: 3 km out (was 80 m), under the haze   // the alley (x -125 to -28)
     const quad = (x0, x1, z0, y0, z1, y1, alley) => {   // a strip of ground from (z0, y0) to (z1, y1), level across x
       const g2 = new THREE.BufferGeometry(), P = [x0, y0, z0, x1, y0, z0, x1, y1, z1, x0, y1, z1].map((v, i) => i % 3 === 0 ? -v * M : v * M);
       g2.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); g2.setIndex([0, 1, 2, 0, 2, 3]);
@@ -2984,10 +2985,12 @@ function outdoor() {
     quad(-E, E, -E, yb, zb, yb);                                                                    // the gardens' side, a storey down
     quad(-E, A0, zb, yb, zf, yt); quad(A0, A1, zb, yb, zf, yt, true); quad(A1, E, zb, yb, zf, yt);   // the slope the terrace is built into (hidden inside the house; by it, the alley's own steps with Gardens on)
     quad(-E, E, zf, yt, E, yt);                                                                     // the street's side, out to the horizon
+    buildBeyond(null, g);                                                                           // V1.4: the hill opposite
     scene.add(g);
   }
   if (OUT.sky) { OUT.sky.visible = on; OUT.ground.visible = on; OUT.ground.children.forEach(m => { if (m.userData.alley) m.visible = !S.hgarden; }); }   // with Gardens on the alley steps down there
-  scene.fog.near = on ? 30 : 1e4; scene.fog.far = on ? 110 : 2e4;
+  scene.fog.near = on ? 40 : 1e4; scene.fog.far = on ? 700 : 2e4;   // V1.4: the hill at 330 m about half hazed, as the view photos (was 30–110: nothing past 110 m)
+  if (camera.far !== (on ? 3000 : 120)) { camera.far = on ? 3000 : 120; camera.updateProjectionMatrix(); }   // and seen out to the sky
   if (sun && on !== OUT.sunOut) {   // outside, the sun where the sky shows it (the living room's sits low by its window), its shadows over house and garden
     OUT.sunOut = on; const c = sun.shadow.camera, e = on ? 18 : 5.5;
     if (on) { const t = v3(233, 0, -900); sun.target.position.copy(t); sun.position.copy(t).addScaledVector(dayLight.position.clone().sub(dayLight.target.position).normalize(), 30); }
@@ -5522,7 +5525,8 @@ function buildPlants(grp) {
   bark.clippingPlanes = []; leaf.clippingPlanes = [];
   let sd = 4242; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
   const Y = new THREE.Vector3(0, 1, 0);
-  for (const P of PL) {
+  buildTrees(grp, PL.filter(P => P.kind !== "cordyline"));                        // V1.4: the far end's trees
+  for (const P of PL.filter(P => P.kind === "cordyline")) {
     const trunks = [], leaves = [], base = v3(P.x, P.y, P.z);
     const seg = (a, b, r0, r1) => { const d = b.clone().sub(a), L = d.length(), g = new THREE.CylinderGeometry(r1, r0, L, 8, 1, true);
       g.translate(0, L / 2, 0); g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(Y, d.normalize())); g.translate(a.x, a.y, a.z); trunks.push(g); };
@@ -5544,6 +5548,139 @@ function buildPlants(grp) {
     const tm = new THREE.Mesh(mergeGeometries(trunks.map(g => g.index ? g.toNonIndexed() : g)), bark), lm = new THREE.Mesh(mergeGeometries(leaves), leaf);
     for (const m of [tm, lm]) { m.castShadow = true; m.receiveShadow = true; m.raycast = () => {}; grp.add(m); }
   }
+}
+/* V1.4: the far end's trees (survey_data.PLANTS, from the view photos): a clump of tall pale stems with branches and an airy crown,
+   and a conifer, a dense dark column. Their leaves are drawn sprays on cards (cut out by their alpha), one instanced mesh a kind */
+const SPRAY = {};
+function sprayTex(k) {
+  if (SPRAY[k]) return SPRAY[k];
+  let sd = 77 + k.length; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+  const cols = { leaf: ["#5d7f35", "#4f7130", "#6b8c3c", "#45652b", "#789a45"], dark: ["#2f4d27", "#3a5a2c", "#28421f", "#456634"], needle: ["#2c4a26", "#36552c", "#22391d", "#3f5f31"] }[k];
+  return (SPRAY[k] = canvasTex(256, 256, (g, w, h) => {
+    if (k === "needle") {                                      // fronds: a stalk with short needles both sides
+      for (let i = 0; i < 9; i++) { const a = rnd() * Math.PI * 2, L = w * (0.25 + rnd() * 0.2), x0 = w / 2 + Math.cos(a) * w * 0.06, y0 = h / 2 + Math.sin(a) * h * 0.06;
+        g.strokeStyle = cols[i % cols.length]; g.lineWidth = 3;
+        for (let t = 0; t < 1; t += 0.06) { const x = x0 + Math.cos(a) * L * t, y = y0 + Math.sin(a) * L * t, n = 14 * (1 - t * 0.6);
+          for (const sg of [-1, 1]) { g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a + sg * 0.9) * n, y + Math.sin(a + sg * 0.9) * n); g.stroke(); } } }
+      return; }
+    for (let i = 0; i < 34; i++) {                             // leaves round the spray's middle, each a pointed oval with its midrib
+      const a = rnd() * Math.PI * 2, r = Math.sqrt(rnd()) * w * 0.36, x = w / 2 + Math.cos(a) * r, y = h / 2 + Math.sin(a) * r, L = w * (0.09 + rnd() * 0.05);
+      g.save(); g.translate(x, y); g.rotate(rnd() * Math.PI * 2); g.fillStyle = cols[Math.floor(rnd() * cols.length)];
+      g.beginPath(); g.moveTo(-L, 0); g.quadraticCurveTo(0, -L * 0.42, L, 0); g.quadraticCurveTo(0, L * 0.42, -L, 0); g.fill();
+      g.strokeStyle = "rgba(20,35,10,0.35)"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-L, 0); g.lineTo(L, 0); g.stroke(); g.restore(); }
+  }));
+}
+function buildTrees(grp, list) {
+  if (!list.length) return;
+  let sd = 9157; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+  const Y = new THREE.Vector3(0, 1, 0), stems = { pale: [], dark: [] }, cards = { leaf: [], dark: [], needle: [] };
+  const seg = (to, a, b, r0, r1) => { const d = b.clone().sub(a), L = d.length(), g = new THREE.CylinderGeometry(r1, r0, L, 7, 1, true);
+    g.translate(0, L / 2, 0); g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(Y, d.normalize())); g.translate(a.x, a.y, a.z); to.push(g.toNonIndexed()); };
+  for (const P of list) {
+    const base = v3(P.x, P.y, P.z), H = P.h * M, S = P.spread * M / 2, card = (P.leaf || 60) * M;
+    if (P.kind === "conifer") {                                // the trunk to near the top, the fronds in a column narrowing upwards
+      seg(stems.dark, base, base.clone().add(new THREE.Vector3(0, H * 0.95, 0)), P.r * M, P.r * 0.15 * M);
+      for (let i = 0; i < 2200; i++) { const t = Math.pow(rnd(), 0.85), a = rnd() * Math.PI * 2, rr = S * Math.pow(1 - t, 0.8) * (0.45 + 0.55 * Math.sqrt(rnd()));
+        cards.needle.push([base.x + Math.cos(a) * rr, base.y + H * (0.05 + 0.95 * t), base.z + Math.sin(a) * rr, card * (0.7 + rnd() * 0.5)]); }
+      continue;
+    }
+    const ends = [];                                           // stems leaning out from one foot, each with branches up its top half
+    for (let k = 0; k < (P.stems || 1); k++) {
+      const a = (k + rnd() * 0.6) / (P.stems || 1) * Math.PI * 2, lean = S * 0.2 * (0.5 + rnd() * 0.5), r = P.r * M * (0.75 + rnd() * 0.4);
+      const foot = base.clone().add(new THREE.Vector3(Math.cos(a) * 0.12, 0, Math.sin(a) * 0.12));
+      const top = foot.clone().add(new THREE.Vector3(Math.cos(a) * lean, H * (0.84 + rnd() * 0.12), Math.sin(a) * lean));
+      const mid = foot.clone().lerp(top, 0.5).add(new THREE.Vector3((rnd() - 0.5) * 0.3, 0, (rnd() - 0.5) * 0.3));
+      seg(stems.pale, foot, mid, r, r * 0.7); seg(stems.pale, mid, top, r * 0.7, r * 0.2); ends.push(top);
+      for (let j = 0; j < 7; j++) { const t = 0.42 + j * 0.075, s0 = t < 0.5 ? foot.clone().lerp(mid, t * 2) : mid.clone().lerp(top, (t - 0.5) * 2);
+        const b = a + (rnd() - 0.5) * 2.6, L = S * (0.7 - j * 0.06) * (0.7 + rnd() * 0.4), e = s0.clone().add(new THREE.Vector3(Math.cos(b) * L, L * (0.45 + rnd() * 0.5), Math.sin(b) * L));
+        seg(stems.pale, s0, e, r * 0.32 * (1 - t * 0.5), r * 0.07); ends.push(e); }
+    }
+    const per = Math.round((P.cards || 1400) / ends.length), to = P.dark ? cards.dark : cards.leaf;
+    for (const e of ends) for (let i = 0; i < per; i++) { const u = rnd() * 2 - 1, a = rnd() * Math.PI * 2, rr = Math.cbrt(rnd()) * S * 0.4, q = Math.sqrt(1 - u * u);
+      to.push([e.x + Math.cos(a) * q * rr, e.y + u * rr * 0.65, e.z + Math.sin(a) * q * rr, card * (0.7 + rnd() * 0.6)]); }
+  }
+  for (const [k, list2] of Object.entries(stems)) if (list2.length) {
+    const m = new THREE.Mesh(mergeGeometries(list2), reg(new THREE.MeshStandardMaterial({ color: k === "pale" ? "#a59f95" : "#5b4b3d", roughness: 0.95 })));
+    m.material.clippingPlanes = []; m.castShadow = m.receiveShadow = true; m.raycast = () => {}; grp.add(m); }
+  const o = new THREE.Object3D(), plane = new THREE.PlaneGeometry(1, 1);
+  for (const [k, list2] of Object.entries(cards)) if (list2.length) {
+    const mt = reg(new THREE.MeshStandardMaterial({ map: sprayTex(k), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.8 })); mt.clippingPlanes = [];
+    const im = new THREE.InstancedMesh(plane, mt, list2.length);
+    list2.forEach(([x, y, z, sz], i) => { o.position.set(x, y, z); o.rotation.set((rnd() - 0.5) * 1.6, rnd() * Math.PI * 2, (rnd() - 0.5) * 1.6); o.scale.setScalar(sz); o.updateMatrix(); im.setMatrixAt(i, o.matrix); });
+    im.castShadow = im.receiveShadow = true; im.raycast = () => {}; grp.add(im); }
+}
+/* V1.4: past the far fence (survey_data.BEYOND, from the view photos): the long low building with grey sheet roofs (with Gardens), and
+   the hill opposite with its rows of houses across the valley (with the ground: the land, always there outside), hazy with distance */
+function buildBeyond(grp, land) {
+  const B = R.HOUSE3 && R.HOUSE3.beyond; if (!B) return;
+  if (grp && B.building) {
+    const W = B.building, [xa, xb] = W.x, [za, zb] = W.z, n = W.bays || 1, d = (za - zb) / n;
+    const wall = reg(new THREE.MeshStandardMaterial({ color: "#8e938b", roughness: 0.9 })), sheet = sheetTex(), trim = reg(new THREE.MeshStandardMaterial({ color: "#e4e2dc", roughness: 0.8 }));   // grey-green cladding, a white fascia
+    const roof = reg(new THREE.MeshStandardMaterial({ color: "#ffffff", map: sheet, roughness: 0.7, side: THREE.DoubleSide })); wall.clippingPlanes = []; roof.clippingPlanes = [];
+    const bx = new THREE.Mesh(new THREE.BoxGeometry((xb - xa) * M, (W.eave - W.y0) * M, (za - zb) * M), wall);
+    bx.position.copy(v3((xa + xb) / 2, (W.y0 + W.eave) / 2, (za + zb) / 2)); bx.castShadow = bx.receiveShadow = true; grp.add(bx);
+    const fa = new THREE.Mesh(new THREE.BoxGeometry((xb - xa + 30) * M, 0.35, (za - zb + 30) * M), trim); fa.position.copy(v3((xa + xb) / 2, W.eave - 17, (za + zb) / 2)); grp.add(fa);   wall.clippingPlanes = trim.clippingPlanes = [];
+    for (let i = 0; i < n; i++) {                               // each bay a shallow ridge across, the gables at the ends
+      const z0 = za - i * d, z1 = z0 - d, sh = new THREE.Shape([new THREE.Vector2(z0 * M, W.eave * M), new THREE.Vector2((z0 + z1) / 2 * M, W.ridge * M), new THREE.Vector2(z1 * M, W.eave * M)]);
+      const g = new THREE.ExtrudeGeometry(sh, { depth: (xb - xa) * M, bevelEnabled: false });
+      g.rotateY(-Math.PI / 2); g.translate(-xa * M, 0, 0);    // the profile's x becomes z; extruded along the world's -x, from xa to xb (x flips)
+      const uv = g.attributes.uv, P = g.attributes.position; for (let j = 0; j < P.count; j++) uv.setXY(j, P.getX(j) / 0.9, P.getZ(j) / 2);   // the sheets' ribs 90 apart
+      const m = new THREE.Mesh(g, roof); m.castShadow = m.receiveShadow = true; grp.add(m); }
+  }
+  if (land && B.hill) {
+    const Hh = B.hill, NA = 72, NR = 14, pos = [], uv = [], idx = [], [a0, a1] = Hh.a, T = Hh.top;
+    const top = a => { for (let i = 1; i < T.length; i++) if (a <= T[i][0]) { const [p, q] = [T[i - 1], T[i]], t = (a - p[0]) / (q[0] - p[0]); return p[1] + (q[1] - p[1]) * t; } return T[T.length - 1][1]; };
+    const ss = (e0, e1, x) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
+    for (let j = 0; j <= NR; j++) for (let i = 0; i <= NA; i++) {
+      const a = a0 + (a1 - a0) * i / NA, r = Hh.r0 + (Hh.r2 - Hh.r0) * j / NR, rad = a * Math.PI / 180;
+      const rise = r < Hh.r1 ? ss(Hh.r0, Hh.r1, r) : 1 - 0.2 * ss(Hh.r1, Hh.r2, r), ends = ss(a0, a0 + 12, a) * ss(a1, a1 - 12, a);
+      const y = Hh.base - 60 + (top(a) + 60) * rise * ends;   // its foot just under the ground, so the land meets it without a seam
+      const p = v3(Hh.cx + Math.sin(rad) * r, y, Hh.cz - Math.cos(rad) * r); pos.push(p.x, p.y, p.z);
+      uv.push(rad * r / 20000, (r + y * 4) / 16000); }      // the houses along the hill (a tile 200 m across), up its face
+    for (let j = 0; j < NR; j++) for (let i = 0; i < NA; i++) { const k = j * (NA + 1) + i; idx.push(k, k + 1, k + NA + 1, k + 1, k + NA + 2, k + NA + 1); }
+    const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals();
+    const mt = reg(new THREE.MeshStandardMaterial({ map: townTex(), roughness: 1, side: THREE.DoubleSide })); mt.clippingPlanes = [];
+    const m = new THREE.Mesh(g, mt); m.raycast = () => {}; m.name = "hill"; land.add(m);
+  }
+  if (land && B.trees) {                                        // the valley's trees between: clumps of big leaf cards, no trunks (too far to see)
+    const Tr = B.trees, C = B.hill || { cx: 233, cz: -339 }, o = new THREE.Object3D(), list = { leaf: [], dark: [] };
+    let sd = 2024; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < Tr.n; i++) {
+      const a = (Tr.a[0] + (Tr.a[1] - Tr.a[0]) * rnd()) * Math.PI / 180, r = Tr.r[0] + (Tr.r[1] - Tr.r[0]) * rnd(), h = Tr.h[0] + (Tr.h[1] - Tr.h[0]) * rnd();
+      const cx = C.cx + Math.sin(a) * r, cz = C.cz - Math.cos(a) * r, to = rnd() < 0.35 ? list.dark : list.leaf;
+      for (let k = 0; k < 26; k++) { const u = rnd() * 2 - 1, b = rnd() * Math.PI * 2, rr = Math.cbrt(rnd()) * h * 0.38, q = Math.sqrt(1 - u * u);
+        to.push(v3(cx + Math.cos(b) * q * rr, (B.hill ? B.hill.base : -262) + h * 0.62 + u * rr * 0.7, cz + Math.sin(b) * q * rr)); } }
+    const plane = new THREE.PlaneGeometry(1, 1);
+    for (const [k, pts] of Object.entries(list)) {
+      const mt = reg(new THREE.MeshStandardMaterial({ map: sprayTex(k), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.85 })); mt.clippingPlanes = [];
+      const im = new THREE.InstancedMesh(plane, mt, pts.length);
+      pts.forEach((p, i) => { o.position.copy(p); o.rotation.set((rnd() - 0.5) * 1.2, rnd() * Math.PI * 2, (rnd() - 0.5) * 1.2); o.scale.setScalar(2.4 + rnd() * 1.6); o.updateMatrix(); im.setMatrixAt(i, o.matrix); });
+      im.raycast = () => {}; land.add(im); }
+  }
+}
+function sheetTex() {   // grey sheet roofing: ribs, a little weathering
+  return canvasTex(128, 128, (g, w, h) => { g.fillStyle = "#4c5154"; g.fillRect(0, 0, w, h);
+    for (let x = 0; x < w; x += w / 4) { const gr = g.createLinearGradient(x, 0, x + w / 4, 0); gr.addColorStop(0, "rgba(255,255,255,0.12)"); gr.addColorStop(0.15, "rgba(0,0,0,0.18)"); gr.addColorStop(0.3, "rgba(0,0,0,0)"); g.fillStyle = gr; g.fillRect(x, 0, w / 4, h); }
+    let sd = 31; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < 40; i++) { g.fillStyle = `rgba(${rnd() < 0.5 ? "40,42,40" : "150,150,140"},0.08)`; g.fillRect(rnd() * w, rnd() * h, 2 + rnd() * 10, 4 + rnd() * 30); } });
+}
+function townTex() {    // the hill's face from across the valley: clusters of terraced houses (roofs over pale and brick walls) among trees and gardens
+  return canvasTex(SMALL ? 512 : 1024, SMALL ? 512 : 1024, (g, w, h) => {
+    let sd = 4711; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647, sc = w / 1024;
+    g.fillStyle = "#566a40"; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 900; i++) { g.fillStyle = ["#475a33", "#617349", "#4f633a", "#6c7d52", "#3e5130"][i % 5]; g.globalAlpha = 0.55; g.beginPath(); g.arc(rnd() * w, rnd() * h, (5 + rnd() * 16) * sc, 0, 7); g.fill(); }
+    g.globalAlpha = 1;
+    const roofs = ["#6a4136", "#5c3a30", "#4f4d4e", "#704636", "#5e5a58"], walls = ["#a9a092", "#8e5c47", "#9d9484", "#82503d", "#b3ab9d"];
+    for (let c = 0; c < 22; c++) {                              // a cluster: a few short terraces stepping up the hill, not one long row
+      const cx = rnd() * w, cy = rnd() * h, rows = 2 + Math.floor(rnd() * 4);
+      for (let r = 0; r < rows; r++) { const y = cy + r * 26 * sc, n = 2 + Math.floor(rnd() * 4); let x = cx + (rnd() - 0.5) * 30 * sc;
+        for (let k = 0; k < n; k++) { const run = (24 + rnd() * 50) * sc, rf = roofs[Math.floor(rnd() * roofs.length)], wl = walls[Math.floor(rnd() * walls.length)];
+          for (const dx of [0, -w, w]) { const xx = (x + dx), yy = ((y % h) + h) % h;
+            g.fillStyle = wl; g.fillRect(xx, yy + 7 * sc, run, 8 * sc); g.fillStyle = rf; g.fillRect(xx - 1.5 * sc, yy, run + 3 * sc, 8 * sc);
+            g.fillStyle = "rgba(40,50,60,0.5)"; for (let q = xx + 4 * sc; q < xx + run - 3 * sc; q += 7 * sc) g.fillRect(q, yy + 9 * sc, 2.5 * sc, 3 * sc); }
+          x += run + (4 + rnd() * 14) * sc; } } }
+    for (let i = 0; i < 700; i++) { g.fillStyle = ["#3b4f2d", "#4a6136", "#33462a", "#55693d"][i % 4]; g.beginPath(); g.arc(rnd() * w, rnd() * h, (4 + rnd() * 11) * sc, 0, 7); g.fill(); }   // trees in front of the houses
+  });
 }
 function worldUV(geo, k, off) {
   const T = houseTex(k); if (!T) return geo;
@@ -5679,6 +5816,7 @@ function buildHouse() {
   }
   cur = HFLOOR.out = new THREE.Group(); houseG.add(cur);
   buildPlants(cur);                                                               // V1.3: the cordyline in the back garden (with Gardens)
+  buildBeyond(cur, null);                                                          // V1.4: the low building past the far fence
   // the front: the drive in front of the garage, the small lawn left of it (from the street) with its low brick wall, a strip of lawn
   // by the neighbour's fence with a young tree, the pavement and the close (house/HOUSE.md, the agent's photo of the front)
   const G0 = HS.find(F => F.id === "ground"), zf = H3 ? H3.front : G0 ? G0.zs + 20 : 530, gar = G0 && G0.rooms.find(r => r.id === "garage"), hall = G0 && G0.rooms.find(r => r.id === "hall");

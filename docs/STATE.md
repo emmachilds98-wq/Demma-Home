@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.3 (28 Oct 2026)
+**Version:** V1.4 (28 Oct 2026)
 
 ## Where it lives
 
@@ -46,9 +46,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   Room · Look · Edit, the item cards. The only project for now; each room gets its own in time (`projects/`), with room left for it.
 - **Measure** (the dock, fifth button): the 18 sizes still guessed, by room, a number and a photo each; a room's name flies there. Kept as
   you type (the shared page's database, or this device and a link from Send), in the V1 app's format, so `pull_edits.py` reads both.
-- **Outside (V1.3):** the whole house is always by day, under a real sky with the sun from the south-west (its light and shadows too, so the back is in shade), on ground that runs to a
+- **Outside (V1.3, V1.4):** the whole house is always by day, under a real sky with the sun from the south-west (its light and shadows too, so the back is in shade), on ground that runs to a
   hazy horizon (the street's level in front, the garden's behind, the slope between); the lawn green as the back photo, the fences
-  boarded, the cordyline by the right-hand fence (`survey_data.PLANTS`). Inside, the rooms keep the time you set.
+  boarded, next door's cordyline over our right-hand fence (`survey_data.PLANTS`). With Gardens: the far end's trees, the far fences, the low
+  grey-roofed building past them; always: the valley's trees and the hill of houses opposite, in haze (`survey_data.BEYOND`). Inside, the rooms keep the time you set.
 - **Its look (V1.1):** CC0 photos over the drawn textures (oak, hessian, carpets, the cord's and the plaster's relief), each scaled to its
   part's own colour; rounded edges on every box; the iPhones get the shade and glow when their frames in HD are under 14 ms.
 - **Not brought across yet:** the V1 app's tap-a-piece size edit for the house (Measure covers the guessed sizes). `room3d_page.embed()`
