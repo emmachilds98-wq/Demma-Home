@@ -2967,8 +2967,11 @@ const dayLight = new THREE.DirectionalLight("#fff1dc", 0); dayLight.position.cop
    clear); built the first time */
 const OUT = { sky: null, ground: null, sunOut: false };
 const sunLux = () => S.quality === "hd" && (S.tod === "day" || S.view === "house") ? SUNCFG.lux * (OUT.sunOut ? SUNCFG.out : 1) : 0;
+/* V1.5 (BUILD_SPEC phase 5): and out of the living room's window by day, from inside it: the same sky and land, the garden, its trees and
+   the building past the fence, in place of the plain sky (v56's stand-in until the outside was modelled); by evening the dusk plane */
+const roomOut = () => !!(R.HOUSE3 && !HOUSEV(S.view) && !(VIEWS[S.view] || {}).above && S.tod === "day");
 function outdoor() {
-  const on = !!(R.HOUSE3 && S.view === "house" && hfloor === "all");
+  const house = !!(R.HOUSE3 && S.view === "house" && hfloor === "all"), room = roomOut(), on = house || room;
   if (on && !OUT.sky) {
     const sky = OUT.sky = new Sky(); sky.scale.setScalar(3000); sky.name = "sky";   // V1.4: past the hill (it was 100 m: anything further was behind it)
     const u = sky.material.uniforms; u.turbidity.value = 3.5; u.rayleigh.value = 1.1; u.mieCoefficient.value = 0.004; u.mieDirectionalG.value = 0.8;
@@ -2988,11 +2991,17 @@ function outdoor() {
     buildBeyond(null, g);                                                                           // V1.4: the hill opposite
     scene.add(g);
   }
-  if (OUT.sky) { OUT.sky.visible = on; OUT.ground.visible = on; OUT.ground.children.forEach(m => { if (m.userData.alley) m.visible = !S.hgarden; }); }   // with Gardens on the alley steps down there
+  if (room && !OUT.plants) { OUT.plants = new THREE.Group(); buildPlants(OUT.plants); buildBeyond(OUT.plants, null); scene.add(OUT.plants); }   // the house's own are in its outside, built with it
+  if (OUT.plants) OUT.plants.visible = room;
+  if (garden3d && !HOUSEV(S.view)) garden3d.visible = room;                     // the house's views set it by Gardens
+  if (view) view.visible = !room && !(VIEWS[S.view] || {}).above;
+  if (OUT.sky) { OUT.sky.visible = on; OUT.ground.visible = on; OUT.ground.children.forEach(m => { if (m.userData.alley) m.visible = room || !S.hgarden; });   // with Gardens on the alley steps down there
+    const d = house || !sun ? dayLight.position.clone().sub(dayLight.target.position) : sun.position.clone().sub(sun.target.position);   // the sun the sky shows: the one lighting it
+    OUT.sky.material.uniforms.sunPosition.value.copy(d.normalize()); }
   scene.fog.near = on ? 40 : 1e4; scene.fog.far = on ? 700 : 2e4;   // V1.4: the hill at 330 m about half hazed, as the view photos (was 30–110: nothing past 110 m)
   if (camera.far !== (on ? 3000 : 120)) { camera.far = on ? 3000 : 120; camera.updateProjectionMatrix(); }   // and seen out to the sky
-  if (sun && on !== OUT.sunOut) {   // outside, the sun where the sky shows it (the living room's sits low by its window), its shadows over house and garden
-    OUT.sunOut = on; const c = sun.shadow.camera, e = on ? 18 : 5.5;
+  if (sun && house !== OUT.sunOut) {   // outside, the sun where the sky shows it (the living room's sits low by its window), its shadows over house and garden
+    const on = house; OUT.sunOut = on; const c = sun.shadow.camera, e = on ? 18 : 5.5;
     if (on) { const t = v3(233, 0, -900); sun.target.position.copy(t); sun.position.copy(t).addScaledVector(dayLight.position.clone().sub(dayLight.target.position).normalize(), 30); }
     else { sun.position.copy(sun.userData.p0); sun.target.position.copy(sun.userData.t0); roomKey = null; }
     c.left = c.bottom = -e; c.right = c.top = e; c.far = on ? 60 : 16; c.updateProjectionMatrix(); sun.target.updateMatrixWorld();
@@ -3320,6 +3329,7 @@ function applyLight() {
   if (inK) { scene.traverse(l => { if (l.isLight && l !== skyFill && l !== dayLight) l.intensity = 0; }); hemi.intensity = 0.5; }   // every light of the living room's, the spots too
   scene.background.set(outside && R.HOUSE3 ? (day ? "#c6d6e3" : "#1b2233") : "#0d100e");             // and a sky behind it
   if (gl.shadowMap.enabled !== hd) { gl.shadowMap.enabled = hd; MATS.forEach(m => m.needsUpdate = true); sizeRenderer(); if (LIVE && started) precompile(); }
+  if (started) outdoor();                                                   // V1.5: day or evening changes the living room's window
   reshadow();
   dirty();
 }
@@ -4141,6 +4151,7 @@ function setView(name, instant, dur) {
   qsa("[data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === name)));
   syncRmode();                                                              // v78b: the living room's three too
   store.set(KEY, S); updateCaption(); brandPlace();
+  if (started) outdoor();                                                   // V1.5: the living room's window, by day, out to the modelled outside
 }
 /* the camera to an eye and a point to look at (room cm); v32: also a piece's own close look (R3D.set's "aim") */
 function flyTo(e, a, fov, above, instant, dur) {
@@ -5615,11 +5626,11 @@ function buildBeyond(grp, land) {
   const B = R.HOUSE3 && R.HOUSE3.beyond; if (!B) return;
   if (grp && B.building) {
     const W = B.building, [xa, xb] = W.x, [za, zb] = W.z, n = W.bays || 1, d = (za - zb) / n;
-    const wall = reg(new THREE.MeshStandardMaterial({ color: "#8e938b", roughness: 0.9 })), sheet = sheetTex(), trim = reg(new THREE.MeshStandardMaterial({ color: "#e4e2dc", roughness: 0.8 }));   // grey-green cladding, a white fascia
+    const wall = reg(new THREE.MeshStandardMaterial({ color: "#8e938b", roughness: 0.9 })), sheet = sheetTex(), trim = reg(new THREE.MeshStandardMaterial({ color: "#b9bab4", roughness: 0.8 }));   // grey-green cladding, a pale fascia
     const roof = reg(new THREE.MeshStandardMaterial({ color: "#ffffff", map: sheet, roughness: 0.7, side: THREE.DoubleSide })); wall.clippingPlanes = []; roof.clippingPlanes = [];
     const bx = new THREE.Mesh(new THREE.BoxGeometry((xb - xa) * M, (W.eave - W.y0) * M, (za - zb) * M), wall);
     bx.position.copy(v3((xa + xb) / 2, (W.y0 + W.eave) / 2, (za + zb) / 2)); bx.castShadow = bx.receiveShadow = true; grp.add(bx);
-    const fa = new THREE.Mesh(new THREE.BoxGeometry((xb - xa + 30) * M, 0.35, (za - zb + 30) * M), trim); fa.position.copy(v3((xa + xb) / 2, W.eave - 17, (za + zb) / 2)); grp.add(fa);   wall.clippingPlanes = trim.clippingPlanes = [];
+    const fa = new THREE.Mesh(new THREE.BoxGeometry((xb - xa + 20) * M, 0.2, (za - zb + 20) * M), trim); fa.position.copy(v3((xa + xb) / 2, W.eave - 10, (za + zb) / 2)); grp.add(fa);   wall.clippingPlanes = trim.clippingPlanes = [];
     for (let i = 0; i < n; i++) {                               // each bay a shallow ridge across, the gables at the ends
       const z0 = za - i * d, z1 = z0 - d, sh = new THREE.Shape([new THREE.Vector2(z0 * M, W.eave * M), new THREE.Vector2((z0 + z1) / 2 * M, W.ridge * M), new THREE.Vector2(z1 * M, W.eave * M)]);
       const g = new THREE.ExtrudeGeometry(sh, { depth: (xb - xa) * M, bevelEnabled: false });

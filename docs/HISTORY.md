@@ -121,3 +121,5 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V1.4** (28 Oct 2026): the far end and the view beyond, from the view photos: the end trees (a conifer, tall stems in leaf, next door's
   evergreen), the far fences, the low grey-roofed building past them, the valley's trees and the hill of houses opposite; the cordyline is
   next door's (over our fence). The client: "merge it now and continue".
+- **V1.5** (28 Oct 2026): out of the living room's window by day, the modelled outside (garden, trees, valley, hill) in place of the
+  plain sky, as the client's video frame through it. The client: "merge it and continue".
