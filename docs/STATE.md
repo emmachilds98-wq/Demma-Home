@@ -46,7 +46,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   Room · Look · Edit, the item cards. The only project for now; each room gets its own in time (`projects/`), with room left for it.
 - **Measure** (the dock, fifth button): the 18 sizes still guessed, by room, a number and a photo each; a room's name flies there. Kept as
   you type (the shared page's database, or this device and a link from Send), in the V1 app's format, so `pull_edits.py` reads both.
-- **Outside (V1.3):** the whole house is always by day, under a real sky with the sun from the south-west, on ground that runs to a
+- **Outside (V1.3):** the whole house is always by day, under a real sky with the sun from the south-west (its light and shadows too, so the back is in shade), on ground that runs to a
   hazy horizon (the street's level in front, the garden's behind, the slope between); the lawn green as the back photo, the fences
   boarded, the cordyline by the right-hand fence (`survey_data.PLANTS`). Inside, the rooms keep the time you set.
 - **Its look (V1.1):** CC0 photos over the drawn textures (oak, hessian, carpets, the cord's and the plaster's relief), each scaled to its

@@ -115,7 +115,7 @@ so the cross-origin gotcha below is side-stepped. The rooms' own surfaces stay d
 
 ### Phase 4 · Light and sky
 
-**V1.3: started.** The whole house is always by day (the rooms keep the time set); three's `Sky` over it, its sun where the day light comes from (the south-west over the front: the back faces 14° east of north); a haze to the horizon (`scene.fog`, made at start so turning it up builds no shaders); the outside's exposure 0.32 (mean 130–160, contrast 45–60 on the stills, inside the targets). Next: the sun from a date and time (`house/sun.py`), the sun's shadow camera fitted to the whole house.
+**V1.3: started.** The whole house is always by day (the rooms keep the time set); three's `Sky` over it; the sun that lights it and casts its shadows moved there too (the south-west over the front, 51° up: the back faces 14° east of north, so it's in shade), its shadow box 36 m over house and garden (before, outside was lit by the living room's own low sun, from the north-east at 21°, which bleached the fences and trunk); a haze to the horizon (`scene.fog`, made at start so turning it up builds no shaders); the outside's exposure 0.32, the sun at half the room's (mean 118–154, contrast 32–62 on the stills, inside the targets). Next: the sun from a date and time (`house/sun.py`).
 
 
 - Physical sky (three's `Sky` addon) driven by the sun position (`FACING` 14°, a date/time picker; the NOAA code is `house/sun.py`, easy to port

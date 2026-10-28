@@ -2964,7 +2964,8 @@ const dayLight = new THREE.DirectionalLight("#fff1dc", 0); dayLight.position.cop
    a real sky (three's Sky, its sun where the day light comes from) on ground that runs to a hazy horizon: the street's level in front of
    the back wall, the garden's behind it, as the land steps down. Only in The whole house from outside (a floor shown keeps its cutaway
    clear); built the first time */
-const OUT = { sky: null, ground: null };
+const OUT = { sky: null, ground: null, sunOut: false };
+const sunLux = () => S.quality === "hd" && (S.tod === "day" || S.view === "house") ? SUNCFG.lux * (OUT.sunOut ? SUNCFG.out : 1) : 0;
 function outdoor() {
   const on = !!(R.HOUSE3 && S.view === "house" && hfloor === "all");
   if (on && !OUT.sky) {
@@ -2987,6 +2988,13 @@ function outdoor() {
   }
   if (OUT.sky) { OUT.sky.visible = on; OUT.ground.visible = on; OUT.ground.children.forEach(m => { if (m.userData.alley) m.visible = !S.hgarden; }); }   // with Gardens on the alley steps down there
   scene.fog.near = on ? 30 : 1e4; scene.fog.far = on ? 110 : 2e4;
+  if (sun && on !== OUT.sunOut) {   // outside, the sun where the sky shows it (the living room's sits low by its window), its shadows over house and garden
+    OUT.sunOut = on; const c = sun.shadow.camera, e = on ? 18 : 5.5;
+    if (on) { const t = v3(233, 0, -900); sun.target.position.copy(t); sun.position.copy(t).addScaledVector(dayLight.position.clone().sub(dayLight.target.position).normalize(), 30); }
+    else { sun.position.copy(sun.userData.p0); sun.target.position.copy(sun.userData.t0); roomKey = null; }
+    c.left = c.bottom = -e; c.right = c.top = e; c.far = on ? 60 : 16; c.updateProjectionMatrix(); sun.target.updateMatrixWorld();
+    sun.intensity = sunLux(); if (!on) placeRoomLights(); reshadow();
+  }
 }
 function area(color, w, h, pos, look) {
   const l = new THREE.RectAreaLight(color, 1, w * M, h * M);
@@ -3299,7 +3307,7 @@ function applyLight() {
   hemi.intensity = day ? 0.3 + (hd ? 0 : 0.25) : 0.04 + on * 0.26 + (hd ? 0 : (L.strip * 0.0075 + L.uprights * 0.0015 + (L.bias > 0 ? 0.08 : 0)));   // v50: less bounce, more shape
   win.visible = hd || day;
   envLevels(day); bloomLevels(day);
-  if (sun) sun.intensity = day && hd ? SUNCFG.lux : 0;                                   // v48 §6: the sun, by day in HD
+  if (sun) sun.intensity = sunLux();                                                      // v48 §6: the sun, by day in HD
   envSoon();
   gl.toneMappingExposure = day ? (HOUSEV(S.view) && R.HOUSE3 ? 0.32 : 0.4) : 0.58;      // v50: cosier, not washed out; V1.3: outside a little lower (mean 153 → in 110–170)
   const outside = HOUSEV(S.view);                                                    // v58: the built house in daylight
@@ -5357,7 +5365,7 @@ let started = false;
    Its direction (geometry.SUN: degrees round from straight out of the window towards the room's +x, and up): v49, 7 am in June, low from
    the right (the back faces 14° east of north: the only sun the room gets is on spring and summer mornings). Always in the scene (a light coming and going would rebuild every shader), dark by night
    and in Fast, which has no shadows. */
-const SUNCFG = { lux: 80 };   // tuned on stills: the bars' shadows read on the sofa, the ottoman and the rug, the floor not washed out
+const SUNCFG = { lux: 80, out: 0.5 };   // tuned on stills: the bars' shadows read on the sofa, the ottoman and the rug, the floor not washed out; outside (V1.3), higher in the sky, half
 /* v54, client: "You have rough measurements now and pictures so I'd like you to run the drafts" (every floor and both gardens): each
    floor laid out as a plan in 3D (floors, walls cut at 110 like a dolls' house, solid walls dark, windows blue, doors brown, each room
    named with its use and rough size), the ground floor round the real living room, the lower ground floor to the east and the first
@@ -5474,7 +5482,7 @@ function houseTex(k) {
   T.fence = [0.9, 1.8, (g, w, h) => {               // V1.3: the gardens' fences, as the back photo: weathered featheredge boards, 10 wide, a rail's shadow
     const n = 9, bw = w / n;
     for (let k = 0; k < n; k++) { const t = rnd(); g.fillStyle = `rgb(${128 + t * 30},${100 + t * 22},${72 + t * 16})`; g.fillRect(k * bw, 0, bw, h);
-      const gr = g.createLinearGradient(k * bw, 0, (k + 1) * bw, 0); gr.addColorStop(0, "rgba(0,0,0,0.28)"); gr.addColorStop(0.18, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(255,240,220,0.08)");
+      const gr = g.createLinearGradient(k * bw, 0, (k + 1) * bw, 0); gr.addColorStop(0, "rgba(0,0,0,0.16)"); gr.addColorStop(0.18, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(255,240,220,0.08)");
       g.fillStyle = gr; g.fillRect(k * bw, 0, bw, h); }
     for (let k = 0; k < 160; k++) { g.fillStyle = `rgba(${rnd() < 0.5 ? "70,55,40" : "200,180,150"},${0.06 + rnd() * 0.1})`; g.fillRect(rnd() * w, rnd() * h, 1 + rnd() * 1.5, 30 + rnd() * 140); }
     for (const yy of [0.12, 0.88]) { g.fillStyle = "rgba(0,0,0,0.12)"; g.fillRect(0, h * yy, w, 6); } }];
@@ -5510,7 +5518,7 @@ function houseTex(k) {
    narrow leaves, the young ones up, the old ones arching out and down; one merged mesh for the trunks, one for the leaves */
 function buildPlants(grp) {
   const PL = (R.HOUSE3 && R.HOUSE3.plants) || []; if (!PL.length || !grp) return;
-  const bark = reg(new THREE.MeshStandardMaterial({ color: "#6f6253", roughness: 0.95 })), leaf = reg(new THREE.MeshStandardMaterial({ color: "#5b7a38", roughness: 0.6, side: THREE.DoubleSide }));
+  const bark = reg(new THREE.MeshStandardMaterial({ color: "#8a7e70", roughness: 0.95 })), leaf = reg(new THREE.MeshStandardMaterial({ color: "#5b7a38", roughness: 0.6, side: THREE.DoubleSide }));
   bark.clippingPlanes = []; leaf.clippingPlanes = [];
   let sd = 4242; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
   const Y = new THREE.Vector3(0, 1, 0);
