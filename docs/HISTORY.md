@@ -126,3 +126,6 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V1.6** (29 Oct 2026): Be there, in every room (standing eye height, a wide lens, look round); the gardens round ours (the table and
   chairs, next door's trampoline and sheds, their lawns and fences through the living room's window). The client: "give every room a wide
   angle within the room as if you're there viewing option".
+- **V1.7** (29 Oct 2026): the repo tidied: dead scripts, the retired garden photos and their code, unused pictures, old comparison stills
+  and the build's own icons out (33 files); a repo check against crowding; the outside's sun direction no longer a zero light in every living
+  room shader. The client: "please optimise the codebase and ensure we're not overcrowding the repo".

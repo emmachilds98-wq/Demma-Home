@@ -34,7 +34,7 @@ LEVELS = dict(lower=-260.0, ground=0.0, first=260.0, ceil=235.0, slab=25.0, gara
 # (photo_house_rear_24oct.jpg) shows it over the right-hand (west) fence about 4.5 m out from the house, and the view from upstairs
 # (photo_view_full_24oct.jpg) puts it in next door's gravel garden, just over our fence (V1.4; it stood in ours): about 5.6 m tall,
 # forking at about 2 m into six heads of long narrow leaves (each about 110 long), the crown about 3.8 m across, overhanging our side.
-# V1.4, the far end (the view photos, on garden_window.py's fitted camera: the lawn runs to the trees at about 17 m, the far fence at
+# V1.4, the far end (the view photos, on v48's fitted camera (garden_window.py, in git history): the lawn runs to the trees at about 17 m, the far fence at
 # 25): a conifer just right of our garden's middle, about 19 m out, about 11 m tall; behind it to the left a clump of four tall pale
 # stems in leaf by summer (photo_garden_summer_24oct.jpg), about 15 m; next door's (west) dark evergreen at its end, about 7.5 m
 PLANTS = [dict(id="cordyline", kind="cordyline", x=610.0, y=-260.0, z=-787.0, h=560.0, fork=200.0, heads=6, spread=380.0, r=13.0, leaf=110.0,
