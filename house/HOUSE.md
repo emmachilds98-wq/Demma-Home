@@ -175,7 +175,7 @@ the door to the hall at the west. In mm (the sketch isn't to scale: trust the nu
   from the fences, its height from the man on the lawn; the neighbour's shed fronts line up with it); the rest is under the trees. A birch clump and a conifer at the end.
 - **Beyond:** a long low building with grey roofs behind the end fences, then a valley and a hill of terraced houses opposite, a little
   above the living room's eye level. The right-hand neighbour has a shed with a shingle roof at the end (a trampoline, a rotary dryer).
-- **Camera heights** (from the view photos, `media-wall/src/garden_window.py`): upstairs window about 6.7 m above the lawn; the living
+- **Camera heights** (from the view photos, v48's `garden_window.py`, in git history): upstairs window about 6.7 m above the lawn; the living
   room's standing eye about 4.1 m.
 
 ## The street (the client, 25 Oct 2026)

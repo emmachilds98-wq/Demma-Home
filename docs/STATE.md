@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.6 (29 Oct 2026)
+**Version:** V1.7 (29 Oct 2026)
 
 ## Where it lives
 
@@ -18,7 +18,7 @@ Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and i
 ```bash
 python3 -m pip install -r media-wall/requirements.txt && python3 -m playwright install chromium
 python3 tools/build.py            # everything into _site/ (about 3 min; --fast keeps the renders and PDFs)
-python3 tools/checks.py           # every check, one verdict (--quick: no browser). Paste its lines in the PR.
+python3 tools/checks.py           # every check, one verdict (--quick: no browser), the repo's size too. Paste its lines in the PR.
 python3 tools/round.py "words"    # a client round: version up, pull their numbers, build, check, HISTORY
 python3 tools/pull_edits.py rows.json   # the client's measurements into the model (see its docstring for getting the rows)
 ```
@@ -86,7 +86,8 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 
 - The living room in HD with the shade on (V1.1): 364 draws, 119k triangles, 112 shaders. The page carries its data inline (2 MB, 1.3 MB
   of it the photos): loading the photos after the first picture is the next speed step. The workflow no longer renders stills (5–9 min).
-- Clone: about 75 MB (DIY: 5.2 GB).
+- The repo (V1.7): 343 files, 70 MB tracked, 46 MB of it the client's photos; `checks.py`'s repo check fails on a tracked build output
+  or any other file over 1.5 MB. The clone is about 76 MB with its history (DIY: 5.2 GB).
 
 ## Open with the client
 

@@ -533,30 +533,6 @@ const LBOX_TEX = canvasTex(416, 416, (g, w, h) => {
     g.fillStyle = on ? "#ffffff" : "#26262a"; g.beginPath(); g.arc((k + 0.5) * c, (r + 0.5) * c, c * 0.3, 0, 7); g.fill();
   }
 });
-function skyTex(day) {
-  return canvasTex(512, 256, (g, w, h) => {
-    const s = g.createLinearGradient(0, 0, 0, h);
-    if (day) { s.addColorStop(0, "#c9d9e8"); s.addColorStop(0.7, "#e8eef2"); s.addColorStop(1, "#b8c2b4"); }
-    else { s.addColorStop(0, "#0a1024"); s.addColorStop(0.75, "#1a2240"); s.addColorStop(1, "#2b2a35"); }
-    g.fillStyle = s; g.fillRect(0, 0, w, h);
-    g.fillStyle = day ? "#9aa596" : "#141418";               // the houses opposite
-    for (let x = 0; x < w; x += 70) g.fillRect(x, h * 0.62 + (x % 140 ? 8 : 0), 62, h);
-    if (!day) { g.fillStyle = "#f5c46a"; for (let x = 18; x < w; x += 70) if (x % 3) g.fillRect(x, h * 0.72, 10, 8); }
-  });
-}
-const SKY = { day: skyTex(true), night: skyTex(false) };
-/* v47.1, client (with a video through the window): "Can we somehow make the room look less dark through it and not just a blank black
-   window": the garden itself (art/garden_day, from the video; art/garden_dusk, the same at blue hour for the evening), in place of the
-   drawn sky as soon as each picture arrives. Same material, so no new shader */
-/* v56, client: "fix the living room only view it has a random room clipped on where you've added the garden view ... keep it blank if
-   need be through the window for now until the model of the whole house is done": the garden photo is off (GARDEN_ON); the window shows
-   a plain sky, light by day, dusk by evening. Turn it back on when the whole house and its garden are modelled (UPGRADE_PLAN_v56.md) */
-const GARDEN_ON = false;
-{ const IMG = (typeof DATA !== "undefined" && DATA.img) || {};
-  if (GARDEN_ON) for (const [k, slot] of [["garden_day", "day"], ["garden_dusk", "night"]]) if (IMG[k])
-    new THREE.TextureLoader().load(IMG[k], t => { t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; SKY[slot] = t;
-      if (view && (slot === "day") === (S.tod === "day")) { view.material.map = t; view.material.needsUpdate = true; dirty(); } }); }
-
 /* ---------------------------------------------------------------- materials */
 const MATS = [];
 /* v21: the dolls'-house cutaway. From outside the room (the views from above), whatever stands along the wall nearest the camera (curtains,
@@ -906,10 +882,10 @@ function buildShell() {
   const pane = new THREE.Mesh(new THREE.PlaneGeometry((wx1 - wx0) * M, (wy1 - wy0) * M), glass);
   pane.position.copy(v3(mid, (wy0 + wy1) / 2, FZ - 1)); shell.add(pane);
   /* v48, client: "It's a floor up so take perspective into account": the garden picture is made from one eye in the room (the window's
-     middle, at standing height), straight out and level (garden_window.py), so hung square-on at d from that eye, at the size its angles
+     middle, at standing height), straight out and level (v48's garden_window.py, in git history), so hung square-on at d from that eye, at the size its angles
      give, it lines up: the lawn well below the sill, the trees and the hill across the valley at eye level, from anywhere in the room */
   const GV = R.GARDEN_VIEW || { eye: [mid, 150, WZ + 60], d: 1000, tan: [2.747, 0.839, 2.145] }, [tx, tu, td] = GV.tan;
-  view = new THREE.Mesh(new THREE.PlaneGeometry(2 * GV.d * tx * M, GV.d * (tu + td) * M), new THREE.MeshBasicMaterial({ map: SKY.night, toneMapped: false }));
+  view = new THREE.Mesh(new THREE.PlaneGeometry(2 * GV.d * tx * M, GV.d * (tu + td) * M), new THREE.MeshBasicMaterial({ color: "#1d2535", toneMapped: false }));
   view.position.copy(v3(GV.eye[0], GV.eye[1] + GV.d * (tu - td) / 2, GV.eye[2] - GV.d)); shell.add(view);
   /* v53, client: "Can you make the garden visible through the window at any angle ... both gardens": from above (Whole room, Bird's eye,
      Dolls' house) the back garden is ground under the room: the house's back wall down to the lawn, the patio, the lawn, the path down
@@ -2976,7 +2952,7 @@ const hemi = new THREE.HemisphereLight("#e2e0da", "#b39a7c", 0.05); scene.add(he
 // v58: daylight on the outside of the house (The whole house only; kept in the scene at 0 otherwise, so no shader rebuilds): the sky's
 // fill and the sun from the south-west over the front (the back faces 14° east of north)
 const skyFill = new THREE.HemisphereLight("#dfe8f1", "#5d5446", 0); scene.add(skyFill);
-const dayLight = new THREE.DirectionalLight("#fff1dc", 0); dayLight.position.copy(v3(700, 1400, 1100)); dayLight.target.position.copy(v3(233, 0, 80)); scene.add(dayLight, dayLight.target);
+const dayLight = { position: v3(700, 1400, 1100), target: { position: v3(233, 0, 80) } };   // V1.7: only where the outside's sun is (the sun lights it): a light at 0 here was in every living room shader
 /* V1.3, the client: "continue upgrading the 3d model of the house" (BUILD_SPEC phase 4, the start of 5): outside, the house stands under
    a real sky (three's Sky, its sun where the day light comes from) on ground that runs to a hazy horizon: the street's level in front of
    the back wall, the garden's behind it, as the land steps down. Only in The whole house from outside (a floor shown keeps its cutaway
@@ -3329,7 +3305,7 @@ function applyLight() {
   if (ideaLed) ideaLed.color.set(day ? "#8a8578" : "#fff1d6");
   curtShut.visible = !!S.curtains; curtOpen.visible = !S.curtains;
   win.intensity = day ? 70 : 11; win.color.set(day ? "#eef0f2" : "#7d89b8");   // v47.1: dusk light, not black (v50: a softer, less blue day)
-  view.material.map = GARDEN_ON ? (day ? SKY.day : SKY.night) : null; view.material.color.set(GARDEN_ON ? "#ffffff" : day ? "#dfe6ec" : "#1d2535"); view.material.needsUpdate = true;   // v56: a plain sky for now
+  view.material.color.set(day ? "#dfe6ec" : "#1d2535");   // v56: a plain sky (by day V1.5 shows the modelled outside instead)
   // bounce light: a real room's walls relight it; this stands in for that, in proportion to what's on. v15: more of it, so the room
   // reads evenly lit rather than as pools under each head
   const on = (L.strip * 1.0 + L.uprights * 0.3 + L.bar1 * 0.5 + L.bar2 * 0.5 + L.lamp * 0.35 + L.accent * 0.06 + (L.bias > 0 ? 8 : 0) + (S.lbox ? 4 : 0)) / 100;
@@ -3340,10 +3316,10 @@ function applyLight() {
   envSoon();
   gl.toneMappingExposure = day ? (HOUSEV(S.view) && R.HOUSE3 ? 0.32 : 0.4) : 0.58;      // v50: cosier, not washed out; V1.3: outside a little lower (mean 153 → in 110–170)
   const outside = HOUSEV(S.view);                                                    // v58: the built house in daylight
-  skyFill.intensity = outside ? (day ? 2.6 : 0.5) : 0; dayLight.intensity = outside && day ? 3.2 : 0;
+  skyFill.intensity = outside ? (day ? 2.6 : 0.5) : 0;
   const inK = !!ROOMV();                                                                // v60: in a room of the house, light off its pale floor and walls,
   skyFill.groundColor.set(inK ? "#d9d3c9" : "#5d5446");                                 // and the living room's own lights stay upstairs
-  if (inK) { scene.traverse(l => { if (l.isLight && l !== skyFill && l !== dayLight) l.intensity = 0; }); hemi.intensity = 0.5; }   // every light of the living room's, the spots too
+  if (inK) { scene.traverse(l => { if (l.isLight && l !== skyFill) l.intensity = 0; }); hemi.intensity = 0.5; }   // every light of the living room's, the spots too
   scene.background.set(outside && R.HOUSE3 ? (day ? "#c6d6e3" : "#1b2233") : "#0d100e");             // and a sky behind it
   if (gl.shadowMap.enabled !== hd) { gl.shadowMap.enabled = hd; MATS.forEach(m => m.needsUpdate = true); sizeRenderer(); if (LIVE && started) precompile(); }
   if (started) outdoor();                                                   // V1.5: day or evening changes the living room's window

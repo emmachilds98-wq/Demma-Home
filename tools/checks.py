@@ -1,8 +1,8 @@
 """Demma's Home V1 (Phase 7): every check, one command, one verdict. The workflow runs it on every push and pull request; run it yourself
 before you push. Exits non-zero if any check fails; prints one line each (the result lines to paste in a PR).
 
-python3 tools/checks.py            the model's checks, flicker, clashes, privacy (repo and site), the front door, the media wall's page and taps
-python3 tools/checks.py --quick    no browser: the model's checks, flicker, clashes, privacy
+python3 tools/checks.py            the model's checks, flicker, clashes, privacy (repo and site), the repo's size, the front door, the media wall's page and taps
+python3 tools/checks.py --quick    no browser: the model's checks, flicker, clashes, privacy, the repo's size
 
 Needs the site built first (python3 tools/build.py); THREE_LOCAL serves three.js where the CDN is blocked."""
 import json, os, pathlib, re, subprocess, sys, time
@@ -42,6 +42,21 @@ def privacy():
     return a == 0 and b == 0, out1.strip().splitlines()[-1] + " · site: " + out2.strip().splitlines()[-1]
 
 
+def repo():
+    """V1.7, the client: "ensure we're not overcrowding the repo": nothing a build makes is tracked (.gitignore), and no file over 1.5 MB
+    but the client's photos (media-wall/inputs, kept whole: "put photos in, I need them all")."""
+    git = lambda *a: subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True).stdout
+    files = [f for f in git("ls-files", "-z").split("\0") if f]
+    if not files:
+        return True, "not a git checkout"
+    built = [f for f in git("ls-files", "-ci", "--exclude-standard", "-z").split("\0") if f]
+    size = {f: (ROOT / f).stat().st_size for f in files if (ROOT / f).is_file()}
+    big = [f for f, n in size.items() if n > 1.5 * 2 ** 20 and not f.startswith("media-wall/inputs/")]
+    photos = sum(n for f, n in size.items() if f.startswith("media-wall/inputs/"))
+    msg = f"{len(files)} files, {sum(size.values()) / 2 ** 20:.0f} MB tracked ({photos / 2 ** 20:.0f} MB the client's photos), {len(built)} built, {len(big)} over 1.5 MB"
+    return not built and not big, msg + (": " + ", ".join((built + big)[:4]) if built or big else "")
+
+
 def site():
     code, out = sh([ROOT / "tools/check_site.py", SITE], timeout=2400)
     last = [l for l in out.splitlines() if l.startswith("site check") or l.startswith("FAIL")]
@@ -70,7 +85,7 @@ def taps():
 
 def main(argv):
     quick = "--quick" in argv
-    checks = [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy)] + ([] if quick else [("site", site), ("page", qa), ("taps", taps)])
+    checks = [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("repo", repo)] + ([] if quick else [("site", site), ("page", qa), ("taps", taps)])
     fails = 0
     for name, fn in checks:
         t = time.time()

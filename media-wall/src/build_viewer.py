@@ -1024,7 +1024,6 @@ def _page(site=False):
     imgs = {k: f"{prefix}art/{k}.webp" for k in [f"art_{s}_{p}" for s in ("join", "four", "six", "side", "drawers") for p in ("mint", "card_room", "deep", "sage", "treron")] + ["key_join", "doc_paint", "doc_skirt"]}
     imgs.update({f"dims_{v}": f"{prefix}art/dims_{v}.webp" for v in ("join", "four", "six", "drawers", "side")})
     imgs.update({k: f"{prefix}art/{k}.webp" for k, *_ in SHOTS3D})
-    imgs.update({k: f"{prefix}art/{k}.webp" for k in ("garden_day", "garden_dusk")})   # v47.1: the garden through the window
     rows = track_rows()
     phases = phase_data(rows)
     _, lo_tot, hi_tot = phase_totals()
@@ -1452,14 +1451,12 @@ def art_sha(p):
     return hashlib.sha256(p.read_bytes()).hexdigest()
 
 
-TEXTURES = {"garden_day.webp", "garden_dusk.webp"}   # v50: the 3D room's textures stay inside the page: from the asset store the
-                                                     # window couldn't load them (a cross-origin texture), so it showed no garden
 
 
 def deck_assets_todo():
     """v22: the art/ files the deck's asset store doesn't hold yet (new, or changed since they were uploaded)."""
     have = json.loads(DECK_ASSETS.read_text()) if DECK_ASSETS.exists() else {}
-    return [p for p in sorted((HERE / "art").glob("*.webp")) if p.name not in TEXTURES and have.get(p.name, {}).get("sha") != art_sha(p)]
+    return [p for p in sorted((HERE / "art").glob("*.webp")) if have.get(p.name, {}).get("sha") != art_sha(p)]
 
 
 def inline_images(html_):
@@ -1470,7 +1467,7 @@ def inline_images(html_):
     import base64
     have = json.loads(DECK_ASSETS.read_text()) if DECK_ASSETS.exists() else {}
     for p in sorted((HERE / "art").glob("*.webp")):
-        a = None if p.name in TEXTURES else have.get(p.name)
+        a = have.get(p.name)
         uri = a["url"] if a and a.get("sha") == art_sha(p) else "data:image/webp;base64," + base64.b64encode(p.read_bytes()).decode()
         html_ = html_.replace(f"art/{p.name}", uri)
     return html_
