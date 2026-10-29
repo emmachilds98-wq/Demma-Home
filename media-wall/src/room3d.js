@@ -2518,11 +2518,26 @@ const ROOMV = () => R.HOUSE3 && (VIEWS[S.view] || {}).box;                      
 /* v78b, the client: "add the viewing buttons to the living room also, it doesnt have the in it, above, on its own buttons like all other
    rooms": the living room is drawn on its own (not in the house), so its three are its own views: from the window, the whole room from
    above, and the room from the hall's corner with its ceiling off */
-const LIV_RMODE = { in: "window", above: "room", alone: "livalone" };
+const LIV_RMODE = { in: "window", stand: "livstand", above: "room", alone: "livalone" };
+/* V1.6, the client: "give every room a wide angle within the room as if you're there viewing option": Be there, in every room (the living
+   room too): from its door at standing eye height, a wide lens, level; dragging looks round from where you stand (View's "Look round from
+   here"), put back as it was on the way out */
+const STAND_FOV = 80, STAND_EYE = 160;
+let standCam = null;
+function standLook(on) {
+  if (on) { if (standCam === null) standCam = S.cam; S.cam = "look"; }
+  else if (standCam !== null) { S.cam = standCam; standCam = null; } else return;
+  applyCam(false); syncButtons();
+}
+function standIn() {
+  const v = VIEWS[S.view], rr = ((R.HOUSE3 && R.HOUSE3.rooms) || {})[VIEW_ROOM[S.view]], fy = rr ? rr[4] : 0;
+  standLook(true);
+  flyTo([v.eye[0], fy + STAND_EYE, v.eye[2]], [v.at[0], fy + STAND_EYE - 10, v.at[2]], STAND_FOV, false);
+}
 const LIVV = () => !HOUSEV(S.view) && !!VIEWS[S.view];
 function syncRmode() {
   const rm = qs("#r3d-rmode"); if (!rm) return;
-  const liv = LIVV(), cur = liv ? (S.view === "room" ? "above" : S.view === "livalone" ? "alone" : "in") : RMODE;
+  const liv = LIVV(), cur = liv ? (S.view === "room" ? "above" : S.view === "livalone" ? "alone" : S.view === "livstand" ? "stand" : "in") : RMODE;
   rm.hidden = !(ROOMV() || liv); qsa("[data-rmode]", rm).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.rmode === cur)));
 }
 const HFLOOR = {};     // v55: its floors (lower, ground, first) and the outside (gardens, the alley), for the floor picker
@@ -2584,6 +2599,7 @@ function applyFloors() {
   if (HFLOOR.out) HFLOOR.out.visible = showG;
   if (garden3d && houseG.visible) garden3d.visible = showG;
   if (HFLOOR.street) HFLOOR.street.visible = !!S.hstreet;
+  if (HFLOOR.nextThings) HFLOOR.nextThings.visible = !!S.hstreet;
   qsa("[data-htog]").forEach(b => b.setAttribute("aria-pressed", String(!!S[b.dataset.htog])));
   const fv = qs("#r3d-fview"); if (fv) { fv.hidden = !on; qsa("[data-hfview]", fv).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.hfview === hfview))); }   // v74
   const pk = qs("#r3d-pick"), mini = qs(".r3d-mini"); if (pk && mini) { const off = on && mini.classList.contains("pickoff"); if (!on) mini.classList.remove("pickoff");
@@ -2991,7 +3007,8 @@ function outdoor() {
     buildBeyond(null, g);                                                                           // V1.4: the hill opposite
     scene.add(g);
   }
-  if (room && !OUT.plants) { OUT.plants = new THREE.Group(); buildPlants(OUT.plants); buildBeyond(OUT.plants, null); scene.add(OUT.plants); }   // the house's own are in its outside, built with it
+  if (room && !OUT.plants) { OUT.plants = new THREE.Group(); buildPlants(OUT.plants); buildBeyond(OUT.plants, null);   // V1.6: and the gardens round ours
+    buildThings(OUT.plants, "ours"); buildThings(OUT.plants, "next"); buildNextGardens(OUT.plants); scene.add(OUT.plants); }   // the house's own are in its outside, built with it
   if (OUT.plants) OUT.plants.visible = room;
   if (garden3d && !HOUSEV(S.view)) garden3d.visible = room;                     // the house's views set it by Gardens
   if (view) view.visible = !room && !(VIEWS[S.view] || {}).above;
@@ -3973,6 +3990,7 @@ const VIEWS = {
   // from above the window side, the window wall cut away (updateCut): the media wall, the breast, the door, the stairs, the table's wall,
   // the PC wall, the sofa and the rug in one picture
   room:    { label: "The whole room", eye: [250, 440, -540], at: [238, 60, -118], fov: 50, above: true },
+  livstand: { label: "Standing in the living room", eye: [372, 160, -6], at: [110, 150, -210], fov: STAND_FOV, stand: true },   // V1.6: Be there, from the door
   livalone: { label: "The living room on its own", eye: [-170, 520, 230], at: [240, 40, -140], fov: 46, above: true },   // v78b: from the hall's corner, the ceiling off
   landing: { label: "Landing", eye: [330, 425, 250], at: [345, 330, -60], fov: 80, box: [288, 402, 275, 485, -72, 256] },     // v66: from the top of the stairs
   hall:    { label: "Entrance hall", eye: [372, 160, 413], at: [352, 95, 60], fov: 80, box: [310, 398, 15, 225, 50, 416] },   // v69: the wall moved to 303.5   // v66: in from the front door
@@ -4139,6 +4157,7 @@ canvas.addEventListener("pointerdown", () => { canvas.focus({ preventScroll: tru
 function setView(name, instant, dur) {
   const v = VIEWS[name] || VIEWS.window, wasHouse = HOUSEV(S.view); S.view = name;
   if (RMODE !== "in") setRmode("in", true);                               // v71: a new view starts in the room
+  standLook(!!v.stand);                                                     // V1.6: the living room's Be there looks round from where you stand
   let p = (S.site === "C" && S.cab === "sliding" && v.Cs) || v[S.site] || v;   // v30: "Cs", the sliding cabinet's own eye
   if (name === "house" && camera.aspect < 1.2) { const f = Math.min(1.25, 0.6 / camera.aspect);   // v54: a phone stands further back to take in every floor
     p = { eye: p.at.map((a, i) => a + (p.eye[i] - a) * f), at: p.at }; }
@@ -5190,7 +5209,8 @@ function rmodeDress(rr, rid) {
 }
 function setRmode(m, quiet) {
   RMODE = ROOMV() && m !== "in" ? m : "in";
-  const rid = VIEW_ROOM[S.view], rr = RMODE !== "in" && R.HOUSE3 && (R.HOUSE3.rooms || {})[rid];
+  if (RMODE !== "stand") standLook(false);
+  const rid = VIEW_ROOM[S.view], rr = (RMODE === "above" || RMODE === "alone") && R.HOUSE3 && (R.HOUSE3.rooms || {})[rid];
   const planes = [];
   if (rr) { const [x0, x1, z0, z1, fy] = rr, top = fy + (R.HOUSE3.ceil || 235) - 3, g = 15, P = (x, y, z, c) => new THREE.Plane(new THREE.Vector3(x, y, z), c * M);
     planes.push(P(0, -1, 0, top));                                                    // the ceiling and everything over it off
@@ -5210,6 +5230,7 @@ function setRmode(m, quiet) {
     else { const r = 0.5 * Math.hypot(w, d, 235), v = 22.5 * Math.PI / 180, h = Math.atan(Math.tan(v) * camera.aspect), D = (camera.aspect < 1 ? 0.62 : 0.85) * r / Math.sin(Math.min(v, h));   // the room's sphere in the narrower side (v72: a phone stands closer)
       const sx = Math.sign(233 - cx) || 1, sz = Math.sign(95 - cz) || 1;   // from the house's middle: over its inside walls, the outside wall behind
       flyTo([cx + sx * D * 0.4, fy + 60 + D * 0.78, cz + sz * D * 0.48], [cx, fy + 50, cz], 45, true); } }
+  else if (RMODE === "stand") standIn();
   else if (!quiet) setView(S.view);
   reshadow(); dirty();
 }
@@ -5669,6 +5690,48 @@ function buildBeyond(grp, land) {
       im.raycast = () => {}; land.add(im); }
   }
 }
+/* V1.6: the things in the gardens (survey_data.GARDEN_THINGS, from the view photos): ours (the round table and its chairs, with Gardens)
+   and next door's (the trampoline, the sheds, with Next door); and for the living room's window, next door's back lawns and fences */
+function thingMat(c, o) { const m = reg(new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.8 }, o || {}))); m.clippingPlanes = []; return m; }
+function buildThings(grp, own) {
+  const L = ((R.HOUSE3 && R.HOUSE3.things) || []).filter(t => t.own === own); if (!L.length || !grp) return;
+  const y0 = (R.HOUSE3.lawn ?? -260), add = (g, m, x, y, z, ry = 0) => { const o = new THREE.Mesh(g, m); o.position.copy(v3(x, y, z)); o.rotation.y = ry; o.castShadow = o.receiveShadow = true; o.raycast = () => {}; grp.add(o); return o; };
+  const cyl = (r0, r1, h, n = 20) => new THREE.CylinderGeometry(r0 * M, r1 * M, h * M, n);
+  const black = thingMat("#1c1d1f", { roughness: 0.35 }), steel = thingMat("#2a2b2d", { roughness: 0.5, metalness: 0.4 });
+  for (const t of L) {
+    if (t.kind === "table") {                                  // a round glass top on a pedestal
+      add(cyl(t.d / 2, t.d / 2, 1.2, 32), thingMat("#151618", { roughness: 0.15 }), t.x, y0 + t.h, t.z);
+      add(cyl(2.5, 2.5, t.h, 10), black, t.x, y0 + t.h / 2, t.z); add(cyl(24, 26, 3, 20), black, t.x, y0 + 1.5, t.z);
+    } else if (t.kind === "chair") {                           // a folding chair: a seat and a back of cloth on a dark frame (a recliner leans back)
+      const g = new THREE.Group(), cloth = thingMat(t.colour || "#e6e1d6", { roughness: 0.9, side: THREE.DoubleSide }), ry = (t.turn || 0) * Math.PI / 180;
+      const seat = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.03, 0.5), cloth); seat.position.set(0, 0.42, 0); g.add(seat);
+      const back = new THREE.Mesh(new THREE.BoxGeometry(0.5, t.recline ? 0.95 : 0.55, 0.03), cloth); back.position.set(0, t.recline ? 0.85 : 0.7, -0.27); back.rotation.x = t.recline ? -0.45 : -0.12; g.add(back);
+      for (const sx of [-0.25, 0.25]) for (const sz of [-0.24, 0.24]) { const l = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.44, 6), steel); l.position.set(sx, 0.21, sz); g.add(l); }
+      g.position.copy(v3(t.x, y0, t.z)); g.rotation.y = ry; g.traverse(o => { if (o.isMesh) { o.castShadow = o.receiveShadow = true; o.raycast = () => {}; } }); grp.add(g);
+    } else if (t.kind === "trampoline") {                      // the green pad round the black mat, its legs, the black net on poles
+      const r = t.d / 2, h = 85;
+      const pad = new THREE.Mesh(new THREE.TorusGeometry(r * M, 0.12, 8, 48), thingMat("#2f8f6a", { roughness: 0.6 })); pad.rotation.x = Math.PI / 2; pad.position.copy(v3(t.x, y0 + h, t.z)); pad.castShadow = true; pad.raycast = () => {}; grp.add(pad);
+      const mat = new THREE.Mesh(new THREE.CircleGeometry((r - 10) * M, 40), thingMat("#111214", { roughness: 0.9, side: THREE.DoubleSide })); mat.rotation.x = -Math.PI / 2; mat.position.copy(v3(t.x, y0 + h - 2, t.z)); mat.raycast = () => {}; grp.add(mat);
+      const net = new THREE.Mesh(new THREE.CylinderGeometry(r * M, r * M, 1.8, 40, 1, true), thingMat("#0e0f10", { roughness: 1, transparent: true, opacity: 0.35, side: THREE.DoubleSide, depthWrite: false }));
+      net.position.copy(v3(t.x, y0 + h + 90, t.z)); net.raycast = () => {}; grp.add(net);
+      for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2, px = t.x + Math.cos(a) * r, pz = t.z + Math.sin(a) * r;
+        add(cyl(1.8, 1.8, h + 180, 6), steel, px, y0 + (h + 180) / 2, pz); }
+    } else if (t.kind === "shed") {                            // walls, a pitched roof across, a door in its front
+      const [xa, xb] = t.x, [za, zb] = t.z, w = xb - xa, d = Math.abs(za - zb), zm = (za + zb) / 2, wall = thingMat(t.wall, { roughness: 0.9 }), roof = thingMat(t.roof, { roughness: 0.95 });
+      add(new THREE.BoxGeometry(w * M, (t.eave - y0) * M, d * M), wall, (xa + xb) / 2, (y0 + t.eave) / 2, zm);
+      const z0 = Math.max(za, zb) + 12, z1 = Math.min(za, zb) - 12, sh = new THREE.Shape([new THREE.Vector2(z0 * M, t.eave * M), new THREE.Vector2(zm * M, t.ridge * M), new THREE.Vector2(z1 * M, t.eave * M)]);
+      const g = new THREE.ExtrudeGeometry(sh, { depth: (w + 20) * M, bevelEnabled: false }); g.rotateY(-Math.PI / 2); g.translate(-(xa - 10) * M, 0, 0);
+      const m = new THREE.Mesh(g, roof); m.castShadow = m.receiveShadow = true; m.raycast = () => {}; grp.add(m);
+      add(new THREE.BoxGeometry(80 * M, 180 * M, 0.02), thingMat("#5a4030", { roughness: 0.9 }), (xa + xb) / 2, y0 + 90, Math.max(za, zb) + 1);
+    }
+  }
+}
+function buildNextGardens(grp) {
+  const N = R.HOUSE3 && R.HOUSE3.next_gardens; if (!N || !grp) return;
+  for (const [k, list] of Object.entries(N)) { const T = houseTex(k), m = thingMat(T ? "#ffffff" : k === "lawn" ? "#5d6a44" : "#6b5644", { map: T ? T.map : null, roughness: 0.95 });
+    for (const [x0, y0, z0, x1, y1, z1] of list) { const p = v3((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2), g = new THREE.BoxGeometry(Math.abs(x1 - x0) * M, Math.abs(y1 - y0) * M, Math.abs(z1 - z0) * M);
+      if (T) worldUV(g, k, p); const b = new THREE.Mesh(g, m); b.position.copy(p); b.receiveShadow = true; b.castShadow = k === "fence"; b.raycast = () => {}; grp.add(b); } }
+}
 function sheetTex() {   // grey sheet roofing: ribs, a little weathering
   return canvasTex(128, 128, (g, w, h) => { g.fillStyle = "#4c5154"; g.fillRect(0, 0, w, h);
     for (let x = 0; x < w; x += w / 4) { const gr = g.createLinearGradient(x, 0, x + w / 4, 0); gr.addColorStop(0, "rgba(255,255,255,0.12)"); gr.addColorStop(0.15, "rgba(0,0,0,0.18)"); gr.addColorStop(0.3, "rgba(0,0,0,0)"); g.fillStyle = gr; g.fillRect(x, 0, w / 4, h); }
@@ -5828,6 +5891,8 @@ function buildHouse() {
   cur = HFLOOR.out = new THREE.Group(); houseG.add(cur);
   buildPlants(cur);                                                               // V1.3: the cordyline in the back garden (with Gardens)
   buildBeyond(cur, null);                                                          // V1.4: the low building past the far fence
+  buildThings(cur, "ours");                                                        // V1.6: the table and chairs
+  HFLOOR.nextThings = new THREE.Group(); houseG.add(HFLOOR.nextThings); buildThings(HFLOOR.nextThings, "next");   // and next door's, with Next door
   // the front: the drive in front of the garage, the small lawn left of it (from the street) with its low brick wall, a strip of lawn
   // by the neighbour's fence with a young tree, the pavement and the close (house/HOUSE.md, the agent's photo of the front)
   const G0 = HS.find(F => F.id === "ground"), zf = H3 ? H3.front : G0 ? G0.zs + 20 : 530, gar = G0 && G0.rooms.find(r => r.id === "garage"), hall = G0 && G0.rooms.find(r => r.id === "hall");

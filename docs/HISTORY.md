@@ -123,3 +123,6 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
   next door's (over our fence). The client: "merge it now and continue".
 - **V1.5** (28 Oct 2026): out of the living room's window by day, the modelled outside (garden, trees, valley, hill) in place of the
   plain sky, as the client's video frame through it. The client: "merge it and continue".
+- **V1.6** (29 Oct 2026): Be there, in every room (standing eye height, a wide lens, look round); the gardens round ours (the table and
+  chairs, next door's trampoline and sheds, their lawns and fences through the living room's window). The client: "give every room a wide
+  angle within the room as if you're there viewing option".

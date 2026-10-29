@@ -43,8 +43,20 @@ PLANTS = [dict(id="cordyline", kind="cordyline", x=610.0, y=-260.0, z=-787.0, h=
                src="B: the view photos (photo_view_full_24oct.jpg), on the fitted camera (E)"),
           dict(id="end_trees", kind="broadleaf", x=300.0, y=-260.0, z=-2420.0, h=1500.0, spread=900.0, stems=4, r=14.0, leaf=70.0, cards=1800,
                src="B: the view photos, in leaf as the summer photo (photo_garden_summer_24oct.jpg) (E)"),
-          dict(id="next_evergreen", kind="broadleaf", x=720.0, y=-260.0, z=-2380.0, h=750.0, spread=620.0, stems=2, r=12.0, leaf=60.0, cards=1300, dark=True,
+          dict(id="next_evergreen", kind="broadleaf", x=640.0, y=-260.0, z=-2380.0, h=750.0, spread=620.0, stems=2, r=12.0, leaf=60.0, cards=1300, dark=True,
                src="B: the view photo, next door's end (E)")]
+
+# V1.6: the things in the gardens (the view photos, photo_view_full_24oct.jpg; E): ours, by the house on the path's side, the round black
+# table and three folding chairs (two cream recliners, a navy one); east of our fence, past the alley's house, a 3 m trampoline (green
+# pad, black net) about 13 m out and a brown shed with a grey shingle roof at the end; west, next door's orange-brown shed at its end
+GARDEN_THINGS = [dict(id="table", kind="table", own="ours", x=360.0, z=-575.0, d=90.0, h=72.0),
+                 dict(id="recliner_1", kind="chair", own="ours", x=318.0, z=-500.0, turn=200.0, colour="#e6e1d6", recline=True),
+                 dict(id="recliner_2", kind="chair", own="ours", x=300.0, z=-585.0, turn=270.0, colour="#e6e1d6", recline=True),
+                 dict(id="chair", kind="chair", own="ours", x=425.0, z=-520.0, turn=130.0, colour="#27324a"),
+                 dict(id="trampoline", kind="trampoline", own="next", x=-370.0, z=-1650.0, d=305.0),
+                 dict(id="shed_east", kind="shed", own="next", x=(-560.0, -230.0), z=(-2560.0, -2830.0), eave=-30.0, ridge=30.0, wall="#7a5a3e", roof="#5d5f62"),
+                 dict(id="shed_west", kind="shed", own="next", x=(770.0, 960.0), z=(-2580.0, -2830.0), eave=-50.0, ridge=-10.0, wall="#a0603a", roof="#3a3b3d")]
+GARDEN_THINGS_SRC = "B: the view photos (photo_view_full_24oct.jpg), sized by eye against the fences (E)"
 
 # V1.4: beyond the far fence (the view photos; E): a long low building with grey sheet roofs just past the fences, standing a little
 # lower than the lawn, its roofs about 3 m over it (they show at the sheds' height from upstairs); then the valley, and the hill
