@@ -92,6 +92,10 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
   - **Bedroom 3: the office and gaming room**, 2.04 × 2.17 (agent), the front window.
   - Airing cupboard off the landing. **The top landing is more square** than drawn (the plan shows a slim strip); **the green mark at the
     top of the stairs is the landing's rough size** (the client, 25 Oct).
+  - **The boiler cupboard sticks out into both bedrooms** (the client, 29 Oct): in the master in line with the wardrobes' front; into
+    bedroom 2 by an amount to measure (10 cm drawn).
+  - **The bathroom's wall over the stairs**, by the sink, about 7.5 cm further into the bathroom than drawn before, for more room over
+    the stairs (the client, 29 Oct: "roughly 5-10 more cm").
 - **Both gardens:** the back (about 25 m, the photos) and the front (the agent's photo, below; sizes to come).
 
 ## Floors (the agent's plans)
@@ -159,8 +163,8 @@ the door to the hall at the west. In mm (the sketch isn't to scale: trust the nu
 ## The garden (left and right as seen from the house)
 
 - A lawn about the width of the house, running away from it; a paved path down the left side.
-- Cordylines (cabbage palms) by the path, a big clump near the house: next door's (west), just over our fence, its crown over our path (the
-  view from upstairs, V1.4). **No patio across the back** (the agent's photo of the back, 25 Oct):
+- Cordylines (cabbage palms) by the path, a big clump near the house, in our garden by the path (the client, 29 Oct 2026: "the palm tree is in my
+  garden and not next door"). **No patio across the back** (the agent's photo of the back, 25 Oct):
   the lawn runs to the house wall and the concrete path runs down the left (looking out) from the back door to the end; the round
   table and chairs in the view photos stand by the house on that side (to confirm).
 - Fences: close-board, about 180 high, on the left (looking out); a lower slatted fence, about 120, on the right, with a timber gate

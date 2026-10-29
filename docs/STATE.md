@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.7 (29 Oct 2026)
+**Version:** V1.8 (29 Oct 2026)
 
 ## Where it lives
 
@@ -48,7 +48,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   you type (the shared page's database, or this device and a link from Send), in the V1 app's format, so `pull_edits.py` reads both.
 - **Outside (V1.3, V1.4):** the whole house is always by day, under a real sky with the sun from the south-west (its light and shadows too, so the back is in shade), on ground that runs to a
   hazy horizon (the street's level in front, the garden's behind, the slope between); the lawn green as the back photo, the fences
-  boarded, next door's cordyline over our right-hand fence (`survey_data.PLANTS`). With Gardens: the far end's trees, the far fences, the low
+  boarded, the cordyline in our garden by the path (`survey_data.PLANTS`). With Gardens: the far end's trees, the far fences, the low
   grey-roofed building past them; always: the valley's trees and the hill of houses opposite, in haze (`survey_data.BEYOND`). Inside, the rooms keep the time you set.
 - **Out of the living room's window (V1.5):** by day, from inside, the modelled outside (the garden, the trees, the valley, the hill);
   by evening the dusk plane as before. Next door's lawns, fences, trampoline and sheds show through it too (V1.6).
@@ -93,7 +93,7 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 
 1. When happy, archive `DIY` (Settings → Archive).
 2. From each iPhone, the site with `?perf` added, after opening the house once: a screenshot of the corner box (Phase 4's real numbers).
-3. Still to measure (all in Measure): the bathroom's ceiling over the toilet and the slope's start, the vanity's width, the bath's length;
+3. Still to measure (all in Measure): how far the boiler cupboard sticks into bedroom 2; the bathroom's ceiling over the toilet and the slope's start, the vanity's width, the bath's length;
    the landing's door widths and the wall between the bedroom doors' frames; the tapestry's drop; the hall radiator; the master from the
    wardrobes to the front wall; the alcove; bedroom 2's length; a stair tread; the meter and bin cupboards; the living room's side-wall socket.
 4. Decide: where the side-wall socket goes; near-photo pictures (minutes each) or not; whether the house's tap-a-piece size edit comes back.

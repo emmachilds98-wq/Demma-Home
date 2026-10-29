@@ -31,14 +31,14 @@ AGENT_OVER = round((4.95 / 4.67 + 3.65 / 3.47) / 2, 3)  # the agent's labels rea
 LEVELS = dict(lower=-260.0, ground=0.0, first=260.0, ceil=235.0, slab=25.0, garage=-15.0, drive=-15.0, lawn=-260.0)
 
 # V1.3: the plants in the gardens (B, E until measured; trees aren't for the tape, so no Measure rows). The cordyline: the back photo
-# (photo_house_rear_24oct.jpg) shows it over the right-hand (west) fence about 4.5 m out from the house, and the view from upstairs
-# (photo_view_full_24oct.jpg) puts it in next door's gravel garden, just over our fence (V1.4; it stood in ours): about 5.6 m tall,
-# forking at about 2 m into six heads of long narrow leaves (each about 110 long), the crown about 3.8 m across, overhanging our side.
+# (photo_house_rear_24oct.jpg) shows it by the path near the right-hand (west) fence about 4.5 m out from the house. It is ours (the
+# client, 29 Oct 2026: "the palm tree is in my garden and not next door"; V1.4 had read the view from upstairs as next door's): about
+# 5.6 m tall, forking at about 2 m into six heads of long narrow leaves (each about 110 long), the crown about 3.8 m across.
 # V1.4, the far end (the view photos, on v48's fitted camera (garden_window.py, in git history): the lawn runs to the trees at about 17 m, the far fence at
 # 25): a conifer just right of our garden's middle, about 19 m out, about 11 m tall; behind it to the left a clump of four tall pale
 # stems in leaf by summer (photo_garden_summer_24oct.jpg), about 15 m; next door's (west) dark evergreen at its end, about 7.5 m
-PLANTS = [dict(id="cordyline", kind="cordyline", x=610.0, y=-260.0, z=-787.0, h=560.0, fork=200.0, heads=6, spread=380.0, r=13.0, leaf=110.0,
-               src="B: the back photo (photo_house_rear_24oct.jpg) sized against the house; next door's: the view from upstairs (E)"),
+PLANTS = [dict(id="cordyline", kind="cordyline", x=370.0, y=-260.0, z=-787.0, h=560.0, fork=200.0, heads=6, spread=380.0, r=13.0, leaf=110.0,
+               src="B: the back photo (photo_house_rear_24oct.jpg) sized against the house; in our garden: the client (E)"),
           dict(id="conifer", kind="conifer", x=190.0, y=-260.0, z=-2240.0, h=1100.0, spread=360.0, r=18.0, leaf=55.0,
                src="B: the view photos (photo_view_full_24oct.jpg), on the fitted camera (E)"),
           dict(id="end_trees", kind="broadleaf", x=300.0, y=-260.0, z=-2420.0, h=1500.0, spread=900.0, stems=4, r=14.0, leaf=70.0, cards=1800,
@@ -298,7 +298,7 @@ FIT_DOORS = {"kitchen_door": (-100.5, -37.1),   # v73, the client: "shift the do
              # leaf), the 15 kept, the master's door 10 nearer the switch (the switch stays: 6 off the frame now)
              # v81, the client: "further adjust the boiler cupboard door to fit between the two bedrooms without moving bedroom doors":
              # its frames meet theirs (the 15 gone), the leaf 73 (E: a 711 leaf in its lining), the cupboard 85 behind it
-             "airing_door": (64.5, 137.5),                  # v76: the cupboard 60 (client), its door 48 (E), centred; v78b 70 and 58
+             "airing_door": (64.5, 112.5),                  # v76: the cupboard 60 (client), its door 48 (E), centred; v78b 70 and 58; V1.8 48 (the cupboard back to the wardrobes' line)
              # v78, the client: "adjust my bedroom door/master bedroom and boiler cupboard door to fit better within their gaps": the
              # frames as their v69 words, edge to edge: bedroom 2's 3 off the corner, the cupboard's straight after (no sliver between),
              # 15, the master's (76, as bedroom 2's: a 762 door, E), 40 to the corridor's end
@@ -311,8 +311,14 @@ FIT_DOOR_LINE = {"bath_door": -35.65}                # v76: in the bathroom's fr
 # whiteboard; the banister ends at it) in line with the door, its side showing, and the bathroom's wall over the stairs a little behind it,
 # over the bottom step (the LED strip along its foot): the stairwell opens from the living room's stair front (z -41, its ceiling opening),
 # the bathroom's corner over the stairs (this piece) ends 3.15 short of it for that wall. Bedroom 2's door round the corner as before.
-BATH_1 = dict(x=(408.0, 467.0), z=(-309.0, -44.15))
+# V1.8, the client: "make the wall that comes into the bathroom next to the sink come further into the room leaving more space in the
+# alcove above the stairs, by roughly 5-10 more cm": its wall over the stairs 7.5 further into the bathroom (was -44.15)
+BATH_1 = dict(x=(408.0, 467.0), z=(-309.0, -51.65))
 BED2_1 = None                                         # v76: bedroom 2's door fits its front wall again (v75's nook gone)
+# V1.8, the client: "the boiler cupboard on first floor also sticks out into both bedrooms, it is inline with the wardrobe front in the
+# master bedroom and stick out in the bedroom 2 although unsure of size" ("adjust as needed"): its side in the master flush with the
+# wardrobes' front, into bedroom 2 by into_bed2 (E, in Measure); its walls 4 (bedroom 2) and 6 (the master) as before; its door narrower
+AIRING = dict(into_bed2=10.0, wall_bed2=4.0, wall_master=6.0)
 MASTER_1 = dict(x=(202.0, 251.0), z=(268.1, 499.4))   # v73: the master past its alcove by the door (the wall 19 in for the office)
 SWITCHES_AT = {("master_door", "landing"): 237.4}   # v72, the client: the master's switch in the middle of the gap to the corridor's end
 METERS = dict(electric=dict(w=28.0, h=50.0, d=18.0, y=115.0), gas=dict(w=26.0, h=36.0, d=16.0, y=25.0),   # v69: to fit the 38-wide cupboard

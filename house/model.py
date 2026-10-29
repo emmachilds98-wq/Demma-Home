@@ -100,6 +100,14 @@ def rooms(floor):
             out.append(dict(id="bed2_1", room="bed2", x0=b1["x"][0], x1=b1["x"][1], z0=b1["z"][0], z1=b1["z"][1], name="", use=""))
         b_ = D.BATH_1                                            # v77: the bathroom's corner over the bottom of the flight
         out.append(dict(id="bathroom_1", room="bathroom", x0=b_["x"][0], x1=b_["x"][1], z0=b_["z"][0], z1=b_["z"][1], name="", use=""))
+        A, by = D.AIRING, {r["id"]: r for r in out}             # V1.8: the boiler cupboard out into both bedrooms (survey_data.AIRING)
+        wf = by["master"]["z0"] + D.MASTER["wardrobes"]["d"]     # in the master, in line with the wardrobes' front
+        bz = by["bed2"]["z1"] - A["into_bed2"]                   # into bedroom 2
+        a, b2 = by["airing"], by["bed2"]
+        out.append(dict(id="bed2_1", room="bed2", x0=b2["x0"], x1=a["x0"], z0=bz, z1=b2["z1"], name="", use=""))   # beside it, to the old wall
+        b2["z1"] = bz
+        a["z0"], a["z1"] = bz + A["wall_bed2"], wf                 # its end at the wardrobes' front, the wall's face just past it
+        by["master_b"]["z0"] = wf + A["wall_master"]
         m1 = D.MASTER_1                                          # v73: the master past the little alcove by its door
         out.append(dict(id="master_1", room="master", x0=m1["x"][0], x1=m1["x"][1], z0=m1["z"][0], z1=m1["z"][1], name="", use=""))
     if floor == "lower":                                         # v80: the store on under the flight's top steps, to the hall's door down
