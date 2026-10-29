@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.5 (28 Oct 2026)
+**Version:** V1.6 (29 Oct 2026)
 
 ## Where it lives
 
@@ -51,7 +51,9 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   boarded, next door's cordyline over our right-hand fence (`survey_data.PLANTS`). With Gardens: the far end's trees, the far fences, the low
   grey-roofed building past them; always: the valley's trees and the hill of houses opposite, in haze (`survey_data.BEYOND`). Inside, the rooms keep the time you set.
 - **Out of the living room's window (V1.5):** by day, from inside, the modelled outside (the garden, the trees, the valley, the hill);
-  by evening the dusk plane as before.
+  by evening the dusk plane as before. Next door's lawns, fences, trampoline and sheds show through it too (V1.6).
+- **Be there (V1.6):** every room, the living room too, has a fourth way to see it beside In it · Above · On its own: from its door at
+  standing eye height (160), a wide lens; dragging looks round from where you stand.
 - **Its look (V1.1):** CC0 photos over the drawn textures (oak, hessian, carpets, the cord's and the plaster's relief), each scaled to its
   part's own colour; rounded edges on every box; the iPhones get the shade and glow when their frames in HD are under 14 ms.
 - **Not brought across yet:** the V1 app's tap-a-piece size edit for the house (Measure covers the guessed sizes). `room3d_page.embed()`

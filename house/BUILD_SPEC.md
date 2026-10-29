@@ -136,6 +136,10 @@ in place of v56's plain sky; by evening the dusk plane as before (`room3d.js` `r
 (`photo_garden_window_24oct.jpg`): the cordyline left, the path and lawn, the end trees, the dark fence right. 25 more draws by day. The
 garden photo (`GARDEN_ON`) stays off for good. Next: the view photos laid on the hill.
 
+**V1.6: the gardens round ours.** From the view photos: the round table and three folding chairs by the house (with Gardens);
+next door's trampoline and two sheds (with Next door); and through the living room's window, next door's back lawns and fences from the
+house file's street (`export3d` `next_gardens`). `survey_data.GARDEN_THINGS`, `buildThings`, `buildNextGardens`.
+
 
 - Terrain as a height field: the street level at the front (0), the slope down the alley to the lawn (−260 at the back wall), the back
   garden (25 m, width of the plot from the survey), the front drive and lawn; the alley's steps from the survey.

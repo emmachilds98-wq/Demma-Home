@@ -46,6 +46,10 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
     e["ceil"] = model.CEIL
     e["plants"] = getattr(model.D, "PLANTS", [])                # V1.3: the gardens' plants (survey_data.PLANTS: where, how big, the source)
     e["beyond"] = getattr(model.D, "BEYOND", None)               # V1.4: past the far fence (survey_data.BEYOND): the low building, the hill
+    e["things"] = getattr(model.D, "GARDEN_THINGS", [])          # V1.6: the table and chairs, next door's trampoline and sheds
+    st = e["floors"].get("street", {}).get("boxes", {})          # V1.6: next door's back lawns and fences, for the living room's window
+    lawn = model.D.LEVELS["lawn"]
+    e["next_gardens"] = {k: [b for b in st.get(k, []) if b[1] <= lawn + 1 and b[4] <= lawn + 200] for k in ("lawn", "fence")}
     e.update(front=model.RO["s"], back=model.RO["n"], garage=[0.0, next(r["x1"] for r in model.rooms("ground") if r["id"] == "garage")], hall=[model.D.WALL_HALL, model.RO["w"]], drive=model.D.LEVELS["drive"], lawn=model.D.LEVELS["lawn"])   # V1.3: the ground beyond, at the street's and the garden's levels
     return e
 
