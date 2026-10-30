@@ -69,7 +69,8 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
     tree tapestry hangs on it); where the box ends, the doorway down to the lower stairs with a grille over it (**an empty frame, no door: the client's photos of
     30 Oct, only the old hinges' marks**; removed V1.12); by the front door the
     mirror over a black bench on the party wall, a shoe rack each side of the front door, the radiator on the other wall, a pendant bulb.
-    The front door from inside: cream, four panels and two small lights, a brass letterbox.
+    The front door from inside: cream, four panels and two small lights, a brass letterbox (modelled V1.16: the lights through the door, the
+    letterbox in the rail between the panels).
   - **The stairs (the photos):** the living room's flight runs straight up between a wall and a white newel and banister, grey carpet,
     an LED strip along it; the lower flight runs down under it between walls, grey carpet, a handrail on the left going down, laminate at
     the bottom. Fitted v67: the top landing ends where the hall's photo puts the door down (the plans' landing).

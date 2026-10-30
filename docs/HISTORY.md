@@ -153,3 +153,5 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
   (they were low chairs; the photos show bar stools), the guitars' bodies. The client: "continue upgrading".
 - **V1.15** (30 Oct 2026): by evening a room's windows show the night (the WC's and the bathroom's showed the garden in daylight), and
   switching day or evening in a room updates them at once; the gallery by evening (`--evening`).
+- **V1.16** (30 Oct 2026): the front door as the hall photo: cream inside, its two small lights through it (they were painted on its porch
+  face only), four raised panels, the letterbox in the rail, a lever each side. The client: "continue upgrading".
