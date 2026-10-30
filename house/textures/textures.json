@@ -112,5 +112,17 @@
   "size": 1.6,
   "url": "https://polyhaven.com/a/white_plaster_02",
   "licence": "CC0"
+ },
+ "worktop": {
+  "asset": "granite_tile_03",
+  "size": 0.6,
+  "url": "https://polyhaven.com/a/granite_tile_03",
+  "licence": "CC0"
+ },
+ "artex": {
+  "asset": "made by build_textures.stipple",
+  "size": 0.5,
+  "url": "",
+  "licence": "ours"
  }
 }

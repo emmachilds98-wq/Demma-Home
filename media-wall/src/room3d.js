@@ -3010,6 +3010,14 @@ function outdoor() {
     buildBeyond(null, g);                                                                           // V1.4: the hill opposite
     scene.add(g);
   }
+  if (house && !OUT.skyEnv) {   // V1.13 (QUALITY_PLAN Q3): outside, the house reflects its own sky: an environment made from a sky like the
+    // one shown, at the room reflection's size (so swapping them rebuilds no shaders), once
+    const pm = new THREE.PMREMGenerator(gl), sk = new Sky(), sc = new THREE.Scene(), u = sk.material.uniforms, u0 = OUT.sky.material.uniforms;
+    for (const k of ["turbidity", "rayleigh", "mieCoefficient", "mieDirectionalG"]) u[k].value = u0[k].value;
+    u.sunPosition.value.copy(dayLight.position).sub(dayLight.target.position).normalize(); sk.scale.setScalar(50); sc.add(sk);
+    OUT.skyEnv = pm.fromScene(sc, 0.02, 0.1, 100).texture; pm.dispose(); sk.geometry.dispose(); sk.material.dispose();
+  }
+  if (HMATS && OUT.skyEnv) { const e = house ? OUT.skyEnv : houseEnv(); for (const m of Object.values(HMATS)) if (m.envMap && m.envMap !== e) m.envMap = e; }
   const liv = room && !HOUSEV(S.view);   // the living room is drawn on its own: its outside brings the gardens; a house room has the house's
   if (liv && !OUT.plants) { OUT.plants = new THREE.Group(); buildPlants(OUT.plants); buildBeyond(OUT.plants, null);   // V1.6: and the gardens round ours
     buildThings(OUT.plants, "ours"); buildThings(OUT.plants, "next"); buildNextGardens(OUT.plants); scene.add(OUT.plants); }   // the house's own are in its outside, built with it
@@ -5805,10 +5813,10 @@ function buildHouse() {
       const m = reg(new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, toneMapped: false }));
       m.clippingPlanes = []; m.userData.hk = "contact"; return m; };
     const m3 = {}, mat3 = k => m3[k] || (m3[k] = k === "contact" ? contactMat() : (() => { const [c, r] = H3.mats[k] || ["#cccccc", 0.9], gl3 = k === "glass", T = houseTex(k);
-      const m = reg(new THREE.MeshStandardMaterial({ color: T ? "#ffffff" : c, map: T ? T.map : null, bumpMap: T && T.bump ? T.map : null, bumpScale: T ? T.bump : 1, normalMap: T && T.normal || null, roughness: r, metalness: k === "brass" || k === "chrome" || k === "steel" ? 0.8 : 0, transparent: gl3, opacity: gl3 ? 0.3 : 1, depthWrite: !gl3, side: THREE.DoubleSide,
+      const m = reg(new THREE.MeshStandardMaterial({ color: T ? "#ffffff" : c, map: T ? T.map : null, bumpMap: T && T.bump ? T.map : null, bumpScale: T ? T.bump : 1, normalMap: T && T.normal || null, roughness: r, metalness: k === "brass" || k === "chrome" || k === "steel" ? 0.8 : 0, transparent: gl3, opacity: gl3 ? 0.14 : 1,   /* V1.13: clear (0.3 tinted the outside blue-green) */ depthWrite: !gl3, side: THREE.DoubleSide,
         emissive: { led: "#ffffff", pc_glow: "#cfe0ff", screen: "#1b2433" }[k] || "#000000", emissiveIntensity: { led: 1.5, pc_glow: 0.9, screen: 0.6 }[k] || 0 }));   // v60: the kitchen's LED battens glow; v61: the PC's glass, the screens
       m.envMapIntensity = 0.15;   // v60: the reflections are the living room's (its LEDs tinted the kitchen's white walls pink)
-      if (!SMALL) { m.userData.hk = k; m.envMap = houseEnv(); m.envMapIntensity = finishEnv(m); }   // v73: one neutral room, made once
+      if (!LOWD) { m.userData.hk = k; m.envMap = houseEnv(); m.envMapIntensity = finishEnv(m); }   // v73: one neutral room, made once (V1.13: the iPhones too)
       m.clippingPlanes = []; m.userData.hk = k; return m; })());
     HMATS = m3;
     const put = (g, geos, m) => { if (!geos.length) return; const me = new THREE.Mesh(worldUV(mergeGeometries(geos), m.userData.hk), m); me.receiveShadow = true;

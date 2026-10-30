@@ -21,7 +21,12 @@ TINT = {"carpet_grey": ("Carpet012", 0.5, "#6f6f73"), "carpet": ("Carpet012", 0.
         # plaster is all but even: its look is the relief; the pine's knots softened; the oak's fine grain brought up)
         "pine": ("coated_pine", 1.0, "#c99a55", 1, 0.55), "pine_dark": ("coated_pine", 1.0, "#7a5a30", 1, 0.55),
         "birch": ("white_maple_veneer", 0.8, "#dcc8a2", 1, 1.3), "oak": ("oak_veneer_01", 1.0, "#b9864f", 1, 1.6),
-        "paint": ("white_plaster_02", 1.6, "#f1ede5", 4, 0.12), "ceiling": ("white_plaster_02", 1.6, "#f3f2ee", 4, 0.12)}
+        "paint": ("white_plaster_02", 1.6, "#f1ede5", 1, 0.08), "ceiling": ("white_plaster_02", 1.6, "#f3f2ee", 1, 0.08),   # V1.13: the relief as photographed (4× read as rough render up close)
+        "worktop": ("granite_tile_03", 0.6, "#26282a", 1, 1.4)}   # V1.13 (QUALITY_PLAN Q2): the kitchen's black speckled worktop (one tile of it)
+CROP = {"granite_tile_03": (0.02, 0.02, 0.31, 0.31)}   # V1.13: a part of the photo, as fractions (one tile, clear of the grout lines)
+# V1.13 (Q2): made here, not photographed: artex (stipple), the kitchen's and the lower landing's ceilings in the client's photos of 30 Oct:
+# key: (real size m, colour); a height field of soft random peaks, its normal map and a faint shade in the hollows
+STIPPLE = {"artex": (0.5, "#f3f2ee")}
 SRC = {"Carpet012": "https://ambientcg.com/view?id=Carpet012"}
 PX = {}                                                          # sizes other than 1024 px (V1.11, the client: "i dont want these low res versions, best textures"; was 512)
 # V1.1: the living room's own surfaces, the photo as it is (room3d.js matches each to its drawn texture's average colour as it loads,
@@ -73,6 +78,37 @@ def tint(im, col, k=1.0):
     return Image.merge("RGB", [g.point(lambda v, k=k: min(255, int(v * k / m))) for k in c])
 
 
+def load(src, aid, kind):
+    """<asset>_diff.jpg or _nor.jpg, cropped when CROP says"""
+    im = Image.open(src / f"{aid}_{kind}.jpg").convert("RGB")
+    if aid in CROP:
+        x0, y0, x1, y1 = CROP[aid]; im = im.crop((int(x0 * im.width), int(y0 * im.height), int(x1 * im.width), int(y1 * im.height)))
+    return im
+
+
+def stipple(px, col, seed=7):
+    """artex: soft peaks (blurred random dots, clipped, so the tops stay rounded), the normal map from its slopes, the colour shaded
+    3 % in the hollows; tiles seamlessly (the dots wrap)"""
+    import numpy as np
+    from PIL import ImageFilter
+    rng = np.random.default_rng(seed)
+    a = np.zeros((px, px), np.float32)
+    n = px * px // 30
+    ys, xs = rng.integers(0, px, n), rng.integers(0, px, n)
+    a[ys, xs] = rng.uniform(0.4, 1.0, n)
+    big = np.tile(a, (3, 3))                                       # blur across the seams, then take the middle
+    im = Image.fromarray((big * 255).astype("uint8")).filter(ImageFilter.GaussianBlur(px / 340))
+    h = np.asarray(im, np.float32)[px:2 * px, px:2 * px] / 255
+    h = np.clip(h / (h.max() or 1) * 3, 0, 1)
+    gy, gx = np.gradient(h)
+    k = 6.0
+    nrm = np.dstack([-gx * k, gy * k, np.ones_like(h)]); nrm /= np.linalg.norm(nrm, axis=-1, keepdims=True)
+    c = np.array([int(col[i:i + 2], 16) for i in (1, 3, 5)], np.float32)
+    shade = 0.97 + 0.03 * h
+    return (Image.fromarray(np.clip(c * shade[..., None], 0, 255).astype("uint8")),
+            Image.fromarray(((nrm + 1) * 127.5).clip(0, 255).astype("uint8")))
+
+
 def main(src):
     src = pathlib.Path(src); meta = json.loads((HERE / "textures.json").read_text()) if (HERE / "textures.json").exists() else {}
     jobs = [(k, a, sz, lambda d, t=t: tone(d, *t), 1) for k, (a, sz, *t) in SET.items()] + [(k, a, sz, lambda d, c=c, x=x: tint(d, c, *x[1:2]), (x or [1])[0]) for k, (a, sz, c, *x) in TINT.items()]
@@ -80,11 +116,11 @@ def main(src):
         if not (src / f"{aid}_diff.jpg").exists():          # keep what's built when a download isn't to hand
             continue
         px = PX.get(key, 1024)
-        d = Image.open(src / f"{aid}_diff.jpg").convert("RGB").resize((px, px), Image.LANCZOS)
+        d = load(src, aid, "diff").resize((px, px), Image.LANCZOS)
         look(d).save(HERE / f"{key}_map.jpg", quality=78, optimize=True)
         n = src / f"{aid}_nor.jpg"
         if n.exists():
-            relief(Image.open(n).convert("RGB").resize((px, px), Image.LANCZOS), rk).save(HERE / f"{key}_nor.jpg", quality=82, optimize=True)
+            relief(load(src, aid, "nor").resize((px, px), Image.LANCZOS), rk).save(HERE / f"{key}_nor.jpg", quality=82, optimize=True)
         meta[key] = dict(asset=aid, size=size, url=SRC.get(aid, f"https://polyhaven.com/a/{aid}"), licence="CC0")
     for key, (aid, size, mpx, npx, tq, rk) in PLAIN.items():
         if not (src / f"{aid}_nor.jpg").exists():
@@ -96,6 +132,10 @@ def main(src):
             im = relief(im, rk) if kind == "nor" else im
             (turn(im, kind == "nor") if tq else im).save(HERE / f"{key}_{kind}.jpg", quality=76 if kind == "map" else 80, optimize=True)
         meta[key] = dict(asset=aid, size=size, url=SRC.get(aid, f"https://polyhaven.com/a/{aid}"), licence="CC0")
+    for key, (size, col) in STIPPLE.items():
+        m, n = stipple(1024, col)
+        m.save(HERE / f"{key}_map.jpg", quality=82, optimize=True); n.save(HERE / f"{key}_nor.jpg", quality=84, optimize=True)
+        meta[key] = dict(asset="made by build_textures.stipple", size=size, url="", licence="ours")
     (HERE / "textures.json").write_text(json.dumps(meta, indent=1))
     print("textures", len(meta))
 

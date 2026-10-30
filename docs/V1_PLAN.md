@@ -18,6 +18,8 @@ in text, so an agent can build without opening it). This plan as a page for the 
 
 ## 0. Status board (update this table in every PR)
 
+The quality of the 3D (surfaces, light, the photos' details) has its own plan and board: `docs/QUALITY_PLAN.md`.
+
 | Phase | What | Status | PR | Notes |
 |---|---|---|---|---|
 | 0 | Fresh start: the name, the docs, the repo cleansed | **In review** (27 Oct) | V1 | The client picked A: the new repo `Demma-Home`. Name V1 everywhere; `docs/STATE.md`, `DECISIONS.md`, `HISTORY.md`; no outputs in git; the workflow builds and publishes. Left for the client: Pages on (Actions), archive `DIY` |

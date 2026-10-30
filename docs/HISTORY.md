@@ -146,3 +146,6 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
   lawn, carpets) had shown as their flat mean colour, a photo sent into a texture too small for it; now caught by the site check. The door
   at the top of the stairs down taken out (the client's photos: an empty frame), its frame and grille kept; 11 new photos in (private
   details blurred).
+- **V1.13** (30 Oct 2026): the quality plan (`docs/QUALITY_PLAN.md`; the client: "write a full upgrade plan to get the house to the best
+  possible quality 3D model and execute it"), its Q2 to Q4: artex ceilings where the photos show them, the speckled worktop, clear glass,
+  the house reflecting its sky outside, and `tools/gallery.py`; the walls' plaster relief as photographed (V1.12's read as rough render).
