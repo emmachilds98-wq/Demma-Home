@@ -13,7 +13,7 @@ live when complete". Earlier the same day: "best textures, quality and performan
 | Q5 | Speed with quality | Not started | Compressed textures (KTX2, about a quarter of the graphics memory) once the photos settle; the iPhones' real numbers first (`?perf`) |
 | Q6 | Shape | In progress (V1.14) | Done from the photos and standard sizes: the desk chairs (five-star base on castors, gas lift, padded seat, curved back, arms), the kitchen's bar stools (bucket seat, high back, chrome pole, foot ring, round base), the guitars' bodies (their bouts and waist, the sound hole, the pickguard); V1.16 the front door as the hall photo (cream inside, its two lights through it, four raised panels, the letterbox in the rail, a lever each side). Needs the client: the rest (beds, monitors, the sofa-bed) from measurements or product names; doors' panels where the photos show them |
 | Q7 | Out of the front | Needs the client | What's opposite the house from the front windows (a photo out of the master bedroom's window); now the ground runs to the horizon |
-| Q8 | Every size measured | Needs the client | The 19 guesses in Measure (the dock's fifth button) |
+| Q8 | Every size measured | Needs the client | The 20 guesses in Measure (the dock's fifth button) |
 
 **Not doing:** a path-traced "Render photo" (BUILD_SPEC phase 7): minutes of graphics card a picture and a large library, for pictures the
 client already takes in View.

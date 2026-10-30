@@ -106,8 +106,8 @@ def rooms(floor):
         a, b2 = by["airing"], by["bed2"]
         out.append(dict(id="bed2_1", room="bed2", x0=b2["x0"], x1=a["x0"], z0=bz, z1=b2["z1"], name="", use=""))   # beside it, to the old wall
         b2["z1"] = bz
-        a["z0"], a["z1"] = bz + A["wall_bed2"], wf                 # its end at the wardrobes' front, the wall's face just past it
-        by["master_b"]["z0"] = wf + A["wall_master"]
+        a["z0"], a["z1"] = bz + A["wall_bed2"], wf + A.get("into_master", A["wall_master"]) - A["wall_master"]   # V1.18: its wall's face past the wardrobes' front
+        by["master_b"]["z0"] = a["z1"] + A["wall_master"]
         m1 = D.MASTER_1                                          # v73: the master past the little alcove by its door
         out.append(dict(id="master_1", room="master", x0=m1["x"][0], x1=m1["x"][1], z0=m1["z"][0], z1=m1["z"][1], name="", use=""))
     if floor == "lower":                                         # v80: the store on under the flight's top steps, to the hall's door down
@@ -349,12 +349,23 @@ def walls_for(o, floor, rs, ds, y0, y1):
             l0, l1 = sorted((line, line + out_dir * t))
             holes = [(d["a"], d["b"], y0 - SLAB, y0 + D.DOOR_H) for d in ds if d["axis"] == axis and l0 - 16 <= d["line"] <= l1 + 16]
             ext = 0 if axis == "z" else t        # close the corners
+            # V1.18, the client: "take the extra piece overlap on the wall of the bathroom out": not on into the room's own other piece
+            # (the bathroom's wall over the stairs stood 10.6 into the bathroom by the sink)
+            e0_, e1_ = ext, ext
+            for q in rs:
+                if q is not r and q["room"] == r["room"] and axis == "x" and q["z0"] < l1 and q["z1"] > l0:
+                    if abs(q["x1"] - a0) < 1: e0_ = 0
+                    if abs(q["x0"] - a1) < 1: e1_ = 0
             # v78: an opening that reaches the edge's end runs on past it, so no stub of wall stands loose in the room beyond (a
             # post stood over the master's bed where its three pieces meet)
             holes += [(s0 - (ext + 1 if s0 <= a0 + 1 else 0), s1 + (ext + 1 if s1 >= a1 - 1 else 0), y0 - SLAB - 1, y1 + 1) for s0, s1 in skip]
+            if floor == "ground" and r["id"] == "hall" and axis == "x" and line == r["z0"]:
+                # V1.18, the client: "take this wall out of the stairwell": the living room's flight runs on into the hall's box through
+                # it, so it stops at the box's side
+                holes.append((stair_box_x(), a1 + ext + 1, y0 - SLAB - 1, y1 + 1))
             if floor == "first" and axis == "z" and DM["x"][0] < l0 and l1 < DM["x"][1]:
                 a0 = max(a0, DM["face"] + DM["t"])   # inside the dormer's face, not through it
-            for seg in _split_dormer(floor, axis, a0 - ext, a1 + ext):
+            for seg in _split_dormer(floor, axis, a0 - e0_, a1 + e1_):
                 top = y1 if floor != "first" else min(y1, _wall_top(axis, seg, l0, l1))
                 o.end()
                 wall(o, "paint", axis, l0, l1, seg[0], seg[1], y0 - SLAB, top, holes)
@@ -450,7 +461,7 @@ def outer_walls(o, floor):
         else:
             axis, line = "z", xa
             side = "e" if abs(line) < 1 else "w"
-            out = -1 if side == "e" else 1
+            out = (1 if zb > za else -1) * (1 if area > 0 else -1)   # V1.18: from the outline's winding (the lower store's step at x 408 had its brick inside the store)
             lo, hi = (za, zb) if za < zb else (zb, za)
             ea, eb = (e0, e1) if za < zb else (e1, e0)
             pa, pb = 0, 0
@@ -566,6 +577,11 @@ def _geometry():
 Gm = _geometry()                                                   # the measured living room's numbers (its door, its flight)
 
 
+def stair_box_x():
+    """The hall's face of the box round the living room's flight (its side wall's room face)."""
+    return Gm.STAIR_X[0] - 2.2
+
+
 def floors_and_fittings(o, floor, rs):
     y = FLOOR_Y[floor]
     for r in rs:
@@ -587,7 +603,7 @@ def floors_and_fittings(o, floor, rs):
         # stairs, a grille over it
         z0f = Gm.ALC_D - Gm.STAIR_D + 6
         zl1 = z0f + (Gm.STAIR_N - 1) * Gm.STAIR_GOING + Gm.LANDING_D
-        xs = Gm.STAIR_X[0] - 2.2
+        xs = stair_box_x()
         o.box("paint", xs, y - SLAB, 38.0, Gm.STAIR_X[0] - 0.4, y + CEIL, zl1)
         dx0, dx1 = D.HALL["door"]
         wall(o, "paint", "x", zl1, zl1 + 1.8, xs, WIDTH, y - SLAB, y + CEIL, [(dx0, dx1, y - SLAB, y + D.DOOR_H)])
@@ -1485,6 +1501,8 @@ def skirting(o, floor, rs):
                     cuts.append((d["a"] - 6, d["b"] + 6))
             if floor == "ground" and r["id"] == "hall" and axis == "z" and inward < 0:
                 cuts.append((r["z0"], stair()["z1"]))               # over the lower flight
+            if floor == "ground" and r["id"] == "hall" and axis == "x" and inward > 0:
+                cuts.append((stair_box_x(), r["x1"]))               # V1.18: not across the living room's flight
             if floor == "first" and axis == "x" and abs(line - BACK) < 1:     # the back: only the dormer's face, inside it
                 line = zi; cuts += [(a0, DM["x"][0] + DM["t"]), (DM["x"][1] - DM["t"], a1)]
             if floor == "first" and r["id"] == "bed2":                        # not inside the block
@@ -1569,6 +1587,8 @@ def switches(o, floor):
                 lo, hi, face, out = r["x0"], r["x1"], None, 0
                 if abs(r["z1"] - L) < 10: face, out = r["z1"], -1
                 elif abs(r["z0"] - L) < 10: face, out = r["z0"], 1
+            if floor == "ground" and r["id"] == "hall":
+                hi = min(hi, stair_box_x())                          # V1.18: the stair box ends the hall's wall by the living room's door
             if face is None or hi <= a or lo >= b:
                 continue
             p0 = b + 9 if b + 18 < hi else a - 17                    # beyond the frame, the latch side, inside the room's wall

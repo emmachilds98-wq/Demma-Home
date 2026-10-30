@@ -156,3 +156,6 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V1.16** (30 Oct 2026): the front door as the hall photo: cream inside, its two small lights through it (they were painted on its porch
   face only), four raised panels, the letterbox in the rail, a lever each side. The client: "continue upgrading".
 - **V1.17** (30 Oct 2026): the house's mirrors reflect; the build prunes older versions' renders and PDFs (`build.prune`).
+- **V1.18** (30 Oct 2026): the client's pictures: the boiler cupboard a normal size (a standard door, out 17.5 into each bedroom), the
+  wall across the living room's stairs out, the bathroom wall's stub by the sink out, the stair curtain clear of the banister, the lower
+  store's outside wall turned (`model.outer_walls` from the outline's winding).

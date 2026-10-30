@@ -292,7 +292,7 @@ WALL_HALL = 303.5     # the hall's face of the wall to the garage (M: the living
 # needed. It also actually just houses towels and boxes for stuff no boiler": the cupboard 60 (58.5-118.5, a 48 door), so the bathroom
 # end (its wall, door and the box over the stairs, in one line) 18.2 back: the landing's end z -32.5, the bathroom about 1.8 x 2.7;
 # bedroom 2's door with it, still in the corner; the master's door and its gaps as they were. Bedroom 2's door's nook gone (BED2_1 None).
-FIT = {"first": {"bathroom": dict(x1=408.0, z1=-38.8), "bed2": dict(z1=54.5), "airing": dict(x0=202.0, z0=58.5, z1=143.5), "master": dict(x1=202.0, z0=60.5),
+FIT = {"first": {"bathroom": dict(x1=408.0, z1=-38.8), "bed2": dict(z1=62.0), "airing": dict(x0=202.0, z0=58.5, z1=143.5), "master": dict(x1=202.0, z0=68.0),
                  "master_b": dict(x0=202.0, z0=149.5, z1=268.1), "bed3": dict(x0=263.7),
                  "landing": dict(x1=408.0, z0=-32.5), "first_stairs": dict(x0=408.0, z0=-41.0, z1=196.0), "landing_top": dict(x0=408.0, z0=196.0)},
                  # v66: the stairwell over the flight; v67 (the landing photos): open to the flight's top step (the plans read 170)
@@ -304,7 +304,7 @@ FIT_DOORS = {"kitchen_door": (-100.5, -37.1),   # v73, the client: "shift the do
              # leaf), the 15 kept, the master's door 10 nearer the switch (the switch stays: 6 off the frame now)
              # v81, the client: "further adjust the boiler cupboard door to fit between the two bedrooms without moving bedroom doors":
              # its frames meet theirs (the 15 gone), the leaf 73 (E: a 711 leaf in its lining), the cupboard 85 behind it
-             "airing_door": (64.5, 112.5),                  # v76: the cupboard 60 (client), its door 48 (E), centred; v78b 70 and 58; V1.8 48 (the cupboard back to the wardrobes' line)
+             "airing_door": (64.5, 135.5),                  # V1.18: a standard door (686 leaf, 71 in its lining: E), bedroom 2's frame to the master's                  # v76: the cupboard 60 (client), its door 48 (E), centred; v78b 70 and 58; V1.8 48 (the cupboard back to the wardrobes' line)
              # v78, the client: "adjust my bedroom door/master bedroom and boiler cupboard door to fit better within their gaps": the
              # frames as their v69 words, edge to edge: bedroom 2's 3 off the corner, the cupboard's straight after (no sliver between),
              # 15, the master's (76, as bedroom 2's: a 762 door, E), 40 to the corridor's end
@@ -324,7 +324,14 @@ BED2_1 = None                                         # v76: bedroom 2's door fi
 # V1.8, the client: "the boiler cupboard on first floor also sticks out into both bedrooms, it is inline with the wardrobe front in the
 # master bedroom and stick out in the bedroom 2 although unsure of size" ("adjust as needed"): its side in the master flush with the
 # wardrobes' front, into bedroom 2 by into_bed2 (E, in Measure); its walls 4 (bedroom 2) and 6 (the master) as before; its door narrower
-AIRING = dict(into_bed2=10.0, wall_bed2=4.0, wall_master=6.0)
+# V1.18, the client: "readjust the first floor boiler cupboard to normal sizing, making it stick out further into the bedroom 2 by
+# shifting the whole wall of the master bedroom and cupboard as needed ... adequate space for the boiler cupboard to have the normal sized
+# door as well as have the stick out alcove wall into both rooms" (their picture: the cupboard's master side and the wardrobes moving into
+# the master): the wall between the bedrooms (and the wardrobes on it) 7.5 into the master (bedroom 2 to z 62; the bedside keeps its 60
+# clear of the wardrobes); the cupboard's bedroom 2 side where it was, so 17.5 out into bedroom 2; its master side 17.5 past the wardrobes'
+# front too (its wall's face: into_master);
+# inside 89 × 71, a standard door (a 686 leaf, 71 in its lining, E) between bedroom 2's frame and the master's
+AIRING = dict(into_bed2=17.5, into_master=17.5, wall_bed2=4.0, wall_master=6.0)
 MASTER_1 = dict(x=(202.0, 251.0), z=(268.1, 499.4))   # v73: the master past its alcove by the door (the wall 19 in for the office)
 SWITCHES_AT = {("master_door", "landing"): 237.4}   # v72, the client: the master's switch in the middle of the gap to the corridor's end
 METERS = dict(electric=dict(w=28.0, h=50.0, d=18.0, y=115.0), gas=dict(w=26.0, h=36.0, d=16.0, y=25.0),   # v69: to fit the 38-wide cupboard

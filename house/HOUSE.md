@@ -94,8 +94,10 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
   - **Bedroom 3: the office and gaming room**, 2.04 × 2.17 (agent), the front window.
   - Airing cupboard off the landing. **The top landing is more square** than drawn (the plan shows a slim strip); **the green mark at the
     top of the stairs is the landing's rough size** (the client, 25 Oct).
-  - **The boiler cupboard sticks out into both bedrooms** (the client, 29 Oct): in the master in line with the wardrobes' front; into
-    bedroom 2 by an amount to measure (10 cm drawn).
+  - **The boiler cupboard sticks out into both bedrooms** (the client, 29 Oct; resized 30 Oct): a normal size with a standard door, the
+    wall between the bedrooms (and the wardrobes) shifted 7.5 cm into the master for it; it stands 17.5 cm out into each bedroom (to
+    measure), 89 × 71 inside.
+  - **No wall across the living room's stairs** where they run on into the hall (the client, 30 Oct).
   - **The bathroom's wall over the stairs**, by the sink, about 7.5 cm further into the bathroom than drawn before, for more room over
     the stairs (the client, 29 Oct: "roughly 5-10 more cm").
 - **Both gardens:** the back (about 25 m, the photos) and the front (the agent's photo, below; sizes to come).
@@ -360,7 +362,7 @@ the door. Also room for improvement." The gap: "Left wall behind airing cupboard
   covers the whole of that wall (the size to come). The radiator is about half a metre nearer the living room than drawn, its light
   switch above it and slightly right, between it and the shoe rack.
 - **The stair curtain (v81, the client):** a dual curtain round the foot of the living room's stairs, the bottom step and the open side
-  (an option in the 3D room).
+  (an option in the 3D room) Hung clear of the banister, which stays (30 Oct).
 
 ## Not known yet (ask the client when a room needs it)
 
