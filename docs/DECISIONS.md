@@ -59,6 +59,8 @@ take one out (to `docs/HISTORY.md`) when they change their mind.
 - **No door or wall between the landing and the stairwell** (26 Oct 2026, v77): the banister guards it.
 - **The kitchen** as their photos and notes: the bar along the door's wall, the boiler in its corner over the bar's end (26 Oct 2026, v73).
 - **The bathroom door is white** like the rest (26 Oct 2026, v73).
+- **No door at the top of the stairs down** (30 Oct 2026, V1.12: "there is no door on the stair well like that"; the photos show the
+  empty frame): the frame and the grille stay.
 - **Best quality first on the PCs and the iPhones** (30 Oct 2026, V1.11: "i dont want these low res versions, best textures, quality and
   performance on the PC and mobile"): no starting in Fast on a capable device; sharper photos; stepping down only if a device is slow.
 - **The boiler cupboard sticks out into both bedrooms**, flush with the master's wardrobes, its door narrower to fit (29 Oct 2026, V1.8: "adjust as needed").

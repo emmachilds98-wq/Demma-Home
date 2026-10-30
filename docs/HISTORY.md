@@ -143,4 +143,6 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
   sharpness while you drag; the PCs' sun shadows at 4096, the house at 2×; phones save 4K pictures.
 - **V1.12** (30 Oct 2026): real surfaces in every room ("best textures"): the walls and ceilings smooth plaster in the paint's colour, the
   pine, dark pine, birch and the office's oak from CC0 photos tinted to their colours. A fix: from V1.9 the house's photos (brick, roof,
-  lawn, carpets) had shown as their flat mean colour, a photo sent into a texture too small for it; now caught by the site check.
+  lawn, carpets) had shown as their flat mean colour, a photo sent into a texture too small for it; now caught by the site check. The door
+  at the top of the stairs down taken out (the client's photos: an empty frame), its frame and grille kept; 11 new photos in (private
+  details blurred).

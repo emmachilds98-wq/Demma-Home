@@ -591,8 +591,9 @@ def floors_and_fittings(o, floor, rs):
         o.box("paint", xs, y - SLAB, 38.0, Gm.STAIR_X[0] - 0.4, y + CEIL, zl1)
         dx0, dx1 = D.HALL["door"]
         wall(o, "paint", "x", zl1, zl1 + 1.8, xs, WIDTH, y - SLAB, y + CEIL, [(dx0, dx1, y - SLAB, y + D.DOOR_H)])
-        o.box("door_white", dx0 + 0.8, y + 0.5, zl1 + 0.2, dx1 - 0.8, y + D.DOOR_H - 0.8, zl1 + 1.6)
-        o.box("chrome", dx0 + 4, y + 100, zl1 + 1.6, dx0 + 13, y + 102, zl1 + 5)
+        if D.HALL.get("door_leaf", True):   # V1.12, the client's photos: the frame stands empty (its hinges' marks only)
+            o.box("door_white", dx0 + 0.8, y + 0.5, zl1 + 0.2, dx1 - 0.8, y + D.DOOR_H - 0.8, zl1 + 1.6)
+            o.box("chrome", dx0 + 4, y + 100, zl1 + 1.6, dx0 + 13, y + 102, zl1 + 5)
         for xa, xb, ya, yb in ((dx0 - 6, dx0 + 0.8, y, y + D.DOOR_H + 6), (dx1 - 0.8, dx1 + 6, y, y + D.DOOR_H + 6), (dx0 - 6, dx1 + 6, y + D.DOOR_H - 0.8, y + D.DOOR_H + 6)):
             o.box("upvc", xa, ya, zl1 + 1.8, xb, yb, zl1 + 3.0)
         o.box("grille", dx0 + 8, y + D.DOOR_H + 9, zl1 + 1.8, dx1 - 8, y + D.DOOR_H + 27, zl1 + 2.4)

@@ -66,7 +66,8 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
     white front door ahead. Modelled v65. The right cupboard takes a 240 L wheelie bin (just: to measure); the left reads 39 wide
     inside, so recycling boxes (which bins? to ask).
   - **The hall (the client's photos, 25 Oct; modelled v67):** grey carpet; the living room's stairs boxed in on the hall side (an orange
-    tree tapestry hangs on it); where the box ends, the white door down to the lower stairs with a grille over it; by the front door the
+    tree tapestry hangs on it); where the box ends, the doorway down to the lower stairs with a grille over it (**an empty frame, no door: the client's photos of
+    30 Oct, only the old hinges' marks**; removed V1.12); by the front door the
     mirror over a black bench on the party wall, a shoe rack each side of the front door, the radiator on the other wall, a pendant bulb.
     The front door from inside: cream, four panels and two small lights, a brass letterbox.
   - **The stairs (the photos):** the living room's flight runs straight up between a wall and a white newel and banister, grey carpet,

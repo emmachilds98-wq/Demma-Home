@@ -57,6 +57,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Out of every window (V1.10):** by day, standing in any room (In it, Be there), its windows show the outside: the sky, the
   ground to the horizon, the hill and the valley's trees, the gardens, next door and the street. Be there draws only what the room sees,
   as In it does (the kitchen 150 draws, was 358).
+- **The hall's doorway down (V1.12):** an empty frame under its grille, no door (the client's photos of 30 Oct; `HALL["door_leaf"]`).
 - **Its look (V1.1, V1.11, V1.12):** CC0 photos over the drawn textures, from the 2k sources at 1024 px (the living room's oak 2048):
   the living room's oak, hessian, carpets, cord and plaster; the house's brick, roof, lawn, drive, road, paving, laminate and carpets; and
   (V1.12) every room's walls and ceilings (smooth plaster in the paint's colour), the pine and dark pine, the birch and the office's oak,
