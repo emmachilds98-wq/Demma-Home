@@ -155,3 +155,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
   switching day or evening in a room updates them at once; the gallery by evening (`--evening`).
 - **V1.16** (30 Oct 2026): the front door as the hall photo: cream inside, its two small lights through it (they were painted on its porch
   face only), four raised panels, the letterbox in the rail, a lever each side. The client: "continue upgrading".
+- **V1.17** (30 Oct 2026): the house's mirrors reflect; the build prunes older versions' renders and PDFs (`build.prune`).

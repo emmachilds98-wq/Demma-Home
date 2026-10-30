@@ -42,6 +42,22 @@ def artifact():
     (SITE / "artifact.html").write_text(page)
 
 
+def prune(out):
+    """V1.17: only the newest version of each render and PDF stays (each round left a set: 549 MB by V1.16; a --fast build keeps the
+    newest renders, build_doc.latest)"""
+    newest = {}
+    for f in out.iterdir():
+        m = re.search(r"(?<![0-9A-Za-z])V(\d+(?:\.\d+)?)(?![0-9.])", f.name)
+        if f.is_file() and m:
+            key, ver = f.name.replace(m.group(0), "V*", 1), tuple(int(n) for n in m.group(1).split("."))
+            if key in newest and newest[key][0] > ver:
+                f.unlink()
+            else:
+                if key in newest:
+                    newest[key][1].unlink()
+                newest[key] = (ver, f)
+
+
 def main(argv):
     fast = "--fast" in argv
     t0 = time.time()
@@ -67,6 +83,7 @@ def main(argv):
     run(["export_house.py", SITE / "data/house.json"], cwd=HOUSE)
     if not fast or not (HOUSE / "out/Whole_House_HD_Plan.pdf").exists():
         run(["build_report.py"], cwd=HOUSE)                               # the whole-house report (PDF)
+    prune(SRC.parent / "out")
     for d in ("media-wall/out", "media-wall/src/art", "house/out"):
         if (SITE / d).exists():
             shutil.rmtree(SITE / d)

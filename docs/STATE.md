@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.16 (30 Oct 2026)
+**Version:** V1.17 (30 Oct 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -64,6 +64,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   every room by day in HD on one sheet (`_shots/gallery.jpg`).
 - **The front door (V1.16):** as the hall photo: cream to the hall, white to the porch, its two lights through it (seen from both
   sides), four raised panels, the brass letterbox in the rail between them, a lever each side.
+- **Mirrors (V1.17):** the hall's and the bathroom's mirrors reflect a room (they were flat grey, the hall's clear glass).
 - **By evening (V1.15):** standing in a room, its windows show the night (the garden showed in daylight through the WC's and the
   bathroom's); switching day or evening there updates them at once. `tools/gallery.py --evening` makes the evening sheet.
 - **Shapes (V1.14, QUALITY_PLAN Q6):** real swivel desk chairs in the office and bedroom 2 (`model.desk_chair`), the kitchen's bar stools as the
@@ -118,3 +119,5 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
    the landing's door widths and the wall between the bedroom doors' frames; the tapestry's drop; the hall radiator; the master from the
    wardrobes to the front wall; the alcove; bedroom 2's length; a stair tread; the meter and bin cupboards; the living room's side-wall socket.
 4. Decide: where the side-wall socket goes; near-photo pictures (minutes each) or not; whether the house's tap-a-piece size edit comes back.
+- **V1.17** (30 Oct 2026): the hall's and the bathroom's mirrors reflect (grey before); each build keeps only the newest version of each
+  render and PDF (old rounds' copies had grown to 549 MB on the build machine). The client: "merge and continue".

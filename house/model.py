@@ -1450,7 +1450,7 @@ def bathroom(o):
     o.item("bath.mirror", "Mirror", "bathroom", src="client's photo (27 Oct) + E", data=("BATH", "mirror"), axis="z")
     m = B["mirror"]; (m0, m1), (my0, my1) = m["z"], m["y"]              # v82 (the photo): the mirror over the basin, a thin wood frame, its light bar
     o.box("oak", xw - 2.6, y + my0, m0, xw - 0.4, y + my1, m1)
-    o.box("steel", xw - 3.0, y + my0 + 1.5, m0 + 1.5, xw - 2.6, y + my1 - 1.5, m1 - 1.5)   # the glass (as the hall's mirror)
+    o.box("mirror", xw - 3.0, y + my0 + 1.5, m0 + 1.5, xw - 2.6, y + my1 - 1.5, m1 - 1.5)  # the glass (V1.17: a mirror, it was grey steel)
     o.box("black", xw - 5, y + my1 + 1, (m0 + m1) / 2 - 20, xw - 0.4, y + my1 + 3.5, (m0 + m1) / 2 + 20)
 
 
@@ -1685,7 +1685,7 @@ def hall(o):
     o.item("hall.mirror", "The hall mirror", "hall", src="client's photo + E", data=("HALL", "mirror"), axis="z")
     m = Hh["mirror"]; xw = WIDTH + 1                                           # the party wall's plaster face (the hall's side)
     o.box("steel", xw - 2.4, y + m["y"][0], m["z"][0], xw, y + m["y"][1], m["z"][1])
-    o.box("glass", xw - 2.6, y + m["y"][0] + 3, m["z"][0] + 3, xw - 2.4, y + m["y"][1] - 3, m["z"][1] - 3)
+    o.box("mirror", xw - 2.6, y + m["y"][0] + 3, m["z"][0] + 3, xw - 2.4, y + m["y"][1] - 3, m["z"][1] - 3)   # V1.17: was clear glass
     o.item("hall.bench", "The bench", "hall", src="client's photo + E", data=("HALL", "bench"), axis="z")
     b = Hh["bench"]
     o.box("black", b["x"][0], y, b["z"][0], b["x"][1] - 1.5, y + b["h"], b["z"][1])
@@ -1882,7 +1882,7 @@ def build():
 
 MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textures)
     "brick": ("#9a4b36", 0.92), "party": ("#9a4b36", 0.92), "soldier": ("#83402e", 0.9), "paint": ("#f1ede5", 0.85),
-    "upvc": ("#f5f5f2", 0.35), "glass": ("#dfe9ee", 0.03), "artex": ("#f3f2ee", 0.97), "door_cream": ("#e8ddc2", 0.4), "brass": ("#c9b58a", 0.3), "rib": ("#e2e2de", 0.5),
+    "upvc": ("#f5f5f2", 0.35), "glass": ("#dfe9ee", 0.03), "artex": ("#f3f2ee", 0.97), "door_cream": ("#e8ddc2", 0.4), "mirror": ("#eef2f3", 0.12), "brass": ("#c9b58a", 0.3), "rib": ("#e2e2de", 0.5),
     "tile": ("#7b5a4b", 0.85), "ridge": ("#6d4c3f", 0.85), "hung": ("#6f4636", 0.85), "felt": ("#3d3b3a", 0.9),
     "slab": ("#cfc8bb", 0.95), "carpet": ("#cdbfa6", 1.0), "tile_f": ("#d9d4cb", 0.6), "vinyl": ("#cdd8da", 0.6), "concrete": ("#a8a49c", 0.95),
     "earth": ("#8a8173", 1.0), "porch_in": ("#a7a49c", 0.9), "bin": ("#2f3236", 0.6), "recycle": ("#2b5d9a", 0.6), "quarry": ("#b25a43", 0.7), "board": ("#c4b79f", 0.9), "oak": ("#b07a46", 0.55), "fitting": ("#f6f6f3", 0.3),
