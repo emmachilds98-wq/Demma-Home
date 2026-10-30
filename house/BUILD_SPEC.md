@@ -196,7 +196,7 @@ their photo was taken, the photo in `EVIDENCE.md`).
 **v66:** every room a person stands in has a view (landing, hall, garage, WC added; `ROOM_VIEW`), so each room button lands inside. **v64:** The whole house has Outside / First / Ground / Lower, two switches (Gardens, Next door: off by default, the client: "so I can look at just my own house"), and on a floor its rooms as buttons (`drawRooms`, `ROOM_VIEW`: into a room's own view, else from above). Room views: `kitchen`, `office`, `bed2`, `master` (a `box` keeps the eye in). Next: views for the other rooms, walking between them.
 
 - The floor picker (done), a room list (tap → fly to the room, its floor shown), walking through doors and up the stairs (extend
-  `floorHop`/walk to change floor on the stairs), Out of the window for every window.
+  `floorHop`/walk to change floor on the stairs), Out of the window for every window (**V1.10: done**, by day, from In it and Be there).
 
 ### Phase 9 · Checks (every phase)
 

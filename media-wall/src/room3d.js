@@ -2601,11 +2601,12 @@ function applyFloors() {
   /* v73, the client: "still extremely slow": standing in a room, only what can be seen from it is drawn: its own floor, the group with
      its ceiling (the lower floor's are in the ground floor's, the first floor's in the roof's), the floor its stairs lead to (the landing,
      the hall), the outside through its windows; the living room only from the landing (v81: down the stairwell) */
-  if (ROOMV() && RMODE === "in" && R.HOUSE3.rooms) {
+  if (INSIDE() && R.HOUSE3.rooms) {   // V1.10: Be there too (it drew the whole house)
     const rid = VIEW_ROOM[S.view], rr = R.HOUSE3.rooms[rid];
     if (rr) {
       const fk = { "-260": "lower", "0": "ground", "260": "first" }[String(rr[4])];
-      const see = new Set(["out", "street", fk, { lower: "ground", ground: "first", first: "roof" }[fk]]);
+      const see = new Set(["out", "street", "nextThings", fk, { lower: "ground", ground: "first", first: "roof" }[fk]]);
+      if (S.tod === "day") for (const k of ["street", "nextThings"]) if (HFLOOR[k]) HFLOOR[k].visible = true;   // V1.10: next door and the street through the windows
       if (rid === "landing") see.add("ground");
       if (rid === "hall") see.add("lower");
       for (const [k, g] of Object.entries(HFLOOR)) if (!see.has(k) && g.visible) { g.visible = false; hidReal.push(g); }
@@ -2978,7 +2979,8 @@ const OUT = { sky: null, ground: null, sunOut: false };
 const sunLux = () => S.quality === "hd" && (S.tod === "day" || S.view === "house") ? SUNCFG.lux * (OUT.sunOut ? SUNCFG.out : 1) : 0;
 /* V1.5 (BUILD_SPEC phase 5): and out of the living room's window by day, from inside it: the same sky and land, the garden, its trees and
    the building past the fence, in place of the plain sky (v56's stand-in until the outside was modelled); by evening the dusk plane */
-const roomOut = () => !!(R.HOUSE3 && !HOUSEV(S.view) && !(VIEWS[S.view] || {}).above && S.tod === "day");
+const INSIDE = () => !!ROOMV() && (RMODE === "in" || RMODE === "stand");   // V1.10: standing in one of the house's rooms (In it, Be there)
+const roomOut = () => !!(R.HOUSE3 && S.tod === "day" && ((!HOUSEV(S.view) && !(VIEWS[S.view] || {}).above) || INSIDE()));   // V1.10: and every room's windows
 function outdoor() {
   const house = !!(R.HOUSE3 && S.view === "house" && hfloor === "all"), room = roomOut(), on = house || room;
   if (on && !OUT.sky) {
@@ -2989,24 +2991,26 @@ function outdoor() {
     const H = R.HOUSE3, g = OUT.ground = new THREE.Group(); g.name = "ground";
     const mat = reg(new THREE.MeshStandardMaterial({ color: "#56633f", roughness: 1, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 4, polygonOffsetUnits: 4 })); mat.clippingPlanes = [];
     const yt = (H.drive ?? -15) - 2, yb = (H.lawn ?? -260) - 2, A0 = -125, A1 = -28, E = 300000, zf = H.front, zb = H.back;   // V1.4: 3 km out (was 80 m), under the haze   // the alley (x -125 to -28)
-    const quad = (x0, x1, z0, y0, z1, y1, alley) => {   // a strip of ground from (z0, y0) to (z1, y1), level across x
+    const quad = (x0, x1, z0, y0, z1, y1, alley, slope) => {   // a strip of ground from (z0, y0) to (z1, y1), level across x
       const g2 = new THREE.BufferGeometry(), P = [x0, y0, z0, x1, y0, z0, x1, y1, z1, x0, y1, z1].map((v, i) => i % 3 === 0 ? -v * M : v * M);
       g2.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); g2.setIndex([0, 1, 2, 0, 2, 3]);
       g2.setAttribute("normal", new THREE.Float32BufferAttribute([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0], 3));   // lit as level ground: the slope doesn't read as a lighter band
-      const m = new THREE.Mesh(g2, mat); m.receiveShadow = true; m.raycast = () => {}; m.userData.alley = !!alley; g.add(m); };
+      const m = new THREE.Mesh(g2, mat); m.receiveShadow = true; m.raycast = () => {}; m.userData.alley = !!alley; m.userData.slope = !!slope; g.add(m); };
     quad(-E, E, -E, yb, zb, yb);                                                                    // the gardens' side, a storey down
-    quad(-E, A0, zb, yb, zf, yt); quad(A0, A1, zb, yb, zf, yt, true); quad(A1, E, zb, yb, zf, yt);   // the slope the terrace is built into (hidden inside the house; by it, the alley's own steps with Gardens on)
+    quad(-E, A0, zb, yb, zf, yt, false, true); quad(A0, A1, zb, yb, zf, yt, true, true); quad(A1, E, zb, yb, zf, yt, false, true);   // the slope the terrace is built into (hidden inside the house; by it, the alley's own steps with Gardens on)
     quad(-E, E, zf, yt, E, yt);                                                                     // the street's side, out to the horizon
     buildBeyond(null, g);                                                                           // V1.4: the hill opposite
     scene.add(g);
   }
-  if (room && !OUT.plants) { OUT.plants = new THREE.Group(); buildPlants(OUT.plants); buildBeyond(OUT.plants, null);   // V1.6: and the gardens round ours
+  const liv = room && !HOUSEV(S.view);   // the living room is drawn on its own: its outside brings the gardens; a house room has the house's
+  if (liv && !OUT.plants) { OUT.plants = new THREE.Group(); buildPlants(OUT.plants); buildBeyond(OUT.plants, null);   // V1.6: and the gardens round ours
     buildThings(OUT.plants, "ours"); buildThings(OUT.plants, "next"); buildNextGardens(OUT.plants); scene.add(OUT.plants); }   // the house's own are in its outside, built with it
-  if (OUT.plants) OUT.plants.visible = room;
+  if (OUT.plants) OUT.plants.visible = liv;
   if (garden3d && !HOUSEV(S.view)) garden3d.visible = room;                     // the house's views set it by Gardens
   if (view) view.visible = !room && !(VIEWS[S.view] || {}).above;
-  if (OUT.sky) { OUT.sky.visible = on; OUT.ground.visible = on; OUT.ground.children.forEach(m => { if (m.userData.alley) m.visible = room || !S.hgarden; });   // with Gardens on the alley steps down there
-    const d = house || !sun ? dayLight.position.clone().sub(dayLight.target.position) : sun.position.clone().sub(sun.target.position);   // the sun the sky shows: the one lighting it
+  if (OUT.sky) { OUT.sky.visible = on; OUT.ground.visible = on; const low = INSIDE() && ((R.HOUSE3.rooms || {})[VIEW_ROOM[S.view]] || [])[4] < 0;   // V1.10: the slope runs through the lower floor's rooms
+    OUT.ground.children.forEach(m => { m.visible = !(low && m.userData.slope); if (m.userData.alley && m.visible) m.visible = room || !S.hgarden; });   // with Gardens on the alley steps down there
+    const d = house || !liv || !sun ? dayLight.position.clone().sub(dayLight.target.position) : sun.position.clone().sub(sun.target.position);   // the sun the sky shows: the one lighting it
     OUT.sky.material.uniforms.sunPosition.value.copy(d.normalize()); }
   scene.fog.near = on ? 40 : 1e4; scene.fog.far = on ? 700 : 2e4;   // V1.4: the hill at 330 m about half hazed, as the view photos (was 30–110: nothing past 110 m)
   if (camera.far !== (on ? 3000 : 120)) { camera.far = on ? 3000 : 120; camera.updateProjectionMatrix(); }   // and seen out to the sky

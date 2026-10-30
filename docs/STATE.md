@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.9 (30 Oct 2026)
+**Version:** V1.10 (30 Oct 2026)
 
 ## Where it lives
 
@@ -54,6 +54,9 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   by evening the dusk plane as before. Next door's lawns, fences, trampoline and sheds show through it too (V1.6).
 - **Be there (V1.6):** every room, the living room too, has a fourth way to see it beside In it · Above · On its own: from its door at
   standing eye height (160), a wide lens; dragging looks round from where you stand.
+- **Out of every window (V1.10):** by day, standing in any room (In it, Be there), its windows show the outside: the sky, the
+  ground to the horizon, the hill and the valley's trees, the gardens, next door and the street. Be there draws only what the room sees,
+  as In it does (the kitchen 150 draws, was 358).
 - **Its look (V1.1):** CC0 photos over the drawn textures (oak, hessian, carpets, the cord's and the plaster's relief), each scaled to its
   part's own colour; rounded edges on every box; the iPhones get the shade and glow when their frames in HD are under 14 ms.
 - **Not brought across yet:** the V1 app's tap-a-piece size edit for the house (Measure covers the guessed sizes). `room3d_page.embed()`
