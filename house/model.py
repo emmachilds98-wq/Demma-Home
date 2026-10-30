@@ -850,6 +850,60 @@ def street(o):
         _copy(h, o, lambda x, base=base: base - x)                       # mirrored: its x runs east
 
 
+def _seat_frame(face, cx, cz):
+    """a seat's own frame: f forward (the way its sitter faces), s to its side; to the house's (x, z)"""
+    fx, fz = {"+x": (1, 0), "-x": (-1, 0), "+z": (0, 1), "-z": (0, -1)}[face]
+    return lambda f, s: (cx + f * fx - s * fz, cz + f * fz + s * fx)
+
+
+def _back(o, m, face, cx, cz, prof, w):
+    """a seat's back: its side outline [(f, y)] (f along its facing), w wide across"""
+    to = _seat_frame(face, cx, cz)
+    if face in ("+x", "-x"):
+        o.prism(m, "z", cz - w / 2, cz + w / 2, [(to(f, 0)[0], yy) for f, yy in prof])
+    else:
+        o.prism(m, "x", cx - w / 2, cx + w / 2, [(to(f, 0)[1], yy) for f, yy in prof])
+
+
+def desk_chair(o, cx, cz, y, face):
+    """V1.14 (QUALITY_PLAN Q6): a swivel desk chair (E: a standard office chair, seat 46 high, 50 wide): a five-star base on castors, the
+    gas lift, a padded seat, a curved back on its spine, arms. face: the way its sitter faces."""
+    to = _seat_frame(face, cx, cz)
+    star, dw = [], math.atan(2.5 / 32)
+    for i in range(5):                                             # the base: five arms 5 wide, 32 out from a hub 6 round
+        t = math.radians(90 + i * 72)
+        for r, a in ((6, t - math.radians(30)), (32, t - dw), (32, t + dw), (6, t + math.radians(30))):
+            star.append((cx + r * math.cos(a), cz + r * math.sin(a)))
+    o.prism("black", "y", y + 5, y + 8.5, star)
+    for i in range(5):                                             # the castors
+        t = math.radians(90 + i * 72)
+        o.lathe("black", cx + 29 * math.cos(t), y, cz + 29 * math.sin(t), [(0, 0), (2.6, 0.4), (2.8, 2.6), (2.2, 5), (0, 5)])
+    sy = y + 46
+    o.lathe("black", cx, y + 8, cz, [(0, 0), (5.5, 0), (4.5, 4), (3.6, 14), (0, 14)])                   # the hub and shroud
+    o.lathe("chrome", cx, y + 22, cz, [(0, 0), (2.4, 0), (2.4, sy - y - 28), (0, sy - y - 28)])           # the gas lift
+    o.lathe("black", cx, sy - 6, cz, [(0, 0), (9, 0), (9, 1.5), (0, 1.5)])                                # the plate
+    o.lathe("black", cx, sy - 4.5, cz, [(0, 0), (22, 0), (25, 1.5), (26, 4.5), (25, 7.5), (22, 9), (0, 9)], 1.0, 0.96)   # the seat
+    _back(o, "black", face, cx, cz, [(-24, sy + 2), (-19, sy + 2), (-16, sy + 14), (-21, sy + 14)], 8)  # the spine
+    _back(o, "black", face, cx, cz, [(-21, sy + 12), (-15, sy + 12), (-13, sy + 40), (-15, sy + 62), (-19, sy + 66), (-23, sy + 66), (-24, sy + 50), (-23, sy + 24)], 46)   # the back
+    for sd in (-24, 24):                                           # the arms: a post and a pad
+        (ax, az), (bx, bz) = to(-10, sd - 2), to(6, sd + 2)
+        o.box("black", min(ax, bx), sy + 8, min(az, bz), max(ax, bx), sy + 11, max(az, bz))
+        (px, pz), (qx, qz) = to(-8, sd - 1.2), to(-4, sd + 1.2)
+        o.box("black", min(px, qx), sy, min(pz, qz), max(px, qx), sy + 8, max(pz, qz))
+
+
+def bar_stool(o, cx, cz, y, face, seat=65.0):
+    """V1.14 (Q6): the kitchen's bar stools as the client's photos (photo_kitchen_bar_boiler_30oct): a black bucket seat with a high curved
+    back on a chrome pole, a foot ring, a round chrome base (E: a standard 65 high seat for a 90 counter)"""
+    sy = y + seat
+    o.lathe("chrome", cx, y, cz, [(0, 0), (21, 0), (21, 0.8), (16, 2.2), (4, 3), (0, 3)])               # the base
+    o.lathe("chrome", cx, y + 3, cz, [(0, 0), (2.8, 0), (2.8, seat - 9), (0, seat - 9)])                  # the pole
+    o.lathe("chrome", cx, y + 26, cz, [(15.5, 0), (17, 0), (17, 1.5), (15.5, 1.5), (15.5, 0)])            # the foot ring
+    o.lathe("chrome", cx, sy - 6, cz, [(0, 0), (8, 0), (8, 2), (0, 2)])
+    o.lathe("black", cx, sy - 4, cz, [(0, 0), (19, 0), (21, 2.5), (21.5, 5.5), (20.5, 6.5), (17, 5), (0, 4.5)], 1.0, 0.95)   # the bucket
+    _back(o, "black", face, cx, cz, [(-21, sy + 1), (-17, sy + 1), (-15, sy + 18), (-16, sy + 34), (-19, sy + 37), (-22, sy + 36), (-23, sy + 20)], 40)   # its back
+
+
 def kitchen(o):
     """v60: the kitchen as it is, from the client's photos (survey_data.KITCHEN): the L of units, the appliances, the worktop, the metro
     tiles, the wall units, the sink and tap, the breakfast bar and its chairs, the LED battens."""
@@ -964,12 +1018,9 @@ def kitchen(o):
     for dz in (-12, -4, 4, 12):                                                         # its pipes down the wall to the bar
         zc = (bo["z"][0] + bo["z"][1]) / 2 + dz
         o.box("chrome", xw - 4, Y(B["h"]), zc - 1, xw - 2, Y(bo["y"][0]), zc + 1)
-    o.item("kitchen.chairs", "The bar chairs", "kitchen", src="E", measure=False)
-    for cx_, cz_ in K["chairs"]:
-        o.box("black", cx_ - 22, Y(45), cz_ - 22, cx_ + 22, Y(50), cz_ + 22)
-        o.box("black", cx_ - 22, Y(50), cz_ - 22, cx_ - 18, Y(92), cz_ + 22)
-        for lx, lz in ((cx_ - 19, cz_ - 19), (cx_ + 19, cz_ - 19), (cx_ - 19, cz_ + 19), (cx_ + 19, cz_ + 19)):
-            o.box("chrome", lx - 1, Y(0), lz - 1, lx + 1, Y(45), lz + 1)
+    o.item("kitchen.chairs", "The bar stools", "kitchen", src="client's photos (30 Oct) + E", measure=False)
+    for cx_, cz_ in K["chairs"]:                                   # V1.14: bar stools, as the photos (they were low chairs)
+        bar_stool(o, cx_, cz_, Y(0), "+x")
     # the LED battens on the ceiling (the photo)
     o.item("kitchen.lights", "The LED battens", "kitchen", kind="light", src="client's photo", measure=False)
     for zc in (-200.0, -90.0):
@@ -1054,11 +1105,8 @@ def office(o):
     o.box("pc_white", pc["x"][0], y0, pc["z"][0], pc["x"][1], y0 + pc["h"], pc["z"][1])
     o.box("pc_glow", pc["x"][0] - 0.3, y0 + 3, pc["z"][0] + 2, pc["x"][0], y0 + pc["h"] - 3, pc["z"][1] - 2)   # its glass side, lit
     o.item("office.chairs", "The desk chairs", "bed3", src="E", measure=False)
-    for cx, cz in (O["chair"], O["chair2"]):                       # a desk chair at each setup, facing the desk
-        o.box("black", cx - 26, y0 + 46, cz - 26, cx + 26, y0 + 54, cz + 26)
-        o.box("black", cx - 32, y0 + 54, cz - 25, cx - 24, y0 + 125, cz + 25)
-        o.box("chrome", cx - 3, y0 + 8, cz - 3, cx + 3, y0 + 46, cz + 3)
-        o.box("black", cx - 28, y0, cz - 3, cx + 28, y0 + 8, cz + 3); o.box("black", cx - 3, y0, cz - 28, cx + 3, y0 + 8, cz + 28)
+    for cx, cz in (O["chair"], O["chair2"]):                       # a desk chair at each setup, facing the desk (V1.14: a real swivel chair)
+        desk_chair(o, cx, cz, y0, "+x")
     o.item("office.radiator", "The office radiator", "bed3", kind="radiator", src="F + E", data=("OFFICE", "radiator"), axis="x")
     r = O["radiator"]                                              # under the window, and the blind down
     radiator(o, "x", FRONT - 3, -1, r["x"][0], r["x"][1], y0 + r["y"][0], y0 + r["y"][1])
@@ -1264,10 +1312,7 @@ def music(o):
     o.box("red_gloss", rt["x"][0] + 20, dy, rt["z"][0] + 30, rt["x"][0] + 42, dy + 4.5, rt["z"][0] + 50)   # the interface on the return
     o.item("music.chair", "The desk chair", "bed2", src="E", measure=False)
     hx, hz = Mu["chair"]                                           # the chair, facing the desk
-    o.box("black", hx - 25, y + 52, hz - 25, hx + 25, y + 60, hz + 25)
-    o.box("black", hx - 24, y + 60, hz + 18, hx + 24, y + 122, hz + 25)
-    o.box("chrome", hx - 3, y + 8, hz - 3, hx + 3, y + 52, hz + 3)
-    o.box("black", hx - 28, y, hz - 3, hx + 28, y + 8, hz + 3); o.box("black", hx - 3, y, hz - 28, hx + 3, y + 8, hz + 28)
+    desk_chair(o, hx, hz, y, "-z")                                 # V1.14: a real swivel chair
     o.item("music.kallax", "The Kallax with drawers", "bed2", src="IKEA KALLAX (E placed)", data=("MUSIC", "kallax"), axis="x")
     kx = Mu["kallax"]; ka, kb_ = kx["x"]; kz0, kz1 = kx["z0"], kx["z0"] + kx["d"]; T = 3.8   # the Kallax, white, open to the room
     for xa in (ka, (ka + kb_) / 2 - 0.8, kb_ - T):
@@ -1299,13 +1344,22 @@ def music(o):
     o.box("black", 30.0, y, (az0 + az1) / 2 - 20, 44.0, y + 4, (az0 + az1) / 2 + 20)  # a pedalboard in front of it
     o.item("music.guitars", "The two guitars", "bed2", src="client + E", data=("MUSIC", "guitars"), axis="z")
     o.box("black", 46, y + 0.5, Mu["guitars"][0][1] - 22, 74, y + 3, Mu["guitars"][1][1] + 22)   # the double stand's foot
-    for k, (gx, gz) in enumerate(Mu["guitars"]):                   # two guitars, face to the room: an electric and an acoustic
+    def outline(gz, y0, r1, r2, c2, n=18):                         # V1.14 (Q6): a guitar's body, its two bouts as circles, the waist between
+        def w(h): return max(r1 * math.sqrt(max(0.0, 1 - ((h - r1) / r1) ** 2)), r2 * math.sqrt(max(0.0, 1 - ((h - c2) / r2) ** 2)))
+        L = c2 + r2; hs = [L * i / n for i in range(n + 1)]
+        return [(gz + w(h), y0 + h) for h in hs] + [(gz - w(h), y0 + h) for h in reversed(hs)]
+    for k, (gx, gz) in enumerate(Mu["guitars"]):                   # two guitars, face to the room: an electric and an acoustic (E: standard sizes)
         body = "guitar_red" if k == 0 else "pine"
-        o.box(body, gx - 4, y + 8, gz - 13, gx + 4, y + 30, gz + 13)          # the lower bout
-        o.box(body, gx - 4, y + 30, gz - 10, gx + 4, y + 48, gz + 10)         # the upper bout
-        o.box("pine_dark", gx - 1.5, y + 48, gz - 2.5, gx + 2.5, y + 104, gz + 2.5)   # the neck
-        o.box("black", gx - 2, y + 104, gz - 4, gx + 2.5, y + 120, gz + 4)            # the head
-        o.box("black", gx + 4, y + 22, gz - 5, gx + 4.4, y + 38, gz + 5)              # the pickguard / sound hole
+        r1, r2, c2, t = (16.0, 12.0, 32.0, 2.4) if k == 0 else (19.0, 14.5, 40.0, 5.0)   # the electric's solid body, the acoustic's deep one
+        top = y + 8 + c2 + r2
+        o.prism(body, "x", gx - t, gx + t, outline(gz, y + 8, r1, r2, c2))
+        o.box("pine_dark", gx - 1.5, top - 2, gz - 2.3, gx + 2, y + 104, gz + 2.3)    # the neck
+        o.box("black", gx - 1.6, y + 104, gz - 3.4, gx + 2.2, y + 118, gz + 3.4)      # the head
+        if k == 0:                                                 # the pickguard
+            o.prism("black", "x", gx + t, gx + t + 0.3, outline(gz + 4, y + 15, 6.0, 4.0, 14.0, 12))
+        else:                                                      # the sound hole and its ring
+            hole = [(gz + 5 * math.cos(i * math.pi / 10), y + 8 + 33 + 5 * math.sin(i * math.pi / 10)) for i in range(20)]
+            o.prism("black", "x", gx + t, gx + t + 0.3, hole)
         o.box("black", gx - 6, y + 4, gz - 1, gx - 2, y + 60, gz + 1)                 # the stand's upright
     o.item("music.panels", "The acoustic panels", "bed2", kind="decor", src="E", data=("MUSIC", "panels"), measure=False)
     for kind, a1, a2, py in Mu["panels"]:                          # acoustic panels at the desk's side reflection points

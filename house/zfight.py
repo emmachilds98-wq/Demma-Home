@@ -21,6 +21,10 @@ def _faces(ex):
                 add(g, m, "z", z0, -1, (x0, x1, y0, y1)); add(g, m, "z", z1, 1, (x0, x1, y0, y1))
         for P in F["prisms"]:                                 # their straight edges only (along the axes)
             pts, a, b, ax = P["pts"], P["a"], P["b"], P["axis"]
+            if ax == "y":                                     # V1.14: a plan shape raised (a chair's base): its top and bottom only
+                us, vs = [p[0] for p in pts], [p[1] for p in pts]
+                add(g, P["m"], "y", a, -1, (min(us), max(us), min(vs), max(vs))); add(g, P["m"], "y", b, 1, (min(us), max(us), min(vs), max(vs)))
+                continue
             cu = sum(p[0] for p in pts) / len(pts); cv = sum(p[1] for p in pts) / len(pts)
             for (u1, v1), (u2, v2) in zip(pts, pts[1:] + pts[:1]):
                 if abs(u1 - u2) < 0.05 and abs(v1 - v2) > 0.2:
