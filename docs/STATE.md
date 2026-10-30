@@ -93,7 +93,7 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
   photos, kept by the service worker); the page is 2.1 MB, was 3.7; the shared page 10.9 MB (its limit 16). Until they land each photo's texture is its mean colour (`photo_meta`). At 8 Mbit/s in a test
   browser the page downloads in 3.6 s, was 5.4; the first picture 8.4 s, was 9.0 (software graphics: the rest is drawing). The shared page
   keeps them inline, read after the first picture. `check_site.py` checks all 13 sets arrive.
-- The repo (V1.7): 343 files, 70 MB tracked, 46 MB of it the client's photos; `checks.py`'s repo check fails on a tracked build output
+- The repo (V1.11): 343 files, 76 MB tracked, 46 MB of it the client's photos (7 MB the 3D's textures); `checks.py`'s repo check fails on a tracked build output
   or any other file over 1.5 MB. The clone is about 76 MB with its history (DIY: 5.2 GB).
 
 ## Open with the client
