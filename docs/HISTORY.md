@@ -134,3 +134,6 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
   wall over the stairs 7.5 cm further in.
 - **V1.9** (30 Oct 2026): Phase 4's next speed step: the 3D's photos (1.6 MB) come after the first picture, a file of their own on Pages
   kept by the service worker; until then each is its mean colour. The page 2.1 MB, was 3.7; the same picture once they land.
+- **V1.10** (30 Oct 2026): out of every window. By day each room's windows show the outside (the sky, the ground, the hill, the gardens,
+  next door, the street), not dark glass; the slope the house is built into kept out of the lower floor's rooms; Be there draws only
+  what the room sees (the kitchen 150 draws, was 358).
