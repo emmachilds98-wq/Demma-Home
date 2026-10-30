@@ -176,7 +176,12 @@ if (BIG_GPU && !S.picked) S.quality = "hd";
    move), and a capable chip (any iPhone's Apple GPU, Adreno 6xx and up, Mali-G57 and up, Immortalis, Xclipse) goes on to HD when its
    first frames are quick, and back to Fast if HD runs slow. */
 const GOOD_PHONE = SMALL && /apple gpu|adreno[^0-9]*([6-9]\d{2})|mali-g(5[7-9]|6\d|7\d|[1-9]\d{2})|immortalis|xclipse/i.test(GPU);
-const LIVE_SHADOW = BIG_GPU ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap, LIVE_MAP = BIG_GPU ? 2048 : 1024;   // v44: a real graphics card gets the pictures' soft 2048 shadows live
+/* V1.11, the client: "i dont want these low res versions, best textures, quality and performance on the PC and mobile": a capable phone
+   (their iPhones) starts in HD at its screen's own sharpness with the shade, the glow and the PCs' soft 2048 shadows; if its frames run
+   slow it gives way a step at a time (3× to 2×, then the shade, then Fast) rather than starting low */
+if (GOOD_PHONE && !S.picked) S.quality = "hd";
+const HI = BIG_GPU || GOOD_PHONE, LOWD = SMALL && !GOOD_PHONE;   // LOWD: a phone without a capable chip, the only one still drawn lighter
+const LIVE_SHADOW = HI ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap, LIVE_MAP = HI ? 2048 : 1024;   // v44: a real graphics card gets the pictures' soft 2048 shadows live
 gl.shadowMap.type = LIVE_SHADOW;   // v14.1: PCF while you look round; the saved HD pictures use soft shadows
 gl.shadowMap.autoUpdate = false;          // v14.1: shadows don't move with the camera, so they're redrawn only when the room changes
 const reshadow = () => { gl.shadowMap.needsUpdate = true; };
@@ -258,15 +263,15 @@ const AO = { c: null, g: null };
 let houseLite = /[?&]houselite\b/.test(location.search);
 /* V1.1, the client's iPhones (15 Pro, 16): a capable phone in HD whose frames are quick (under 14 ms) gets the PCs' shade and glow too
    (phoneAO, from autoQuality), lighter (8 samples, 2× anti-aliasing); off again for the visit if its frames then pass 30 ms */
-let phoneAO = false, phoneAOoff = false;
+let phoneAO = GOOD_PHONE, phoneAOoff = false, phoneCap = 3;   // V1.11: on from the start; phoneCap: the phone's sharpness, 3× until slow
 const aoLive = () => S.quality === "hd" && (BIG_GPU || phoneAO || /[?&]ao\b/.test(location.search)) && !/[?&]noao\b/.test(location.search) && !(houseLite && R.HOUSE3 && HOUSEV(S.view));   // ?ao tries it anywhere
 function aoComposer(w, h, pr) {
   if (!AO.c) {
-    const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: SMALL ? (GOOD_PHONE ? 2 : 0) : 4 });   // anti-aliased, as on screen
+    const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: SMALL ? (GOOD_PHONE ? 4 : 0) : 4 });   // anti-aliased, as on screen
     AO.c = new EffectComposer(gl, rt); AO.c.addPass(new RenderPass(scene, camera));
     AO.g = new GTAOPass(scene, camera, w, h); AO.g.blendIntensity = 0.9;
-    AO.g.updateGtaoMaterial({ radius: 0.3, distanceExponent: 1.4, thickness: 1.2, scale: 1.1, samples: SMALL ? 8 : 16, distanceFallOff: 1 });
-    AO.g.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: SMALL ? 8 : 16 });
+    AO.g.updateGtaoMaterial({ radius: 0.3, distanceExponent: 1.4, thickness: 1.2, scale: 1.1, samples: SMALL && !GOOD_PHONE ? 8 : 16, distanceFallOff: 1 });
+    AO.g.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: SMALL && !GOOD_PHONE ? 8 : 16 });
     clipMat(AO.g.normalMaterial);                                    // the cutaway cuts the depth it shades from, too
     AO.c.addPass(AO.g);
     // v48 §5, client: "improving the renders graphics and quality": a soft glow round what's brighter than white (the LED strips, the lamp's
@@ -315,7 +320,7 @@ function canvasTex(w, h, draw, srgb = true) {
   const t = new THREE.CanvasTexture(c);
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
   if (srgb) t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = Math.min(BIG_GPU ? 16 : 8, gl.capabilities.getMaxAnisotropy());   // v44: as sharp at a slant as the card allows
+  t.anisotropy = Math.min(BIG_GPU || GOOD_PHONE ? 16 : 8, gl.capabilities.getMaxAnisotropy());   // v44: as sharp at a slant as the card allows
   return t;
 }
 function rnd(seed) { return () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }; }
@@ -4697,10 +4702,10 @@ function setAbove(show) {   // the floor above (the stairwell's upper walls) hid
    above too (v52 showed it only once the camera was inside the room) */
 
 /* ---------------------------------------------------------------- render loop, only when something changed */
-let need = 2, moving = false, still_t = 0, lowRes = false, dragT = 0, slowDev = !BIG_GPU;   // v35: slowDev until the speed check says otherwise (v39: not on a real graphics card)
+let need = 2, moving = false, still_t = 0, lowRes = false, dragT = 0, slowDev = !HI;   // v35: slowDev until the speed check says otherwise (v39: not on a real graphics card)
 const MV = []; let mvLast = 0;   // v39: the gaps between frames while the room moves: slow ones turn on the lower resolution while you drag
 function dirty() { need = Math.max(need, 2); }
-function fullRatio() { const d = window.devicePixelRatio || 1; if (SMALL) return Math.min(d, GOOD_PHONE ? 2 : 1.5); if (S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view)) return houseLite ? 1 : Math.min(d, 1.5);   // v73: the house at the screen's own sharpness (no supersampling: it's many times the living room's drawing)
+function fullRatio() { const d = window.devicePixelRatio || 1; if (SMALL) return Math.min(d, GOOD_PHONE ? phoneCap : 1.5); if (S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view)) return houseLite ? 1 : Math.min(d, BIG_GPU ? 2 : 1.5);   // V1.11: a real graphics card draws the house at 2× too   // v73: the house at the screen's own sharpness (no supersampling: it's many times the living room's drawing)
   return S.quality === "hd" ? (BIG_GPU ? Math.min(Math.max(d, 1.5), 2) : Math.min(d, 1.5)) : Math.min(d, 1); }   // v39: phones at their own sharpness; v44: a real graphics card draws HD at 1.5–2×; v50: Fast on a PC at full size (was 0.85×)
 /* v21: narrower screens (phones show the room at 4:3) widen the field of view so every view takes in as much of the room across as at 16:9 */
 let baseFov = 50;
@@ -4758,7 +4763,7 @@ function frame(now) {
   if (!tween && !freeAbove() && (clampRoom(camera.position) | clampRoom(controls.target, true) | collide())) need = 2;   // v17: never outside the room; v41: nor in the furniture
   const active = moving || changed || !!tween;
   if (active && mvLast && now - mvLast < 250) { MV.push(now - mvLast); if (MV.length >= 24) { const m = MV.sort((a, b) => a - b)[12]; MV.length = 0;
-    if (m > 28) slowDev = true; else if (m < 14 && !lowRes && BIG_GPU) slowDev = false;
+    if (m > 28) slowDev = true; else if (m < 14 && !lowRes && HI) slowDev = false;
     if (m > 40 && !houseLite && S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view)) { houseLite = true; sizeRenderer(); toast("A lighter drawing for the house on this computer"); } } }
   mvLast = active ? now : 0;
   // v35: the lower resolution only while you hold and drag the room on a slow device, and only once the drag has lasted a moment:
@@ -4798,6 +4803,7 @@ function autoQuality() {
   const ms = probeT.sort((a, b) => a - b)[1];
   if (S.quality === "fast") slowDev = ms > 30;
   if (S.quality === "hd" && GOOD_PHONE && !BIG_GPU) {   // V1.1: the shade and glow on a quick phone (also when you picked HD), measured again with them on
+    if (ms > 30 && phoneCap > 2) { phoneCap = 2; sizeRenderer(); dirty(); probe = 3; probeT.length = 0; return; }   // V1.11: sharpness gives way first
     if (phoneAO && ms > 30) { phoneAO = false; phoneAOoff = true; dirty(); return; }
     if (!phoneAO && !phoneAOoff && ms < 14) { phoneAO = true; dirty(); probe = 3; probeT.length = 0; return; }
   }
@@ -4830,7 +4836,7 @@ function still(w, h) {
   LIVE = false; syncRig();                                                                 // v35: the lights as they always were, for the picture
   const was = gl.shadowMap.enabled, wasQ = S.quality; gl.shadowMap.enabled = true; gl.shadowMap.type = THREE.PCFSoftShadowMap;
   if (wasQ !== "hd") { S.quality = "hd"; applyLight(); gl.shadowMap.enabled = true; }
-  const big = SMALL ? 1024 : BIG_GPU ? 4096 : 2048;   // v18: phones keep 1024 maps for the picture, and at most six spots cast shadows; v48: 4096 on a real card
+  const big = LOWD ? 1024 : BIG_GPU ? 4096 : 2048;   // V1.11: a capable phone 2048   // v18: phones keep 1024 maps for the picture, and at most six spots cast shadows; v48: 4096 on a real card
   Object.values(lights).flat().forEach(l => { if (l.isSpotLight && l.visible) { l.castShadow = true; l.shadow.mapSize.set(big, big); if (l.shadow.map) { l.shadow.map.dispose(); l.shadow.map = null; } } });
   capShadows(Math.max(0, Math.min(6, (gl.capabilities.maxTextures || 16) - 11)));
   MATS.forEach(m => { m.needsUpdate = true; if (m.userData.trans) m.transmission = m.userData.trans; });   // v39: real glass in the pictures
@@ -4858,7 +4864,7 @@ function stillName() {
 }
 qs("#r3d-save").addEventListener("click", async () => {
   const st = qs("#r3d-savest");
-  const [sw, sh] = SMALL ? [2560, 1440] : [3840, 2160];   // v18: phones save at 2560 × 1440 so the picture doesn't take the room down
+  const [sw, sh] = LOWD ? [2560, 1440] : [3840, 2160];   // V1.11: a capable phone saves 4K too   // v18: phones save at 2560 × 1440 so the picture doesn't take the room down
   st.textContent = `Rendering ${sw} × ${sh}…`;
   await new Promise(r => setTimeout(r, 30));
   const url = still(sw, sh);
@@ -5412,7 +5418,7 @@ function houseTex(k) {
      too (loading from elsewhere failed there in v50); the drawn ones below stay for everything else and as the fallback */
   const pkey = { party: "brick", soldier: "brick" }[k] || k, pm = PMETA[pkey];
   if (pm && pm.map) {   // V1.9: its mean colour and a flat relief until the photos land (loadPhotos), then the photo in the same texture
-    const img = (f, srgb, fill) => { const t = canvasTex(4, 4, g => { g.fillStyle = fill; g.fillRect(0, 0, 4, 4); }, srgb); t.anisotropy = 4;
+    const img = (f, srgb, fill) => { const t = canvasTex(4, 4, g => { g.fillStyle = fill; g.fillRect(0, 0, 4, 4); }, srgb);   // V1.11: as sharp at a slant as the card allows (was 4)
       whenPhoto(pkey, f, src => { const im = new Image(); im.onload = () => { texSet(t, im); reshadow(); dirty(); }; im.src = src; }); return t; };
     return (HTEX[k] = { map: img("map", true, pm.avg || "#888888"), normal: pm.nor ? img("nor", false, "#8080ff") : null, size: [pm.size, pm.size], bump: 0 });
   }
@@ -5736,7 +5742,7 @@ function sheetTex() {   // grey sheet roofing: ribs, a little weathering
     for (let i = 0; i < 40; i++) { g.fillStyle = `rgba(${rnd() < 0.5 ? "40,42,40" : "150,150,140"},0.08)`; g.fillRect(rnd() * w, rnd() * h, 2 + rnd() * 10, 4 + rnd() * 30); } });
 }
 function townTex() {    // the hill's face from across the valley: clusters of terraced houses (roofs over pale and brick walls) among trees and gardens
-  return canvasTex(SMALL ? 512 : 1024, SMALL ? 512 : 1024, (g, w, h) => {
+  return canvasTex(LOWD ? 512 : 1024, LOWD ? 512 : 1024, (g, w, h) => {
     let sd = 4711; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647, sc = w / 1024;
     g.fillStyle = "#566a40"; g.fillRect(0, 0, w, h);
     for (let i = 0; i < 900; i++) { g.fillStyle = ["#475a33", "#617349", "#4f633a", "#6c7d52", "#3e5130"][i % 5]; g.globalAlpha = 0.55; g.beginPath(); g.arc(rnd() * w, rnd() * h, (5 + rnd() * 16) * sc, 0, 7); g.fill(); }
@@ -5851,7 +5857,7 @@ function buildHouse() {
       }
       for (const [mk, geos] of Object.entries(byMat)) put(cur, geos, mat3(mk));
       const byL = {};                                 // v70: the suite's turned shapes (pans, seats, bowls)
-      for (const L of F.lathes || []) { const g = new THREE.LatheGeometry(L.p.map(([r, h]) => new THREE.Vector2(r * M, h * M)), SMALL ? 12 : 28);
+      for (const L of F.lathes || []) { const g = new THREE.LatheGeometry(L.p.map(([r, h]) => new THREE.Vector2(r * M, h * M)), LOWD ? 12 : 28);
         g.scale(L.s[0], 1, L.s[1]); const c = v3(L.c[0], L.c[1], L.c[2]); g.translate(c.x, c.y, c.z); (byL[L.m] = byL[L.m] || []).push(g); }
       for (const [mk, geos] of Object.entries(byL)) put(cur, geos, mat3(mk));
       if (fresh) for (const L of F.labels || []) label([L.name, [L.use, `about ${L.w.toFixed(1)} × ${L.d.toFixed(1)} m`].filter(Boolean).join(" · ")], L.x, L.y, L.z, 190);
@@ -5939,7 +5945,7 @@ function buildSun() {
   sun.position.copy(v3(wc[0] + Math.sin(az) * Math.cos(el) * L, wc[1] + Math.sin(el) * L, wc[2] - Math.cos(az) * Math.cos(el) * L));
   sun.target.position.copy(v3(wc[0] - Math.sin(az) * 160, 0, wc[2] + 160));
   sun.userData.p0 = sun.position.clone(); sun.userData.t0 = sun.target.position.clone();   // v69: where it sits for the living room
-  sun.castShadow = true; sun.shadow.mapSize.set(SMALL ? 1024 : 2048, SMALL ? 1024 : 2048); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02; sun.shadow.radius = 3;
+  sun.castShadow = true; const sm = BIG_GPU ? 4096 : HI || !SMALL ? 2048 : 1024; sun.shadow.mapSize.set(sm, sm); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02; sun.shadow.radius = 3;   // V1.11: the sun's 4096 on a real graphics card (BUILD_SPEC phase 7)
   const c = sun.shadow.camera; c.left = -5.5; c.right = 5.5; c.top = 5.5; c.bottom = -5.5; c.near = 0.5; c.far = 16; c.updateProjectionMatrix();   // the whole room: outside it the sun shone through walls
   scene.add(sun, sun.target);
   if (R.HOUSE3) for (let k = 0; k < 2; k++) { const l = new THREE.PointLight("#ffcf98", 0, 7, 2); l.visible = false; l.userData.houseLight = true; scene.add(l); ROOMLIGHTS.push(l); }   // v69 (B3): at the start, so the set never changes
@@ -6113,7 +6119,7 @@ if (EMBED) {
         else if (d.cmd === "moment") { playMoment(d.k); syncButtons(); }
         else if (d.cmd === "panel") { root.classList.toggle("emb-panel", !!d.k); if (window.DemmaTools) d.k ? window.DemmaTools.open(d.k) : window.DemmaTools.close(); }
         else if (d.cmd === "living-edit") { root.classList.toggle("emb-edit", !!d.on); setEdit(!!d.on); }
-        else if (d.cmd === "picture") { const [w, h] = SMALL ? [2560, 1440] : [3840, 2160]; post("picture", { url: still(d.w || w, d.h || h), name: stillName() }); }
+        else if (d.cmd === "picture") { const [w, h] = LOWD ? [2560, 1440] : [3840, 2160]; post("picture", { url: still(d.w || w, d.h || h), name: stillName() }); }
         else if (d.cmd === "perf") post("perf", { perf: perfInfo(), buildMs: window.R3D && window.R3D.buildMs });
         else if (d.cmd === "lift") liftBed(!!d.on);
         else if (d.cmd === "resize") sizeRenderer();

@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.10 (30 Oct 2026)
+**Version:** V1.11 (30 Oct 2026)
 
 ## Where it lives
 
@@ -57,8 +57,9 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Out of every window (V1.10):** by day, standing in any room (In it, Be there), its windows show the outside: the sky, the
   ground to the horizon, the hill and the valley's trees, the gardens, next door and the street. Be there draws only what the room sees,
   as In it does (the kitchen 150 draws, was 358).
-- **Its look (V1.1):** CC0 photos over the drawn textures (oak, hessian, carpets, the cord's and the plaster's relief), each scaled to its
-  part's own colour; rounded edges on every box; the iPhones get the shade and glow when their frames in HD are under 14 ms.
+- **Its look (V1.1, V1.11):** CC0 photos over the drawn textures (oak, hessian, carpets, the cord's and the plaster's relief, the house's
+  brick, roof, lawn, drive, road, paving, laminate), each scaled to its part's own colour; V1.11 from the 2k sources at 1024 px (the oak
+  2048), twice as sharp as before (7 MB, after the first picture, kept by the phone); rounded edges on every box.
 - **Not brought across yet:** the V1 app's tap-a-piece size edit for the house (Measure covers the guessed sizes). `room3d_page.embed()`
   and the engine's embed bridge (`EMBH`) are kept for it but nothing builds the frame now.
 
@@ -78,9 +79,9 @@ page without its outer tags (the shared page adds its own); its data and script 
 
 | Who | Device | How the 3D draws there |
 |---|---|---|
-| Emma | iPhone 15 Pro | Apple graphics: a capable phone. Starts Fast at 2×, sharpens itself to HD when its frames are quick (under 18 ms), then the shade and glow (under 14 ms); drops back if slow. Add to Home Screen gives it its own icon, full screen |
+| Emma | iPhone 15 Pro | Apple graphics: a capable phone. V1.11: starts in HD at the screen's own 3× with the shade, the glow, soft 2048 shadows, 4× anti-aliasing and the 1024–2048 photos; if its frames pass 30 ms it gives way a step at a time (2×, then the shade, then Fast past 45 ms). Add to Home Screen gives it its own icon, full screen |
 | Dave | iPhone 16 | The same as the iPhone 15 Pro |
-| Emma | PC, NVIDIA RTX 5060, 32 GB | A real graphics card: HD from the start (soft shadows at 2048, ambient occlusion, glow), drawn at 1.5–2× |
+| Emma | PC, NVIDIA RTX 5060, 32 GB | A real graphics card: HD from the start (soft shadows at 2048, the sun's at 4096, ambient occlusion, glow), drawn at 1.5–2×, the whole house too (V1.11) |
 | Dave | PC, NVIDIA RTX 3060, 32 GB | The same as the RTX 5060 |
 
 Quality is under View → More (HD or Fast). `?perf` at the end of the address shows the counts in a corner: the screenshot to send.
@@ -88,8 +89,8 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 ## Numbers (28 Oct, software graphics in a test browser: relative, not a phone's)
 
 - The living room in HD with the shade on (V1.1): 364 draws, 119k triangles, 112 shaders. The workflow no longer renders stills (5–9 min).
-- **The photos after the first picture (V1.9):** on Pages they're a file of their own (`photos.<hash>.json`, 1.6 MB, kept by the service
-  worker); the page is 2.1 MB, was 3.7. Until they land each photo's texture is its mean colour (`photo_meta`). At 8 Mbit/s in a test
+- **The photos after the first picture (V1.9):** on Pages they're a file of their own (`photos.<hash>.json`, 8.8 MB since V1.11's sharper
+  photos, kept by the service worker); the page is 2.1 MB, was 3.7; the shared page 10.9 MB (its limit 16). Until they land each photo's texture is its mean colour (`photo_meta`). At 8 Mbit/s in a test
   browser the page downloads in 3.6 s, was 5.4; the first picture 8.4 s, was 9.0 (software graphics: the rest is drawing). The shared page
   keeps them inline, read after the first picture. `check_site.py` checks all 13 sets arrive.
 - The repo (V1.7): 343 files, 70 MB tracked, 46 MB of it the client's photos; `checks.py`'s repo check fails on a tracked build output

@@ -1,7 +1,7 @@
 # Sources for the house's textures
 
-Photo-textures (v70), all **CC0** (public domain) from [Poly Haven](https://polyhaven.com). They were downloaded at 1k, then toned
-to the client's photos and shrunk to 512 px (the living room's oak 1024) by `house/textures/build_textures.py`. The page carries them inline. The real size is
+Photo-textures (v70), all **CC0** (public domain) from [Poly Haven](https://polyhaven.com). They were downloaded at 2k, then toned
+to the client's photos and shrunk to 1024 px (the living room's oak 2048; V1.11, was 512) by `house/textures/build_textures.py`. On Pages they come after the first picture (V1.9); the shared page carries them inline. The real size is
 the area one copy of the picture covers.
 
 | Used for | Poly Haven asset | Real size | Toned |

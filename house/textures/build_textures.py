@@ -1,5 +1,5 @@
 """v70 (BUILD_SPEC phase 3): CC0 photo-textures from Poly Haven for the house's outside and floors, toned to the client's photos.
-    python3 house/textures/build_textures.py <folder of the 1k downloads>     (writes house/textures/<key>_map.jpg / _nor.jpg, 512 px)
+    python3 house/textures/build_textures.py <folder of the 2k downloads>     (writes house/textures/<key>_map.jpg / _nor.jpg, 1024 px)
 Each comes in as <asset>_diff.jpg and <asset>_nor.jpg (polyhaven.com, CC0); the sources and sizes are in house/SOURCES.md."""
 import sys, json, pathlib
 from PIL import Image, ImageEnhance
@@ -17,13 +17,13 @@ SET = {"brick": ("red_brick_03", 1.0, 1.3, 1.22, 1.12),            # the front p
 TINT = {"carpet_grey": ("Carpet012", 0.5, "#6f6f73"), "carpet": ("Carpet012", 0.5, "#cdbfa6"),
         "lawn": ("sparse_grass", 2.0, "#5a7838")}   # V1.3: the lawn's light and shade in the back photo's green (the photo's own grass is mostly dry)
 SRC = {"Carpet012": "https://ambientcg.com/view?id=Carpet012"}
-PX = {}                                                          # sizes other than 512 px (the carpets at 0.5 m are already 1 px a mm)
+PX = {}                                                          # sizes other than 1024 px (V1.11, the client: "i dont want these low res versions, best textures"; was 512)
 # V1.1: the living room's own surfaces, the photo as it is (room3d.js matches each to its drawn texture's average colour as it loads,
 # so the parts keep their colours and only the grain, weave and relief are real): key: (asset, real size m, map px, normal px, turn,
 # relief). The oak is turned a quarter so its grain runs along the boards, as the drawn oak's does; 0 px leaves that picture out. Veneer
 # and smooth plaster have only a hair of relief, gone at 256-512 px: relief scales it so it reads at the room's distance
-PLAIN = {"lr_oak": ("oak_veneer_01", 0.6, 1024, 512, True, 6), "lr_hessian": ("hessian_380", 0.6, 512, 256, False, 1.5),
-         "lr_cord": ("ribbed_corduroy", 0.6, 0, 256, False, 1.5), "lr_plaster": ("white_plaster_02", 1.6, 0, 256, False, 6)}
+PLAIN = {"lr_oak": ("oak_veneer_01", 0.6, 2048, 1024, True, 6), "lr_hessian": ("hessian_380", 0.6, 1024, 1024, False, 1.5),   # V1.11: twice as sharp
+         "lr_cord": ("ribbed_corduroy", 0.6, 0, 1024, False, 1.5), "lr_plaster": ("white_plaster_02", 1.6, 0, 1024, False, 6)}
 
 
 def turn(im, normal):
@@ -71,7 +71,7 @@ def main(src):
     for key, aid, size, look in jobs:
         if not (src / f"{aid}_diff.jpg").exists():          # keep what's built when a download isn't to hand
             continue
-        px = PX.get(key, 512)
+        px = PX.get(key, 1024)
         d = Image.open(src / f"{aid}_diff.jpg").convert("RGB").resize((px, px), Image.LANCZOS)
         look(d).save(HERE / f"{key}_map.jpg", quality=78, optimize=True)
         n = src / f"{aid}_nor.jpg"
