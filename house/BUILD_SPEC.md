@@ -183,7 +183,7 @@ their photo was taken, the photo in `EVIDENCE.md`).
 
 ### Phase 7 · Rendering tiers
 
-1. **Phone:** only the current floor detailed, other floors as simplified shells; 1K textures; no shadows; ≥ 30 fps on the emulated
+1. **Phone:** only the current floor detailed, other floors as simplified shells; 1K textures (V1.11: a capable phone gets the PCs' set: HD, 3×, the shade, soft shadows, stepping down only if slow); ≥ 30 fps on the emulated
    390 × 844 test (`R3D.perf().frameMs` ≤ 33).
 2. **PC HD:** shadows (the sun 4096 on a big GPU), AO, bloom, per-room reflections, 2K textures.
 3. **Render photo:** `three-gpu-pathtracer` (pinned version, from a CDN allowed by the page's rules) on the current camera, progressive,

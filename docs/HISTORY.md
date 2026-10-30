@@ -137,3 +137,7 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V1.10** (30 Oct 2026): out of every window. By day each room's windows show the outside (the sky, the ground, the hill, the gardens,
   next door, the street), not dark glass; the slope the house is built into kept out of the lower floor's rooms; Be there draws only
   what the room sees (the kitchen 150 draws, was 358).
+- **V1.11** (30 Oct 2026): best quality on the PCs and the iPhones. The client: "i dont want these low res versions, best textures, quality
+  and performance on the PC and mobile". The photos from the 2k sources at 1024 px (the oak 2048), twice as sharp; a capable phone starts in
+  HD at 3× with the shade, soft 2048 shadows and 4× anti-aliasing (was Fast at 2×), gives way a step at a time only if slow, keeps full
+  sharpness while you drag; the PCs' sun shadows at 4096, the house at 2×; phones save 4K pictures.
