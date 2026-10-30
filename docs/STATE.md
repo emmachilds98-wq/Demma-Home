@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.18 (30 Oct 2026)
+**Version:** V1.19 (30 Oct 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -64,6 +64,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   every room by day in HD on one sheet (`_shots/gallery.jpg`).
 - **The front door (V1.16):** as the hall photo: cream to the hall, white to the porch, its two lights through it (seen from both
   sides), four raised panels, the brass letterbox in the rail between them, a lever each side.
+- **Hide buttons (V1.19):** one labelled pill under the view buttons, in every view, on a phone too: it takes every button and panel
+  off and leaves only Show buttons (Esc too); a toast says how to bring them back. The version shows on a phone after where you are.
 - **Fixes from the client's pictures (V1.18):** the boiler cupboard a normal size with a standard door, out into both bedrooms (the wall
   between them 7.5 into the master); no wall across the living room's stairs into the hall; the stub of the bathroom's wall by the sink
   gone; the stair curtain clear of the banister; the lower store's outside wall faces the right way (its brick showed inside).
@@ -126,3 +128,5 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
   render and PDF (old rounds' copies had grown to 549 MB on the build machine). The client: "merge and continue".
 - **V1.18** (30 Oct 2026): from the client's pictures: the boiler cupboard resized with a standard door, the wall across the living room's
   stairs out, the bathroom wall's stub out, the stair curtain clear of the banister, the lower store's brick outside its wall.
+- **V1.19** (30 Oct 2026): Hide buttons takes every button off in any view (labelled on a phone too; Show buttons or Esc brings them back);
+  the version on the phone's brand. The client: "I need to be able to take more buttons off easily and make it clear how to do this".

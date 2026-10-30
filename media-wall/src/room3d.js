@@ -2605,8 +2605,6 @@ function applyFloors() {
   if (HFLOOR.nextThings) HFLOOR.nextThings.visible = !!S.hstreet;
   qsa("[data-htog]").forEach(b => b.setAttribute("aria-pressed", String(!!S[b.dataset.htog])));
   const fv = qs("#r3d-fview"); if (fv) { fv.hidden = !on; qsa("[data-hfview]", fv).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.hfview === hfview))); }   // v74
-  const pk = qs("#r3d-pick"), mini = qs(".r3d-mini"); if (pk && mini) { const off = on && mini.classList.contains("pickoff"); if (!on) mini.classList.remove("pickoff");
-    pk.setAttribute("aria-pressed", String(off)); pk.querySelector(".ms").textContent = off ? "unfold_more" : "unfold_less"; pk.querySelector(".t").textContent = off ? "Show buttons" : "Hide buttons"; }
   syncRmode();   // v71
   /* v73, the client: "still extremely slow": standing in a room, only what can be seen from it is drawn: its own floor, the group with
      its ceiling (the lower floor's are in the ground floor's, the first floor's in the roof's), the floor its stairs lead to (the landing,
@@ -2678,7 +2676,7 @@ function drawRooms() {
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-hfloor]"); if (b) { hfloor = b.dataset.hfloor; applyFloors(); floorCam(); return; }
   const fvb = e.target.closest("[data-hfview]"); if (fvb) { hfview = fvb.dataset.hfview; applyFloors(); floorCam(); return; }   // v74
-  if (e.target.closest("#r3d-pick")) { qs(".r3d-mini")?.classList.toggle("pickoff"); applyFloors(); return; }
+  if (e.target.closest("#r3d-pick")) { setBare(!document.body.classList.contains("bare")); return; }
   const tg = e.target.closest("[data-htog]"); if (tg) { S[tg.dataset.htog] = !S[tg.dataset.htog]; store.set(KEY, S); applyFloors(); return; }
   const r = e.target.closest("[data-hroom]"); if (!r || !R.HOUSE3) return;
   const id = r.dataset.hroom, v = ROOM_VIEW[id];
@@ -4289,6 +4287,14 @@ function lookUrl() {
   const here = location.href.split("#")[0], local = location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname) || /github\.io$/.test(location.hostname);
   return (local ? here : TOURD.pages) + "#look-" + b64u(JSON.stringify(lookOf()));
 }
+/* V1.19, the client: "take more buttons off easily and make it clear how": Hide buttons takes every button off but Show buttons (Esc too) */
+function setBare(on) {
+  document.body.classList.toggle("bare", on);
+  const pk = qs("#r3d-pick"); if (!pk) return;
+  pk.setAttribute("aria-pressed", String(on)); pk.querySelector(".ms").textContent = on ? "visibility" : "visibility_off"; pk.querySelector(".t").textContent = on ? "Show buttons" : "Hide buttons";
+  if (on) toast("Buttons hidden: tap Show buttons, top right, to bring them back");
+}
+document.addEventListener("keydown", e => { if (e.key === "Escape" && document.body.classList.contains("bare")) { e.preventDefault(); setBare(false); } });
 function toast(t) {   // the clock starts once two frames have drawn (applying a look can recompile the room first)
   const el = qs("#r3d-toast"); if (!el) return; el.textContent = t; el.hidden = false; clearTimeout(toast.t);
   requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 3200); }));

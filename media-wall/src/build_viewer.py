@@ -1223,7 +1223,7 @@ def _page(site=False):
 {STYLE_V25}
 <button type="button" class="skip" data-tools-toggle>Open the room's controls</button>
 <div class="brand"><span class="mark" aria-hidden="true"><i style="background:var(--peach)"></i><i style="background:var(--mint)"></i><i style="background:var(--lilac)"></i><i style="background:var(--butter)"></i></span>
-  <span><b>Demma's Home<span class="ver" title="This page is {LABEL}">{LABEL}</span></b><small id="brand-place">The whole house</small></span></div>
+  <span><b>Demma's Home<span class="ver" title="This page is {LABEL}">{LABEL}</span></b><small id="brand-place" data-ver="{LABEL}">The whole house</small></span></div>
 <nav class="hnav" aria-label="The plan">{"".join(f'<button type="button" data-nav="{k}" aria-current="false">{n}</button>' for k, n in (("plan", "Plan"), ("build", "Build"), ("buy", "Buy")))}</nav>
 <main id="room" aria-label="Your room in 3D">{room3d_page.section(gallery3d())}</main>
 {sheet("plan", "Your plan", "map", 300, plan_home + chapters)}
