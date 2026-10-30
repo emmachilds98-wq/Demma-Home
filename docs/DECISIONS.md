@@ -59,4 +59,7 @@ take one out (to `docs/HISTORY.md`) when they change their mind.
 - **No door or wall between the landing and the stairwell** (26 Oct 2026, v77): the banister guards it.
 - **The kitchen** as their photos and notes: the bar along the door's wall, the boiler in its corner over the bar's end (26 Oct 2026, v73).
 - **The bathroom door is white** like the rest (26 Oct 2026, v73).
+- **The boiler cupboard sticks out into both bedrooms**, flush with the master's wardrobes, its door narrower to fit (29 Oct 2026, V1.8: "adjust as needed").
+- **The bathroom's wall over the stairs** 5–10 cm further into the bathroom (29 Oct 2026, V1.8).
+- **The cordyline (palm) is in their garden**, by the path, not next door's (29 Oct 2026, V1.8: "the palm tree is in my garden and not next door").
 - **The alley gate** between their house and next door (25 Oct 2026, v66).

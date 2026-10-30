@@ -129,3 +129,6 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V1.7** (29 Oct 2026): the repo tidied: dead scripts, the retired garden photos and their code, unused pictures, old comparison stills
   and the build's own icons out (33 files); a repo check against crowding; the outside's sun direction no longer a zero light in every living
   room shader. The client: "please optimise the codebase and ensure we're not overcrowding the repo".
+- **V1.8** (29 Oct 2026): the cordyline back in their garden by the path, where V1.3 had it ("the palm tree is in my garden and not next
+  door"); the boiler cupboard out into both bedrooms, flush with the master's wardrobes, 10 into bedroom 2 (in Measure); the bathroom's
+  wall over the stairs 7.5 cm further in.

@@ -37,6 +37,7 @@ ROWS = [
     ("hall_radiator", "hall", "The hall radiator's width", "end to end", lambda: round(D.HALL["radiator"]["z"][1] - D.HALL["radiator"]["z"][0], 1), ("length", ("HALL", "radiator", "z"))),
     ("master_front", "master", "Wardrobes' front to the front wall", "along the carpet", _master_front, None),
     ("master_alcove", "master", "The wardrobes' alcove width", "wall to wall", lambda: round(D.MASTER["alcove"][1] - D.MASTER["alcove"][0], 1), None),
+    ("airing_bed2", "bed2", "How far the boiler cupboard sticks into the room", "from the wall beside it", lambda: D.AIRING["into_bed2"], ("set", ("AIRING", "into_bed2"))),
     ("bed2_long", "bed2", "Bathroom wall to the wall behind the wardrobes", "along the carpet, the longest way", lambda: 363.0, None),
     ("stairs_tread", "living", "One stair tread's depth", "nose to nose", lambda: __import__("model").Gm.STAIR_GOING, None),
     ("meters", "hall", "The meter cupboard's width", "inside", lambda: 38.0, None),

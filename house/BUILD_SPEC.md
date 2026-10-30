@@ -128,10 +128,10 @@ so the cross-origin gotcha below is side-stepped. The rooms' own surfaces stay d
 
 **V1.3: started.** Ground to the horizon (`room3d.js` `outdoor()`): the street's level in front, the garden's behind, the slope the terrace is built into between them (hidden in the house; by it, the alley's own steps with Gardens on); the lawn tinted to the back photo's green; the fences' boards (`houseTex` `fence`); the cordyline (`survey_data.PLANTS`, `buildPlants`).
 
-**V1.4: the far end and beyond.** The cordyline moved over the fence (next door's, the view from upstairs). The far end's trees (`buildTrees`: a conifer, a clump of tall stems, next door's evergreen; their leaves drawn sprays on instanced cards); the far fences; past them the long low building with grey sheet roofs (with Gardens), the valley's trees and the hill opposite with its houses (with the land, `buildBeyond`, `survey_data.BEYOND`); the land 3 km out, the sky past it, the camera's reach 3 km outside (120 m inside), the haze 40–700 m. 
+**V1.4: the far end and beyond.** The far end's trees (`buildTrees`: a conifer, a clump of tall stems, next door's evergreen; their leaves drawn sprays on instanced cards); the far fences; past them the long low building with grey sheet roofs (with Gardens), the valley's trees and the hill opposite with its houses (with the land, `buildBeyond`, `survey_data.BEYOND`); the land 3 km out, the sky past it, the camera's reach 3 km outside (120 m inside), the haze 40–700 m. 
 
 **V1.5: out of the living room's window.** By day, from inside the living room, the window shows the modelled outside (the garden, its
-trees and next door's cordyline, the building past the fence, the valley and the hill, under the sky lit by the room's own sun, in the haze)
+trees and the cordyline, the building past the fence, the valley and the hill, under the sky lit by the room's own sun, in the haze)
 in place of v56's plain sky; by evening the dusk plane as before (`room3d.js` `roomOut`, `outdoor()`). It matches the client's video frame
 (`photo_garden_window_24oct.jpg`): the cordyline left, the path and lawn, the end trees, the dark fence right. 25 more draws by day. The
 garden photo (`GARDEN_ON`) stays off for good. Next: the view photos laid on the hill.
