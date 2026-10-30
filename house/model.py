@@ -737,12 +737,28 @@ def porch(o):
         o.box("upvc", x - 1.5, 0.5, d["a"] + 1, x + 1.5, D.DOOR_H - 1, d["b"] - 1)
         o.box("chrome", x + side * 1.5, 98, d["a"] + 6, x + side * 4, 101, d["a"] + 14)
     d = ds["hall_porch"]; z = d["line"]                                                  # the front door, ahead
-    o.box("upvc", d["a"] + 1, 0.5, z - 2.2, d["b"] - 1, D.DOOR_H - 1, z + 2.2)
-    w = d["b"] - d["a"]
-    for xa in (d["a"] + 12, d["a"] + w / 2 + 4):
-        o.box("glass", xa, D.DOOR_H - 50, z + 2.2, xa + w / 2 - 16, D.DOOR_H - 22, z + 2.8)
-    o.box("brass", d["b"] - 14, 98, z + 2.2, d["b"] - 10, 112, z + 4.2)
-    o.box("brass", (d["a"] + d["b"]) / 2 - 14, 75, z + 2.2, (d["a"] + d["b"]) / 2 + 14, 79, z + 3.2)   # the letterbox
+    # V1.14b (QUALITY_PLAN Q6, the client's photo_hall_to_front_door_30oct): white to the porch, cream to the hall, two small lights high
+    # up through it (they were on its porch face only), below them four raised panels on the hall side, a brass letterbox both sides, a
+    # lever handle each side
+    a0, a1, H_, w = d["a"] + 1, d["b"] - 1, D.DOOR_H - 1, d["b"] - d["a"]
+    gl = [(d["a"] + 12, d["a"] + w / 2 - 4), (d["a"] + w / 2 + 4, d["b"] - 12)]; g0, g1 = D.DOOR_H - 50, D.DOOR_H - 22
+    o.box("upvc", a0, 0.5, z - 2.0, a1, g0, z + 2.2)                                      # the leaf round its two lights
+    o.box("upvc", a0, g1, z - 2.0, a1, H_, z + 2.2)
+    for xa, xb in ((a0, gl[0][0]), (gl[0][1], gl[1][0]), (gl[1][1], a1)):
+        o.box("upvc", xa, g0, z - 2.0, xb, g1, z + 2.2)
+    for xa, xb in gl:
+        o.box("glass", xa, g0, z - 0.3, xb, g1, z + 0.3)
+    o.box("door_cream", a0, 0.5, z - 2.2, a1, g0, z - 2.0)                                # its hall face, cream
+    o.box("door_cream", a0, g1, z - 2.2, a1, H_, z - 2.0)
+    for xa, xb in ((a0, gl[0][0]), (gl[0][1], gl[1][0]), (gl[1][1], a1)):
+        o.box("door_cream", xa, g0, z - 2.2, xb, g1, z - 2.0)
+    for xa, xb in gl:                                                                     # the panels: two tall, two short
+        for ya, yb in ((g0 - 72, g0 - 8), (12, g0 - 84)):
+            o.box("door_cream", xa + 3, ya, z - 2.9, xb - 3, yb, z - 2.2)   # clear of the handle's plate
+    for zz, k in ((z + 2.2, 1), (z - 2.2, -1)):                                           # the letterbox and the lever, each side
+        o.box("brass", (d["a"] + d["b"]) / 2 - 14, 66, min(zz, zz + k * 1.0), (d["a"] + d["b"]) / 2 + 14, 71, max(zz, zz + k * 1.0))   # in the rail between the panels
+        o.box("brass", d["b"] - 14, 98, min(zz, zz + k * 2.0), d["b"] - 10, 112, max(zz, zz + k * 2.0))
+        o.box("brass", d["b"] - 24, 106, min(zz + k * 2.0, zz + k * 5.0), d["b"] - 10, 108, max(zz + k * 2.0, zz + k * 5.0))
     P_, rs = D.PORCH, {r["id"]: r for r in rooms("ground")}
     e, wst = rs["front_store_e"], rs["front_store_w"]
     # v69, the client: the garage side's cupboard "houses my electric box and my gas meter": both on its back wall
@@ -1866,7 +1882,7 @@ def build():
 
 MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textures)
     "brick": ("#9a4b36", 0.92), "party": ("#9a4b36", 0.92), "soldier": ("#83402e", 0.9), "paint": ("#f1ede5", 0.85),
-    "upvc": ("#f5f5f2", 0.35), "glass": ("#dfe9ee", 0.03), "artex": ("#f3f2ee", 0.97), "brass": ("#c9b58a", 0.3), "rib": ("#e2e2de", 0.5),
+    "upvc": ("#f5f5f2", 0.35), "glass": ("#dfe9ee", 0.03), "artex": ("#f3f2ee", 0.97), "door_cream": ("#e8ddc2", 0.4), "brass": ("#c9b58a", 0.3), "rib": ("#e2e2de", 0.5),
     "tile": ("#7b5a4b", 0.85), "ridge": ("#6d4c3f", 0.85), "hung": ("#6f4636", 0.85), "felt": ("#3d3b3a", 0.9),
     "slab": ("#cfc8bb", 0.95), "carpet": ("#cdbfa6", 1.0), "tile_f": ("#d9d4cb", 0.6), "vinyl": ("#cdd8da", 0.6), "concrete": ("#a8a49c", 0.95),
     "earth": ("#8a8173", 1.0), "porch_in": ("#a7a49c", 0.9), "bin": ("#2f3236", 0.6), "recycle": ("#2b5d9a", 0.6), "quarry": ("#b25a43", 0.7), "board": ("#c4b79f", 0.9), "oak": ("#b07a46", 0.55), "fitting": ("#f6f6f3", 0.3),
