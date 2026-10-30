@@ -151,3 +151,5 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
   the house reflecting its sky outside, and `tools/gallery.py`; the walls' plaster relief as photographed (V1.12's read as rough render).
 - **V1.14** (30 Oct 2026): the quality plan's Q6, shapes, from the photos and standard sizes: swivel desk chairs, the kitchen's bar stools
   (they were low chairs; the photos show bar stools), the guitars' bodies. The client: "continue upgrading".
+- **V1.15** (30 Oct 2026): by evening a room's windows show the night (the WC's and the bathroom's showed the garden in daylight), and
+  switching day or evening in a room updates them at once; the gallery by evening (`--evening`).

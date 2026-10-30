@@ -2615,8 +2615,9 @@ function applyFloors() {
     const rid = VIEW_ROOM[S.view], rr = R.HOUSE3.rooms[rid];
     if (rr) {
       const fk = { "-260": "lower", "0": "ground", "260": "first" }[String(rr[4])];
-      const see = new Set(["out", "street", "nextThings", fk, { lower: "ground", ground: "first", first: "roof" }[fk]]);
-      if (S.tod === "day") for (const k of ["street", "nextThings"]) if (HFLOOR[k]) HFLOOR[k].visible = true;   // V1.10: next door and the street through the windows
+      const day = S.tod === "day", see = new Set([fk, { lower: "ground", ground: "first", first: "roof" }[fk]].concat(day ? ["out", "street", "nextThings"] : []));   // V1.15: by evening the windows show the night (the garden stayed in daylight)
+      if (day) for (const k of ["street", "nextThings"]) if (HFLOOR[k]) HFLOOR[k].visible = true;   // V1.10: next door and the street through the windows
+      if (!day && garden3d && garden3d.visible) { garden3d.visible = false; hidReal.push(garden3d); }
       if (rid === "landing") see.add("ground");
       if (rid === "hall") see.add("lower");
       for (const [k, g] of Object.entries(HFLOOR)) if (!see.has(k) && g.visible) { g.visible = false; hidReal.push(g); }
@@ -3301,6 +3302,7 @@ function envSoon() {
   if (started && aoLive()) ENV.t = setTimeout(roomEnv, 1200);
   else if (ENV.studio && scene.environment !== ENV.studio) { scene.environment = ENV.studio; envLevels(S.tod === "day"); }
 }
+let lastTod = null;   // V1.15: the time of day applyLight last saw
 function applyLight() {
   placeRoomLights();                                          // v69: a room of the house: its ceiling lights, day or evening
   const day = S.tod === "day" || S.view === "house", hd = S.quality === "hd";   // V1.3: the whole house by day (inside, the rooms keep the time you set)
@@ -3361,7 +3363,7 @@ function applyLight() {
   if (inK) { scene.traverse(l => { if (l.isLight && l !== skyFill) l.intensity = 0; }); hemi.intensity = 0.5; }   // every light of the living room's, the spots too
   scene.background.set(outside && R.HOUSE3 ? (day ? "#c6d6e3" : "#1b2233") : "#0d100e");             // and a sky behind it
   if (gl.shadowMap.enabled !== hd) { gl.shadowMap.enabled = hd; MATS.forEach(m => m.needsUpdate = true); sizeRenderer(); if (LIVE && started) precompile(); }
-  if (started) outdoor();                                                   // V1.5: day or evening changes the living room's window
+  if (started) { if (ROOMV() && S.tod !== lastTod) applyFloors(); else outdoor(); lastTod = S.tod; }   // V1.5: day or evening changes the living room's window; V1.15: and a room's (applyFloors ends in outdoor), only when it changes (not each slider move)
   reshadow();
   dirty();
 }
