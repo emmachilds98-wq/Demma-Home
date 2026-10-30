@@ -1773,7 +1773,7 @@ def lower_ceilings(o):
     for r in rooms("lower"):
         if r["id"] in ("lower_stairs",):
             continue
-        o.box("ceiling", r["x0"], y - 2, r["z0"], r["x1"], y, r["z1"])
+        o.box("artex" if r["id"] in D.ARTEX else "ceiling", r["x0"], y - 2, r["z0"], r["x1"], y, r["z1"])   # V1.13: artex where the photos show it
 
 
 def build():
@@ -1812,7 +1812,7 @@ def build():
 
 MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textures)
     "brick": ("#9a4b36", 0.92), "party": ("#9a4b36", 0.92), "soldier": ("#83402e", 0.9), "paint": ("#f1ede5", 0.85),
-    "upvc": ("#f5f5f2", 0.35), "glass": ("#9fbccd", 0.05), "brass": ("#c9b58a", 0.3), "rib": ("#e2e2de", 0.5),
+    "upvc": ("#f5f5f2", 0.35), "glass": ("#dfe9ee", 0.03), "artex": ("#f3f2ee", 0.97), "brass": ("#c9b58a", 0.3), "rib": ("#e2e2de", 0.5),
     "tile": ("#7b5a4b", 0.85), "ridge": ("#6d4c3f", 0.85), "hung": ("#6f4636", 0.85), "felt": ("#3d3b3a", 0.9),
     "slab": ("#cfc8bb", 0.95), "carpet": ("#cdbfa6", 1.0), "tile_f": ("#d9d4cb", 0.6), "vinyl": ("#cdd8da", 0.6), "concrete": ("#a8a49c", 0.95),
     "earth": ("#8a8173", 1.0), "porch_in": ("#a7a49c", 0.9), "bin": ("#2f3236", 0.6), "recycle": ("#2b5d9a", 0.6), "quarry": ("#b25a43", 0.7), "board": ("#c4b79f", 0.9), "oak": ("#b07a46", 0.55), "fitting": ("#f6f6f3", 0.3),

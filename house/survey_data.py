@@ -230,6 +230,9 @@ WC = dict(toilet=dict(x=(417.0, 453.0), d=62.0), cistern=dict(x=(412.0, 458.0), 
 # hall's back corner to the door down, floor to ceiling (tapestry z None: the wall's own length). "the rad shifted roughly half a meter
 # to the left" (facing it: towards the living room; it stood behind the tall rack) and "the light switch appears above the rad slightly
 # to the right between rad and shoe rack": its plate 117 up (as the others), just past the radiator's end.
+# V1.13 (QUALITY_PLAN Q2): the ceilings with artex (stipple), as the client's photos of 30 Oct show them: the kitchen
+# (photo_kitchen_*_30oct) and the lower landing by the WC and the stairs (photo_wc_sink_stairs_30oct); the WC's and the hall's are smooth.
+ARTEX = ["kitchen", "kitchen_1", "kitchen_2", "lower_landing"]
 # V1.12, the client: "i want the door from ground living room to upstairs door to be removed, there is no door on the stair well like
 # that"; their photos of 30 Oct (photo_hall_door_down_frame_30oct, photo_hall_racks_frame_30oct) show it: the frame in the stair box's end,
 # the grille over it, no door, only the old hinges' marks. door_leaf False: the frame and the grille stay, the door and its handle go.
