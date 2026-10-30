@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.8 (29 Oct 2026)
+**Version:** V1.9 (30 Oct 2026)
 
 ## Where it lives
 
@@ -84,8 +84,11 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 
 ## Numbers (28 Oct, software graphics in a test browser: relative, not a phone's)
 
-- The living room in HD with the shade on (V1.1): 364 draws, 119k triangles, 112 shaders. The page carries its data inline (2 MB, 1.3 MB
-  of it the photos): loading the photos after the first picture is the next speed step. The workflow no longer renders stills (5–9 min).
+- The living room in HD with the shade on (V1.1): 364 draws, 119k triangles, 112 shaders. The workflow no longer renders stills (5–9 min).
+- **The photos after the first picture (V1.9):** on Pages they're a file of their own (`photos.<hash>.json`, 1.6 MB, kept by the service
+  worker); the page is 2.1 MB, was 3.7. Until they land each photo's texture is its mean colour (`photo_meta`). At 8 Mbit/s in a test
+  browser the page downloads in 3.6 s, was 5.4; the first picture 8.4 s, was 9.0 (software graphics: the rest is drawing). The shared page
+  keeps them inline, read after the first picture. `check_site.py` checks all 13 sets arrive.
 - The repo (V1.7): 343 files, 70 MB tracked, 46 MB of it the client's photos; `checks.py`'s repo check fails on a tracked build output
   or any other file over 1.5 MB. The clone is about 76 MB with its history (DIY: 5.2 GB).
 

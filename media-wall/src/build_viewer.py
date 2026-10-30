@@ -1435,6 +1435,20 @@ self.addEventListener("fetch", e => {{
 """)
 
 
+def split_photos(html_):
+    """V1.9 (Phase 4): on Pages the 3D's photos (1.6 MB) are a file of their own, named by its contents, fetched after the first picture
+    and kept by the service worker; the page carries the rest. tools/build.py puts them back inline for the shared page."""
+    import hashlib, re
+    m = re.search(r'<script type="application/json" id="photo-data">(.*?)</script>', html_, re.S)
+    if not m or len(m.group(1)) < 3:
+        return html_
+    name = f"photos.{hashlib.sha256(m.group(1).encode()).hexdigest()[:10]}.json"
+    for old in SITE.glob("photos.*.json"):
+        if old.name != name: old.unlink()
+    (SITE / name).write_text(m.group(1))
+    return html_[:m.start()] + f'<script type="application/json" id="photo-data" data-src="{name}"></script>' + html_[m.end():]
+
+
 def publish_files():
     """{published path: source} for the Artifact publish: the viewer images and the downloads."""
     files = {f"art/{p.name}": str(p) for p in sorted((HERE / "art").glob("*.webp"))}
@@ -1489,7 +1503,7 @@ if __name__ == "__main__":
     (HERE / "media_wall_viewer_inline.html").write_text(inline_images(page()))
     SITE.mkdir(parents=True, exist_ok=True)
     for name in ("index.html", "plan.html"):                                  # V1.2: the site's front door again (plan.html for old links)
-        (SITE / name).write_text(site())
+        (SITE / name).write_text(split_photos(site()))
     pwa_files()
     (HERE / "publish_files.json").write_text(json.dumps(publish_files(), indent=1))
     todo = deck_assets_todo()

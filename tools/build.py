@@ -36,6 +36,8 @@ def artifact():
     page = re.sub(r"<!doctype html>\s*<html[^>]*>\s*<head>\s*", "", page, flags=re.I)
     page = re.sub(r'<meta charset="utf-8">\s*<meta name="viewport"[^>]*>\s*', "", page)
     page = re.sub(r"</head>\s*<body>", "", page).replace("</body>\n</html>\n", "").replace('<link rel="manifest" href="manifest.webmanifest">\n', "")
+    page = re.sub(r'<script type="application/json" id="photo-data" data-src="([^"]+)"></script>',   # V1.9: its photos inline again
+                  lambda m: '<script type="application/json" id="photo-data">' + (SITE / m.group(1)).read_text() + "</script>", page)
     page = page.replace('href="media-wall/out/', 'href="https://emmachilds98-wq.github.io/Demma-Home/media-wall/out/')
     (SITE / "artifact.html").write_text(page)
 

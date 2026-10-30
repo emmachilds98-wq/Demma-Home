@@ -1,6 +1,6 @@
 """Demma's Home V1.2: the front door's check, on the built site (index.html, the old design back). At the iPhone 15 Pro's size (393 × 852,
 touch) and a desktop's (1920 × 1080): no script errors, nothing off the right edge, it opens on the whole house and the brand says so, the
-floors pill is one row on the phone, and the dock's Measure lists every open size, keeps a number typed in and counts it. Screenshots go
+floors pill is one row on the phone, the photos arrive after the first picture (V1.9), and the dock's Measure lists every open size, keeps a number typed in and counts it. Screenshots go
 to _shots/ (the workflow keeps them with the run).
 
 python3 tools/check_site.py [site dir]      exits non-zero on any failure; THREE_LOCAL serves three.js where the CDN is blocked"""
@@ -32,6 +32,7 @@ def main():
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     base = f"http://127.0.0.1:{httpd.server_address[1]}/"
     rows = len(json.loads((SITE / "data/house.json").read_text())["measure"])
+    photos = len(json.loads((ROOT / "house/textures/textures.json").read_text()))
     fails = []
     with sync_playwright() as p:
         b = pw.launch(p, pw.GL)
@@ -45,6 +46,8 @@ def main():
             view, place = pg.evaluate("() => [R3D._dbg.S.view, (document.getElementById('brand-place') || {}).textContent]")
             if view != "house": fails.append(f"{w}: opens on {view!r}, not the whole house")
             if place != "The whole house": fails.append(f"{w}: the brand says {place!r}")
+            got = pg.evaluate("() => R3D.photos()")   # V1.9: the photos come after the first picture (their own file)
+            if got != photos: fails.append(f"{w}: {got} of {photos} photo sets arrived")
             off = pg.evaluate(OFF)
             if off: fails.append(f"{w}: off the right edge: {off}")
             pg.screenshot(path=str(SHOTS / f"site-{w}-house.png"))
@@ -70,7 +73,7 @@ def main():
         b.close()
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
-    print(f"site check: the front door at 393 and 1920, opens on the house, Measure keeps a number, {len(fails)} failed; screenshots in _shots/")
+    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, Measure keeps a number, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
 

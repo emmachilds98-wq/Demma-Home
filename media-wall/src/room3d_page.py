@@ -779,7 +779,9 @@ def section(gallery=""):
     moments = "".join(f'<button type="button" data-moment="{k}"><span class="ms" aria-hidden="true">{ic}</span>{t}</button>'
                       for k, ic, t in (("dinner", "dinner_dining", "Dinner for six"), ("four", "lunch_dining", "Lunch for four"), ("film", "movie", "Film night"), ("morning", "wb_sunny", "Morning"),
                                      ("games", "casino", "Games night"), ("drinks", "local_bar", "Drinks")))   # v37
-    data = json.dumps(json.loads((HERE / "scene3d.json").read_text()), separators=(",", ":"))
+    sc = json.loads((HERE / "scene3d.json").read_text())
+    photos = json.dumps((sc["room"].get("HOUSE3") or {}).pop("photo_tex", {}), separators=(",", ":"))   # V1.9: the photos after the first picture
+    data = json.dumps(sc, separators=(",", ":"))
     return f"""<div class="r3d" id="r3d">
   <div class="r3d-stage"><canvas tabindex="0" aria-label="The living room in 3D: drag to look round, scroll or pinch to zoom; WASD or the arrow keys walk, Q and E turn"></canvas>
     <img class="r3d-poster" data-art="3d_room" alt="" aria-hidden="true">
@@ -828,6 +830,7 @@ def section(gallery=""):
 <script type="application/json" id="hotspots-data">{json.dumps(hotspots(), separators=(",", ":"))}</script>
 <script type="module">{(HERE / "room3d.js").read_text()}</script>
 <script type="module">{(HERE / "measure.js").read_text()}</script>
+<script type="application/json" id="photo-data">{photos}</script>
 <script>{DRAWER_JS}</script>
 <script>setTimeout(() => {{ const r = document.getElementById("r3d"), m = document.getElementById("r3d-msg");
   if (r && !r.classList.contains("ready") && !r.classList.contains("nogl")) m.innerHTML = 'The 3D room needs a moment, or your connection blocked its 3D library. The <a href="#plan" data-go="views">drawn views</a> show every option.'; }}, 20000);</script>"""
