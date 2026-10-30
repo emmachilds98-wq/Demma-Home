@@ -132,3 +132,5 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V1.8** (29 Oct 2026): the cordyline back in their garden by the path, where V1.3 had it ("the palm tree is in my garden and not next
   door"); the boiler cupboard out into both bedrooms, flush with the master's wardrobes, 10 into bedroom 2 (in Measure); the bathroom's
   wall over the stairs 7.5 cm further in.
+- **V1.9** (30 Oct 2026): Phase 4's next speed step: the 3D's photos (1.6 MB) come after the first picture, a file of their own on Pages
+  kept by the service worker; until then each is its mean colour. The page 2.1 MB, was 3.7; the same picture once they land.

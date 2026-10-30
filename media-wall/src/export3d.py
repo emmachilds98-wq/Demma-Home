@@ -41,6 +41,10 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
         for f in ("map", "nor"):
             if t[f] in seen: t[f] = "@" + seen[t[f]]
             elif t[f]: seen[t[f]] = f"{k}.{f}"
+    from PIL import Image                                   # V1.9: what the 3D shows until the photos arrive: each one's size and mean colour
+    avg = lambda f: "#%02x%02x%02x" % Image.open(f).convert("RGB").resize((1, 1), Image.Resampling.BOX).getpixel((0, 0))
+    e["photo_meta"] = {k: dict(size=m["size"], map=(td / f"{k}_map.jpg").exists(), nor=(td / f"{k}_nor.jpg").exists(),
+                               avg=avg(td / f"{k}_map.jpg") if (td / f"{k}_map.jpg").exists() else None) for k, m in meta.items()}
     # v71: each room's outline and floor level (the viewer's From above and On its own views cut the house to it)
     e["rooms"] = {rid: [r["x0"], r["x1"], r["z0"], r["z1"], model.FLOOR_Y[r["floor"]]] for rid, r in model.room_sizes().items()}
     e["ceil"] = model.CEIL

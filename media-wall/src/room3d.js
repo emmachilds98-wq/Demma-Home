@@ -481,35 +481,52 @@ HESSIAN.repeat.set(3, 9);
    house's) take over the drawn textures above as they arrive. The same texture objects, so no material changes and no new shaders. A
    colour photo is scaled to its drawn texture's average first, so every part keeps its colour (yours, the plan's) and only the grain, the
    weave and the pile are real. A phone without a capable chip keeps the drawn ones */
-const PHOTO = (R.HOUSE3 && R.HOUSE3.photo_tex) || {};
-for (const t of Object.values(PHOTO)) for (const f of ["map", "nor"]) if (typeof t[f] === "string" && t[f][0] === "@") { const [k, g] = t[f].slice(1).split("."); t[f] = PHOTO[k][g]; }   // a shared picture, sent once
-const PHOTOS = !(SMALL && !GOOD_PHONE) && !!(PHOTO.lr_oak && PHOTO.lr_oak.map);
-function photoInto(tex, src, match = true) {
-  if (!PHOTOS || !src) return;
-  const im = new Image();
-  im.onload = () => {
-    let out = im;
-    if (match && tex.image && tex.image.getContext) {
-      const avg = d => { const t = [0, 0, 0]; for (let i = 0; i < d.length; i += 4) { t[0] += d[i]; t[1] += d[i + 1]; t[2] += d[i + 2]; } return t.map(v => v / (d.length / 4) || 1); };
-      const was = tex.image, want = avg(was.getContext("2d").getImageData(0, 0, was.width, was.height).data);
-      out = document.createElement("canvas"); out.width = im.naturalWidth; out.height = im.naturalHeight;
-      const g = out.getContext("2d"); g.drawImage(im, 0, 0);
-      const px = g.getImageData(0, 0, out.width, out.height), d = px.data, k = avg(d).map((v, i) => want[i] / v);
-      for (let i = 0; i < d.length; i += 4) { d[i] *= k[0]; d[i + 1] *= k[1]; d[i + 2] *= k[2]; }   // clamped at 255 by the array
-      g.putImageData(px, 0, 0);
-    }
-    tex.image = out; tex.needsUpdate = true; dirty();
-  };
-  im.src = src;
+/* V1.9 (Phase 4): the photos come after the first picture (their own file on Pages, the page's last script on the shared page): until
+   then each photo's texture is its mean colour (house/textures, photo_meta) and a flat relief, the same texture objects, so nothing
+   recompiles when they land */
+const PHOTO = {}, PMETA = (R.HOUSE3 && R.HOUSE3.photo_meta) || {}, PWAIT = [];
+const PHOTOS = !(SMALL && !GOOD_PHONE) && !!(PMETA.lr_oak && PMETA.lr_oak.map);
+let photosIn = null, photosDone = false;
+function loadPhotos() {
+  if (photosIn) return photosIn;
+  const el = document.getElementById("photo-data"), src = el && el.dataset.src, txt = el && el.textContent.trim();
+  return (photosIn = (txt ? Promise.resolve(txt) : src ? fetch(src).then(r => r.ok ? r.text() : "{}") : Promise.resolve("{}"))
+    .then(t => JSON.parse(t)).catch(() => ({})).then(P => {
+      for (const t of Object.values(P)) for (const f of ["map", "nor"]) if (typeof t[f] === "string" && t[f][0] === "@") { const [k, g] = t[f].slice(1).split("."); t[f] = P[k][g]; }   // a shared picture, sent once
+      Object.assign(PHOTO, P); photosDone = true; PWAIT.splice(0).forEach(w => w());
+    }));
+}
+const whenPhoto = (k, f, fn) => { if (!(PMETA[k] && PMETA[k][f])) return false; const go = () => PHOTO[k] && PHOTO[k][f] && fn(PHOTO[k][f]); photosDone ? go() : PWAIT.push(go); return true; };
+const TEX_CLONES = new WeakMap();   // a clone shares the picture but needs telling it changed (not in userData: three copies that as JSON)
+const texClone = t => { const c = t.clone(); TEX_CLONES.has(t) ? TEX_CLONES.get(t).push(c) : TEX_CLONES.set(t, [c]); return c; };
+function texSet(tex, img) { tex.image = img; tex.needsUpdate = true; (TEX_CLONES.get(tex) || []).forEach(c => { c.image = img; c.needsUpdate = true; }); }
+function photoInto(tex, k, f, match = true) {
+  if (!PHOTOS) return;
+  whenPhoto(k, f, src => {
+    const im = new Image();
+    im.onload = () => {
+      let out = im;
+      if (match && tex.image && tex.image.getContext) {
+        const avg = d => { const t = [0, 0, 0]; for (let i = 0; i < d.length; i += 4) { t[0] += d[i]; t[1] += d[i + 1]; t[2] += d[i + 2]; } return t.map(v => v / (d.length / 4) || 1); };
+        const was = tex.image, want = avg(was.getContext("2d").getImageData(0, 0, was.width, was.height).data);
+        out = document.createElement("canvas"); out.width = im.naturalWidth; out.height = im.naturalHeight;
+        const g = out.getContext("2d"); g.drawImage(im, 0, 0);
+        const px = g.getImageData(0, 0, out.width, out.height), d = px.data, k = avg(d).map((v, i) => want[i] / v);
+        for (let i = 0; i < d.length; i += 4) { d[i] *= k[0]; d[i + 1] *= k[1]; d[i + 2] *= k[2]; }   // clamped at 255 by the array
+        g.putImageData(px, 0, 0);
+      }
+      texSet(tex, out); dirty();
+    };
+    im.src = src;
+  });
 }
 const flatNormal = () => canvasTex(4, 4, (g, w, h) => { g.fillStyle = "#8080ff"; g.fillRect(0, 0, w, h); }, false);
 const OAK_NRM = flatNormal(), CORD_NRM = flatNormal(), PLASTER_NRM = flatNormal();
 CORD_NRM.repeat.set(1.44, 0.6);          // the photo's 100 ribs a copy: 144 across a cushion, as the drawn cord's
 PLASTER_NRM.repeat.set(0.625, 0.625);    // 1.6 m of plaster a copy
-const PH = k => PHOTO[k] || {};
-photoInto(OAK_TEX, PH("lr_oak").map); photoInto(OAK_NRM, PH("lr_oak").nor, false);
-photoInto(HESSIAN, PH("lr_hessian").map); photoInto(CORD_NRM, PH("lr_cord").nor, false); photoInto(PLASTER_NRM, PH("lr_plaster").nor, false);
-photoInto(CARPET, PH("carpet_grey").map); photoInto(OATMEAL, PH("carpet").map);   // the house's Carpet012, in your grey and the oatmeal
+photoInto(OAK_TEX, "lr_oak", "map"); photoInto(OAK_NRM, "lr_oak", "nor", false);
+photoInto(HESSIAN, "lr_hessian", "map"); photoInto(CORD_NRM, "lr_cord", "nor", false); photoInto(PLASTER_NRM, "lr_plaster", "nor", false);
+photoInto(CARPET, "carpet_grey", "map"); photoInto(OATMEAL, "carpet", "map");   // the house's Carpet012, in your grey and the oatmeal
 // v16: the client's light box is an IKEA OBEGRÄNSAD: a black panel with a 16 x 16 grid of white LEDs that shows blocky black-and-white
 // pictures, "like pharmacy LED ads". Drawn showing a pixel music note; the unlit LEDs are dark grey dots on the black face.
 // v16: the cap's embroidery. v37: drawn as rows of gold stitching in the shape of the client's cap (four lines on the crown, fourteen
@@ -899,11 +916,11 @@ function buildShell() {
       b.position.copy(v3((xa + xb) / 2, (ya + yb) / 2, (za + zb) / 2)); b.castShadow = b.receiveShadow = true; garden3d.add(b); };
     const zp = z0 - GD.patio;
     if (GD.patio > 0) flat(x0, x1, z0, zp, y0 + 2, mat("#a59f94"));                // a patio by the house (none: the lawn runs to the wall)
-    const texd = (k, c, w, d) => { const T = R.HOUSE3 && houseTex(k); if (!T) return mat(c); const tx = T.map.clone(); tx.needsUpdate = true; tx.repeat.set(w / 100 / T.size[0], d / 100 / T.size[1]);
+    const texd = (k, c, w, d) => { const T = R.HOUSE3 && houseTex(k); if (!T) return mat(c); const tx = texClone(T.map); tx.needsUpdate = true; tx.repeat.set(w / 100 / T.size[0], d / 100 / T.size[1]);
       return reg(new THREE.MeshStandardMaterial({ map: tx, roughness: 0.95 })); };   // v59: lawn and concrete, at their size
     flat(x0, x1 - GD.path, zp, z1, y0, texd("lawn", "#55613f", x1 - GD.path - x0, zp - z1));     // the lawn
     flat(x1 - GD.path, x1, zp, z1, y0 + 1, texd("concrete", "#9b958a", GD.path, zp - z1));      // the path down the left (looking out)
-    const fence = (h, len = GD.length) => { const T = R.HOUSE3 && houseTex("fence"); if (!T) return mat("#6b5644"); const tx = T.map.clone(); tx.needsUpdate = true;   // V1.3: boarded, each board 10 wide
+    const fence = (h, len = GD.length) => { const T = R.HOUSE3 && houseTex("fence"); if (!T) return mat("#6b5644"); const tx = texClone(T.map); tx.needsUpdate = true;   // V1.3: boarded, each board 10 wide
       tx.repeat.set(len / 100 / T.size[0], h / 100 / T.size[1]); return reg(new THREE.MeshStandardMaterial({ map: tx, roughness: 0.9 })); };
     box(x0 - 4, x1 + 4, y0, y0 + GD.fence, z1, z1 - 4, fence(GD.fence, x1 - x0 + 8));   // V1.4: the far fence, 25 m out (the view photos)
     box(x0 - 4, x0, y0, y0 + (GD.fence_r || GD.fence), z0 - 100, z1, fence(GD.fence_r || GD.fence)); box(x1, x1 + 4, y0, y0 + GD.fence, z0, z1, fence(GD.fence));   // the right one lower, its gate by the house box(x0 - 4, x1 + 4, y0, y0 + GD.fence, z1, z1 - 4, fence);
@@ -5389,11 +5406,11 @@ function houseTex(k) {
   if (k in HTEX) return HTEX[k];
   /* v70 (BUILD_SPEC phase 3): CC0 photo-textures (Poly Haven, house/SOURCES.md) where we have them, inline so the shared page shows them
      too (loading from elsewhere failed there in v50); the drawn ones below stay for everything else and as the fallback */
-  const PT = PHOTO, pk = PT[{ party: "brick", soldier: "brick" }[k] || k];
-  if (pk && pk.map) {
-    const img = (src, srgb) => { const t = new THREE.Texture(), im = new Image(); t.image = im; t.wrapS = t.wrapT = THREE.RepeatWrapping;
-      t.colorSpace = srgb ? THREE.SRGBColorSpace : THREE.NoColorSpace; t.anisotropy = 4; im.onload = () => { t.needsUpdate = true; reshadow(); dirty(); }; im.src = src; return t; };
-    return (HTEX[k] = { map: img(pk.map, true), normal: pk.nor ? img(pk.nor, false) : null, size: [pk.size, pk.size], bump: 0 });
+  const pkey = { party: "brick", soldier: "brick" }[k] || k, pm = PMETA[pkey];
+  if (pm && pm.map) {   // V1.9: its mean colour and a flat relief until the photos land (loadPhotos), then the photo in the same texture
+    const img = (f, srgb, fill) => { const t = canvasTex(4, 4, g => { g.fillStyle = fill; g.fillRect(0, 0, 4, 4); }, srgb); t.anisotropy = 4;
+      whenPhoto(pkey, f, src => { const im = new Image(); im.onload = () => { texSet(t, im); reshadow(); dirty(); }; im.src = src; }); return t; };
+    return (HTEX[k] = { map: img("map", true, pm.avg || "#888888"), normal: pm.nor ? img("nor", false, "#8080ff") : null, size: [pm.size, pm.size], bump: 0 });
   }
   let s = 7 + k.length * 101; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
   const noise = (g, w, h, n, a, cols) => { for (let i = 0; i < n; i++) { g.fillStyle = cols[i % cols.length]; g.globalAlpha = a * rnd(); g.fillRect(rnd() * w, rnd() * h, 1 + rnd() * 2, 1 + rnd() * 2); } g.globalAlpha = 1; };
@@ -5946,6 +5963,7 @@ function start() {
   msg.hidden = true;
   root.classList.add("ready");
   requestAnimationFrame(frame);
+  requestAnimationFrame(() => setTimeout(loadPhotos, 30));                              // V1.9: the photos once the first picture is up
   precompile();                                                                         // v35: hidden parts' shaders, while the room's idle
   lookFromHash();                                                                       // v28: a shared #look- link (after the first compile, so its note shows)
   try {                                                                                 // v30: once, say the room's things can be tapped
@@ -5967,6 +5985,7 @@ function start() {
     still, ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, collide, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG },
     errors: () => store.get("r3d-errors", []),                                       // v35: what the trap kept
     perf: perfInfo,                                                                   // v35: the counts to watch each round
+    photos: () => loadPhotos().then(() => Object.keys(PHOTO).length),               // V1.9: how many photo sets landed
     bench(n = 30) {   // ms per frame while orbiting at full resolution, for tuning
       const t = performance.now();
       for (let i = 0; i < n; i++) { controls.rotateLeft ? controls.rotateLeft(0.01) : 0; camera.position.applyAxisAngle(new THREE.Vector3(0, 1, 0), 0.004); camera.lookAt(controls.target); gl.render(scene, camera); }
