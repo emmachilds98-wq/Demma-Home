@@ -41,6 +41,8 @@ def _bboxes(export):
                 us = [q[0] for q in P["pts"]]; vs = [q[1] for q in P["pts"]]
                 if P["axis"] == "x":
                     add(tags[P["t"]], P["a"], min(vs), min(us), P["b"], max(vs), max(us))
+                elif P["axis"] == "y":                               # V1.14: a plan shape (x, z) raised from a to b
+                    add(tags[P["t"]], min(us), P["a"], min(vs), max(us), P["b"], max(vs))
                 else:
                     add(tags[P["t"]], min(us), min(vs), P["a"], max(us), max(vs), P["b"])
         for part in F.get("parts", {}).values():

@@ -149,3 +149,5 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V1.13** (30 Oct 2026): the quality plan (`docs/QUALITY_PLAN.md`; the client: "write a full upgrade plan to get the house to the best
   possible quality 3D model and execute it"), its Q2 to Q4: artex ceilings where the photos show them, the speckled worktop, clear glass,
   the house reflecting its sky outside, and `tools/gallery.py`; the walls' plaster relief as photographed (V1.12's read as rough render).
+- **V1.14** (30 Oct 2026): the quality plan's Q6, shapes, from the photos and standard sizes: swivel desk chairs, the kitchen's bar stools
+  (they were low chairs; the photos show bar stools), the guitars' bodies. The client: "continue upgrading".

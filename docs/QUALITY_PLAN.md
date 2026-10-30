@@ -11,7 +11,7 @@ live when complete". Earlier the same day: "best textures, quality and performan
 | Q3 | Light outside | Done (V1.13) | The whole house reflects its own sky (an environment made from the sky, same size as the room's, so no shader rebuilds): the windows and the gloss catch it |
 | Q4 | The gallery | Done (V1.13) | `tools/gallery.py`: every room by day in HD, after the photos land, on one sheet (`_shots/gallery.jpg`); each round's proof and the client's quick look |
 | Q5 | Speed with quality | Not started | Compressed textures (KTX2, about a quarter of the graphics memory) once the photos settle; the iPhones' real numbers first (`?perf`) |
-| Q6 | Shape | Needs the client | Furniture beyond boxes (chairs, monitors, beds) from measurements or product names; doors' panels where the photos show them |
+| Q6 | Shape | In progress (V1.14) | Done from the photos and standard sizes: the desk chairs (five-star base on castors, gas lift, padded seat, curved back, arms), the kitchen's bar stools (bucket seat, high back, chrome pole, foot ring, round base), the guitars' bodies (their bouts and waist, the sound hole, the pickguard). Needs the client: the rest (beds, monitors, the sofa-bed) from measurements or product names; doors' panels where the photos show them |
 | Q7 | Out of the front | Needs the client | What's opposite the house from the front windows (a photo out of the master bedroom's window); now the ground runs to the horizon |
 | Q8 | Every size measured | Needs the client | The 19 guesses in Measure (the dock's fifth button) |
 

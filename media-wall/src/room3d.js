@@ -2508,6 +2508,8 @@ function editedFloor(fk, F) {
     const sx = (E.to[3] - E.to[0]) / Math.max(0.1, E.from[3] - E.from[0]), sz = (E.to[5] - E.to[2]) / Math.max(0.1, E.from[5] - E.from[2]);
     const c = f([L.c[0], L.c[1], L.c[2], L.c[0], L.c[1], L.c[2]]); return Object.assign({}, L, { c: [c[0], c[1], c[2]], s: [L.s[0] * sx, L.s[1] * sz] }); });
   const prisms = (F.prisms || []).filter(P => !(xf[P.t] && HEDITS[tags[P.t]].removed)).map(P => { const f = xf[P.t]; if (!f) return P;
+    if (P.axis === "y") { const pts = P.pts.map(([u, w]) => { const q = f([u, 0, w, u, 0, w]); return [q[0], q[2]]; }), ab = f([0, P.a, 0, 0, P.b, 0]);   // V1.14
+      return Object.assign({}, P, { pts, a: ab[1], b: ab[4] }); }
     const pts = P.pts.map(([u, w]) => { const q = P.axis === "x" ? f([0, w, u, 0, w, u]) : f([u, w, 0, u, w, 0]); return P.axis === "x" ? [q[2], q[1]] : [q[0], q[1]]; });
     const ab = P.axis === "x" ? f([P.a, 0, 0, P.b, 0, 0]) : f([0, 0, P.a, 0, 0, P.b]); return Object.assign({}, P, { pts, a: P.axis === "x" ? ab[0] : ab[2], b: P.axis === "x" ? ab[3] : ab[5] }); });
   const parts = {}; for (const [k, P] of Object.entries(F.parts || {})) { const pb = {}, pt = {}; for (const [m, list] of Object.entries(P.boxes)) [pb[m], pt[m]] = mapList(list, (P.bt || {})[m]); parts[k] = Object.assign({}, P, { boxes: pb, bt: pt }); }
@@ -5863,7 +5865,9 @@ function buildHouse() {
       const byMat = {};
       for (const P of F.prisms) {                     // a profile extruded: along x the profile is (z, y), along z it is (x, y)
         const g = new THREE.ExtrudeGeometry(new THREE.Shape(P.pts.map(([u, w]) => new THREE.Vector2(u * M, w * M))), { depth: (P.b - P.a) * M, bevelEnabled: false });
-        if (P.axis === "x") mx.set(0, 0, -1, -P.a * M, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1); else mx.set(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, P.a * M, 0, 0, 0, 1);
+        if (P.axis === "x") mx.set(0, 0, -1, -P.a * M, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1);
+        else if (P.axis === "y") mx.set(-1, 0, 0, 0, 0, 0, 1, P.a * M, 0, 1, 0, 0, 0, 0, 0, 1);   // V1.14: a plan shape (x, z) raised from a to b (a chair's star base)
+        else mx.set(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, P.a * M, 0, 0, 0, 1);
         g.applyMatrix4(mx); (byMat[P.m] = byMat[P.m] || []).push(g);
       }
       for (const [mk, geos] of Object.entries(byMat)) put(cur, geos, mat3(mk));

@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.13 (30 Oct 2026)
+**Version:** V1.14 (30 Oct 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -62,6 +62,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **True to the photos (V1.13):** artex ceilings in the kitchen and the lower landing (made by `build_textures.stipple`), the kitchen's
   black speckled worktop (a granite photo), clear window glass; outside, the house reflects its own sky (`OUT.skyEnv`). `tools/gallery.py`:
   every room by day in HD on one sheet (`_shots/gallery.jpg`).
+- **Shapes (V1.14, QUALITY_PLAN Q6):** real swivel desk chairs in the office and bedroom 2 (`model.desk_chair`), the kitchen's bar stools as the
+  photos (`model.bar_stool`), the guitars' bodies; prisms can rise along y now (a plan shape: the chairs' star bases).
 - **The hall's doorway down (V1.12):** an empty frame under its grille, no door (the client's photos of 30 Oct; `HALL["door_leaf"]`).
 - **Its look (V1.1, V1.11, V1.12):** CC0 photos over the drawn textures, from the 2k sources at 1024 px (the living room's oak 2048):
   the living room's oak, hessian, carpets, cord and plaster; the house's brick, roof, lawn, drive, road, paving, laminate and carpets; and
