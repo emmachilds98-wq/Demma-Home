@@ -504,7 +504,9 @@ function loadPhotos() {
 const whenPhoto = (k, f, fn) => { if (!(PMETA[k] && PMETA[k][f])) return false; const go = () => PHOTO[k] && PHOTO[k][f] && fn(PHOTO[k][f]); photosDone ? go() : PWAIT.push(go); return true; };
 const TEX_CLONES = new WeakMap();   // a clone shares the picture but needs telling it changed (not in userData: three copies that as JSON)
 const texClone = t => { const c = t.clone(); TEX_CLONES.has(t) ? TEX_CLONES.get(t).push(c) : TEX_CLONES.set(t, [c]); return c; };
-function texSet(tex, img) { tex.image = img; tex.needsUpdate = true; (TEX_CLONES.get(tex) || []).forEach(c => { c.image = img; c.needsUpdate = true; }); }
+/* V1.12: dispose first: WebGL2 keeps a texture at the size it was first sent (immutable storage), so a 1024 photo sent into its 4 × 4
+   stand-in never showed (V1.9 to V1.11: the house's photos stayed their mean colour); disposed, it's made again at the photo's size */
+function texSet(tex, img) { for (const t of [tex, ...(TEX_CLONES.get(tex) || [])]) { t.dispose(); t.image = img; t.needsUpdate = true; } }
 function photoInto(tex, k, f, match = true) {
   if (!PHOTOS) return;
   whenPhoto(k, f, src => {

@@ -141,3 +141,6 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
   and performance on the PC and mobile". The photos from the 2k sources at 1024 px (the oak 2048), twice as sharp; a capable phone starts in
   HD at 3× with the shade, soft 2048 shadows and 4× anti-aliasing (was Fast at 2×), gives way a step at a time only if slow, keeps full
   sharpness while you drag; the PCs' sun shadows at 4096, the house at 2×; phones save 4K pictures.
+- **V1.12** (30 Oct 2026): real surfaces in every room ("best textures"): the walls and ceilings smooth plaster in the paint's colour, the
+  pine, dark pine, birch and the office's oak from CC0 photos tinted to their colours. A fix: from V1.9 the house's photos (brick, roof,
+  lawn, carpets) had shown as their flat mean colour, a photo sent into a texture too small for it; now caught by the site check.

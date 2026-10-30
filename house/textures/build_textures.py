@@ -15,7 +15,13 @@ SET = {"brick": ("red_brick_03", 1.0, 1.3, 1.22, 1.12),            # the front p
 # v72 (B3): the carpets, from ambientCG (CC0; its _Color and _NormalGL saved as <asset>_diff / _nor): the pile tinted to the
 # photos' colour (the grey of the bedrooms, landing, hall and stairs; the oatmeal elsewhere) so its light and shade stay, the hue is ours
 TINT = {"carpet_grey": ("Carpet012", 0.5, "#6f6f73"), "carpet": ("Carpet012", 0.5, "#cdbfa6"),
-        "lawn": ("sparse_grass", 2.0, "#5a7838")}   # V1.3: the lawn's light and shade in the back photo's green (the photo's own grass is mostly dry)
+        "lawn": ("sparse_grass", 2.0, "#5a7838"),   # V1.3: the lawn's light and shade in the back photo's green (the photo's own grass is mostly dry)
+        # V1.12, the client: "best textures": the rooms' own materials (house/model.py's names) get real grain and plaster in their colours;
+        # optional: how much steeper the relief (smooth plaster's is a hair, gone at the room's distance), then the photo's contrast (painted
+        # plaster is all but even: its look is the relief; the pine's knots softened; the oak's fine grain brought up)
+        "pine": ("coated_pine", 1.0, "#c99a55", 1, 0.55), "pine_dark": ("coated_pine", 1.0, "#7a5a30", 1, 0.55),
+        "birch": ("white_maple_veneer", 0.8, "#dcc8a2", 1, 1.3), "oak": ("oak_veneer_01", 1.0, "#b9864f", 1, 1.6),
+        "paint": ("white_plaster_02", 1.6, "#f1ede5", 4, 0.12), "ceiling": ("white_plaster_02", 1.6, "#f3f2ee", 4, 0.12)}
 SRC = {"Carpet012": "https://ambientcg.com/view?id=Carpet012"}
 PX = {}                                                          # sizes other than 1024 px (V1.11, the client: "i dont want these low res versions, best textures"; was 512)
 # V1.1: the living room's own surfaces, the photo as it is (room3d.js matches each to its drawn texture's average colour as it loads,
@@ -57,18 +63,20 @@ def tone(im, sat, bri, warm):
     return im
 
 
-def tint(im, col):
-    """the picture's light and shade (its grey, scaled so its mean is the colour's) in the colour's hue"""
+def tint(im, col, k=1.0):
+    """the picture's light and shade (its grey, scaled so its mean is the colour's) in the colour's hue; k scales its contrast"""
     from PIL import ImageStat
     g = im.convert("L"); m = ImageStat.Stat(g).mean[0] or 1
+    if k != 1.0:
+        g = g.point(lambda v: max(0, min(255, int(m + (v - m) * k))))
     c = [int(col[i:i + 2], 16) for i in (1, 3, 5)]
     return Image.merge("RGB", [g.point(lambda v, k=k: min(255, int(v * k / m))) for k in c])
 
 
 def main(src):
     src = pathlib.Path(src); meta = json.loads((HERE / "textures.json").read_text()) if (HERE / "textures.json").exists() else {}
-    jobs = [(k, a, sz, lambda d, t=t: tone(d, *t)) for k, (a, sz, *t) in SET.items()] + [(k, a, sz, lambda d, c=c: tint(d, c)) for k, (a, sz, c) in TINT.items()]
-    for key, aid, size, look in jobs:
+    jobs = [(k, a, sz, lambda d, t=t: tone(d, *t), 1) for k, (a, sz, *t) in SET.items()] + [(k, a, sz, lambda d, c=c, x=x: tint(d, c, *x[1:2]), (x or [1])[0]) for k, (a, sz, c, *x) in TINT.items()]
+    for key, aid, size, look, rk in jobs:
         if not (src / f"{aid}_diff.jpg").exists():          # keep what's built when a download isn't to hand
             continue
         px = PX.get(key, 1024)
@@ -76,7 +84,7 @@ def main(src):
         look(d).save(HERE / f"{key}_map.jpg", quality=78, optimize=True)
         n = src / f"{aid}_nor.jpg"
         if n.exists():
-            Image.open(n).convert("RGB").resize((px, px), Image.LANCZOS).save(HERE / f"{key}_nor.jpg", quality=82, optimize=True)
+            relief(Image.open(n).convert("RGB").resize((px, px), Image.LANCZOS), rk).save(HERE / f"{key}_nor.jpg", quality=82, optimize=True)
         meta[key] = dict(asset=aid, size=size, url=SRC.get(aid, f"https://polyhaven.com/a/{aid}"), licence="CC0")
     for key, (aid, size, mpx, npx, tq, rk) in PLAIN.items():
         if not (src / f"{aid}_nor.jpg").exists():

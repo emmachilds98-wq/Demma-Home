@@ -76,5 +76,41 @@
   "size": 1.6,
   "url": "https://polyhaven.com/a/white_plaster_02",
   "licence": "CC0"
+ },
+ "pine": {
+  "asset": "coated_pine",
+  "size": 1.0,
+  "url": "https://polyhaven.com/a/coated_pine",
+  "licence": "CC0"
+ },
+ "pine_dark": {
+  "asset": "coated_pine",
+  "size": 1.0,
+  "url": "https://polyhaven.com/a/coated_pine",
+  "licence": "CC0"
+ },
+ "birch": {
+  "asset": "white_maple_veneer",
+  "size": 0.8,
+  "url": "https://polyhaven.com/a/white_maple_veneer",
+  "licence": "CC0"
+ },
+ "oak": {
+  "asset": "oak_veneer_01",
+  "size": 1.0,
+  "url": "https://polyhaven.com/a/oak_veneer_01",
+  "licence": "CC0"
+ },
+ "paint": {
+  "asset": "white_plaster_02",
+  "size": 1.6,
+  "url": "https://polyhaven.com/a/white_plaster_02",
+  "licence": "CC0"
+ },
+ "ceiling": {
+  "asset": "white_plaster_02",
+  "size": 1.6,
+  "url": "https://polyhaven.com/a/white_plaster_02",
+  "licence": "CC0"
  }
 }
