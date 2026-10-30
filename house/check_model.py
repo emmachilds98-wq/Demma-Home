@@ -136,13 +136,13 @@ air_ = next(r for r in Mo.rooms("first") if r["id"] == "airing")
 AR_ = 6.0                                                          # v78: frame to frame (the model's architraves are 6 wide)
 gaps = [dd["bed2_door"]["a"] - AR_ - L_["z0"], dd["airing_door"]["a"] - AR_ - (dd["bed2_door"]["b"] + AR_), dd["master_door"]["a"] - AR_ - (dd["airing_door"]["b"] + AR_)]
 endg = L_["z1"] - (dd["master_door"]["b"] + AR_)
-# V1.8, the client: the cupboard out into both bedrooms, its end in the master at the wardrobes' front ("adjust as needed"): its door in
+# V1.18: a standard door and out past the wardrobes' front (survey_data.AIRING). V1.8, the client: the cupboard out into both bedrooms, its end in the master at the wardrobes' front ("adjust as needed"): its door in
 # it, straight after bedroom 2's; the wall from it to the master's door plain (v81's frames meeting no longer holds)
 wf_ = next(r for r in Mo.rooms("first") if r["id"] == "master")["z0"] + D.MASTER["wardrobes"]["d"]
 check("landing: bedroom 2's door in the corner, the boiler cupboard's straight after it and within the cupboard, about 40 to the end (client)",
       gaps[0] <= 3 and 0 <= gaps[1] < 1 and gaps[2] >= 0 and air_["z0"] <= dd["airing_door"]["a"] and dd["airing_door"]["b"] <= air_["z1"]
-      and abs(air_["z1"] - wf_) < 1 and 25 <= endg <= 50,
-      f"gaps {', '.join(f'{g:.0f}' for g in gaps)}, the cupboard {air_['z1'] - air_['z0']:.0f} (to the wardrobes' front), {endg:.0f} to the corridor's end")
+      and abs(air_["z1"] + D.AIRING["wall_master"] - wf_ - D.AIRING["into_master"]) < 1 and 25 <= endg <= 50,   # V1.18: out past the wardrobes' front
+      f"gaps {', '.join(f'{g:.0f}' for g in gaps)}, the cupboard {air_['z1'] - air_['z0']:.0f}, {D.AIRING['into_master']:.1f} past the wardrobes' front, {endg:.0f} to the corridor's end")
 sw_ = D.SWITCHES_AT[("master_door", "landing")] + 4.25
 # v78b, the client: the master's door "slightly closer to the lightswitch": the switch stays, just right of the door's frame
 fr_ = dd["master_door"]["b"] + AR_

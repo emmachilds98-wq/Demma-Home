@@ -38,7 +38,8 @@ ROWS = [
     ("master_front", "master", "Wardrobes' front to the front wall", "along the carpet", _master_front, None),
     ("master_alcove", "master", "The wardrobes' alcove width", "wall to wall", lambda: round(D.MASTER["alcove"][1] - D.MASTER["alcove"][0], 1), None),
     ("airing_bed2", "bed2", "How far the boiler cupboard sticks into the room", "from the wall beside it", lambda: D.AIRING["into_bed2"], ("set", ("AIRING", "into_bed2"))),
-    ("bed2_long", "bed2", "Bathroom wall to the wall behind the wardrobes", "along the carpet, the longest way", lambda: 363.0, None),
+    ("airing_master", "master", "How far the boiler cupboard sticks into the room", "past the wardrobes' front", lambda: D.AIRING["into_master"], ("set", ("AIRING", "into_master"))),   # V1.18
+    ("bed2_long", "bed2", "Bathroom wall to the wall behind the wardrobes", "along the carpet, the longest way", lambda: 370.5, None),   # V1.18: the wall 7.5 into the master
     ("stairs_tread", "living", "One stair tread's depth", "nose to nose", lambda: __import__("model").Gm.STAIR_GOING, None),
     ("meters", "hall", "The meter cupboard's width", "inside", lambda: 38.0, None),
     ("bins", "porch", "The bin cupboard's width", "inside", lambda: 39.0, None),

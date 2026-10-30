@@ -921,6 +921,14 @@ STAIR_CURTAIN["floor_gap"] = round(CEIL - STAIR_CURTAIN["track_h"] - STAIR_CURTA
 # track along the open side, from the corner by the bottom step back to the door's wall (1 short of the door's frame), the pair's other
 # panel on it; under the flat ceiling there (the stairwell opens over the flight only)
 STAIR_CURTAIN["side"] = (STAIR_CURTAIN["z"], BREAST_D_WEST - 2.5)
+# V1.18, the client: "stop the bannisters clipping through the curtain but they should remain there": the banister's newel (its west face
+# 403.5, its front at the stair's front) and slats stood 0.5-1.5 inside the pleats (3.2 deep): both tracks move out to clear them by 0.8
+_bn_x = min(STAIR_X[0] - 3.0 - BANISTER["slat_t"] / 2, STAIR_X[0] - BANISTER["newel"] / 2)     # 403.5: the banister's room-side face
+_cl = 3.2 + 0.8                                                                              # the pleats' depth and the clearance
+STAIR_CURTAIN["x"] = (round(_bn_x - _cl - STAIR_CURTAIN["track_w"] / 2, 2), STAIR_CURTAIN["x"][1])   # the side panel's line 399.5
+STAIR_CURTAIN["z"] = round(ALC_D - STAIR_D - _cl + STAIR_CURTAIN["track_w"] / 2, 2)               # the panel across 4 in front of the newel
+STAIR_CURTAIN["side"] = (STAIR_CURTAIN["z"], BREAST_D_WEST - 2.5)
+STAIR_CURTAIN["len"] = round(STAIR_CURTAIN["x"][1] - STAIR_CURTAIN["x"][0], 1)
 STAIR_CURTAIN["side_len"] = round(STAIR_CURTAIN["side"][1] - STAIR_CURTAIN["side"][0], 1)    # 77.5
 
 

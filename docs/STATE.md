@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.17 (30 Oct 2026)
+**Version:** V1.18 (30 Oct 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -46,7 +46,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   the rooms are one row each, sliding sideways. The brand's second line says where you are. `?room` opens the living room.
 - **The living room** is the old page as it was: the stickers on its places, Plan · Build · Buy (the media wall's sheets), the dock's View ·
   Room · Look · Edit, the item cards. The only project for now; each room gets its own in time (`projects/`), with room left for it.
-- **Measure** (the dock, fifth button): the 18 sizes still guessed, by room, a number and a photo each; a room's name flies there. Kept as
+- **Measure** (the dock, fifth button): the 20 sizes still guessed, by room, a number and a photo each; a room's name flies there. Kept as
   you type (the shared page's database, or this device and a link from Send), in the V1 app's format, so `pull_edits.py` reads both.
 - **Outside (V1.3, V1.4):** the whole house is always by day, under a real sky with the sun from the south-west (its light and shadows too, so the back is in shade), on ground that runs to a
   hazy horizon (the street's level in front, the garden's behind, the slope between); the lawn green as the back photo, the fences
@@ -64,6 +64,9 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   every room by day in HD on one sheet (`_shots/gallery.jpg`).
 - **The front door (V1.16):** as the hall photo: cream to the hall, white to the porch, its two lights through it (seen from both
   sides), four raised panels, the brass letterbox in the rail between them, a lever each side.
+- **Fixes from the client's pictures (V1.18):** the boiler cupboard a normal size with a standard door, out into both bedrooms (the wall
+  between them 7.5 into the master); no wall across the living room's stairs into the hall; the stub of the bathroom's wall by the sink
+  gone; the stair curtain clear of the banister; the lower store's outside wall faces the right way (its brick showed inside).
 - **Mirrors (V1.17):** the hall's and the bathroom's mirrors reflect a room (they were flat grey, the hall's clear glass).
 - **By evening (V1.15):** standing in a room, its windows show the night (the garden showed in daylight through the WC's and the
   bathroom's); switching day or evening there updates them at once. `tools/gallery.py --evening` makes the evening sheet.
@@ -121,3 +124,5 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 4. Decide: where the side-wall socket goes; near-photo pictures (minutes each) or not; whether the house's tap-a-piece size edit comes back.
 - **V1.17** (30 Oct 2026): the hall's and the bathroom's mirrors reflect (grey before); each build keeps only the newest version of each
   render and PDF (old rounds' copies had grown to 549 MB on the build machine). The client: "merge and continue".
+- **V1.18** (30 Oct 2026): from the client's pictures: the boiler cupboard resized with a standard door, the wall across the living room's
+  stairs out, the bathroom wall's stub out, the stair curtain clear of the banister, the lower store's brick outside its wall.
