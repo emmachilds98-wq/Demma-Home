@@ -167,3 +167,5 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V1.21** (31 Oct 2026): the soft things' real weave: the bedding cotton, the curtains linen, bedroom 2's bed leather, the sofa-bed and
   the blanket wool (they were flat colours).
 - **V1.22** (31 Oct 2026): every room door's handles a lever on a round rose, each side (they were chrome bars).
+- **V1.23** (31 Oct 2026): a white handle inside each opening casement sash (the side ones; the middle of three is fixed); the bath a
+  black wall filler at its plug end, to match the shower.

@@ -286,6 +286,15 @@ def window(o, side, x0, x1, y0, y1, design, face):
         for i in range(1, n):
             xm = x0 + w * i / n; o.box(W, xm - 3, y0, zo, xm + 3, y1, zi)
         yt = y0 + h * 0.78; o.box(W, x0, yt - 2.5, zo, x1, yt + 2.5, zi)
+        # V1.23 (Q6): a handle on each opening sash, inside, at its latch edge by the mullion, pointing down (shut): the side sashes open,
+        # the middle of three is fixed (the photos' windows; E: a standard uPVC espagnolette handle, 3 × 12 plate, 11 lever)
+        hy_ = (y0 + fr + yt - 2.5) / 2; zf = zi; out = -s
+        for i in ((0, 2) if n == 3 else (0,)):
+            xe = x0 + w * (i + 1) / n - 3 - 3.5 if i == 0 else x0 + w * i / n + 3 + 3.5   # just inside the sash's mullion edge
+            p0, p1 = sorted((zf, zf + out * 1.2)); q0, q1 = sorted((zf + out * 1.2, zf + out * 3.6)); r0, r1 = sorted((zf + out * 3.6, zf + out * 5.0))
+            o.box(W, xe - 1.5, hy_ - 6, p0, xe + 1.5, hy_ + 6, p1)                       # the plate
+            o.box(W, xe - 0.9, hy_ + 2.5, q0, xe + 0.9, hy_ + 4.3, q1)                   # its spindle boss
+            o.box(W, xe - 1.0, hy_ - 8, r0, xe + 1.0, hy_ + 4.3, r1)                     # the lever, down
     elif design in ("bars", "glazed", "living"):   # Georgian bars
         cols = max(2, round(w / 30)); rows = max(2, round(h / 32))
         if design == "glazed":
@@ -1460,6 +1469,13 @@ def bathroom(o):
         za_ = bz1 - 16 + k * 2.4; dx = 1.6 * (k % 2)
         o.box("curtain", rx - 2.5 + dx, y + 50 + (k % 3), za_, rx - 0.5 + dx, ry, za_ + 2.6)
     o.box("black", bx0 + 0.6, y + 120, bz1 - 22, bx0 + 2.5, y + 192, bz1 - 20)    # the riser and the black shower head
+    # V1.23 (Q6): the bath filler, black to match the shower, on the wall at the plug end (it had no taps): a plate, the spout, two levers
+    yt_ = y + b["h"] + 14
+    o.box("black", bx0 + 0.2, yt_ - 4, bz0 + 17, bx0 + 1.4, yt_ + 4, bz0 + 33)
+    o.box("black", bx0 + 1.4, yt_ - 1.2, bz0 + 23.5, bx0 + 15, yt_ + 1.2, bz0 + 26.5)
+    o.box("black", bx0 + 13, yt_ - 4, bz0 + 23.5, bx0 + 15, yt_ - 1.2, bz0 + 26.5)
+    for zc in (bz0 + 19, bz0 + 31):
+        o.box("black", bx0 + 1.4, yt_ - 1, zc - 1, bx0 + 7, yt_ + 1, zc + 1)
     o.box("black", bx0 + 2.5, y + 190, bz1 - 28, bx0 + 14, y + 194, bz1 - 14)
     o.item("bath.tiles", "The wall tiles and the tiled box", "bathroom", kind="finish", src="client's photo + E", data=("BATH", "tiles"), measure=False)
     T, til = "stone", B["tiles"]                                   # the wall tiles, just proud of each wall
