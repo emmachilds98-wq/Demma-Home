@@ -241,14 +241,16 @@ class Out:
         stretched sx along x and sz along z (oval)."""
         self.lathes.append(dict(m=m, c=[round(cx, 1), round(y0, 1), round(cz, 1)], p=[[round(r, 2), round(h, 2)] for r, h in prof], s=[round(sx, 3), round(sz, 3)], t=self._t()))
 
-    def part(self, name, pivot, axis, angle):
-        """v68: a piece that moves in the viewer (the ottoman's lid): its own boxes, turning `angle` degrees about `axis` through `pivot`."""
+    def part(self, name, pivot, axis, angle, t0=0, label=None):
+        """v68: a piece that moves in the viewer (the ottoman's lid): its own boxes, turning `angle` degrees about `axis` through `pivot`.
+        V1.26: the doors too (axis "y", upright through the hinge): t0 how far it starts (0 shut, 1 open), label its name on its card."""
         p = Out(self.floor); p.tags, p.tag = self.tags, self.tag   # V1: the lid belongs to the bed
-        self.parts[name] = dict(pivot=[round(v, 1) for v in pivot], axis=axis, angle=angle, out=p); return p
+        self.parts[name] = dict(pivot=[round(v, 1) for v in pivot], axis=axis, angle=round(angle, 1), t0=t0, label=label, out=p); return p
 
     def json(self):
         return dict(boxes=self.boxes, prisms=self.prisms, labels=self.labels, lathes=self.lathes, tags=self.tags, bt=self.bt,
-                    parts={k: dict(pivot=v["pivot"], axis=v["axis"], angle=v["angle"], boxes=v["out"].boxes, bt=v["out"].bt) for k, v in self.parts.items()})
+                    parts={k: dict(pivot=v["pivot"], axis=v["axis"], angle=v["angle"], t0=v["t0"], label=v["label"], boxes=v["out"].boxes,
+                                   bt=v["out"].bt, prisms=v["out"].prisms) for k, v in self.parts.items()})
 
 
 def wall(o, m, axis, line0, line1, a0, a1, y0, y1, holes=()):
@@ -768,11 +770,17 @@ def porch(o):
     gar = next(p for p in D.OPENINGS if p["id"] == "garage_door")
     o.box("soldier", gar["x"][0] - 14, gar["head"] + 0.4, zf - 0.5, gar["x"][1] + 14, gar["head"] + 22, zf + 1.2)
     ds = {d["id"]: d for d in doors("ground")}
-    for did, side in (("store_w", -1), ("store_e", 1)):                                  # the cupboards' doors, shut, white
-        d = ds[did]; x = d["line"]
-        o.box("upvc", x - 1.5, 0.5, d["a"] + 1, x + 1.5, D.DOOR_H - 1, d["b"] - 1)
-        o.box("chrome", x + side * 1.5, 98, d["a"] + 6, x + side * 4, 101, d["a"] + 14)
+    for did, side in (("store_w", -1), ("store_e", 1)):                                  # the cupboards' doors, white
+        # V1.26, the client: "bin cupboards outside open from the outside side, so doorhandle on left on left door and right on the right
+        # door": hinged at the house end, the handle at the street end, each opening into the porch (tap it)
+        d = ds[did]; x = d["line"]; H = hang("ground", d, 1.5)
+        p = o.part("door." + did, H["pivot"], "y", H["angle"], label=DOOR_NAMES[did][0])
+        p.box("upvc", x - 1.5, 0.5, d["a"] + 1, x + 1.5, D.DOOR_H - 1, d["b"] - 1)
+        p.box("chrome", x + side * 1.5, 98, d["b"] - 14, x + side * 4, 101, d["b"] - 6)
+        hinges(p, "z", d["a"] + 1.2, x - 1.5, x + 1.5, 0)
     d = ds["hall_porch"]; z = d["line"]                                                  # the front door, ahead
+    H = hang("ground", d, 2.9)                                                           # V1.26: on its hinge, opening into the hall (tap it)
+    O_, o = o, o.part("door.hall_porch", H["pivot"], "y", H["angle"], label=DOOR_NAMES["hall_porch"][0])
     # V1.14b (QUALITY_PLAN Q6, the client's photo_hall_to_front_door_30oct): white to the porch, cream to the hall, two small lights high
     # up through it (they were on its porch face only), below them four raised panels on the hall side, a brass letterbox both sides, a
     # lever handle each side
@@ -795,6 +803,8 @@ def porch(o):
         o.box("brass", (d["a"] + d["b"]) / 2 - 14, 66, min(zz, zz + k * 1.0), (d["a"] + d["b"]) / 2 + 14, 71, max(zz, zz + k * 1.0))   # in the rail between the panels
         o.box("brass", d["b"] - 14, 98, min(zz, zz + k * 2.0), d["b"] - 10, 112, max(zz, zz + k * 2.0))
         o.box("brass", d["b"] - 24, 106, min(zz + k * 2.0, zz + k * 5.0), d["b"] - 10, 108, max(zz + k * 2.0, zz + k * 5.0))
+    hinges(o, "x", a0 - 0.6, z - 2.2, z + 2.2, 0)
+    o = O_
     P_, rs = D.PORCH, {r["id"]: r for r in rooms("ground")}
     e, wst = rs["front_store_e"], rs["front_store_w"]
     # v69, the client: the garage side's cupboard "houses my electric box and my gas meter": both on its back wall
@@ -1586,8 +1596,50 @@ def hinges(o, axis, edge, f0, f1, y):
             o.box("chrome", f0 - 0.4, y + h, edge - 0.6, f1 + 0.4, y + h + 7.6, edge + 0.6)
 
 
+def door_room_side(floor, d):
+    """V1.26: which way a door opens: into its own room (DOOR_NAMES), +1 or -1 across its wall (z for a door along x, x for one along z)."""
+    rid = DOOR_NAMES.get(d["id"], ("", ""))[1]
+    for r in rooms(floor):
+        if r["room"] != rid and r["id"] != rid:
+            continue
+        lo, hi = (r["z0"], r["z1"]) if d["axis"] == "x" else (r["x0"], r["x1"])
+        a0, a1 = (r["x0"], r["x1"]) if d["axis"] == "x" else (r["z0"], r["z1"])
+        if a0 - 1 <= d["a"] and d["b"] <= a1 + 1 and (abs(lo - d["line"]) < 10 or abs(hi - d["line"]) < 10):
+            return 1 if (lo + hi) / 2 > d["line"] else -1
+    return 1
+
+
+def hang(floor, d, th):
+    """V1.26: a door on its hinge (survey_data.DOOR_HANG): the hinge's end (a or b), the side it opens to, the pivot (the hinge's line on
+    the face it opens towards; th: half the leaf's thickness), the signed angle to open it (degrees about y), and how it starts."""
+    h = D.DOOR_HANG.get(d["id"], {})
+    end, s_ = h.get("hinge", "a"), h.get("side") or door_room_side(floor, d)
+    hx = d["a"] + 0.8 if end == "a" else d["b"] - 0.8
+    u = 1 if end == "a" else -1                                    # the leaf runs from its hinge towards +u
+    y = FLOOR_Y[floor]
+    if d["axis"] == "x":
+        pivot, sign = (hx, y, d["line"] + s_ * th), -s_ * u
+    else:
+        pivot, sign = (d["line"] + s_ * th, y, hx), s_ * u
+    deg = h.get("deg", 90.0)
+    if deg is None:                                                # the bathroom's: it stops on the bath, BATH_DOOR_GAP off the wall behind it
+        deg = bath_door_deg(floor, d, end)
+    return dict(end=end, side=s_, u=u, hinge=hx, pivot=pivot, angle=sign * deg, t0=h.get("open", 0))
+
+
+def bath_door_deg(floor, d, end):
+    """V1.26, the client: the bathroom door "hits the bath just before it gets to fully open leaving roughly 15cm gap behind the door": the
+    angle at which its free edge stands BATH_DOOR_GAP off the wall it would fold back against."""
+    import math
+    r = next(q for q in rooms(floor) if q["id"] == "bathroom")
+    a, b = d["a"] + 0.8, d["b"] - 0.8
+    hx, wall = (a, r["x0"]) if end == "a" else (b, r["x1"])
+    return round(math.degrees(math.acos(max(-1.0, min(1.0, (D.BATH_DOOR_GAP - abs(hx - wall)) / (b - a))))), 1)
+
+
 def door_leaves(o, floor):
-    """v66: the doors between the rooms, shut, with a lever handle each side (the cupboards' are chalk_doors and porch)."""
+    """v66: the doors between the rooms, with a lever handle each side (the cupboards' are chalk_doors and porch). V1.26, the client: "i'd
+    like to be able to open and close doors now at will": each leaf its own part on its hinge (tap it in the viewer)."""
     y = FLOOR_Y[floor]
     for d in doors(floor):
         o.item(d["id"], *DOOR_NAMES.get(d["id"], (d["id"], "")), kind="door", src=door_src(d["id"]), data=door_data(d["id"]), axis=d["axis"])
@@ -1610,40 +1662,27 @@ def door_leaves(o, floor):
             for s_ in (-1, 1):
                 o.box("chrome", mid - 5, hy - 2, L + s_ * 1.5, mid - 2, hy + 2, L + s_ * 4.5)
             continue
-        if d["id"] in D.DOOR_OPEN and d["axis"] == "z":                # V1.20: open into the room on its hinge (survey_data.DOOR_OPEN)
-            end, sd = D.DOOR_OPEN[d["id"]]
-            hz, w = (a, b - a) if end == "a" else (b, a - b)              # the hinge's z, the leaf's width along z when shut (signed)
-            fx = L + sd * 1.75                                            # the room-side face it turns about
-            z0_, z1_ = sorted((hz, hz + (3.5 if w > 0 else -3.5)))
-            xa_, xb_ = sorted((fx, fx + sd * abs(w)))
-            o.box(m, xa_, y + 0.5, z0_, xb_, y + D.DOOR_H - 0.8, z1_)
-            hinges(o, "x", fx + sd * 0.4, z0_, z1_, y)                    # V1.25: on its hinge edge, by the frame
-            xh = fx + sd * (abs(w) - 7)                                   # the lever by its free edge, both faces (V1.22: on its rose)
-            lever(o, "x", z0_, -1, xh, hy + 1, -sd); lever(o, "x", z1_, 1, xh, hy + 1, -sd)
-            if m == "door_white":                                         # its boards' V-joints, both faces
-                for k in range(1, 6):
-                    c = fx + sd * abs(w) * k / 6
-                    o.box("gap", c - 0.3, y + 1.5, z0_ - 0.3, c + 0.3, y + D.DOOR_H - 1.8, z0_)
-                    o.box("gap", c - 0.3, y + 1.5, z1_, c + 0.3, y + D.DOOR_H - 1.8, z1_ + 0.3)
-            continue
+        H = hang(floor, d, 1.75)
+        p = o.part("door." + d["id"], H["pivot"], "y", H["angle"], t0=H["t0"], label=DOOR_NAMES.get(d["id"], (d["id"],))[0])
+        lat = b - 7 if H["end"] == "a" else a + 7                         # the lever by its free edge, pointing back to the hinge
         if d["axis"] == "x":
-            o.box(m, a, y + 0.5, L - 1.75, b, y + D.DOOR_H - 0.8, L + 1.75)
-            hinges(o, "x", a + 0.4, L - 1.75, L + 1.75, y)                # V1.25: the hinges opposite the lever
+            p.box(m, a, y + 0.5, L - 1.75, b, y + D.DOOR_H - 0.8, L + 1.75)
+            hinges(p, "x", H["hinge"] + H["u"] * 0.4, L - 1.75, L + 1.75, y)   # V1.25: three hinges on its hinge edge
             for s_ in (-1, 1):
-                lever(o, "x", L + s_ * 1.75, s_, b - 7, hy + 1, -1)       # V1.22: a lever on a rose, each face (was a chrome bar)
+                lever(p, "x", L + s_ * 1.75, s_, lat, hy + 1, -H["u"])    # V1.22: a lever on a rose, each face (was a chrome bar)
         else:
-            o.box(m, L - 1.75, y + 0.5, a, L + 1.75, y + D.DOOR_H - 0.8, b)
-            hinges(o, "z", a + 0.4, L - 1.75, L + 1.75, y)
+            p.box(m, L - 1.75, y + 0.5, a, L + 1.75, y + D.DOOR_H - 0.8, b)
+            hinges(p, "z", H["hinge"] + H["u"] * 0.4, L - 1.75, L + 1.75, y)
             for s_ in (-1, 1):
-                lever(o, "z", L + s_ * 1.75, s_, b - 7, hy + 1, -1)
+                lever(p, "z", L + s_ * 1.75, s_, lat, hy + 1, -H["u"])
         if m == "door_white":                                        # v72 (B4): cottage doors (the landing photos): six boards, five V-joints a face
             for k in range(1, 6):
                 c = a + (b - a) * k / 6
                 for s_ in (-1, 1):
                     if d["axis"] == "x":
-                        o.box("gap", c - 0.3, y + 1.5, L + s_ * 1.75, c + 0.3, y + D.DOOR_H - 1.8, L + s_ * 2.05)
+                        p.box("gap", c - 0.3, y + 1.5, L + s_ * 1.75, c + 0.3, y + D.DOOR_H - 1.8, L + s_ * 2.05)
                     else:
-                        o.box("gap", L + s_ * 1.75, y + 1.5, c - 0.3, L + s_ * 2.05, y + D.DOOR_H - 1.8, c + 0.3)
+                        p.box("gap", L + s_ * 1.75, y + 1.5, c - 0.3, L + s_ * 2.05, y + D.DOOR_H - 1.8, c + 0.3)
 
 
 def switches(o, floor):
@@ -1740,6 +1779,52 @@ def radiator(o, axis, wall, out, a0, a1, y0, y1):
     put("upvc", a0 + 0.5, a1 - 0.5, 4.5, 9.5, y1, y1 + 0.6)       # the grille on top
     for p in (a0 - 4, a1 + 1):                                     # the valves
         put("chrome", p, p + 3, 5.0, 8.0, y0 - 6, y0 + 2)
+
+
+def secret(o):
+    """V1.26, the client's photos down the hatch: the secret room square, solid to the front, a brick pier off the middle of its back
+    wall (behind the kitchen), a drain in its floor (survey_data.SECRET)."""
+    S_, y = D.SECRET, FLOOR_Y["lower"]
+    r = next(q for q in rooms("lower") if q["id"] == "secret")
+    top = y + CEIL
+    o.item("secret.walls", "Its bare brick", "secret", kind="decor", src="client's photos", measure=False)
+    for xa, za, xb, zb in ((r["x0"] + 0.1, r["z0"] + 0.1, r["x0"] + 0.6, r["z1"] - 0.1), (r["x1"] - 0.6, r["z0"] + 0.1, r["x1"] - 0.1, r["z1"] - 0.1),
+                           (r["x0"] + 0.6, r["z0"] + 0.1, r["x1"] - 0.6, r["z0"] + 0.6), (r["x0"] + 0.6, r["z1"] - 0.6, r["x1"] - 0.6, r["z1"] - 0.1)):
+        o.box("brick_buff", xa, y + 0.1, za, xb, top - 0.1, zb)    # the photos' pale buff brick over the walls' plaster
+    o.item("secret.pier", "The brick pier", "secret", src="client's photo + E", data=("SECRET", "pier"), axis="z")
+    cx, w = (r["x0"] + r["x1"]) / 2, S_["pier"]["w"]
+    o.box("brick_buff", cx - w / 2, y, r["z0"] + 0.6, cx + w / 2, top - 0.1, r["z0"] + S_["pier"]["d"])
+    o.item("secret.drain", "The floor drain", "secret", src="client's photo + E", data=("SECRET", "drain"), measure=False)
+    dx, dz, ds_ = S_["drain"]["x"], S_["drain"]["z"], S_["drain"]["s"]
+    o.box("steel_dark", dx - ds_ / 2, y, dz - ds_ / 2, dx + ds_ / 2, y + 0.4, dz + ds_ / 2)
+    for k in range(-2, 3):                                        # its grate's slots
+        o.box("black", dx - ds_ / 2 + 2, y + 0.4, dz + k * 2.6 - 0.5, dx + ds_ / 2 - 2, y + 0.45, dz + k * 2.6 + 0.5)
+    o.item("secret.fill", "Solid to the front", "secret", src="client (something blocks it)", measure=False)
+    fr = max(q["z1"] for q in rooms("ground") if q["id"] == "garage")
+    o.box("earth", r["x0"], y, r["z1"] + 5.1, r["x1"], top, fr)                  # behind its new front wall (5)
+    o.end()
+
+
+def garage_box(o):
+    """V1.26, the client: the garage's back corner by the hall, "a bunch of chipboard covering the air vents" of the old warm-air heating: a
+    hollow chipboard box floor to ceiling (survey_data.GARAGE_BOX); and the secret room's way in, a heavy steel access cover in the middle
+    of the garage floor (survey_data.SECRET)."""
+    g = next(q for q in rooms("ground") if q["id"] == "garage")
+    B, y0, y1 = D.GARAGE_BOX, D.LEVELS["garage"], FLOOR_Y["ground"] + CEIL
+    o.item("garage.box", "The chipboard box", "garage", src="client + E (39 deep)", data=("GARAGE_BOX", "d"), axis="x")
+    zf, t = g["z0"] + B["d"], B["t"]
+    o.box("chipboard", B["x0"], y0, zf - t, g["x1"], y1, zf)          # its front
+    o.box("chipboard", B["x0"], y0, g["z0"], B["x0"] + t, y1, zf - t)  # its side
+    for xa in (B["x0"] + 30, B["x0"] + 70):                           # the sheets' joints
+        o.box("gap", xa - 0.2, y0, zf, xa + 0.2, y1, zf + 0.1)
+    C = D.SECRET["cover"]
+    o.item("garage.cover", "The access cover to the secret room", "garage", src="client + E (600 × 450)", measure=False)
+    cx, cz = (g["x0"] + g["x1"]) / 2, (g["z0"] + g["z1"]) / 2
+    o.box("steel_dark", cx - C["w"] / 2 - 3, y0, cz - C["d"] / 2 - 3, cx + C["w"] / 2 + 3, y0 + 0.6, cz + C["d"] / 2 + 3)   # its frame
+    o.box("steel", cx - C["w"] / 2, y0 + 0.6, cz - C["d"] / 2, cx + C["w"] / 2, y0 + 0.9, cz + C["d"] / 2)                  # the plate
+    for dx in (-C["w"] / 2 + 6, C["w"] / 2 - 10):                     # its two lifting keyholes
+        o.box("black", cx + dx, y0 + 0.9, cz - 1, cx + dx + 4, y0 + 0.95, cz + 1)
+    o.end()
 
 
 def hall(o):
@@ -1956,7 +2041,9 @@ def build():
         if floor == "lower":
             steps += [lambda: stairs(o), lambda: kitchen(o), lambda: wc(o)]
         if floor == "ground":
-            steps += [lambda: lower_ceilings(o), lambda: hall(o)]
+            steps += [lambda: lower_ceilings(o), lambda: hall(o), lambda: garage_box(o)]
+        if floor == "lower":
+            steps += [lambda: secret(o)]
         if floor == "first":
             steps += [lambda: office(o), lambda: bed2(o), lambda: master(o), lambda: boiler(o), lambda: bathroom(o), lambda: music(o), lambda: landing(o)]
         steps += [lambda: chalk_doors(o, floor), lambda: pendants(o, floor), lambda: switches(o, floor), lambda: sockets(o, floor), lambda: contacts(o, floor)]
@@ -1983,7 +2070,7 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "upvc": ("#f5f5f2", 0.35), "glass": ("#dfe9ee", 0.03), "artex": ("#f3f2ee", 0.97), "door_cream": ("#e8ddc2", 0.4), "mirror": ("#eef2f3", 0.12), "brass": ("#c9b58a", 0.3), "rib": ("#e2e2de", 0.5),
     "tile": ("#7b5a4b", 0.85), "ridge": ("#6d4c3f", 0.85), "hung": ("#6f4636", 0.85), "felt": ("#3d3b3a", 0.9),
     "slab": ("#cfc8bb", 0.95), "carpet": ("#cdbfa6", 1.0), "tile_f": ("#d9d4cb", 0.6), "vinyl": ("#cdd8da", 0.6), "concrete": ("#a8a49c", 0.95),
-    "earth": ("#8a8173", 1.0), "porch_in": ("#a7a49c", 0.9), "bin": ("#2f3236", 0.6), "recycle": ("#2b5d9a", 0.6), "quarry": ("#b25a43", 0.7), "board": ("#c4b79f", 0.9), "oak": ("#b07a46", 0.55), "fitting": ("#f6f6f3", 0.3),
+    "earth": ("#8a8173", 1.0), "brick_buff": ("#d6c7a3", 0.92), "chipboard": ("#c8ad80", 0.85), "porch_in": ("#a7a49c", 0.9), "bin": ("#2f3236", 0.6), "recycle": ("#2b5d9a", 0.6), "quarry": ("#b25a43", 0.7), "board": ("#c4b79f", 0.9), "oak": ("#b07a46", 0.55), "fitting": ("#f6f6f3", 0.3),
     "eaves": ("#e7e1d6", 0.9), "garage_blue": ("#2c3b63", 0.45), "garage_white": ("#ecebe7", 0.4), "garage_black": ("#26282a", 0.45), "timber": ("#8a5a35", 0.8), "pane": ("#3a4550", 0.08),
     "gloss": ("#f4f4f1", 0.12), "gap": ("#9b9a95", 0.6), "black": ("#1d1d1f", 0.5), "black_app": ("#1f2023", 0.35), "glass_dark": ("#17191c", 0.1),
     "ring": ("#2b2c2e", 0.6), "steel": ("#c8cacc", 0.25), "steel_dark": ("#8e9195", 0.35), "worktop": ("#26282a", 0.35), "metro": ("#111214", 0.12),

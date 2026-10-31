@@ -43,6 +43,8 @@ ROWS = [
     ("meters", "hall", "The meter cupboard's width", "inside", lambda: 38.0, None),
     ("bins", "porch", "The bin cupboard's width", "inside", lambda: 39.0, None),
     ("living_socket", "living", "The side-wall socket, from the corner", "along the wall", lambda: None, None),
+    ("garage_box", "garage", "The chipboard box's depth", "out from the back wall", lambda: D.GARAGE_BOX["d"], ("set", ("GARAGE_BOX", "d"))),   # V1.26
+    ("secret_pier", "secret", "The brick pier's length", "out from the back wall", lambda: D.SECRET["pier"]["d"], ("set", ("SECRET", "pier", "d"))),
 ]
 
 

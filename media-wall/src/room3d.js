@@ -4480,6 +4480,7 @@ function pickItem(e) {
   const near = (obj, r) => !!obj && obj.getWorldPosition(new THREE.Vector3()).distanceTo(p) < r * M;
   const BL = HPARTS.bed_lift;                                                    // v71: the master's ottoman bed: its card
   if (BL && houseG && houseG.visible) { const bx = new THREE.Box3().setFromObject(BL.g); bx.min.y -= 0.6; bx.expandByScalar(0.03); if (bx.containsPoint(p)) return "hbed"; }
+  if (houseG && houseG.visible) for (const [k, P] of Object.entries(HPARTS)) if (k.startsWith("door.") && under(o, P.g)) return "hdoor:" + k;   // V1.26
   if (S.site === "C" && (under(o, cab) || under(o, optC))) return "cab";
   if (under(o, lamp)) return "lamp";
   if (under(o, bar1)) return "bar1";
@@ -4513,6 +4514,10 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id === "hbed") { const P_ = HPARTS.bed_lift, up = !!(P_ && (P_.tw ? P_.tw.to === 1 : P_.t > 0.5));   // v71, the client: the bed as a card, like the living room's
     return ["Your ottoman bed", up ? "Lifted on its struts: four storage boxes inside" : "Pine, the base lifts from the foot", [
       btn(up ? "Lower the bed" : "Lift the bed", { hbed: up ? "down" : "up" }), ...(ROOMV() && RMODE !== "above" ? [btn("See it from above", { rmode: "above" })] : [])]]; }
+  if (id.startsWith("hdoor:")) { const k = id.slice(6), P = HPARTS[k]; if (!P) return null; const op = doorOpen(P);   // V1.26: a door's card
+    const any = Object.entries(HPARTS).some(([q, Q]) => q.startsWith("door.") && doorOpen(Q));
+    return [P.label || "The door", op ? (Math.abs(P.angle) < 89 ? "Open as far as it goes" : "Open") : "Shut", [
+      btn(op ? "Shut it" : "Open it", { hdoor: k }), btn(any ? "Shut every door" : "Open every door", { hdoors: any ? "shut" : "open" })]]; }
   if (id === "nowplay") return ["Now playing, on the ledge", `${NOWP[S.nowp % NOWP.length].name}`, [   // v39: which LP faces out
       btn("‹", { nowp: "-1" }, false, "q", "The one before"), btn("›", { nowp: "1" }, false, "q", "The next one"),
       btn("A photo of yours", { nowpic: "1" }), btn("Look at it", { view: "breast" })]];
@@ -4709,6 +4714,7 @@ if (act) {
     if (EMBH) { EMBH.tap(e); return; }                                        // V1: in the app, a tap names the piece to the app
     let id = pickItem(e); if (!id) return;
     const r = stage.getBoundingClientRect();
+    if (id.startsWith("hdoor:")) swingDoor(id.slice(6), !doorOpen(HPARTS[id.slice(6)]));   // V1.26: a tap opens or shuts it, its card says which
     if (tryOpts) { const pl = placeOf(id); if (pl) id = `opt:${pl}:${placeIx(pl, id)}`; }             // v39: Try options: what else could go here
     openAct(id, [e.clientX - r.left, e.clientY - r.top]);
   });
@@ -5194,13 +5200,24 @@ function liftBed(on) {
   P.tw = { a: P.t, to: on ? 1 : 0, t0: performance.now() }; dirty();
   if (actId === "hbed") renderAct();                             // v71: the card follows (where the lid is going)
 }
+function partPose(P) {   // three's x is flipped: the foot rises (about z), a door turns into its room (about y)
+  if (P.axis === "y") P.g.rotation.y = -P.t * P.angle * Math.PI / 180; else P.g.rotation.z = -P.t * P.angle * Math.PI / 180;
+}
 function liftTick(now) {   // each frame while a part moves (the frame loop, like the cabinet's doors)
   let on = false;
   for (const P of Object.values(HPARTS)) { if (!P.tw) continue;
     const k = Math.max(0, Math.min(1, (now - P.tw.t0) / 900)), e = k * k * (3 - 2 * k); P.t = P.tw.a + (P.tw.to - P.tw.a) * e;
-    P.g.rotation.z = -P.t * P.angle * Math.PI / 180; on = true; if (k >= 1) P.tw = null; }   // three's x is flipped: the foot rises
+    partPose(P); on = true; if (k >= 1) P.tw = null; }
   return on;
 }
+/* V1.26, the client: "i'd like to be able to open and close doors now at will": tap a door, it opens (or shuts) on its hinge; its card
+   opens or shuts every door. The bathroom's stops on the bath (house/survey_data.DOOR_HANG) */
+const doorOpen = P => !!(P && (P.tw ? P.tw.to === 1 : P.t > 0.5));
+function swingDoor(k, on) {
+  const P = HPARTS[k]; if (!P) return;
+  P.tw = { a: P.t, to: on ? 1 : 0, t0: performance.now() }; dirty();
+}
+function swingAll(on) { for (const k of Object.keys(HPARTS)) if (k.startsWith("door.")) swingDoor(k, on); if (actId) renderAct(); }
 /* v71, the client: "three ways to view the room": in it (wide), from above (the ceiling and the floors over it cut away), and the room on
    its own (the house cut to the room's walls, everything else put away), so nothing clips into it */
 const VIEW_ROOM = Object.fromEntries(Object.entries(ROOM_VIEW).map(([r, v]) => [v, r]));
@@ -5337,6 +5354,8 @@ root.addEventListener("click", e => {
   if (d.view) { setView(d.view); return; }
   if (d.rmode) { if (LIVV()) setView(LIV_RMODE[d.rmode]); else setRmode(d.rmode); if (actId) closeAct(); return; }   // v71: in it, from above, on its own (v78b: the living room's views)
   if (d.hbed) { liftBed(d.hbed === "up"); return; }                          // v71: the bed's card
+  if (d.hdoor) { swingDoor(d.hdoor, !doorOpen(HPARTS[d.hdoor])); if (actId) renderAct(); return; }   // V1.26: a door's card
+  if (d.hdoors) { swingAll(d.hdoors === "open"); return; }
   if (d.walk) { if (e.detail === 0) walk(d.walk); return; }   // v31: a pointer moves on pointerdown (held, it repeats); Enter or Space here
   if (d.eye) { lift(+d.eye); return; }
   if (d.level) { levelView(); return; }
@@ -5483,6 +5502,8 @@ function houseTex(k) {
     board: [1.2, 0.6, (g, w, h) => { const pl = ["#c4b296", "#bba98b", "#cbb99c", "#b6a283"];
       for (let i = 0; i < 4; i++) { g.fillStyle = pl[i]; g.fillRect(0, i * h / 4, w, h / 4); g.fillStyle = "rgba(0,0,0,0.25)"; g.fillRect(0, i * h / 4, w, 2); g.fillRect(rnd() * w, i * h / 4, 2, h / 4); }
       noise(g, w, h, 6000, 0.2, ["#7a6448", "#e6d6bb"]); }],
+    chipboard: [0.6, 0.6, (g, w, h) => { g.fillStyle = "#c8ad80"; g.fillRect(0, 0, w, h);   // V1.26: the garage's chipboard box: pressed flakes
+      noise(g, w, h, 9000, 0.55, ["#a88a5a", "#ddc596", "#8d7046", "#e8d4ab", "#b49461"]); }],
   };
   // v60: the kitchen (the client's photos): black bevelled metro tiles, the black speckled worktop, the grey wood-effect floor, chalkboard
   T.metro = [0.40, 0.40, (g, w, h) => {              // 20 × 10 tiles, 2 across × 4 down, light grout
@@ -5873,24 +5894,26 @@ function buildHouse() {
       for (const [mk, list] of Object.entries(F.boxes)) put(cur, list.map(([x0, y0, z0, x1, y1, z1]) => houseBox(mk, x0, y0, z0, x1, y1, z1)), mat3(mk));
       SHARED = new Set();
       const byMat = {};
-      for (const P of F.prisms) {                     // a profile extruded: along x the profile is (z, y), along z it is (x, y)
+      const prismGeo = P => {                         // a profile extruded: along x the profile is (z, y), along z it is (x, y)
         const g = new THREE.ExtrudeGeometry(new THREE.Shape(P.pts.map(([u, w]) => new THREE.Vector2(u * M, w * M))), { depth: (P.b - P.a) * M, bevelEnabled: false });
         if (P.axis === "x") mx.set(0, 0, -1, -P.a * M, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1);
         else if (P.axis === "y") mx.set(-1, 0, 0, 0, 0, 0, 1, P.a * M, 0, 1, 0, 0, 0, 0, 0, 1);   // V1.14: a plan shape (x, z) raised from a to b (a chair's star base)
         else mx.set(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, P.a * M, 0, 0, 0, 1);
-        g.applyMatrix4(mx); (byMat[P.m] = byMat[P.m] || []).push(g);
-      }
+        g.applyMatrix4(mx); return g; };
+      for (const P of F.prisms) (byMat[P.m] = byMat[P.m] || []).push(prismGeo(P));
       for (const [mk, geos] of Object.entries(byMat)) put(cur, geos, mat3(mk));
       const byL = {};                                 // v70: the suite's turned shapes (pans, seats, bowls)
       for (const L of F.lathes || []) { const g = new THREE.LatheGeometry(L.p.map(([r, h]) => new THREE.Vector2(r * M, h * M)), LOWD ? 12 : 28);
         g.scale(L.s[0], 1, L.s[1]); const c = v3(L.c[0], L.c[1], L.c[2]); g.translate(c.x, c.y, c.z); (byL[L.m] = byL[L.m] || []).push(g); }
       for (const [mk, geos] of Object.entries(byL)) put(cur, geos, mat3(mk));
       if (fresh) for (const L of F.labels || []) label([L.name, [L.use, `about ${L.w.toFixed(1)} × ${L.d.toFixed(1)} m`].filter(Boolean).join(" · ")], L.x, L.y, L.z, 190);
-      for (const [pk, P] of Object.entries(F.parts || {})) {   // v68: a piece that moves, its boxes round its hinge
+      for (const [pk, P] of Object.entries(F.parts || {})) {   // v68: a piece that moves, its boxes round its hinge (V1.26: the doors too)
         const pv = v3(...P.pivot), g = new THREE.Group(); g.position.copy(pv); cur.add(g);
         for (const [mk, list] of Object.entries(P.boxes)) put(g, list.map(([x0, y0, z0, x1, y1, z1]) => houseBox(mk, x0, y0, z0, x1, y1, z1).translate(-pv.x, -pv.y, -pv.z)), mat3(mk));
-        const was = HPARTS[pk]; HPARTS[pk] = { g, angle: P.angle, t: was ? was.t : 0 };
-        if (was && was.t) g.rotation.z = was.g.rotation.z;
+        const pm = {}; for (const Q of P.prisms || []) (pm[Q.m] = pm[Q.m] || []).push(prismGeo(Q).translate(-pv.x, -pv.y, -pv.z));
+        for (const [mk, geos] of Object.entries(pm)) put(g, geos, mat3(mk));
+        const was = HPARTS[pk]; HPARTS[pk] = { g, angle: P.angle, axis: P.axis, label: P.label, floor: fk, t: was ? was.t : (P.t0 || 0) };
+        partPose(HPARTS[pk]);
       }
       if (EMBH) EMBH.pickable(fk, F);
     };
@@ -6017,7 +6040,7 @@ function start() {
       if (addp && CATALOGUE[addp.type]) { const a = { id: "a" + Date.now().toString(36), type: addp.type, x: addp.x, z: addp.z }; pushUndo(); addThing(a); if (addp.rot) setLayout(a.id, { rot: addp.rot }); placeAll(); store.set(KEY, S); dirty(); }
       if (showat != null) { showOpen(); if (SH) { SH.own = true; SH.paused = true; SH.t = showat; showPose(SH.t); showCard(); qs("#r3d-show").hidden = true; } }
       if (o.view) setView(o.view, true); if (aim) flyTo(aim.eye, aim.at, aim.fov || 55, !!aim.above, true); },   // v58: "above" lets a look stand off (the house)
-    still, ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, collide, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG },
+    still, ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { HPARTS, swingDoor, swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, collide, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG },
     errors: () => store.get("r3d-errors", []),                                       // v35: what the trap kept
     perf: perfInfo,                                                                   // v35: the counts to watch each round
     photos: () => loadPhotos().then(() => Object.keys(PHOTO).length),               // V1.9: how many photo sets landed
