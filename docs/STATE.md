@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.20 (31 Oct 2026)
+**Version:** V1.21 (31 Oct 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -64,6 +64,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   every room by day in HD on one sheet (`_shots/gallery.jpg`).
 - **The front door (V1.16):** as the hall photo: cream to the hall, white to the porch, its two lights through it (seen from both
   sides), four raised panels, the brass letterbox in the rail between them, a lever each side.
+- **Fabrics (V1.21):** the bedding, pillows and mattresses cotton, the curtains linen, bedroom 2's bed leather, the sofa-bed and the
+  blanket wool (Poly Haven, CC0, `build_textures.TINT`); they were flat colours.
 - **The client's pictures again (V1.20):** the wardrobes' fronts in line with the boiler cupboard (the wall between the bedrooms 17.5
   further into the master, the bed and bedsides with it); the cupboard's bedroom 2 wall off bedroom 2's door frame; bedroom 2's door shown
   open into the room, hinged at the bathroom end (`survey_data.DOOR_OPEN`); the kitchen door in the middle of the lower landing, the bar
@@ -137,3 +139,4 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
   the version on the phone's brand. The client: "I need to be able to take more buttons off easily and make it clear how to do this".
 - **V1.20** (31 Oct 2026): the client's pictures: wardrobes in line with the boiler cupboard, the cupboard off bedroom 2's door frame,
   bedroom 2's door open into the room, the kitchen door centred (bar shorter), no wall through the lower flight; soft pillows.
+- **V1.21** (31 Oct 2026): real fabric on the soft things (bedding, curtains, leather, wool). The client: "continue upgrading".

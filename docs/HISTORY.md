@@ -164,3 +164,5 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V1.20** (31 Oct 2026): the wardrobes' fronts in line with the boiler cupboard (the wall 17.5 further into the master), the cupboard off
   bedroom 2's door frame, bedroom 2's door open into the room (hinged at the bathroom end), the kitchen door in the middle of the lower
   landing (the bar 15 shorter), the store's wall under the lower flight only up to the steps; soft pillows, a cloth mattress.
+- **V1.21** (31 Oct 2026): the soft things' real weave: the bedding cotton, the curtains linen, bedroom 2's bed leather, the sofa-bed and
+  the blanket wool (they were flat colours).

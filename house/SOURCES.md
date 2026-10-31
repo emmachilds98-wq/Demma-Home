@@ -1,7 +1,7 @@
 # Sources for the house's textures
 
 Photo-textures (v70), all **CC0** (public domain) from [Poly Haven](https://polyhaven.com). They were downloaded at 2k, then toned
-to the client's photos and shrunk to 1024 px (the living room's oak 2048; V1.11, was 512) by `house/textures/build_textures.py`. On Pages they come after the first picture (V1.9); the shared page carries them inline. V1.13: the kitchen's worktop from granite_tile_03 (one tile cropped); the artex made by `build_textures.stipple` (ours). V1.12 adds the rooms' own: walls and ceilings (white_plaster_02), pine and dark pine (coated_pine), birch (white_maple_veneer), the office's oak (oak_veneer_01), each tinted to its colour. The real size is
+to the client's photos and shrunk to 1024 px (the living room's oak 2048; V1.11, was 512) by `house/textures/build_textures.py`. On Pages they come after the first picture (V1.9); the shared page carries them inline. V1.21: the soft things' weave: the bedding (stretch_poplin; the pillows and mattresses share it), the curtains (rough_linen), bedroom 2's bed (brown_leather), the sofa-bed (caban) and the blanket (jersey_melange), each tinted to its colour. V1.13: the kitchen's worktop from granite_tile_03 (one tile cropped); the artex made by `build_textures.stipple` (ours). V1.12 adds the rooms' own: walls and ceilings (white_plaster_02), pine and dark pine (coated_pine), birch (white_maple_veneer), the office's oak (oak_veneer_01), each tinted to its colour. The real size is
 the area one copy of the picture covers.
 
 | Used for | Poly Haven asset | Real size | Toned |

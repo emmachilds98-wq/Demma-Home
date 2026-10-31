@@ -6,7 +6,7 @@ live when complete". Earlier the same day: "best textures, quality and performan
 
 | # | Phase | Status | What |
 |---|---|---|---|
-| Q1 | Sharp surfaces | Done (V1.11, V1.12) | Every photo from 2k sources at 1024 px (the oak 2048); walls and ceilings plaster, pine, birch and oak grain in their colours; the house's photos fixed (V1.9's 4 × 4 stand-in); full quality first on the iPhones and PCs |
+| Q1 | Sharp surfaces | Done (V1.11, V1.12, V1.21) | Every photo from 2k sources at 1024 px (the oak 2048); walls and ceilings plaster, pine, birch and oak grain in their colours; the house's photos fixed (V1.9's 4 × 4 stand-in); full quality first on the iPhones and PCs; V1.21 the soft things' weave (bedding, curtains, leather, wool) |
 | Q2 | True to the photos | Done (V1.13, V1.17) | Artex (stipple) ceilings where the photos show them (the kitchen, the lower stairs); clear window glass (it tinted the view blue-green); the kitchen's black speckled worktop from a photo; the walls' plaster back to its photographed relief (V1.12's 4× read as rough render up close, seen in the gallery); V1.17 the hall's and the bathroom's mirrors reflect (they were grey, seen in the gallery) |
 | Q3 | Light outside | Done (V1.13) | The whole house reflects its own sky (an environment made from the sky, same size as the room's, so no shader rebuilds): the windows and the gloss catch it |
 | Q4 | The gallery | Done (V1.13, V1.15) | `tools/gallery.py`: every room by day in HD, after the photos land, on one sheet (`_shots/gallery.jpg`); V1.15 `--evening` too (it found the windows showing the garden in daylight at night); each round's proof and the client's quick look |

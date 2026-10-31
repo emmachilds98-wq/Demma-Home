@@ -22,7 +22,11 @@ TINT = {"carpet_grey": ("Carpet012", 0.5, "#6f6f73"), "carpet": ("Carpet012", 0.
         "pine": ("coated_pine", 1.0, "#c99a55", 1, 0.55), "pine_dark": ("coated_pine", 1.0, "#7a5a30", 1, 0.55),
         "birch": ("white_maple_veneer", 0.8, "#dcc8a2", 1, 1.3), "oak": ("oak_veneer_01", 1.0, "#b9864f", 1, 1.6),
         "paint": ("white_plaster_02", 1.6, "#f1ede5", 1, 0.08), "ceiling": ("white_plaster_02", 1.6, "#f3f2ee", 1, 0.08),   # V1.13: the relief as photographed (4× read as rough render up close)
-        "worktop": ("granite_tile_03", 0.6, "#26282a", 1, 1.4)}   # V1.13 (QUALITY_PLAN Q2): the kitchen's black speckled worktop (one tile of it)
+        "worktop": ("granite_tile_03", 0.6, "#26282a", 1, 1.4),   # V1.13 (QUALITY_PLAN Q2): the kitchen's black speckled worktop (one tile of it)
+        # V1.21 (Q1/Q6): the soft things' real weave in their colours (they were flat): the bedding cotton poplin (the pillows and mattresses
+        # share it: room3d.js), the curtains linen, bedroom 2's bed leather, the sofa-bed and the blanket wool
+        "duvet": ("stretch_poplin", 0.25, "#e9e6df", 1, 0.6), "curtain": ("rough_linen", 0.4, "#f4f3ef", 1, 0.6),
+        "leather": ("brown_leather", 0.5, "#1f1d1d", 1, 1.0), "lycksele": ("caban", 0.3, "#5b6b78", 1, 1.0), "check": ("jersey_melange", 0.3, "#7d7e86", 1, 1.0)}
 CROP = {"granite_tile_03": (0.02, 0.02, 0.31, 0.31)}   # V1.13: a part of the photo, as fractions (one tile, clear of the grout lines)
 # V1.13 (Q2): made here, not photographed: artex (stipple), the kitchen's and the lower landing's ceilings in the client's photos of 30 Oct:
 # key: (real size m, colour); a height field of soft random peaks, its normal map and a faint shade in the hollows

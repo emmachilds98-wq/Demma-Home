@@ -5437,7 +5437,7 @@ function houseTex(k) {
   if (k in HTEX) return HTEX[k];
   /* v70 (BUILD_SPEC phase 3): CC0 photo-textures (Poly Haven, house/SOURCES.md) where we have them, inline so the shared page shows them
      too (loading from elsewhere failed there in v50); the drawn ones below stay for everything else and as the fallback */
-  const pkey = { party: "brick", soldier: "brick" }[k] || k, pm = PMETA[pkey];
+  const pkey = { party: "brick", soldier: "brick", pillow: "duvet", mattress: "duvet" }[k] || k, pm = PMETA[pkey];   // V1.21: the bedding's one cotton
   if (pm && pm.map) {   // V1.9: its mean colour and a flat relief until the photos land (loadPhotos), then the photo in the same texture
     const img = (f, srgb, fill) => { const t = canvasTex(4, 4, g => { g.fillStyle = fill; g.fillRect(0, 0, 4, 4); }, srgb);   // V1.11: as sharp at a slant as the card allows (was 4)
       whenPhoto(pkey, f, src => { const im = new Image(); im.onload = () => { texSet(t, im); reshadow(); dirty(); }; im.src = src; }); return t; };
