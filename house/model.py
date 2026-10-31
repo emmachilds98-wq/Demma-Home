@@ -248,9 +248,11 @@ class Out:
         self.parts[name] = dict(pivot=[round(v, 1) for v in pivot], axis=axis, angle=round(angle, 1), t0=t0, label=label, out=p); return p
 
     def json(self):
-        return dict(boxes=self.boxes, prisms=self.prisms, labels=self.labels, lathes=self.lathes, tags=self.tags, bt=self.bt,
-                    parts={k: dict(pivot=v["pivot"], axis=v["axis"], angle=v["angle"], t0=v["t0"], label=v["label"], boxes=v["out"].boxes,
-                                   bt=v["out"].bt, prisms=v["out"].prisms) for k, v in self.parts.items()})
+        return dict(boxes=self.boxes, prisms=self.prisms, labels=self.labels, lathes=self.lathes, tags=self.tags, bt=self.bt, parts=self._parts())
+
+    def _parts(self):   # V1.26b: a part can carry its own parts (a bifold's second panel), turning with it as it goes
+        return {k: dict(pivot=v["pivot"], axis=v["axis"], angle=v["angle"], t0=v["t0"], label=v["label"], boxes=v["out"].boxes,
+                        bt=v["out"].bt, prisms=v["out"].prisms, parts=v["out"]._parts()) for k, v in self.parts.items()}
 
 
 def wall(o, m, axis, line0, line1, a0, a1, y0, y1, holes=()):
@@ -1648,19 +1650,24 @@ def door_leaves(o, floor):
             continue
         a, b, L = d["a"] + 0.8, d["b"] - 0.8, d["line"]
         hy = y + 100
-        if d["id"] in D.BIFOLD and d["axis"] == "x":               # v69: a white bifold, shut: two panels on a top track, a knob
+        if d["id"] in D.BIFOLD and d["axis"] == "x":               # v69: a white bifold: two panels on a top track, a knob
+            # V1.26b: it folds: the first panel turns on the jamb, the second on the hinges between them, its far end running back
+            # along the track (tap it)
             mid = (a + b) / 2
-            for pa, pb in ((a, mid - 0.3), (mid + 0.3, b)):
-                o.box(m, pa, y + 1.5, L - 1.5, pb, y + D.DOOR_H - 3, L + 1.5)
+            H = hang(floor, d, 1.5)
+            p1 = o.part("door." + d["id"], H["pivot"], "y", H["angle"], label=DOOR_NAMES[d["id"]][0])
+            p2 = p1.part("fold", (mid, y, L - H["side"] * 1.5), "y", -2 * H["angle"])
+            for pp, pa, pb in ((p1, a, mid - 0.3), (p2, mid + 0.3, b)):
+                pp.box(m, pa, y + 1.5, L - 1.5, pb, y + D.DOOR_H - 3, L + 1.5)
                 for ya, yb in ((y + 12, y + 92), (y + 108, y + D.DOOR_H - 14)):   # each panel's two recessed fields
                     for s_ in (-1, 1):
-                        o.box("gap", pa + 6, ya, L + s_ * 1.5, pb - 6, ya + 0.6, L + s_ * 1.8)
-                        o.box("gap", pa + 6, yb - 0.6, L + s_ * 1.5, pb - 6, yb, L + s_ * 1.8)
-                        o.box("gap", pa + 6, ya, L + s_ * 1.5, pa + 6.6, yb, L + s_ * 1.8)
-                        o.box("gap", pb - 6.6, ya, L + s_ * 1.5, pb - 6, yb, L + s_ * 1.8)
+                        pp.box("gap", pa + 6, ya, L + s_ * 1.5, pb - 6, ya + 0.6, L + s_ * 1.8)
+                        pp.box("gap", pa + 6, yb - 0.6, L + s_ * 1.5, pb - 6, yb, L + s_ * 1.8)
+                        pp.box("gap", pa + 6, ya, L + s_ * 1.5, pa + 6.6, yb, L + s_ * 1.8)
+                        pp.box("gap", pb - 6.6, ya, L + s_ * 1.5, pb - 6, yb, L + s_ * 1.8)
             o.box("steel", a - 0.8, y + D.DOOR_H - 3, L - 2, b + 0.8, y + D.DOOR_H - 0.5, L + 2)      # the track
             for s_ in (-1, 1):
-                o.box("chrome", mid - 5, hy - 2, L + s_ * 1.5, mid - 2, hy + 2, L + s_ * 4.5)
+                p1.box("chrome", mid - 5, hy - 2, L + s_ * 1.5, mid - 2, hy + 2, L + s_ * 4.5)
             continue
         H = hang(floor, d, 1.75)
         p = o.part("door." + d["id"], H["pivot"], "y", H["angle"], t0=H["t0"], label=DOOR_NAMES.get(d["id"], (d["id"],))[0])

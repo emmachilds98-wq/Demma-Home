@@ -5200,8 +5200,10 @@ function liftBed(on) {
   P.tw = { a: P.t, to: on ? 1 : 0, t0: performance.now() }; dirty();
   if (actId === "hbed") renderAct();                             // v71: the card follows (where the lid is going)
 }
-function partPose(P) {   // three's x is flipped: the foot rises (about z), a door turns into its room (about y)
-  if (P.axis === "y") P.g.rotation.y = -P.t * P.angle * Math.PI / 180; else P.g.rotation.z = -P.t * P.angle * Math.PI / 180;
+function partPose(P, t) {   // three's x is flipped: the foot rises (about z), a door turns into its room (about y); its own parts with it
+  t = t ?? P.t;
+  if (P.axis === "y") P.g.rotation.y = -t * P.angle * Math.PI / 180; else P.g.rotation.z = -t * P.angle * Math.PI / 180;
+  for (const K of P.kids || []) partPose(K, t);
 }
 function liftTick(now) {   // each frame while a part moves (the frame loop, like the cabinet's doors)
   let on = false;
@@ -5216,6 +5218,7 @@ const doorOpen = P => !!(P && (P.tw ? P.tw.to === 1 : P.t > 0.5));
 function swingDoor(k, on) {
   const P = HPARTS[k]; if (!P) return;
   P.tw = { a: P.t, to: on ? 1 : 0, t0: performance.now() }; dirty();
+  S.doors = Object.assign({}, S.doors, { [k]: on ? 1 : 0 }); store.set(KEY, S);   // V1.26b: remembered
 }
 function swingAll(on) { for (const k of Object.keys(HPARTS)) if (k.startsWith("door.")) swingDoor(k, on); if (actId) renderAct(); }
 /* v71, the client: "three ways to view the room": in it (wide), from above (the ceiling and the floors over it cut away), and the room on
@@ -5907,12 +5910,18 @@ function buildHouse() {
         g.scale(L.s[0], 1, L.s[1]); const c = v3(L.c[0], L.c[1], L.c[2]); g.translate(c.x, c.y, c.z); (byL[L.m] = byL[L.m] || []).push(g); }
       for (const [mk, geos] of Object.entries(byL)) put(cur, geos, mat3(mk));
       if (fresh) for (const L of F.labels || []) label([L.name, [L.use, `about ${L.w.toFixed(1)} × ${L.d.toFixed(1)} m`].filter(Boolean).join(" · ")], L.x, L.y, L.z, 190);
-      for (const [pk, P] of Object.entries(F.parts || {})) {   // v68: a piece that moves, its boxes round its hinge (V1.26: the doors too)
-        const pv = v3(...P.pivot), g = new THREE.Group(); g.position.copy(pv); cur.add(g);
+      const partG = (P, into, at) => {                 // a part's group on its pivot, its own parts inside it (V1.26b: a bifold's second panel)
+        const pv = v3(...P.pivot), g = new THREE.Group(); g.position.copy(pv).sub(at); into.add(g);
         for (const [mk, list] of Object.entries(P.boxes)) put(g, list.map(([x0, y0, z0, x1, y1, z1]) => houseBox(mk, x0, y0, z0, x1, y1, z1).translate(-pv.x, -pv.y, -pv.z)), mat3(mk));
         const pm = {}; for (const Q of P.prisms || []) (pm[Q.m] = pm[Q.m] || []).push(prismGeo(Q).translate(-pv.x, -pv.y, -pv.z));
         for (const [mk, geos] of Object.entries(pm)) put(g, geos, mat3(mk));
-        const was = HPARTS[pk]; HPARTS[pk] = { g, angle: P.angle, axis: P.axis, label: P.label, floor: fk, t: was ? was.t : (P.t0 || 0) };
+        const kids = Object.values(P.parts || {}).map(Q => Object.assign(partG(Q, g, pv), { angle: Q.angle, axis: Q.axis }));
+        return { g, kids };
+      };
+      for (const [pk, P] of Object.entries(F.parts || {})) {   // v68: a piece that moves, its boxes round its hinge (V1.26: the doors too)
+        const { g, kids } = partG(P, cur, new THREE.Vector3());
+        const was = HPARTS[pk], kept = (S.doors || {})[pk];   // V1.26b: a door stays as you left it (this device)
+        HPARTS[pk] = { g, kids, angle: P.angle, axis: P.axis, label: P.label, floor: fk, t: was ? was.t : kept != null ? kept : (P.t0 || 0) };
         partPose(HPARTS[pk]);
       }
       if (EMBH) EMBH.pickable(fk, F);

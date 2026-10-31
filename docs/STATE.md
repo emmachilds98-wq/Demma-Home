@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.26 (31 Oct 2026)
+**Version:** V1.27 (31 Oct 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -65,7 +65,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **The front door (V1.16):** as the hall photo: cream to the hall, white to the porch, its two lights through it (seen from both
   sides), four raised panels, the brass letterbox in the rail between them, a lever each side.
 - **Doors (V1.26):** tap a door to open or shut it (every room door, the front door, the bin cupboards'); its card shuts or opens
-  every door. The bathroom's stops on the bath, 15 off the wall (the bath 184 so it meets it). Not the office's bifold yet.
+  every door. The bathroom's stops on the bath, 15 off the wall (the bath 184 so it meets it). V1.27: the office's bifold folds too; each
+  door stays as you left it (this device).
 - **The garage and the secret room (V1.26):** the chipboard box in the garage's back corner by the hall; the access cover in the middle
   of its floor; the secret room square (2.78), solid to the front, bare buff brick, its pier and drain. The bin cupboards' handles at the
   street end (they open from outside).
@@ -142,8 +143,7 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
    the landing's door widths and the wall between the bedroom doors' frames; the tapestry's drop; the hall radiator; the master from the
    wardrobes to the front wall; the alcove; bedroom 2's length; a stair tread; the meter and bin cupboards; the living room's side-wall socket; the garage's chipboard box's depth; the secret room's pier.
 4. Decide: where the side-wall socket goes; near-photo pictures (minutes each) or not; whether the house's tap-a-piece size edit comes back.
-- **V1.25** (31 Oct 2026): bedroom 2's door hinged at the boiler cupboard end, open flat against the cupboard (the client's arrow:
-  "fix this door to come out the right way"); hinges on every room door; bedroom 2's moulded head cap from the landing photo.
 - **V1.26** (31 Oct 2026): doors open and shut with a tap (the bathroom's stops on the bath); the bin cupboards' handles at the street
   end; the garage's chipboard box and the secret room's cover; the secret room square, its pier and drain. The client: "i'd like to be
   able to open and close doors now at will".
+- **V1.27** (31 Oct 2026): the office's bifold folds open with a tap; doors stay as you left them. The client: "merge and continue".
