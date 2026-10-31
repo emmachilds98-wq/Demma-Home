@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.19 (30 Oct 2026)
+**Version:** V1.20 (31 Oct 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -46,7 +46,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   the rooms are one row each, sliding sideways. The brand's second line says where you are. `?room` opens the living room.
 - **The living room** is the old page as it was: the stickers on its places, Plan · Build · Buy (the media wall's sheets), the dock's View ·
   Room · Look · Edit, the item cards. The only project for now; each room gets its own in time (`projects/`), with room left for it.
-- **Measure** (the dock, fifth button): the 20 sizes still guessed, by room, a number and a photo each; a room's name flies there. Kept as
+- **Measure** (the dock, fifth button): the 19 sizes still guessed, by room, a number and a photo each; a room's name flies there. Kept as
   you type (the shared page's database, or this device and a link from Send), in the V1 app's format, so `pull_edits.py` reads both.
 - **Outside (V1.3, V1.4):** the whole house is always by day, under a real sky with the sun from the south-west (its light and shadows too, so the back is in shade), on ground that runs to a
   hazy horizon (the street's level in front, the garden's behind, the slope between); the lawn green as the back photo, the fences
@@ -64,6 +64,11 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   every room by day in HD on one sheet (`_shots/gallery.jpg`).
 - **The front door (V1.16):** as the hall photo: cream to the hall, white to the porch, its two lights through it (seen from both
   sides), four raised panels, the brass letterbox in the rail between them, a lever each side.
+- **The client's pictures again (V1.20):** the wardrobes' fronts in line with the boiler cupboard (the wall between the bedrooms 17.5
+  further into the master, the bed and bedsides with it); the cupboard's bedroom 2 wall off bedroom 2's door frame; bedroom 2's door shown
+  open into the room, hinged at the bathroom end (`survey_data.DOOR_OPEN`); the kitchen door in the middle of the lower landing, the bar
+  15 shorter; the store's wall under the lower flight stops at the steps' underside. Soft pillows and a cloth mattress in bedroom 2.
+  The master is now tight: 47 from the bed to the chest (a question for the client).
 - **Hide buttons (V1.19):** one labelled pill under the view buttons, in every view, on a phone too: it takes every button and panel
   off and leaves only Show buttons (Esc too); a toast says how to bring them back. The version shows on a phone after where you are.
 - **Fixes from the client's pictures (V1.18):** the boiler cupboard a normal size with a standard door, out into both bedrooms (the wall
@@ -130,3 +135,5 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
   stairs out, the bathroom wall's stub out, the stair curtain clear of the banister, the lower store's brick outside its wall.
 - **V1.19** (30 Oct 2026): Hide buttons takes every button off in any view (labelled on a phone too; Show buttons or Esc brings them back);
   the version on the phone's brand. The client: "I need to be able to take more buttons off easily and make it clear how to do this".
+- **V1.20** (31 Oct 2026): the client's pictures: wardrobes in line with the boiler cupboard, the cupboard off bedroom 2's door frame,
+  bedroom 2's door open into the room, the kitchen door centred (bar shorter), no wall through the lower flight; soft pillows.

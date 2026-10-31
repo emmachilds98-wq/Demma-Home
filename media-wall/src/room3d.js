@@ -5836,7 +5836,8 @@ function buildHouse() {
     /* v69 (B4), the client: "more realistic like our living room": furniture, fittings and soft things with rounded edges (cm by
        material: the whites and woods a little, the suite and cushions a lot); walls, floors and frames stay sharp */
     const ROUND = { pine: 0.8, pine_dark: 0.3, birch: 0.6, oak: 0.6, wardrobe: 0.5, gloss: 0.8, door_white: 0.4, door_wood: 0.4, fitting: 6, porcelain: 1,
-      primrose: 4, duvet: 3, pot: 4, lycksele: 3, storebox: 1.5, leather: 2, check: 1, curtain: 1, mattress: 4 };
+      primrose: 4, duvet: 3, pot: 4, lycksele: 3, storebox: 1.5, leather: 2, check: 1, curtain: 1, mattress: 4, pillow: 6 };
+    const SOFT = { pillow: 4, mattress: 3, duvet: 3 };   // V1.20: the soft things' edges round in steps (one step read as a chamfer: slabs)
     /* v78: a face that exactly meets a neighbour's (two pieces of one wall, side by side) is never seen, but drawn it showed edge-on
        as a bright hairline up the wall (the landing's, above each door). The faces two square pieces share, from opposite sides: */
     const fkey = (ax, p, a0, a1, b0, b1) => ax + "|" + p + "|" + a0 + "|" + a1 + "|" + b0 + "|" + b1;
@@ -5859,7 +5860,7 @@ function buildHouse() {
             b.groups.forEach((gp, f) => { if (!SHARED.has(keys[f])) for (let j = gp.start; j < gp.start + gp.count; j++) keep.push(I[j]); });
             b.setIndex(keep); b.clearGroups(); } }
         return b; }
-      const b = new RoundedBoxGeometry(w * M, h * M, d * M, 1, Math.max(0.0005, Math.min(r, Math.min(w, h, d) / 2 - 0.05)) * M);
+      const b = new RoundedBoxGeometry(w * M, h * M, d * M, SOFT[mk] || 1, Math.max(0.0005, Math.min(r, Math.min(w, h, d) / 2 - 0.05)) * M);
       b.translate(c.x, c.y, c.z); return b; };
     /* V1 (Phase 3): a floor can be built again with the client's edits (editedFloor: the edited pieces moved and sized, the walls round a
        door or a window following it); the floor keeps its group, so what's shown and hidden stays as it was */

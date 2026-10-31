@@ -139,7 +139,7 @@ KITCHEN = dict(
     # the boiler on that wall over the bar's door end (E: a combi 40 wide, 70 high, 30 deep, its underside at 150)
     # v73: "it should be a table along that whole wall, boiler goes on the corner of the room on the right end of the table if you're
     # looking from the oven": from the back wall to the kitchen door's frame; the boiler in the back corner over its far end
-    bar=dict(x=(304.8, 364.8), z=(-309.0, -108.0), h=92.0), chairs=[(276, -250), (276, -170)],
+    bar=dict(x=(304.8, 364.8), z=(-309.0, -123.0), h=92.0), chairs=[(276, -250), (276, -170)],
     boiler=dict(z=(-305.0, -265.0), y=(150.0, 220.0), d=30.0),
     src="client's photos (positions) + standard sizes (E)")
 CHALK_DOORS = ["store_door", "cupboard_door", "airing_door"]
@@ -191,8 +191,8 @@ BED2 = dict(block_z=_block_z, block_x=98.0, low_wall=LOW_WALL,   # v68: from the
 # the window, lower than its sill (75); the ottoman lifts from the foot on gas struts, four 60 × 40 × 25 boxes inside (E). In each 1 m
 # frame, one each: a top shelf, a hanging rail, three KOMPLEMENT drawers (100 × 58, 16 high: ikea.com), boxes on top to the ceiling. A
 # BILLY (40 × 28 × 202: ikea.com) between the wardrobes and the bed.
-MASTER = dict(bed=dict(x=(0.0, 212.0), z=(228.0, 390.0), head_h=118.0, lift=50.0, boxes=dict(w=60.0, d=40.0, h=25.0)),
-              bedsides=[(186.0, 226.0), (392.0, 432.0)],   # v72: centred on the wall past the alcove (118.5–499.4); the king 150 × 200 in its pine frame
+MASTER = dict(bed=dict(x=(0.0, 212.0), z=(245.5, 407.5), head_h=118.0, lift=50.0, boxes=dict(w=60.0, d=40.0, h=25.0)),
+              bedsides=[(203.5, 243.5), (409.5, 449.5)],   # v72: centred on the wall past the alcove; V1.20 17.5 along with the wardrobes (60 clear of them); the king 150 × 200 in its pine frame
               chest=dict(x=(107.5, 187.5), z=(454.4, 499.4), h=72.0), wardrobes=dict(x0=0.0, w=100.0, n=2, d=58.0, h=201.0,
               drawer_h=16.0, drawers=3, top_boxes=30.0),   # v69: no BILLY (it blocked a wardrobe): only floor-free storage
               alcove=(0.0, 202.0), src="client (layout, the wardrobes' gap) + standard sizes (E) + ikea.com (KOMPLEMENT, BILLY)")
@@ -292,13 +292,14 @@ WALL_HALL = 303.5     # the hall's face of the wall to the garage (M: the living
 # needed. It also actually just houses towels and boxes for stuff no boiler": the cupboard 60 (58.5-118.5, a 48 door), so the bathroom
 # end (its wall, door and the box over the stairs, in one line) 18.2 back: the landing's end z -32.5, the bathroom about 1.8 x 2.7;
 # bedroom 2's door with it, still in the corner; the master's door and its gaps as they were. Bedroom 2's door's nook gone (BED2_1 None).
-FIT = {"first": {"bathroom": dict(x1=408.0, z1=-38.8), "bed2": dict(z1=62.0), "airing": dict(x0=202.0, z0=58.5, z1=143.5), "master": dict(x1=202.0, z0=68.0),
+FIT = {"first": {"bathroom": dict(x1=408.0, z1=-38.8), "bed2": dict(z1=79.5), "airing": dict(x0=202.0, z0=58.5, z1=143.5), "master": dict(x1=202.0, z0=85.5),
                  "master_b": dict(x0=202.0, z0=149.5, z1=268.1), "bed3": dict(x0=263.7),
                  "landing": dict(x1=408.0, z0=-32.5), "first_stairs": dict(x0=408.0, z0=-41.0, z1=196.0), "landing_top": dict(x0=408.0, z0=196.0)},
                  # v66: the stairwell over the flight; v67 (the landing photos): open to the flight's top step (the plans read 170)
        "ground": {"hall": dict(x0=WALL_HALL), "front_store_e": dict(x0=WALL_HALL), "garage": dict(x1=round(WALL_HALL - 12.6, 1))},
        "lower": {"kitchen": dict(z1=-23.8), "kitchen_1": dict(z0=-23.8), "kitchen_2": dict(z0=-23.8), "kitchen_cupboard": dict(z0=-23.8)}}
-FIT_DOORS = {"kitchen_door": (-100.5, -37.1),   # v73, the client: "shift the door": to the landing's stairs end, clear of the bar and the boiler
+FIT_DOORS = {"kitchen_door": (-115.5, -52.1),   # V1.20, the client: "kitchen door more centre with the area space between stairs and bathroom, this means shift up the table end": in the middle of the landing (the bar 15 shorter)
+             # v73 (-100.5 to -37.1), the client: "shift the door": to the landing's stairs end, clear of the bar and the boiler
              # v78b, the client: "adjusting the boiler room door to be wider towards the bedroom 1, you can move the bedroom 1 door
              # slightly closer to the lightswitch to the right if needed": the cupboard 10 wider that way (70), its door 58 (E, a 584
              # leaf), the 15 kept, the master's door 10 nearer the switch (the switch stays: 6 off the frame now)
@@ -310,6 +311,9 @@ FIT_DOORS = {"kitchen_door": (-100.5, -37.1),   # v73, the client: "shift the do
              # 15, the master's (76, as bedroom 2's: a 762 door, E), 40 to the corridor's end
              "cupboard_door": (-19.0, 31.0), "bed2_door": (-23.5, 52.5), "master_door": (149.5, 225.5),
              "bath_door": (290.2, 358.2)}   # v77, the two photos: in the corner by bedroom 2's door, 68 wide (E: against its 198 height)   # v69/v72/v73: the landing's doors in the client's order
+# V1.20, the client: "the bedroom 2 door opens from the bathroom side of the door frame outwards into the bedroom ... allowing better room
+# to pass in": drawn open, hinged at the frame's bathroom end (a), swung 90° into the room (-1: towards smaller x)
+DOOR_OPEN = {"bed2_door": ("a", -1)}
 FIT_DOOR_LINE = {"bath_door": -35.65}                # v76: in the bathroom's front wall, in line with the box's front (between -38.8 and -32.5)
 # v77, the client (two photos: the bathroom end from the stairs, and up the flight): "the bathroom is still wrong. It comes out slightly
 # above the stairs and is joined to the wall with the bannister and you can see the bedroom 2 door right there"; earlier "it goes back in
@@ -331,14 +335,19 @@ BED2_1 = None                                         # v76: bedroom 2's door fi
 # clear of the wardrobes); the cupboard's bedroom 2 side where it was, so 17.5 out into bedroom 2; its master side 17.5 past the wardrobes'
 # front too (its wall's face: into_master);
 # inside 89 × 71, a standard door (a 686 leaf, 71 in its lining, E) between bedroom 2's frame and the master's
-AIRING = dict(into_bed2=17.5, into_master=17.5, wall_bed2=4.0, wall_master=6.0)
+# V1.20, the client: "wall should line up with wardrobes so move the whole master bedroom wall ... shift the boiler room wall slightly too to
+# stop the doorframe overlap" (their picture: the wardrobes' front in line with the cupboard's master side, the cupboard's bedroom 2 wall
+# off bedroom 2's door frame): the wall between the bedrooms (and the wardrobes) 17.5 further into the master (bedroom 2 to z 79.5), the
+# wardrobes' front in line with the cupboard (into_master 0); the cupboard's bedroom 2 side at z 58.5, past bedroom 2's door and its frame
+# (it stood 8 into the doorway), 21 out into bedroom 2; inside 75 × 71, its standard door as before
+AIRING = dict(into_bed2=21.0, into_master=0.0, wall_bed2=4.0, wall_master=6.0)
 MASTER_1 = dict(x=(202.0, 251.0), z=(268.1, 499.4))   # v73: the master past its alcove by the door (the wall 19 in for the office)
 SWITCHES_AT = {("master_door", "landing"): 237.4}   # v72, the client: the master's switch in the middle of the gap to the corridor's end
 METERS = dict(electric=dict(w=28.0, h=50.0, d=18.0, y=115.0), gas=dict(w=26.0, h=36.0, d=16.0, y=25.0),   # v69: to fit the 38-wide cupboard
               src="client (the electric box and the gas meter in it) + standard meter boxes (E)")
 # v70: double sockets (E: 30 up, over a worktop 105, over a desk 90, over a bedside 75): (floor, the wall runs along x|z, its line, the
 # room's side, where along it, height)
-SOCKETS = [("first", "z", 0.0, 1, 185.0, 75.0), ("first", "z", 0.0, 1, 391.0, 75.0),        # the master: over each bedside
+SOCKETS = [("first", "z", 0.0, 1, 223.5, 75.0), ("first", "z", 0.0, 1, 429.5, 75.0),        # the master: over each bedside
            ("first", "z", 467.0, -1, 300.0, 90.0), ("first", "z", 467.0, -1, 440.0, 90.0),   # the office: over the desk
            ("first", "z", 270.0, -1, -150.0, 95.0), ("first", "x", 54.5, -1, 60.0, 30.0),    # the music room: the return, by the chair-bed
            ("lower", "z", 0.0, 1, -60.0, 105.0), ("lower", "z", 0.0, 1, -230.0, 105.0),      # the kitchen: over the worktop
