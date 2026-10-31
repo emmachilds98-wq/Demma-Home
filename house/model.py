@@ -1880,13 +1880,15 @@ def pendants(o, floor):
         if rid not in ids:
             continue
         o.item("light." + rid, "The ceiling light", rid, kind="light", src="client's photos", data=("PENDANTS", rid), measure=False)
-        o.box("upvc", px - 5, y - 2, pz - 5, px + 5, y - 0.3, pz + 5)
-        if rid == "wc":
-            o.box("primrose", px - 7, y - 32, pz - 7, px + 7, y - 6, pz + 7)
-            o.box("upvc", px - 7.2, y - 24, pz - 7.2, px + 7.2, y - 16, pz + 7.2)
+        # V1.24 (Q6): turned, not boxes: a round ceiling rose, the flex, a lampholder and a pear-shaped bulb (E: a standard GLS, 60 dia.)
+        o.lathe("upvc", px, y - 2, pz, [(0, 0), (4, 0), (5, 0.6), (5, 1.7), (0, 1.7)])
+        if rid == "wc":                                            # its yellow drum shade with the white band (the photo)
+            o.lathe("primrose", px, y - 32, pz, [(0, 0), (7.5, 0), (7.5, 26), (2, 26), (2, 28), (0, 28)])
+            o.lathe("upvc", px, y - 24, pz, [(0, 0), (7.7, 0), (7.7, 8), (0, 8)])
         else:
-            o.box("upvc", px - 0.4, y - 34, pz - 0.4, px + 0.4, y - 2, pz + 0.4)
-            o.box("led", px - 3, y - 41, pz - 3, px + 3, y - 34, pz + 3)
+            o.box("upvc", px - 0.35, y - 33, pz - 0.35, px + 0.35, y - 2, pz + 0.35)
+            o.lathe("upvc", px, y - 37, pz, [(0, 0), (1.7, 0), (1.7, 4), (1.2, 4.6), (0, 4.6)])
+            o.lathe("led", px, y - 45.5, pz, [(0, 0), (1.6, 0.3), (2.7, 1.4), (3.1, 3), (2.7, 4.8), (1.6, 6.6), (1.3, 8.5), (0, 8.5)])
 
 
 def upper_ceilings(o):
