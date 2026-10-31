@@ -1535,6 +1535,25 @@ def skirting(o, floor, rs):
                     o.box("skirting", l0, y, s0, l1, y + SKIRT_H - 2.5, s1); o.box("skirting", t0, y + SKIRT_H - 2.5, s0, t1, y + SKIRT_H, s1)
 
 
+def lever(o, axis, face, out, at, y, toward):
+    """V1.22 (Q6): a lever handle on a door's face, as the photos' doors have: a round rose (an octagon, 5.2 across, 0.8 proud), its
+    spindle, and the lever 12 long pointing back from the latch edge (`toward`: -1 or 1 along the door). axis: the way the door runs;
+    face: its face's line; out: which way the face looks; at: the rose's middle along the door; y: its middle's height."""
+    import math
+    ring = [(at + 2.6 * math.cos(k * math.pi / 4 + math.pi / 8), y + 2.6 * math.sin(k * math.pi / 4 + math.pi / 8)) for k in range(8)]
+    f0, f1 = sorted((face, face + out * 0.8))
+    o.prism("chrome", "z" if axis == "x" else "x", f0, f1, ring)
+    s0, s1 = sorted((face + out * 0.8, face + out * 4.2))
+    l0, l1 = sorted((face + out * 4.2, face + out * 5.8))
+    a0, a1 = sorted((at, at + toward * 12))
+    if axis == "x":
+        o.box("chrome", at - 0.7, y - 0.7, s0, at + 0.7, y + 0.7, s1)
+        o.box("chrome", a0 - 0.8, y - 0.9, l0, a1 + 0.8, y + 0.9, l1)
+    else:
+        o.box("chrome", s0, y - 0.7, at - 0.7, s1, y + 0.7, at + 0.7)
+        o.box("chrome", l0, y - 0.9, a0 - 0.8, l1, y + 0.9, a1 + 0.8)
+
+
 def door_leaves(o, floor):
     """v66: the doors between the rooms, shut, with a lever handle each side (the cupboards' are chalk_doors and porch)."""
     y = FLOOR_Y[floor]
@@ -1566,9 +1585,8 @@ def door_leaves(o, floor):
             z0_, z1_ = sorted((hz, hz + (3.5 if w > 0 else -3.5)))
             xa_, xb_ = sorted((fx, fx + sd * abs(w)))
             o.box(m, xa_, y + 0.5, z0_, xb_, y + D.DOOR_H - 0.8, z1_)
-            xh = fx + sd * (abs(w) - 9)                                   # the lever by its free edge, both faces
-            for zf_ in ((z0_ - 3.75, z0_), (z1_, z1_ + 3.75)):
-                o.box("chrome", min(xh, xh + sd * 9) , hy, zf_[0], max(xh, xh + sd * 9), hy + 2, zf_[1])
+            xh = fx + sd * (abs(w) - 7)                                   # the lever by its free edge, both faces (V1.22: on its rose)
+            lever(o, "x", z0_, -1, xh, hy + 1, -sd); lever(o, "x", z1_, 1, xh, hy + 1, -sd)
             if m == "door_white":                                         # its boards' V-joints, both faces
                 for k in range(1, 6):
                     c = fx + sd * abs(w) * k / 6
@@ -1578,11 +1596,11 @@ def door_leaves(o, floor):
         if d["axis"] == "x":
             o.box(m, a, y + 0.5, L - 1.75, b, y + D.DOOR_H - 0.8, L + 1.75)
             for s_ in (-1, 1):
-                o.box("chrome", b - 13, hy, L + s_ * 1.75, b - 4, hy + 2, L + s_ * 5.5)
+                lever(o, "x", L + s_ * 1.75, s_, b - 7, hy + 1, -1)       # V1.22: a lever on a rose, each face (was a chrome bar)
         else:
             o.box(m, L - 1.75, y + 0.5, a, L + 1.75, y + D.DOOR_H - 0.8, b)
             for s_ in (-1, 1):
-                o.box("chrome", L + s_ * 1.75, hy, b - 13, L + s_ * 5.5, hy + 2, b - 4)
+                lever(o, "z", L + s_ * 1.75, s_, b - 7, hy + 1, -1)
         if m == "door_white":                                        # v72 (B4): cottage doors (the landing photos): six boards, five V-joints a face
             for k in range(1, 6):
                 c = a + (b - a) * k / 6

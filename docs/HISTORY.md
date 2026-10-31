@@ -166,3 +166,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
   landing (the bar 15 shorter), the store's wall under the lower flight only up to the steps; soft pillows, a cloth mattress.
 - **V1.21** (31 Oct 2026): the soft things' real weave: the bedding cotton, the curtains linen, bedroom 2's bed leather, the sofa-bed and
   the blanket wool (they were flat colours).
+- **V1.22** (31 Oct 2026): every room door's handles a lever on a round rose, each side (they were chrome bars).

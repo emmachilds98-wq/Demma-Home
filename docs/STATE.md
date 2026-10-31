@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.21 (31 Oct 2026)
+**Version:** V1.22 (31 Oct 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -64,6 +64,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   every room by day in HD on one sheet (`_shots/gallery.jpg`).
 - **The front door (V1.16):** as the hall photo: cream to the hall, white to the porch, its two lights through it (seen from both
   sides), four raised panels, the brass letterbox in the rail between them, a lever each side.
+- **Door handles (V1.22):** every room door has a lever on a round rose each side (`model.lever`; they were chrome bars).
 - **Fabrics (V1.21):** the bedding, pillows and mattresses cotton, the curtains linen, bedroom 2's bed leather, the sofa-bed and the
   blanket wool (Poly Haven, CC0, `build_textures.TINT`); they were flat colours.
 - **The client's pictures again (V1.20):** the wardrobes' fronts in line with the boiler cupboard (the wall between the bedrooms 17.5
@@ -140,3 +141,4 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 - **V1.20** (31 Oct 2026): the client's pictures: wardrobes in line with the boiler cupboard, the cupboard off bedroom 2's door frame,
   bedroom 2's door open into the room, the kitchen door centred (bar shorter), no wall through the lower flight; soft pillows.
 - **V1.21** (31 Oct 2026): real fabric on the soft things (bedding, curtains, leather, wool). The client: "continue upgrading".
+- **V1.22** (31 Oct 2026): lever handles on roses on every room door. The client: "continue upgrading".
