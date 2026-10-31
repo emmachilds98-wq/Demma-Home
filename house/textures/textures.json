@@ -124,5 +124,35 @@
   "size": 0.5,
   "url": "",
   "licence": "ours"
+ },
+ "duvet": {
+  "asset": "stretch_poplin",
+  "size": 0.25,
+  "url": "https://polyhaven.com/a/stretch_poplin",
+  "licence": "CC0"
+ },
+ "curtain": {
+  "asset": "rough_linen",
+  "size": 0.4,
+  "url": "https://polyhaven.com/a/rough_linen",
+  "licence": "CC0"
+ },
+ "leather": {
+  "asset": "brown_leather",
+  "size": 0.5,
+  "url": "https://polyhaven.com/a/brown_leather",
+  "licence": "CC0"
+ },
+ "lycksele": {
+  "asset": "caban",
+  "size": 0.3,
+  "url": "https://polyhaven.com/a/caban",
+  "licence": "CC0"
+ },
+ "check": {
+  "asset": "jersey_melange",
+  "size": 0.3,
+  "url": "https://polyhaven.com/a/jersey_melange",
+  "licence": "CC0"
  }
 }

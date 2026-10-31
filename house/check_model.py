@@ -91,6 +91,7 @@ dep = next(r["z1"] for r in Mo.rooms("first") if r["id"] == "airing") - next(r["
 # v78b, the client: the boiler cupboard's door "wider towards the bedroom 1": the cupboard 10 wider that way, so its end stands 10 past
 # the wardrobes' fronts (v65: "as deep as the kallax wardrobe and aligns with boiler cupboard"; measure which still holds)
 # v81, the client: the cupboard's door "to fit between the two bedrooms": the cupboard 15 wider again, its end 25 past them (measure)
+dep += D.AIRING["wall_master"]                                    # V1.20: its wall's face (in line with the wardrobes' fronts, the client)
 check("master: the wardrobes in the alcove, the boiler cupboard's end at most 25 past their fronts (client)", 0 <= dep - W["d"] <= 25,
       f"alcove {dep:.0f} deep (fitted), wardrobes {W['d']:.0f}: the cupboard's end {dep - W['d']:.0f} past their fronts")
 # v68: the master bedroom's storage for two; the office 2.25 m (the client)
@@ -119,7 +120,12 @@ ma = next(r for r in Mo.rooms("first") if r["id"] == "airing")
 check("master: past the alcove (the client's landing; the agent read 4.45)", 350 <= mr["z1"] - ma["z1"] <= 460, f"{mr['z1'] - ma['z1']:.0f} from the alcove's front to the front wall: smaller (client: 'rather wide')")
 b2_ = Mo.room_sizes()["bed2"]
 check("bedroom 2 bigger behind the master's wardrobes (client)", b2_["z1"] - b2_["z0"] > 350, f"{(b2_['x1'] - b2_['x0']) / 100:.2f} × {(b2_['z1'] - b2_['z0']) / 100:.2f} m at its longest (an L)")
-check("master: a king bed (150 × 200) in its frame fits with 60 round it", MA["bed"]["z"][1] - MA["bed"]["z"][0] >= 160 and MA["chest"]["z"][0] - MA["bed"]["z"][1] >= 60, f"the frame {MA['bed']['x'][1] - MA['bed']['x'][0]:.0f} × {MA['bed']['z'][1] - MA['bed']['z'][0]:.0f}")
+# V1.20: the client moved the wall between the bedrooms 25 into the master (V1.18, V1.20): with the wardrobes kept clear (their rule) the
+# bed's side to the chest is the squeeze: a question for them (where the chest goes, the bedsides' size), not a fail
+gap_c = MA["chest"]["z"][0] - MA["bed"]["z"][1]
+check("master: a king bed (150 × 200) in its frame fits with 60 round it", MA["bed"]["z"][1] - MA["bed"]["z"][0] >= 160 and gap_c >= 60,
+      f"the frame {MA['bed']['x'][1] - MA['bed']['x'][0]:.0f} × {MA['bed']['z'][1] - MA['bed']['z'][0]:.0f}" + ("" if gap_c >= 60 else f", {gap_c:.0f} to the chest: since the wall moved in (client), where does the chest go? (measure)"),
+      warn=MA["bed"]["z"][1] - MA["bed"]["z"][0] >= 160 and gap_c >= 45)
 # v81, the client: the hall's radiator "shifted roughly half a meter to the left", its switch "above the rad slightly to the right between
 # rad and shoe rack"; the bathroom's slope "actually cuts off and becomes straight again" (over the sink)
 Hh_ = D.HALL; rk_ = min(r_["z"][0] for r_ in Hh_["racks"] if r_["x"][0] < D.WALL_HALL + 10)
@@ -192,8 +198,8 @@ ways = [("master: past the bed's foot to the window", foot_x - MA_["bed"]["x"][1
         ("music room: past the chair-bed to the desk", 270.0 - Mu_["chairbed"]["x"][1]),
         ("office: from the chairs to the wall", O_["chair"][0] - 25 - b3_["x0"])]
 for n, w in ways:
-    own = n.startswith("master: past the bed's foot")             # v73: the client's own bed in their own room: a question for them, not a fail
-    check(f"60 to pass: {n}", w >= 60, f"{w:.0f} wide" + ("" if w >= 60 else (": the wall 19 in past the alcove (client): does the bed sit another way? (measure)" if own and w < 55 else ": tight, a person turns sideways (measure)")), warn=w >= 55 or own)
+    own = n.startswith("master: past the bed's foot") or (n == "master: from the bed to the chest" and w >= 45)   # v73: the client's own bed in their own room: a question for them, not a fail (V1.20: the chest too, since the wall moved in)
+    check(f"60 to pass: {n}", w >= 60, f"{w:.0f} wide" + ("" if w >= 60 else ((": the wall moved in (client): where does the chest go? (measure)" if "chest" in n else ": the wall 19 in past the alcove (client): does the bed sit another way? (measure)") if own and w < 55 else ": tight, a person turns sideways (measure)")), warn=w >= 55 or own)
 # 10. v66: bedroom 2 as the music room: the day bed opens clear of the fixed pieces; the guitars and the amp move for a guest
 Mu = D.MUSIC; dk = Mu["desk"]; cb = Mu["chairbed"]; kx = Mu["kallax"]
 open_z = cb["z1"] - cb["bed_l"]

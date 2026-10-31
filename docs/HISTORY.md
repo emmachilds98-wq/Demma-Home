@@ -161,3 +161,11 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
   store's outside wall turned (`model.outer_walls` from the outline's winding).
 - **V1.19** (30 Oct 2026): Hide buttons, in every view, takes every button and panel off (Show buttons or Esc brings them back); the
   version shows on a phone.
+- **V1.20** (31 Oct 2026): the wardrobes' fronts in line with the boiler cupboard (the wall 17.5 further into the master), the cupboard off
+  bedroom 2's door frame, bedroom 2's door open into the room (hinged at the bathroom end), the kitchen door in the middle of the lower
+  landing (the bar 15 shorter), the store's wall under the lower flight only up to the steps; soft pillows, a cloth mattress.
+- **V1.21** (31 Oct 2026): the soft things' real weave: the bedding cotton, the curtains linen, bedroom 2's bed leather, the sofa-bed and
+  the blanket wool (they were flat colours).
+- **V1.22** (31 Oct 2026): every room door's handles a lever on a round rose, each side (they were chrome bars).
+- **V1.23** (31 Oct 2026): a white handle inside each opening casement sash (the side ones; the middle of three is fixed); the bath a
+  black wall filler at its plug end, to match the shower.

@@ -286,6 +286,15 @@ def window(o, side, x0, x1, y0, y1, design, face):
         for i in range(1, n):
             xm = x0 + w * i / n; o.box(W, xm - 3, y0, zo, xm + 3, y1, zi)
         yt = y0 + h * 0.78; o.box(W, x0, yt - 2.5, zo, x1, yt + 2.5, zi)
+        # V1.23 (Q6): a handle on each opening sash, inside, at its latch edge by the mullion, pointing down (shut): the side sashes open,
+        # the middle of three is fixed (the photos' windows; E: a standard uPVC espagnolette handle, 3 × 12 plate, 11 lever)
+        hy_ = (y0 + fr + yt - 2.5) / 2; zf = zi; out = -s
+        for i in ((0, 2) if n == 3 else (0,)):
+            xe = x0 + w * (i + 1) / n - 3 - 3.5 if i == 0 else x0 + w * i / n + 3 + 3.5   # just inside the sash's mullion edge
+            p0, p1 = sorted((zf, zf + out * 1.2)); q0, q1 = sorted((zf + out * 1.2, zf + out * 3.6)); r0, r1 = sorted((zf + out * 3.6, zf + out * 5.0))
+            o.box(W, xe - 1.5, hy_ - 6, p0, xe + 1.5, hy_ + 6, p1)                       # the plate
+            o.box(W, xe - 0.9, hy_ + 2.5, q0, xe + 0.9, hy_ + 4.3, q1)                   # its spindle boss
+            o.box(W, xe - 1.0, hy_ - 8, r0, xe + 1.0, hy_ + 4.3, r1)                     # the lever, down
     elif design in ("bars", "glazed", "living"):   # Georgian bars
         cols = max(2, round(w / 30)); rows = max(2, round(h / 32))
         if design == "glazed":
@@ -359,6 +368,13 @@ def walls_for(o, floor, rs, ds, y0, y1):
             # v78: an opening that reaches the edge's end runs on past it, so no stub of wall stands loose in the room beyond (a
             # post stood over the master's bed where its three pieces meet)
             holes += [(s0 - (ext + 1 if s0 <= a0 + 1 else 0), s1 + (ext + 1 if s1 >= a1 - 1 else 0), y0 - SLAB - 1, y1 + 1) for s0, s1 in skip]
+            if floor == "lower" and axis == "x":
+                st = stair()
+                if st["z0"] < line < st["z1"] and a0 < st["x1"] and a1 > st["x0"]:
+                    # V1.20, the client: "remove the wall in the stairwell again": the store's wall under the flight stops at the steps'
+                    # underside (it ran full height through them)
+                    soffit = y0 + int((l0 - st["z0"]) // st["going"]) * st["rise"] - 14
+                    holes.append((st["x0"], (a1 + ext + 1) if st["x1"] >= a1 - 1 else st["x1"], soffit, y1 + 1))
             if floor == "ground" and r["id"] == "hall" and axis == "x" and line == r["z0"]:
                 # V1.18, the client: "take this wall out of the stairwell": the living room's flight runs on into the hall's box through
                 # it, so it stops at the box's side
@@ -1189,10 +1205,10 @@ def bed2(o):
     b_ = B["bed"]; bx0, bx1, bz0, bz1 = b_["x"][0], b_["x"][1], b_["z"][0], b_["z"][1]
     o.box("leather", bx0, y, bz0, bx0 + 8, y + b_["head_h"], bz1)
     o.box("leather", bx0 + 8, y + 8, bz0, bx1, y + 32, bz1)
-    o.box("upvc", bx0 + 10, y + 32, bz0 + 4, bx1 - 3, y + 52, bz1 - 4)
+    o.box("mattress", bx0 + 10, y + 32, bz0 + 4, bx1 - 3, y + 52, bz1 - 4)   # V1.20: the mattress in cloth (it was shiny uPVC)
     o.box("check", bx0 + 40, y + 52, bz0 + 2, bx1 - 1, y + 58, bz1 - 2)
     for pz in (bz0 + 8, (bz0 + bz1) / 2 + 3):
-        o.box("pot", bx0 + 10, y + 52, pz, bx0 + 42, y + 64, pz + 62)
+        o.box("pillow", bx0 + 10, y + 52, pz, bx0 + 42, y + 64, pz + 62)   # V1.20: soft, puffed pillows (they were pot-coloured slabs)
 
 
 def boiler(o):
@@ -1246,7 +1262,7 @@ def master(o):
         lid.box("duvet", x0 + 52, y + 42, za, x1 - 1, y + 64, zb)
     lid.box("duvet", x1 - 2.5, y + 42, z0 + 2, x1 - 0.5, y + 64, z1 - 2)
     for pz in (z0 + 10, (z0 + z1) / 2 + 3):
-        lid.box("pot", x0 + 9, y + 60, pz, x0 + 45, y + 72, pz + 66)
+        lid.box("pillow", x0 + 9, y + 60, pz, x0 + 45, y + 72, pz + 66)
     for za, zb in M_["bedsides"]:                                  # pine bedside drawers, round knobs
         o.item(f"master.bedside{int(za)}", "A pine bedside", "master", src="E", data=("MASTER", "bedsides"), axis="z")
         o.box("pine", 0, y + 6, za, 35, y + 60, zb)
@@ -1307,7 +1323,7 @@ def music(o):
     o.box("black", x0, y + 18, z0 + 4, x1, y + 21, z0 + 7)
     o.box("lycksele", x0 + 2, y + 21, z0, x1 - 2, y + 42, z1 - 22)                  # the seat
     o.box("lycksele", x0 + 2, y + 21, z1 - 22, x1 - 2, y + cb["h"], z1 - 2)         # the back, leaning on the wall
-    o.box("pot", x0 + 8, y + 42, z1 - 34, x1 - 8, y + 62, z1 - 22)                  # a cushion
+    o.box("pillow", x0 + 8, y + 42, z1 - 34, x1 - 8, y + 62, z1 - 22)               # a cushion
     o.item("music.desk", "The L desk", "bed2", src="E (custom)", data=("MUSIC", "desk"), axis="x")
     dk = Mu["desk"]; dx0, dx1 = dk["x"]; dz0, dz1 = dk["z"]; dy = y + dk["h"]        # the L desk in birch ply
     rt = dk["ret"]
@@ -1453,6 +1469,13 @@ def bathroom(o):
         za_ = bz1 - 16 + k * 2.4; dx = 1.6 * (k % 2)
         o.box("curtain", rx - 2.5 + dx, y + 50 + (k % 3), za_, rx - 0.5 + dx, ry, za_ + 2.6)
     o.box("black", bx0 + 0.6, y + 120, bz1 - 22, bx0 + 2.5, y + 192, bz1 - 20)    # the riser and the black shower head
+    # V1.23 (Q6): the bath filler, black to match the shower, on the wall at the plug end (it had no taps): a plate, the spout, two levers
+    yt_ = y + b["h"] + 14
+    o.box("black", bx0 + 0.2, yt_ - 4, bz0 + 17, bx0 + 1.4, yt_ + 4, bz0 + 33)
+    o.box("black", bx0 + 1.4, yt_ - 1.2, bz0 + 23.5, bx0 + 15, yt_ + 1.2, bz0 + 26.5)
+    o.box("black", bx0 + 13, yt_ - 4, bz0 + 23.5, bx0 + 15, yt_ - 1.2, bz0 + 26.5)
+    for zc in (bz0 + 19, bz0 + 31):
+        o.box("black", bx0 + 1.4, yt_ - 1, zc - 1, bx0 + 7, yt_ + 1, zc + 1)
     o.box("black", bx0 + 2.5, y + 190, bz1 - 28, bx0 + 14, y + 194, bz1 - 14)
     o.item("bath.tiles", "The wall tiles and the tiled box", "bathroom", kind="finish", src="client's photo + E", data=("BATH", "tiles"), measure=False)
     T, til = "stone", B["tiles"]                                   # the wall tiles, just proud of each wall
@@ -1528,6 +1551,25 @@ def skirting(o, floor, rs):
                     o.box("skirting", l0, y, s0, l1, y + SKIRT_H - 2.5, s1); o.box("skirting", t0, y + SKIRT_H - 2.5, s0, t1, y + SKIRT_H, s1)
 
 
+def lever(o, axis, face, out, at, y, toward):
+    """V1.22 (Q6): a lever handle on a door's face, as the photos' doors have: a round rose (an octagon, 5.2 across, 0.8 proud), its
+    spindle, and the lever 12 long pointing back from the latch edge (`toward`: -1 or 1 along the door). axis: the way the door runs;
+    face: its face's line; out: which way the face looks; at: the rose's middle along the door; y: its middle's height."""
+    import math
+    ring = [(at + 2.6 * math.cos(k * math.pi / 4 + math.pi / 8), y + 2.6 * math.sin(k * math.pi / 4 + math.pi / 8)) for k in range(8)]
+    f0, f1 = sorted((face, face + out * 0.8))
+    o.prism("chrome", "z" if axis == "x" else "x", f0, f1, ring)
+    s0, s1 = sorted((face + out * 0.8, face + out * 4.2))
+    l0, l1 = sorted((face + out * 4.2, face + out * 5.8))
+    a0, a1 = sorted((at, at + toward * 12))
+    if axis == "x":
+        o.box("chrome", at - 0.7, y - 0.7, s0, at + 0.7, y + 0.7, s1)
+        o.box("chrome", a0 - 0.8, y - 0.9, l0, a1 + 0.8, y + 0.9, l1)
+    else:
+        o.box("chrome", s0, y - 0.7, at - 0.7, s1, y + 0.7, at + 0.7)
+        o.box("chrome", l0, y - 0.9, a0 - 0.8, l1, y + 0.9, a1 + 0.8)
+
+
 def door_leaves(o, floor):
     """v66: the doors between the rooms, shut, with a lever handle each side (the cupboards' are chalk_doors and porch)."""
     y = FLOOR_Y[floor]
@@ -1552,14 +1594,29 @@ def door_leaves(o, floor):
             for s_ in (-1, 1):
                 o.box("chrome", mid - 5, hy - 2, L + s_ * 1.5, mid - 2, hy + 2, L + s_ * 4.5)
             continue
+        if d["id"] in D.DOOR_OPEN and d["axis"] == "z":                # V1.20: open into the room on its hinge (survey_data.DOOR_OPEN)
+            end, sd = D.DOOR_OPEN[d["id"]]
+            hz, w = (a, b - a) if end == "a" else (b, a - b)              # the hinge's z, the leaf's width along z when shut (signed)
+            fx = L + sd * 1.75                                            # the room-side face it turns about
+            z0_, z1_ = sorted((hz, hz + (3.5 if w > 0 else -3.5)))
+            xa_, xb_ = sorted((fx, fx + sd * abs(w)))
+            o.box(m, xa_, y + 0.5, z0_, xb_, y + D.DOOR_H - 0.8, z1_)
+            xh = fx + sd * (abs(w) - 7)                                   # the lever by its free edge, both faces (V1.22: on its rose)
+            lever(o, "x", z0_, -1, xh, hy + 1, -sd); lever(o, "x", z1_, 1, xh, hy + 1, -sd)
+            if m == "door_white":                                         # its boards' V-joints, both faces
+                for k in range(1, 6):
+                    c = fx + sd * abs(w) * k / 6
+                    o.box("gap", c - 0.3, y + 1.5, z0_ - 0.3, c + 0.3, y + D.DOOR_H - 1.8, z0_)
+                    o.box("gap", c - 0.3, y + 1.5, z1_, c + 0.3, y + D.DOOR_H - 1.8, z1_ + 0.3)
+            continue
         if d["axis"] == "x":
             o.box(m, a, y + 0.5, L - 1.75, b, y + D.DOOR_H - 0.8, L + 1.75)
             for s_ in (-1, 1):
-                o.box("chrome", b - 13, hy, L + s_ * 1.75, b - 4, hy + 2, L + s_ * 5.5)
+                lever(o, "x", L + s_ * 1.75, s_, b - 7, hy + 1, -1)       # V1.22: a lever on a rose, each face (was a chrome bar)
         else:
             o.box(m, L - 1.75, y + 0.5, a, L + 1.75, y + D.DOOR_H - 0.8, b)
             for s_ in (-1, 1):
-                o.box("chrome", L + s_ * 1.75, hy, b - 13, L + s_ * 5.5, hy + 2, b - 4)
+                lever(o, "z", L + s_ * 1.75, s_, b - 7, hy + 1, -1)
         if m == "door_white":                                        # v72 (B4): cottage doors (the landing photos): six boards, five V-joints a face
             for k in range(1, 6):
                 c = a + (b - a) * k / 6
@@ -1910,7 +1967,7 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "gloss": ("#f4f4f1", 0.12), "gap": ("#9b9a95", 0.6), "black": ("#1d1d1f", 0.5), "black_app": ("#1f2023", 0.35), "glass_dark": ("#17191c", 0.1),
     "ring": ("#2b2c2e", 0.6), "steel": ("#c8cacc", 0.25), "steel_dark": ("#8e9195", 0.35), "worktop": ("#26282a", 0.35), "metro": ("#111214", 0.12),
     "chrome": ("#d9dbde", 0.15), "porcelain": ("#e4e6e8", 0.2), "primrose": ("#e3cf5c", 0.25), "tile_w": ("#f2f2ef", 0.2), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "rug": ("#5b5e66", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "pink": ("#f2c6d6", 0.4), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
-    "cloth0": ("#3d4a5c", 0.95), "cloth1": ("#b9b2a6", 0.95), "cloth2": ("#7a2f2f", 0.95), "cloth3": ("#2f3b2f", 0.95), "cloth4": ("#d8d2c4", 0.95), "cloth5": ("#555555", 0.95), "cloth6": ("#9b8b6e", 0.95), "curtain": ("#f4f3ef", 0.9), "stone": ("#cbc6bd", 0.5), "marble": ("#141416", 0.15), "led": ("#ffffff", 0.3), "chalk": ("#222423", 0.85), "storebox": ("#c9c1b2", 0.95), "contact": ("#000000", 1.0), "mattress": ("#f0eee8", 0.9), "trim": ("#5a5d60", 0.5), "gutter": ("#f2f2ef", 0.4), "lead": ("#6c7072", 0.55), "birch": ("#dcc8a2", 0.7), "lycksele": ("#5b6b78", 0.95), "grille": ("#e8dcc4", 0.6), "ceiling": ("#f3f2ee", 0.95),
+    "cloth0": ("#3d4a5c", 0.95), "cloth1": ("#b9b2a6", 0.95), "cloth2": ("#7a2f2f", 0.95), "cloth3": ("#2f3b2f", 0.95), "cloth4": ("#d8d2c4", 0.95), "cloth5": ("#555555", 0.95), "cloth6": ("#9b8b6e", 0.95), "curtain": ("#f4f3ef", 0.9), "stone": ("#cbc6bd", 0.5), "marble": ("#141416", 0.15), "led": ("#ffffff", 0.3), "chalk": ("#222423", 0.85), "storebox": ("#c9c1b2", 0.95), "contact": ("#000000", 1.0), "mattress": ("#f0eee8", 0.9), "pillow": ("#f4f1eb", 0.95), "trim": ("#5a5d60", 0.5), "gutter": ("#f2f2ef", 0.4), "lead": ("#6c7072", 0.55), "birch": ("#dcc8a2", 0.7), "lycksele": ("#5b6b78", 0.95), "grille": ("#e8dcc4", 0.6), "ceiling": ("#f3f2ee", 0.95),
     "laminate": ("#a9a39a", 0.7), "oak": ("#b8844f", 0.55), "screen": ("#0d0f12", 0.15), "pc_white": ("#eeeeec", 0.3), "pc_glow": ("#dfe6ff", 0.2),
     "pegboard": ("#f4f4f2", 0.6), "ivy": ("#2f5a2b", 0.8), "blind": ("#4a4d52", 0.9), "books": ("#8a3b2e", 0.8), "jar": ("#d9a441", 0.4), "pot": ("#e8e3d8", 0.5),
     "carpet_grey": ("#6f6f73", 1.0), "red_gloss": ("#c8201e", 0.15), "red_back": ("#9d1714", 0.4), "cat": ("#bdbcb8", 1.0), "sisal": ("#cdb88f", 0.9),

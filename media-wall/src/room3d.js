@@ -5437,7 +5437,7 @@ function houseTex(k) {
   if (k in HTEX) return HTEX[k];
   /* v70 (BUILD_SPEC phase 3): CC0 photo-textures (Poly Haven, house/SOURCES.md) where we have them, inline so the shared page shows them
      too (loading from elsewhere failed there in v50); the drawn ones below stay for everything else and as the fallback */
-  const pkey = { party: "brick", soldier: "brick" }[k] || k, pm = PMETA[pkey];
+  const pkey = { party: "brick", soldier: "brick", pillow: "duvet", mattress: "duvet" }[k] || k, pm = PMETA[pkey];   // V1.21: the bedding's one cotton
   if (pm && pm.map) {   // V1.9: its mean colour and a flat relief until the photos land (loadPhotos), then the photo in the same texture
     const img = (f, srgb, fill) => { const t = canvasTex(4, 4, g => { g.fillStyle = fill; g.fillRect(0, 0, 4, 4); }, srgb);   // V1.11: as sharp at a slant as the card allows (was 4)
       whenPhoto(pkey, f, src => { const im = new Image(); im.onload = () => { texSet(t, im); reshadow(); dirty(); }; im.src = src; }); return t; };
@@ -5836,7 +5836,8 @@ function buildHouse() {
     /* v69 (B4), the client: "more realistic like our living room": furniture, fittings and soft things with rounded edges (cm by
        material: the whites and woods a little, the suite and cushions a lot); walls, floors and frames stay sharp */
     const ROUND = { pine: 0.8, pine_dark: 0.3, birch: 0.6, oak: 0.6, wardrobe: 0.5, gloss: 0.8, door_white: 0.4, door_wood: 0.4, fitting: 6, porcelain: 1,
-      primrose: 4, duvet: 3, pot: 4, lycksele: 3, storebox: 1.5, leather: 2, check: 1, curtain: 1, mattress: 4 };
+      primrose: 4, duvet: 3, pot: 4, lycksele: 3, storebox: 1.5, leather: 2, check: 1, curtain: 1, mattress: 4, pillow: 6 };
+    const SOFT = { pillow: 4, mattress: 3, duvet: 3 };   // V1.20: the soft things' edges round in steps (one step read as a chamfer: slabs)
     /* v78: a face that exactly meets a neighbour's (two pieces of one wall, side by side) is never seen, but drawn it showed edge-on
        as a bright hairline up the wall (the landing's, above each door). The faces two square pieces share, from opposite sides: */
     const fkey = (ax, p, a0, a1, b0, b1) => ax + "|" + p + "|" + a0 + "|" + a1 + "|" + b0 + "|" + b1;
@@ -5859,7 +5860,7 @@ function buildHouse() {
             b.groups.forEach((gp, f) => { if (!SHARED.has(keys[f])) for (let j = gp.start; j < gp.start + gp.count; j++) keep.push(I[j]); });
             b.setIndex(keep); b.clearGroups(); } }
         return b; }
-      const b = new RoundedBoxGeometry(w * M, h * M, d * M, 1, Math.max(0.0005, Math.min(r, Math.min(w, h, d) / 2 - 0.05)) * M);
+      const b = new RoundedBoxGeometry(w * M, h * M, d * M, SOFT[mk] || 1, Math.max(0.0005, Math.min(r, Math.min(w, h, d) / 2 - 0.05)) * M);
       b.translate(c.x, c.y, c.z); return b; };
     /* V1 (Phase 3): a floor can be built again with the client's edits (editedFloor: the edited pieces moved and sized, the walls round a
        door or a window following it); the floor keeps its group, so what's shown and hidden stays as it was */
