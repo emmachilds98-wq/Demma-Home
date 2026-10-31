@@ -50,6 +50,8 @@ a { color: var(--oak); }
   .brand .mark { width: 34px; height: 34px; padding: 8px; border-radius: 12px; }
   .brand small { display: block; font-size: 11.5px; }   /* V1.2: on a phone the second line says where you are, in place of the version */
   .brand b { font-size: 16px; } .brand .ver { display: none; }
+  /* V1.19, the client: "The version number doesn't appear on the mobile version": after where you are, on the second line */
+  .brand small::after { content: " · " attr(data-ver); color: var(--mut2); font-weight: 500; }
   .bbar { position: fixed; left: 8px; right: 8px; bottom: max(8px, env(safe-area-inset-bottom)); z-index: 45; display: none; align-items: center; gap: 2px; justify-content: space-between;
     padding: 6px 8px 6px 6px; border-radius: 30px; background: var(--page); box-shadow: var(--shadow); }
   body.sheet-open .bbar { display: flex; }   /* v32: on a phone the bar switches between the sheets; in the room the tools have the bottom */

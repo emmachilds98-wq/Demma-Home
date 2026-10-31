@@ -159,3 +159,5 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V1.18** (30 Oct 2026): the client's pictures: the boiler cupboard a normal size (a standard door, out 17.5 into each bedroom), the
   wall across the living room's stairs out, the bathroom wall's stub by the sink out, the stair curtain clear of the banister, the lower
   store's outside wall turned (`model.outer_walls` from the outline's winding).
+- **V1.19** (30 Oct 2026): Hide buttons, in every view, takes every button and panel off (Show buttons or Esc brings them back); the
+  version shows on a phone.
