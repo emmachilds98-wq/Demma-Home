@@ -100,7 +100,8 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
   - **No wall across the living room's stairs** where they run on into the hall (the client, 30 Oct).
   - **The wardrobes' fronts in line with the boiler cupboard** (the client, 31 Oct): the wall between the bedrooms and the wardrobes 17.5
     further into the master; the cupboard's bedroom 2 wall clear of bedroom 2's door frame (21 out into bedroom 2). **Bedroom 2's door
-    opens into the room, hinged at the bathroom end** (drawn open). The master is tight now: where does the chest go?
+    opens into the room, hinged at the boiler cupboard end** (the client's arrow, 31 Oct; the landing photo's handle is at the bathroom
+    end): drawn open, flat back against the cupboard's side. Its frame has a moulded cap over the head on the landing side (the photo). The master is tight now: where does the chest go?
   - **The kitchen door in the middle of the lower landing**, between the stairs and the WC (the client, 31 Oct); the bar 15 shorter.
   - **No wall through the lower flight:** the store's wall under it stops at the steps (the client, 31 Oct).
   - **The bathroom's wall over the stairs**, by the sink, about 7.5 cm further into the bathroom than drawn before, for more room over

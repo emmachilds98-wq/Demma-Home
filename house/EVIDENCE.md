@@ -79,7 +79,7 @@ the agent's sizes (149, 150, 146 px a metre). The tracing is ±10 cm at best.
 | `house/evidence/compare_kitchen.jpg`, `now_kitchen.jpg` | The client's kitchen photo beside the Kitchen view (v60) |
 | `house/evidence/now_office.jpg` | The Office view: the new straight oak desk (v61) |
 | `house/evidence/v82_bathroom_beam.jpg` | v82: the client's photo from the bathroom's door beside the model (the slope up to the beam, the lower ceiling over the toilet, the mirror); the bathroom from above |
-| `media-wall/inputs/photo_bathroom_from_door_27oct.jpg`, `photo_landing_doors_27oct.jpg` | The client's photos (27 Oct): the bathroom from its door; the landing's three doors (the chalkboard's writing blurred) |
+| `media-wall/inputs/photo_bathroom_from_door_27oct.jpg`, `photo_landing_doors_27oct.jpg` | The client's photos (27 Oct): the bathroom from its door; the landing's three doors (the chalkboard's writing blurred). V1.25: bedroom 2's handle at the bathroom end (so hinged at the cupboard's, as the client's arrow), its frame's moulded head cap |
 | `house/evidence/v81_curtain_hall_bath.jpg` | v81: the curtain round the foot of the stairs (an option); the hall's radiator, switch and whole-wall tapestry; the bathroom's slope before and after, beside the client's photo |
 | `house/evidence/v80_lower_stairs_ground_view.jpg` | v80: the lower flight's top steps before (through the wall) and after (inside it); the ground floor's Overhead with the living room |
 | `house/evidence/v79_cupboard_stairs_views.jpg` | v79: the boiler cupboard's wider door, the top of the stairs, the steeper flight; the living room's In it, Above, On its own |
