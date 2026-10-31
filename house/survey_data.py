@@ -204,8 +204,10 @@ MASTER = dict(bed=dict(x=(0.0, 212.0), z=(245.5, 407.5), head_h=118.0, lift=50.0
 # head; stone-effect grey wall tiles 60 × 30, black marble-effect floor tiles 60 × 60. Sizes E (standard), placed off the photos.
 BATH = dict(strip_x=400.0, box_z=-191.0, box_h=125.0, slope_y0=133.0, beam_y=219.0, mirror=dict(z=(-151.0, -106.0), y=(115.0, 163.0)), vanity=dict(z=(-171.0, -86.0), d=33.0, top=86.0, basin_d=45.0),
             slim=dict(z=(-191.0, -171.0), d=30.0, h=80.0), toilet=dict(x=(359.0, 395.0), d=65.0, cistern_h=80.0),
-            bath=dict(x=(283.3, 353.0), l=170.0, h=55.0), rail_y=205.0, tiles=dict(sill=90.0, bath=200.0, sink=125.0, cheek=125.0),
+            bath=dict(x=(283.3, 353.0), l=184.0, h=55.0), rail_y=205.0, tiles=dict(sill=90.0, bath=200.0, sink=125.0, cheek=125.0),
             src="client's photos (what goes where) + standard sizes (E)")
+# V1.26: the bath 184 (was 170, E): the client's bathroom door stops on it 15 short of the wall behind it, so its end meets the door's
+# free edge there (DOOR_HANG; the photo from the door shows its end just inside the door). Still in Measure.
 # v81, the client: "it currently shows a large incline wall that covers most the sink area. you have images that show it actually cuts
 # off and becomes straight again": the photo (inputs/photo_bathroom_sink_25oct.jpg): the tiles level all round at the box's top, a short
 # straight rise (slope_y0), then a steep slope that meets the ceiling over the vanity's far end; over the sink the wall is straight.
@@ -297,7 +299,8 @@ FIT = {"first": {"bathroom": dict(x1=408.0, z1=-38.8), "bed2": dict(z1=79.5), "a
                  "landing": dict(x1=408.0, z0=-32.5), "first_stairs": dict(x0=408.0, z0=-41.0, z1=196.0), "landing_top": dict(x0=408.0, z0=196.0)},
                  # v66: the stairwell over the flight; v67 (the landing photos): open to the flight's top step (the plans read 170)
        "ground": {"hall": dict(x0=WALL_HALL), "front_store_e": dict(x0=WALL_HALL), "garage": dict(x1=round(WALL_HALL - 12.6, 1))},
-       "lower": {"kitchen": dict(z1=-23.8), "kitchen_1": dict(z0=-23.8), "kitchen_2": dict(z0=-23.8), "kitchen_cupboard": dict(z0=-23.8)}}
+       "lower": {"kitchen": dict(z1=-23.8), "kitchen_1": dict(z0=-23.8), "kitchen_2": dict(z0=-23.8), "kitchen_cupboard": dict(z0=-23.8),
+                 "secret": dict(z1=327.0)}}   # V1.26, the client: "secret room seems to be square not rectangle" (its 277.7 width deep, was 450)
 FIT_DOORS = {"kitchen_door": (-115.5, -52.1),   # V1.20, the client: "kitchen door more centre with the area space between stairs and bathroom, this means shift up the table end": in the middle of the landing (the bar 15 shorter)
              # v73 (-100.5 to -37.1), the client: "shift the door": to the landing's stairs end, clear of the bar and the boiler
              # v78b, the client: "adjusting the boiler room door to be wider towards the bedroom 1, you can move the bedroom 1 door
@@ -313,7 +316,21 @@ FIT_DOORS = {"kitchen_door": (-115.5, -52.1),   # V1.20, the client: "kitchen do
              "bath_door": (290.2, 358.2)}   # v77, the two photos: in the corner by bedroom 2's door, 68 wide (E: against its 198 height)   # v69/v72/v73: the landing's doors in the client's order
 # V1.20, the client: "the bedroom 2 door opens from the bathroom side of the door frame outwards into the bedroom ... allowing better room
 # to pass in": drawn open, hinged at the frame's bathroom end (a), swung 90° into the room (-1: towards smaller x)
-DOOR_OPEN = {"bed2_door": ("a", -1)}
+# V1.25, the client (an overhead picture, an arrow from the bathroom end to the boiler cupboard): "fix this door to come out the right way
+# as shown by the arrow": hinged at the cupboard end (b), it opens back flat against the cupboard's side; the switch on its latch side
+# V1.26, the client: "i'd like to be able to open and close doors now at will": every door on its hinge, tap it to open or shut it. How
+# each hangs: its hinge's end (a: the smaller x or z, as the levers were drawn, unless a photo says), the side it opens to (its own room
+# unless given), how far it opens (deg) and whether it starts open. The client: "the bathroom door doesnt open all the way, most of the way
+# but hits the bath just before it gets to fully open leaving roughly 15cm gap behind the door" (the photo from its door: hinged on the
+# bath's side): it stops at BATH_DOOR_GAP from the wall behind it (its angle from that, model.bath_door_deg); the bath reaches it (BATH).
+# The bin cupboards (the client): "open from the outside side, so doorhandle on left on left door and right on the right door": hinged at
+# the house end, the handle at the street end, opening into the porch. The front door into the hall (its lever at the b end, the photo).
+BATH_DOOR_GAP = 15.0
+DOOR_HANG = {"bed2_door": dict(hinge="b", open=1), "bath_door": dict(hinge="a", deg=None),
+             "store_w": dict(hinge="a", side=-1), "store_e": dict(hinge="a", side=1), "hall_porch": dict(hinge="a", side=-1)}
+# V1.25, the client's photo of the landing doors (27 Oct): bedroom 2's frame has a moulded cap over its head, wider than its legs (E: 35 deep,
+# 25 past each leg), on the landing's side
+HEAD_CAP = {"bed2_door": "landing"}
 FIT_DOOR_LINE = {"bath_door": -35.65}                # v76: in the bathroom's front wall, in line with the box's front (between -38.8 and -32.5)
 # v77, the client (two photos: the bathroom end from the stairs, and up the flight): "the bathroom is still wrong. It comes out slightly
 # above the stairs and is joined to the wall with the bannister and you can see the bedroom 2 door right there"; earlier "it goes back in
@@ -386,3 +403,18 @@ MUSIC = dict(desk=dict(x=(102.0, 270.0), z=(-288.0, -218.0), h=80.0, t=3.0, rise
              src="client (the music room, the guitars, the amp, the keyboard) + ikea.com (LYCKSELE, KALLAX) + standard sizes (E)")
 # V1 (Phase 3): the client's own numbers from the app (house/client_edits.json, written by tools/pull_edits.py) replace the guesses above
 __import__("client_edits").apply(globals())
+
+# V1.26, the client (two photos down the hatch and a picture over the model): "secret room seems to be square not rectangle and has something
+# blocking towards the front. it roughly has this shape with a wall in the middle behind the kitchen and a drain shown by the yellow circle.
+# it is accessible right now through a water mains cover (the large heavy rectangle metal covers used by uk water companies) and is around
+# the middle of our garage": square (FIT), the rest to the front solid (earth: what it is, unknown); a buff brick pier off the middle of the
+# back wall (one brick wide, out about 0.4 of the room as the picture: E); the floor drain's square grate near the hall side, towards the
+# front (the picture: E); the cover in the garage floor's middle (a 600 × 450 access cover, E). Walls: the photos' pale buff brick.
+SECRET = dict(pier=dict(w=21.5, d=115.0), drain=dict(x=219.0, z=268.0, s=15.0), cover=dict(w=60.0, d=45.0),
+              src="client's photos and picture (31 Oct) + E (sizes)")
+# V1.26, the client (a picture of the garage's back corner by the hall): "the garage has a similar chimney gap at the back left but its a
+# bunch of chipboard covering the air vents that built the old blow air heating from downstairs. it now is pretty vacant with possible pipe
+# or two": a chipboard box in that corner, in line with the chimney breast's edge (geometry.BREAST_X: the stack runs on behind it), as deep
+# as the breast is in the living room (E: 39), floor to ceiling, hollow
+GARAGE_BOX = dict(x0=186.0, d=39.0, t=1.8, src="client + the chimney breast's line (E: depth)")
+

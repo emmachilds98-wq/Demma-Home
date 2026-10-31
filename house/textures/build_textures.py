@@ -144,5 +144,17 @@ def main(src):
     print("textures", len(meta))
 
 
+def buff():
+    """V1.26: the secret room's pale buff brick (the client's photos down the hatch), toned from the red brick's photo (no new download):
+    its light and shade kept, the hue the photos' cream; the same relief."""
+    from PIL import ImageOps
+    g = ImageOps.autocontrast(Image.open(HERE / "brick_map.jpg").convert("L"), cutoff=1)
+    ImageOps.colorize(g, black="#7d6e55", white="#f2ead6", mid="#cdbd98").save(HERE / "brick_buff_map.jpg", quality=86)
+    (HERE / "brick_buff_nor.jpg").write_bytes((HERE / "brick_nor.jpg").read_bytes())
+    meta = json.loads((HERE / "textures.json").read_text())
+    meta["brick_buff"] = dict(meta["brick"], asset=meta["brick"]["asset"] + " (toned buff)")
+    (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
+
+
 if __name__ == "__main__":
-    main(sys.argv[1])
+    buff() if sys.argv[1:] == ["--buff"] else main(sys.argv[1])

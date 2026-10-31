@@ -55,7 +55,10 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
     with the fridge not sticking out so much": its front fitted to the fridge-freezer's (60 from the front wall).
   - WC 1.64 × 1.88 (agent), a window on the back wall; **its small sink on the wall by the kitchen** (the maroon mark; the client, 25 Oct).
   - The landing and the stairs up; the store under the stairs.
-  - **The "secret room"** (the client's words): the space the agent called unexcavated, under the garage, at the front.
+  - **The "secret room"** (the client's words): the space the agent called unexcavated, under the garage, at the front. **The client,
+    31 Oct (two photos down the hatch):** square, not long (2.78 × 2.78 drawn); something solid blocks it towards the front; bare pale
+    buff brick; a one-brick pier out from the middle of its back wall (behind the kitchen); a square drain grate in the floor near the
+    hall side, towards the front. The way in: a heavy rectangular water-company style access cover in the middle of the garage floor.
 - **Ground floor (street level):**
   - **Living room** 4.95 × 3.65 (agent; measured 467 × 347, ceiling 235): the window on the back wall right of centre (the orange mark).
   - Solid walls (black): the chimney breast between the living room and the garage (our media wall's breast), a block in the
@@ -100,7 +103,8 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
   - **No wall across the living room's stairs** where they run on into the hall (the client, 30 Oct).
   - **The wardrobes' fronts in line with the boiler cupboard** (the client, 31 Oct): the wall between the bedrooms and the wardrobes 17.5
     further into the master; the cupboard's bedroom 2 wall clear of bedroom 2's door frame (21 out into bedroom 2). **Bedroom 2's door
-    opens into the room, hinged at the bathroom end** (drawn open). The master is tight now: where does the chest go?
+    opens into the room, hinged at the boiler cupboard end** (the client's arrow, 31 Oct; the landing photo's handle is at the bathroom
+    end): drawn open, flat back against the cupboard's side. Its frame has a moulded cap over the head on the landing side (the photo). The master is tight now: where does the chest go?
   - **The kitchen door in the middle of the lower landing**, between the stairs and the WC (the client, 31 Oct); the bar 15 shorter.
   - **No wall through the lower flight:** the store's wall under it stops at the steps (the client, 31 Oct).
   - **The bathroom's wall over the stairs**, by the sink, about 7.5 cm further into the bathroom than drawn before, for more room over
@@ -340,8 +344,10 @@ the door. Also room for improvement." The gap: "Left wall behind airing cupboard
 - **As it is (modelled, v65):** on the left the white gloss vanity (basin, black tap; two doors, a drawer over a door) against the side
   wall under the slope, a slim white cabinet with round vents beyond it; the low corner boxed in and tiled (the plan's black mark), its
   side running up the dormer's cheek; the close-coupled toilet under the frosted window; the bath along the right from the window wall
-  to by the door, a ceiling-hung rail, a white curtain, a black shower head; stone-effect grey wall tiles (60 × 30), black
+  to by the door (V1.26: 184 drawn, so the door meets it), a ceiling-hung rail, a white curtain, a black shower head; stone-effect grey wall tiles (60 × 30), black
   marble-effect floor tiles (60 × 60).
+- **The door (the client, 31 Oct):** hinged on the bath's side (the photo from the door); it "doesnt open all the way, most of the way but
+  hits the bath just before it gets to fully open leaving roughly 15cm gap behind the door".
 
 - **v68, the client:** "the wall above the sink doesnt incline across the whole wall. it goes up to around the sink area then changes
   angles to be more straight": the back slope is 50°; from the tiled box (125) the slope reaches the ceiling over the slim cabinet and the
@@ -363,6 +369,11 @@ the door. Also room for improvement." The gap: "Left wall behind airing cupboard
 - The cupboard on the garage side houses the electric box and the gas meter; the other is the bin cupboard. The wall between the hall
   and the garage runs in line with the living room's recess by the door (the client, 26 Oct: "the whole wall" moves into the house, so
   that cupboard is about half as wide and the garage wall lines up with the living room's alcove): the hall 1.02 wide, the garage 2.91.
+- **The bin cupboards' doors (the client, 31 Oct):** they "open from the outside side, so doorhandle on left on left door and right on the
+  right door": hinged at the house end, the handle at the street end, opening into the porch.
+- **The garage's back corner by the hall (the client, 31 Oct):** "a similar chimney gap at the back left but its a bunch of chipboard
+  covering the air vents that built the old blow air heating from downstairs. it now is pretty vacant with possible pipe or two": a
+  chipboard box floor to ceiling, from the chimney breast's line to the hall wall (its depth to measure).
 - The hall's tapestry (v69): an orange tree-of-life hanging on the stairs' box from the corner by the door down. **v81, the client:** it
   covers the whole of that wall (the size to come). The radiator is about half a metre nearer the living room than drawn, its light
   switch above it and slightly right, between it and the shoe rack.

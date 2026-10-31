@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.23 (31 Oct 2026)
+**Version:** V1.27 (31 Oct 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -64,6 +64,14 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   every room by day in HD on one sheet (`_shots/gallery.jpg`).
 - **The front door (V1.16):** as the hall photo: cream to the hall, white to the porch, its two lights through it (seen from both
   sides), four raised panels, the brass letterbox in the rail between them, a lever each side.
+- **Doors (V1.26):** tap a door to open or shut it (every room door, the front door, the bin cupboards'); its card shuts or opens
+  every door. The bathroom's stops on the bath, 15 off the wall (the bath 184 so it meets it). V1.27: the office's bifold folds too; each
+  door stays as you left it (this device).
+- **The garage and the secret room (V1.26):** the chipboard box in the garage's back corner by the hall; the access cover in the middle
+  of its floor; the secret room square (2.78), solid to the front, bare buff brick, its pier and drain. The bin cupboards' handles at the
+  street end (they open from outside).
+- **Bedroom 2's door (V1.25):** hinged at the boiler cupboard end, drawn open flat against the cupboard's side (the client's arrow);
+  three hinges on every room door; bedroom 2's frame has the moulded cap over its head from the landing photo.
 - **Ceiling lights (V1.24):** turned, not boxes: a round rose, the flex, a lampholder and a pear-shaped bulb; the WC's yellow drum shade.
 - **Window handles, bath taps (V1.23):** every casement's opening sashes have a white handle inside, pointing down; the bath a black
   wall filler at its plug end (it had none).
@@ -72,7 +80,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   blanket wool (Poly Haven, CC0, `build_textures.TINT`); they were flat colours.
 - **The client's pictures again (V1.20):** the wardrobes' fronts in line with the boiler cupboard (the wall between the bedrooms 17.5
   further into the master, the bed and bedsides with it); the cupboard's bedroom 2 wall off bedroom 2's door frame; bedroom 2's door shown
-  open into the room, hinged at the bathroom end (`survey_data.DOOR_OPEN`); the kitchen door in the middle of the lower landing, the bar
+  open into the room (`survey_data.DOOR_OPEN`; V1.25 hinged at the cupboard end); the kitchen door in the middle of the lower landing, the bar
   15 shorter; the store's wall under the lower flight stops at the steps' underside. Soft pillows and a cloth mattress in bedroom 2.
   The master is now tight: 47 from the bed to the chest (a question for the client).
 - **Hide buttons (V1.19):** one labelled pill under the view buttons, in every view, on a phone too: it takes every button and panel
@@ -131,20 +139,11 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 
 1. When happy, archive `DIY` (Settings → Archive).
 2. From each iPhone, the site with `?perf` added, after opening the house once: a screenshot of the corner box (Phase 4's real numbers).
-3. Still to measure (all in Measure): how far the boiler cupboard sticks into bedroom 2; the bathroom's ceiling over the toilet and the slope's start, the vanity's width, the bath's length;
+3. Still to measure (all in Measure): how far the boiler cupboard sticks into bedroom 2; the bathroom's ceiling over the toilet and the slope's start, the vanity's width, the bath's length (184 drawn, from the door);
    the landing's door widths and the wall between the bedroom doors' frames; the tapestry's drop; the hall radiator; the master from the
-   wardrobes to the front wall; the alcove; bedroom 2's length; a stair tread; the meter and bin cupboards; the living room's side-wall socket.
+   wardrobes to the front wall; the alcove; bedroom 2's length; a stair tread; the meter and bin cupboards; the living room's side-wall socket; the garage's chipboard box's depth; the secret room's pier.
 4. Decide: where the side-wall socket goes; near-photo pictures (minutes each) or not; whether the house's tap-a-piece size edit comes back.
-- **V1.17** (30 Oct 2026): the hall's and the bathroom's mirrors reflect (grey before); each build keeps only the newest version of each
-  render and PDF (old rounds' copies had grown to 549 MB on the build machine). The client: "merge and continue".
-- **V1.18** (30 Oct 2026): from the client's pictures: the boiler cupboard resized with a standard door, the wall across the living room's
-  stairs out, the bathroom wall's stub out, the stair curtain clear of the banister, the lower store's brick outside its wall.
-- **V1.19** (30 Oct 2026): Hide buttons takes every button off in any view (labelled on a phone too; Show buttons or Esc brings them back);
-  the version on the phone's brand. The client: "I need to be able to take more buttons off easily and make it clear how to do this".
-- **V1.20** (31 Oct 2026): the client's pictures: wardrobes in line with the boiler cupboard, the cupboard off bedroom 2's door frame,
-  bedroom 2's door open into the room, the kitchen door centred (bar shorter), no wall through the lower flight; soft pillows.
-- **V1.21** (31 Oct 2026): real fabric on the soft things (bedding, curtains, leather, wool). The client: "continue upgrading".
-- **V1.22** (31 Oct 2026): lever handles on roses on every room door. The client: "continue upgrading".
-- **V1.23** (31 Oct 2026): window handles on the opening sashes; the bath's black filler. The client: "continue upgrading".
-- **V1.24** (31 Oct 2026): the ceiling lights turned: round roses, lampholders, real bulb shapes, the WC's drum shade. The client:
-  "continue upgrading".
+- **V1.26** (31 Oct 2026): doors open and shut with a tap (the bathroom's stops on the bath); the bin cupboards' handles at the street
+  end; the garage's chipboard box and the secret room's cover; the secret room square, its pier and drain. The client: "i'd like to be
+  able to open and close doors now at will".
+- **V1.27** (31 Oct 2026): the office's bifold folds open with a tap; doors stay as you left them. The client: "merge and continue".

@@ -187,6 +187,14 @@ for did, pieces in _foot().items():
         swx, swz = (d_["a"], d_["b"]), (d_["line"] + 6, d_["line"] + 6 + w2)
     hit = [n for n, xr, zr in pieces if xr[0] < swx[1] and xr[1] > swx[0] and zr[0] < swz[1] and zr[1] > swz[0]]
     check(f"clear swing: {did}", not hit, ", ".join(hit) or f"x {swx[0]:.0f}–{swx[1]:.0f}, z {swz[0]:.0f}–{swz[1]:.0f} clear")
+# V1.26, the client: the bathroom door "hits the bath just before it gets to fully open leaving roughly 15cm gap behind the door"
+bd_ = next(q for q in Mo.doors("first") if q["id"] == "bath_door"); hb_ = Mo.hang("first", bd_, 1.75)
+lw_ = bd_["b"] - bd_["a"] - 1.6; edge_z = hb_["pivot"][2] + hb_["side"] * lw_ * _m.sin(_m.radians(abs(hb_["angle"])))
+bath_end = Mo.DM["face"] + Mo.DM["t"] + D.BATH["bath"]["l"]
+check("bathroom: the door opens most of the way and stops on the bath (client)", 75 < abs(hb_["angle"]) < 90 and abs(bath_end - edge_z) < 3,
+      f"open {abs(hb_['angle']):.0f}°, {D.BATH_DOOR_GAP:.0f} behind it; its edge to z {edge_z:.1f}, the bath's end {bath_end:.1f}")
+sq_ = next(r for r in Mo.rooms("lower") if r["id"] == "secret")
+check("secret room: square (client)", abs((sq_["x1"] - sq_["x0"]) - (sq_["z1"] - sq_["z0"])) < 1, f"{sq_['x1'] - sq_['x0']:.1f} × {sq_['z1'] - sq_['z0']:.1f}")
 # v70: "60 to pass" (the client: only things that save space): the main way through each furnished room
 MA_, Mu_, O_ = D.MASTER, D.MUSIC, D.OFFICE
 mb_ = next(r for r in Mo.rooms("first") if r["id"] == "master_b"); b3_ = next(r for r in Mo.rooms("first") if r["id"] == "bed3")
