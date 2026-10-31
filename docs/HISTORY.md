@@ -169,3 +169,5 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V1.22** (31 Oct 2026): every room door's handles a lever on a round rose, each side (they were chrome bars).
 - **V1.23** (31 Oct 2026): a white handle inside each opening casement sash (the side ones; the middle of three is fixed); the bath a
   black wall filler at its plug end, to match the shower.
+- **V1.24** (31 Oct 2026): the ceiling lights turned (lathes): a round rose, the flex, a lampholder and a pear-shaped bulb; the WC's
+  yellow drum shade with its white band (they were boxes).

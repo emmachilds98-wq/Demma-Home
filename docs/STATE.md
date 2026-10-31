@@ -64,6 +64,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   every room by day in HD on one sheet (`_shots/gallery.jpg`).
 - **The front door (V1.16):** as the hall photo: cream to the hall, white to the porch, its two lights through it (seen from both
   sides), four raised panels, the brass letterbox in the rail between them, a lever each side.
+- **Ceiling lights (V1.24):** turned, not boxes: a round rose, the flex, a lampholder and a pear-shaped bulb; the WC's yellow drum shade.
 - **Window handles, bath taps (V1.23):** every casement's opening sashes have a white handle inside, pointing down; the bath a black
   wall filler at its plug end (it had none).
 - **Door handles (V1.22):** every room door has a lever on a round rose each side (`model.lever`; they were chrome bars).
@@ -145,3 +146,5 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 - **V1.21** (31 Oct 2026): real fabric on the soft things (bedding, curtains, leather, wool). The client: "continue upgrading".
 - **V1.22** (31 Oct 2026): lever handles on roses on every room door. The client: "continue upgrading".
 - **V1.23** (31 Oct 2026): window handles on the opening sashes; the bath's black filler. The client: "continue upgrading".
+- **V1.24** (31 Oct 2026): the ceiling lights turned: round roses, lampholders, real bulb shapes, the WC's drum shade. The client:
+  "continue upgrading".
