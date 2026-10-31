@@ -313,7 +313,12 @@ FIT_DOORS = {"kitchen_door": (-115.5, -52.1),   # V1.20, the client: "kitchen do
              "bath_door": (290.2, 358.2)}   # v77, the two photos: in the corner by bedroom 2's door, 68 wide (E: against its 198 height)   # v69/v72/v73: the landing's doors in the client's order
 # V1.20, the client: "the bedroom 2 door opens from the bathroom side of the door frame outwards into the bedroom ... allowing better room
 # to pass in": drawn open, hinged at the frame's bathroom end (a), swung 90° into the room (-1: towards smaller x)
-DOOR_OPEN = {"bed2_door": ("a", -1)}
+# V1.25, the client (an overhead picture, an arrow from the bathroom end to the boiler cupboard): "fix this door to come out the right way
+# as shown by the arrow": hinged at the cupboard end (b), it opens back flat against the cupboard's side; the switch on its latch side
+DOOR_OPEN = {"bed2_door": ("b", -1)}
+# V1.25, the client's photo of the landing doors (27 Oct): bedroom 2's frame has a moulded cap over its head, wider than its legs (E: 35 deep,
+# 25 past each leg), on the landing's side
+HEAD_CAP = {"bed2_door": "landing"}
 FIT_DOOR_LINE = {"bath_door": -35.65}                # v76: in the bathroom's front wall, in line with the box's front (between -38.8 and -32.5)
 # v77, the client (two photos: the bathroom end from the stairs, and up the flight): "the bathroom is still wrong. It comes out slightly
 # above the stairs and is joined to the wall with the bannister and you can see the bedroom 2 door right there"; earlier "it goes back in

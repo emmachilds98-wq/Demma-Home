@@ -398,6 +398,10 @@ def walls_for(o, floor, rs, ds, y0, y1):
                         rid = (lambda xa, ya, xb, yb: o.box("upvc", xa, ya, r0, xb, yb, r1)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("upvc", r0, ya, xa, r1, yb, xb))
                         rid(d["a"] - 3.2, y0, d["a"] - 0.2, y0 + D.DOOR_H + 2.8); rid(d["b"] + 0.2, y0, d["b"] + 3.2, y0 + D.DOOR_H + 2.8)
                         rid(d["a"] - 0.2, y0 + D.DOOR_H - 0.2, d["b"] + 0.2, y0 + D.DOOR_H + 2.8)
+                        if D.HEAD_CAP.get(d["id"]) == r["id"]:   # V1.25: a moulded cap over the head, past the legs (survey_data.HEAD_CAP)
+                            c0, c1 = (zf - 2.2, zf + 1.2) if out_dir > 0 else (zf, zf + 3.4)
+                            cap = (lambda xa, ya, xb, yb: o.box("upvc", xa, ya, c0, xb, yb, c1)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("upvc", c0, ya, xa, c1, yb, xb))
+                            cap(d["a"] - 8.5, y0 + D.DOOR_H + 6, d["b"] + 8.5, y0 + D.DOOR_H + 9.5)
 
 
 def _covers(spans, a0, a1):
@@ -1570,6 +1574,18 @@ def lever(o, axis, face, out, at, y, toward):
         o.box("chrome", l0, y - 0.9, a0 - 0.8, l1, y + 0.9, a1 + 0.8)
 
 
+HINGES = (18.0, 93.0, 168.0)                                       # E: three 76 mm butt hinges a door, their bottoms up its edge
+
+
+def hinges(o, axis, edge, f0, f1, y):
+    """V1.25: a door's three hinges, their knuckles on its hinge edge (across the leaf's thickness f0..f1, a little proud each face)."""
+    for h in HINGES:
+        if axis == "x":                                            # the edge runs up at x = edge, the leaf's faces along z
+            o.box("chrome", edge - 0.6, y + h, f0 - 0.4, edge + 0.6, y + h + 7.6, f1 + 0.4)
+        else:
+            o.box("chrome", f0 - 0.4, y + h, edge - 0.6, f1 + 0.4, y + h + 7.6, edge + 0.6)
+
+
 def door_leaves(o, floor):
     """v66: the doors between the rooms, shut, with a lever handle each side (the cupboards' are chalk_doors and porch)."""
     y = FLOOR_Y[floor]
@@ -1601,6 +1617,7 @@ def door_leaves(o, floor):
             z0_, z1_ = sorted((hz, hz + (3.5 if w > 0 else -3.5)))
             xa_, xb_ = sorted((fx, fx + sd * abs(w)))
             o.box(m, xa_, y + 0.5, z0_, xb_, y + D.DOOR_H - 0.8, z1_)
+            hinges(o, "x", fx + sd * 0.4, z0_, z1_, y)                    # V1.25: on its hinge edge, by the frame
             xh = fx + sd * (abs(w) - 7)                                   # the lever by its free edge, both faces (V1.22: on its rose)
             lever(o, "x", z0_, -1, xh, hy + 1, -sd); lever(o, "x", z1_, 1, xh, hy + 1, -sd)
             if m == "door_white":                                         # its boards' V-joints, both faces
@@ -1611,10 +1628,12 @@ def door_leaves(o, floor):
             continue
         if d["axis"] == "x":
             o.box(m, a, y + 0.5, L - 1.75, b, y + D.DOOR_H - 0.8, L + 1.75)
+            hinges(o, "x", a + 0.4, L - 1.75, L + 1.75, y)                # V1.25: the hinges opposite the lever
             for s_ in (-1, 1):
                 lever(o, "x", L + s_ * 1.75, s_, b - 7, hy + 1, -1)       # V1.22: a lever on a rose, each face (was a chrome bar)
         else:
             o.box(m, L - 1.75, y + 0.5, a, L + 1.75, y + D.DOOR_H - 0.8, b)
+            hinges(o, "z", a + 0.4, L - 1.75, L + 1.75, y)
             for s_ in (-1, 1):
                 lever(o, "z", L + s_ * 1.75, s_, b - 7, hy + 1, -1)
         if m == "door_white":                                        # v72 (B4): cottage doors (the landing photos): six boards, five V-joints a face

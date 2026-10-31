@@ -171,3 +171,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
   black wall filler at its plug end, to match the shower.
 - **V1.24** (31 Oct 2026): the ceiling lights turned (lathes): a round rose, the flex, a lampholder and a pear-shaped bulb; the WC's
   yellow drum shade with its white band (they were boxes).
+- **V1.25** (31 Oct 2026): bedroom 2's door hinged at the boiler cupboard end, opening back against the cupboard's side (the client's arrow); three hinges on every room door; bedroom 2's moulded head cap from the landing photo
