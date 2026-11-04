@@ -2132,8 +2132,23 @@ def living_shell():
     floors.append([sx0, n * r - 3, zl - 1.5, sx1, n * r, zl1])
     edges = [[0, WZ, W, WZ, 0, 1], [0, AD, 0, WZ, 1, 0], [B0, AD, 0, AD, 0, -1], [B0, 0, B0, AD, -1, 0], [B1, 0, B0, 0, 0, -1], [B1, RZ, B1, 0, 1, 0],
              [dx0 - 6, RZ, B1, RZ, 0, -1], [sx0, RZ, dx1 + 6, RZ, 0, -1], [W, WZ, W, F, -1, 0], [sx0 - 2.2, F, sx0 - 2.2, RZ, -1, 0], [W, F, sx0, F, 0, -1]]
+    # V1.45: its walls as the viewer draws them (each a plane: along x or z at c, from u0 to u1, its inside facing n; the paint the
+    # client's Look sets for that wall, w the main green, r the recesses' darker; holes [u0, u1, y0, y1] for the door, the stairs, the window)
+    (wx0, wx1), (wy0, wy1), A = g.WINDOW_X, g.WINDOW_Y, g.ALC_W
+    walls = [dict(axis="x", c=0, u=[WZ, 0], n=[1, 0, 0], paint="pc", tone="w"), dict(axis="x", c=0, u=[0, AD], n=[1, 0, 0], paint="media", tone="w"),
+             dict(axis="z", c=AD, u=[0, A], n=[0, 0, -1], paint="media", tone="w"), dict(axis="x", c=B0, u=[0, AD], n=[-1, 0, 0], paint="media", tone="r"),
+             dict(axis="z", c=0, u=[B0, B1], n=[0, 0, -1], paint="breast", tone="w"), dict(axis="x", c=B1, u=[0, RZ], n=[1, 0, 0], paint="breast", tone="r"),
+             dict(axis="z", c=RZ, u=[B1, W], n=[0, 0, -1], paint="door", tone="r", holes=[[dx0, dx1, 0, DH], [sx0, W, 0, C]]),
+             dict(axis="x", c=W, u=[WZ, RZ], n=[-1, 0, 0], paint="stairs", tone="w"),
+             dict(axis="z", c=WZ, u=[0, W], n=[0, 0, 1], paint="window", tone="w", holes=[[wx0, wx1, wy0, wy1]])]
+    for w_ in walls:
+        w_["y"] = [0, C]; w_.setdefault("holes", [])
+    sk, st = g.SKIRT_H, g.SKIRT_T                                     # the skirting (eggshell in the wall colour): boxes [x0, y0, z0, x1, y1, z1]
+    skirting = [[0, 0, WZ, st, sk, AD], [B1, 0, 0, B1 + st, sk, RZ], [0, 0, AD - st, A, sk, AD], [B0, 0, -st, B1, sk, 0],
+                [B1, 0, RZ - st, dx0 - 6, sk, RZ], [dx1 + 6, 0, RZ - st, sx0, sk, RZ], [0, 0, WZ, W, sk, WZ + st], [W - st, 0, WZ, W, sk, F]]
     rnd = lambda L: [[round(v, 1) for v in q] for q in L]
-    return dict(solids=rnd(solids), floors=rnd(floors), edges=rnd(edges), box=[0.0, W, WZ, RZ],
+    return dict(solids=rnd(solids), floors=rnd(floors), edges=rnd(edges), box=[0.0, W, WZ, RZ], walls=walls, skirting=skirting,
+                floor=[0.0, WZ, W, RZ], ceiling=[[0.0, well, WZ, RZ], [well, W, WZ, F]],   # V1.45: [x0, z0, x1, z1]; the ceiling round its opening over the stairs
                 door=dict(a=dx0, b=dx1, line=RZ, h=DH), flight=dict(x0=sx0, x1=sx1, z0=round(z0, 1), zl=round(zl, 1), zl1=round(zl1, 1), n=n, r=r, g=gq))
 
 
