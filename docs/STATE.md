@@ -2,11 +2,11 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.40 (4 Nov 2026)
+**Version:** V1.41 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
-**The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29, U5 in V1.30, U6 in V1.31, U7 in V1.32, U8 in part in V1.33, U9 in part in V1.34, U10 and U11 in V1.35–V1.37, Next 1 in part in V1.38, Next 5 in V1.39, Next 2 in part in V1.40; its "Next" list is the work to take on).
+**The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29, U5 in V1.30, U6 in V1.31, U7 in V1.32, U8 in part in V1.33, U9 in part in V1.34, U10 and U11 in V1.35–V1.37, Next 1 in part in V1.38, Next 5 in V1.39, Next 2 in part in V1.40–V1.41; its "Next" list is the work to take on).
 
 ## Where it lives
 
@@ -44,7 +44,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 ## The site (V1.2: the old design back)
 
-- **V1.40:** `tools/camfit.py` fits the 3D's camera to a photo (`compare.CAMS`: the WC, the office, the landing); the WC's cistern
+- **V1.40:** `tools/camfit.py` fits the 3D's camera to a photo (`compare.CAMS`: the WC, the office, the landing; V1.41 the kitchen, after a sweep); the WC's cistern
   raised to just under its sill, as the photo.
 - **V1.39:** the shade where things meet in the living room (the foot of its walls: `livShade`) and on the first floor's ceilings (where
   flat along the walls, the back slope's crease, the dormer's sides: `model.ceiling_shade`, drawn by `houseShade`).
