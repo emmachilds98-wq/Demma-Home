@@ -39,6 +39,8 @@ def artifact():
     page = re.sub(r'<script type="application/json" id="photo-data" data-src="([^"]+)"></script>',   # V1.9: its photos inline again
                   lambda m: '<script type="application/json" id="photo-data">' + (SITE / m.group(1)).read_text() + "</script>", page)
     page = page.replace('href="media-wall/out/', 'href="https://emmachilds98-wq.github.io/Demma-Home/media-wall/out/')
+    sys.path.insert(0, str(SRC)); import room3d_page                       # V1.31: the shared page keeps three from the CDN (its size limit)
+    page = re.sub(r'<script type="importmap">.*?</script>', lambda m: room3d_page.IMPORTMAP, page, count=1, flags=re.S)
     (SITE / "artifact.html").write_text(page)
 
 

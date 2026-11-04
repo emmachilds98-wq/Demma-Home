@@ -15,6 +15,7 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { Sky } from "three/addons/objects/Sky.js";   // V1.3: the sky over the whole house   // v48 §5: the lights' glow
 
+const MOD_AT = performance.now();   // V1.31: when this script began (R3D.timing)
 const root = document.getElementById("r3d");
 const SC = JSON.parse(document.getElementById("scene3d-data").textContent);
 const R = SC.room;
@@ -4859,8 +4860,21 @@ requestAnimationFrame(() => { measureShift(false); setLabels(labelsOn); });
 new ResizeObserver(sizeRenderer).observe(canvas);
 controls.addEventListener("start", () => { moving = true; });
 controls.addEventListener("end", () => { moving = false; });
+/* V1.31 (U4): from outside (The whole house, Outside) the living room's furniture, lights and fittings were drawn behind the house's
+   walls: about 440 of 659 draws. They're left out unless the eye is near its window at the back, where you can see in */
+const LIVING = []; let livOut = false;
+function livingFromOutside() {
+  const x = -camera.position.x / M, z = camera.position.z / M, wx = (R.WINDOW_X[0] + R.WINDOW_X[1]) / 2;
+  const want = !!R.HOUSE3 && S.view === "house" && hfloor === "all" && !tween && !(z < R.WINDOW_Z - 20 && Math.hypot(x - wx, z - R.WINDOW_Z) < 1400);
+  if (want === livOut) return false;
+  livOut = want;
+  for (const o of LIVING) { if (o === view) continue; if (want) { o.userData.livWas = o.visible; o.visible = false; } else if (o.userData.livWas !== undefined) { o.visible = o.userData.livWas; delete o.userData.livWas; } }
+  if (!want) applyFloors();   // the floor or the room you've gone to hides what it hides (Lower, a room's own view) again
+  reshadow(); return true;
+}
 function frame(now) {
   requestAnimationFrame(frame);
+  if (livingFromOutside()) need = 2;
   if (!canvas.clientWidth) return;
   if (tween) {
     const k = Math.min(1, (now - tween.t0) / (tween.dur || 900)), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
@@ -4892,7 +4906,7 @@ function frame(now) {
   if (glLost || (document.body.classList.contains("sheet-open") && !SH && !tween)) return;   // v35: nothing drawn behind the Plan's sheets (the last picture stays)
   if (need > 0) {
     const t = probe > 0 && !lowRes ? performance.now() : 0;
-    const f0 = performance.now(); syncRig(); draw(); FT.calls = gl.info.render.calls; FT.tris = gl.info.render.triangles; need--; placeStickers(); FT[FT.n++ % 60] = performance.now() - f0;
+    const f0 = performance.now(); syncRig(); draw(); if (!START_MS.firstAt) { START_MS.firstAt = Math.round(performance.now()); START_MS.firstMs = Math.round(performance.now() - f0); } FT.calls = gl.info.render.calls; FT.tris = gl.info.render.triangles; need--; placeStickers(); FT[FT.n++ % 60] = performance.now() - f0;
     if (t) { const c = gl.getContext(); c.readPixels(0, 0, 1, 1, c.RGBA, c.UNSIGNED_BYTE, PX); probeT.push(performance.now() - t); probe--; if (!probe) autoQuality(); }
   }
 }
@@ -6101,6 +6115,7 @@ function buildSun() {
   scene.add(sun, sun.target);
   if (R.HOUSE3) for (let k = 0; k < 2; k++) { const l = new THREE.PointLight("#ffcf98", 0, 7, 2); l.visible = false; l.userData.houseLight = true; scene.add(l); ROOMLIGHTS.push(l); }   // v69 (B3): at the start, so the set never changes
 }
+const START_MS = {};
 function start() {
   started = true;
   const t0 = performance.now();
@@ -6110,21 +6125,34 @@ function start() {
   buildSun();
   gl.localClippingEnabled = true;
   scene.add(lightRig);                                                                  // v35: the fixed set of lights
-  buildShell(); buildLights(); buildFurniture(); buildSuggest(); buildSeatAndPouf();   // v69 (B6): the house is built the first time it's looked at
-  bar1 = buildBar(R.BAR1, lights.bar1, "bar1");
+  const TM = START_MS, tm = k => { TM[k] = Math.round(performance.now() - t0); }; TM.modAt = Math.round(MOD_AT); TM.startAt = Math.round(t0);   // V1.31 (U4): where the start's time goes (R3D.timing)
+  tm("env"); buildShell(); tm("shell"); buildLights(); tm("lights"); buildFurniture(); tm("furniture"); buildSuggest(); tm("suggest"); buildSeatAndPouf();   // v69 (B6): the house is built the first time it's looked at
+  bar1 = buildBar(R.BAR1, lights.bar1, "bar1"); tm("bar");
+  scene.children.forEach(o => { if (!o.isLight && o !== lightRig && o !== sun && o !== sun.target) LIVING.push(o); });   // V1.31: the living room's own
   gl.shadowMap.enabled = S.quality === "hd";
   cabSnap = true; applyState(); cabSnap = false;          // v30: the doors start where they are, no swing
   syncButtons();
   scene.traverse(o => { if (o.isMesh || o.isPoints || o.isLine) [].concat(o.material).forEach(m => m && !m.clippingPlanes && clipMat(m)); });   // v21: the cutaway
-  setView(S.view, true);
+  tm("state"); setView(S.view, true); tm("view");
   applyCam(S.cam === "look"); applyPad();                                               // v31
   sizeRenderer();
   // v81: no gl.compile here: it ran before the cutaway's clipping was set, so its 28 programs never matched the first frame's (which made
   // its own): 60 compiled for 32 used, about 1.7 s of a 15 s start here (more on a phone)
-  msg.hidden = true;
   root.classList.add("ready");
-  requestAnimationFrame(frame);
-  requestAnimationFrame(() => setTimeout(loadPhotos, 30));                              // V1.9: the photos once the first picture is up
+  /* V1.31 (U4): two thirds of the start was building shaders, all at the first frame (the page froze). Now they're built first with
+     compileAsync: in parallel where the browser can (KHR_parallel_shader_compile), the page still answering meanwhile; then the first
+     frame. For the right ones: after the cutaway's clipping is set (v81's lesson), and into a target like the shade's composer when it's
+     on (its shaders differ from the screen's). Never more than 8 s' wait */
+  const first = () => { if (first.done) return; first.done = true; START_MS.compiled = Math.round(performance.now() - t0); msg.hidden = true;
+    requestAnimationFrame(frame); requestAnimationFrame(() => setTimeout(loadPhotos, 30)); };   // V1.9: the photos once the first picture is up
+  if (gl.compileAsync && !/[?&]nocompile\b/.test(location.search)) {
+    msg.textContent = "Building the house…"; msg.hidden = false;
+    const was = gl.getRenderTarget();
+    try {
+      if (aoLive()) { if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }); gl.setRenderTarget(PRE.rtAO); }
+      Promise.race([gl.compileAsync(scene, camera), new Promise(r => setTimeout(r, 8000))]).then(first, first);
+    } catch (e) { first(); } finally { gl.setRenderTarget(was); }
+  } else first();
   precompile();                                                                         // v35: hidden parts' shaders, while the room's idle
   lookFromHash();                                                                       // v28: a shared #look- link (after the first compile, so its note shows)
   try {                                                                                 // v30: once, say the room's things can be tapped
@@ -6145,6 +6173,7 @@ function start() {
       if (o.view) setView(o.view, true); if (aim) flyTo(aim.eye, aim.at, aim.fov || 55, !!aim.above, true); },   // v58: "above" lets a look stand off (the house)
     still, ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { HPARTS, swingDoor, swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, collide, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG },
     errors: () => store.get("r3d-errors", []),                                       // v35: what the trap kept
+    timing: () => Object.assign({ page: Math.round(performance.now()) }, START_MS),     // V1.31: the start's steps (ms from start()), and the page's age
     perf: perfInfo,                                                                   // v35: the counts to watch each round
     photos: () => loadPhotos().then(() => Object.keys(PHOTO).length),               // V1.9: how many photo sets landed
     bench(n = 30) {   // ms per frame while orbiting at full resolution, for tuning

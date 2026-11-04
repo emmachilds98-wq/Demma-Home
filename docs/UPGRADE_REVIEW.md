@@ -131,7 +131,7 @@ From the phone screenshots:
 | U1 | No more clipping | 1.1–1.4 (wall gap, slopes, furniture solid, no shaking); 1.8; the double-tap walk on every floor | Small | Done (V1.28) |
 | U2 | Zoom and smooth moves | 2.8 (zoom to the pointer, lens pinch, smooth wheel), 5.3, a 60–65° lens (3.1) | Small | Done (V1.28) |
 | U3 | Phone buttons | Section 6 and screen-size labels (3.4) | Small | Done (V1.28) |
-| U4 | First picture sooner | 2.1 (house first), 2.2 (bundle), 2.3, 2.4, 2.7 | Medium | Not started |
+| U4 | First picture sooner | 2.1 (house first), 2.2 (bundle), 2.3, 2.4, 2.7 | Medium | Done (V1.29) |
 | U5 | Photos | 2.5, 2.6, 3.2 (KTX2, roughness, the shared page under its limit); this is QUALITY_PLAN Q5 | Medium | Not started |
 | U6 | Flicker | 1.5–1.7 and a stricter `zfight.py` | Small | Not started |
 | U7 | Walk the house | 5.1, 5.2, 5.4 | Large | Not started |
@@ -159,3 +159,12 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
   house is framed in the space under them and stands nearer, the tip sits above the dock, the dock's two buttons are centred; the
   room labels keep their size on screen (a phone: the name only). Found: on a phone the first floor's labels can overlap a little
   (Landing, Boiler cupboard): next, nudge them apart.
+- **U4 (V1.29):** measured first (`R3D.timing()`, the start's steps in ms; software graphics, so relative): two thirds of the start was
+  building shaders, all inside the first frame (a 6.5–9.4 s freeze here). Now `compileAsync` builds them first (in parallel where the
+  browser can; after the cutaway's clipping; into the shade composer's kind of target when it's on), with "Building the house…" up
+  meanwhile, then the first frame (54 ms). From outside, the living room's furniture and lights are left out unless the eye is near its
+  back window: the Outside view 216 draws (was 659), so it's inside a phone's 600. three.js and its 11 add-ons come in one minified file
+  of their own on Pages (`media-wall/src/vendor.py`, `package.json`: `npm ci`; the CDN's import map if Node isn't there, and always on the
+  shared page), one request (were about 15 in three waves). First picture here 8.4 s (was 16.1). **Changed from the review:** the living
+  room is still built at the start (it shows in the ground floor and through its window, so it can't wait); the waiting is what was cut.
+  Next: the iPhones' `?perf` and `R3D.timing()` numbers.

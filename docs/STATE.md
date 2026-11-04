@@ -2,11 +2,11 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.28 (4 Nov 2026)
+**Version:** V1.29 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
-**The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28; work the next row).
+**The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29; work the next row).
 
 ## Where it lives
 
@@ -26,7 +26,7 @@ python3 tools/checks.py           # every check, one verdict (--quick: no browse
 python3 tools/round.py "words"    # a client round: version up, pull their numbers, build, check, HISTORY
 python3 tools/pull_edits.py rows.json   # the client's measurements into the model (see its docstring for getting the rows)
 ```
-In a sandbox that can't reach jsDelivr, set `THREE_LOCAL` to an unpacked `three@0.160.0` npm package (`npm pack three@0.160.0`).
+`npm ci` first (V1.29: three.js and esbuild; the build bundles three into `_site/three.<hash>.js`, else it uses the CDN). In a sandbox that can't reach jsDelivr, set `THREE_LOCAL` to an unpacked `three@0.160.0` npm package (`npm pack three@0.160.0`).
 Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (`media-wall/src/pw.py`).
 
 ## What's where
@@ -43,6 +43,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 ## The site (V1.2: the old design back)
 
+- **V1.29 (U4):** shaders built before the first frame (`compileAsync`), "Building the house…" meanwhile; the living room left out from
+  outside unless the eye is by its window (Outside 216 draws); three.js one file on Pages; `R3D.timing()` the start's steps.
 - **V1.28 (U1–U3):** the eye is solid to the house (walls, furniture, slopes: a 20 cm ball, sliding); double-tap walks on every floor;
   zoom to the pointer; Be there's lens zooms (wheel, pinch); mode changes fly; on a phone two rows of buttons, labels a steady size,
   only the tools that work in each room (Room, Look, Edit only in the living room; Plan · Build · Buy not in the house's other rooms).

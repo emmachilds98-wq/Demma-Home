@@ -1,0 +1,9 @@
+{
+  "name": "demmas-home",
+  "private": true,
+  "description": "V1.31 (U4): three.js and esbuild for the site's one-file bundle (media-wall/src/vendor.py); the build falls back to the CDN without them",
+  "devDependencies": {
+    "esbuild": "0.25.12",
+    "three": "0.160.0"
+  }
+}

@@ -1502,8 +1502,12 @@ if __name__ == "__main__":
     (HERE / "media_wall_viewer.html").write_text(page())
     (HERE / "media_wall_viewer_inline.html").write_text(inline_images(page()))
     SITE.mkdir(parents=True, exist_ok=True)
+    import vendor
+    vmap = vendor.bundle(SITE)                                               # V1.31 (U4): three.js in one file of its own, if Node is here
     for name in ("index.html", "plan.html"):                                  # V1.2: the site's front door again (plan.html for old links)
-        (SITE / name).write_text(split_photos(site()))
+        html_ = split_photos(site())
+        if vmap: html_ = html_.replace(room3d_page.IMPORTMAP, vmap, 1)
+        (SITE / name).write_text(html_)
     pwa_files()
     (HERE / "publish_files.json").write_text(json.dumps(publish_files(), indent=1))
     todo = deck_assets_todo()
