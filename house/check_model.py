@@ -286,7 +286,7 @@ check("no flicker that can be seen", not tied, f"{len(tied)} pairs seen and tied
 
 # --------------------------------------------------------------------- the drawings
 OUT = ROOT / "out"; OUT.mkdir(exist_ok=True)
-EV = ROOT / "evidence"
+EV = ROOT / "evidence"; EV.mkdir(exist_ok=True)   # V1.36: only the overlays go here now (built, not kept)
 for f in Mo.FLOOR_Y:
     rs = Mo.rooms(f); s = 0.8
     w, h = 560 * s, 900 * s

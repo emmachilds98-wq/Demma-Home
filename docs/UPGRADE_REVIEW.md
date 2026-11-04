@@ -129,6 +129,7 @@ From the phone screenshots:
 | # | Phase | What | Size | Status |
 |---|---|---|---|---|
 | U10 | **Faster GitHub builds (first: the client, 4 Nov)** | The browser checks side by side, Pages published straight after the build, the renders and Playwright kept between runs, documents-only changes skip the browser checks | Medium | In progress (V1.35) |
+| U11 | **A lean repo (the client, 4 Nov)** | Old proof pictures out (git keeps them), the report's pictures made fresh, a size budget for what's tracked and for git's history | Small | Done (V1.36) |
 | U1 | No more clipping | 1.1–1.4 (wall gap, slopes, furniture solid, no shaking); 1.8; the double-tap walk on every floor | Small | Done (V1.28) |
 | U2 | Zoom and smooth moves | 2.8 (zoom to the pointer, lens pinch, smooth wheel), 5.3, a 60–65° lens (3.1) | Small | Done (V1.28) |
 | U3 | Phone buttons | Section 6 and screen-size labels (3.4) | Small | Done (V1.28) |
@@ -217,6 +218,14 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
   its run; every merge to main now publishes (it used to cancel the one before). Found: the phone's button row (V1.30) caught taps meant
   for the room under it (the tap test): it lets them through now; room labels that would overlap on a phone step aside, the bigger
   room's name kept.
+
+- **U11 (V1.36), the client: "Make sure you clear the unwanted old data so we keep the repo under the max size":** the 67 proof
+  shots of rounds v58 to V1.27 (`house/evidence/`, 5.9 MB) are out; git keeps them (`git show 7d8ec00:house/evidence/<name>`). They
+  were also wrong where they were used: the whole-house report showed them under "Where the model is now", pictures of rounds long
+  gone. The report now takes this round's `tools/gallery.py` and `tools/compare.py` pictures, or points to the site. `checks.py`'s repo
+  line has a budget: 200 MB tracked, 750 MB of history (GitHub asks for under 1 GB): now 77 MB tracked (49 of it the client's photos,
+  kept whole), 329 files (were 396), history 87 MB. Every script is still used. Not done: rewriting git's history to drop old pictures
+  for good (it would need a force-push to main; at 87 MB there's no need); deleting old branches on GitHub (one may be another session's).
 
 ## Next (found while working; agents: take these in order)
 

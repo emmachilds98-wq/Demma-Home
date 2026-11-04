@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.35 (4 Nov 2026)
+**Version:** V1.36 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -43,6 +43,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 ## The site (V1.2: the old design back)
 
+- **V1.36 (U11):** `house/evidence/` holds only `check_model.py`'s overlays (built, not kept); the report's pictures come from
+  `tools/gallery.py` and `tools/compare.py`; `checks.py`'s repo line: 77 MB tracked, history 87 MB (budget 200 and 750).
 - **V1.35 (U10, first):** the workflow: `build` (renders and Playwright cached, quick checks, privacy on the built site) then on main
   `deploy` at once; `browser` runs site, page and taps side by side (`checks.py --only`), not for documents-only changes. Locally:
   `python3 tools/build.py --keep-renders` reuses the renders already made (`tools/render_key.py` says when they're current).
@@ -161,7 +163,7 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
   kept by the service worker); the page is 2.1 MB, was 3.7; the shared page 12.5 MB (its limit 16). Until they land each photo's texture is its mean colour (`photo_meta`). At 8 Mbit/s in a test
   browser the page downloads in 3.6 s, was 5.4; the first picture 8.4 s, was 9.0 (software graphics: the rest is drawing). The shared page
   keeps them inline, read after the first picture. `check_site.py` checks all 13 sets arrive.
-- The repo (V1.12): 355 files, 78 MB tracked, 46 MB of it the client's photos (9 MB the 3D's textures); `checks.py`'s repo check fails on a tracked build output
+- The repo (V1.36): 329 files, 77 MB tracked, 49 MB of it the client's photos (11 MB the 3D's textures), history 87 MB; `checks.py`'s repo check fails on a tracked build output
   or any other file over 1.5 MB. The clone is about 76 MB with its history (DIY: 5.2 GB).
 
 ## Open with the client

@@ -53,8 +53,14 @@ def repo():
     size = {f: (ROOT / f).stat().st_size for f in files if (ROOT / f).is_file()}
     big = [f for f, n in size.items() if n > 1.5 * 2 ** 20 and not f.startswith("media-wall/inputs/")]
     photos = sum(n for f, n in size.items() if f.startswith("media-wall/inputs/"))
-    msg = f"{len(files)} files, {sum(size.values()) / 2 ** 20:.0f} MB tracked ({photos / 2 ** 20:.0f} MB the client's photos), {len(built)} built, {len(big)} over 1.5 MB"
-    return not built and not big, msg + (": " + ", ".join((built + big)[:4]) if built or big else "")
+    # V1.36 (U11), the client: "clear the unwanted old data so we keep the repo under the max size": a budget for what's tracked and
+    # for git's history (GitHub asks repositories to stay under 1 GB; a shallow checkout counts what it has)
+    hist = sum(int(l.split()[1]) for l in git("count-objects", "-v").splitlines() if l.split()[0] in ("size:", "size-pack:")) / 1024
+    tracked = sum(size.values()) / 2 ** 20
+    over = tracked > 200 or hist > 750
+    msg = (f"{len(files)} files, {tracked:.0f} MB tracked ({photos / 2 ** 20:.0f} MB the client's photos), {len(built)} built, {len(big)} over 1.5 MB, "
+           f"history {hist:.0f} MB (budget 200 tracked, 750 history)")
+    return not built and not big and not over, msg + (": " + ", ".join((built + big)[:4]) if built or big else "")
 
 
 def sizes():
