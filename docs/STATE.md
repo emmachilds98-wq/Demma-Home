@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.34 (4 Nov 2026)
+**Version:** V1.35 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -11,7 +11,7 @@ Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and i
 ## Where it lives
 
 - **The site on GitHub Pages:** https://emmachilds98-wq.github.io/Demma-Home/ (built and published by the workflow on every push to
-  `main`; Pages' source is GitHub Actions). `plan.html` is the same page, for old links.
+  `main`, a few minutes after the merge since V1.35; Pages' source is GitHub Actions). `plan.html` is the same page, for old links.
 - **The shared page** (the claude.ai artifact; private until its owner shares it with Dave from its Share menu):
   https://claude.ai/artifact/8M7ZmKP8m1kEDTZnuL3cyK . Its database holds what they type in Measure, for both of them (`measurements`;
   `edits`, `notes`, `photos`, `ticks` from the V1 app stay readable). The round 82 shared viewer (`71ffwf5PRLhoLj6G5KTvm2`) stays as it was.
@@ -43,6 +43,9 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 ## The site (V1.2: the old design back)
 
+- **V1.35 (U10, first):** the workflow: `build` (renders and Playwright cached, quick checks, privacy on the built site) then on main
+  `deploy` at once; `browser` runs site, page and taps side by side (`checks.py --only`), not for documents-only changes. Locally:
+  `python3 tools/build.py --keep-renders` reuses the renders already made (`tools/render_key.py` says when they're current).
 - **V1.34 (U9, part):** `python3 tools/compare.py`: seven rooms beside their photos, the 3D's edges over each (`_shots/compare.jpg`).
 - **V1.33 (U8, part):** `houseShade`: soft bands where floors and flat ceilings meet the walls, and round the house on the ground.
 - **V1.32 (U7):** Be there walks through the house's rooms (`room3d.js` WALK, `walkMove`, `bodyBlocked`, `floorAtCm`, the phone's

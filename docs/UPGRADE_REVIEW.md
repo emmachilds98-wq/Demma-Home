@@ -128,6 +128,7 @@ From the phone screenshots:
 
 | # | Phase | What | Size | Status |
 |---|---|---|---|---|
+| U10 | **Faster GitHub builds (first: the client, 4 Nov)** | The browser checks side by side, Pages published straight after the build, the renders and Playwright kept between runs, documents-only changes skip the browser checks | Medium | In progress (V1.35) |
 | U1 | No more clipping | 1.1–1.4 (wall gap, slopes, furniture solid, no shaking); 1.8; the double-tap walk on every floor | Small | Done (V1.28) |
 | U2 | Zoom and smooth moves | 2.8 (zoom to the pointer, lens pinch, smooth wheel), 5.3, a 60–65° lens (3.1) | Small | Done (V1.28) |
 | U3 | Phone buttons | Section 6 and screen-size labels (3.4) | Small | Done (V1.28) |
@@ -206,6 +207,17 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
   (the stairs open onto the lower landing). `checks.py`'s `sizes` line gives STATE's numbers. **Needs the client:** the room scans
   (iPhone 15 Pro's LiDAR) and the 21 sizes in Measure, when they can measure.
 
+- **U10 (V1.35), the client: "Optimise the build process in order for GitHub uploads to not take so long ... priority on this":** a run
+  took 25 minutes and Pages waited for all of it: install 0.5, build 2 (the drawn renders 1.6 of it), the browser checks 22.75 one after
+  another (here: the front door 1.6, the media wall's page 2, the taps 6; GitHub's machines are slower). Now (`.github/workflows/build.yml`):
+  the `build` job installs (Playwright's browser cached), builds (the renders cached under `tools/render_key.py`, a hash of everything
+  they're drawn from but the version; `build.py --keep-renders` renames them for the version), runs the quick checks with privacy on
+  the built site, and hands the site on; on main `deploy` publishes straight after. The `browser` job runs site, page and taps on three
+  machines at once (`checks.py --only`), and not at all when only `docs/` or `*.md` changed. A pull request's newer push still replaces
+  its run; every merge to main now publishes (it used to cancel the one before). Found: the phone's button row (V1.30) caught taps meant
+  for the room under it (the tap test): it lets them through now; room labels that would overlap on a phone step aside, the bigger
+  room's name kept.
+
 ## Next (found while working; agents: take these in order)
 
 1. **The living room into the house file** (V1_PLAN Phase 5): its walls, doorway and stairs as boxes in `house/model.py`, so a walk goes
@@ -214,5 +226,5 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
    photo), then fix the sizes whose lines still miss: the accuracy pass that needs no tape measure.
 3. **The client's iPhones' numbers**: `?perf` and `R3D.timing()` from each, then decide KTX2 (U5) and light maps (U8).
 4. **Republish the shared page** with `PHOTOS_URL` (STATE.md, "Republish"): about 2 MB, was 15.85 of its 16.
-5. **The first floor's sloped ceilings' shade** (U8) and **the floor labels nudged apart** on a phone (U3).
+5. **The first floor's sloped ceilings' shade** (U8). (The floor labels on a phone: done in V1.35.)
 6. **A photo from the foot of the lower stairs** to confirm V1.32's opening (STATE.md's questions).

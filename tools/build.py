@@ -48,6 +48,14 @@ def artifact():
     (SITE / "artifact.html").write_text(page)
 
 
+def relabel(out):
+    """V1.35 (U10): kept renders carry the version they were made at in their names; name them for this one"""
+    for f in out.glob("Media wall V* - *.png"):
+        new = re.sub(r"^Media wall V[0-9.]+ - ", f"Media wall {LABEL} - ", f.name)
+        if new != f.name:
+            (out / new).unlink(missing_ok=True); f.rename(out / new)
+
+
 def prune(out):
     """V1.17: only the newest version of each render and PDF stays (each round left a set: 549 MB by V1.16; a --fast build keeps the
     newest renders, build_doc.latest)"""
@@ -70,8 +78,11 @@ def main(argv):
     SITE.mkdir(parents=True, exist_ok=True)
     (SRC.parent / "out").mkdir(exist_ok=True)
     have_pdfs = any((SRC.parent / "out").glob(f"Demmas_Home_{LABEL}_Plan.pdf"))
-    if not (fast and (SRC / "art/art_join_mint.webp").exists()):
+    keep = fast or "--keep-renders" in argv                               # V1.35 (U10): the workflow's cached renders (tools/render_key.py)
+    if not (keep and (SRC / "art/art_join_mint.webp").exists()):
         run(["make_images.py"])                                           # the drawn renders, the diagrams, art/
+    else:
+        relabel(SRC.parent / "out")
     run(["export3d.py"])                                                  # the 3D's data (the house with its pieces' tags)
     if not (fast and have_pdfs):
         run(["build_doc.py"])                                             # the plan and the build guide (PDFs)

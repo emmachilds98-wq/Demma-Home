@@ -357,6 +357,8 @@ body.hv #r3d-dt-room, body.hv #r3d-dt-look, body.hv #r3d-editbtn, body.hroom .hn
 @media (max-width: 899px) { body.hv .r3d-bubbles { justify-content: center; gap: 28px; } body.hv .r3d-bub { flex: 0 0 auto; } }
 /* V1.30: on a phone the small buttons share a row (six rows were the top half of the screen); the floors and rooms a row each, a fade
    where there's more to slide to */
+/* V1.35: the row lets taps through to what's under it; only its buttons take them (the tap test found it over the room's pieces) */
+.r3d-mini { pointer-events: none; } .r3d-mini > * { pointer-events: auto; }
 @media (max-width: 599px) { .r3d-mini { flex-direction: row; flex-wrap: wrap; justify-content: flex-end; align-items: center; max-width: calc(100vw - 24px); right: 12px; gap: 6px; }
   .r3d-mini > #r3d-floors, .r3d-mini > #r3d-hrooms { flex: 0 0 auto; order: 5; } .r3d-mini > #r3d-hrooms { order: 6; margin-top: 0; }
   .r3d-mini > .r3d-break { flex-basis: 100%; height: 0; order: 4; }

@@ -97,8 +97,12 @@ def taps():
 
 
 def main(argv):
+    """python3 tools/checks.py [--quick | --only site,page,taps]"""
     quick = "--quick" in argv
     checks = [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("repo", repo), ("sizes", sizes)] + ([] if quick else [("site", site), ("page", qa), ("taps", taps)])
+    if "--only" in argv:                                         # V1.35 (U10): one or more by name (the workflow runs the browser checks side by side)
+        want = argv[argv.index("--only") + 1].split(",")
+        checks = [c for c in [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("repo", repo), ("sizes", sizes), ("site", site), ("page", qa), ("taps", taps)] if c[0] in want]
     fails = 0
     for name, fn in checks:
         t = time.time()

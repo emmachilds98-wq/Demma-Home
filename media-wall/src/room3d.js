@@ -4974,6 +4974,20 @@ function livingFromOutside() {
   if (!want) applyFloors();   // the floor or the room you've gone to hides what it hides (Lower, a room's own view) again
   reshadow(); return true;
 }
+/* V1.35, found in V1.30: on a phone a floor's room names overlapped (the landing's and the boiler cupboard's). Where two would, the
+   smaller room's steps aside until there's room again */
+function declutter() {
+  if (!houseG || !houseG.visible || !canvas.clientWidth) return;
+  const L = []; houseG.traverseVisible(o => { if (o.isSprite && o.userData.hlabel && o.userData.px) L.push(o); });
+  if (L.length < 2) return;
+  const W = canvas.clientWidth, H = canvas.clientHeight, v = new THREE.Vector3(), kept = [];
+  L.sort((a, b) => (b.userData.area || 1e9) - (a.userData.area || 1e9));
+  for (const s_ of L) {
+    s_.getWorldPosition(v).project(camera); const [w, h] = s_.userData.px, x = (v.x + 1) / 2 * W, y = (1 - v.y) / 2 * H;
+    const r = [x - w / 2, y - h / 2, x + w / 2, y + h / 2], hit = v.z > 1 || kept.some(q => r[0] < q[2] && r[2] > q[0] && r[1] < q[3] && r[3] > q[1]);
+    s_.material.visible = !hit; if (!hit) kept.push(r);
+  }
+}
 function frame(now) {
   requestAnimationFrame(frame);
   if (livingFromOutside()) need = 2;
@@ -5009,7 +5023,7 @@ function frame(now) {
   if (glLost || (document.body.classList.contains("sheet-open") && !SH && !tween)) return;   // v35: nothing drawn behind the Plan's sheets (the last picture stays)
   if (need > 0) {
     const t = probe > 0 && !lowRes ? performance.now() : 0;
-    const f0 = performance.now(); syncRig(); draw(); if (!START_MS.firstAt) { START_MS.firstAt = Math.round(performance.now()); START_MS.firstMs = Math.round(performance.now() - f0); } FT.calls = gl.info.render.calls; FT.tris = gl.info.render.triangles; need--; placeStickers(); FT[FT.n++ % 60] = performance.now() - f0;
+    const f0 = performance.now(); syncRig(); declutter(); draw(); if (!START_MS.firstAt) { START_MS.firstAt = Math.round(performance.now()); START_MS.firstMs = Math.round(performance.now() - f0); } FT.calls = gl.info.render.calls; FT.tris = gl.info.render.triangles; need--; placeStickers(); FT[FT.n++ % 60] = performance.now() - f0;
     if (t) { const c = gl.getContext(); c.readPixels(0, 0, 1, 1, c.RGBA, c.UNSIGNED_BYTE, PX); probeT.push(performance.now() - t); probe--; if (!probe) autoQuality(); }
   }
 }
@@ -6077,7 +6091,7 @@ function buildHouse() {
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, toneMapped: false, sizeAttenuation: false })); sp.renderOrder = 999;
     const px = SMALL ? 30 : 46, asp = cv.width / cv.height;   // its height in screen pixels, whatever the lens
     sp.onBeforeRender = (r, sc, cam) => { const k = 2 * px / Math.max(200, canvas.clientHeight) * Math.tan((cam.fov || 50) * Math.PI / 360); if (sp.scale.y !== k) { sp.scale.set(k * asp, k, 1); sp.updateMatrixWorld(); } };
-    sp.scale.set(0.05 * asp, 0.05, 1); sp.position.copy(v3(x, y, z)); sp.userData.hlabel = true; cur.add(sp); };
+    sp.scale.set(0.05 * asp, 0.05, 1); sp.position.copy(v3(x, y, z)); sp.userData.hlabel = true; sp.userData.px = [px * asp, px]; cur.add(sp); };
   const FLOOR = { kitchen: "#d6cfc2", bathroom: "#c3d6dc", wc: "#c3d6dc", garage: "#aaa69e", secret: "#8d8880", porch: "#b9a58e" }, WALL = "#f2eee6", WH = 110;
   const H3 = R.HOUSE3;
   if (H3) {
@@ -6158,7 +6172,8 @@ function buildHouse() {
       for (const L of F.lathes || []) { const g = new THREE.LatheGeometry(L.p.map(([r, h]) => new THREE.Vector2(r * M, h * M)), LOWD ? 12 : 28);
         g.scale(L.s[0], 1, L.s[1]); const c = v3(L.c[0], L.c[1], L.c[2]); g.translate(c.x, c.y, c.z); (byL[L.m] = byL[L.m] || []).push(g); }
       for (const [mk, geos] of Object.entries(byL)) put(cur, geos, mat3(mk));
-      if (fresh) for (const L of F.labels || []) label([L.name, [L.use, `about ${L.w.toFixed(1)} × ${L.d.toFixed(1)} m`].filter(Boolean).join(" · ")], L.x, L.y, L.z, 190);
+      if (fresh) for (const L of F.labels || []) { label([L.name, [L.use, `about ${L.w.toFixed(1)} × ${L.d.toFixed(1)} m`].filter(Boolean).join(" · ")], L.x, L.y, L.z, 190);
+        cur.children[cur.children.length - 1].userData.area = L.w * L.d; }   // V1.35: the bigger room's name wins where two overlap
       const partG = (P, into, at) => {                 // a part's group on its pivot, its own parts inside it (V1.26b: a bifold's second panel)
         const pv = v3(...P.pivot), g = new THREE.Group(); g.position.copy(pv).sub(at); into.add(g);
         for (const [mk, list] of Object.entries(P.boxes)) put(g, list.map(([x0, y0, z0, x1, y1, z1]) => houseBox(mk, x0, y0, z0, x1, y1, z1).translate(-pv.x, -pv.y, -pv.z)), mat3(mk));
