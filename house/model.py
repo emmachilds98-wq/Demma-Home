@@ -2109,7 +2109,20 @@ def export():
     for f in FLOOR_Y:                                            # v69: the rooms' ceiling lights
         if f in out:
             out[f]["lights"] = room_lights(f)
-    return dict(mats=MATS, floors=out, ridge=[round(RIDGE_Z, 1), round(RIDGE_Y, 1)], est=True)
+    return dict(mats=MATS, floors=out, ridge=[round(RIDGE_Z, 1), round(RIDGE_Y, 1)], est=True, depth_rank=depth_rank())
+
+
+# V1.31 (U6, docs/UPGRADE_REVIEW.md): where two materials' faces lie in one plane (a wall's paint on its blockwork, a frame flush with
+# its reveal) they flickered as you moved. Each material has a rank: where faces tie, the higher is drawn (room3d.js turns it into a
+# polygon offset, constant: no bleed at a slant). The structure under the finishes under everything fitted; a few pairs by name
+STRUCTURE = {"brick", "brick_buff", "party", "slab", "eaves", "felt", "hung", "lead", "earth", "concrete", "timber", "chipboard", "soldier", "quarry"}
+FINISH = {"paint", "ceiling", "artex", "porch_in"}
+RANK_BY_NAME = {"party": -1, "ceiling": 1.5, "artex": 1.5, "wardrobe_back": 2, "tapestry_dark": 2, "gap": 4, "skirting": 4, "metro": 4, "stone": 4,
+                "contact": 6}
+
+
+def depth_rank():
+    return {m: RANK_BY_NAME.get(m, 0 if m in STRUCTURE else 1 if m in FINISH else 3) for m in MATS}
 
 
 

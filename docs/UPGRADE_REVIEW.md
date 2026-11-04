@@ -133,7 +133,7 @@ From the phone screenshots:
 | U3 | Phone buttons | Section 6 and screen-size labels (3.4) | Small | Done (V1.28) |
 | U4 | First picture sooner | 2.1 (house first), 2.2 (bundle), 2.3, 2.4, 2.7 | Medium | Done (V1.29) |
 | U5 | Photos | 2.5, 2.6, 3.2 (KTX2, roughness, the shared page under its limit); this is QUALITY_PLAN Q5 | Medium | Done (V1.30) |
-| U6 | Flicker | 1.5–1.7 and a stricter `zfight.py` | Small | Not started |
+| U6 | Flicker | 1.5–1.7 and a stricter `zfight.py` | Small | Done (V1.31) |
 | U7 | Walk the house | 5.1, 5.2, 5.4 | Large | Not started |
 | U8 | Baked light | 3.3, 3.5 | Large | Not started |
 | U9 | Measured | 4.1–4.3 (needs the client's scans) | Needs the client | Not started |
@@ -177,3 +177,9 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
   (the normal maps don't shrink), so the photos stay JPEG; KTX2 waits for the iPhones' `?perf` numbers (it needs a Basis encoder in the
   build, and saves graphics memory, not download); the living room's four photos are still matched to their colours as they load (a
   few tens of ms, after the first picture).
+- **U6 (V1.31):** `zfight.py` now tells the pairs a camera can see (the space in front of the overlap isn't inside another box): 29 of
+  the 91. Every material has a depth rank (`house/model.py` `depth_rank`: the structure, then the finishes, then everything fitted, a
+  few pairs by name), which `room3d.js` turns into a constant polygon offset, so where faces tie the right one is drawn every frame;
+  `checks.py` and `check_model.py` fail on a pair that's seen and tied (0 now). The house's materials are one-sided (the mirrored
+  prisms wound back): six views against `?double` differ in under 70 pixels, no holes. **Changed from the review:** the glass stays one
+  mesh a floor (looking through one window at another is rare, and it never writes depth, so nothing hides behind it).

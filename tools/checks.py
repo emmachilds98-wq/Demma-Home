@@ -26,8 +26,8 @@ def model():
 
 def zfight():
     code, out = sh(["zfight.py", "0"], HOUSE)
-    m = re.search(r"(\d+) pairs, (\d+) on the outside", out)
-    return bool(m) and m.group(2) == "0", m.group(0) if m else out[-300:]
+    m = re.search(r"(\d+) pairs, (\d+) on the outside, (\d+) can be seen, (\d+) of them tied", out)   # V1.31 (U6): and none seen and tied
+    return bool(m) and m.group(2) == "0" and m.group(4) == "0", m.group(0) if m else out[-300:]
 
 
 def clash():
