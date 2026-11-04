@@ -262,6 +262,10 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
 - **V1.41 (Next 2, more):** `camfit.py` sweeps a view with no start (nine spots in the room, eight ways each, at 155 up) and refines
   the best three. It fits the kitchen (0.49: the fridge's column, the wall cabinets' tops, the worktop on the right); the hall, the
   bathroom and the master still settle wrong (facing back to the front door; facing a wall; the bed's clutter), so they're left out.
+- **V1.42 (Next 2, the hall):** the hall's view box stops at the stair box's side (x 398), but its front part runs to the party wall
+  (the mirror, the bench), where the photo was taken: `camfit.BOX` lets the hall's eye there and `MARGIN` keeps it out of the porch.
+  From a hand start by the front door it fits in part (0.31): the door down's frame and grille and the right wall's foot sit on the
+  photo's; the photo shows a sliver of the box's side, so it was taken a few cm nearer the radiator. No size changed.
 
 ## Next (found while working; agents: take these in order)
 
@@ -269,7 +273,7 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
    stairs as boxes in `house/model.py` so it's one model and the shade bands cover it (V1.38 reads them from `geometry.py`'s numbers in
    `room3d.js` `livSolids`, `livFloors`).
 2. **Camera-match each view to its photo** (V1.40–V1.41, in part: below): the WC, the office, the landing and the kitchen are fitted
-   (`compare.CAMS`); still to fit: the hall (the sweep turns it round: the end door and the front door look alike as edges), the
+   (`compare.CAMS`), the hall in part (V1.42); still to fit: the
    bathroom (the photo is mostly its door frame, from the landing) and the master (people and clutter over its lines): by hand from a
    start near the photo's spot (`compare.CAMS` is where `camfit.py` starts), or with fresh, tidy photos from each doorway.
 3. **The client's iPhones' numbers**: `?perf` and `R3D.timing()` from each, then decide KTX2 (U5) and light maps (U8).

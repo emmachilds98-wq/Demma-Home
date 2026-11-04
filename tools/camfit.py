@@ -13,6 +13,8 @@ sys.path.insert(0, str(ROOT / "media-wall/src")); sys.path.insert(0, str(ROOT / 
 import pw, localcdn, compare  # noqa: E402
 
 SITE = ROOT / "_site"
+MARGIN = {"hall": 6}
+BOX = {"hall": [310, 460, 15, 225, 50, 416]}   # the hall's front part runs to the party wall (the mirror, the bench), past its view's box
 STEP = dict(x=40.0, y=15.0, z=40.0, yaw=10.0, pitch=6.0, fov=8.0)
 
 
@@ -86,9 +88,10 @@ def main(only):
             pg.evaluate("document.body.classList.add('bare'); document.querySelectorAll('.r3d-mini, .brand, .r3d-toast, .r3d-stick').forEach(e => e.style.visibility = 'hidden')")
             v = compare.CAMS.get(view) or pg.evaluate(f"(() => {{ const V = R3D._dbg.VIEWS['{view}']; return {{ eye: V.eye, at: V.at, fov: 70 }}; }})()")
             c = start_of(v)
-            bx = pg.evaluate(f"R3D._dbg.VIEWS['{view}'].box")    # [x0, x1, y0, y1, z0, z1]: the eye stays in the room (or its doorway, 40 on) at a phone's height
+            bx = BOX.get(view) or pg.evaluate(f"R3D._dbg.VIEWS['{view}'].box")    # [x0, x1, y0, y1, z0, z1]: the eye stays in the room (or its doorway, 40 on) at a phone's height
             fy = -260.0 if bx[2] < -100 else 260.0 if bx[2] > 200 else 0.0   # its floor (the views' boxes start a little over it)
-            ok = lambda t: bx[0] - 40 <= t["x"] <= bx[1] + 40 and bx[4] - 40 <= t["z"] <= bx[5] + 40 and fy + 110 <= t["y"] <= fy + 190
+            g = MARGIN.get(view, 40)                          # how far past the room's box (a doorway); the hall's front door is the porch's
+            ok = lambda t: bx[0] - g <= t["x"] <= bx[1] + g and bx[4] - g <= t["z"] <= bx[5] + g and fy + 110 <= t["y"] <= fy + 190
             c["y"] = min(max(c["y"], fy + 110), fy + 190)
 
             def render(c):
