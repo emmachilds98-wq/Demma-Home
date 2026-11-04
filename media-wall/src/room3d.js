@@ -74,6 +74,7 @@ if (R.FIRM) { DEF.sugg = Object.fromEntries(R.FIRM.sugg.map(k => [k, true])); DE
   DEF.ideas = Object.fromEntries((R.FIRM.ideas || []).map(k => [k, true])); }   // v43: the C-table is in the plan   // v18: the window corner holds the plant stand or the record shelf   // v16: the table by the stairs by default; the laser off
 const KEY = "mw18-3d";
 const S = Object.assign({}, DEF, store.get(KEY, {}));
+if (!S.open147) { S.curtains = false; S.blinds = false; S.open147 = true; }   // V1.47, the client: "pull blinds up and open curtains in all rooms": once, whatever was saved
 if (!S.v45) {   // v45, client: "stipple ceiling as default and cosy lighting": once, a saved room moves to them; your own choices stay after
   S.v45 = 1; S.scene = "cosy"; S.tod = "evening"; S.lv = null; S.decor = Object.assign({}, S.decor, { ceiling: "stipple" });
 }
@@ -599,7 +600,7 @@ function paintColour(ratio, ch = "wall") {
 }
 function paintMat(ratio, eggshell, both, ch = "wall") {
   const k = ratio.toFixed(2) + (eggshell ? "e" : "") + (both ? "d" : "") + ch;
-  const relief = eggshell ? {} : PHOTOS ? { normalMap: PLASTER_NRM, normalScale: new THREE.Vector2(0.35, 0.35) } : { bumpMap: WALL_BUMP, bumpScale: 0.6 };   // V1.1: real plaster
+  const relief = eggshell ? {} : PHOTOS ? { normalMap: PLASTER_NRM, normalScale: new THREE.Vector2(0.18, 0.18) } : { bumpMap: WALL_BUMP, bumpScale: 0.6 };   // V1.1: real plaster
   if (!paintMats.has(k)) paintMats.set(k, reg(new THREE.MeshStandardMaterial({ color: paintColour(ratio, ch), roughness: eggshell ? 0.45 : 0.92,
     ...relief, side: both ? THREE.DoubleSide : THREE.FrontSide, userData: { ratio, ch } })));
   return paintMats.get(k);
@@ -2641,9 +2642,8 @@ function applyFloors() {
     const rid = VIEW_ROOM[S.view], rr = R.HOUSE3.rooms[rid];
     if (rr) {
       const fk = { "-260": "lower", "0": "ground", "260": "first" }[String(rr[4])];
-      const day = S.tod === "day", see = new Set([fk, { lower: "ground", ground: "first", first: "roof" }[fk]].concat(day ? ["out", "street", "nextThings"] : []));   // V1.15: by evening the windows show the night (the garden stayed in daylight)
-      if (day) for (const k of ["street", "nextThings"]) if (HFLOOR[k]) HFLOOR[k].visible = true;   // V1.10: next door and the street through the windows
-      if (!day && garden3d && garden3d.visible) { garden3d.visible = false; hidReal.push(garden3d); }
+      const see = new Set([fk, { lower: "ground", ground: "first", first: "roof" }[fk], "out", "street", "nextThings"]);   // V1.47: the outside by evening too, in the evening's light (V1.15 hid it: it stayed in daylight)
+      for (const k of ["street", "nextThings"]) if (HFLOOR[k]) HFLOOR[k].visible = true;   // V1.10: next door and the street through the windows
       if (rid === "landing") see.add("ground");
       if (rid === "hall") see.add("lower");
       for (const [k, g] of Object.entries(HFLOOR)) if (!see.has(k) && g.visible) { g.visible = false; hidReal.push(g); }
@@ -3032,7 +3032,17 @@ const sunLux = () => S.quality === "hd" && (S.tod === "day" || S.view === "house
 /* V1.5 (BUILD_SPEC phase 5): and out of the living room's window by day, from inside it: the same sky and land, the garden, its trees and
    the building past the fence, in place of the plain sky (v56's stand-in until the outside was modelled); by evening the dusk plane */
 const INSIDE = () => !!ROOMV() && (RMODE === "in" || RMODE === "stand");   // V1.10: standing in one of the house's rooms (In it, Be there)
-const roomOut = () => !!(R.HOUSE3 && S.tod === "day" && ((!HOUSEV(S.view) && !(VIEWS[S.view] || {}).above) || INSIDE()));   // V1.10: and every room's windows
+const roomOut = () => !!(R.HOUSE3 && ((S.tod === "day" && !HOUSEV(S.view) && !(VIEWS[S.view] || {}).above) || INSIDE()));   // V1.10: and every room's windows; V1.47, the client: "see in and out of the windows at all times": the house's rooms by evening too, through a dusk veil (the living room keeps its dusk picture)
+/* V1.47: by evening, seen from a room of the house, the outside through its windows is dusk: a see-through dark blue shell just outside
+   the house's walls (drawn last, never in a tap's way), so the garden, next door and the hill show, dimmed, as at dusk */
+let VEIL = null;
+function duskVeil(on) {
+  if (!on && !VEIL) return;
+  if (!VEIL) { const x0 = -90, x1 = 545, z0 = -400, z1 = 590, y0 = -330, y1 = 720, g = new THREE.BoxGeometry((x1 - x0) * M, (y1 - y0) * M, (z1 - z0) * M);
+    VEIL = new THREE.Mesh(g, reg(new THREE.MeshBasicMaterial({ color: "#0b1226", transparent: true, opacity: 0.68, side: THREE.BackSide, depthWrite: false, fog: false, toneMapped: false })));
+    VEIL.material.clippingPlanes = []; VEIL.position.copy(v3((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2)); VEIL.raycast = () => {}; VEIL.renderOrder = 5; VEIL.name = "duskVeil"; scene.add(VEIL); }
+  VEIL.visible = on;
+}
 function outdoor() {
   const house = !!(R.HOUSE3 && S.view === "house" && hfloor === "all"), room = roomOut(), on = house || room;
   if (on && !OUT.sky) {
@@ -3049,7 +3059,7 @@ function outdoor() {
       g2.setAttribute("normal", new THREE.Float32BufferAttribute([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0], 3));   // lit as level ground: the slope doesn't read as a lighter band
       const m = new THREE.Mesh(g2, mat); m.receiveShadow = true; m.raycast = () => {}; m.userData.alley = !!alley; m.userData.slope = !!slope; g.add(m); };
     quad(-E, E, -E, yb, zb, yb);                                                                    // the gardens' side, a storey down
-    quad(-E, A0, zb, yb, zf, yt, false, true); quad(A0, A1, zb, yb, zf, yt, true, true); quad(A1, E, zb, yb, zf, yt, false, true);   // the slope the terrace is built into (hidden inside the house; by it, the alley's own steps with Gardens on)
+    quad(-E, A0, zb, yb, zf, yt, false, true); quad(A0, A1, zb, yb, zf, yt, true, true); quad(482, E, zb, yb, zf, yt, false, true);   // the slope the terrace is built into (by it, the alley's own steps with Gardens on); V1.47, the client: "the garden green floor can be seen through the window of the kitchen": not across the house (A1 to its party wall, 482), where it ran through the lower floor's rooms
     quad(-E, E, zf, yt, E, yt);                                                                     // the street's side, out to the horizon
     buildBeyond(null, g);                                                                           // V1.4: the hill opposite
     scene.add(g);
@@ -3071,7 +3081,9 @@ function outdoor() {
   if (OUT.sky) { OUT.sky.visible = on; OUT.ground.visible = on; const low = INSIDE() && ((R.HOUSE3.rooms || {})[VIEW_ROOM[S.view]] || [])[4] < 0;   // V1.10: the slope runs through the lower floor's rooms
     OUT.ground.children.forEach(m => { m.visible = !(low && m.userData.slope); if (m.userData.alley && m.visible) m.visible = room || !S.hgarden; });   // with Gardens on the alley steps down there
     const d = house || !liv || !sun ? dayLight.position.clone().sub(dayLight.target.position) : sun.position.clone().sub(sun.target.position);   // the sun the sky shows: the one lighting it
-    OUT.sky.material.uniforms.sunPosition.value.copy(d.normalize()); }
+    OUT.sky.material.uniforms.sunPosition.value.copy(d.normalize());
+    if (S.tod !== "day" && !house) OUT.sky.material.uniforms.sunPosition.value.set(-0.6, -0.04, -0.8).normalize(); }   // V1.47: by evening from inside, the sun just down: a dusk sky
+  duskVeil(INSIDE() && S.tod !== "day");
   scene.fog.near = on ? 40 : 1e4; scene.fog.far = on ? 700 : 2e4;   // V1.4: the hill at 330 m about half hazed, as the view photos (was 30–110: nothing past 110 m)
   if (camera.far !== (on ? 3000 : 120)) { camera.far = on ? 3000 : 120; camera.updateProjectionMatrix(); }   // and seen out to the sky
   if (sun && house !== OUT.sunOut) {   // outside, the sun where the sky shows it (the living room's sits low by its window), its shadows over house and garden
@@ -3345,7 +3357,9 @@ function envSoon() {
   else if (ENV.studio && scene.environment !== ENV.studio) { scene.environment = ENV.studio; envLevels(S.tod === "day"); }
 }
 let lastTod = null;   // V1.15: the time of day applyLight last saw
+function blindsApply() { if (HMATS && HMATS.blind_cloth) HMATS.blind_cloth.visible = !!S.blinds; }   // V1.47, the client: "pull blinds up ... give ability to close them": rolled up unless pulled down
 function applyLight() {
+  blindsApply();
   placeRoomLights();                                          // v69: a room of the house: its ceiling lights, day or evening
   const day = S.tod === "day" || S.view === "house", hd = S.quality === "hd";   // V1.3: the whole house by day (inside, the rooms keep the time you set)
   const L = {}; LAYERS.forEach(k => L[k] = lvl(k));          // v15: the sliders (a scene button fills them in), times the master
@@ -4364,8 +4378,28 @@ function seatLook() {        // "look round from here": the point you turn round
 function applyCam(reseat = true) {
   const look = S.cam === "look";
   controls.enableZoom = !look; controls.rotateSpeed = look ? 0.4 : 0.55;
+  controls.enableRotate = !inPlace();   // V1.47: turning on the spot is ours (lookTurn), not the orbit's
   if (reseat) seatLook();
 }
+/* V1.47, the client: "its still hard to look around when in the rooms ... from a pc": a drag circled the eye round a point 35 cm (Be there)
+   or 2.2 m (In it) in front, so the eye slid about and met the walls. In the house's rooms and looking round, a drag now turns the view
+   where you stand, as a photo sphere does: the picture follows the pointer, a pixel of drag a pixel of view (from the lens), the tilt
+   kept short of straight up or down. Two fingers still pinch the lens; the whole house and the living room's views still orbit */
+const inPlace = () => S.cam === "look" || (!!ROOMV() && RMODE === "in");
+const LD_ = { ids: new Set(), id: null, x: 0, y: 0 };
+function lookTurn(dx, dy) {
+  const k = camera.fov / Math.max(1, canvas.clientHeight) * Math.PI / 180, cam = camera.position;
+  const d = controls.target.clone().sub(cam), len = d.length() || 0.35; d.normalize();
+  d.applyAxisAngle(new THREE.Vector3(0, 1, 0), dx * k);                                   // drag right: the room comes with it (you turn left)
+  const r = new THREE.Vector3().crossVectors(d, new THREE.Vector3(0, 1, 0)).normalize(), el = Math.asin(Math.max(-1, Math.min(1, d.y)));
+  const t_ = Math.max(-1.45, Math.min(1.45, el + dy * k)) - el; d.applyAxisAngle(r, t_);   // drag down: you look up
+  controls.target.copy(cam).addScaledVector(d, len); controls.update(); dirty(); syncEye();
+}
+canvas.addEventListener("pointerdown", e => { LD_.ids.add(e.pointerId); controls.enableRotate = !inPlace();   // before the orbit sees it (capture)
+  if (!inPlace() || tween || LD_.ids.size > 1 || (e.pointerType === "mouse" && e.button !== 0)) { LD_.id = null; return; }
+  LD_.id = e.pointerId; LD_.x = e.clientX; LD_.y = e.clientY; }, true);
+addEventListener("pointermove", e => { if (e.pointerId !== LD_.id || !inPlace()) return; const dx = e.clientX - LD_.x, dy = e.clientY - LD_.y; LD_.x = e.clientX; LD_.y = e.clientY; if (dx || dy) lookTurn(dx, dy); });
+for (const ev of ["pointerup", "pointercancel"]) addEventListener(ev, e => { LD_.ids.delete(e.pointerId); if (e.pointerId === LD_.id) LD_.id = null; });
 let eyeT = 0;
 function syncEye() {         // the height slider follows the camera
   const now = performance.now(); if (now - eyeT < 80) return; eyeT = now;
@@ -4723,6 +4757,7 @@ function pickItem(e) {
   const BL = HPARTS.bed_lift;                                                    // v71: the master's ottoman bed: its card
   if (BL && houseG && houseG.visible) { const bx = new THREE.Box3().setFromObject(BL.g); bx.min.y -= 0.6; bx.expandByScalar(0.03); if (bx.containsPoint(p)) return "hbed"; }
   if (houseG && houseG.visible) for (const [k, P] of Object.entries(HPARTS)) if (k.startsWith("door.") && under(o, P.g)) return "hdoor:" + k;   // V1.26
+  if (houseG && houseG.visible && o.material && /^blind/.test(o.material.userData.hk || "")) return "hblinds";   // V1.47: a blind (or its roller): its card
   if (HPARTS["door.living_door"] && under(o, livLeaf)) return "hdoor:door.living_door";   // V1.38: the living room's side of its door
   if (S.site === "C" && (under(o, cab) || under(o, optC))) return "cab";
   if (under(o, lamp)) return "lamp";
@@ -4757,6 +4792,7 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id === "hbed") { const P_ = HPARTS.bed_lift, up = !!(P_ && (P_.tw ? P_.tw.to === 1 : P_.t > 0.5));   // v71, the client: the bed as a card, like the living room's
     return ["Your ottoman bed", up ? "Lifted on its struts: four storage boxes inside" : "Pine, the base lifts from the foot", [
       btn(up ? "Lower the bed" : "Lift the bed", { hbed: up ? "down" : "up" }), ...(ROOMV() && RMODE !== "above" ? [btn("See it from above", { rmode: "above" })] : [])]]; }
+  if (id === "hblinds") return ["The blinds", S.blinds ? "Down" : "Rolled up", [btn(S.blinds ? "Roll them up" : "Pull them down", { tog: "blinds" })]];   // V1.47
   if (id.startsWith("hdoor:")) { const k = id.slice(6), P = HPARTS[k]; if (!P) return null; const op = doorOpen(P);   // V1.26: a door's card
     const any = Object.entries(HPARTS).some(([q, Q]) => q.startsWith("door.") && doorOpen(Q));
     return [P.label || "The door", op ? (Math.abs(P.angle) < 89 ? "Open as far as it goes" : "Open") : "Shut", [
@@ -5023,7 +5059,7 @@ controls.addEventListener("end", () => { moving = false; });
 const LIVING = []; let livOut = false;
 function livingFromOutside() {
   const x = -camera.position.x / M, z = camera.position.z / M, wx = (R.WINDOW_X[0] + R.WINDOW_X[1]) / 2;
-  const want = !!R.HOUSE3 && S.view === "house" && hfloor === "all" && !tween && !(z < R.WINDOW_Z - 20 && Math.hypot(x - wx, z - R.WINDOW_Z) < 1400);
+  const want = !!R.HOUSE3 && S.view === "house" && hfloor === "all" && !tween && !(z < R.WINDOW_Z - 20 && Math.hypot(x - wx, z - R.WINDOW_Z) < 4000);   // V1.47, the client: "see in and out of the windows at all times": from anywhere behind the house (the garden is 25 m; was 14)
   if (want === livOut) return false;
   livOut = want;
   for (const o of LIVING) { if (o === view) continue; if (want) { o.userData.livWas = o.visible; o.visible = false; } else if (o.userData.livWas !== undefined) { o.visible = o.userData.livWas; delete o.userData.livWas; } }
@@ -5766,13 +5802,13 @@ function houseTex(k) {
         g.fillStyle = "rgba(0,0,0,0.25)"; g.fillRect(x, y, 2, th);
       }
       noise(g, w, h, 7000, 0.3, ["#000", "#d8c8b8", "#4b5a3a"]); }],
-    hung: [0.66, 0.40, (g, w, h) => {                  // plain tiles hung on the dormer, 16.5 × 10 gauge
-      const tw = w / 4, th = h / 4, b = ["#6f4636", "#653f31", "#78503e"];
-      for (let r = 0; r < 4; r++) for (let c = -1; c < 5; c++) {
-        const x = c * tw + (r % 2 ? tw / 2 : 0); g.fillStyle = b[Math.floor(rnd() * 3)]; g.fillRect(x, r * th, tw, th);
-        g.fillStyle = "rgba(0,0,0,0.3)"; g.fillRect(x, r * th + th - 3, tw, 3); g.fillRect(x, r * th, 2, th);
-      }
-      noise(g, w, h, 3000, 0.25, ["#000", "#caa"]); }],
+    hung: [0.90, 0.60, (g, w, h) => {                  // V1.47, the client: "a cladding type material maybe wood on the sides of that part of the roof"
+      const n = 4, bh = h / n, b = ["#5b3b29", "#523422", "#634230", "#57392a"];   // (the back photo): dark-stained timber weatherboards, 15 high, lapped
+      for (let r = 0; r < n; r++) { const y = r * bh; g.fillStyle = b[r % b.length]; g.fillRect(0, y, w, bh);
+        for (let i = 0; i < 60; i++) { g.fillStyle = rnd() < 0.5 ? "rgba(0,0,0,0.10)" : "rgba(255,220,190,0.06)"; g.fillRect(rnd() * w, y + rnd() * bh, 40 + rnd() * 160, 1 + rnd() * 1.5); }   // the grain, along the board
+        const gr = g.createLinearGradient(0, y + bh - 10, 0, y + bh); gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,0.45)"); g.fillStyle = gr; g.fillRect(0, y + bh - 10, w, 10);   // the shadow under the lap
+        g.fillStyle = "rgba(255,230,200,0.10)"; g.fillRect(0, y, w, 2); }
+      noise(g, w, h, 2500, 0.2, ["#000", "#8a6a50"]); }],
     lawn: [1.0, 1.0, (g, w, h) => { g.fillStyle = "#5c6d40"; g.fillRect(0, 0, w, h); noise(g, w, h, 26000, 0.55, ["#46582f", "#6f8350", "#7d8f55", "#3c4a28"]); }],
     concrete: [1.2, 1.2, (g, w, h) => { g.fillStyle = "#aaa59c"; g.fillRect(0, 0, w, h); noise(g, w, h, 20000, 0.35, ["#7d7a73", "#c8c4bb", "#918d85"]); }],
     paving: [1.2, 1.2, (g, w, h) => { g.fillStyle = "#c3beb4"; g.fillRect(0, 0, w, h); noise(g, w, h, 12000, 0.3, ["#8f8b84", "#dad6cd"]);
@@ -5871,7 +5907,7 @@ function houseTex(k) {
   if (!T[k]) return (HTEX[k] = null);
   const [sw, sh, draw] = T[k], px = !SMALL && HI_T.has(k) ? 1024 : 512, tex = canvasTex(px, px, (g, w, h) => { g.scale(w / 512, h / 512); draw(g, 512, 512); });   // v72 (B3): the surfaces seen close drawn at 1k on a computer (the same drawing, crisper), 512 on a phone
   const BUMP = { paint: 0.4, ceiling: 1.2, pine: 0.4, birch: 0.3, door_wood: 0.4, rug: 1.5, duvet: 0.8, lycksele: 1.0, storebox: 1.0, tapestry: 0.9,
-    tile_w: 0.8, carpet: 1.4, carpet_grey: 1.4, brick: 1.2, hung: 1.0, tile: 1.0, stone: 0.5, metro: 0.6, laminate: 0.4, oak: 0.4, marble: 0.3 };   // v69
+    tile_w: 0.8, carpet: 1.4, carpet_grey: 1.4, brick: 1.2, hung: 0.6, tile: 1.0, stone: 0.5, metro: 0.6, laminate: 0.4, oak: 0.4, marble: 0.3 };   // v69
   return (HTEX[k] = { map: tex, size: [sw, sh], bump: BUMP[k] || 0 });
 }
 /* world-sized UVs (metres over the texture's size), by the face's direction: floors and roofs from above, walls from the side; roof
@@ -6170,12 +6206,14 @@ function buildHouse() {
       const m = reg(new THREE.MeshStandardMaterial({ color: T ? "#ffffff" : c, map: T ? T.map : null, bumpMap: T && T.bump ? T.map : null, bumpScale: T ? T.bump : 1, normalMap: T && T.normal || null, roughness: T && T.rough ? Math.min(1, r / T.roughMean) : r, roughnessMap: T && T.rough || null, metalness: k === "brass" || k === "chrome" || k === "steel" ? 0.8 : k === "mirror" ? 0.25 : 0, transparent: gl3, opacity: gl3 ? 0.14 : 1,   /* V1.13: clear (0.3 tinted the outside blue-green) */ depthWrite: !gl3, side: HOUSE_SIDE,
         emissive: { led: "#ffffff", pc_glow: "#cfe0ff", screen: "#1b2433" }[k] || "#000000", emissiveIntensity: { led: 1.5, pc_glow: 0.9, screen: 0.6 }[k] || 0 }));   // v60: the kitchen's LED battens glow; v61: the PC's glass, the screens
       m.envMapIntensity = 0.15;   // v60: the reflections are the living room's (its LEDs tinted the kitchen's white walls pink)
+      const NS = { paint: 0.3, ceiling: 0.3, brick: 0.7, party: 0.7, soldier: 0.7 }[k];   // V1.47, the client: "walls ... have a rugged non flat effect ... should be smooth or have less of that look": the relief turned down
+      if (m.normalMap && NS) m.normalScale.set(NS, NS);
       if (!LOWD) { m.userData.hk = k; m.envMap = houseEnv(); m.envMapIntensity = finishEnv(m); }   // v73: one neutral room, made once (V1.13: the iPhones too)
       if (k === "mirror") { m.color.set("#ffffff"); m.map = MIRROR_SHEEN; }   // V1.17: the hall's and the bathroom's mirrors as the living room's (grey before; as metal, black)
       const rk = (H3.depth_rank || {})[k] ?? 3;   // V1.31 (U6): where faces lie in one plane the higher rank is drawn (house/model.py depth_rank); constant, so nothing shows through at a slant
       if (rk) { m.polygonOffset = true; m.polygonOffsetFactor = 0; m.polygonOffsetUnits = -2 * rk; }
       m.clippingPlanes = []; m.userData.hk = k; return m; })());
-    HMATS = m3;
+    HMATS = m3; blindsApply();
     const put = (g, geos, m) => { if (!geos.length) return; const me = new THREE.Mesh(worldUV(mergeGeometries(geos), m.userData.hk), m); me.receiveShadow = true;
       me.castShadow = !m.transparent; g.add(me); geos.forEach(q => q.dispose()); };   // v69: the house's walls and pieces cast the sun's shadow (as the living room's)
     const mx = new THREE.Matrix4();
@@ -6254,7 +6292,7 @@ function buildHouse() {
       hsolidSet(fk, F); if (HSOLID[fk]) HSOLID[fk].g = cur;   // V1.28: solid to the eye (shown with its floor)
     };
     for (const [fk, F] of Object.entries(H3.floors)) HBUILD(fk, editedFloor(fk, F));
-    houseShade(H3, m3);
+    houseShade(H3, m3); blindsApply();   // V1.47: the blinds' cloth exists now
   }
   for (const F of H3 ? [] : HS) {
     cur = HFLOOR[F.id] = new THREE.Group(); houseG.add(cur);

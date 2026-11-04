@@ -724,7 +724,7 @@ def roof(o):
     ops = [op for op in D.OPENINGS if op.get("dormer")]
     holes = [(op["x"][0], op["x"][1], yf + op["sill"], yf + op["head"]) for op in ops]
     wall(o, "hung", "x", zo, zi - 3, x0, x1, base, DM["top"], holes)
-    wall(o, "paint", "x", zi - 3, zi, x0, x1, base, DM["top"], holes)   # v62: plaster inside (the room showed the hung tiles)
+    wall(o, "paint", "x", zi - 3, zi, x0 + DM["t"], x1 - DM["t"], base, DM["top"], holes)   # v62: plaster inside (the room showed the hung tiles); V1.47: between the cheeks (its ends showed as a white strip on the cladding outside)
     o.box("paint", x0, yf - SLAB, BACK, x1, base + 2, zi)            # v62: under the dormer's face, down to the floor (no gap to the roof)
     for op in ops:
         o.item(op["id"], *WINDOW_NAMES.get(op["id"], (op["id"], "")), kind="window", src=op["src"], data=("OPENINGS", op["id"]), axis="x")
@@ -806,9 +806,9 @@ def porch(o):
             o.box("door_cream", xa + 3, ya, z - 2.9, xb - 3, yb, z - 2.2)   # clear of the handle's plate
     for zz, k in ((z + 2.2, 1), (z - 2.2, -1)):                                           # the letterbox and the lever, each side
         o.box("brass", (d["a"] + d["b"]) / 2 - 14, 66, min(zz, zz + k * 1.0), (d["a"] + d["b"]) / 2 + 14, 71, max(zz, zz + k * 1.0))   # in the rail between the panels
-        o.box("brass", d["b"] - 14, 98, min(zz, zz + k * 2.0), d["b"] - 10, 112, max(zz, zz + k * 2.0))
-        o.box("brass", d["b"] - 24, 106, min(zz + k * 2.0, zz + k * 5.0), d["b"] - 10, 108, max(zz + k * 2.0, zz + k * 5.0))
-    hinges(o, "x", a0 - 0.6, z - 2.2, z + 2.2, 0)
+        o.box("brass", d["a"] + 10, 98, min(zz, zz + k * 2.0), d["a"] + 14, 112, max(zz, zz + k * 2.0))   # V1.47: the lever at the a end (on the right from outside)
+        o.box("brass", d["a"] + 10, 106, min(zz + k * 2.0, zz + k * 5.0), d["a"] + 24, 108, max(zz + k * 2.0, zz + k * 5.0))
+    hinges(o, "x", a1 + 0.6, z - 2.2, z + 2.2, 0)                                       # V1.47: hinged at the b end
     o = O_
     P_, rs = D.PORCH, {r["id"]: r for r in rooms("ground")}
     e, wst = rs["front_store_e"], rs["front_store_w"]
@@ -1179,7 +1179,7 @@ def office(o):
     radiator(o, "x", FRONT - 3, -1, r["x"][0], r["x"][1], y0 + r["y"][0], y0 + r["y"][1])
     o.item("office.blind", "The roller blind", "bed3", kind="decor", src="client's photo", measure=False)
     op = next(p for p in D.OPENINGS if p["id"] == "bed3_window")
-    o.box("blind", op["x"][0] + 4, y0 + op["sill"] + 20, FRONT - 1.5, op["x"][1] - 4, y0 + op["head"], FRONT - 0.5)
+    o.box("blind_cloth", op["x"][0] + 4, y0 + op["sill"] + 20, FRONT - 1.5, op["x"][1] - 4, y0 + op["head"], FRONT - 0.5)   # V1.47: shown when the blinds are down (rolled up to start)
     o.box("blind", op["x"][0] + 2, y0 + op["head"] - 2, FRONT - 6, op["x"][1] - 2, y0 + op["head"] + 6, FRONT - 0.5)
 
 
@@ -1198,7 +1198,7 @@ def bed2(o):
     # v64: the desk only (the client keeps the desk, the bed, the drawers and the red shelving)
     o.item("bed2.blind", "The blind", "bed2", kind="decor", src="client's photo", measure=False)
     op = next(p for p in D.OPENINGS if p["id"] == "bed2_window")   # the blind, half down
-    o.box("blind", op["x"][0] + 3, y + op["head"] - 70, zi + 0.5, op["x"][1] - 3, y + op["head"], zi + 1.5)
+    o.box("blind_cloth", op["x"][0] + 3, y + op["head"] - 70, zi + 0.5, op["x"][1] - 3, y + op["head"], zi + 1.5)   # V1.47: shown when the blinds are down
     o.box("blind", op["x"][0] + 1, y + op["head"] - 2, zi, op["x"][1] - 1, y + op["head"] + 7, zi + 7)
     o.item("bed2.shelving", "The red shelving", "bed2", src="E (77 × 147 × 39)", data=("BED2", "shelving"), axis="z")
     if "shelving" in D.BED2_KEEP:
@@ -2092,7 +2092,7 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "chrome": ("#d9dbde", 0.15), "porcelain": ("#e4e6e8", 0.2), "primrose": ("#e3cf5c", 0.25), "tile_w": ("#f2f2ef", 0.2), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "rug": ("#5b5e66", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "pink": ("#f2c6d6", 0.4), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
     "cloth0": ("#3d4a5c", 0.95), "cloth1": ("#b9b2a6", 0.95), "cloth2": ("#7a2f2f", 0.95), "cloth3": ("#2f3b2f", 0.95), "cloth4": ("#d8d2c4", 0.95), "cloth5": ("#555555", 0.95), "cloth6": ("#9b8b6e", 0.95), "curtain": ("#f4f3ef", 0.9), "stone": ("#cbc6bd", 0.5), "marble": ("#141416", 0.15), "led": ("#ffffff", 0.3), "chalk": ("#222423", 0.85), "storebox": ("#c9c1b2", 0.95), "contact": ("#000000", 1.0), "mattress": ("#f0eee8", 0.9), "pillow": ("#f4f1eb", 0.95), "trim": ("#5a5d60", 0.5), "gutter": ("#f2f2ef", 0.4), "lead": ("#6c7072", 0.55), "birch": ("#dcc8a2", 0.7), "lycksele": ("#5b6b78", 0.95), "grille": ("#e8dcc4", 0.6), "ceiling": ("#f3f2ee", 0.95),
     "laminate": ("#a9a39a", 0.7), "oak": ("#b8844f", 0.55), "screen": ("#0d0f12", 0.15), "pc_white": ("#eeeeec", 0.3), "pc_glow": ("#dfe6ff", 0.2),
-    "pegboard": ("#f4f4f2", 0.6), "ivy": ("#2f5a2b", 0.8), "blind": ("#4a4d52", 0.9), "books": ("#8a3b2e", 0.8), "jar": ("#d9a441", 0.4), "pot": ("#e8e3d8", 0.5),
+    "pegboard": ("#f4f4f2", 0.6), "ivy": ("#2f5a2b", 0.8), "blind": ("#4a4d52", 0.9), "blind_cloth": ("#4a4d52", 0.9), "books": ("#8a3b2e", 0.8), "jar": ("#d9a441", 0.4), "pot": ("#e8e3d8", 0.5),
     "carpet_grey": ("#6f6f73", 1.0), "red_gloss": ("#c8201e", 0.15), "red_back": ("#9d1714", 0.4), "cat": ("#bdbcb8", 1.0), "sisal": ("#cdb88f", 0.9),
     "pink": ("#e8607a", 0.8), "pine": ("#c99a55", 0.55), "pine_dark": ("#7a5a30", 0.6), "wardrobe": ("#f2f1ec", 0.35), "duvet": ("#e9e6df", 0.95), "leather": ("#1f1d1d", 0.45), "check": ("#7d7e86", 0.95),
     "lawn": ("#5f7043", 1.0), "paving": ("#bdb8ae", 0.95), "road": ("#59595c", 0.95), "fence": ("#6b5644", 0.9),
@@ -2194,7 +2194,7 @@ def export():
 STRUCTURE = {"brick", "brick_buff", "party", "slab", "eaves", "felt", "hung", "lead", "earth", "concrete", "timber", "chipboard", "soldier", "quarry"}
 FINISH = {"paint", "ceiling", "artex", "porch_in"}
 RANK_BY_NAME = {"party": -1, "ceiling": 1.5, "artex": 1.5, "wardrobe_back": 2, "tapestry_dark": 2, "gap": 4, "skirting": 4, "metro": 4, "stone": 4,
-                "contact": 6}
+                "contact": 6, "blind_cloth": 2}   # V1.47: the roller over its cloth
 
 
 def depth_rank():
