@@ -32,6 +32,19 @@ ACCESS = """() => { const vis = el => { const r = el.getBoundingClientRect(), cs
   const noname = [...document.querySelectorAll("button, a[href], [role=button], input, select, textarea")].filter(el => vis(el) && !(el.getAttribute("aria-label") || el.getAttribute("title") || el.textContent || el.value || (el.labels && el.labels[0] && el.labels[0].textContent) || "").trim()).map(el => el.outerHTML.slice(0, 80));
   const c = document.querySelector(".r3d-stage canvas"), place = (document.getElementById("brand-place") || {}).textContent || "";
   return { noname: noname.slice(0, 4), label: c && c.getAttribute("aria-label").startsWith(place) ? "" : (c && c.getAttribute("aria-label")) }; }"""
+SIZE = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), cv = document.querySelector('.r3d canvas');
+  if (window.DemmaTools) window.DemmaTools.close();
+  R3D.set({ view: 'office' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
+  const it = Object.values(D.PICK).flat().find(q => q.id === 'office.desk'); if (!it) return { err: 'no desk in PICK' };
+  const c = it.b.getCenter(new D.THREE.Vector3()).project(D.camera), r = cv.getBoundingClientRect();
+  const o = { clientX: r.left + (c.x + 1) / 2 * cv.clientWidth, clientY: r.top + (1 - c.y) / 2 * cv.clientHeight, bubbles: true, pointerId: 1, button: 0, isPrimary: true };
+  cv.dispatchEvent(new PointerEvent('pointerdown', o)); cv.dispatchEvent(new PointerEvent('pointerup', o)); await sl(300);
+  const card = D.actId, b = document.querySelector('#r3d-act [data-actopen^="hsize:"]'); if (!b) return { card };
+  b.click(); await sl(200); document.querySelector('#r3d-act [data-hstep="w"][data-by="1"]').click(); await sl(600);
+  const row = JSON.parse(localStorage.getItem('demma-v1:edits') || '{}')['office.desk~w'], ed = !!D.HEDITS['office.desk'];
+  document.querySelector('#r3d-act [data-hreset]').click(); await sl(600);
+  return { card, row: row ? row.value : null, ed, after: Object.keys(D.HEDITS).length };
+}"""
 OFF = """() => { const W = document.documentElement.clientWidth, out = [];
   for (const el of document.querySelectorAll("body *")) { const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
     if (!r.width || cs.display === "none" || cs.visibility === "hidden" || cs.position === "fixed" || el.closest("[hidden], .sheet, .r3d-panel, .r3d-floors, .lightbox, .r3d-stage")) continue;
@@ -90,8 +103,13 @@ def main():
             cnt = pg.evaluate("() => document.getElementById('ms-count').textContent")
             if not cnt.startswith("1 of"): fails.append(f"{w}: Measure counts {cnt!r}")
             pg.screenshot(path=str(SHOTS / f"site-{w}-measure.png"))
-            if phone:                                           # V1.38: walk into the living room, up to the landing and back out (the small screen: quicker frames)
+            if phone:                                           # V1.50: tap a piece, change its size, put it back
                 pg.click("#r3d-dt-measure"); pg.wait_for_timeout(500)
+                sz = pg.evaluate(SIZE)
+                if sz.get("card") != "hitem:office.desk" or not sz.get("row") or not sz.get("ed") or sz.get("after"):
+                    fails.append(f"{w}: tapping the office desk and widening it: {sz} (want its card, a row of 223.9, the 3D changed, then back as planned)")
+                pg.screenshot(path=str(SHOTS / f"site-{w}-size.png"))
+            if phone:                                           # V1.38: walk into the living room, up to the landing and back out (the small screen: quicker frames)
                 wk = pg.evaluate(WALK)
                 want = ["hall", "livstand", "landing", "livstand", "hall"]
                 got = [v for i, v in enumerate(wk["seen"]) if i == 0 or v != wk["seen"][i - 1]]
@@ -102,7 +120,7 @@ def main():
         b.close()
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
-    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a walk into the living room and up its stairs, {len(fails)} failed; screenshots in _shots/")
+    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a piece resized from a tap, a walk into the living room and up its stairs, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
 

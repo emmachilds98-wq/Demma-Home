@@ -2532,13 +2532,113 @@ function editedFloor(fk, F) {
   const lathes = (F.lathes || []).filter(L => !(xf[L.t] && HEDITS[tags[L.t]].removed)).map(L => { const f = xf[L.t]; if (!f) return L; const E = HEDITS[tags[L.t]];
     const sx = (E.to[3] - E.to[0]) / Math.max(0.1, E.from[3] - E.from[0]), sz = (E.to[5] - E.to[2]) / Math.max(0.1, E.from[5] - E.from[2]);
     const c = f([L.c[0], L.c[1], L.c[2], L.c[0], L.c[1], L.c[2]]); return Object.assign({}, L, { c: [c[0], c[1], c[2]], s: [L.s[0] * sx, L.s[1] * sz] }); });
-  const prisms = (F.prisms || []).filter(P => !(xf[P.t] && HEDITS[tags[P.t]].removed)).map(P => { const f = xf[P.t]; if (!f) return P;
-    if (P.axis === "y") { const pts = P.pts.map(([u, w]) => { const q = f([u, 0, w, u, 0, w]); return [q[0], q[2]]; }), ab = f([0, P.a, 0, 0, P.b, 0]);   // V1.14
+  const prisms = (F.prisms || []).filter(P => !(xf[P.t] && HEDITS[tags[P.t]].removed)).map(P => mapPrism(P, xf[P.t]));
+  const parts = {}; for (const [k, P] of Object.entries(F.parts || {})) { const pb = {}, pt = {}; for (const [m, list] of Object.entries(P.boxes)) [pb[m], pt[m]] = mapList(list, (P.bt || {})[m]);
+    const t = Object.values(P.bt || {}).flat().find(q => xf[q]), f = t != null ? xf[t] : null;   // V1.50: a resized door swings from its hinge, its handle with it
+    const pv = f ? f([P.pivot[0], P.pivot[1], P.pivot[2], P.pivot[0], P.pivot[1], P.pivot[2]]) : null;
+    parts[k] = Object.assign({}, P, { boxes: pb, bt: pt }, f ? { pivot: pv.slice(0, 3), prisms: (P.prisms || []).map(Q => mapPrism(Q, f)) } : {}); }
+  return Object.assign({}, F, { boxes, bt, lathes, prisms, parts });
+}
+function mapPrism(P, f) {
+  if (!f) return P;
+  if (P.axis === "y") { const pts = P.pts.map(([u, w]) => { const q = f([u, 0, w, u, 0, w]); return [q[0], q[2]]; }), ab = f([0, P.a, 0, 0, P.b, 0]);   // V1.14
       return Object.assign({}, P, { pts, a: ab[1], b: ab[4] }); }
     const pts = P.pts.map(([u, w]) => { const q = P.axis === "x" ? f([0, w, u, 0, w, u]) : f([u, w, 0, u, w, 0]); return P.axis === "x" ? [q[2], q[1]] : [q[0], q[1]]; });
-    const ab = P.axis === "x" ? f([P.a, 0, 0, P.b, 0, 0]) : f([0, 0, P.a, 0, 0, P.b]); return Object.assign({}, P, { pts, a: P.axis === "x" ? ab[0] : ab[2], b: P.axis === "x" ? ab[3] : ab[5] }); });
-  const parts = {}; for (const [k, P] of Object.entries(F.parts || {})) { const pb = {}, pt = {}; for (const [m, list] of Object.entries(P.boxes)) [pb[m], pt[m]] = mapList(list, (P.bt || {})[m]); parts[k] = Object.assign({}, P, { boxes: pb, bt: pt }); }
-  return Object.assign({}, F, { boxes, bt, lathes, prisms, parts });
+    const ab = P.axis === "x" ? f([P.a, 0, 0, P.b, 0, 0]) : f([0, 0, P.a, 0, 0, P.b]); return Object.assign({}, P, { pts, a: P.axis === "x" ? ab[0] : ab[2], b: P.axis === "x" ? ab[3] : ab[5] });
+}
+/* V1.50 (V1_PLAN phase 3, the old app's Edit in the old design): tap a piece in the house and change its size. Each piece's boxes, by its
+   tag, find what a tap is on; the changes are Measure's "edits" rows ({item, field, value}: measure.js's store, so Send shares them),
+   with the same arithmetic as tools/pull_edits.py, which folds them into house/survey_data.py. */
+const PICK = {};
+const wbox = b => new THREE.Box3(new THREE.Vector3(-b[3] * M, b[1] * M, b[2] * M), new THREE.Vector3(-b[0] * M, b[4] * M, b[5] * M));
+function pickable(fk, F) {
+  const tags = F.tags || [], list = [];
+  for (const [m, boxes] of Object.entries(F.boxes)) { if (m === "contact") continue; const bt = (F.bt || {})[m] || [];
+    boxes.forEach((b, i) => { if (bt[i] >= 0) list.push({ id: tags[bt[i]], b: wbox(b) }); }); }
+  for (const L of F.lathes || []) if (L.t >= 0) { const r = Math.max(...L.p.map(q => q[0])), h = Math.max(...L.p.map(q => q[1]));
+    list.push({ id: tags[L.t], b: wbox([L.c[0] - r * L.s[0], L.c[1], L.c[2] - r * L.s[1], L.c[0] + r * L.s[0], L.c[1] + h, L.c[2] + r * L.s[1]]) }); }
+  for (const P of Object.values(F.parts || {})) for (const [m, boxes] of Object.entries(P.boxes)) { const bt = (P.bt || {})[m] || [];
+    boxes.forEach((b, i) => { if (bt[i] >= 0) list.push({ id: tags[bt[i]], b: wbox(b) }); }); }
+  PICK[fk] = list;
+}
+function housePiece(hits, cut) {   // the piece whose box the ray meets first, at or just behind the first surface it hits
+  const d0 = hits.length ? hits[0].distance : Infinity; let best = null; const q = new THREE.Vector3();
+  for (const [fk, list] of Object.entries(PICK)) { const g = HFLOOR[fk]; if (!g || !shown(g)) continue;
+    for (const it of list) { if (!ray.ray.intersectBox(it.b, q) || cut(q, g)) continue; const d = ray.ray.origin.distanceTo(q);
+      if (d <= d0 + 0.05 && (!best || d < best.d)) best = { id: it.id, d }; } }
+  return best ? best.id : null;
+}
+/* the picked piece: a dashed outline round its box and its size on a tag (the design's Edit mode) */
+const SEL = { g: null };
+function clearSel() { if (!SEL.g) return; scene.remove(SEL.g); SEL.g.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { o.material.map && o.material.map.dispose(); o.material.dispose(); } }); SEL.g = null; dirty(); }
+function selPiece(o) {
+  clearSel(); if (!o || !o.box) return;
+  const b = o.box, g = new THREE.Group(), bx = wbox(b), size = bx.getSize(new THREE.Vector3()), c = bx.getCenter(new THREE.Vector3());
+  const geo = new THREE.EdgesGeometry(new THREE.BoxGeometry(size.x + 0.02, size.y + 0.02, size.z + 0.02));
+  const line = new THREE.LineSegments(geo, new THREE.LineDashedMaterial({ color: "#fff1bf", dashSize: 0.04, gapSize: 0.025, depthTest: false, transparent: true, toneMapped: false }));
+  line.computeLineDistances(); line.position.copy(c); line.renderOrder = 997; g.add(line);
+  if (o.label) {
+    const cv = document.createElement("canvas"), x = cv.getContext("2d"); cv.width = 320; cv.height = 112;
+    x.fillStyle = "#fff1bf"; x.beginPath(); x.roundRect ? x.roundRect(4, 4, 312, 104, 52) : x.rect(4, 4, 312, 104); x.fill();
+    x.fillStyle = "#1d2a22"; x.font = "600 54px Figtree, system-ui, sans-serif"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(o.label, 160, 60);
+    const tx = new THREE.CanvasTexture(cv); tx.colorSpace = THREE.SRGBColorSpace;
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tx, depthTest: false, toneMapped: false })); sp.renderOrder = 999;
+    const d = camera.position.distanceTo(c), s = Math.max(0.12, Math.min(0.9, d * 0.09)); sp.scale.set(s, s * 112 / 320, 1);
+    sp.position.set(c.x, bx.min.y - s * 0.28, c.z); g.add(sp);
+  }
+  g.traverse(q => { q.raycast = () => {}; }); SEL.g = g; scene.add(g); dirty();
+}
+/* edits: rebuild only the floors whose pieces changed */
+let pend = null;
+function applyHEdits(map) {
+  const before = new Set(Object.keys(HEDITS));
+  for (const k of Object.keys(HEDITS)) if (!map[k]) delete HEDITS[k];
+  Object.assign(HEDITS, map);
+  const touched = new Set([...before, ...Object.keys(map)]);
+  if (!houseG || !HBUILD) return;
+  for (const [fk, F] of Object.entries(R.HOUSE3.floors)) if ((F.tags || []).some(id => touched.has(id))) (pend = pend || new Set()).add(fk);
+  if (pend) requestAnimationFrame(() => { const fs = pend; pend = null; if (!fs) return;
+    for (const fk of fs) HBUILD(fk, editedFloor(fk, R.HOUSE3.floors[fk])); solidDirty(); reshadow(); dirty(); });
+}
+const HIT = id => (((R.HOUSE3 || {}).items) || {})[id];
+const DS = () => (!EMBED && window.DemmaStore) || null;
+const FIELDS = [["w", "Width"], ["h", "Height"], ["up", "Up from the floor"], ["along", "Along the wall"]];
+function pieceNow(id) {
+  const it = HIT(id), e = {}, ds = DS();
+  if (ds) for (const v of Object.values(ds.rows("edits") || {})) if (v && v.item === id && typeof v.value === "number") e[v.field] = v.value;
+  return { w: e.w ?? it.s[0], h: e.h ?? it.s[1], up: e.up ?? it.s[2], along: e.along ?? it.al };
+}
+function pieceDelta(id) { const it = HIT(id), c = pieceNow(id); return [c.along - it.al, c.w - it.s[0], c.h - it.s[1], c.up - it.s[2]]; }
+function pieceBox(id) {
+  const it = HIT(id), [dA, dW, dH, dU] = pieceDelta(id), k = it.ax === "z" ? 2 : 0, b = it.b.slice();
+  b[k] += dA; b[k + 3] += dA + dW; b[1] += dU; b[4] += dU + dH; return b;
+}
+function storeEdits() {   // Measure's rows, as the engine's edits (HEDITS)
+  if (!DS() || !R.HOUSE3) return;
+  const out = {};
+  for (const [id, it] of Object.entries(R.HOUSE3.items || {})) {
+    const [dA, dW, dH, dU] = pieceDelta(id); if (!dA && !dW && !dH && !dU) continue;
+    const E = { from: it.b, to: pieceBox(id) }, o = it.op;
+    if (o) E.op = { axis: o.axis, line: o.line, a: o.a, b: o.b, y0: o.y0, y1: o.y1, a2: o.a + dA, b2: o.b + dA + dW, y02: o.y0 + dU, y12: o.y1 + dU + dH };
+    out[id] = E;
+  }
+  const was = JSON.stringify(HEDITS), now = JSON.stringify(out);
+  if (was !== now) applyHEdits(out);
+}
+window.addEventListener("demma-rows", e => { if (e.detail !== "edits") return; storeEdits();
+  if (actId && /^hsize:|^hitem:/.test(actId)) { const id = actId.split(":")[1]; selOf(id); const st = qs("#r3d-act-st"); if (st) st.textContent = actItems(actId)[1]; } });
+const cmR = v => Math.round(v * 10) / 10;
+const clampF = (f, v) => Math.max(f === "along" || f === "up" ? -500 : 1, Math.min(1000, v));
+function selOf(id) { const it = HIT(id); if (!it) { clearSel(); return; } const c = pieceNow(id); selPiece({ box: pieceBox(id), label: `${Math.round(c.w)} × ${Math.round(c.h)}` }); }
+const pieceLine = id => { const it = HIT(id), c = pieceNow(id), ed = pieceDelta(id).some(Boolean);
+  return `${cmR(c.w)} wide, ${cmR(c.h)} high, ${cmR(c.up)} up` + (ed ? " · changed by you" : it.g ? " · a guess: measure it" : ""); };
+let sizeT = 0;
+async function setPiece(id, field, v) {
+  const it = HIT(id), ds = DS(); if (!it || !ds) return;
+  const base = field === "along" ? it.al : it.s[["w", "h", "up"].indexOf(field)], rid = `${id}~${field}`;
+  try { if (v == null || Math.abs(v - base) < 0.05) { if (ds.rows("edits")[rid]) await ds.del("edits", rid); }
+        else await ds.put("edits", rid, { item: id, field, value: v }); }
+  catch (e) { toast("That didn't save: try again"); }
 }
 let houseG = null;     // v54: the whole house, drafted (The whole house view)
 const HOUSEV = n => n === "house" || (!!R.HOUSE3 && !!(VIEWS[n] || {}).box);   // v60: the views that show the built house (a room's own, from inside it)
@@ -4759,6 +4859,7 @@ function pickItem(e) {
   if (BL && houseG && houseG.visible) { const bx = new THREE.Box3().setFromObject(BL.g); bx.min.y -= 0.6; bx.expandByScalar(0.03); if (bx.containsPoint(p)) return "hbed"; }
   if (houseG && houseG.visible) for (const [k, P] of Object.entries(HPARTS)) if (k.startsWith("door.") && under(o, P.g)) return "hdoor:" + k;   // V1.26
   if (houseG && houseG.visible && o.material && /^blind/.test(o.material.userData.hk || "")) return "hblinds";   // V1.47: a blind (or its roller): its card
+  if (houseG && houseG.visible && DS() && under(o, houseG)) { const k = housePiece([hit], q => cutAway(q)); if (k && HIT(k)) return "hitem:" + k; }   // V1.50: a piece: its size
   if (HPARTS["door.living_door"] && under(o, livLeaf)) return "hdoor:door.living_door";   // V1.38: the living room's side of its door
   if (S.site === "C" && (under(o, cab) || under(o, optC))) return "cab";
   if (under(o, lamp)) return "lamp";
@@ -4793,11 +4894,17 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id === "hbed") { const P_ = HPARTS.bed_lift, up = !!(P_ && (P_.tw ? P_.tw.to === 1 : P_.t > 0.5));   // v71, the client: the bed as a card, like the living room's
     return ["Your ottoman bed", up ? "Lifted on its struts: four storage boxes inside" : "Pine, the base lifts from the foot", [
       btn(up ? "Lower the bed" : "Lift the bed", { hbed: up ? "down" : "up" }), ...(ROOMV() && RMODE !== "above" ? [btn("See it from above", { rmode: "above" })] : [])]]; }
+  if (id.startsWith("hitem:")) { const k = id.slice(6), it = HIT(k); if (!it) return null;   // V1.50: a piece in the house, its size
+    return [it.n, pieceLine(k), [btn("Change its size", { actopen: "hsize:" + k }), ...(pieceDelta(k).some(Boolean) ? [btn("As planned", { hreset: k })] : [])]]; }
+  if (id.startsWith("hsize:")) { const k = id.slice(6), it = HIT(k); if (!it) return null; const c = pieceNow(k), door = it.k === "door";
+    return [it.n, pieceLine(k), [btn("Done", { actopen: "hitem:" + k }), btn("As planned", { hreset: k })],
+      FIELDS.filter(([f]) => !(door && (f === "h" || f === "up"))).map(([f, t]) => [f, t, cmR(c[f])])]; }
   if (id === "hblinds") return ["The blinds", S.blinds ? "Down" : "Rolled up", [btn(S.blinds ? "Roll them up" : "Pull them down", { tog: "blinds" })]];   // V1.47
   if (id.startsWith("hdoor:")) { const k = id.slice(6), P = HPARTS[k]; if (!P) return null; const op = doorOpen(P);   // V1.26: a door's card
     const any = Object.entries(HPARTS).some(([q, Q]) => q.startsWith("door.") && doorOpen(Q));
     return [P.label || "The door", op ? (Math.abs(P.angle) < 89 ? "Open as far as it goes" : "Open") : "Shut", [
-      btn(op ? "Shut it" : "Open it", { hdoor: k }), btn(any ? "Shut every door" : "Open every door", { hdoors: any ? "shut" : "open" })]]; }
+      btn(op ? "Shut it" : "Open it", { hdoor: k }), btn(any ? "Shut every door" : "Open every door", { hdoors: any ? "shut" : "open" }),
+      ...(DS() && HIT(k.slice(5)) ? [btn("Change its size", { actopen: "hsize:" + k.slice(5) })] : [])]]; }
   if (id === "nowplay") return ["Now playing, on the ledge", `${NOWP[S.nowp % NOWP.length].name}`, [   // v39: which LP faces out
       btn("‹", { nowp: "-1" }, false, "q", "The one before"), btn("›", { nowp: "1" }, false, "q", "The next one"),
       btn("A photo of yours", { nowpic: "1" }), btn("Look at it", { view: "breast" })]];
@@ -4933,6 +5040,13 @@ function renderAct() {
   qs("#r3d-act-h").textContent = title; qs("#r3d-act-st").textContent = st;
   qsa(".r3d-actmore", act).forEach(m => m.remove());
   const box = qs("#r3d-acts"); box.textContent = "";
+  qsa(".r3d-actfields").forEach(m => m.remove());
+  if (items[3]) { const w = document.createElement("div"); w.className = "r3d-actfields";   // V1.50: a piece's sizes, a stepper each
+    w.innerHTML = items[3].map(([f, t, v]) => `<div class="fld"><span>${t}</span><span class="stp"><button type="button" data-hstep="${f}" data-by="-1" aria-label="${t}: 1 cm less">−</button>`
+      + `<input type="number" inputmode="decimal" step="1" value="${v}" data-hfield="${f}" aria-label="${t} in cm"><button type="button" data-hstep="${f}" data-by="1" aria-label="${t}: 1 cm more">+</button></span></div>`).join("")
+      + `<p class="note">${DS() && DS().mode === "shared" ? "Saved for you both as you go" : "Saved on this device · Send in Measure shares it"}</p>`;
+    box.before(w); }
+  if (/^(hitem|hsize):/.test(actId)) selOf(actId.split(":")[1]); else if (!EMBED) clearSel();
   // v39 (the approved redesign): a card shows its first three buttons; everything else sits under Details
   let shownN = 0, into = box, more = null;
   for (const b of bs) {
@@ -4963,7 +5077,7 @@ function openAct(id, xy) {
   actId = id; actXY = xy; act.hidden = false; renderAct();
   if (!act.hidden) { const f = qs("#r3d-acts button"); if (f) f.focus({ preventScroll: true }); }
 }
-function closeAct() { actId = null; if (act) act.hidden = true; clearAim(); }
+function closeAct() { actId = null; if (act) act.hidden = true; clearAim(); if (!EMBED) clearSel(); }
 if (act) {
   act.addEventListener("click", e => {
     const b = e.target.closest("button"); if (!b) return;
@@ -4977,12 +5091,19 @@ if (act) {
     if (d.optcyc) { const [pl, ix] = d.optcyc.split(":"), L = placeOpts(pl), i = ((+ix % L.length) + L.length) % L.length, [g, it] = L[i];   // v39
       if (!optOn(it)) optPick(g.k, it.v); actId = `opt:${pl}:${i}`; renderAct(); return; }
     if (d.optkeep) { closeAct(); return; }
-    if (d.actopen) { actId = d.actopen; renderAct(); return; }
+    if (d.actopen) { actId = d.actopen; renderAct(); if (d.actopen.startsWith("hsize:")) { const f = qs(".r3d-actfields input"); if (f) f.focus({ preventScroll: true }); } return; }
+    if (d.hstep && actId) { const k = actId.split(":")[1], f = d.hstep, v = clampF(f, cmR(pieceNow(k)[f] + +d.by)), inp = qs(`.r3d-actfields [data-hfield="${f}"]`);   // V1.50
+      if (inp) inp.value = v; setPiece(k, f, v); return; }
+    if (d.hreset) { const k = d.hreset, ds = DS(); if (!ds) return;
+      Promise.all(Object.entries(ds.rows("edits")).filter(([, v]) => v && v.item === k).map(([rid]) => ds.del("edits", rid))).then(() => { if (actId) renderAct(); }); return; }
     if (d.nowp) { S.nowp = ((S.nowp || 0) + +d.nowp + NOWP.length) % NOWP.length; applyNow(); store.set(KEY, S); renderAct(); return; }
     if (d.nowpic) { pickNowPic(); return; }
     if (d.measure) { if (d.measure === "done") { endMeasure(); closeAct(); } else { clearMeasure(); renderAct(); } return; }
     if (d.view) setTimeout(closeAct, 0);                     // the room flies there; the card has done its job
   });
+  act.addEventListener("input", e => { const el = e.target; if (!el.dataset || !el.dataset.hfield || !actId) return;   // V1.50: a typed size, kept once you pause
+    const k = actId.split(":")[1], f = el.dataset.hfield, v = parseFloat(el.value); if (!isFinite(v)) return;
+    clearTimeout(sizeT); sizeT = setTimeout(() => setPiece(k, f, clampF(f, cmR(v))), 450); });
   canvas.addEventListener("pointerdown", e => { tapDown = (S.edit || e.button > 0) ? null : [e.clientX, e.clientY, e.timeStamp]; if (actId) closeAct(); });   // review after v48: the touch's own time, so a slow frame between down and up can't turn a tap into a long press
   canvas.addEventListener("pointerup", e => {
     const t = tapDown; tapDown = null;
@@ -6289,7 +6410,7 @@ function buildHouse() {
         HPARTS[pk] = { g, kids, angle: P.angle, axis: P.axis, label: P.label, floor: fk, t: was ? was.t : kept != null ? kept : (P.t0 || 0) };
         partPose(HPARTS[pk]);
       }
-      if (EMBH) EMBH.pickable(fk, F);
+      pickable(fk, F);   // V1.50: each piece's boxes, for a tap (the app's bridge too)
       hsolidSet(fk, F); if (HSOLID[fk]) HSOLID[fk].g = cur;   // V1.28: solid to the eye (shown with its floor)
     };
     for (const [fk, F] of Object.entries(H3.floors)) HBUILD(fk, editedFloor(fk, F));
@@ -6430,7 +6551,7 @@ function start() {
       if (addp && CATALOGUE[addp.type]) { const a = { id: "a" + Date.now().toString(36), type: addp.type, x: addp.x, z: addp.z }; pushUndo(); addThing(a); if (addp.rot) setLayout(a.id, { rot: addp.rot }); placeAll(); store.set(KEY, S); dirty(); }
       if (showat != null) { showOpen(); if (SH) { SH.own = true; SH.paused = true; SH.t = showat; showPose(SH.t); showCard(); qs("#r3d-show").hidden = true; } }
       if (o.view) setView(o.view, true); if (aim) flyTo(aim.eye, aim.at, aim.fov || 55, !!aim.above, true); },   // v58: "above" lets a look stand off (the house)
-    still, ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { get flying() { return !!tween; }, HPARTS, swingDoor, WALK, walkMove, collide, bodyBlocked, floorAtCm, HSOLID, livSolids, livFloors,  swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, collide, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG },
+    still, ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { get flying() { return !!tween; }, HPARTS, PICK, HEDITS, get actId() { return actId; }, swingDoor, WALK, walkMove, collide, bodyBlocked, floorAtCm, HSOLID, livSolids, livFloors,  swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, collide, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG },
     errors: () => store.get("r3d-errors", []),                                       // v35: what the trap kept
     timing: () => Object.assign({ page: Math.round(performance.now()) }, START_MS),     // V1.31: the start's steps (ms from start()), and the page's age
     perf: perfInfo,                                                                   // v35: the counts to watch each round
@@ -6455,18 +6576,6 @@ if (EMBED) {
   root.classList.add("embed");
   EMBH = (() => {
     const post = (type, d = {}) => { try { parent.postMessage(Object.assign({ src: "r3d", type }, d), "*"); } catch (e) {} };
-    const PICK = {};
-    const wbox = b => new THREE.Box3(new THREE.Vector3(-b[3] * M, b[1] * M, b[2] * M), new THREE.Vector3(-b[0] * M, b[4] * M, b[5] * M));
-    function pickable(fk, F) {
-      const tags = F.tags || [], list = [];
-      for (const [m, boxes] of Object.entries(F.boxes)) { if (m === "contact") continue; const bt = (F.bt || {})[m] || [];
-        boxes.forEach((b, i) => { if (bt[i] >= 0) list.push({ id: tags[bt[i]], b: wbox(b) }); }); }
-      for (const L of F.lathes || []) if (L.t >= 0) { const r = Math.max(...L.p.map(q => q[0])), h = Math.max(...L.p.map(q => q[1]));
-        list.push({ id: tags[L.t], b: wbox([L.c[0] - r * L.s[0], L.c[1], L.c[2] - r * L.s[1], L.c[0] + r * L.s[0], L.c[1] + h, L.c[2] + r * L.s[1]]) }); }
-      for (const P of Object.values(F.parts || {})) for (const [m, boxes] of Object.entries(P.boxes)) { const bt = (P.bt || {})[m] || [];
-        boxes.forEach((b, i) => { if (bt[i] >= 0) list.push({ id: tags[bt[i]], b: wbox(b) }); }); }
-      PICK[fk] = list;
-    }
     const FK = { "-260": "lower", "0": "ground", "260": "first" };
     function roomAt(p) {
       if (!p || !R.HOUSE3) return null; const x = -p.x / M, y = p.y / M, z = p.z / M;
@@ -6482,49 +6591,13 @@ if (EMBED) {
       if (houseG && houseG.visible && R.HOUSE3) {
         const hits = ray.intersectObjects(scene.children, true).filter(h => h.object.isMesh && shown(h.object) && h.object.material && h.object.material.visible !== false
           && !["contact", "glass"].includes(h.object.material.userData.hk) && !cut(h.point, h.object) && !(SEL.g && under(h.object, SEL.g)));
-        const d0 = hits.length ? hits[0].distance : Infinity; let best = null; const q = new THREE.Vector3();
-        for (const [fk, list] of Object.entries(PICK)) { const g = HFLOOR[fk]; if (!g || !shown(g)) continue;
-          for (const it of list) { if (!ray.ray.intersectBox(it.b, q) || cut(q, g)) continue; const d = ray.ray.origin.distanceTo(q);
-            if (d <= d0 + 0.05 && (!best || d < best.d)) best = { id: it.id, d }; } }
-        post("pick", { id: best ? best.id : null, room: roomAt(hits[0] && hits[0].point) });
+        post("pick", { id: housePiece(hits, cut), room: roomAt(hits[0] && hits[0].point) });
         return true;
       }
       const id = pickItem(e);
       const h = ray.intersectObjects(scene.children, true).find(x => x.object.isMesh && shown(x.object) && !cut(x.point));
       post("pick", { id: id ? "living:" + id : null, room: roomAt(h && h.point) || "living" });
       return true;
-    }
-    /* the picked piece: a dashed outline round its box and its size on a tag (the design's Edit mode) */
-    const SEL = { g: null };
-    function clearSel() { if (!SEL.g) return; scene.remove(SEL.g); SEL.g.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { o.material.map && o.material.map.dispose(); o.material.dispose(); } }); SEL.g = null; dirty(); }
-    function select(o) {
-      clearSel(); if (!o || !o.box) return;
-      const b = o.box, g = new THREE.Group(), bx = wbox(b), size = bx.getSize(new THREE.Vector3()), c = bx.getCenter(new THREE.Vector3());
-      const geo = new THREE.EdgesGeometry(new THREE.BoxGeometry(size.x + 0.02, size.y + 0.02, size.z + 0.02));
-      const line = new THREE.LineSegments(geo, new THREE.LineDashedMaterial({ color: "#fff1bf", dashSize: 0.04, gapSize: 0.025, depthTest: false, transparent: true, toneMapped: false }));
-      line.computeLineDistances(); line.position.copy(c); line.renderOrder = 997; g.add(line);
-      if (o.label) {
-        const cv = document.createElement("canvas"), x = cv.getContext("2d"); cv.width = 320; cv.height = 112;
-        x.fillStyle = "#fff1bf"; x.beginPath(); x.roundRect ? x.roundRect(4, 4, 312, 104, 52) : x.rect(4, 4, 312, 104); x.fill();
-        x.fillStyle = "#1d2a22"; x.font = "600 54px Figtree, system-ui, sans-serif"; x.textAlign = "center"; x.textBaseline = "middle"; x.fillText(o.label, 160, 60);
-        const tx = new THREE.CanvasTexture(cv); tx.colorSpace = THREE.SRGBColorSpace;
-        const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tx, depthTest: false, toneMapped: false })); sp.renderOrder = 999;
-        const d = camera.position.distanceTo(c), s = Math.max(0.12, Math.min(0.9, d * 0.09)); sp.scale.set(s, s * 112 / 320, 1);
-        sp.position.set(c.x, bx.min.y - s * 0.28, c.z); g.add(sp);
-      }
-      g.traverse(q => { q.raycast = () => {}; }); SEL.g = g; scene.add(g); dirty();
-    }
-    /* edits: rebuild only the floors whose pieces changed */
-    let pend = null;
-    function edits(map) {
-      const before = new Set(Object.keys(HEDITS));
-      for (const k of Object.keys(HEDITS)) if (!map[k]) delete HEDITS[k];
-      Object.assign(HEDITS, map);
-      const touched = new Set([...before, ...Object.keys(map)]);
-      if (!houseG || !HBUILD) return;
-      for (const [fk, F] of Object.entries(R.HOUSE3.floors)) if ((F.tags || []).some(id => touched.has(id))) (pend = pend || new Set()).add(fk);
-      if (pend) requestAnimationFrame(() => { const fs = pend; pend = null; if (!fs) return;
-        for (const fk of fs) HBUILD(fk, editedFloor(fk, R.HOUSE3.floors[fk])); solidDirty(); reshadow(); dirty(); });
     }
     function go(o) {
       if (o.house) {
@@ -6553,8 +6626,8 @@ if (EMBED) {
       const d = ev.data; if (!d || d.src !== "demma") return;
       try {
         if (d.cmd === "go") go(d);
-        else if (d.cmd === "select") select(d);
-        else if (d.cmd === "edits") edits(d.edits || {});
+        else if (d.cmd === "select") selPiece(d);
+        else if (d.cmd === "edits") applyHEdits(d.edits || {});
         else if (d.cmd === "moment") { playMoment(d.k); syncButtons(); }
         else if (d.cmd === "panel") { root.classList.toggle("emb-panel", !!d.k); if (window.DemmaTools) d.k ? window.DemmaTools.open(d.k) : window.DemmaTools.close(); }
         else if (d.cmd === "living-edit") { root.classList.toggle("emb-edit", !!d.on); setEdit(!!d.on); }
