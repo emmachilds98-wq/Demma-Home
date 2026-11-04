@@ -151,9 +151,9 @@ function bodyBlocked(x, feet, z) {
   for (const [h, r] of [[55, 18], [105, 18], [STAND_EYE, 12]]) if (hBlocked(x, feet + h, z, r, true) || livBlocked(x, feet + h, z, r)) return true;   // the head 12 (a doorway's head clears it from the last stair)
   return false;
 }
-function floorAtCm(x, z, feet) {            // the top of what's underfoot: the highest at or under a step up (35)
+function floorAtCm(x, z, feet) {            // the top of what's underfoot: the highest at or under a step up (24: the stairs' 20, not a bed's base: V1.53)
   let best = -Infinity;
-  const under = q => { if (x > q[0] && x < q[3] && z > q[2] && z < q[5] && q[4] <= feet + 35 && q[4] > best) best = q[4]; };
+  const under = q => { if (x > q[0] && x < q[3] && z > q[2] && z < q[5] && q[4] <= feet + 24 && q[4] > best) best = q[4]; };
   for (const S_ of Object.values(HSOLID)) if (S_.g) S_.b.forEach(under);
   if (nearLiving(x, feet, z)) livFloors().forEach(under);
   return best;
@@ -164,7 +164,7 @@ function walkMove(side, fwd, turn, dt) {    // -1..1 each; true if the eye moved
   if (WALK.feet === null) WALK.feet = cam.y / M - STAND_EYE;
   const d = controls.target.clone().sub(cam); d.y = 0; if (d.lengthSq() < 1e-8) d.set(0, 0, 1); d.normalize();
   if (turn) { const a = -turn * 1.8 * dt; d.applyAxisAngle(new THREE.Vector3(0, 1, 0), a); const t = controls.target.clone().sub(cam).applyAxisAngle(new THREE.Vector3(0, 1, 0), a); controls.target.copy(cam).add(t); }
-  const sp = 140 * dt, sd = new THREE.Vector3(-d.z, 0, d.x);
+  const sp = 140 * dt * (WALK.fast ? 2.2 : 1), sd = new THREE.Vector3(-d.z, 0, d.x);   // V1.53: Shift hurries
   const mv = d.clone().multiplyScalar(fwd * sp).add(sd.multiplyScalar(side * sp));    // cm in three's axes
   let x = x0 - mv.x, z = z0 + mv.z;                                                    // room cm (x flipped)
   const blk = (x_, z_) => bodyBlocked(x_, Math.max(WALK.feet, floorAtCm(x_, z_, WALK.feet)), z_);   // V1.38: tested where it will stand, a step up taken
@@ -181,10 +181,10 @@ function walkMove(side, fwd, turn, dt) {    // -1..1 each; true if the eye moved
 }
 function walkRoom(x, feet, z) {             // walked into another room with its own view: be in it, where you stand
   const L = FLIGHT();
-  if (x > L.x0 - 4 && x < L.x1 && z > L.z0 - 12 && z < L.zl1 && feet < 200) {   // V1.38: on the living room's flight: its room low down, the landing's view higher
+  if (x > L.x0 - 4 && x < L.x1 && z > L.z0 - 12 && z < L.zl1 && feet < 200 && feet > -60) {   // V1.53: not from the kitchen under it   // V1.38: on the living room's flight: its room low down, the landing's view higher
     const want = feet < 60 ? "livstand" : "landing"; if (want !== S.view) enterRoom(want); return; }
   const LB = LIV().box;
-  if (x > LB[0] && x < LB[1] && z > LB[2] && z < LB[3] + 2 && feet < 120) {   // V1.38: in the living room
+  if (x > LB[0] && x < LB[1] && z > LB[2] && z < LB[3] + 2 && feet < 120 && feet > -60) {   // V1.38: in the living room (V1.53: not the kitchen under it)
     if (S.view !== "livstand" && z < LB[3] - 12) enterRoom("livstand"); return; }   // V1.39: well past the door's line (to the hall's box, 45: no flicker in the doorway)
   const rooms = R.HOUSE3.rooms || {};
   for (const [id, r] of Object.entries(rooms)) {
@@ -235,7 +235,7 @@ STICK.addEventListener("pointerup", stickEnd); STICK.addEventListener("pointerca
 function syncStick() {
   const on = RMODE === "stand" && !!ROOMV() || S.view === "livstand"; STICK.hidden = !(on && COARSE); root.classList.toggle("walking", on && COARSE);
   if (on && !WALK.hinted) { WALK.hinted = true; try { if (!localStorage.getItem("demma-walkhint")) { localStorage.setItem("demma-walkhint", "1");
-    setTimeout(() => toast(COARSE ? "Walk with the stick, drag to look" : "Walk with W A S D or the arrows, drag to look"), 900); } } catch (e) {} }
+    setTimeout(() => toast(COARSE ? "Walk with the stick, drag to look" : "Walk with W A S D or the arrows (Shift to hurry), drag to look"), 900); } } catch (e) {} }
 }
 function collide(p = camera.position) {    // true if it moved the eye
   let moved = false;
@@ -253,6 +253,7 @@ function collide(p = camera.position) {    // true if it moved the eye
    room's middle (or the media wall from the middle itself) */
 let lastTap = null;
 function floorHop(e) {
+  if (R.HOUSE3) { const sp = spotAt(e); return !!sp && goStand(sp.x, sp.fy, sp.z); }   // V1.53: from any view, stand where you double-click
   ray.setFromCamera(ndc(e), camera);
   const hit = ray.intersectObjects(scene.children, true).find(h => h.object.isMesh && shown(h.object) && !clippedAt(h.point));
   const KB = ROOMV();
@@ -273,11 +274,112 @@ function floorHop(e) {
   flyTo([x, 155, z], at, 60, false, false, 900); walked = true;
   return true;
 }
+/* V1.53, the client: "make double click in an area on pc take you there and wasd and arrow keys move you around as if you're walking while
+   holding mouse / screen will rotate view. enable a drop in man like street view to any area of the house too": a double-click (a double-tap)
+   on any floor you can see, from the whole house, a floor, a room from above or in it, stands you there (Be there: the keys walk, a drag
+   looks round where you stand); the figure in the corner drops you wherever you let go of it, a ring on the floor showing where. The spot:
+   what the pointer is on (a floor, a rug, the top of a bed: the floor under it, the nearest place a body fits), or through a roof or a wall,
+   the first floor down with a room under the pointer that you can stand in */
+function standRoomAt(x, y, z) {             // [the room, its floor's level] at a point in the house (cm), if it's one you can stand in
+  if (!R.HOUSE3) return null;
+  const LB = LIV().box;
+  if (x > LB[0] && x < LB[1] && z > LB[2] && z < LB[3] && y > -30 && y < 245) return ["living", 0];
+  let best = null;
+  for (const [id, r] of Object.entries(R.HOUSE3.rooms || {})) {
+    if (x < r[0] || x > r[1] || z < r[2] || z > r[3] || y < r[4] - 30 || y > r[4] + 245) continue;
+    if (!best || (ROOM_VIEW[id] && !ROOM_VIEW[best[0]])) best = [id, r[4]];
+  }
+  return best && ROOM_VIEW[best[0]] ? best : null;
+}
+function spotAt(e) {                        // where a double-click or the figure would stand you: {x, z, fy, id}, or null
+  if (!R.HOUSE3) return null;
+  ray.setFromCamera(ndc(e), camera);
+  const cut = q => RPLANES.some(pl => pl.distanceToPoint(q) < 0);
+  const h = ray.intersectObjects(scene.children, true).find(q => q.object.isMesh && shown(q.object) && q.object.material && q.object.material.visible !== false
+    && !["glass", "contact"].includes(q.object.material.userData && q.object.material.userData.hk) && !cut(q.point) && (under(q.object, houseG) || !clippedAt(q.point)));
+  if (h && h.distance < 60) {
+    const p = h.point.clone().addScaledVector(ray.ray.direction, -0.05);   // 5 cm back toward the eye: this side of a wall
+    const r = standRoomAt(-p.x / M, p.y / M - 1, p.z / M);
+    if (r) return { x: -p.x / M, z: p.z / M, fy: r[1], id: r[0] };
+  }
+  for (const [fk, fy] of [["first", 260], ["ground", 0], ["lower", -260]]) {   // through the roof, or from a floor above: the first floor down
+    if (HFLOOR[fk] && !shown(HFLOOR[fk]) && !(fk === "ground" && !(houseG && houseG.visible))) continue;
+    const q = new THREE.Vector3(); if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -fy * M), q)) continue;
+    const r = standRoomAt(-q.x / M, fy + 1, q.z / M); if (r) return { x: -q.x / M, z: q.z / M, fy, id: r[0] };
+  }
+  return null;
+}
+function freeSpot(x, fy, z) {               // the nearest place a body fits on the floor itself (not on the bed or in a wardrobe), within 1.5 m
+  const fits = (X, Z) => !bodyBlocked(X, fy, Z) && floorAtCm(X, Z, fy) <= fy + 6 && !!standRoomAt(X, fy + 1, Z);
+  if (fits(x, z)) return [x, z];
+  for (let r = 15; r <= 150; r += 15) for (let a = 0; a < 16; a++) {
+    const t = a / 16 * Math.PI * 2, X = x + Math.cos(t) * r, Z = z + Math.sin(t) * r;
+    if (fits(X, Z)) return [X, Z];
+  }
+  return [x, z];
+}
+const roomName = id => id === "living" ? "Living room" : ((Object.values(R.HOUSE3.floors).flatMap(F => F.labels || []).find(l => l.id === id) || {}).name || "");
+function goStand(x, fy, z, look, dur) {      // Be there at (x, z) on the floor at fy, facing look ([dx, dz]) or on the way the eye came
+  const r = standRoomAt(x, fy + 1, z); if (!r) return false;
+  [x, z] = freeSpot(x, fy, z);
+  let [dx, dz] = look || (() => {                 // the way you were looking (from straight above: up the screen), as Street View does
+    const f = new THREE.Vector3(); camera.getWorldDirection(f); if (Math.hypot(f.x, f.z) < 0.35) f.set(0, 1, 0).applyQuaternion(camera.quaternion);
+    return [-f.x * 100, f.z * 100]; })();
+  if (Math.hypot(dx, dz) < 20) { const rr = r[0] === "living" ? [0, R.W, R.WINDOW_Z, R.ALC_D] : R.HOUSE3.rooms[r[0]]; dx = (rr[0] + rr[1]) / 2 - x; dz = (rr[2] + rr[3]) / 2 - z; }
+  if (Math.hypot(dx, dz) < 1) { dx = 0; dz = -1; }
+  const l = Math.hypot(dx, dz); dx /= l; dz /= l;
+  if (actId && typeof closeAct === "function") closeAct();
+  const v = r[0] === "living" ? "livstand" : ROOM_VIEW[r[0]];
+  if (v === "livstand") { if (S.view !== v) setView(v); standLook(true);
+    flyTo([x, STAND_EYE, z], [x + dx * 100, STAND_EYE - 10, z + dz * 100], STAND_FOV, false, false, dur || 900); }
+  else { standSpot = [x, z, dx, dz]; if (S.view !== v) setView(v); setRmode("stand"); }
+  walked = true; dirty(); return true;
+}
+function startWalk() {                      // a walk key in a room's In it: stand where you are, then walk on
+  if (!R.HOUSE3 || tween || !((ROOMV() && RMODE === "in") || S.view === "window")) return false;
+  const c = camera.position, d = controls.target.clone().sub(c), x = -c.x / M, z = c.z / M, r = standRoomAt(x, c.y / M - 120, z);
+  return !!r && goStand(x, r[1], z, [-d.x, d.z], 450);
+}
+/* the figure: drag it over the house, a ring and the room's name show where it would put you down, let go to stand there */
+const PEG = document.createElement("button"); PEG.type = "button"; PEG.className = "r3d-peg"; PEG.id = "r3d-peg";
+PEG.innerHTML = '<span class="ms" aria-hidden="true">person</span>'; PEG.title = "Drag me to where you want to stand";
+PEG.setAttribute("aria-label", "Drop in: drag the figure onto the house to stand there"); root.append(PEG);
+const PEGM = { id: null, moved: false, x0: 0, y0: 0, s: null, ghost: null, ring: null };
+function pegShow(e) {
+  const r = stage.getBoundingClientRect(), cv = canvas.getBoundingClientRect(), g = PEGM.ghost;
+  g.style.left = (e.clientX - r.left) + "px"; g.style.top = (e.clientY - r.top) + "px";
+  const over = e.clientX >= cv.left && e.clientX <= cv.right && e.clientY >= cv.top && e.clientY <= cv.bottom;
+  const sp = PEGM.s = over ? spotAt(e) : null;
+  g.classList.toggle("ok", !!sp); g.querySelector("b").textContent = sp ? roomName(sp.id) : over ? "Not a room to stand in" : "";
+  if (!PEGM.ring) { PEGM.ring = new THREE.Mesh(new THREE.RingGeometry(0.17, 0.26, 40), new THREE.MeshBasicMaterial({ color: "#ffd54a", transparent: true, opacity: 0.95, depthTest: false, toneMapped: false, side: THREE.DoubleSide }));
+    PEGM.ring.rotation.x = -Math.PI / 2; PEGM.ring.renderOrder = 999; PEGM.ring.raycast = () => {}; scene.add(PEGM.ring); }
+  PEGM.ring.visible = !!sp; if (sp) PEGM.ring.position.copy(v3(sp.x, sp.fy + 2, sp.z));
+  dirty();
+}
+function pegEnd() { if (PEGM.ghost) PEGM.ghost.remove(); PEGM.ghost = null; if (PEGM.ring) PEGM.ring.visible = false; root.classList.remove("pegging"); dirty(); }
+PEG.addEventListener("pointerdown", e => { if (e.button > 0) return; PEGM.id = e.pointerId; PEGM.x0 = e.clientX; PEGM.y0 = e.clientY; PEGM.moved = false;
+  try { PEG.setPointerCapture(e.pointerId); } catch (er) {} e.preventDefault(); });
+PEG.addEventListener("pointermove", e => {
+  if (e.pointerId !== PEGM.id || (!PEGM.moved && Math.hypot(e.clientX - PEGM.x0, e.clientY - PEGM.y0) < 6)) return;
+  if (!PEGM.moved) { PEGM.moved = true; root.classList.add("pegging"); if (actId) closeAct();
+    PEGM.ghost = document.createElement("div"); PEGM.ghost.className = "r3d-pegghost"; PEGM.ghost.setAttribute("aria-hidden", "true");
+    PEGM.ghost.innerHTML = '<span class="ms">person</span><b></b>'; stage.append(PEGM.ghost); }
+  pegShow(e);
+});
+PEG.addEventListener("pointerup", e => {
+  if (e.pointerId !== PEGM.id) return; PEGM.id = null;
+  if (!PEGM.moved) { toast("Drag the figure onto the house to stand there"); return; }
+  if (PEGM.ghost) pegShow(e); const sp = PEGM.s; pegEnd();
+  if (sp) goStand(sp.x, sp.fy, sp.z); else toast("Drop it on a room's floor");
+});
+PEG.addEventListener("pointercancel", e => { if (e.pointerId === PEGM.id) { PEGM.id = null; pegEnd(); } });
+PEG.addEventListener("click", e => { if (e.detail === 0) toast("Drag the figure onto the house to stand there, or double-click a floor"); });   // from the keyboard
 function walk(kind, k = 1) {        // about 15 cm a press on the floor plane; turns 10°; v31: up and down 10 cm; k < 1 while a button's held
   if (tween) return;
   if (!houseG && R.HOUSE && walking()) { buildHouse(); reshadow(); applyFloors(); }   // V1.38: as walkTick
   if (walking()) { const m = { f: [0, 1], b: [0, -1], l: [-1, 0], r: [1, 0] }[kind], t = { tl: -1, tr: 1 }[kind];   // V1.32: as a walk, by its rules
     if (m || t) { walkMove(m ? m[0] : 0, m ? m[1] : 0, t || 0, (t ? 0.1 : 0.11) * k); controls.update(); dirty(); syncEye(); } return; }
+  if (S.view === "house" || (ROOMV() && (RMODE === "above" || RMODE === "alone"))) { glide(kind, k); return; }   // V1.53: over the house the keys glide over it
   walked = true; controls.maxDistance = 6;
   const fwd = controls.target.clone().sub(camera.position); fwd.y = 0;
   if (fwd.lengthSq() < 1e-8) fwd.set(0, 0, 1);
@@ -296,6 +398,19 @@ function walk(kind, k = 1) {        // about 15 cm a press on the floor plane; t
   }
   clampRoom(camera.position); clampRoom(controls.target, true); collide();
   controls.update(); dirty(); syncEye();
+}
+function glide(kind, k = 1) {   // V1.53: over the whole house or a room from above, the keys move over it as a map does (they stepped the eye into the
+  const cam = camera.position, t = controls.target, dist = cam.distanceTo(t);   // living room's box); Q and E turn round it, R and F come closer or go back
+  if (kind === "tl" || kind === "tr") { const a = (kind === "tl" ? 1 : -1) * Math.PI / 24 * k, off = cam.clone().sub(t).applyAxisAngle(new THREE.Vector3(0, 1, 0), a); cam.copy(t).add(off); }
+  else if (kind === "u" || kind === "dn") { const off = cam.clone().sub(t).multiplyScalar(kind === "u" ? 0.92 : 1.08); if (off.length() > 1.5) cam.copy(t).add(off); }
+  else {
+    const fwd = t.clone().sub(cam); fwd.y = 0;
+    if (fwd.length() < 0.2 * dist) { fwd.set(0, 1, 0).applyQuaternion(camera.quaternion); fwd.y = 0; }   // looking straight down: the screen's up
+    fwd.normalize(); const side = new THREE.Vector3(-fwd.z, 0, fwd.x), step = dist * 0.035 * k * (WALK.fast ? 2.5 : 1);
+    const d = kind === "f" ? fwd.multiplyScalar(step) : kind === "b" ? fwd.multiplyScalar(-step) : kind === "r" ? side.multiplyScalar(step) : side.multiplyScalar(-step);
+    cam.add(d); t.add(d);
+  }
+  controls.update(); dirty();
 }
 const WALK_KEYS = { w: "f", arrowup: "f", s: "b", arrowdown: "b", a: "l", arrowleft: "l", d: "r", arrowright: "r", q: "tl", e: "tr",
                     r: "u", f: "dn", pageup: "u", pagedown: "dn" };   // v31: R and F (or Page Up and Down) go up and down
@@ -373,15 +488,18 @@ root.addEventListener("pointerdown", e => {
   padT = { t: setTimeout(() => { if (padT) padT.i = setInterval(() => walk(k, 0.4), 60); }, 300) };
 });
 ["pointerup", "pointercancel"].forEach(ev => document.addEventListener(ev, padStop)); window.addEventListener("blur", padStop);
-root.addEventListener("keydown", e => {
+document.addEventListener("keydown", e => {   // V1.53: the page's too (not only once the 3D has the focus)
+  WALK.fast = e.shiftKey;
+  if (!(e.target === document.body || root.contains(e.target))) return;
   if (e.altKey || e.ctrlKey || e.metaKey || /^(input|select|textarea)$/i.test(e.target.tagName)) return;
   if (e.target.tagName === "BUTTON" && !e.target.dataset.walk && e.key.startsWith("Arrow")) return;   // arrows still move between buttons
   const k = WALK_KEYS[e.key.toLowerCase()]; if (!k) return;
   e.preventDefault();
   if (walking()) { if (k !== "u" && k !== "dn") WALK.keys.add(k); dirty(); return; }   // V1.32: held, not a step a press
+  if ("fblr".includes(k) && startWalk()) { WALK.keys.add(k); return; }               // V1.53: in a room, a walk key stands you there and walks on
   walk(k);
 });
-root.addEventListener("keyup", e => { const k = WALK_KEYS[e.key.toLowerCase()]; if (k) WALK.keys.delete(k); });
+document.addEventListener("keyup", e => { WALK.fast = e.shiftKey; const k = WALK_KEYS[e.key.toLowerCase()]; if (k) WALK.keys.delete(k); });
 window.addEventListener("blur", () => { WALK.keys.clear(); WALK.stick = [0, 0]; });
 canvas.addEventListener("pointerdown", () => { canvas.focus({ preventScroll: true }); if (tourSt) tourEnd(); if (SH) SH.own = true; });   // v28: touching the room ends the tour; v32: "Watch it open" carries on, the camera yours
 function setView(name, instant, dur) {

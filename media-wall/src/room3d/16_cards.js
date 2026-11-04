@@ -262,6 +262,7 @@ if (act) {
   act.addEventListener("input", e => { const el = e.target; if (!el.dataset || !el.dataset.hfield || !actId) return;   // V1.50: a typed size, kept once you pause
     const k = actId.split(":")[1], f = el.dataset.hfield, v = parseFloat(el.value); if (!isFinite(v)) return;
     clearTimeout(sizeT); sizeT = setTimeout(() => setPiece(k, f, clampF(f, cmR(v))), 450); });
+  canvas.addEventListener("dblclick", e => { if (S.edit || MEAS.on || EMBH) return; e.preventDefault(); floorHop(e); });   // V1.53: on a PC, a double-click stands you there
   canvas.addEventListener("pointerdown", e => { tapDown = (S.edit || e.button > 0) ? null : [e.clientX, e.clientY, e.timeStamp]; if (actId) closeAct(); });   // review after v48: the touch's own time, so a slow frame between down and up can't turn a tap into a long press
   canvas.addEventListener("pointerup", e => {
     const t = tapDown; tapDown = null;
@@ -269,7 +270,7 @@ if (act) {
     if (MEAS.on) { measureTap(e); return; }                                   // v39: measure in 3D
     const now = e.timeStamp, dbl = lastTap && now - lastTap.t < 380 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30;
     lastTap = dbl ? null : { t: now, x: e.clientX, y: e.clientY };
-    if (dbl && floorHop(e)) return;                                           // v41: a double-tap on the floor flies you there
+    if (dbl && e.pointerType !== "mouse" && floorHop(e)) return;             // v41: a double-tap on the floor flies you there (V1.53: a mouse's double-click: dblclick)
     if (EMBH) { EMBH.tap(e); return; }                                        // V1: in the app, a tap names the piece to the app
     let id = pickItem(e); if (!id) return;
     const r = stage.getBoundingClientRect();

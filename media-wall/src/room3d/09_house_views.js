@@ -9,7 +9,7 @@ const LIV_RMODE = { in: "window", stand: "livstand", above: "room", alone: "liva
    room too): from its door at standing eye height, a wide lens, level; dragging looks round from where you stand (View's "Look round from
    here"), put back as it was on the way out */
 const STAND_FOV = 80, STAND_EYE = 160;
-let standCam = null;
+let standCam = null, standSpot = null;   // V1.53: standSpot, where a double-click or the figure puts you down ([x, z, dx, dz], room cm)
 function standLook(on) {
   if (on) { if (standCam === null) standCam = S.cam; S.cam = "look"; }
   else if (standCam !== null) { S.cam = standCam; standCam = null; } else return;
@@ -18,6 +18,8 @@ function standLook(on) {
 function standIn() {
   const v = VIEWS[S.view], rr = ((R.HOUSE3 && R.HOUSE3.rooms) || {})[VIEW_ROOM[S.view]], fy = rr ? rr[4] : 0;
   standLook(true);
+  if (standSpot) { const [x, z, dx, dz] = standSpot; standSpot = null;
+    flyTo([x, fy + STAND_EYE, z], [x + dx * 100, fy + STAND_EYE - 10, z + dz * 100], STAND_FOV, false, false, 900); return; }
   flyTo([v.eye[0], fy + STAND_EYE, v.eye[2]], [v.at[0], fy + STAND_EYE - 10, v.at[2]], STAND_FOV, false);
 }
 const LIVV = () => !HOUSEV(S.view) && !!VIEWS[S.view];
@@ -156,11 +158,13 @@ function floorCam() {
   if (!rs.length) return;
   const x0 = Math.min(...rs.map(r => r[0])), x1 = Math.max(...rs.map(r => r[1])), z0 = Math.min(...rs.map(r => r[2])), z1 = Math.max(...rs.map(r => r[3]));
   const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0, y = hfloor === "all" ? 540 : fy;
-  const fit = (fov, sx, sy) => { const v = fov * Math.PI / 360, h = Math.atan(Math.tan(v) * camera.aspect); return 1.1 * Math.max(sx / 2 / Math.tan(h), sy / 2 / Math.tan(v)); };
-  if (hfview === "top") { flyTo([cx, y + 60 + fit(45, w, d), cz + 1], [cx, y, cz], 45, REDUCE); return; }   // V1.29 (U2): flown, not cut
+  const fit = (fov, sx, sy) => { const v = fitFov(fov) * Math.PI / 360, h = Math.atan(Math.tan(v) * camera.aspect); return (camera.aspect < 1 ? 1.35 : 1.1) * Math.max(sx / 2 / Math.tan(h), sy / 2 / Math.tan(v)); };
+  // V1.53, the client: "improve overhead views": a long lens from high up (the walls stand straight, not leaning out), and from above (flyTo's
+  // fourth is "above": REDUCE there had held the eye to 6 m, so a floor never fitted)
+  if (hfview === "top") { flyTo([cx, y + 60 + fit(26, w, d), cz + 1], [cx, y, cz], 26, true, REDUCE); return; }   // V1.29 (U2): flown, not cut
   const H = VIEWS.house, dir = new THREE.Vector3(H.eye[0] - H.at[0], H.eye[1] - H.at[1], H.eye[2] - H.at[2]).normalize();
-  const r = 0.5 * Math.hypot(w, d, 235), v = 25 * Math.PI / 180, hh = Math.atan(Math.tan(v) * camera.aspect), D = (camera.aspect < 1 ? 0.62 : 0.9) * r / Math.sin(Math.min(v, hh));   // the floors below show under it too
-  flyTo([cx + dir.x * D, y + dir.y * D, cz + dir.z * D], [cx, y + 40, cz], 50, REDUCE);
+  const r = 0.5 * Math.hypot(w, d, 235), v = 25 * Math.PI / 180, hh = Math.atan(Math.tan(v) * camera.aspect), D = (camera.aspect < 1 ? 0.5 : 0.9) * r / Math.sin(Math.min(v, hh));   // the floors below show under it too (V1.53: a phone closer, now it's not held to 6 m)
+  flyTo([cx + dir.x * D, y + dir.y * D, cz + dir.z * D], [cx, y + 40, cz], 50, true, REDUCE);
 }
 function drawRooms() {
   const box = qs("#r3d-hrooms"); if (!box) return;

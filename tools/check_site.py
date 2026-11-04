@@ -32,6 +32,20 @@ ACCESS = """() => { const vis = el => { const r = el.getBoundingClientRect(), cs
   const noname = [...document.querySelectorAll("button, a[href], [role=button], input, select, textarea")].filter(el => vis(el) && !(el.getAttribute("aria-label") || el.getAttribute("title") || el.textContent || el.value || (el.labels && el.labels[0] && el.labels[0].textContent) || "").trim()).map(el => el.outerHTML.slice(0, 80));
   const c = document.querySelector(".r3d-stage canvas"), place = (document.getElementById("brand-place") || {}).textContent || "";
   return { noname: noname.slice(0, 4), label: c && c.getAttribute("aria-label").startsWith(place) ? "" : (c && c.getAttribute("aria-label")) }; }"""
+# V1.53: the first floor from overhead fits the screen (flyTo had held it to 6 m), and the figure dropped on bedroom 3 stands you there
+DROP = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), cv = document.querySelector('.r3d canvas');
+  const settle = async () => { await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(200); await sl(300); };
+  if (window.DemmaTools && DemmaTools.isOpen()) DemmaTools.close();
+  R3D.set({ view: 'house' }); await settle(); document.querySelector('[data-hfloor=first]').click(); await sl(500); document.querySelector('[data-hfview=top]').click(); await settle();
+  const scr = id => { const r = D.H3.rooms[id], v = new D.THREE.Vector3(-(r[0] + r[1]) / 2 / 100, r[4] / 100, (r[2] + r[3]) / 2 / 100).project(D.camera); return [(v.x + 1) / 2 * cv.clientWidth, (1 - v.y) / 2 * cv.clientHeight]; };
+  const off = ['bed3', 'master', 'bed2', 'bathroom', 'landing'].filter(id => { const [x, y] = scr(id); return x < 0 || y < 0 || x > cv.clientWidth || y > cv.clientHeight; });
+  const b = document.getElementById('r3d-peg'), r = b.getBoundingClientRect(), c = cv.getBoundingClientRect(), [x, y] = scr('bed3');
+  const o = (X, Y) => ({ clientX: X, clientY: Y, bubbles: true, pointerId: 9, button: 0, isPrimary: true });
+  b.dispatchEvent(new PointerEvent('pointerdown', o(r.left + 10, r.top + 10))); b.dispatchEvent(new PointerEvent('pointermove', o(r.left - 30, r.top - 30)));
+  b.dispatchEvent(new PointerEvent('pointermove', o(c.left + x, c.top + y))); const said = (document.querySelector('.r3d-pegghost b') || {}).textContent;
+  b.dispatchEvent(new PointerEvent('pointerup', o(c.left + x, c.top + y))); await settle();
+  return { off, said, view: D.S.view, mode: D.RMODE, eye: Math.round(D.camera.position.y * 100) };
+}"""
 SIZE = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), cv = document.querySelector('.r3d canvas');
   if (window.DemmaTools) window.DemmaTools.close();
   R3D.set({ view: 'office' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
@@ -110,6 +124,11 @@ def main():
                 if sz.get("card") != "hitem:office.desk" or not sz.get("row") or not sz.get("ed") or not sz.get("listed") or sz.get("after") or not sz.get("gone"):
                     fails.append(f"{w}: tapping the office desk and widening it: {sz} (want its card, a row of 223.9, the 3D changed, Measure listing it, then back as planned)")
                 pg.screenshot(path=str(SHOTS / f"site-{w}-size.png"))
+            if phone:                                           # V1.53: the floor from overhead, then the figure dropped in
+                dr = pg.evaluate(DROP)
+                if dr.get("off") or dr.get("said") != "Bedroom 3" or dr.get("view") != "office" or dr.get("mode") != "stand" or abs(dr.get("eye", 0) - 420) > 15:
+                    fails.append(f"{w}: the first floor from overhead and the figure dropped on bedroom 3: {dr} (want every room on screen, 'Bedroom 3', standing in the office at 420)")
+                pg.screenshot(path=str(SHOTS / f"site-{w}-drop.png"))
             if phone:                                           # V1.38: walk into the living room, up to the landing and back out (the small screen: quicker frames)
                 wk = pg.evaluate(WALK)
                 want = ["hall", "livstand", "landing", "livstand", "hall"]
@@ -121,7 +140,7 @@ def main():
         b.close()
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
-    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a piece resized from a tap, a walk into the living room and up its stairs, {len(fails)} failed; screenshots in _shots/")
+    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a piece resized from a tap, the figure dropped in, a walk into the living room and up its stairs, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
 
