@@ -53,7 +53,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   V1.54: the lower floor's views without the earth over the secret room (`HMATS.earth` off there). Phones (the client: "works on iPhones
   ... mainly the 15 pro"): views from above framed between the buttons (`freeFrame`, `fromAbove`); a card opened by a tap ignores that
   tap's click (`actAt`), and a double-tap's second tap on it still counts; iOS's own dblclick ignored; no callout on the figure.
-  Tried with real touches as an iPhone 15 Pro (3×), 15 Pro Max, SE, Pixel 7, Galaxy S24, iPad Mini; `check_site` double-taps by touch.
+  A tablet's walking tip no longer stretched down the screen (it blocked a drag). Tried with real touches as an iPhone 15 Pro (3×), 15 Pro
+  Max, SE, Pixel 7, Galaxy S24, iPad Mini; `check_site` double-taps by touch (`window.__r3dDblMs`: the rig's slow touches only).
 - **V1.52 (V1_PLAN 2.6):** the 3D's one 6,664-line `room3d.js` split into 22 parts (`media-wall/src/room3d/NN_<part>.js`), joined into the same script (the built page byte for byte the same); `checks.py`'s sizes line checks each part parses alone.
 - **V1.50 (V1_PLAN phase 3):** tap a piece in the house: its card says its size; Change its size, a stepper each (a door: width, place),
   the 3D changes as you go, As planned puts it back. Measure rows in `edits` ({item, field, value}; Send shares them), `pull_edits.py`

@@ -372,7 +372,7 @@ body.bare .r3d-peg, .r3d.embed .r3d-peg, .r3d.editing .r3d-peg { display: none; 
 .r3d-stick { position: fixed; left: 16px; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 96px); z-index: 31; width: 112px; height: 112px; border-radius: 50%;
   background: color-mix(in oklab, var(--cream, #fbf7ef) 55%, transparent); box-shadow: 0 4px 18px rgba(0,0,0,.18); touch-action: none; }
 .r3d-stick[hidden], body.bare .r3d-stick, .r3d.tools-open .r3d-stick { display: none; }
-.r3d.walking .r3d-toast { bottom: calc(max(8px, env(safe-area-inset-bottom)) + 222px) !important; }   /* the tip clear of the stick */
+.r3d.walking .r3d-toast { top: auto !important; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 222px) !important; }   /* the tip clear of the stick (V1.54: its top let go, or a tablet's 132 stretched it down the screen) */
 .r3d-stick i { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%; background: var(--ink, #1d2a22);
   transform: translate(var(--x, 0px), var(--y, 0px)); }
 /* V1.30 (U3): only the tools that work where you are (room3d.js brandPlace) */
