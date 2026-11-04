@@ -1,0 +1,141 @@
+# Upgrade review (V1.27, 4 Nov 2026)
+
+The client asked for a review of how to make the house better in quality and accuracy, fix clipping and textures, make the 3D appear
+and zoom faster, make moving round the house better, and improve the buttons and panels. This file is that review and a plan in phases
+that agents can work through. Privacy still comes first: no address anywhere (`CLAUDE.md`).
+
+**How it was tested:** a fresh `tools/build.py`, then the built site in headless Chromium with software graphics at 1280 × 800 and at the
+iPhone 15 Pro's 393 × 852. Software graphics is slow, so the times below only compare one thing with another. They are not what an
+iPhone or an RTX PC will show (those numbers still need `?perf` screenshots from the client).
+
+## What was measured
+
+| What | Now | Notes |
+|---|---|---|
+| Time until the 3D is ready | 16.6 s (1280), 12.3 s (phone size) | Of that, 4.6 s / 3.4 s is the page building the 3D in JavaScript |
+| Whole house view | 659 draw calls, 227k triangles | Over the 600 a phone can handle (BUILD_SPEC §4) |
+| Rooms | bathroom 63, master 53, kitchen 92, landing 290 draw calls | Good, apart from the landing |
+| Photo file | 13.3 MB (`photos.<hash>.json`) | STATE says 10.4. The photos are stored as text (base64), which makes them about a third bigger |
+| Shared page | 15.45 MB of its 16 MB limit | Adding the next set of photos will push it over the limit |
+| Flicker pairs (`zfight.py`) | 91 inside, 0 outside | The check only fails on outside pairs |
+| Open sizes | 21 in `house.json` (44 of 125 items marked "to measure") | STATE and the site check say 19 |
+
+## 1. Clipping (the camera going into walls)
+
+Each fault was found by pushing the camera as far back as it would go in each room:
+
+1. **The camera can stop exactly on a wall.** `clampRoom` holds the eye inside the room's box with no gap (`g = 0`). The near plane
+   (5 cm) and its corners at an 80° lens then go through the plaster. In the master bedroom the screen filled with the inside of a wall.
+   **Fix:** keep the eye at least 25 cm inside each wall and check a small sphere, not a point.
+2. **Sloped ceilings are ignored.** Every room's box is a plain rectangle up to 235. In the bathroom the eye went above the slope into
+   the roof space. **Fix:** export each room's ceiling shape from `model.py` (it already has `under_back`) into `house.json`, and keep
+   the eye under it.
+3. **No furniture collision in the house's rooms.** `collide()` returns straight away outside the living room, so you can walk through
+   beds, wardrobes and the bath. **Fix:** treat the item boxes `house.json` already has (with ids) as solid.
+4. **Shaking at walls.** OrbitControls keeps trying to move the eye out and the clamp pulls it back every frame. **Fix:** clamp
+   inside the controls' own update, or shorten the orbit distance near walls.
+5. **Flicker.** 91 pairs of faces share a plane inside the house (for example paint against uPVC at the window reveals, which you can
+   see from inside). **Fix:** make `zfight.py` fail on any pair a room's camera can see, and move one face of each pair in by 1–2 mm.
+6. **Every house material is double-sided.** That doubles the shadow problems (acne) and the drawing cost for closed boxes. **Fix:**
+   front faces only, except for the few genuinely thin parts.
+7. **One glass mesh for each floor.** All of a floor's glass is merged into one object, so it can't be sorted against other see-through
+   things. **Fix:** a mesh for each window, or `alphaHash`.
+8. **Light leaks along wall joins.** The shadow `normalBias` is 0.02 (2 cm at this scale). **Fix:** about 0.005, with a slope bias.
+
+## 2. Speed: the first picture and zooming
+
+1. **It opens on the whole house but builds the whole living room first.** `start()` builds the shell, furniture, lights,
+   suggestions and bar, and then the house. **Fix:** build the house first and the living room when you enter it (or when nothing
+   else is happening). This should save a large part of the 3.4–4.6 s build.
+2. **three.js arrives as about 15 separate files from jsDelivr.** **Fix:** bundle and minify it with the page's own code (esbuild) and
+   host it on Pages. This means fewer round trips, it works offline from the first visit, and `THREE_LOCAL` is no longer needed.
+3. **Shaders.** r160 has `renderer.compileAsync`. Call it after the cutaway's clipping is set (the reason the v81 `compile()` was
+   dropped), so the browser compiles shaders in parallel instead of stalling the first frames.
+4. **The whole house draws everything inside it.** From outside, all the furniture behind closed walls is still drawn (659 calls).
+   **Fix:** in Outside, hide the inside pieces except through windows near the camera. Show them once a floor is picked.
+5. **Photos are tinted on the phone.** `photoInto` reads every pixel of every 1024–2048 px photo on the main thread to match its colour.
+   **Fix:** do this once in `build_textures.py`, and decode with `createImageBitmap` (off the main thread).
+6. **Photo delivery.** Use KTX2/Basis (QUALITY_PLAN Q5: about a quarter of the graphics memory, nothing to decode on the phone) as
+   separate files, loading only the current room's set first. On the shared page, move the photos to the artifact's asset store so
+   the page drops well under 16 MB.
+7. **Loading feels slow.** For 12–17 s there's nothing to look at. **Fix:** a progress bar and a small picture of the opening view
+   made by the build (only for loading, not an HD still).
+8. **Zoom:**
+   - The wheel and pinch move towards the orbit point, not towards what you point at. **Fix:** `controls.zoomToCursor = true` (r160 has it).
+   - In Be there, zoom is off, so pinching does nothing. **Fix:** make pinch and the wheel change the lens (FOV 35°–80°), like a camera.
+   - Looking round, the wheel walks 15 cm a notch in jumps. **Fix:** smooth, timed movement.
+
+## 3. Quality and textures
+
+1. **Lens too wide.** Rooms open at 74–84° (up to 95° on a phone in portrait), which stretches the edges. **Fix:** 60–65° to start,
+   and widen with pinch or the wheel (above).
+2. **Every surface has the same shine all over.** Each photo has only colour and relief (`_map`, `_nor`); roughness is one number for
+   each material. **Fix:** add the roughness map from each Poly Haven set (packed with ambient occlusion: ORM) for floors, worktops,
+   tiles and wood, so they look worn and real.
+3. **Flat light indoors.** House rooms have the sky, the sun and two unshadowed ceiling lights. Machines that don't start in HD get no
+   shadows at all. **Fix:** bake the light and shade into the house's fixed shell at build time (light maps or per-vertex shade). This
+   adds nothing to the cost of drawing and is the biggest step towards looking like a photo. The living room keeps its live lights.
+4. **Labels can't be read on a phone.** Room labels are drawn at a fixed size in the 3D, so from the floor view they're a few pixels
+   tall. **Fix:** labels that stay the same size on screen (HTML over the 3D, or `sizeAttenuation: false`).
+5. **Small model details.** The verge board sticks out past the gable at the front corner. The ground under the house has no shade, so
+   in Fast the house looks like it's floating. **Fix:** add a soft contact shadow under the house, as the furniture has.
+
+## 4. Accuracy
+
+1. **Scan the rooms with the iPhone 15 Pro.** It has LiDAR. Apple's RoomPlan (through apps such as Polycam or magicplan) measures
+   walls, doors, windows and big furniture to about 1–2 cm and exports them. One scan per room would settle most of the 21 open sizes
+   and the 44 guessed items in an afternoon. Add each scan as a source in `survey_data.py`, the same way as a measurement. Strip any
+   location from the files before they go in the repo. Dave's iPhone 16 has no LiDAR.
+2. **Compare with the photos.** `house/evidence/compare_*.jpg` exists already. Make it a check: put the 3D camera where each photo was
+   taken and lay one over the other, so a size that's wrong shows up as edges that don't line up.
+3. **Keep the docs true.** STATE's numbers are behind (photos, shared page size, 19 vs 21 open sizes). `checks.py` could print them
+   so they can't drift.
+
+## 5. Moving round the house
+
+Today each room is its own view that you jump to. Walking is in steps (15 cm and 10° a press), and double-tapping the floor only works
+on the ground floor (`floorAt` uses the living room's floor at height 0).
+
+1. **Walk mode, a house you can walk through:**
+   - **PC:** WASD or the arrow keys with smooth speed, and a mouse drag to look round (with an option to capture the mouse).
+   - **Phone:** a thumb stick bottom-left to walk, and a drag anywhere else to look.
+   - **Getting about:** tap the floor on any storey to walk there, with a marker where you'll land. Go through doorways (`house.json`
+     has the doors) and up and down the stairs along the flight. Your eye stays at 160.
+2. **Collision from a plan:** at build time, make each floor's walkable grid (walls, furniture, doors open or shut) from `model.py`.
+   This is simpler and steadier than testing boxes every frame, and it fixes items 1.1–1.4.
+3. **Smooth changes.** In It · Be there · Above · On its own currently cut straight across (`flyTo(..., true)`). **Fix:** move the
+   camera between them (instant when the device is set to reduce motion).
+4. **Go in by tapping the house.** In a floor's view, tapping a room in the 3D takes you in, with a soft highlight under your finger.
+   The room pills stay for anyone who prefers them. This fits the client's "rooms are reached through it".
+
+## 6. Buttons and panels (keeping the old style)
+
+From the phone screenshots:
+
+1. **The house is small on a phone.** The buttons on the right (home, labels, Angled · Overhead, floors, rooms, Hide buttons) take up
+   the top 35–45% of the screen, and the house sits small in the gap. **Fix:**
+   - Frame the house in the space left below the buttons, the way the Tools panel already shifts the view.
+   - Move Hide labels into View.
+   - Put the floors and the rooms in one row.
+2. **Plan · Build · Buy shows in every room**, though it belongs to the media wall (review 1.2 point 2 is still true). **Fix:** show it
+   only in the living room, or call it the media wall's plan.
+3. **The dock shows the living room's tools everywhere.** Room, Look and Edit show in the bathroom. **Fix:** show only what works in
+   the room you're in.
+4. **The floors row is cut off on a phone** ("Next door" is half off the edge, with no sign it scrolls). **Fix:** a fade at the edge.
+5. **The first-visit tip covers the floor buttons on a phone.** **Fix:** move it to above the dock.
+
+## The plan in phases (each a PR, proved by `tools/checks.py` and the gallery)
+
+| # | Phase | What | Size |
+|---|---|---|---|
+| U1 | No more clipping | 1.1–1.4 (wall gap, slopes, furniture solid, no shaking); 1.8; the double-tap walk on every floor | Small |
+| U2 | Zoom and smooth moves | 2.8 (zoom to the pointer, lens pinch, smooth wheel), 5.3, a 60–65° lens (3.1) | Small |
+| U3 | Phone buttons | Section 6 and screen-size labels (3.4) | Small |
+| U4 | First picture sooner | 2.1 (house first), 2.2 (bundle), 2.3, 2.4, 2.7 | Medium |
+| U5 | Photos | 2.5, 2.6, 3.2 (KTX2, roughness, the shared page under its limit); this is QUALITY_PLAN Q5 | Medium |
+| U6 | Flicker | 1.5–1.7 and a stricter `zfight.py` | Small |
+| U7 | Walk the house | 5.1, 5.2, 5.4 | Large |
+| U8 | Baked light | 3.3, 3.5 | Large |
+| U9 | Measured | 4.1–4.3 (needs the client's scans) | Needs the client |
+
+U1 to U3 can each be done in one round and fix what the client sees most. U4 and U5 make the biggest difference on the iPhones.

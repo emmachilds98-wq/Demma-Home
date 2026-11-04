@@ -6,6 +6,8 @@ Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and i
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
+**The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9, none started.
+
 ## Where it lives
 
 - **The site on GitHub Pages:** https://emmachilds98-wq.github.io/Demma-Home/ (built and published by the workflow on every push to
