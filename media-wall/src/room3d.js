@@ -812,16 +812,13 @@ function rect(cx, cy, cz, w, h, normal, mat) {     // a wall patch w × h (cm) c
    walls (V1.33's houseShade): bands along every wall, the alcove, the breast, the flight's side and foot; on every device (the live
    shade, GTAO, only runs on the capable ones in HD); cut away with the room. Not its ceiling: the LED strip's glow is brightest there */
 let livShadeG = null;
-function livShade(W, WZ, A, AD, B0, B1, RZ, dx0, dx1, sx0, F) {
+function livShade() {
   const tex = canvasTex(4, 64, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h);
     gr.addColorStop(0, "rgba(0,0,0,0.34)"); gr.addColorStop(0.35, "rgba(0,0,0,0.12)"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.clearRect(0, 0, w, h); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, false);
   tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
   const mat = () => reg(new THREE.MeshBasicMaterial({ color: "#000000", map: tex, transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide,
     polygonOffset: true, polygonOffsetFactor: 0, polygonOffsetUnits: -10 }));
-  // each wall's foot: [a, b, inward] in room cm (x, z); the door's gap and the flight left open
-  const E = [[[0, WZ], [W, WZ], [0, 1]], [[0, AD], [0, WZ], [1, 0]], [[A, AD], [0, AD], [0, -1]], [[A, 0], [A, AD], [-1, 0]], [[B1, 0], [A, 0], [0, -1]],
-    [[B1, RZ], [B1, 0], [1, 0]], [[dx0 - 6, RZ], [B1, RZ], [0, -1]], [[sx0, RZ], [dx1 + 6, RZ], [0, -1]], [[W, WZ], [W, F], [-1, 0]],
-    [[sx0 - 2.2, F], [sx0 - 2.2, RZ], [-1, 0]], [[W, F], [sx0, F], [0, -1]]];
+  const E = R.HOUSE3.living.edges.map(([ax, az, bx, bz, nx, nz]) => [[ax, az], [bx, bz], [nx, nz]]);   // V1.44: each wall's foot from the house file
   const band = (pos, uv, [a, b, n], y, w) => {
     const P = [a, b, [b[0] + n[0] * w, b[1] + n[1] * w], [a[0] + n[0] * w, a[1] + n[1] * w]].map(([x, z]) => v3(x, y, z)), U = [[0, 1], [1, 1], [1, 0], [0, 0]];
     for (const i of [0, 1, 2, 0, 2, 3]) { pos.push(P[i].x, P[i].y, P[i].z); uv.push(U[i][0], U[i][1]); } };
@@ -896,7 +893,7 @@ function buildShell() {
     const m = new THREE.Mesh(new THREE.PlaneGeometry((xb - xa) * M, (zb - za) * M), ceilMat);
     m.rotation.x = Math.PI / 2; m.position.copy(v3((xa + xb) / 2, C, (za + zb) / 2)); m.receiveShadow = true; m.castShadow = true; shell.add(m);   // v48: and the ceiling
   }
-  livShade(Wd, WZ, A, AD, B0, B1, RZ, dx0, dx1, sx0, front);
+  livShade();
   // skirting, eggshell in the wall colour
   const sk = R.SKIRT_H, st = 2;
   [[0, WZ, st, sk, AD - WZ], [B1, 0, st, sk, RZ]].forEach(([x, z, w, h, d]) => cube(x, 0, z, w, h, d, egg, false));
@@ -4188,24 +4185,15 @@ const walking = () => (RMODE === "stand" && !!ROOMV() || S.view === "livstand") 
 /* V1.38 (UPGRADE_REVIEW Next 1), the client: "review how to make the movement within the house better": the living room is drawn on its
    own (geometry.py's measured room, not the house file), so a walk takes its walls, its furniture and its flight from that: in through
    its door from the hall (the door opens as you reach it), round the room, up its stairs to the landing, and back down */
-const FLIGHT = () => { const n = R.STAIR_N || 13, z0 = R.STAIR_FRONT + 6, zl = z0 + (n - 1) * R.STAIR_GOING;
-  return { x0: R.STAIR_X[0], x1: R.STAIR_X[1], z0, zl, zl1: zl + (R.LANDING_D || 90), n, r: R.STAIR_RISE, g: R.STAIR_GOING }; };
-function livSolids() {                      // room cm [x0, y0, z0, x1, y1, z1], none over its ceiling (the rooms over it): its walls (the door's gap), the flight's open side, the ceiling, what stands in it
-  const TOP = R.CEIL + 10, W = R.W, WZ = R.WINDOW_Z, AD = R.ALC_D, [B0, B1] = R.BREAST_X, RZ = R.RECESS_Z, [dx0, dx1] = R.DOOR_X, sx0 = R.STAIR_X[0], F = R.STAIR_FRONT;
-  const b = [[-40, -60, WZ - 40, W + 40, TOP, WZ], [-40, -60, WZ, 0, TOP, AD + 10], [W, -60, WZ, W + 40, 520, FLIGHT().zl1],
-    [0, -60, AD, B0, TOP, AD + 20], [B0, -60, 0, B1, TOP, RZ + 6], [B1, -60, RZ, dx0, TOP, RZ + 6], [dx1, -60, RZ, sx0, TOP, RZ + 6],
-    [dx0, R.DOOR_H, RZ, dx1, TOP, RZ + 6], [sx0 - 7, -60, F + 2, sx0, R.CEIL, RZ + 6], [0, R.CEIL, WZ, R.WELL_X0 || sx0, TOP, RZ]];
-  const PB = R.PIPE_BOX; if (PB) b.push([PB.x[0], -60, PB.z[0], PB.x[1], TOP, PB.z[1]]);
-  if (!doorOpen(HPARTS["door.living_door"])) b.push([dx0, -60, RZ, dx1, R.DOOR_H, RZ + 6]);   // its door shut (it opens as you reach it)
+const LIV = () => R.HOUSE3.living;   // V1.44 (V1_PLAN phase 5): the living room's shell from the house file (house/model.py living_shell)
+const FLIGHT = () => LIV().flight;
+function livSolids() {                      // room cm [x0, y0, z0, x1, y1, z1]: its walls (the door's gap), the flight's open side, the ceiling, the pipe box; what stands in it
+  const L = LIV(), b = L.solids.slice(), d = L.door;
+  if (!doorOpen(HPARTS["door.living_door"])) b.push([d.a, -60, d.line, d.b, d.h, d.line + 6]);   // its door shut (it opens as you reach it)
   for (const q of solidBoxes()) b.push([-q.max.x / M, q.min.y / M, q.min.z / M, -q.min.x / M, q.max.y / M, q.max.z / M]);   // three's x flipped
   return b;
 }
-function livFloors() {                      // its floor, each tread and the top landing (to walk on, not solid: a body rises onto them)
-  const L = FLIGHT(), f = [[0, -10, R.WINDOW_Z, R.W, 0, R.RECESS_Z + 6]];
-  for (let i = 1; i < L.n; i++) f.push([L.x0, i * L.r - 3, L.z0 + (i - 1) * L.g - 1.5, L.x1, i * L.r, L.z0 + i * L.g]);
-  f.push([L.x0, L.n * L.r - 3, L.zl - 1.5, L.x1, L.n * L.r, L.zl1]);
-  return f;
-}
+const livFloors = () => LIV().floors;      // its floor, each tread and the top landing (to walk on, not solid: a body rises onto them)
 const nearLiving = (x, y, z) => x > -60 && x < R.W + 60 && z > R.WINDOW_Z - 60 && z < FLIGHT().zl1 + 30 && y < 560;
 function livBlocked(x, y, z, r) {
   if (!nearLiving(x, y, z)) return false;
@@ -4247,8 +4235,9 @@ function walkRoom(x, feet, z) {             // walked into another room with its
   const L = FLIGHT();
   if (x > L.x0 - 4 && x < L.x1 && z > L.z0 - 12 && z < L.zl1 && feet < 200) {   // V1.38: on the living room's flight: its room low down, the landing's view higher
     const want = feet < 60 ? "livstand" : "landing"; if (want !== S.view) enterRoom(want); return; }
-  if (x > 0 && x < R.W && z > R.WINDOW_Z && z < R.RECESS_Z + 2 && feet < 120) {   // V1.38: in the living room
-    if (S.view !== "livstand" && z < R.RECESS_Z - 12) enterRoom("livstand"); return; }   // V1.39: well past the door's line (to the hall's box, 45: no flicker in the doorway)
+  const LB = LIV().box;
+  if (x > LB[0] && x < LB[1] && z > LB[2] && z < LB[3] + 2 && feet < 120) {   // V1.38: in the living room
+    if (S.view !== "livstand" && z < LB[3] - 12) enterRoom("livstand"); return; }   // V1.39: well past the door's line (to the hall's box, 45: no flicker in the doorway)
   const rooms = R.HOUSE3.rooms || {};
   for (const [id, r] of Object.entries(rooms)) {
     if (x < r[0] || x > r[1] || z < r[2] || z > r[3] || Math.abs(feet - r[4]) > 130) continue;

@@ -2112,6 +2112,31 @@ def room_lights(floor):
     return out
 
 
+def living_shell():
+    """V1.44 (V1_PLAN phase 5): the measured living room (media-wall/src/geometry.py) as the house file's data, not worked out again in
+    the viewer: its walls with the door's gap, the flight's open side, its ceiling (open over the stairs) and the pipe box (solids,
+    [x0, y0, z0, x1, y1, z1], none over its ceiling: the first floor walks over it); its floor, the flight's treads and its top landing
+    (floors: walked on, not solid); the foot of its walls ([ax, az, bx, bz, nx, nz], for the shade); its door and its flight. The viewer
+    still draws the room itself (its look, the media wall project); the walk, the shade and the checks read this."""
+    g = Gm
+    W, WZ, AD, (B0, B1), RZ = g.ROOM_W, g.WINDOW_Z, g.ALC_D, g.BREAST_X, g.BREAST_D_WEST
+    (dx0, dx1), (sx0, sx1), F, C, DH = g.DOOR_X, g.STAIR_X, g.ALC_D - g.STAIR_D, g.CEIL, D.DOOR_H
+    n, r, gq = g.STAIR_N, g.STAIR_RISE, g.STAIR_GOING
+    z0 = F + 6.0; zl = z0 + (n - 1) * gq; zl1 = zl + g.LANDING_D; top = C + 10; well = dx1 + 1.5
+    solids = [[-40, -60, WZ - 40, W + 40, top, WZ], [-40, -60, WZ, 0, top, AD + 10], [W, -60, WZ, W + 40, 520, zl1],
+              [0, -60, AD, B0, top, AD + 20], [B0, -60, 0, B1, top, RZ + 6], [B1, -60, RZ, dx0, top, RZ + 6], [dx1, -60, RZ, sx0, top, RZ + 6],
+              [dx0, DH, RZ, dx1, top, RZ + 6], [sx0 - 7, -60, F + 2, sx0, C, RZ + 6], [0, C, WZ, well, top, RZ]]
+    pb = g.PIPE_BOX
+    solids.append([pb["x"][0], -60, pb["z"][0], pb["x"][1], top, pb["z"][1]])
+    floors = [[0, -10, WZ, W, 0, RZ + 6]] + [[sx0, i * r - 3, z0 + (i - 1) * gq - 1.5, sx1, i * r, z0 + i * gq] for i in range(1, n)]
+    floors.append([sx0, n * r - 3, zl - 1.5, sx1, n * r, zl1])
+    edges = [[0, WZ, W, WZ, 0, 1], [0, AD, 0, WZ, 1, 0], [B0, AD, 0, AD, 0, -1], [B0, 0, B0, AD, -1, 0], [B1, 0, B0, 0, 0, -1], [B1, RZ, B1, 0, 1, 0],
+             [dx0 - 6, RZ, B1, RZ, 0, -1], [sx0, RZ, dx1 + 6, RZ, 0, -1], [W, WZ, W, F, -1, 0], [sx0 - 2.2, F, sx0 - 2.2, RZ, -1, 0], [W, F, sx0, F, 0, -1]]
+    rnd = lambda L: [[round(v, 1) for v in q] for q in L]
+    return dict(solids=rnd(solids), floors=rnd(floors), edges=rnd(edges), box=[0.0, W, WZ, RZ],
+                door=dict(a=dx0, b=dx1, line=RZ, h=DH), flight=dict(x0=sx0, x1=sx1, z0=round(z0, 1), zl=round(zl, 1), zl1=round(zl1, 1), n=n, r=r, g=gq))
+
+
 def ceiling_shade():
     """V1.39 (UPGRADE_REVIEW Next 5): where the first floor's ceiling is flat along a room's walls, the crease where the back slope meets
     the flat ceiling, and the dormer's sides: [ax, az, bx, bz, nx, nz] edges (the inward direction n) for the viewer's soft shade bands
@@ -2145,7 +2170,7 @@ def export():
     for f in FLOOR_Y:                                            # v69: the rooms' ceiling lights
         if f in out:
             out[f]["lights"] = room_lights(f)
-    return dict(mats=MATS, floors=out, ridge=[round(RIDGE_Z, 1), round(RIDGE_Y, 1)], est=True, depth_rank=depth_rank(), shade_ceil=ceiling_shade())
+    return dict(mats=MATS, floors=out, ridge=[round(RIDGE_Z, 1), round(RIDGE_Y, 1)], est=True, depth_rank=depth_rank(), shade_ceil=ceiling_shade(), living=living_shell())
 
 
 # V1.31 (U6, docs/UPGRADE_REVIEW.md): where two materials' faces lie in one plane (a wall's paint on its blockwork, a frame flush with

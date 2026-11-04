@@ -341,6 +341,18 @@ _mr = [m["id"] for m in _h["measure"] if m["room"] not in _rooms]
 check("house file: every open measurement is in a room", not _mr, ", ".join(_mr) or f"{len(_h['measure'])} rows")
 check("house file: the client's edits all applied", not _h["problems"], "; ".join(_h["problems"]) or "none waiting or all in")
 
+# V1.44 (V1_PLAN phase 5): the measured living room (model.living_shell) meets the house: its door is the hall's door, its flight runs
+# under the first floor's stairwell, its top step reaches the first floor, and nothing of it stands over its ceiling (the rooms above)
+_L = Mo.living_shell(); _ld = next(d for d in Mo.doors("ground") if d["id"] == "living_door"); _fs = next(r for r in Mo.rooms("first") if r["id"] == "first_stairs")
+check("living room: its door is the hall's doorway", abs(_L["door"]["a"] - _ld["a"]) < 0.5 and abs(_L["door"]["b"] - _ld["b"]) < 0.5,
+      f'{_L["door"]["a"]}–{_L["door"]["b"]} (the hall {_ld["a"]}–{_ld["b"]})')
+check("living room: its flight under the first floor's stairwell", _fs["x0"] - 1 <= _L["flight"]["x0"] and _L["flight"]["x1"] <= _fs["x1"] + 1 and _L["flight"]["zl"] <= _fs["z1"] + 1,
+      f'x {_L["flight"]["x0"]}–{_L["flight"]["x1"]}, top step at z {_L["flight"]["zl"]} (the stairwell x {_fs["x0"]:.0f}–{_fs["x1"]:.0f}, to z {_fs["z1"]:.0f})')
+_top = _L["flight"]["n"] * _L["flight"]["r"]
+check("living room: its top step a step from the first floor", 0 <= Mo.FLOOR_Y["first"] - _top <= 20, f'{_top} to {Mo.FLOOR_Y["first"]}')
+_hi = [q for q in _L["solids"] if q[4] > Mo.FLOOR_Y["first"] + 50 and q[0] < Mo.WIDTH - 1]
+check("living room: nothing of it over its ceiling (the first floor walks there)", not _hi, f"{len(_hi)} too high" if _hi else f'{len(_L["solids"])} solids, {len(_L["floors"])} floors')
+
 w = max(len(r[1]) for r in rows)
 for st_, n, note in rows:
     print(f"{st_:4}  {n:<{w}}  {note}")

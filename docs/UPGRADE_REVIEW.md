@@ -269,9 +269,8 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
 
 ## Next (found while working; agents: take these in order)
 
-1. ~~A walk into the living room and up its stairs~~: done in V1.38 (below). Still to do (V1_PLAN Phase 5): its walls, doorway and
-   stairs as boxes in `house/model.py` so it's one model and the shade bands cover it (V1.38 reads them from `geometry.py`'s numbers in
-   `room3d.js` `livSolids`, `livFloors`).
+1. ~~A walk into the living room and up its stairs~~: done in V1.38; ~~its walls, doorway and stairs in `house/model.py`~~: done in
+   V1.44 (`model.living_shell`, read by the walk and the shade). Left (V1_PLAN Phase 5): its look and furniture drawn from the house data.
 2. **Camera-match each view to its photo** (V1.40–V1.41, in part: below): the WC, the office, the landing and the kitchen are fitted
    (`compare.CAMS`), the hall in part (V1.42); still to fit: the
    bathroom (the photo is mostly its door frame, from the landing) and the master (people and clutter over its lines): by hand from a
