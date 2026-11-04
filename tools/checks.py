@@ -65,15 +65,15 @@ def repo():
 
 def sizes():
     """V1.30 (U5, U9): the numbers STATE.md quotes, from the built site, so they can't drift: the page, the photos, three.js's own
-    file, the shared page (fails at 16 MB, its limit) and the sizes still to measure"""
+    file and the sizes still to measure (V1.37: no shared page any more, the client: "i dont need a copy here")"""
     if not (SITE / "index.html").exists():
         return True, "no site built"
     mb = lambda f: f.stat().st_size / 1e6
-    ph = next(SITE.glob("photos.*.json"), None); tj = next(SITE.glob("three.*.js"), None); art = SITE / "artifact.html"
+    ph = next(SITE.glob("photos.*.json"), None); tj = next(SITE.glob("three.*.js"), None)
     hj = json.loads((SITE / "data/house.json").read_text()) if (SITE / "data/house.json").exists() else {}
     msg = (f"page {mb(SITE / 'index.html'):.1f} MB, photos {mb(ph) if ph else 0:.1f} MB, three.js " + (f"{mb(tj):.2f} MB own file" if tj else "from the CDN")
-           + (f", shared page {mb(art):.2f} MB of 16" if art.exists() else "") + f", {len(hj.get('measure', []))} sizes to measure")
-    return not (art.exists() and mb(art) >= 16.0), msg
+           + f", {len(hj.get('measure', []))} sizes to measure")
+    return True, msg
 
 
 def site():

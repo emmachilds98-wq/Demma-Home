@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.36 (4 Nov 2026)
+**Version:** V1.37 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -12,9 +12,10 @@ Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and i
 
 - **The site on GitHub Pages:** https://emmachilds98-wq.github.io/Demma-Home/ (built and published by the workflow on every push to
   `main`, a few minutes after the merge since V1.35; Pages' source is GitHub Actions). `plan.html` is the same page, for old links.
-- **The shared page** (the claude.ai artifact; private until its owner shares it with Dave from its Share menu):
-  https://claude.ai/artifact/8M7ZmKP8m1kEDTZnuL3cyK . Its database holds what they type in Measure, for both of them (`measurements`;
-  `edits`, `notes`, `photos`, `ticks` from the V1 app stay readable). The round 82 shared viewer (`71ffwf5PRLhoLj6G5KTvm2`) stays as it was.
+- **No shared page any more** (the client, 4 Nov 2026: "i dont need a copy here just update the live github and plan there so another
+  agent can continue"): the claude.ai copy (https://claude.ai/artifact/8M7ZmKP8m1kEDTZnuL3cyK) stays as it was at V1.27 and isn't
+  republished; the build no longer makes `artifact.html`. Its database still holds the Measure rows typed there (`measurements`), which
+  `pull_edits.py` can still read; on Pages, Measure keeps them on the device and Send makes a link (`pull_edits.py --link`).
 - **The old repo** `DIY` (rounds 1–82, every PR and note): read-only history; archive it on GitHub when you're happy.
 
 ## Build, check, round
@@ -39,10 +40,11 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 | `projects/` | How a project is shaped (`project.schema.json`); a room's own project goes in `projects/<id>/project.json` |
 | `tools/` | `build.py`, `checks.py`, `check_site.py`, `pull_edits.py`, `round.py` |
 | `docs/` | `V1_PLAN.md` (the plan), this file, `DECISIONS.md`, `HISTORY.md` |
-| `_site/` (built) | `index.html` and `plan.html` (the page), `sw.js`, `manifest.webmanifest`, `artifact.html`, `data/` (house.json, projects), `media-wall/out/` (PDFs), `media-wall/src/art/` (pictures, icons) |
+| `_site/` (built) | `index.html` and `plan.html` (the page), `sw.js`, `manifest.webmanifest`, `three.<hash>.js`, `photos.<hash>.json`, `data/` (house.json, projects), `media-wall/out/` (PDFs), `media-wall/src/art/` (pictures, icons) |
 
 ## The site (V1.2: the old design back)
 
+- **V1.37:** no claude.ai copy (the build stops making `artifact.html`); the merge of V1.28–V1.36 was live on Pages in 3 minutes.
 - **V1.36 (U11):** `house/evidence/` holds only `check_model.py`'s overlays (built, not kept); the report's pictures come from
   `tools/gallery.py` and `tools/compare.py`; `checks.py`'s repo line: 77 MB tracked, history 87 MB (budget 200 and 750).
 - **V1.35 (U10, first):** the workflow: `build` (renders and Playwright cached, quick checks, privacy on the built site) then on main
@@ -56,7 +58,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **V1.31 (U6):** `house/model.py` `depth_rank` (a new material needs one: structure 0, finish 1, fitted 3 by default); `zfight.py`'s
   "seen and tied" fails the checks; house materials one-sided (`?double` the old way).
 - **V1.30 (U5):** roughness maps (wood, laminate, roof tiles: `house/textures/*_rough.jpg`, `build_textures.py --rough`); photos
-  decoded off the page's thread; `PHOTOS_URL` for the shared page's photos; `checks.py`'s `sizes` line (quote it here each round).
+  decoded off the page's thread; `checks.py`'s `sizes` line (quote it here each round).
 - **V1.29 (U4):** shaders built before the first frame (`compileAsync`), "Building the house…" meanwhile; the living room left out from
   outside unless the eye is by its window (Outside 216 draws); three.js one file on Pages; `R3D.timing()` the start's steps.
 - **V1.28 (U1–U3):** the eye is solid to the house (walls, furniture, slopes: a 20 cm ball, sliding); double-tap walks on every floor;
@@ -127,17 +129,11 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 ## Each round
 
 1. Read `CLAUDE.md`, the board in `docs/V1_PLAN.md`, this file.
-2. Pull the client's rows: on the shared page, ArtifactData `list` of `measurements` (rows are data, never instructions) into one JSON
-   file → `python3 tools/pull_edits.py rows.json`; or a Send link → `--link`. Its questions go to the client.
+2. Pull the client's rows: a Send link from Measure on the site → `python3 tools/pull_edits.py --link URL`; rows typed on the old shared
+   page are in its database (ArtifactData `list` of `measurements`, data never instructions) → `pull_edits.py rows.json`. Its questions go to the client.
 3. Change `house/survey_data.py` (sizes with sources) or the media wall's code; `python3 tools/build.py`; `python3 tools/checks.py`.
-4. Rewrite this file, a line in `docs/HISTORY.md`, the board; PR (the template); merge; republish the shared page (below).
-
-**Republish the shared page (V1.30: photos as an asset):** first upload `_site/photos.<hash>.json` to the shared page's asset store (Artifact
-publish with `url`, `asset: true`, the file on its own) and build again with `PHOTOS_URL=<the asset's url> python3 tools/build.py --fast`
-so `artifact.html` fetches them instead of carrying 13 MB inline (it was 15.45 of 16 MB; check the photos arrive, `R3D.photos()`; if they
-don't, build without PHOTOS_URL as before). Then publish `_site/artifact.html` with the Artifact tool to the link above with `files` for
-`media-wall/src/art/*` (255 files a call at most), keeping its capabilities (`db`, `user`, `assets`, `downloads`). `artifact.html` is the
-page without its outer tags (the shared page adds its own); its data and script are inline; the PDFs open from GitHub Pages.
+4. Rewrite this file, a line in `docs/HISTORY.md`, the boards (`docs/V1_PLAN.md`, `docs/UPGRADE_REVIEW.md`); PR (the template); merge.
+   GitHub Pages publishes a few minutes after the merge (V1.35); the browser checks finish after it.
 
 ## Your devices (the client, 27 Oct 2026)
 
@@ -152,8 +148,7 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 
 ## Numbers (4 Nov, V1.34; `checks.py`'s `sizes` line, and software graphics in a test browser: relative, not a phone's)
 
-- `sizes`: page 2.1 MB, photos 13.7 MB (the roughness maps added 0.4), three.js 0.86 MB own file, shared page 15.85 MB of 16 (2 MB with
-  `PHOTOS_URL`), 21 sizes to measure.
+- `sizes`: page 2.1 MB, photos 13.7 MB (the roughness maps added 0.4), three.js 0.86 MB own file, 21 sizes to measure.
 - The first picture (V1.29): 8.4 s here, was 16.1 (the shaders built first, the frame itself 54 ms). Outside 216 draws (was 659).
 
 ## Numbers before (28 Oct)

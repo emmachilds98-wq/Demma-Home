@@ -67,3 +67,4 @@ take one out (to `docs/HISTORY.md`) when they change their mind.
 - **The bathroom's wall over the stairs** 5–10 cm further into the bathroom (29 Oct 2026, V1.8).
 - **The cordyline (palm) is in their garden**, by the path, not next door's (29 Oct 2026, V1.8: "the palm tree is in my garden and not next door").
 - **The alley gate** between their house and next door (25 Oct 2026, v66).
+- **No claude.ai copy of the site any more** (4 Nov 2026, V1.37): "i dont need a copy here just update the live github and plan there so another agent can continue". GitHub Pages is the site; the plan and its boards in this repo are where an agent picks up.

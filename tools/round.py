@@ -8,7 +8,7 @@ python3 tools/round.py "what changed, in the client's words" [--rows rows.json |
 3. Build everything (tools/build.py; --fast keeps the renders and PDFs) and run every check (tools/checks.py).
 4. Add the round to docs/HISTORY.md and move docs/STATE.md's version line on.
 Then: rewrite docs/STATE.md's "What's open", update the status board in docs/V1_PLAN.md, commit, open the PR with the check lines
-this prints, merge, republish the artifact (docs/STATE.md says how)."""
+this prints, merge: GitHub Pages publishes it in a few minutes (V1.37: no shared page any more)."""
 import datetime, pathlib, re, subprocess, sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]

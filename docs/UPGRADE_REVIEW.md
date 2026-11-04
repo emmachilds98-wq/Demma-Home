@@ -128,7 +128,7 @@ From the phone screenshots:
 
 | # | Phase | What | Size | Status |
 |---|---|---|---|---|
-| U10 | **Faster GitHub builds (first: the client, 4 Nov)** | The browser checks side by side, Pages published straight after the build, the renders and Playwright kept between runs, documents-only changes skip the browser checks | Medium | In progress (V1.35) |
+| U10 | **Faster GitHub builds (first: the client, 4 Nov)** | The browser checks side by side, Pages published straight after the build, the renders and Playwright kept between runs, documents-only changes skip the browser checks | Medium | Done (V1.35, V1.37) |
 | U11 | **A lean repo (the client, 4 Nov)** | Old proof pictures out (git keeps them), the report's pictures made fresh, a size budget for what's tracked and for git's history | Small | Done (V1.36) |
 | U1 | No more clipping | 1.1–1.4 (wall gap, slopes, furniture solid, no shaking); 1.8; the double-tap walk on every floor | Small | Done (V1.28) |
 | U2 | Zoom and smooth moves | 2.8 (zoom to the pointer, lens pinch, smooth wheel), 5.3, a 60–65° lens (3.1) | Small | Done (V1.28) |
@@ -227,6 +227,10 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
   kept whole), 329 files (were 396), history 87 MB. Every script is still used. Not done: rewriting git's history to drop old pictures
   for good (it would need a force-push to main; at 87 MB there's no need); deleting old branches on GitHub (one may be another session's).
 
+- **U10, measured on GitHub (the merge of V1.28–V1.36, 4 Nov):** merged 02:13:21, live on Pages 02:16:23: **3 minutes** (was 25+). The
+  build job 2 min 45 (its render cache missed: a pull request's caches can't be read from main, so the next merge's will hit); the
+  browser checks run after, side by side. V1.37 also stops making the shared page's copy (16 MB less in every Pages upload).
+
 ## Next (found while working; agents: take these in order)
 
 1. **The living room into the house file** (V1_PLAN Phase 5): its walls, doorway and stairs as boxes in `house/model.py`, so a walk goes
@@ -234,6 +238,6 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
 2. **Camera-match each view to its photo** with `tools/compare.py` (move each view's eye, aim and lens until the red lines sit on the
    photo), then fix the sizes whose lines still miss: the accuracy pass that needs no tape measure.
 3. **The client's iPhones' numbers**: `?perf` and `R3D.timing()` from each, then decide KTX2 (U5) and light maps (U8).
-4. **Republish the shared page** with `PHOTOS_URL` (STATE.md, "Republish"): about 2 MB, was 15.85 of its 16.
+4. ~~Republish the shared page~~: not wanted (the client, 4 Nov: "i dont need a copy here just update the live github"); the build no longer makes it (V1.37).
 5. **The first floor's sloped ceilings' shade** (U8). (The floor labels on a phone: done in V1.35.)
 6. **A photo from the foot of the lower stairs** to confirm V1.32's opening (STATE.md's questions).
