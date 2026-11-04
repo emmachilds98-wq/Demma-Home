@@ -259,15 +259,19 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
   balustrade line up. **Not fitted:** the hall (it settles in the porch or by the radiator, not on the box's line where the photo was
   taken), the bathroom (the door frame fills the photo), the master (people and clutter) and the kitchen (its fit is loose); a local
   search needs a start near the right spot, and these need one by hand.
+- **V1.41 (Next 2, more):** `camfit.py` sweeps a view with no start (nine spots in the room, eight ways each, at 155 up) and refines
+  the best three. It fits the kitchen (0.49: the fridge's column, the wall cabinets' tops, the worktop on the right); the hall, the
+  bathroom and the master still settle wrong (facing back to the front door; facing a wall; the bed's clutter), so they're left out.
 
 ## Next (found while working; agents: take these in order)
 
 1. ~~A walk into the living room and up its stairs~~: done in V1.38 (below). Still to do (V1_PLAN Phase 5): its walls, doorway and
    stairs as boxes in `house/model.py` so it's one model and the shade bands cover it (V1.38 reads them from `geometry.py`'s numbers in
    `room3d.js` `livSolids`, `livFloors`).
-2. **Camera-match each view to its photo** (V1.40, in part: below): the WC, the office and the landing are fitted (`compare.CAMS`);
-   still to fit: the hall, the bathroom (the photo is mostly its door frame), the master (people and clutter over its lines) and the
-   kitchen, by hand from a start near the photo's spot (`compare.CAMS` is where `camfit.py` starts), or with fresh, tidy photos.
+2. **Camera-match each view to its photo** (V1.40–V1.41, in part: below): the WC, the office, the landing and the kitchen are fitted
+   (`compare.CAMS`); still to fit: the hall (the sweep turns it round: the end door and the front door look alike as edges), the
+   bathroom (the photo is mostly its door frame, from the landing) and the master (people and clutter over its lines): by hand from a
+   start near the photo's spot (`compare.CAMS` is where `camfit.py` starts), or with fresh, tidy photos from each doorway.
 3. **The client's iPhones' numbers**: `?perf` and `R3D.timing()` from each, then decide KTX2 (U5) and light maps (U8).
 4. ~~Republish the shared page~~: not wanted (the client, 4 Nov: "i dont need a copy here just update the live github"); the build no longer makes it (V1.37).
 5. ~~The first floor's sloped ceilings' shade~~ (U8): done in V1.39 (below). (The floor labels on a phone: done in V1.35.)
