@@ -13,7 +13,7 @@ wall first; each room gets its own in time), and what to buy. It opens on the wh
 
 - `house/`: the house as data (`survey_data.py`, every size with its source) and geometry (`model.py`), and the house file
   (`export_house.py`, every door, window, radiator and piece named, with where its size comes from).
-- `media-wall/`: the page (`src/build_viewer.py`, `page.css`, `room3d_page.py`, the 3D in `room3d.js`, Measure in `measure.js`), the living
+- `media-wall/`: the page (`src/build_viewer.py`, `page.css`, `room3d_page.py`, the 3D in `room3d/` (its parts, joined by `room3d_src.py`), Measure in `measure.js`), the living
   room in full detail and the media wall project (the plan, the build guide, the fit proof).
 - `tools/`: `build.py` (everything into `_site/`), `checks.py` (every check), `round.py` (a round in one command), `pull_edits.py`.
 - Nothing built is committed: the workflow builds, checks and publishes on every push (`.github/workflows/build.yml`); each version's PDFs

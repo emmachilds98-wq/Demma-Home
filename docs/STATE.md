@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.51 (4 Nov 2026)
+**Version:** V1.52 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -34,7 +34,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 | Path | What |
 |---|---|
-| `media-wall/src/` | The site: `build_viewer.py` (the page: brand, Plan · Build · Buy and their sheets, offline, icons), `page.css`, `room3d_page.py` (the 3D's controls: the stickers, the dock's View · Room · Look · Measure · Edit and their panels), `room3d.js` (the 3D: the house, its floors and rooms, the living room), `measure.js` (Measure's saving). The living room and the media wall project: `geometry.py`, `fit.py`, the renders and PDFs (`make_images.py`, `build_doc.py`), `export_project.py` |
+| `media-wall/src/` | The site: `build_viewer.py` (the page: brand, Plan · Build · Buy and their sheets, offline, icons), `page.css`, `room3d_page.py` (the 3D's controls: the stickers, the dock's View · Room · Look · Measure · Edit and their panels), `room3d/` (the 3D, in 22 parts joined in order by `room3d_src.py`: setup, renderer, textures, ... house_edits, views_walk, cards, controls, go, embed; "`room3d.js`" in older notes means these), `measure.js` (Measure's saving). The living room and the media wall project: `geometry.py`, `fit.py`, the renders and PDFs (`make_images.py`, `build_doc.py`), `export_project.py` |
 | `house/` | The house: `survey_data.py` (every size, with its source) → `model.py` (the geometry, every piece tagged with its item) → `export_house.py` (the house file, `house.schema.json`); `measure.py` (what's still a guess: Measure's rows); `client_edits.py`/`.json` (the client's numbers over the guesses); `check_model.py`, `zfight.py`, `privacy_check.py`; `textures/` (the CC0 photos); the facts `HOUSE.md`, `EVIDENCE.md`, `SURVEY.md`, `BUILD_SPEC.md`, `HD_PLAN.md`, `SOURCES.md` |
 | `media-wall/inputs/` | The client's photos and plans (EXIF stripped) |
 | `projects/` | How a project is shaped (`project.schema.json`); a room's own project goes in `projects/<id>/project.json` |
@@ -44,6 +44,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 ## The site (V1.2: the old design back)
 
+- **V1.52 (V1_PLAN 2.6):** the 3D's one 6,664-line `room3d.js` split into 22 parts (`media-wall/src/room3d/NN_<part>.js`), joined into the same script (the built page byte for byte the same); `checks.py`'s sizes line checks each part parses alone.
 - **V1.50 (V1_PLAN phase 3):** tap a piece in the house: its card says its size; Change its size, a stepper each (a door: width, place),
   the 3D changes as you go, As planned puts it back. Measure rows in `edits` ({item, field, value}; Send shares them), `pull_edits.py`
   folds them in. `room3d.js` `PICK`, `housePiece`, `storeEdits`, `selPiece`; the pieces in `R.HOUSE3.items`; `check_site.SIZE` tries it. (V1.49: the walk check waits for flies.)
@@ -53,7 +54,6 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   timber boards, its plaster between the cheeks; roof tiles at 2.4 m (`textures.json`); house walls' relief (`normalScale`) down; by evening a
   dusk veil (`duskVeil`) in the house's rooms; a drag in the house's rooms turns the view in place (`lookTurn`, `inPlace`).
 - **V1.44–V1.48:** the living room's whole fixed shell (`model.living_shell`, house.json's living `shell`, four checks) (walls, floor, ceiling, skirting, door, window opening, stairs, pipe boxing, radiator) drawn from `R.HOUSE3.living` (the same to the pixel). V1_PLAN phase 5 done.
-- **V1.43:** access (V1_PLAN phase 8): the 3D's label follows where you are; the brand's place line is read out (`aria-live`); `check_site.py` checks every control has a name.
 - **V1.40–V1.42:** `tools/camfit.py` fits the 3D's camera to a photo (`compare.CAMS`: the WC, the office, the landing, the kitchen, the hall in part).
 - **V1.39:** the shade where things meet in the living room (the foot of its walls: `livShade`) and on the first floor's ceilings (where
   flat along the walls, the back slope's crease, the dormer's sides: `model.ceiling_shade`, drawn by `houseShade`).

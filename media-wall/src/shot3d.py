@@ -13,6 +13,7 @@ import base64, hashlib, io, json, os, pathlib, shutil, sys
 from playwright.sync_api import sync_playwright
 import localcdn
 import room3d_page
+import room3d_src
 import geometry as G   # v38: the stills start from the client's plan (FIRM)
 
 HERE = pathlib.Path(__file__).parent
@@ -112,7 +113,7 @@ BASE = {"drawers": False, "ideas": {k: True for k in G.FIRM.get("ideas", [])},  
 def room_print():
     """What every still is built from."""
     h = hashlib.sha256()
-    for part in ((HERE / "room3d.js").read_bytes(), (HERE / "scene3d.json").read_bytes(), room3d_page.scenes_json().encode(),
+    for part in (room3d_src.js().encode(), (HERE / "scene3d.json").read_bytes(), room3d_page.scenes_json().encode(),
                  room3d_page.rules_json().encode(), room3d_page.svar_json().encode()):
         h.update(hashlib.sha256(part).digest())
     return h.hexdigest()
