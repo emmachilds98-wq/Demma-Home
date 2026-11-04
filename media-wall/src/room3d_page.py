@@ -807,7 +807,7 @@ def section(gallery=""):
     photos = json.dumps((sc["room"].get("HOUSE3") or {}).pop("photo_tex", {}), separators=(",", ":"))   # V1.9: the photos after the first picture
     data = json.dumps(sc, separators=(",", ":"))
     return f"""<div class="r3d" id="r3d">
-  <div class="r3d-stage"><canvas tabindex="0" aria-label="The living room in 3D: drag to look round, scroll or pinch to zoom; WASD or the arrow keys walk, Q and E turn"></canvas>
+  <div class="r3d-stage"><canvas tabindex="0" aria-label="The whole house in 3D: drag to look round, scroll or pinch to zoom"></canvas>
     <img class="r3d-poster" data-art="3d_room" alt="" aria-hidden="true">
     <div class="r3d-msg" id="r3d-msg">Loading the 3D room…</div>
     <p class="r3d-cap sr-only" id="r3d-cap"></p>

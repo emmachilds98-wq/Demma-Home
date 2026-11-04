@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.42 (4 Nov 2026)
+**Version:** V1.43 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -44,6 +44,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 ## The site (V1.2: the old design back)
 
+- **V1.43:** access (V1_PLAN phase 8): the 3D's label follows where you are; the brand's place line is read out (`aria-live`); `check_site.py` checks every control has a name.
 - **V1.40:** `tools/camfit.py` fits the 3D's camera to a photo (`compare.CAMS`: the WC, the office, the landing; V1.41 the kitchen, after a sweep; V1.42 the hall, in part); the WC's cistern
   raised to just under its sill, as the photo.
 - **V1.39:** the shade where things meet in the living room (the foot of its walls: `livShade`) and on the first floor's ceilings (where
@@ -59,8 +60,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **V1.33 (U8, part):** `houseShade`: soft bands where floors and flat ceilings meet the walls, and round the house on the ground.
 - **V1.32 (U7):** Be there walks through the house's rooms (`room3d.js` WALK, `walkMove`, `bodyBlocked`, `floorAtCm`, the phone's
   `.r3d-stick`); the lower landing open to the lower stairs (`model.OPEN_PAIRS`) and the store's ceiling off the flight.
-- **V1.31 (U6):** `house/model.py` `depth_rank` (a new material needs one: structure 0, finish 1, fitted 3 by default); `zfight.py`'s
-  "seen and tied" fails the checks; house materials one-sided (`?double` the old way).
+- **V1.31 (U6):** `model.depth_rank` (a new material needs one); `zfight.py`'s "seen and tied" fails the checks.
 - **V1.30 (U5):** roughness maps (wood, laminate, roof tiles: `house/textures/*_rough.jpg`, `build_textures.py --rough`); photos
   decoded off the page's thread; `checks.py`'s `sizes` line (quote it here each round).
 - **V1.29 (U4):** shaders built before the first frame (`compileAsync`), "Building the house…" meanwhile; the living room left out from
