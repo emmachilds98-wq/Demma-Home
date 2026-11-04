@@ -219,7 +219,7 @@ BATH = dict(strip_x=400.0, box_z=-191.0, box_h=125.0, slope_y0=133.0, beam_y=219
 # v67, the client's photos (inputs/photo_wc_25oct.jpg, photo_hall_*_25oct.jpg, photo_stairs_*_25oct.jpg, photo_landing_*_25oct.jpg):
 # the WC: the yellow suite, a low-level cistern under the window with its flush pipe; the small wall-hung basin on the right as you go in
 # (the plan's maroon mark), four white tiles over it, the roll holder; white pipes; laminate. Sizes E (standard).
-WC = dict(toilet=dict(x=(417.0, 453.0), d=62.0), cistern=dict(x=(412.0, 458.0), y=(78.0, 102.0), d=14.0),
+WC = dict(toilet=dict(x=(417.0, 453.0), d=62.0), cistern=dict(x=(412.0, 458.0), y=(84.0, 112.0), d=14.0),   # V1.40: its top just under the sill, 28 tall (the photo, the window its ruler: tools/camfit.py)
           basin=dict(z=(-184.0, -138.0), d=30.0, rim=80.0), tiles=dict(z=(-189.0, -133.0), y=(82.0, 136.0)),
           src="client's photo (what goes where) + standard sizes (E)")
 # the hall: the living room's flight boxed in (the tapestry on that wall) to where its landing ends; in that end, the white door down to

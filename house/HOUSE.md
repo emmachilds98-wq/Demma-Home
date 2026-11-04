@@ -86,7 +86,8 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
     off from the hall. Modelled v66.
 - **The WC (the client's photo, 25 Oct; modelled v67):** a yellow suite: a low-level cistern under the window with its flush pipe, the
   pan; the small wall-hung basin on the right as you go in (the plan's maroon mark) with four white tiles over it, the roll holder; white
-  pipes; grey wood-effect laminate; a yellow and white ceiling shade. The kitchen from its door (photo): as modelled.
+  pipes; grey wood-effect laminate; a yellow and white ceiling shade. V1.40 (the photo matched to the 3D, the window as its ruler): the
+  cistern's top just under the window's sill, about 28 tall (84–112 up; it was 78–102). The kitchen from its door (photo): as modelled.
 - **First floor:**
   - **Bathroom** 2.04 × 2.38 (agent): the sink on the left, the toilet ahead (the client), the bath along the right; a back window. Solid
     walls (black) in its top-left corner and beside the door (the room has more shape than drawn). **The sink cabinet** is the maroon
