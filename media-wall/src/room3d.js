@@ -867,7 +867,7 @@ function buildShell() {
   // breast's reveal, the breast, the recess's side, the door wall (open over the stairs), the stairs wall, the window wall
   for (const w of R.HOUSE3.living.walls) wall(w.axis, w.c, w.u[0], w.u[1], w.y[0], w.y[1], w.n, (w.tone === "r" ? rP : wP)(w.paint), w.holes);
   // v16: the hollow pipe boxing in the window's west corner, floor to ceiling, painted with the walls
-  const PX = R.PIPE_BOX;
+  const PX = R.HOUSE3.living.pipe_box;   // V1.48: from the house file
   cube(PX.x[0], 0, PX.z[0], PX.x[1] - PX.x[0], C, PX.z[1] - PX.z[0], wallP);
   // floor (carpet) and ceiling (painted, with the opening over the stairs)
   const LS = R.HOUSE3.living, [fx0, fz0, fx1, fz1] = LS.floor;   // V1.45: the floor, the ceiling's pieces and the skirting from the house file
@@ -961,7 +961,7 @@ function buildShell() {
   }
   sillPlants(wx0, wx1, SL.y, FZ + 2, WZ + SL.nose - 1);
   // the radiator under the window, painted in
-  const [rx0, rx1] = R.RADIATOR_X, [ry0, ry1] = R.RADIATOR_Y, radP = paintMat(lum("#3b6e56") / BASE_L, true, false, "trim");
+  const [rx0, rx1] = R.HOUSE3.living.radiator.x, [ry0, ry1] = R.HOUSE3.living.radiator.y, radP = paintMat(lum("#3b6e56") / BASE_L, true, false, "trim");
   for (let x = rx0; x < rx1 - 2; x += 5) cube(x, ry0, WZ + 3, 3.4, ry1 - ry0, 7, radP);
   // the coffee table (its footprint from the plan; drawn as a plain low table)
   const cof = R.COFFEE, cofM = reg(new THREE.MeshStandardMaterial({ color: "#2c2a28", roughness: 0.5 }));

@@ -271,7 +271,7 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
 
 1. ~~A walk into the living room and up its stairs~~: done in V1.38; ~~its walls, doorway and stairs in `house/model.py`~~: done in
    V1.44 (`model.living_shell`, read by the walk and the shade); V1.45 its walls, floor, ceiling and skirting drawn from it (pixel for
-   pixel as before). V1.46 its door, window opening and flight. Left (V1_PLAN Phase 5): its furniture (the media wall project and the room's pieces).
+   pixel as before). V1.46 its door, window opening and flight; V1.48 its pipe boxing and radiator: done (the furniture stays the project's pieces).
 2. **Camera-match each view to its photo** (V1.40–V1.41, in part: below): the WC, the office, the landing and the kitchen are fitted
    (`compare.CAMS`), the hall in part (V1.42); still to fit: the
    bathroom (the photo is mostly its door frame, from the landing) and the master (people and clutter over its lines): by hand from a
