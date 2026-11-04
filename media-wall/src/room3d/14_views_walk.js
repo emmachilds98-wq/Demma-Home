@@ -168,8 +168,21 @@ function walkMove(side, fwd, turn, dt) {    // -1..1 each; true if the eye moved
   const mv = d.clone().multiplyScalar(fwd * sp).add(sd.multiplyScalar(side * sp));    // cm in three's axes
   let x = x0 - mv.x, z = z0 + mv.z;                                                    // room cm (x flipped)
   const blk = (x_, z_) => bodyBlocked(x_, Math.max(WALK.feet, floorAtCm(x_, z_, WALK.feet)), z_);   // V1.38: tested where it will stand, a step up taken
+  /* V1.55, the client: "on mobile version I tried to walk into the first floor bedroom two and clipped into the living room without wanting
+     to": heading from the top of the living room's stairs for bedroom 2's door, the wall beside the stairs stopped the walk and its slide
+     along that wall took it down the stairs, a tread at a time, into the living room. A step down is now only taken on purpose: never by a
+     slide along a wall, the living room's flight only facing down it, and never off an edge (more than two treads at once, or no floor) */
+  const L = FLIGHT(), here = floorAtCm(x0, z0, WALK.feet), ref = here > -Infinity ? here : WALK.feet;
+  const onFlight = (x_, z_) => x_ > L.x0 - 4 && x_ < L.x1 && z_ > L.z0 - 12 && z_ < L.zl1;
+  const badDown = (x_, z_, slid) => {
+    const f = floorAtCm(x_, z_, WALK.feet); if (!(f < ref - 6)) return false;    // level, or up a step: fine
+    if (f < ref - 45 || slid) return true;
+    return onFlight(x_, z_) && (z_ - z0) > -0.6 * Math.hypot(x_ - x0, z_ - z0);   // the flight runs down toward -z
+  };
+  let slid = false;
   if (!blk(x0, z0) && blk(x, z)) {   // free to step out of something you start in (Be there by the guitars)
-    if (!blk(x, z0)) z = z0; else if (!blk(x0, z)) x = x0; else { x = x0; z = z0; } }
+    slid = true; if (!blk(x, z0)) z = z0; else if (!blk(x0, z)) x = x0; else { x = x0; z = z0; } }
+  if ((x !== x0 || z !== z0) && badDown(x, z, slid)) { x = x0; z = z0; }
   const fl = floorAtCm(x, z, WALK.feet);
   if (fl > -Infinity && fl > WALK.feet - 400) WALK.feet += (fl - WALK.feet) * Math.min(1, dt * 12);
   const ny = (WALK.feet + STAND_EYE) * M, moved = Math.abs(x - x0) + Math.abs(z - z0) > 1e-4 || Math.abs(ny - cam.y) > 1e-5 || !!turn;

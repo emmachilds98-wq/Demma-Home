@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.54 (4 Nov 2026)
+**Version:** V1.55 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -44,6 +44,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 ## The site (V1.2: the old design back)
 
+- **V1.55:** a walk steps down only on purpose (`walkMove` `badDown`): never by sliding along a wall (it slid down the living room's
+  stairs from their top, into the living room, on the way to bedroom 2), the living room's flight only facing down it, never off an edge.
 - **V1.53 (the client: double-click to go there, W A S D to walk, a drop-in figure, better overheads):** a double-click (`dblclick`; a
   double-tap on a phone) on any floor you see stands you there in Be there (`room3d/14_views_walk.js` `spotAt`, `goStand`, `freeSpot`;
   through a roof, the first floor down); the figure bottom right (`#r3d-peg`) drags onto the house, a ring and the room's name where it
@@ -53,8 +55,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   V1.54: the lower floor's views without the earth over the secret room (`HMATS.earth` off there). Phones (the client: "works on iPhones
   ... mainly the 15 pro"): views from above framed between the buttons (`freeFrame`, `fromAbove`); a card opened by a tap ignores that
   tap's click (`actAt`), and a double-tap's second tap on it still counts; iOS's own dblclick ignored; no callout on the figure.
-  A tablet's walking tip no longer stretched down the screen (it blocked a drag). Tried with real touches as an iPhone 15 Pro (3×), 15 Pro
-  Max, SE, Pixel 7, Galaxy S24, iPad Mini; `check_site` double-taps by touch (`window.__r3dDblMs`: the rig's slow touches only).
+  Tablet's walking tip fixed. Tried by touch as an iPhone 15 Pro, 15 Pro Max, SE, Pixel 7, Galaxy S24, iPad Mini (`window.__r3dDblMs`: rigs only).
 - **V1.52 (V1_PLAN 2.6):** the 3D's one 6,664-line `room3d.js` split into 22 parts (`media-wall/src/room3d/NN_<part>.js`), joined into the same script (the built page byte for byte the same); `checks.py`'s sizes line checks each part parses alone.
 - **V1.50 (V1_PLAN phase 3):** tap a piece in the house: its card says its size; Change its size, a stepper each (a door: width, place),
   the 3D changes as you go, As planned puts it back. Measure rows in `edits` ({item, field, value}; Send shares them), `pull_edits.py`
@@ -65,7 +66,6 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   timber boards, its plaster between the cheeks; roof tiles at 2.4 m (`textures.json`); house walls' relief (`normalScale`) down; by evening a
   dusk veil (`duskVeil`) in the house's rooms; a drag in the house's rooms turns the view in place (`lookTurn`, `inPlace`).
 - **V1.44–V1.48:** the living room's whole fixed shell (`model.living_shell`, house.json's living `shell`, four checks) (walls, floor, ceiling, skirting, door, window opening, stairs, pipe boxing, radiator) drawn from `R.HOUSE3.living` (the same to the pixel). V1_PLAN phase 5 done.
-- **V1.40–V1.42:** `tools/camfit.py` fits the 3D's camera to a photo (`compare.CAMS`: the WC, the office, the landing, the kitchen, the hall in part).
 - **V1.28 (U1–U3):** the eye is solid to the house (walls, furniture, slopes: a 20 cm ball, sliding); double-tap walks on every floor;
   zoom to the pointer; Be there's lens zooms (wheel, pinch); mode changes fly; on a phone two rows of buttons, labels a steady size,
   only the tools that work in each room (Room, Look, Edit only in the living room; Plan · Build · Buy not in the house's other rooms).
