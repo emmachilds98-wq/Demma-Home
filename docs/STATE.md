@@ -2,11 +2,11 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.29 (4 Nov 2026)
+**Version:** V1.30 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
-**The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29; work the next row).
+**The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29, U5 in V1.30; work the next row).
 
 ## Where it lives
 
@@ -43,6 +43,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 ## The site (V1.2: the old design back)
 
+- **V1.30 (U5):** roughness maps (wood, laminate, roof tiles: `house/textures/*_rough.jpg`, `build_textures.py --rough`); photos
+  decoded off the page's thread; `PHOTOS_URL` for the shared page's photos; `checks.py`'s `sizes` line (quote it here each round).
 - **V1.29 (U4):** shaders built before the first frame (`compileAsync`), "Building the house…" meanwhile; the living room left out from
   outside unless the eye is by its window (Outside 216 draws); three.js one file on Pages; `R3D.timing()` the start's steps.
 - **V1.28 (U1–U3):** the eye is solid to the house (walls, furniture, slopes: a 20 cm ball, sliding); double-tap walks on every floor;
@@ -118,7 +120,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 3. Change `house/survey_data.py` (sizes with sources) or the media wall's code; `python3 tools/build.py`; `python3 tools/checks.py`.
 4. Rewrite this file, a line in `docs/HISTORY.md`, the board; PR (the template); merge; republish the shared page (below).
 
-**Republish the shared page:** build, then publish `_site/artifact.html` with the Artifact tool to the link above with `files` for
+**Republish the shared page (V1.30: photos as an asset):** first upload `_site/photos.<hash>.json` to the shared page's asset store (Artifact
+publish with `url`, `asset: true`, the file on its own) and build again with `PHOTOS_URL=<the asset's url> python3 tools/build.py --fast`
+so `artifact.html` fetches them instead of carrying 13 MB inline (it was 15.45 of 16 MB; check the photos arrive, `R3D.photos()`; if they
+don't, build without PHOTOS_URL as before). Then publish `_site/artifact.html` with the Artifact tool to the link above with `files` for
 `media-wall/src/art/*` (255 files a call at most), keeping its capabilities (`db`, `user`, `assets`, `downloads`). `artifact.html` is the
 page without its outer tags (the shared page adds its own); its data and script are inline; the PDFs open from GitHub Pages.
 

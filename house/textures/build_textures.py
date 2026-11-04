@@ -156,5 +156,34 @@ def buff():
     (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
 
 
+# V1.30 (U5, docs/UPGRADE_REVIEW.md): where a surface's shine varies (the wood's grain, a floor's wear, the worktop's speckle, the tiles'
+# weathering), Poly Haven's roughness map of the same asset, 512 px grey (one number each before: every board shone the same all over).
+# room3d.js keeps each material's roughness on average (it divides by the map's mean, photo_meta "rough"); the same crop and turn as the photo
+# (asset, contrast round its mean: the laminate's and pine's wear is a few % as photographed, raised so it reads at a room's distance;
+# the worktop, concrete and paving vary 1-2%: left out)
+ROUGH = {"laminate": ("laminate_floor_02", 3), "pine": ("coated_pine", 2), "pine_dark": ("coated_pine", 2), "birch": ("white_maple_veneer", 1.5),
+         "oak": ("oak_veneer_01", 1), "tile": ("roof_09", 1)}
+
+
+def rough():
+    """python3 house/textures/build_textures.py --rough   fetches each 1k roughness map from Poly Haven's API (CC0) into <key>_rough.jpg"""
+    import io, urllib.request
+    get = lambda u: urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": "demmas-home-build/1.0"})).read()
+    got = {}
+    from PIL import ImageStat
+    for key, (aid, k) in ROUGH.items():
+        if aid not in got:
+            files = json.loads(get(f"https://api.polyhaven.com/files/{aid}"))
+            got[aid] = Image.open(io.BytesIO(get(files["Rough"]["1k"]["jpg"]["url"]))).convert("L")
+        im = got[aid]
+        if aid in CROP:
+            a, b, c, d = CROP[aid]; w, h = im.size; im = im.crop((int(a * w), int(b * h), int(c * w), int(d * h)))
+        im = im.resize((512, 512), Image.LANCZOS); m = ImageStat.Stat(im).mean[0]
+        # centred on 0.85: room3d.js divides each material's roughness by the map's mean, which has to stay at or under 1 for the average
+        # to hold (pine's map averaged 0.31: its 0.55 wanted 1.8)
+        im.point(lambda v: max(0, min(255, round(217 + (v - m) * k)))).save(HERE / f"{key}_rough.jpg", quality=82, optimize=True)
+        print("rough", key, aid)
+
+
 if __name__ == "__main__":
-    buff() if sys.argv[1:] == ["--buff"] else main(sys.argv[1])
+    buff() if sys.argv[1:] == ["--buff"] else rough() if sys.argv[1:] == ["--rough"] else main(sys.argv[1])

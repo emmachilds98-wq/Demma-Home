@@ -499,7 +499,7 @@ function loadPhotos() {
   const el = document.getElementById("photo-data"), src = el && el.dataset.src, txt = el && el.textContent.trim();
   return (photosIn = (txt ? Promise.resolve(txt) : src ? fetch(src).then(r => r.ok ? r.text() : "{}") : Promise.resolve("{}"))
     .then(t => JSON.parse(t)).catch(() => ({})).then(P => {
-      for (const t of Object.values(P)) for (const f of ["map", "nor"]) if (typeof t[f] === "string" && t[f][0] === "@") { const [k, g] = t[f].slice(1).split("."); t[f] = P[k][g]; }   // a shared picture, sent once
+      for (const t of Object.values(P)) for (const f of ["map", "nor", "rough"]) if (typeof t[f] === "string" && t[f][0] === "@") { const [k, g] = t[f].slice(1).split("."); t[f] = P[k][g]; }   // a shared picture, sent once
       Object.assign(PHOTO, P); photosDone = true; PWAIT.splice(0).forEach(w => w());
     }));
 }
@@ -509,25 +509,31 @@ const texClone = t => { const c = t.clone(); TEX_CLONES.has(t) ? TEX_CLONES.get(
 TEX_CLONES.set(OAK_TEX, [OAK_TEX_V]);   // V1.12: the doors' upright oak, cloned before this list (it kept the drawn oak's texture: the site check's WebGL error)
 /* V1.12: dispose first: WebGL2 keeps a texture at the size it was first sent (immutable storage), so a 1024 photo sent into its 4 × 4
    stand-in never showed (V1.9 to V1.11: the house's photos stayed their mean colour); disposed, it's made again at the photo's size */
-function texSet(tex, img) { for (const t of [tex, ...(TEX_CLONES.get(tex) || [])]) { t.dispose(); t.image = img; t.needsUpdate = true; } }
+function texSet(tex, img) { const bmp = typeof ImageBitmap !== "undefined" && img instanceof ImageBitmap;   // V1.30: a bitmap comes flipped already
+  for (const t of [tex, ...(TEX_CLONES.get(tex) || [])]) { t.dispose(); t.image = img; t.flipY = !bmp; t.needsUpdate = true; } }
+/* V1.30 (U5): a photo decoded off the page's thread (createImageBitmap; it was decoded as it was first drawn, a stall each), flipped for
+   WebGL as three expects; an <img> where that isn't there */
+function decodeImg(src, flip = true) {
+  const tag = () => new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = src; });
+  if (!window.createImageBitmap) return tag();
+  return fetch(src).then(r => r.blob()).then(b => createImageBitmap(b, { imageOrientation: flip ? "flipY" : "none" })).catch(tag);
+}
 function photoInto(tex, k, f, match = true) {
   if (!PHOTOS) return;
   whenPhoto(k, f, src => {
-    const im = new Image();
-    im.onload = () => {
+    decodeImg(src, !(match && tex.image && tex.image.getContext)).then(im => {
       let out = im;
       if (match && tex.image && tex.image.getContext) {
         const avg = d => { const t = [0, 0, 0]; for (let i = 0; i < d.length; i += 4) { t[0] += d[i]; t[1] += d[i + 1]; t[2] += d[i + 2]; } return t.map(v => v / (d.length / 4) || 1); };
         const was = tex.image, want = avg(was.getContext("2d").getImageData(0, 0, was.width, was.height).data);
-        out = document.createElement("canvas"); out.width = im.naturalWidth; out.height = im.naturalHeight;
+        out = document.createElement("canvas"); out.width = im.naturalWidth || im.width; out.height = im.naturalHeight || im.height;
         const g = out.getContext("2d"); g.drawImage(im, 0, 0);
         const px = g.getImageData(0, 0, out.width, out.height), d = px.data, k = avg(d).map((v, i) => want[i] / v);
         for (let i = 0; i < d.length; i += 4) { d[i] *= k[0]; d[i + 1] *= k[1]; d[i + 2] *= k[2]; }   // clamped at 255 by the array
         g.putImageData(px, 0, 0);
       }
       texSet(tex, out); dirty();
-    };
-    im.src = src;
+    });
   });
 }
 const flatNormal = () => canvasTex(4, 4, (g, w, h) => { g.fillStyle = "#8080ff"; g.fillRect(0, 0, w, h); }, false);
@@ -5564,8 +5570,10 @@ function houseTex(k) {
   const pkey = { party: "brick", soldier: "brick", pillow: "duvet", mattress: "duvet" }[k] || k, pm = PMETA[pkey];   // V1.21: the bedding's one cotton
   if (pm && pm.map) {   // V1.9: its mean colour and a flat relief until the photos land (loadPhotos), then the photo in the same texture
     const img = (f, srgb, fill) => { const t = canvasTex(4, 4, g => { g.fillStyle = fill; g.fillRect(0, 0, 4, 4); }, srgb);   // V1.11: as sharp at a slant as the card allows (was 4)
-      whenPhoto(pkey, f, src => { const im = new Image(); im.onload = () => { texSet(t, im); reshadow(); dirty(); }; im.src = src; }); return t; };
-    return (HTEX[k] = { map: img("map", true, pm.avg || "#888888"), normal: pm.nor ? img("nor", false, "#8080ff") : null, size: [pm.size, pm.size], bump: 0 });
+      whenPhoto(pkey, f, src => { decodeImg(src).then(im => { texSet(t, im); reshadow(); dirty(); }); }); return t; };
+    const rg = pm.rough ? Math.round(pm.rough * 255) : 0, grey = `rgb(${rg},${rg},${rg})`;   // V1.30 (U5): its roughness map, if it has one
+    return (HTEX[k] = { map: img("map", true, pm.avg || "#888888"), normal: pm.nor ? img("nor", false, "#8080ff") : null, size: [pm.size, pm.size], bump: 0,
+      rough: pm.rough && !LOWD ? img("rough", false, grey) : null, roughMean: pm.rough || 0 });
   }
   let s = 7 + k.length * 101; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
   const noise = (g, w, h, n, a, cols) => { for (let i = 0; i < n; i++) { g.fillStyle = cols[i % cols.length]; g.globalAlpha = a * rnd(); g.fillRect(rnd() * w, rnd() * h, 1 + rnd() * 2, 1 + rnd() * 2); } g.globalAlpha = 1; };
@@ -5954,7 +5962,7 @@ function buildHouse() {
       const m = reg(new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, toneMapped: false }));
       m.clippingPlanes = []; m.userData.hk = "contact"; return m; };
     const m3 = {}, mat3 = k => m3[k] || (m3[k] = k === "contact" ? contactMat() : (() => { const [c, r] = H3.mats[k] || ["#cccccc", 0.9], gl3 = k === "glass", T = houseTex(k);
-      const m = reg(new THREE.MeshStandardMaterial({ color: T ? "#ffffff" : c, map: T ? T.map : null, bumpMap: T && T.bump ? T.map : null, bumpScale: T ? T.bump : 1, normalMap: T && T.normal || null, roughness: r, metalness: k === "brass" || k === "chrome" || k === "steel" ? 0.8 : k === "mirror" ? 0.25 : 0, transparent: gl3, opacity: gl3 ? 0.14 : 1,   /* V1.13: clear (0.3 tinted the outside blue-green) */ depthWrite: !gl3, side: THREE.DoubleSide,
+      const m = reg(new THREE.MeshStandardMaterial({ color: T ? "#ffffff" : c, map: T ? T.map : null, bumpMap: T && T.bump ? T.map : null, bumpScale: T ? T.bump : 1, normalMap: T && T.normal || null, roughness: T && T.rough ? Math.min(1, r / T.roughMean) : r, roughnessMap: T && T.rough || null, metalness: k === "brass" || k === "chrome" || k === "steel" ? 0.8 : k === "mirror" ? 0.25 : 0, transparent: gl3, opacity: gl3 ? 0.14 : 1,   /* V1.13: clear (0.3 tinted the outside blue-green) */ depthWrite: !gl3, side: THREE.DoubleSide,
         emissive: { led: "#ffffff", pc_glow: "#cfe0ff", screen: "#1b2433" }[k] || "#000000", emissiveIntensity: { led: 1.5, pc_glow: 0.9, screen: 0.6 }[k] || 0 }));   // v60: the kitchen's LED battens glow; v61: the PC's glass, the screens
       m.envMapIntensity = 0.15;   // v60: the reflections are the living room's (its LEDs tinted the kitchen's white walls pink)
       if (!LOWD) { m.userData.hk = k; m.envMap = houseEnv(); m.envMapIntensity = finishEnv(m); }   // v73: one neutral room, made once (V1.13: the iPhones too)

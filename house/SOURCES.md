@@ -20,4 +20,8 @@ the area one copy of the picture covers.
 | The living room's painted walls (V1.1, the plaster's relief only) | [white_plaster_02](https://polyhaven.com/a/white_plaster_02) | 1.6 m | relief only (the walls keep your pale mint) |
 | The living room's carpet and the oatmeal (V1.1) | Carpet012, as above | 0.5 m | in the page, scaled to your grey and the oatmeal |
 
+V1.30 (`docs/UPGRADE_REVIEW.md` U5): the **roughness maps** of the same CC0 assets (Poly Haven's API, 1k, made 512 px grey by
+`build_textures.py --rough`): laminate_floor_02, coated_pine (pine, dark pine), white_maple_veneer (birch), oak_veneer_01, roof_09; centred on
+0.85 so each material keeps its roughness on average, the laminate's and pine's contrast raised (3×, 2×).
+
 Everything else is drawn in the page (`room3d.js` `houseTex`), sized from the real things (tiles 60 × 30 and 60 × 60, metro 20 × 10, bricks 21.5 × 6.5).

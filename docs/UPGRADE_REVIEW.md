@@ -132,7 +132,7 @@ From the phone screenshots:
 | U2 | Zoom and smooth moves | 2.8 (zoom to the pointer, lens pinch, smooth wheel), 5.3, a 60–65° lens (3.1) | Small | Done (V1.28) |
 | U3 | Phone buttons | Section 6 and screen-size labels (3.4) | Small | Done (V1.28) |
 | U4 | First picture sooner | 2.1 (house first), 2.2 (bundle), 2.3, 2.4, 2.7 | Medium | Done (V1.29) |
-| U5 | Photos | 2.5, 2.6, 3.2 (KTX2, roughness, the shared page under its limit); this is QUALITY_PLAN Q5 | Medium | Not started |
+| U5 | Photos | 2.5, 2.6, 3.2 (KTX2, roughness, the shared page under its limit); this is QUALITY_PLAN Q5 | Medium | Done (V1.30) |
 | U6 | Flicker | 1.5–1.7 and a stricter `zfight.py` | Small | Not started |
 | U7 | Walk the house | 5.1, 5.2, 5.4 | Large | Not started |
 | U8 | Baked light | 3.3, 3.5 | Large | Not started |
@@ -168,3 +168,12 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
   shared page), one request (were about 15 in three waves). First picture here 8.4 s (was 16.1). **Changed from the review:** the living
   room is still built at the start (it shows in the ground floor and through its window, so it can't wait); the waiting is what was cut.
   Next: the iPhones' `?perf` and `R3D.timing()` numbers.
+- **U5 (V1.30):** roughness maps (Poly Haven's, the same CC0 assets) on the laminate, the pine and dark pine, the birch, the oak and the
+  roof tiles, centred so each material keeps its roughness on average (a stand-in of the map's mean from the start: no shader is built
+  again when it lands; not on a phone without a capable chip). Photos decode off the page's thread (`createImageBitmap`, flipped for
+  WebGL; an `<img>` where that isn't there). `checks.py` has a `sizes` line (the page, the photos, three's file, the shared page, the
+  sizes to measure): it fails at 16 MB. The shared page can fetch its photos from its own asset store (`PHOTOS_URL`, STATE.md
+  "Republish"): about 2 MB, was 15.86 inline (the roughness maps added 0.4). **Changed from the review:** WebP saves only 10% here
+  (the normal maps don't shrink), so the photos stay JPEG; KTX2 waits for the iPhones' `?perf` numbers (it needs a Basis encoder in the
+  build, and saves graphics memory, not download); the living room's four photos are still matched to their colours as they load (a
+  few tens of ms, after the first picture).
