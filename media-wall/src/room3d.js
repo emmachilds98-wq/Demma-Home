@@ -861,22 +861,17 @@ function buildShell() {
   const wallP = wP("window"), recP = rP("door"), ceilP = paintMat(lum("#33604a") / BASE_L, false, false, "ceil");
   const egg = paintMat(lum("#346650") / BASE_L, true, false, "trim");
   const C = R.CEIL, Wd = R.W, A = R.ALC_W, AD = R.ALC_D, [B0, B1] = R.BREAST_X, RZ = R.RECESS_Z, WZ = R.WINDOW_Z;
-  const [dx0, dx1] = R.DOOR_X, [sx0, sx1] = R.STAIR_X, [wx0, wx1] = R.WINDOW_X, [wy0, wy1] = R.WINDOW_Y;
-  wall("x", 0, WZ, 0, 0, C, [1, 0, 0], wP("pc"));                                 // the side (east) wall: the PC wall
-  wall("x", 0, 0, AD, 0, C, [1, 0, 0], wP("media"));                              // ... and into the alcove, with the media wall
-  wall("z", AD, 0, A, 0, C, [0, 0, -1], wP("media"));                             // the alcove's back
-  wall("x", B0, 0, AD, 0, C, [-1, 0, 0], rP("media"));                             // the breast's reveal
-  wall("z", 0, B0, B1, 0, C, [0, 0, -1], wP("breast"));                            // the chimney breast
-  wall("x", B1, 0, RZ, 0, C, [1, 0, 0], rP("breast"));                             // the recess's side (the breast's return)
-  wall("z", RZ, B1, Wd, 0, C, [0, 0, -1], rP("door"), [[dx0, dx1, 0, R.DOOR_H], [sx0, Wd, 0, C]]);   // the door wall, open over the stairs
-  wall("x", Wd, WZ, RZ, 0, C, [-1, 0, 0], wP("stairs"));                           // the stairs (west) wall
-  wall("z", WZ, 0, Wd, 0, C, [0, 0, 1], wP("window"), [[wx0, wx1, wy0, wy1]]);     // the window wall
+  const [dx0, dx1] = R.DOOR_X, [wx0, wx1] = R.WINDOW_X, [wy0, wy1] = R.WINDOW_Y;
+  // V1.45 (V1_PLAN phase 5): the walls from the house file (model.living_shell): the PC wall, into the alcove, the alcove's back, the
+  // breast's reveal, the breast, the recess's side, the door wall (open over the stairs), the stairs wall, the window wall
+  for (const w of R.HOUSE3.living.walls) wall(w.axis, w.c, w.u[0], w.u[1], w.y[0], w.y[1], w.n, (w.tone === "r" ? rP : wP)(w.paint), w.holes);
   // v16: the hollow pipe boxing in the window's west corner, floor to ceiling, painted with the walls
   const PX = R.PIPE_BOX;
   cube(PX.x[0], 0, PX.z[0], PX.x[1] - PX.x[0], C, PX.z[1] - PX.z[0], wallP);
   // floor (carpet) and ceiling (painted, with the opening over the stairs)
-  const floor = new THREE.Mesh(new THREE.PlaneGeometry(Wd * M, (RZ - WZ) * M), floorMat = reg(new THREE.MeshStandardMaterial({ map: CARPET, roughness: 1, bumpMap: PILE, bumpScale: 0.5 })));
-  floor.rotation.x = -Math.PI / 2; floor.position.copy(v3(Wd / 2, 0, (RZ + WZ) / 2)); floor.receiveShadow = true; shell.add(floor);
+  const LS = R.HOUSE3.living, [fx0, fz0, fx1, fz1] = LS.floor;   // V1.45: the floor, the ceiling's pieces and the skirting from the house file
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry((fx1 - fx0) * M, (fz1 - fz0) * M), floorMat = reg(new THREE.MeshStandardMaterial({ map: CARPET, roughness: 1, bumpMap: PILE, bumpScale: 0.5 })));
+  floor.rotation.x = -Math.PI / 2; floor.position.copy(v3((fx0 + fx1) / 2, 0, (fz0 + fz1) / 2)); floor.receiveShadow = true; shell.add(floor);
   const wx = R.WELL_X0, front = R.STAIR_FRONT;
   ceilGlow = canvasTex(512, 512, (g, w, h) => {     // the strip's glow on the ceiling, brightest at the edges
     g.fillStyle = "#2c261f"; g.fillRect(0, 0, w, h);    // the bounce over the whole ceiling, then the glow along each edge
@@ -889,16 +884,13 @@ function buildShell() {
   ceilGlow.wrapS = ceilGlow.wrapT = THREE.ClampToEdgeWrapping;
   ceilMat = ceilP.clone(); ceilMat.emissiveMap = ceilGlow; ceilMat.emissive = new THREE.Color("#ffe2c0"); ceilMat.userData = { ratio: ceilP.userData.ratio, ch: "ceil" };
   paintMats.set("ceilglow", reg(ceilMat));
-  for (const [xa, xb, za, zb] of [[0, wx, WZ, RZ], [wx, Wd, WZ, front]]) {
+  for (const [xa, xb, za, zb] of LS.ceiling) {
     const m = new THREE.Mesh(new THREE.PlaneGeometry((xb - xa) * M, (zb - za) * M), ceilMat);
     m.rotation.x = Math.PI / 2; m.position.copy(v3((xa + xb) / 2, C, (za + zb) / 2)); m.receiveShadow = true; m.castShadow = true; shell.add(m);   // v48: and the ceiling
   }
   livShade();
   // skirting, eggshell in the wall colour
-  const sk = R.SKIRT_H, st = 2;
-  [[0, WZ, st, sk, AD - WZ], [B1, 0, st, sk, RZ]].forEach(([x, z, w, h, d]) => cube(x, 0, z, w, h, d, egg, false));
-  [[0, AD - st, A], [B0, -st, B1 - B0], [B1, RZ - st, dx0 - 6 - B1], [dx1 + 6, RZ - st, sx0 - dx1 - 6], [0, WZ, Wd]].forEach(([x, z, w]) => cube(x, 0, z, w, sk, st, egg, false));
-  cube(Wd - st, 0, WZ, st, sk, R.STAIR_FRONT - WZ, egg, false);
+  for (const [x0, y0, z0, x1, y1, z1] of LS.skirting) cube(x0, y0, z0, x1 - x0, y1 - y0, z1 - z0, egg, false);
   // the door, shut, with its frame and handle
   // v20, client: "door of room is also white": the door and its frame stay white satin, not the wall colour
   const doorW = reg(new THREE.MeshStandardMaterial({ color: "#efece5", roughness: 0.35 })), frameW = reg(new THREE.MeshStandardMaterial({ color: "#f3f1eb", roughness: 0.4 }));
