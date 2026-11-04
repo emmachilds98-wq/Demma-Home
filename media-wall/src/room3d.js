@@ -5466,7 +5466,7 @@ function setRmode(m, quiet) {
     if (RMODE === "alone") planes.push(P(1, 0, 0, x1 + g), P(-1, 0, 0, -(x0 - g)), P(0, 1, 0, -(fy - 30)), P(0, 0, 1, -(z0 - g)), P(0, 0, -1, z1 + g)); }
   RPLANES = planes;
   for (const m_ of Object.values(HMATS || {})) { m_.clippingPlanes = planes; m_.clipIntersection = false; m_.clipShadows = planes.length > 0; m_.needsUpdate = true; }   // union: outside any plane goes
-  for (const k of ["tile", "ceiling"]) if (HMATS && HMATS[k]) HMATS[k].visible = !rr;   // v81: the roof's tiles off too (its low eaves lay over the bathroom's corner from above); v82 the ceilings and slopes below the cut (the bathroom's dormer ceiling)
+  for (const k of ["tile", "ceiling", "shade_ceil"]) if (HMATS && HMATS[k]) HMATS[k].visible = !rr;   // V1.33: and the ceilings' shade   // v81: the roof's tiles off too (its low eaves lay over the bathroom's corner from above); v82 the ceilings and slopes below the cut (the bathroom's dormer ceiling)
   hidMode.forEach(o => o.visible = true); hidMode = []; applyFloors();
   if (rr && (RMODE === "alone" || rr[4] < 0)) scene.children.forEach(o => { if (o !== houseG && o !== lightRig && !o.isLight && o !== (sun && sun.target) && o.visible) { o.visible = false; hidMode.push(o); } });
   if (rr && RMODE === "alone") { const fk = { "-260": "lower", "0": "ground", "260": "first" }[String(rr[4])];   // only the room's own floor
@@ -6024,6 +6024,38 @@ function worldUV(geo, k, off) {
   }
   geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2)); return geo;
 }
+/* V1.33 (U8, docs/UPGRADE_REVIEW.md), the client: "better in quality": the shade where things meet, made once: a soft dark band along
+   every room's floor at its walls (and along its ceiling where the ceiling is flat: the lower and ground floors), and round the house
+   where it meets the ground (the drive in front, the garden behind), so it sits on the ground and its rooms have corners. One mesh a
+   floor; on every device (the live shade, GTAO, is only on the capable ones in HD); never in the way of a tap */
+function houseShade(H3, m3) {
+  const tex = canvasTex(4, 64, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h);
+    gr.addColorStop(0, "rgba(0,0,0,0.36)"); gr.addColorStop(0.35, "rgba(0,0,0,0.13)"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.clearRect(0, 0, w, h); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, false);
+  tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+  const mk = () => { const m = reg(new THREE.MeshBasicMaterial({ color: "#000000", alphaMap: null, map: tex, transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide,
+    polygonOffset: true, polygonOffsetFactor: 0, polygonOffsetUnits: -10 })); m.clippingPlanes = []; return m; };
+  const matF = m3.shade_floor = mk(), matC = m3.shade_ceil = mk();
+  const band = (pos, uv, a, b, inward, y, w, up) => {   // a quad from the edge a-b (room cm, at height y) w cm towards inward (unit [dx, dz])
+    const P = [a, b, [b[0] + inward[0] * w, b[1] + inward[1] * w], [a[0] + inward[0] * w, a[1] + inward[1] * w]].map(([x, z]) => v3(x, y, z));
+    const tri = up ? [0, 2, 1, 0, 3, 2] : [0, 1, 2, 0, 2, 3], U = [[0, 1], [1, 1], [1, 0], [0, 0]];   // v 1 (the canvas's dark top) at the wall
+    for (const i of tri) { pos.push(P[i].x, P[i].y, P[i].z); uv.push(U[i][0], U[i][1]); } };
+  const mesh = (pos, uv, mat, into) => { if (!pos.length) return; const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); g.computeVertexNormals();
+    const me = new THREE.Mesh(g, mat); me.raycast = () => {}; me.renderOrder = 1; into.add(me); };
+  const FK = { "-260": "lower", "0": "ground", "260": "first" }, per = {};
+  for (const [id, r] of Object.entries(H3.rooms || {})) {
+    const fk = FK[String(r[4])]; if (!fk || !HFLOOR[fk]) continue;
+    const [x0, x1, z0, z1, fy] = r, W = Math.min(26, (x1 - x0) / 3, (z1 - z0) / 3), P = per[fk] = per[fk] || { f: [[], []], c: [[], []] };
+    const edges = [[[x0, z0], [x1, z0], [0, 1]], [[x1, z1], [x0, z1], [0, -1]], [[x0, z1], [x0, z0], [1, 0]], [[x1, z0], [x1, z1], [-1, 0]]];
+    for (const [a, b, n] of edges) band(P.f[0], P.f[1], a, b, n, fy + 0.3, W, true);
+    if (fk !== "first") for (const [a, b, n] of edges) band(P.c[0], P.c[1], a, b, n, fy + (H3.ceil || 235) - 0.3, W * 0.8, false);   // flat ceilings only (the first floor's slope)
+  }
+  for (const [fk, P] of Object.entries(per)) { mesh(P.f[0], P.f[1], matF, HFLOOR[fk]); mesh(P.c[0], P.c[1], matC, fk === "lower" ? HFLOOR.ground : HFLOOR[fk] === HFLOOR.ground ? (HFLOOR.first || HFLOOR.ground) : HFLOOR[fk]); }
+  // round the house, on the ground: the drive's level in front, the garden's behind (the outline's outer faces, zfight.OUTER)
+  const pos = [], uv = [], fr = H3.front || 527.4, bk = H3.back || -337, dr = (H3.drive ?? -15) + 0.3, lw = (H3.lawn ?? -260) + 0.3;
+  band(pos, uv, [482, fr], [-28, fr], [0, 1], dr, 70, true); band(pos, uv, [-28, bk], [482, bk], [0, -1], lw, 90, true);
+  mesh(pos, uv, mk(), houseG);
+}
 function buildHouse() {
   const HS = R.HOUSE; if (!HS) return;
   houseG = new THREE.Group(); houseG.visible = false; scene.add(houseG);
@@ -6145,6 +6177,7 @@ function buildHouse() {
       hsolidSet(fk, F); if (HSOLID[fk]) HSOLID[fk].g = cur;   // V1.28: solid to the eye (shown with its floor)
     };
     for (const [fk, F] of Object.entries(H3.floors)) HBUILD(fk, editedFloor(fk, F));
+    houseShade(H3, m3);
   }
   for (const F of H3 ? [] : HS) {
     cur = HFLOOR[F.id] = new THREE.Group(); houseG.add(cur);

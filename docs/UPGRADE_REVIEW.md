@@ -135,7 +135,7 @@ From the phone screenshots:
 | U5 | Photos | 2.5, 2.6, 3.2 (KTX2, roughness, the shared page under its limit); this is QUALITY_PLAN Q5 | Medium | Done (V1.30) |
 | U6 | Flicker | 1.5–1.7 and a stricter `zfight.py` | Small | Done (V1.31) |
 | U7 | Walk the house | 5.1, 5.2, 5.4 | Large | Done (V1.32) |
-| U8 | Baked light | 3.3, 3.5 | Large | Not started |
+| U8 | Baked light | 3.3, 3.5 | Large | Done, part (V1.33) |
 | U9 | Measured | 4.1–4.3 (needs the client's scans) | Needs the client | Not started |
 
 U1 to U3 can each be done in one round and fix what the client sees most. U4 and U5 make the biggest difference on the iPhones.
@@ -193,3 +193,10 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
   store's ceiling lying across the flight's steps (it now stops at the flight, as its wall does since V1.20). **Not yet:** the living room
   isn't in the house file (it's drawn on its own), so a walk can't go into it or up its stairs to the first floor; its doorway is shut to
   a walk and the views take you there. Next: bring its walls, doorway and stairs into `house/model.py` (V1_PLAN Phase 5).
+- **U8 (V1.33), in part:** the shade where things meet, made once when the house is built (`room3d.js` `houseShade`): a soft band along
+  every room's floor at its walls, along the flat ceilings (the lower and ground floors; the first floor's slope would need its own), and
+  round the house on the ground (the drive in front, the garden behind), so it sits on the ground. Three or four draws a floor, on every
+  device (the live shade, GTAO, only runs on the capable ones in HD); hidden with the ceilings in Above and On its own. **Not done:**
+  light baked from the sun and the lamps into the walls (light maps). It needs a renderer in the build (Blender, minutes a floor, a
+  second UV set for every piece) and a picture per surface in the download; worth it only if the iPhones' numbers show room to spare.
+  Next steps: the first floor's sloped ceilings' shade; the living room drawn from the house file would get the same bands.
