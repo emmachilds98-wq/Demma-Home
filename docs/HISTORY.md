@@ -180,3 +180,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V1.31** (4 Nov 2026): U6, flicker: each material's depth rank decides faces in one plane (29 that can be seen, none tied now; the checks fail on any); the house's materials one-sided
 - **V1.32** (4 Nov 2026): U7, walking the house: Be there walks (keys, a stick on a phone), a body that climbs stairs, slides along walls and opens doors, the room following you; found walking: a wall across the foot of the lower stairs and the store's ceiling across its steps (both gone)
 - **V1.33** (4 Nov 2026): U8 (in part): the shade where floors and ceilings meet the walls in every room, and round the house where it meets the ground, made once, on every device
+- **V1.34** (4 Nov 2026): U9 (in part): `tools/compare.py` lays the 3D's edges over the client's photo for seven rooms; the upgrade review's next steps listed in `docs/UPGRADE_REVIEW.md`

@@ -2,11 +2,11 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.33 (4 Nov 2026)
+**Version:** V1.34 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
-**The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29, U5 in V1.30, U6 in V1.31, U7 in V1.32, U8 in part in V1.33; work the next row).
+**The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29, U5 in V1.30, U6 in V1.31, U7 in V1.32, U8 in part in V1.33, U9 in part in V1.34; its "Next" list is the work to take on).
 
 ## Where it lives
 
@@ -43,6 +43,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 ## The site (V1.2: the old design back)
 
+- **V1.34 (U9, part):** `python3 tools/compare.py`: seven rooms beside their photos, the 3D's edges over each (`_shots/compare.jpg`).
 - **V1.33 (U8, part):** `houseShade`: soft bands where floors and flat ceilings meet the walls, and round the house on the ground.
 - **V1.32 (U7):** Be there walks through the house's rooms (`room3d.js` WALK, `walkMove`, `bodyBlocked`, `floorAtCm`, the phone's
   `.r3d-stick`); the lower landing open to the lower stairs (`model.OPEN_PAIRS`) and the store's ceiling off the flight. The living room
@@ -144,7 +145,13 @@ page without its outer tags (the shared page adds its own); its data and script 
 
 Quality is under View → More (HD or Fast). `?perf` at the end of the address shows the counts in a corner: the screenshot to send.
 
-## Numbers (28 Oct, software graphics in a test browser: relative, not a phone's)
+## Numbers (4 Nov, V1.34; `checks.py`'s `sizes` line, and software graphics in a test browser: relative, not a phone's)
+
+- `sizes`: page 2.1 MB, photos 13.7 MB (the roughness maps added 0.4), three.js 0.86 MB own file, shared page 15.85 MB of 16 (2 MB with
+  `PHOTOS_URL`), 21 sizes to measure.
+- The first picture (V1.29): 8.4 s here, was 16.1 (the shaders built first, the frame itself 54 ms). Outside 216 draws (was 659).
+
+## Numbers before (28 Oct)
 
 - The living room in HD with the shade on (V1.1): 364 draws, 119k triangles, 112 shaders. The workflow no longer renders stills (5–9 min).
 - **The photos after the first picture (V1.9):** on Pages they're a file of their own (`photos.<hash>.json`, 10.4 MB since V1.12's 19 sets,

@@ -136,7 +136,7 @@ From the phone screenshots:
 | U6 | Flicker | 1.5–1.7 and a stricter `zfight.py` | Small | Done (V1.31) |
 | U7 | Walk the house | 5.1, 5.2, 5.4 | Large | Done (V1.32) |
 | U8 | Baked light | 3.3, 3.5 | Large | Done, part (V1.33) |
-| U9 | Measured | 4.1–4.3 (needs the client's scans) | Needs the client | Not started |
+| U9 | Measured | 4.1–4.3 (needs the client's scans) | Needs the client | Done, part (V1.34); the scans need the client |
 
 U1 to U3 can each be done in one round and fix what the client sees most. U4 and U5 make the biggest difference on the iPhones.
 Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, then update this table and the notes below.**
@@ -200,3 +200,19 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
   light baked from the sun and the lamps into the walls (light maps). It needs a renderer in the build (Blender, minutes a floor, a
   second UV set for every piece) and a picture per surface in the download; worth it only if the iPhones' numbers show room to spare.
   Next steps: the first floor's sloped ceilings' shade; the living room drawn from the house file would get the same bands.
+- **U9 (V1.34), in part:** `tools/compare.py`: each room's view beside the client's photo it was modelled from, at the photo's shape,
+  with the 3D's edges in red over the photo (`_shots/compare.jpg`; seven views). The views' cameras are only roughly where the photos
+  were taken, so for now it's a guide; it already backs V1.32: the kitchen photo shows the lower stairs through the kitchen's doorway
+  (the stairs open onto the lower landing). `checks.py`'s `sizes` line gives STATE's numbers. **Needs the client:** the room scans
+  (iPhone 15 Pro's LiDAR) and the 21 sizes in Measure, when they can measure.
+
+## Next (found while working; agents: take these in order)
+
+1. **The living room into the house file** (V1_PLAN Phase 5): its walls, doorway and stairs as boxes in `house/model.py`, so a walk goes
+   in and up to the first floor, the eye's collision and the shade bands cover it, and it's one model.
+2. **Camera-match each view to its photo** with `tools/compare.py` (move each view's eye, aim and lens until the red lines sit on the
+   photo), then fix the sizes whose lines still miss: the accuracy pass that needs no tape measure.
+3. **The client's iPhones' numbers**: `?perf` and `R3D.timing()` from each, then decide KTX2 (U5) and light maps (U8).
+4. **Republish the shared page** with `PHOTOS_URL` (STATE.md, "Republish"): about 2 MB, was 15.85 of its 16.
+5. **The first floor's sloped ceilings' shade** (U8) and **the floor labels nudged apart** on a phone (U3).
+6. **A photo from the foot of the lower stairs** to confirm V1.32's opening (STATE.md's questions).
