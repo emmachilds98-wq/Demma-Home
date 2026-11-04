@@ -1,6 +1,7 @@
 """v14: the 3D room's piece of the plan page: its controls, its data and its script (room3d.js), plus a standalone copy for
 the headless stills (shot3d.py). Three.js comes from jsDelivr, pinned."""
 import html, json, pathlib
+import room3d_src
 import scenes
 import ideas
 import render as R
@@ -867,7 +868,7 @@ def section(gallery=""):
 <script type="application/json" id="opt-data">{opts_json()}</script>
 <script type="application/json" id="tour-data">{json.dumps(dict(stops=tour(), pages=PAGES_URL), separators=(",", ":"))}</script>
 <script type="application/json" id="hotspots-data">{json.dumps(hotspots(), separators=(",", ":"))}</script>
-<script type="module">{(HERE / "room3d.js").read_text()}</script>
+<script type="module">{room3d_src.js()}</script>
 <script type="module">{(HERE / "measure.js").read_text()}</script>
 <script type="application/json" id="photo-data">{photos}</script>
 <script>{DRAWER_JS}</script>
@@ -907,7 +908,7 @@ def embed(path, art="../art/"):
     for old in list(out.glob("scene.*.json")) + list(out.glob("room3d.*.js")):
         old.unlink()
     data = json.dumps(json.loads((HERE / "scene3d.json").read_text()), separators=(",", ":"))
-    js = (HERE / "room3d.js").read_text()
+    js = room3d_src.js()
     h = lambda s: hashlib.sha256(s.encode()).hexdigest()[:10]
     scene, script = f"scene.{h(data)}.json", f"room3d.{h(js)}.js"
     (out / scene).write_text(data); (out / script).write_text(js)

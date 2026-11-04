@@ -6,6 +6,7 @@ The page's import map points "three" and every add-on room3d.js imports at the o
 loaded once). Without Node or the packages (`npm ci`, package.json) the build keeps the CDN's import map, as before; the shared page
 always keeps the CDN's (tools/build.py artifact(): its size limit)."""
 import hashlib, json, pathlib, re, shutil, subprocess, tempfile
+import room3d_src
 
 HERE = pathlib.Path(__file__).parent
 ROOT = HERE.parents[1]
@@ -13,7 +14,7 @@ ROOT = HERE.parents[1]
 
 def addons():
     """[(name, specifier)] for every `import { X } from "three/addons/..."` in room3d.js"""
-    src = (HERE / "room3d.js").read_text()
+    src = room3d_src.js()
     return re.findall(r'^import \{ (\w+) \} from "(three/addons/[^"]+)";', src, flags=re.M)
 
 
@@ -28,7 +29,7 @@ def bundle(site):
     names = addons()
     with tempfile.TemporaryDirectory(dir=ROOT / "node_modules") as d:   # inside node_modules' folder, so "three" resolves
         entry, out = pathlib.Path(d) / "entry.js", pathlib.Path(d) / "out.js"
-        used = sorted(set(re.findall(r"\bTHREE\.([A-Za-z_]\w*)", (HERE / "room3d.js").read_text())))   # only the names room3d.js uses (836 KB, was 960 with all of three)
+        used = sorted(set(re.findall(r"\bTHREE\.([A-Za-z_]\w*)", room3d_src.js())))   # only the names room3d.js uses (836 KB, was 960 with all of three)
         entry.write_text(f'export {{ {", ".join(used)} }} from "three";\n' + "".join(f'export {{ {n} }} from "{s}";\n' for n, s in names))
         r = subprocess.run([str(esb), str(entry), "--bundle", "--format=esm", "--minify", "--target=es2020", "--legal-comments=none",
                             f"--outfile={out}"], capture_output=True, text=True, cwd=ROOT)

@@ -73,7 +73,22 @@ def sizes():
     hj = json.loads((SITE / "data/house.json").read_text()) if (SITE / "data/house.json").exists() else {}
     msg = (f"page {mb(SITE / 'index.html'):.1f} MB, photos {mb(ph) if ph else 0:.1f} MB, three.js " + (f"{mb(tj):.2f} MB own file" if tj else "from the CDN")
            + f", {len(hj.get('measure', []))} sizes to measure")
-    return True, msg
+    bad = parts_parse()
+    return not bad, msg + f", the 3D's {len(list((SRC / 'room3d').glob('*.js')))} parts" + (f": these don't parse alone: {bad}" if bad else " each parse alone")
+
+
+def parts_parse():
+    """V1.52: each part of the 3D's script (media-wall/src/room3d) starts at a top-level statement: it parses on its own (node --check)"""
+    import shutil, tempfile
+    if not shutil.which("node"):
+        return []
+    bad = []
+    with tempfile.TemporaryDirectory() as td:
+        for f in sorted((SRC / "room3d").glob("*.js")):
+            t = pathlib.Path(td) / (f.stem + ".mjs"); t.write_text(f.read_text())
+            if subprocess.run(["node", "--check", str(t)], capture_output=True).returncode:
+                bad.append(f.name)
+    return bad
 
 
 def site():

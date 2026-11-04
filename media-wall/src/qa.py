@@ -218,7 +218,8 @@ def text_budget():
             if self.stack:
                 self.stack[-1][1][1].append(d)
     pr = P(); pr.feed(re.sub(r"<script.*?</script>|<textarea.*?</textarea>|<svg.*?</svg>", "", page, flags=re.S))   # v39: the cutting list's copy box isn't a caption
-    js = (pathlib.Path(__file__).parent / "room3d.js").read_text()
+    import room3d_src
+    js = room3d_src.js()
     for m in re.finditer(r'toast\(\s*"([^"]+)"', js):
         n = len(m.group(1).split())
         if n > BUDGET["toast"]:
