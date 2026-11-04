@@ -66,7 +66,6 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   dusk veil (`duskVeil`) in the house's rooms; a drag in the house's rooms turns the view in place (`lookTurn`, `inPlace`).
 - **V1.44–V1.48:** the living room's whole fixed shell (`model.living_shell`, house.json's living `shell`, four checks) (walls, floor, ceiling, skirting, door, window opening, stairs, pipe boxing, radiator) drawn from `R.HOUSE3.living` (the same to the pixel). V1_PLAN phase 5 done.
 - **V1.40–V1.42:** `tools/camfit.py` fits the 3D's camera to a photo (`compare.CAMS`: the WC, the office, the landing, the kitchen, the hall in part).
-- **V1.38:** Be there walks into the living room from the hall and up its stairs (`livSolids`, `livFloors`, `livLeaf`, `enterRoom`).
 - **V1.28 (U1–U3):** the eye is solid to the house (walls, furniture, slopes: a 20 cm ball, sliding); double-tap walks on every floor;
   zoom to the pointer; Be there's lens zooms (wheel, pinch); mode changes fly; on a phone two rows of buttons, labels a steady size,
   only the tools that work in each room (Room, Look, Edit only in the living room; Plan · Build · Buy not in the house's other rooms).
