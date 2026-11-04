@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.46 (4 Nov 2026)
+**Version:** V1.47 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -44,6 +44,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 ## The site (V1.2: the old design back)
 
+- **V1.47 (the client's review):** the outside ground's slope not across the house (`outdoor`); blinds a material of their own
+  (`blind_cloth`, shown when `S.blinds`; a tap: `hblinds`); the front door hinged at its b end (`DOOR_HANG`); the dormer's `hung` drawn as
+  timber boards, its plaster between the cheeks; roof tiles at 2.4 m (`textures.json`); house walls' relief (`normalScale`) down; by evening a
+  dusk veil (`duskVeil`) in the house's rooms; a drag in the house's rooms turns the view in place (`lookTurn`, `inPlace`).
 - **V1.45–V1.46:** the living room's walls, floor, ceiling, skirting, door, window opening and stairs drawn from `R.HOUSE3.living` (the same to the pixel).
 - **V1.44:** the living room's shell from the house file (`model.living_shell`, `house.json`'s living room `shell`): the walk and the shade read it; four checks hold it to the house.
 - **V1.43:** access (V1_PLAN phase 8): the 3D's label follows where you are; the brand's place line is read out (`aria-live`); `check_site.py` checks every control has a name.
@@ -55,16 +59,11 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   either side), round the room, up its stairs to the landing and back; the living room's own Be there walks too. `room3d.js`
   `livSolids`/`livFloors` (its walls, furniture, flight), `livLeaf` (its leaf, turned by the house file's `door.living_door`), `enterRoom`
   (the hand-over). Through the open door each side shows the other (hall 527 draws, living room 294).
-- **V1.37:** no claude.ai copy (the build stops making `artifact.html`).
 - **V1.35 (U10, first):** the workflow: `build` (renders and Playwright cached, quick checks, privacy on the built site) then on main
   `deploy` at once; `browser` runs site, page and taps side by side (`checks.py --only`), not for documents-only changes. Locally:
   `python3 tools/build.py --keep-renders` reuses the renders already made (`tools/render_key.py` says when they're current).
 - **V1.32 (U7):** Be there walks through the house's rooms (`room3d.js` WALK, `walkMove`, `bodyBlocked`, `floorAtCm`, the phone's
   `.r3d-stick`); the lower landing open to the lower stairs (`model.OPEN_PAIRS`) and the store's ceiling off the flight.
-- **V1.30 (U5):** roughness maps (wood, laminate, roof tiles: `house/textures/*_rough.jpg`, `build_textures.py --rough`); photos
-  decoded off the page's thread; `checks.py`'s `sizes` line (quote it here each round).
-- **V1.29 (U4):** shaders built before the first frame (`compileAsync`), "Building the house…" meanwhile; the living room left out from
-  outside unless the eye is by its window (Outside 216 draws); three.js one file on Pages; `R3D.timing()` the start's steps.
 - **V1.28 (U1–U3):** the eye is solid to the house (walls, furniture, slopes: a 20 cm ball, sliding); double-tap walks on every floor;
   zoom to the pointer; Be there's lens zooms (wheel, pinch); mode changes fly; on a phone two rows of buttons, labels a steady size,
   only the tools that work in each room (Room, Look, Edit only in the living room; Plan · Build · Buy not in the house's other rooms).

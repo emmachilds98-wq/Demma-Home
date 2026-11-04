@@ -324,10 +324,11 @@ FIT_DOORS = {"kitchen_door": (-115.5, -52.1),   # V1.20, the client: "kitchen do
 # but hits the bath just before it gets to fully open leaving roughly 15cm gap behind the door" (the photo from its door: hinged on the
 # bath's side): it stops at BATH_DOOR_GAP from the wall behind it (its angle from that, model.bath_door_deg); the bath reaches it (BATH).
 # The bin cupboards (the client): "open from the outside side, so doorhandle on left on left door and right on the right door": hinged at
-# the house end, the handle at the street end, opening into the porch. The front door into the hall (its lever at the b end, the photo).
+# the house end, the handle at the street end, opening into the porch. The front door into the hall, its lever at the a end (V1.47: the
+# client, and photo_hall_to_front_door_30oct: on the left from inside; it was drawn at the b end, mirrored).
 BATH_DOOR_GAP = 15.0
 DOOR_HANG = {"bed2_door": dict(hinge="b", open=1), "bath_door": dict(hinge="a", deg=None),
-             "store_w": dict(hinge="a", side=-1), "store_e": dict(hinge="a", side=1), "hall_porch": dict(hinge="a", side=-1)}
+             "store_w": dict(hinge="a", side=-1), "store_e": dict(hinge="a", side=1), "hall_porch": dict(hinge="b", side=-1)}   # V1.47, the client: "front door's handle is on the right hand side and opens inwards" (from outside; the hall photo: on the left from inside)
 # V1.25, the client's photo of the landing doors (27 Oct): bedroom 2's frame has a moulded cap over its head, wider than its legs (E: 35 deep,
 # 25 past each leg), on the landing's side
 HEAD_CAP = {"bed2_door": "landing"}
