@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.43 (4 Nov 2026)
+**Version:** V1.44 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -44,6 +44,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 ## The site (V1.2: the old design back)
 
+- **V1.44:** the living room's shell from the house file (`model.living_shell`, `house.json`'s living room `shell`): the walk and the shade read it; four checks hold it to the house.
 - **V1.43:** access (V1_PLAN phase 8): the 3D's label follows where you are; the brand's place line is read out (`aria-live`); `check_site.py` checks every control has a name.
 - **V1.40:** `tools/camfit.py` fits the 3D's camera to a photo (`compare.CAMS`: the WC, the office, the landing; V1.41 the kitchen, after a sweep; V1.42 the hall, in part); the WC's cistern
   raised to just under its sill, as the photo.
@@ -57,7 +58,6 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **V1.35 (U10, first):** the workflow: `build` (renders and Playwright cached, quick checks, privacy on the built site) then on main
   `deploy` at once; `browser` runs site, page and taps side by side (`checks.py --only`), not for documents-only changes. Locally:
   `python3 tools/build.py --keep-renders` reuses the renders already made (`tools/render_key.py` says when they're current).
-- **V1.33 (U8, part):** `houseShade`: soft bands where floors and flat ceilings meet the walls, and round the house on the ground.
 - **V1.32 (U7):** Be there walks through the house's rooms (`room3d.js` WALK, `walkMove`, `bodyBlocked`, `floorAtCm`, the phone's
   `.r3d-stick`); the lower landing open to the lower stairs (`model.OPEN_PAIRS`) and the store's ceiling off the flight.
 - **V1.31 (U6):** `model.depth_rank` (a new material needs one); `zfight.py`'s "seen and tied" fails the checks.

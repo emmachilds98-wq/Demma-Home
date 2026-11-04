@@ -122,7 +122,8 @@ def living_items():
 def rooms():
     sizes = M.room_sizes()
     out = [dict(id="living", name="Living room", floor="ground", use="the media wall project", box=[0.0, 0.0, G.WINDOW_Z, G.ROOM_W, G.CEIL, G.ALC_D],
-                w=G.ROOM_W, d=G.ROOM_D, ceil=G.CEIL, src="M", project="media-wall", pieces=[[0.0, G.WINDOW_Z, G.ROOM_W, G.ALC_D]])]
+                w=G.ROOM_W, d=G.ROOM_D, ceil=G.CEIL, src="M", project="media-wall", pieces=[[0.0, G.WINDOW_Z, G.ROOM_W, G.ALC_D]],
+                shell=M.living_shell())]   # V1.44: its walls, floors and flight as data (model.living_shell)
     for rid, r in sizes.items():
         if not r["name"]:
             continue

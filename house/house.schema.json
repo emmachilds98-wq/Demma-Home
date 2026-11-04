@@ -26,6 +26,7 @@
           "box": { "$ref": "#/$defs/box" }, "w": { "type": "number" }, "d": { "type": "number" }, "ceil": { "type": "number" },
           "src": { "$ref": "#/$defs/src" }, "project": { "type": ["string", "null"] },
           "pieces": { "type": "array", "description": "the room's outline as rectangles [x0, z0, x1, z1]" },
+          "shell": { "type": "object", "description": "V1.44, the living room only: its walls (solids), floors and treads, the foot of its walls (edges), its door and its flight, room cm (house/model.py living_shell)" },
           "to_measure": { "type": "integer" }, "items": { "type": "integer" } } }
     },
     "items": {
