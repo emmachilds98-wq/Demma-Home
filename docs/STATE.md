@@ -2,11 +2,11 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.38 (4 Nov 2026)
+**Version:** V1.39 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
-**The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29, U5 in V1.30, U6 in V1.31, U7 in V1.32, U8 in part in V1.33, U9 in part in V1.34, U10 and U11 in V1.35–V1.37, Next 1 in part in V1.38; its "Next" list is the work to take on).
+**The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29, U5 in V1.30, U6 in V1.31, U7 in V1.32, U8 in part in V1.33, U9 in part in V1.34, U10 and U11 in V1.35–V1.37, Next 1 in part in V1.38, Next 5 in V1.39; its "Next" list is the work to take on).
 
 ## Where it lives
 
@@ -44,13 +44,14 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 ## The site (V1.2: the old design back)
 
+- **V1.39:** the shade where things meet in the living room (the foot of its walls: `livShade`) and on the first floor's ceilings (where
+  flat along the walls, the back slope's crease, the dormer's sides: `model.ceiling_shade`, drawn by `houseShade`).
 - **V1.38:** Be there walks into the living room: from the hall through its door (it opens as you reach it; a tap opens it from
   either side), round the room, up its stairs to the landing and back; the living room's own Be there walks too. `room3d.js`
   `livSolids`/`livFloors` (its walls, furniture, flight), `livLeaf` (its leaf, turned by the house file's `door.living_door`), `enterRoom`
   (the hand-over). Through the open door each side shows the other (hall 527 draws, living room 294).
-- **V1.37:** no claude.ai copy (the build stops making `artifact.html`); the merge of V1.28–V1.36 was live on Pages in 3 minutes.
-- **V1.36 (U11):** `house/evidence/` holds only `check_model.py`'s overlays (built, not kept); the report's pictures come from
-  `tools/gallery.py` and `tools/compare.py`; `checks.py`'s repo line: 77 MB tracked, history 87 MB (budget 200 and 750).
+- **V1.37:** no claude.ai copy (the build stops making `artifact.html`).
+- **V1.36 (U11):** old proof pictures out; the report's pictures from `tools/gallery.py` and `tools/compare.py`.
 - **V1.35 (U10, first):** the workflow: `build` (renders and Playwright cached, quick checks, privacy on the built site) then on main
   `deploy` at once; `browser` runs site, page and taps side by side (`checks.py --only`), not for documents-only changes. Locally:
   `python3 tools/build.py --keep-renders` reuses the renders already made (`tools/render_key.py` says when they're current).
