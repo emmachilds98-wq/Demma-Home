@@ -126,16 +126,36 @@ From the phone screenshots:
 
 ## The plan in phases (each a PR, proved by `tools/checks.py` and the gallery)
 
-| # | Phase | What | Size |
-|---|---|---|---|
-| U1 | No more clipping | 1.1–1.4 (wall gap, slopes, furniture solid, no shaking); 1.8; the double-tap walk on every floor | Small |
-| U2 | Zoom and smooth moves | 2.8 (zoom to the pointer, lens pinch, smooth wheel), 5.3, a 60–65° lens (3.1) | Small |
-| U3 | Phone buttons | Section 6 and screen-size labels (3.4) | Small |
-| U4 | First picture sooner | 2.1 (house first), 2.2 (bundle), 2.3, 2.4, 2.7 | Medium |
-| U5 | Photos | 2.5, 2.6, 3.2 (KTX2, roughness, the shared page under its limit); this is QUALITY_PLAN Q5 | Medium |
-| U6 | Flicker | 1.5–1.7 and a stricter `zfight.py` | Small |
-| U7 | Walk the house | 5.1, 5.2, 5.4 | Large |
-| U8 | Baked light | 3.3, 3.5 | Large |
-| U9 | Measured | 4.1–4.3 (needs the client's scans) | Needs the client |
+| # | Phase | What | Size | Status |
+|---|---|---|---|---|
+| U1 | No more clipping | 1.1–1.4 (wall gap, slopes, furniture solid, no shaking); 1.8; the double-tap walk on every floor | Small | Done (V1.28) |
+| U2 | Zoom and smooth moves | 2.8 (zoom to the pointer, lens pinch, smooth wheel), 5.3, a 60–65° lens (3.1) | Small | Done (V1.28) |
+| U3 | Phone buttons | Section 6 and screen-size labels (3.4) | Small | Done (V1.28) |
+| U4 | First picture sooner | 2.1 (house first), 2.2 (bundle), 2.3, 2.4, 2.7 | Medium | Not started |
+| U5 | Photos | 2.5, 2.6, 3.2 (KTX2, roughness, the shared page under its limit); this is QUALITY_PLAN Q5 | Medium | Not started |
+| U6 | Flicker | 1.5–1.7 and a stricter `zfight.py` | Small | Not started |
+| U7 | Walk the house | 5.1, 5.2, 5.4 | Large | Not started |
+| U8 | Baked light | 3.3, 3.5 | Large | Not started |
+| U9 | Measured | 4.1–4.3 (needs the client's scans) | Needs the client | Not started |
 
 U1 to U3 can each be done in one round and fix what the client sees most. U4 and U5 make the biggest difference on the iPhones.
+Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, then update this table and the notes below.**
+
+## What each phase did, and what it found
+
+- **U1 (V1.28):** the house's own pieces (every box, slope, eaves wedge and turned piece in `house.json`) are solid to a 20 cm ball
+  round the eye (`room3d.js` `hsolidSet`, `hBlocked`, `houseCollide`): a move into something slides along it, a view that starts inside
+  something moves to the nearest free spot. Be there keeps to the room too (it had no limits). The living room's eye stays 15 cm off its
+  walls (was 4). A double-tap walks on every floor. The room's sun shadow lifts 0.8 cm off the surfaces (was 2). Tested: the eye pushed
+  back, up, left and right in nine rooms stops short of the walls and the slope. Found: an item's card stayed open after going to
+  another room (fixed: it closes). Doors (the parts) stay passable; a few ceilings aren't boxes (the landing's east end), so the
+  room's box still caps the height.
+- **U2 (V1.28):** a scroll or a pinch zooms towards what's under the pointer (`zoomToCursor`); in Be there the wheel and a pinch
+  change the lens (25°–100°); looking round, the wheel walks as far as it turns; In it · Above · On its own and Angled · Overhead fly
+  instead of cutting (instant with reduced motion). **Changed from the review:** the rooms keep their wide lens (the client asked for
+  "a wide angle within the room as if you're there", V1.6); the lens zoom narrows it when wanted.
+- **U3 (V1.28):** in the house's views Room, Look and Edit (the living room's) are hidden, and in its rooms Plan · Build · Buy too;
+  on a phone the small buttons share a row (two rows over the house, were six), the floors and rooms rows fade where there's more, the
+  house is framed in the space under them and stands nearer, the tip sits above the dock, the dock's two buttons are centred; the
+  room labels keep their size on screen (a phone: the name only). Found: on a phone the first floor's labels can overlap a little
+  (Landing, Boiler cupboard): next, nudge them apart.

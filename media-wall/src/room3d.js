@@ -311,6 +311,7 @@ controls.screenSpacePanning = false;   // v17: a right-drag slides along the flo
 // and a drag, a pinch or a scroll moves it about half as far
 controls.dampingFactor = 0.2;
 controls.rotateSpeed = 0.55; controls.zoomSpeed = 0.6; controls.panSpeed = 0.6;
+controls.zoomToCursor = true;   // V1.29 (U2), the client: "how quick the render can ... zoom": a scroll or a pinch goes towards what you point at, not the middle
 controls.addEventListener("change", () => { dirty(); if (typeof syncEye === "function") syncEye(); });
 
 /* ---------------------------------------------------------------- textures, made here so nothing loads */
@@ -2631,10 +2632,18 @@ function applyFloors() {
     }
   }
   drawRooms(); brandPlace(); outdoor();
+  requestAnimationFrame(() => { measureShift(!!(window.DemmaTools && window.DemmaTools.isOpen())); fadeRows(); });   // V1.30: the rows above may have changed
   dirty();
 }
+/* V1.30 (U3): a row with more to slide to fades at its right edge */
+function fadeRows() { qsa(".r3d-floors:not(.r3d-rmode)").forEach(el => el.classList.toggle("more", el.scrollWidth - el.clientWidth - el.scrollLeft > 4)); }
+document.addEventListener("scroll", e => { if (e.target.classList && e.target.classList.contains("r3d-floors")) fadeRows(); }, true);
 /* V1.2: the brand's second line says where you are: the whole house, a floor, a room */
 function brandPlace() {
+  /* V1.30 (U3): only the tools that work where you are: in the house's views Room, Look and Edit (the living room's) step aside; in the
+     house's own rooms Plan · Build · Buy too (the media wall's plan) */
+  const hv = HOUSEV(S.view), hr = !!ROOMV(); document.body.classList.toggle("hv", hv); document.body.classList.toggle("hroom", hr);
+  if (hv && window.DemmaTools && DemmaTools.isOpen() && ["room", "look"].some(k => { const d = qs("#r3d-dp-" + k); return d && !d.hidden; })) DemmaTools.close();
   const el = document.getElementById("brand-place"); if (!el) return;
   let t = "The living room";
   if (S.view === "house") t = { first: "The first floor", ground: "The ground floor", lower: "The lower floor" }[hfloor] || "The whole house";
@@ -2657,10 +2666,10 @@ function floorCam() {
   const x0 = Math.min(...rs.map(r => r[0])), x1 = Math.max(...rs.map(r => r[1])), z0 = Math.min(...rs.map(r => r[2])), z1 = Math.max(...rs.map(r => r[3]));
   const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0, y = hfloor === "all" ? 540 : fy;
   const fit = (fov, sx, sy) => { const v = fov * Math.PI / 360, h = Math.atan(Math.tan(v) * camera.aspect); return 1.1 * Math.max(sx / 2 / Math.tan(h), sy / 2 / Math.tan(v)); };
-  if (hfview === "top") { flyTo([cx, y + 60 + fit(45, w, d), cz + 1], [cx, y, cz], 45, true); return; }
+  if (hfview === "top") { flyTo([cx, y + 60 + fit(45, w, d), cz + 1], [cx, y, cz], 45, REDUCE); return; }   // V1.29 (U2): flown, not cut
   const H = VIEWS.house, dir = new THREE.Vector3(H.eye[0] - H.at[0], H.eye[1] - H.at[1], H.eye[2] - H.at[2]).normalize();
   const r = 0.5 * Math.hypot(w, d, 235), v = 25 * Math.PI / 180, hh = Math.atan(Math.tan(v) * camera.aspect), D = (camera.aspect < 1 ? 0.62 : 0.9) * r / Math.sin(Math.min(v, hh));   // the floors below show under it too
-  flyTo([cx + dir.x * D, y + dir.y * D, cz + dir.z * D], [cx, y + 40, cz], 50, true);
+  flyTo([cx + dir.x * D, y + dir.y * D, cz + dir.z * D], [cx, y + 40, cz], 50, REDUCE);
 }
 function drawRooms() {
   const box = qs("#r3d-hrooms"); if (!box) return;
@@ -3036,6 +3045,7 @@ function outdoor() {
     if (on) { const t = v3(233, 0, -900); sun.target.position.copy(t); sun.position.copy(t).addScaledVector(dayLight.position.clone().sub(dayLight.target.position).normalize(), 30); }
     else { sun.position.copy(sun.userData.p0); sun.target.position.copy(sun.userData.t0); roomKey = null; }
     c.left = c.bottom = -e; c.right = c.top = e; c.far = on ? 60 : 16; c.updateProjectionMatrix(); sun.target.updateMatrixWorld();
+    sun.shadow.normalBias = on ? 0.02 : 0.008;   // V1.28: about a texel and a half (2 cm lifted the room's shadows off its joins: light along the skirting)
     sun.intensity = sunLux(); if (!on) placeRoomLights(); reshadow();
   }
 }
@@ -4038,14 +4048,14 @@ const VIEWS = {
 let tween = null;
 /* v17: the camera stays in the room: x, y and z inside its walls, in front of the chimney breast, the alcove only within it */
 let walked = false;
-const freeAbove = () => (RMODE !== "in") || ((VIEWS[S.view] || {}).above && !walked);   // v71: Above and On its own orbit freely
+const freeAbove = () => (RMODE !== "in" && RMODE !== "stand") || ((VIEWS[S.view] || {}).above && !walked);   // v71: Above and On its own orbit freely (V1.28: Be there keeps to the room too)
 function clampRoom(p, target = false) {   // the target (what you orbit round) may sit on a wall's face or a little past it
   const KB = ROOMV();                                                          // v60: in the kitchen (v61: any room of the house), its own walls
   if (KB) { const [x0, x1, y0, y1, z0, z1] = KB, g = target ? 15 : 0, q = v3(Math.min(Math.max(-p.x / M, x0 - g), x1 + g), Math.min(Math.max(p.y / M, y0 - g), y1 + g), Math.min(Math.max(p.z / M, z0 - g), z1 + g));
     const moved = q.distanceToSquared(p) > 1e-10; p.copy(q); return moved; }
-  const lo = target ? -10 : 4, x = Math.min(Math.max(-p.x / M, lo), R.W - lo), y = Math.min(Math.max(p.y / M, target ? 0 : 20), R.CEIL - (target ? 0 : 8));
-  const zmax = target ? R.RECESS_Z + 10 : x <= R.ALC_W ? R.ALC_D - 4 : x <= R.BREAST_X[1] + 4 ? -4 : R.RECESS_Z - 4;
-  const z = Math.min(Math.max(p.z / M, R.WINDOW_Z + (target ? -30 : 6)), zmax);
+  const lo = target ? -10 : 15, x = Math.min(Math.max(-p.x / M, lo), R.W - lo), y = Math.min(Math.max(p.y / M, target ? 0 : 20), R.CEIL - (target ? 0 : 15));   // V1.28: 15 off the walls (was 4)
+  const zmax = target ? R.RECESS_Z + 10 : x <= R.ALC_W ? R.ALC_D - 15 : x <= R.BREAST_X[1] + 15 ? -15 : R.RECESS_Z - 15;
+  const z = Math.min(Math.max(p.z / M, R.WINDOW_Z + (target ? -30 : 15)), zmax);
   const q = v3(x, y, z), moved = q.distanceToSquared(p) > 1e-10;
   p.copy(q); return moved;
 }
@@ -4068,9 +4078,61 @@ function solidBoxes() {
   }
   return SOLID;
 }
+/* V1.28 (U1), the client: "fix technical issues like clipping": in the house's rooms the eye kept only inside the room's box, so it
+   could rest on a wall's face (the near plane then showed its inside), rise over a sloped ceiling into the roof and pass through beds
+   and wardrobes. Now every piece of the house (its boxes, its prisms: the slopes and eaves, its turned pieces) is solid to a 20 cm ball
+   round the eye. A move into something slides along it (each axis on its own from the last good place); a view that starts inside
+   something is pushed to the nearest free spot. Doors (the parts) stay passable */
+const HSOLID = {}, EYE_R = 20;
+const NOSOLID = new Set(["contact"]);
+function hsolidSet(fk, F) {
+  if (fk === "street") return;
+  const b = [];
+  for (const [m, list] of Object.entries(F.boxes || {})) if (!NOSOLID.has(m)) for (const q of list) b.push(q);
+  for (const L of F.lathes || []) { const r = Math.max(...L.p.map(q => q[0])), hs = L.p.map(q => q[1]);
+    b.push([L.c[0] - r * L.s[0], L.c[1] + Math.min(0, ...hs), L.c[2] - r * L.s[1], L.c[0] + r * L.s[0], L.c[1] + Math.max(...hs), L.c[2] + r * L.s[1]]); }
+  HSOLID[fk] = { b, p: (F.prisms || []).filter(P => !NOSOLID.has(P.m)) };
+  hLast = null;
+}
+function polyNear(pts, u, w, r) {          // inside the outline, or within r of its edge
+  let inside = false, d2 = Infinity;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const [ax, ay] = pts[j], [bx, by] = pts[i];
+    if ((by > w) !== (ay > w) && u < (ax - bx) * (w - by) / (ay - by) + bx) inside = !inside;
+    const ex = bx - ax, ey = by - ay, L = ex * ex + ey * ey, t = L ? Math.max(0, Math.min(1, ((u - ax) * ex + (w - ay) * ey) / L)) : 0;
+    const dx = ax + t * ex - u, dy = ay + t * ey - w; d2 = Math.min(d2, dx * dx + dy * dy);
+  }
+  return inside || d2 < r * r;
+}
+function hBlocked(x, y, z, r = EYE_R) {    // room cm
+  for (const S_ of Object.values(HSOLID)) {
+    if (!S_.g || !shown(S_.g)) continue;
+    for (const q of S_.b) if (x > q[0] - r && x < q[3] + r && y > q[1] - r && y < q[4] + r && z > q[2] - r && z < q[5] + r) return true;
+    for (const P of S_.p) {
+      const [a, uw] = P.axis === "x" ? [x, [z, y]] : P.axis === "z" ? [z, [x, y]] : [y, [x, z]];
+      if (a > P.a - r && a < P.b + r && polyNear(P.pts, uw[0], uw[1], r)) return true;
+    }
+  }
+  return false;
+}
+let hLast = null;                           // the eye's last free place (room cm)
+function houseCollide() {                   // true if it moved the eye
+  const c = camera.position, p = [-c.x / M, c.y / M, c.z / M];
+  if (!hBlocked(...p)) { hLast = p; return false; }
+  let q = null;
+  if (hLast && !hBlocked(...hLast)) {       // slide: each axis on its own, from the last free place
+    q = hLast.slice(); for (const k of [0, 2, 1]) { const t = q.slice(); t[k] = p[k]; if (!hBlocked(...t)) q = t; }
+  } else {                                  // a view that starts inside something: the nearest free spot round it
+    search: for (let d = 5; d <= 120; d += 5) for (let a = 0; a < 16; a++) for (const dy of [0, -d, d]) {
+      const t = [p[0] + Math.cos(a * Math.PI / 8) * d, p[1] + dy, p[2] + Math.sin(a * Math.PI / 8) * d];
+      if (!hBlocked(...t)) { q = t; break search; } }
+    if (!q) return false;
+  }
+  hLast = q; c.set(-q[0] * M, q[1] * M, q[2] * M); return true;
+}
 function collide(p = camera.position) {    // true if it moved the eye
   let moved = false;
-  if (ROOMV()) return false;   // v60: the living room's furniture isn't in the other rooms
+  if (ROOMV()) return p === camera.position ? houseCollide() : false;   // v60: the living room's furniture isn't in the other rooms; V1.28: the house's own pieces are
   for (const b of solidBoxes()) {
     if (p.y > b.max.y + 0.05 || p.y < b.min.y - 0.2) continue;
     if (p.x <= b.min.x || p.x >= b.max.x || p.z <= b.min.z || p.z >= b.max.z) continue;
@@ -4086,6 +4148,16 @@ let lastTap = null;
 function floorHop(e) {
   ray.setFromCamera(ndc(e), camera);
   const hit = ray.intersectObjects(scene.children, true).find(h => h.object.isMesh && shown(h.object) && !clippedAt(h.point));
+  const KB = ROOMV();
+  if (KB) {   // V1.28: in the house's rooms too (it used the living room's floor, at 0: only the ground floor answered)
+    if (!hit || !hit.face || RMODE === "above" || RMODE === "alone") return false;
+    const n = hit.face.normal.clone().transformDirection(hit.object.matrixWorld), rr = (R.HOUSE3.rooms || {})[VIEW_ROOM[S.view]], fy = rr ? rr[4] : KB[2];
+    if (n.y < 0.7 || hit.point.y / M > fy + 40) return false;                       // only the floor (or a rug on it)
+    const x = -hit.point.x / M, z = hit.point.z / M, d = controls.target.clone().sub(camera.position); d.y = 0;
+    if (d.lengthSq() < 1e-8) d.set(0, 0, 1); d.normalize();
+    flyTo([x, fy + STAND_EYE, z], [x - d.x / M, fy + STAND_EYE - 10, z + d.z / M], baseFov, false, false, 700); walked = true;
+    return true;
+  }
   const f = floorAt(e); if (!f || (hit && hit.point.y > 0.03)) return false;     // only the floor itself
   const p = v3(f.x, 155, f.z); clampRoom(p); collide(p); const x = -p.x / M, z = p.z / M;
   const cx = R.W / 2, cz = (R.WINDOW_Z + R.ALC_D) / 2, far = Math.hypot(x - cx, z - cz) < 60;
@@ -4148,11 +4220,20 @@ function syncEye() {         // the height slider follows the camera
 }
 function applyPad() { const p = qs("#r3d-pad"); if (p) p.hidden = !S.pad; }
 let wheelAcc = 0;            // looking round, the wheel (or a two-finger scroll) walks
+/* V1.29 (U2): in Be there the wheel and a pinch change the lens (25°–100°, like a phone's camera), since you walk there with a double-tap
+   or the keys; looking round elsewhere the wheel walks as far as it turns (it went in 15 cm jumps) */
+const lens = f => { if (tween) return; camera.fov = Math.max(25, Math.min(100, f)); camera.updateProjectionMatrix(); dirty(); };   // the lens as seen (a phone's portrait widening included)
 canvas.addEventListener("wheel", e => {
   if (S.cam !== "look") return;
-  e.preventDefault(); wheelAcc += e.deltaY;
-  if (Math.abs(wheelAcc) >= 60) { walk(wheelAcc < 0 ? "f" : "b"); wheelAcc = 0; }
+  e.preventDefault();
+  if (RMODE === "stand" || S.view === "livstand") { lens(camera.fov * Math.exp(e.deltaY * 0.0012)); return; }
+  const k = Math.min(1.5, Math.abs(e.deltaY) / 100); if (k > 0.02) walk(e.deltaY < 0 ? "f" : "b", k);
 }, { passive: false });
+const PINCH = new Map(); let pinch0 = null;
+canvas.addEventListener("pointerdown", e => { if (e.pointerType === "touch") PINCH.set(e.pointerId, [e.clientX, e.clientY]); if (PINCH.size === 2) { const [a, b] = [...PINCH.values()]; pinch0 = [Math.hypot(a[0] - b[0], a[1] - b[1]), camera.fov]; } });
+canvas.addEventListener("pointermove", e => { if (!PINCH.has(e.pointerId)) return; PINCH.set(e.pointerId, [e.clientX, e.clientY]);
+  if (pinch0 && PINCH.size === 2 && S.cam === "look" && (RMODE === "stand" || S.view === "livstand")) { const [a, b] = [...PINCH.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (d > 10) lens(pinch0[1] * pinch0[0] / d); } });
+["pointerup", "pointercancel", "pointerleave"].forEach(t => canvas.addEventListener(t, e => { PINCH.delete(e.pointerId); if (PINCH.size < 2) pinch0 = null; }));
 ["pointerdown", "pointermove", "keydown", "wheel"].forEach(t => root.addEventListener(t, e => { if (t !== "pointermove" || e.buttons) PRE.idleT = performance.now(); }, { passive: true, capture: true }));   // v39: a mouse just moving over the room doesn't hold up the warm-up   // v35: the shader warm-up waits while you use the room
 let padT = null;             // a move button held down keeps moving, in smaller steps
 const padStop = () => { if (padT) { clearTimeout(padT.t); clearInterval(padT.i); padT = null; } };
@@ -4170,11 +4251,13 @@ root.addEventListener("keydown", e => {
 });
 canvas.addEventListener("pointerdown", () => { canvas.focus({ preventScroll: true }); if (tourSt) tourEnd(); if (SH) SH.own = true; });   // v28: touching the room ends the tour; v32: "Watch it open" carries on, the camera yours
 function setView(name, instant, dur) {
-  const v = VIEWS[name] || VIEWS.window, wasHouse = HOUSEV(S.view); S.view = name;
+  const v = VIEWS[name] || VIEWS.window, wasHouse = HOUSEV(S.view);
+  if (name !== S.view && actId && typeof closeAct === "function") closeAct();   // V1.28: a piece's card doesn't follow you to another room
+  S.view = name;
   if (RMODE !== "in") setRmode("in", true);                               // v71: a new view starts in the room
   standLook(!!v.stand);                                                     // V1.6: the living room's Be there looks round from where you stand
   let p = (S.site === "C" && S.cab === "sliding" && v.Cs) || v[S.site] || v;   // v30: "Cs", the sliding cabinet's own eye
-  if (name === "house" && camera.aspect < 1.2) { const f = Math.min(1.25, 0.6 / camera.aspect);   // v54: a phone stands further back to take in every floor
+  if (name === "house" && camera.aspect < 1.2) { const f = Math.min(0.95, 0.42 / camera.aspect);   // v54: a phone stands further back to take in every floor (V1.30: less far: the buttons take less room)
     p = { eye: p.at.map((a, i) => a + (p.eye[i] - a) * f), at: p.at }; }
   flyTo(p.eye, p.at, R.HOUSE3 && v.box ? Math.max(v.fov, 82) : v.fov, !!v.above, instant, dur);   // v71: the house's rooms wide
   if (!houseG && R.HOUSE && HOUSEV(name)) { buildHouse(); reshadow(); }   // v69 (B6): built the first time (the living room starts without it)
@@ -4190,6 +4273,7 @@ function setView(name, instant, dur) {
 /* the camera to an eye and a point to look at (room cm); v32: also a piece's own close look (R3D.set's "aim") */
 function flyTo(e, a, fov, above, instant, dur) {
   walked = false; controls.maxDistance = above ? (S.view === "house" ? 90 : 16) : 6;   // v54: the whole house from further off
+  hLast = null;                                                                            // V1.28: the new place is checked afresh
   const eye = v3(...e), at = v3(...a);
   const from = { eye: camera.position.clone(), at: controls.target.clone(), fov: camera.fov };
   setAbove(!above);
@@ -4762,6 +4846,10 @@ function measureShift(open) {
     const r = p.getBoundingClientRect(); cover = r;
     if (innerWidth >= 900) shift.x = Math.round(Math.max(0, w - r.left - railR) / 2);
     else shift.y = Math.round(Math.max(0, h - r.top) / 4);
+  } else if (S.view === "house" && innerWidth < 600 && w) {   // V1.30 (U3): on a phone the house sits in the middle of the space under the buttons
+    let top = 0; for (const el of document.querySelectorAll(".r3d-mini > :not([hidden]), .brand")) { const r = el.getBoundingClientRect(); if (r.height) top = Math.max(top, r.bottom); }
+    const dock = document.querySelector(".r3d-dock"), bot = dock ? dock.getBoundingClientRect().top : h;
+    if (top > 0 && bot > top) shift.y = -Math.round(((top + bot) / 2 - h / 2));
   }
   applyShift(); dirty();
 }
@@ -5270,10 +5358,10 @@ function setRmode(m, quiet) {
   if (rr) { const [x0, x1, z0, z1, fy] = rr, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0;
     // far enough that the room fills the screen, whatever its shape (a phone stands it up the screen's long side)
     const fit = (fov, sx, sy) => { const v = fov * Math.PI / 360, h = Math.atan(Math.tan(v) * camera.aspect); return 1.12 * Math.max(sx / 2 / Math.tan(h), sy / 2 / Math.tan(v)); };
-    if (RMODE === "above") flyTo([cx, fy + 40 + fit(50, w, d), cz + d * 0.08], [cx, fy, cz], 50, true);
+    if (RMODE === "above") flyTo([cx, fy + 40 + fit(50, w, d), cz + d * 0.08], [cx, fy, cz], 50, REDUCE);   // V1.29 (U2): flown, not cut
     else { const r = 0.5 * Math.hypot(w, d, 235), v = 22.5 * Math.PI / 180, h = Math.atan(Math.tan(v) * camera.aspect), D = (camera.aspect < 1 ? 0.62 : 0.85) * r / Math.sin(Math.min(v, h));   // the room's sphere in the narrower side (v72: a phone stands closer)
       const sx = Math.sign(233 - cx) || 1, sz = Math.sign(95 - cz) || 1;   // from the house's middle: over its inside walls, the outside wall behind
-      flyTo([cx + sx * D * 0.4, fy + 60 + D * 0.78, cz + sz * D * 0.48], [cx, fy + 50, cz], 45, true); } }
+      flyTo([cx + sx * D * 0.4, fy + 60 + D * 0.78, cz + sz * D * 0.48], [cx, fy + 50, cz], 45, REDUCE); } }
   else if (RMODE === "stand") standIn();
   else if (!quiet) setView(S.view);
   reshadow(); dirty();
@@ -5831,9 +5919,14 @@ function buildHouse() {
     g.fillStyle = "rgba(255,252,245,0.92)"; g.beginPath(); g.roundRect ? g.roundRect(4, 4, 504, 152, 40) : g.rect(4, 4, 504, 152); g.fill();
     g.fillStyle = "#1d2a22"; g.textAlign = "center"; g.font = "600 52px Figtree, system-ui, sans-serif"; g.fillText(lines[0], 256, lines[1] ? 70 : 96);
     if (lines[1]) { g.font = "400 36px Figtree, system-ui, sans-serif"; g.fillStyle = "#4b5650"; g.fillText(lines[1], 256, 122); }
+    if (SMALL) { cv.height = 112; g.clearRect(0, 0, 512, 160); g.fillStyle = "rgba(255,252,245,0.94)"; g.beginPath(); g.roundRect ? g.roundRect(4, 4, 504, 104, 52) : g.rect(4, 4, 504, 104); g.fill();
+      g.fillStyle = "#1d2a22"; g.textAlign = "center"; g.font = "600 60px Figtree, system-ui, sans-serif"; g.fillText(lines[0], 256, 78); }   // V1.30: a phone shows the name only, larger
     const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
-    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, toneMapped: false })); sp.renderOrder = 999;
-    sp.scale.set(wcm * M, wcm * M * 160 / 512, 1); sp.position.copy(v3(x, y, z)); sp.userData.hlabel = true; cur.add(sp); };
+    /* V1.30 (U3): the same size on screen however far off (they were a few pixels tall on a phone, from a floor's view) */
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, toneMapped: false, sizeAttenuation: false })); sp.renderOrder = 999;
+    const px = SMALL ? 30 : 46, asp = cv.width / cv.height;   // its height in screen pixels, whatever the lens
+    sp.onBeforeRender = (r, sc, cam) => { const k = 2 * px / Math.max(200, canvas.clientHeight) * Math.tan((cam.fov || 50) * Math.PI / 360); if (sp.scale.y !== k) { sp.scale.set(k * asp, k, 1); sp.updateMatrixWorld(); } };
+    sp.scale.set(0.05 * asp, 0.05, 1); sp.position.copy(v3(x, y, z)); sp.userData.hlabel = true; cur.add(sp); };
   const FLOOR = { kitchen: "#d6cfc2", bathroom: "#c3d6dc", wc: "#c3d6dc", garage: "#aaa69e", secret: "#8d8880", porch: "#b9a58e" }, WALL = "#f2eee6", WH = 110;
   const H3 = R.HOUSE3;
   if (H3) {
@@ -5925,6 +6018,7 @@ function buildHouse() {
         partPose(HPARTS[pk]);
       }
       if (EMBH) EMBH.pickable(fk, F);
+      hsolidSet(fk, F); if (HSOLID[fk]) HSOLID[fk].g = cur;   // V1.28: solid to the eye (shown with its floor)
     };
     for (const [fk, F] of Object.entries(H3.floors)) HBUILD(fk, editedFloor(fk, F));
   }
