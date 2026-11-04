@@ -2112,12 +2112,40 @@ def room_lights(floor):
     return out
 
 
+def ceiling_shade():
+    """V1.39 (UPGRADE_REVIEW Next 5): where the first floor's ceiling is flat along a room's walls, the crease where the back slope meets
+    the flat ceiling, and the dormer's sides: [ax, az, bx, bz, nx, nz] edges (the inward direction n) for the viewer's soft shade bands
+    (room3d.js houseShade). The slopes themselves get none: they meet the walls low, at the eaves."""
+    top, out = FLOOR_Y["first"] + CEIL, []
+    flat = lambda x, z: headroom(x, x, z) >= top - 0.5
+    for rid, r in room_sizes().items():
+        if r["floor"] != "first" or not r["name"] or rid in VOID:
+            continue
+        x0, x1, z0, z1 = r["x0"], r["x1"], r["z0"], r["z1"]
+        for a, b, n in (((x0, z0), (x1, z0), (0, 1)), ((x1, z1), (x0, z1), (0, -1)), ((x0, z1), (x0, z0), (1, 0)), ((x1, z0), (x1, z1), (-1, 0))):
+            L = math.hypot(b[0] - a[0], b[1] - a[1]); k = max(2, int(L // 5)); run = None
+            for i in range(k + 1):
+                t = i / k; x, z = a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t
+                ok = flat(x + n[0] * 10, z + n[1] * 10)
+                if ok and run is None: run = (x, z)
+                if run is not None and (not ok or i == k):
+                    if math.hypot(x - run[0], z - run[1]) > 10: out.append([round(run[0], 1), round(run[1], 1), round(x, 1), round(z, 1), n[0], n[1]])
+                    run = None
+        if z0 < ZC_BACK < z1:                                         # the back slope meets the flat ceiling, outside the dormer
+            for xa, xb in ((x0, min(x1, DM["x"][0] + DM["t"])), (max(x0, DM["x"][1] - DM["t"]), x1)):
+                if xb - xa > 10: out.append([round(xa, 1), round(ZC_BACK, 1), round(xb, 1), round(ZC_BACK, 1), 0, 1])
+        for xc, nx in ((DM["x"][0] + DM["t"], 1), (DM["x"][1] - DM["t"], -1)):   # the dormer's sides, down to the slope's crease
+            if x0 < xc < x1 and z0 < ZC_BACK:
+                out.append([round(xc, 1), round(max(z0, BACK), 1), round(xc, 1), round(min(z1, ZC_BACK), 1), nx, 0])
+    return out
+
+
 def export():
     out = {k: v.json() for k, v in build().items()}
     for f in FLOOR_Y:                                            # v69: the rooms' ceiling lights
         if f in out:
             out[f]["lights"] = room_lights(f)
-    return dict(mats=MATS, floors=out, ridge=[round(RIDGE_Z, 1), round(RIDGE_Y, 1)], est=True, depth_rank=depth_rank())
+    return dict(mats=MATS, floors=out, ridge=[round(RIDGE_Z, 1), round(RIDGE_Y, 1)], est=True, depth_rank=depth_rank(), shade_ceil=ceiling_shade())
 
 
 # V1.31 (U6, docs/UPGRADE_REVIEW.md): where two materials' faces lie in one plane (a wall's paint on its blockwork, a frame flush with

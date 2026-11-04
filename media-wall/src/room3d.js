@@ -808,6 +808,29 @@ function rect(cx, cy, cz, w, h, normal, mat) {     // a wall patch w × h (cm) c
   const uv = m.geometry.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * w / 100, uv.getY(i) * h / 100);
   shell.add(m); return m;
 }
+/* V1.39, the client: "Build in our living room properly too": the living room gets the house's soft shade where its floor meets the
+   walls (V1.33's houseShade): bands along every wall, the alcove, the breast, the flight's side and foot; on every device (the live
+   shade, GTAO, only runs on the capable ones in HD); cut away with the room. Not its ceiling: the LED strip's glow is brightest there */
+let livShadeG = null;
+function livShade(W, WZ, A, AD, B0, B1, RZ, dx0, dx1, sx0, F) {
+  const tex = canvasTex(4, 64, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h);
+    gr.addColorStop(0, "rgba(0,0,0,0.34)"); gr.addColorStop(0.35, "rgba(0,0,0,0.12)"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.clearRect(0, 0, w, h); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, false);
+  tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+  const mat = () => reg(new THREE.MeshBasicMaterial({ color: "#000000", map: tex, transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide,
+    polygonOffset: true, polygonOffsetFactor: 0, polygonOffsetUnits: -10 }));
+  // each wall's foot: [a, b, inward] in room cm (x, z); the door's gap and the flight left open
+  const E = [[[0, WZ], [W, WZ], [0, 1]], [[0, AD], [0, WZ], [1, 0]], [[A, AD], [0, AD], [0, -1]], [[A, 0], [A, AD], [-1, 0]], [[B1, 0], [A, 0], [0, -1]],
+    [[B1, RZ], [B1, 0], [1, 0]], [[dx0 - 6, RZ], [B1, RZ], [0, -1]], [[sx0, RZ], [dx1 + 6, RZ], [0, -1]], [[W, WZ], [W, F], [-1, 0]],
+    [[sx0 - 2.2, F], [sx0 - 2.2, RZ], [-1, 0]], [[W, F], [sx0, F], [0, -1]]];
+  const band = (pos, uv, [a, b, n], y, w) => {
+    const P = [a, b, [b[0] + n[0] * w, b[1] + n[1] * w], [a[0] + n[0] * w, a[1] + n[1] * w]].map(([x, z]) => v3(x, y, z)), U = [[0, 1], [1, 1], [1, 0], [0, 0]];
+    for (const i of [0, 1, 2, 0, 2, 3]) { pos.push(P[i].x, P[i].y, P[i].z); uv.push(U[i][0], U[i][1]); } };
+  const mesh = (list, y, w) => { const pos = [], uv = []; for (const e of list) band(pos, uv, e, y, w);
+    const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+    const me = new THREE.Mesh(g, mat()); me.raycast = () => {}; me.renderOrder = 1; livShadeG.add(me); };
+  livShadeG = new THREE.Group(); livShadeG.name = "livShade"; shell.add(livShadeG);
+  mesh(E, 0.3, 24);
+}
 /* a wall on the plane axis = c, spanning u0..u1 along the other horizontal axis and y0..y1, with rectangular holes */
 function wall(axis, c, u0, u1, y0, y1, normal, mat, holes = []) {
   const cuts = [...new Set([u0, u1, ...holes.flatMap(h => [h[0], h[1]])])].filter(u => u >= u0 && u <= u1).sort((a, b) => a - b);
@@ -873,6 +896,7 @@ function buildShell() {
     const m = new THREE.Mesh(new THREE.PlaneGeometry((xb - xa) * M, (zb - za) * M), ceilMat);
     m.rotation.x = Math.PI / 2; m.position.copy(v3((xa + xb) / 2, C, (za + zb) / 2)); m.receiveShadow = true; m.castShadow = true; shell.add(m);   // v48: and the ceiling
   }
+  livShade(Wd, WZ, A, AD, B0, B1, RZ, dx0, dx1, sx0, front);
   // skirting, eggshell in the wall colour
   const sk = R.SKIRT_H, st = 2;
   [[0, WZ, st, sk, AD - WZ], [B1, 0, st, sk, RZ]].forEach(([x, z, w, h, d]) => cube(x, 0, z, w, h, d, egg, false));
@@ -4222,7 +4246,8 @@ function walkRoom(x, feet, z) {             // walked into another room with its
   const L = FLIGHT();
   if (x > L.x0 - 4 && x < L.x1 && z > L.z0 - 12 && z < L.zl1 && feet < 200) {   // V1.38: on the living room's flight: its room low down, the landing's view higher
     const want = feet < 60 ? "livstand" : "landing"; if (want !== S.view) enterRoom(want); return; }
-  if (x > 0 && x < R.W && z > R.WINDOW_Z && z < R.RECESS_Z + 2 && feet < 120) { if (S.view !== "livstand") enterRoom("livstand"); return; }   // V1.38: in the living room
+  if (x > 0 && x < R.W && z > R.WINDOW_Z && z < R.RECESS_Z + 2 && feet < 120) {   // V1.38: in the living room
+    if (S.view !== "livstand" && z < R.RECESS_Z - 12) enterRoom("livstand"); return; }   // V1.39: well past the door's line (to the hall's box, 45: no flicker in the doorway)
   const rooms = R.HOUSE3.rooms || {};
   for (const [id, r] of Object.entries(rooms)) {
     if (x < r[0] || x > r[1] || z < r[2] || z > r[3] || Math.abs(feet - r[4]) > 130) continue;
@@ -6113,9 +6138,13 @@ function houseShade(H3, m3) {
     const [x0, x1, z0, z1, fy] = r, W = Math.min(26, (x1 - x0) / 3, (z1 - z0) / 3), P = per[fk] = per[fk] || { f: [[], []], c: [[], []] };
     const edges = [[[x0, z0], [x1, z0], [0, 1]], [[x1, z1], [x0, z1], [0, -1]], [[x0, z1], [x0, z0], [1, 0]], [[x1, z0], [x1, z1], [-1, 0]]];
     for (const [a, b, n] of edges) band(P.f[0], P.f[1], a, b, n, fy + 0.3, W, true);
-    if (fk !== "first") for (const [a, b, n] of edges) band(P.c[0], P.c[1], a, b, n, fy + (H3.ceil || 235) - 0.3, W * 0.8, false);   // flat ceilings only (the first floor's slope)
+    if (fk !== "first") for (const [a, b, n] of edges) band(P.c[0], P.c[1], a, b, n, fy + (H3.ceil || 235) - 0.3, W * 0.8, false);   // flat ceilings (the first floor's: below)
   }
   for (const [fk, P] of Object.entries(per)) { mesh(P.f[0], P.f[1], matF, HFLOOR[fk]); mesh(P.c[0], P.c[1], matC, fk === "lower" ? HFLOOR.ground : HFLOOR[fk] === HFLOOR.ground ? (HFLOOR.first || HFLOOR.ground) : HFLOOR[fk]); }
+  if (H3.shade_ceil && HFLOOR.first) {   // V1.39 (Next 5): the first floor's ceiling where it's flat along the walls, the back slope's crease, the dormer's sides (model.ceiling_shade)
+    const pc = [], uc = [], y = 260 + (H3.ceil || 235) - 0.3;
+    for (const [ax, az, bx, bz, nx, nz] of H3.shade_ceil) band(pc, uc, [ax, az], [bx, bz], [nx, nz], y, 20, false);
+    mesh(pc, uc, matC, HFLOOR.roof || HFLOOR.first); }
   // round the house, on the ground: the drive's level in front, the garden's behind (the outline's outer faces, zfight.OUTER)
   const pos = [], uv = [], fr = H3.front || 527.4, bk = H3.back || -337, dr = (H3.drive ?? -15) + 0.3, lw = (H3.lawn ?? -260) + 0.3;
   band(pos, uv, [482, fr], [-28, fr], [0, 1], dr, 70, true); band(pos, uv, [-28, bk], [482, bk], [0, -1], lw, 90, true);

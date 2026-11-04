@@ -242,6 +242,14 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
   first floor's slab (z 191) overhangs the flight's top step (196) by 5, so the knee caught it two steps from the top: the body is now
   tested where it will stand once a step up is taken. Tested by walking (hall → living room → up to the landing → back down → hall)
   in a test browser.
+- **V1.39 (Next 5, and Next 1's shade):** `house/model.py` `ceiling_shade()` works out where the first floor's ceiling is flat along each
+  room's walls (sampling the roof's underside 10 in from the wall), the crease where the back slope meets the flat ceiling (z -148, outside
+  the dormer) and the dormer's sides down to it; `houseShade` draws them on the roof's group, hidden in Above and On its own like the
+  other ceilings' bands. The living room gets floor bands from its own outline (`room3d.js` `livShade`: every wall, the alcove, the
+  breast, the flight's side and foot), cut away with the room. Not its ceiling: the LED strip's glow is brightest at its edges and a dark
+  band fought it. Not done: shade along the slopes' own feet (they meet the walls low, at the eaves' boxes). **Found** (the site check's walk):
+  walking out, a slide along the door's jamb flipped the view hall, living room, hall (the living room began 3 before the hall's box);
+  now it takes over 12 inside the door's line, so the doorway has a gap where neither changes.
 
 ## Next (found while working; agents: take these in order)
 
@@ -252,5 +260,5 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
    photo), then fix the sizes whose lines still miss: the accuracy pass that needs no tape measure.
 3. **The client's iPhones' numbers**: `?perf` and `R3D.timing()` from each, then decide KTX2 (U5) and light maps (U8).
 4. ~~Republish the shared page~~: not wanted (the client, 4 Nov: "i dont need a copy here just update the live github"); the build no longer makes it (V1.37).
-5. **The first floor's sloped ceilings' shade** (U8). (The floor labels on a phone: done in V1.35.)
+5. ~~The first floor's sloped ceilings' shade~~ (U8): done in V1.39 (below). (The floor labels on a phone: done in V1.35.)
 6. **A photo from the foot of the lower stairs** to confirm V1.32's opening (STATE.md's questions).
