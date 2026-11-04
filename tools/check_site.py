@@ -24,6 +24,11 @@ WALK = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   await go(330, 230, 12, () => at()[0] < 340); await go(437, 230, 12, () => at()[0] > 432); await go(437, -300, 40, () => at()[1] < -70);
   await go(357, -10, 20, () => at()[0] < 362); await go(357, 400, 30, () => at()[1] > 150);
   return { seen, top: Math.round(top), end: D.S.view }; }"""
+# V1.43 (V1_PLAN phase 8, access): every visible control has a name; the 3D's label says where you are (the brand's second line)
+ACCESS = """() => { const vis = el => { const r = el.getBoundingClientRect(), cs = getComputedStyle(el); return r.width > 0 && r.height > 0 && cs.visibility !== "hidden" && !el.closest("[hidden]"); };
+  const noname = [...document.querySelectorAll("button, a[href], [role=button], input, select, textarea")].filter(el => vis(el) && !(el.getAttribute("aria-label") || el.getAttribute("title") || el.textContent || el.value || (el.labels && el.labels[0] && el.labels[0].textContent) || "").trim()).map(el => el.outerHTML.slice(0, 80));
+  const c = document.querySelector(".r3d-stage canvas"), place = (document.getElementById("brand-place") || {}).textContent || "";
+  return { noname: noname.slice(0, 4), label: c && c.getAttribute("aria-label").startsWith(place) ? "" : (c && c.getAttribute("aria-label")) }; }"""
 OFF = """() => { const W = document.documentElement.clientWidth, out = [];
   for (const el of document.querySelectorAll("body *")) { const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
     if (!r.width || cs.display === "none" || cs.visibility === "hidden" || cs.position === "fixed" || el.closest("[hidden], .sheet, .r3d-panel, .r3d-floors, .lightbox, .r3d-stage")) continue;
@@ -62,6 +67,9 @@ def main():
             off = pg.evaluate(OFF)
             if off: fails.append(f"{w}: off the right edge: {off}")
             pg.screenshot(path=str(SHOTS / f"site-{w}-house.png"))
+            acc = pg.evaluate(ACCESS)
+            if acc["noname"]: fails.append(f"{w}: controls with no name: {acc['noname']}")
+            if acc["label"]: fails.append(f"{w}: the 3D's label doesn't say where you are: {acc['label']!r}")
             pg.click("[data-hfloor=first]"); pg.wait_for_timeout(2500)
             if phone:
                 fh = pg.evaluate("() => document.getElementById('r3d-floors').getBoundingClientRect().height")
@@ -91,7 +99,7 @@ def main():
         b.close()
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
-    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, Measure keeps a number, a walk into the living room and up its stairs, {len(fails)} failed; screenshots in _shots/")
+    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a walk into the living room and up its stairs, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
 

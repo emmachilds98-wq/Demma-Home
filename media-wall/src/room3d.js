@@ -2692,6 +2692,7 @@ function brandPlace() {
   if (S.view === "house") t = { first: "The first floor", ground: "The ground floor", lower: "The lower floor" }[hfloor] || "The whole house";
   else if (ROOMV()) { const id = VIEW_ROOM[S.view], L = id && id !== "living" && Object.values(R.HOUSE3.floors).flatMap(F => F.labels || []).find(l => l.id === id); t = (L && L.name) || (VIEWS[S.view] || {}).label || t; }
   el.textContent = t;
+  canvas.setAttribute("aria-label", `${t} in 3D: drag to look round, scroll or pinch to zoom; standing (Be there), W A S D or the arrow keys walk, Q and E turn`);   // V1.43: says where you are (it always said the living room)
 }
 /* v64, client: "by floor individually where you can choose to pick a room to focus on": on a floor, its rooms as buttons; a room with
    its own view goes into it, the others are looked at from above */
