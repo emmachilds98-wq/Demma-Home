@@ -861,7 +861,7 @@ function buildShell() {
   const wallP = wP("window"), recP = rP("door"), ceilP = paintMat(lum("#33604a") / BASE_L, false, false, "ceil");
   const egg = paintMat(lum("#346650") / BASE_L, true, false, "trim");
   const C = R.CEIL, Wd = R.W, A = R.ALC_W, AD = R.ALC_D, [B0, B1] = R.BREAST_X, RZ = R.RECESS_Z, WZ = R.WINDOW_Z;
-  const [dx0, dx1] = R.DOOR_X, [wx0, wx1] = R.WINDOW_X, [wy0, wy1] = R.WINDOW_Y;
+  const LD = R.HOUSE3.living.door, LW = R.HOUSE3.living.window, [dx0, dx1] = [LD.a, LD.b], DH = LD.h, [wx0, wx1] = LW.x, [wy0, wy1] = LW.y;   // V1.46: the door and the window from the house file
   // V1.45 (V1_PLAN phase 5): the walls from the house file (model.living_shell): the PC wall, into the alcove, the alcove's back, the
   // breast's reveal, the breast, the recess's side, the door wall (open over the stairs), the stairs wall, the window wall
   for (const w of R.HOUSE3.living.walls) wall(w.axis, w.c, w.u[0], w.u[1], w.y[0], w.y[1], w.n, (w.tone === "r" ? rP : wP)(w.paint), w.holes);
@@ -894,13 +894,13 @@ function buildShell() {
   // the door, shut, with its frame and handle
   // v20, client: "door of room is also white": the door and its frame stay white satin, not the wall colour
   const doorW = reg(new THREE.MeshStandardMaterial({ color: "#efece5", roughness: 0.35 })), frameW = reg(new THREE.MeshStandardMaterial({ color: "#f3f1eb", roughness: 0.4 }));
-  cube(dx0 - 6, 0, RZ - 1.5, 6, R.DOOR_H + 6, 2, frameW); cube(dx1, 0, RZ - 1.5, 6, R.DOOR_H + 6, 2, frameW);
-  cube(dx0 - 6, R.DOOR_H, RZ - 1.5, dx1 - dx0 + 12, 6, 2, frameW);
+  cube(dx0 - 6, 0, RZ - 1.5, 6, DH + 6, 2, frameW); cube(dx1, 0, RZ - 1.5, 6, DH + 6, 2, frameW);
+  cube(dx0 - 6, DH, RZ - 1.5, dx1 - dx0 + 12, 6, 2, frameW);
   // V1.38: the leaf on its hinge at the breast's end (the house's door.living_door turns it: a walk opens it, or a tap)
   const brass = reg(new THREE.MeshStandardMaterial({ color: "#c9b58a", metalness: 0.9, roughness: 0.3 }));
   livLeaf = new THREE.Group(); livLeaf.name = "livLeaf"; livLeaf.position.copy(v3(dx0, 0, RZ + 1)); shell.add(livLeaf);
   const leafBox = (x, y, z, w, h, d, m) => { const me = new THREE.Mesh(new THREE.BoxGeometry(w * M, h * M, d * M), m); me.position.copy(v3(x + w / 2, y + h / 2, z + d / 2)).sub(livLeaf.position); livLeaf.add(shadow(me)); };
-  leafBox(dx0, 0, RZ + 1, dx1 - dx0, R.DOOR_H, 4, doorW);
+  leafBox(dx0, 0, RZ + 1, dx1 - dx0, DH, 4, doorW);
   for (const [y0, y1] of [[14, 98], [112, 186]]) leafBox(dx0 + 9, y0, RZ + 0.6, dx1 - dx0 - 18, y1 - y0, 0.5, doorW);
   leafBox(dx1 - 12, 100, RZ - 1.6, 9, 1.4, 2.6, brass);
   // the window: white frame, glass, a sill, the view out
@@ -1089,8 +1089,8 @@ function buildShell() {
    up to a landing at the first floor, oak treads and a closed oak string on the open side. A stand-in shape (the stairs will change).
    The cutaway leaves it whole (its materials carry no clipping planes), so it never shows in slices. */
 function buildStairs() {
-  const [sx0, sx1] = R.STAIR_X, n = R.STAIR_N || 13, r = R.STAIR_RISE, gq = R.STAIR_GOING, tb = 2.2, nose = 1.5;
-  const z0 = R.STAIR_FRONT + 6, zl = z0 + (n - 1) * gq, zl1 = zl + (R.LANDING_D || 90), top = n * r;
+  const FL = R.HOUSE3.living.flight, sx0 = FL.x0, sx1 = FL.x1, n = FL.n, r = FL.r, gq = FL.g, tb = 2.2, nose = 1.5;   // V1.46: the flight from the house file
+  const z0 = FL.z0, zl = FL.zl, zl1 = FL.zl1, top = n * r;
   const noClip = m => { m.clippingPlanes = []; return m; };
   const body = noClip(paintMat(lum("#2d5a46") / BASE_L, true, false, "w:stairs").clone()); paintMats.set("stairbody", reg(body));
   const oak = noClip(reg(new THREE.MeshStandardMaterial({ color: "#b07a46", map: OAK_TEX, roughness: 0.55 })));

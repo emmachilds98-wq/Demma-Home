@@ -2147,7 +2147,7 @@ def living_shell():
     skirting = [[0, 0, WZ, st, sk, AD], [B1, 0, 0, B1 + st, sk, RZ], [0, 0, AD - st, A, sk, AD], [B0, 0, -st, B1, sk, 0],
                 [B1, 0, RZ - st, dx0 - 6, sk, RZ], [dx1 + 6, 0, RZ - st, sx0, sk, RZ], [0, 0, WZ, W, sk, WZ + st], [W - st, 0, WZ, W, sk, F]]
     rnd = lambda L: [[round(v, 1) for v in q] for q in L]
-    return dict(solids=rnd(solids), floors=rnd(floors), edges=rnd(edges), box=[0.0, W, WZ, RZ], walls=walls, skirting=skirting,
+    return dict(solids=rnd(solids), floors=rnd(floors), edges=rnd(edges), box=[0.0, W, WZ, RZ], walls=walls, skirting=skirting, window=dict(x=[wx0, wx1], y=[wy0, wy1], z=WZ),
                 floor=[0.0, WZ, W, RZ], ceiling=[[0.0, well, WZ, RZ], [well, W, WZ, F]],   # V1.45: [x0, z0, x1, z1]; the ceiling round its opening over the stairs
                 door=dict(a=dx0, b=dx1, line=RZ, h=DH), flight=dict(x0=sx0, x1=sx1, z0=round(z0, 1), zl=round(zl, 1), zl1=round(zl1, 1), n=n, r=r, g=gq))
 
