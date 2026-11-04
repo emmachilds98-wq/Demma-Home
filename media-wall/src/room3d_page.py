@@ -359,7 +359,7 @@ body.bare .r3d .r3d-mini .r3d-minib.r3d-bare { background: var(--page, #fbf7ef);
 /* V1.32 (U7): the walk's stick on a phone */
 /* V1.53: the drop-in figure (bottom right): drag it onto the house to stand there; while dragged, a ghost of it and the room's name */
 .r3d-peg { position: fixed; right: 18px; bottom: 18px; z-index: 30; width: 56px; height: 56px; border: 0; border-radius: 50%; background: oklch(0.86 0.12 85); color: var(--ink);
-  box-shadow: var(--shade); cursor: grab; display: grid; place-items: center; touch-action: none; }
+  box-shadow: var(--shade); cursor: grab; display: grid; place-items: center; touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }   /* iOS: no callout or selection on a long press */
 .r3d-peg .ms { font-size: 32px; }
 .r3d.pegging .r3d-peg { opacity: .35; cursor: grabbing; }
 .r3d-pegghost { position: absolute; z-index: 40; pointer-events: none; transform: translate(-50%, -100%); display: grid; justify-items: center; gap: 2px; }
@@ -372,7 +372,7 @@ body.bare .r3d-peg, .r3d.embed .r3d-peg, .r3d.editing .r3d-peg { display: none; 
 .r3d-stick { position: fixed; left: 16px; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 96px); z-index: 31; width: 112px; height: 112px; border-radius: 50%;
   background: color-mix(in oklab, var(--cream, #fbf7ef) 55%, transparent); box-shadow: 0 4px 18px rgba(0,0,0,.18); touch-action: none; }
 .r3d-stick[hidden], body.bare .r3d-stick, .r3d.tools-open .r3d-stick { display: none; }
-.r3d.walking .r3d-toast { bottom: calc(max(8px, env(safe-area-inset-bottom)) + 222px) !important; }   /* the tip clear of the stick */
+.r3d.walking .r3d-toast { top: auto !important; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 222px) !important; }   /* the tip clear of the stick (V1.54: its top let go, or a tablet's 132 stretched it down the screen) */
 .r3d-stick i { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%; background: var(--ink, #1d2a22);
   transform: translate(var(--x, 0px), var(--y, 0px)); }
 /* V1.30 (U3): only the tools that work where you are (room3d.js brandPlace) */

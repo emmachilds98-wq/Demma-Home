@@ -4,7 +4,7 @@ floors pill is one row on the phone, the photos arrive after the first picture (
 to _shots/ (the workflow keeps them with the run).
 
 python3 tools/check_site.py [site dir]      exits non-zero on any failure; THREE_LOCAL serves three.js where the CDN is blocked"""
-import http.server, json, pathlib, socketserver, sys, threading
+import http.server, json, pathlib, socketserver, sys, threading, time
 from functools import partial
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -42,17 +42,26 @@ DROP = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   const b = document.getElementById('r3d-peg'), r = b.getBoundingClientRect(), c = cv.getBoundingClientRect(), [x, y] = scr('bed3');
   const o = (X, Y) => ({ clientX: X, clientY: Y, bubbles: true, pointerId: 9, button: 0, isPrimary: true });
   b.dispatchEvent(new PointerEvent('pointerdown', o(r.left + 10, r.top + 10))); b.dispatchEvent(new PointerEvent('pointermove', o(r.left - 30, r.top - 30)));
-  b.dispatchEvent(new PointerEvent('pointermove', o(c.left + x, c.top + y))); const said = (document.querySelector('.r3d-pegghost b') || {}).textContent;
+  b.dispatchEvent(new PointerEvent('pointermove', o(c.left + x, c.top + y))); const gb = () => (document.querySelector('.r3d-pegghost b') || {}).textContent; for (let i = 0; i < 50 && !gb(); i++) await sl(100); const said = gb();   // V1.54: worked out on the next frame
   b.dispatchEvent(new PointerEvent('pointerup', o(c.left + x, c.top + y))); await settle();
   return { off, said, view: D.S.view, mode: D.RMODE, eye: Math.round(D.camera.position.y * 100) };
 }"""
+# V1.54: a phone's double-tap, sent as real touches: on the master bedroom's bed from overhead (the first tap opens the bed's card at the
+# foot of the screen, its click mustn't press it, and the second tap still counts), then where it stood you
+TAPAT = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), cv = document.querySelector('.r3d canvas');
+  const settle = async () => { await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(200); await sl(300); };
+  R3D.set({ view: 'house' }); await settle(); document.querySelector('[data-hfloor=first]').click(); await sl(500); document.querySelector('[data-hfview=top]').click(); await settle();
+  const r = D.H3.rooms.master, v = new D.THREE.Vector3(-(r[0] + r[1]) / 2 / 100, r[4] / 100, (r[2] + r[3]) / 2 / 100).project(D.camera), c = cv.getBoundingClientRect();
+  return [c.left + (v.x + 1) / 2 * cv.clientWidth, c.top + (1 - v.y) / 2 * cv.clientHeight + 15]; }"""
+STOOD = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)); await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(200); await sl(300);
+  return { view: D.S.view, mode: D.RMODE, card: D.actId, eye: Math.round(D.camera.position.y * 100) }; }"""
 SIZE = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), cv = document.querySelector('.r3d canvas');
   if (window.DemmaTools) window.DemmaTools.close();
   R3D.set({ view: 'office' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
   const it = Object.values(D.PICK).flat().find(q => q.id === 'office.desk'); if (!it) return { err: 'no desk in PICK' };
   const c = it.b.getCenter(new D.THREE.Vector3()).project(D.camera), r = cv.getBoundingClientRect();
   const o = { clientX: r.left + (c.x + 1) / 2 * cv.clientWidth, clientY: r.top + (1 - c.y) / 2 * cv.clientHeight, bubbles: true, pointerId: 1, button: 0, isPrimary: true };
-  cv.dispatchEvent(new PointerEvent('pointerdown', o)); cv.dispatchEvent(new PointerEvent('pointerup', o)); await sl(300);
+  cv.dispatchEvent(new PointerEvent('pointerdown', o)); cv.dispatchEvent(new PointerEvent('pointerup', o)); await sl(600);   // V1.54: past the card's first 350 ms (a tap's own click)
   const card = D.actId, b = document.querySelector('#r3d-act [data-actopen^="hsize:"]'); if (!b) return { card };
   b.click(); await sl(200); document.querySelector('#r3d-act [data-hstep="w"][data-by="1"]').click(); await sl(600);
   const row = JSON.parse(localStorage.getItem('demma-v1:edits') || '{}')['office.desk~w'], ed = !!D.HEDITS['office.desk'];
@@ -86,6 +95,7 @@ def main():
         for w, h in ((393, 852), (1920, 1080)):
             phone = w < 600
             ctx = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=phone, has_touch=phone, service_workers="block")
+            if phone: ctx.add_init_script("window.__r3dDblMs = 3000;")   # V1.54: this rig hands each touch on only after a slow frame (~0.5 s), so its double-tap and tap allow longer
             pg = ctx.new_page(); pg.set_default_timeout(300000); localcdn.route(pg); errs = []   # V1.5: CI's software graphics draw the whole house at 1920 in ~20 s a frame; a screenshot took over 120 s
             pg.on("pageerror", lambda e: errs.append("pageerror: " + str(e)[:300]))
             pg.on("console", lambda m: errs.append(m.text[:300]) if (m.type == "error" and "favicon" not in m.text and "fonts.g" not in m.text) or "INVALID_" in m.text else None)   # V1.12: and any WebGL error (a photo sent into a texture too small for it, V1.9-V1.11)
@@ -129,6 +139,13 @@ def main():
                 if dr.get("off") or dr.get("said") != "Bedroom 3" or dr.get("view") != "office" or dr.get("mode") != "stand" or abs(dr.get("eye", 0) - 420) > 15:
                     fails.append(f"{w}: the first floor from overhead and the figure dropped on bedroom 3: {dr} (want every room on screen, 'Bedroom 3', standing in the office at 420)")
                 pg.screenshot(path=str(SHOTS / f"site-{w}-drop.png"))
+            if phone:                                           # V1.54: a real double-tap stands you there, the bed's card notwithstanding
+                x, y = pg.evaluate(TAPAT); cdp = ctx.new_cdp_session(pg)
+                for _ in range(2):
+                    cdp.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [{"x": x, "y": y}]}); cdp.send("Input.dispatchTouchEvent", {"type": "touchEnd", "touchPoints": []}); time.sleep(0.12)
+                tp = pg.evaluate(STOOD)
+                if tp.get("view") != "master" or tp.get("mode") != "stand" or tp.get("card") or abs(tp.get("eye", 0) - 420) > 15:
+                    fails.append(f"{w}: a double-tap (touches) on the master bedroom from overhead: {tp} (want standing in it at 420, no card)")
             if phone:                                           # V1.38: walk into the living room, up to the landing and back out (the small screen: quicker frames)
                 wk = pg.evaluate(WALK)
                 want = ["hall", "livstand", "landing", "livstand", "hall"]
@@ -140,7 +157,7 @@ def main():
         b.close()
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
-    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a piece resized from a tap, the figure dropped in, a walk into the living room and up its stairs, {len(fails)} failed; screenshots in _shots/")
+    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a piece resized from a tap, the figure dropped in, a double-tap there, a walk into the living room and up its stairs, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
 

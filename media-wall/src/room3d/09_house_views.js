@@ -81,6 +81,7 @@ function applyFloors() {
   for (const k of ["lower", "ground", "first", "out"]) if (HFLOOR[k]) HFLOOR[k].traverse(o => { if (o.userData.hlabel) o.visible = labelsOn && (k === "out" ? on : (top ? top === k : !R.HOUSE3)); });   // v57: Hide labels hides these too
   if (rmodeG) rmodeG.traverse(o => { if (o.userData.rlabel) o.visible = labelsOn; });   // v72 (B5): the room's name in Above
   hidReal.forEach(o => o.visible = true); hidReal = []; hidLay.forEach(o => o.layers.enable(0)); hidLay = [];
+  if (HMATS && HMATS.earth) HMATS.earth.visible = !(on && sel === "lower");   // V1.53: the earth over the secret room (under the garage) off, so the lower floor shows
   if (on && sel === "lower") scene.children.forEach(o => { if (o !== houseG && o !== garden3d && o !== lightRig && !o.isLight && o !== (sun && sun.target) && o.visible) { o.visible = false; hidReal.push(o); } });
   qsa("[data-hfloor]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.hfloor === hfloor)));
   const fl = qs("#r3d-floors"); if (fl) fl.hidden = !on;
@@ -149,6 +150,23 @@ const ROOM_VIEW = { living: "room", kitchen: "kitchen", bed3: "office", bed2: "b
   landing: "landing", hall: "hall", garage: "garage", wc: "wc" };   // v66: every room a person stands in has its own view
 /* v74, the client: "let me view overhead and the default view for each floor as a whole too": a floor picked (or the whole house),
    Angled looks at it from the house view's direction, Overhead from straight above, each far enough to take in all its rooms */
+/* V1.54, the client: "make sure this new view mode works on iPhones and most mobiles": on a phone the floors' and rooms' buttons take the
+   top of the screen and the dock its foot, so a view from above is framed into what's left between them: [its share of the height, how
+   far its middle sits below the screen's (px)] */
+function freeFrame() {
+  if (camera.aspect >= 1 || typeof stage === "undefined" || !stage) return [1, 0];
+  const st = stage.getBoundingClientRect(), H = st.height; let top = 0, bot = 0;
+  for (const el of document.querySelectorAll(".brand, .r3d-mini, #r3d-floors, #r3d-hrooms, #r3d-rmode, .hnav")) { const r = el.getBoundingClientRect();
+    if (r.width && r.height && r.bottom - st.top < H * 0.5) top = Math.max(top, r.bottom - st.top); }
+  const dk = document.querySelector(".r3d-dock"); if (dk) { const r = dk.getBoundingClientRect(); if (r.height && r.top - st.top > H * 0.5) bot = st.bottom - r.top; }
+  return [Math.max(0.4, (H - top - bot) / H), (top - bot) / 2];
+}
+function fromAbove(cx, y, cz, dist, fov) {  // straight down on (cx, y, cz) from dist (cm) over it, into the free part of a phone's screen
+  const house = S.view === "house";       // over the house, measureShift's view offset already centres it between them (V1.30): kept up to date, the size only here
+  if (house && typeof measureShift === "function") measureShift(!!(window.DemmaTools && window.DemmaTools.isOpen()));
+  const [k, sh] = freeFrame(), D = dist / k, oz = house ? 0 : -sh * 2 * D * Math.tan(fitFov(fov) * Math.PI / 360) / Math.max(1, stage ? stage.clientHeight : 1);   // the screen's up is -z
+  flyTo([cx, y + D, cz + 1 + oz], [cx, y, cz + oz], fov, true, REDUCE);
+}
 function floorCam() {
   if (S.view !== "house" || !R.HOUSE3) return;
   if (hfloor === "all" && hfview === "angle") { setView("house"); return; }
@@ -158,10 +176,10 @@ function floorCam() {
   if (!rs.length) return;
   const x0 = Math.min(...rs.map(r => r[0])), x1 = Math.max(...rs.map(r => r[1])), z0 = Math.min(...rs.map(r => r[2])), z1 = Math.max(...rs.map(r => r[3]));
   const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0, y = hfloor === "all" ? 540 : fy;
-  const fit = (fov, sx, sy) => { const v = fitFov(fov) * Math.PI / 360, h = Math.atan(Math.tan(v) * camera.aspect); return (camera.aspect < 1 ? 1.35 : 1.1) * Math.max(sx / 2 / Math.tan(h), sy / 2 / Math.tan(v)); };
+  const fit = (fov, sx, sy) => { const v = fitFov(fov) * Math.PI / 360, h = Math.atan(Math.tan(v) * camera.aspect); return (camera.aspect < 1 ? 1.12 : 1.25) * Math.max(sx / 2 / Math.tan(h), sy / 2 / Math.tan(v)); };
   // V1.53, the client: "improve overhead views": a long lens from high up (the walls stand straight, not leaning out), and from above (flyTo's
   // fourth is "above": REDUCE there had held the eye to 6 m, so a floor never fitted)
-  if (hfview === "top") { flyTo([cx, y + 60 + fit(26, w, d), cz + 1], [cx, y, cz], 26, true, REDUCE); return; }   // V1.29 (U2): flown, not cut
+  if (hfview === "top") { fromAbove(cx, y, cz, 60 + fit(26, w, d), 26); return; }   // V1.29 (U2): flown, not cut
   const H = VIEWS.house, dir = new THREE.Vector3(H.eye[0] - H.at[0], H.eye[1] - H.at[1], H.eye[2] - H.at[2]).normalize();
   const r = 0.5 * Math.hypot(w, d, 235), v = 25 * Math.PI / 180, hh = Math.atan(Math.tan(v) * camera.aspect), D = (camera.aspect < 1 ? 0.5 : 0.9) * r / Math.sin(Math.min(v, hh));   // the floors below show under it too (V1.53: a phone closer, now it's not held to 6 m)
   flyTo([cx + dir.x * D, y + dir.y * D, cz + dir.z * D], [cx, y + 40, cz], 50, true, REDUCE);

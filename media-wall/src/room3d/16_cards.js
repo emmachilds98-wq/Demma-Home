@@ -232,12 +232,19 @@ let actMoreOpen = false;
 function openAct(id, xy) {
   if (popId) closePop(); clearAim();
   if (String(id).split(":").slice(0, 2).join(":") !== String(actId || "").split(":").slice(0, 2).join(":")) actMoreOpen = false;   // v39: a new card opens folded
-  actId = id; actXY = xy; act.hidden = false; renderAct();
+  actId = id; actXY = xy; act.hidden = false; actAt = performance.now(); renderAct();
   if (!act.hidden) { const f = qs("#r3d-acts button"); if (f) f.focus({ preventScroll: true }); }
 }
+const DBL_MS = +(window.__r3dDblMs || 380);   // a double-tap's two taps within this (a test rig whose touches wait on slow frames can widen it)
+let actAt = 0;   // V1.54: when the card opened: a phone's click from the same tap lands on it (a sheet at the foot) and mustn't press its button
 function closeAct() { actId = null; if (act) act.hidden = true; clearAim(); if (!EMBED) clearSel(); }
 if (act) {
+  act.addEventListener("pointerdown", e => {   // V1.54: the second tap of a double-tap that lands on the card the first one opened: still a double-tap
+    if (e.pointerType === "mouse" || !lastTap || e.timeStamp - lastTap.t > DBL_MS || Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) > 30) return;
+    lastTap = null; e.preventDefault(); e.stopPropagation(); closeAct(); actAt = performance.now(); floorHop(e);
+  }, true);
   act.addEventListener("click", e => {
+    if (performance.now() - actAt < 350) { e.preventDefault(); e.stopPropagation(); return; }   // V1.54: the tap that opened it, not a press
     const b = e.target.closest("button"); if (!b) return;
     if (b.classList.contains("x")) { closeAct(); return; }
     const d = b.dataset;
@@ -262,13 +269,15 @@ if (act) {
   act.addEventListener("input", e => { const el = e.target; if (!el.dataset || !el.dataset.hfield || !actId) return;   // V1.50: a typed size, kept once you pause
     const k = actId.split(":")[1], f = el.dataset.hfield, v = parseFloat(el.value); if (!isFinite(v)) return;
     clearTimeout(sizeT); sizeT = setTimeout(() => setPiece(k, f, clampF(f, cmR(v))), 450); });
-  canvas.addEventListener("dblclick", e => { if (S.edit || MEAS.on || EMBH) return; e.preventDefault(); floorHop(e); });   // V1.53: on a PC, a double-click stands you there
+  let lastPtr = "mouse";
+  canvas.addEventListener("pointerdown", e => { lastPtr = e.pointerType; }, true);
+  canvas.addEventListener("dblclick", e => { if (S.edit || MEAS.on || EMBH || lastPtr !== "mouse") return; e.preventDefault(); floorHop(e); });   // V1.53: on a PC, a double-click stands you there (a phone's double-tap is the pointerup's: iOS can send a dblclick too)
   canvas.addEventListener("pointerdown", e => { tapDown = (S.edit || e.button > 0) ? null : [e.clientX, e.clientY, e.timeStamp]; if (actId) closeAct(); });   // review after v48: the touch's own time, so a slow frame between down and up can't turn a tap into a long press
   canvas.addEventListener("pointerup", e => {
     const t = tapDown; tapDown = null;
-    if (!t || S.edit || Math.hypot(e.clientX - t[0], e.clientY - t[1]) > 6 || e.timeStamp - t[2] > 600) return;
+    if (!t || S.edit || Math.hypot(e.clientX - t[0], e.clientY - t[1]) > 6 || e.timeStamp - t[2] > Math.max(600, DBL_MS)) return;
     if (MEAS.on) { measureTap(e); return; }                                   // v39: measure in 3D
-    const now = e.timeStamp, dbl = lastTap && now - lastTap.t < 380 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30;
+    const now = e.timeStamp, dbl = lastTap && now - lastTap.t < DBL_MS && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30;
     lastTap = dbl ? null : { t: now, x: e.clientX, y: e.clientY };
     if (dbl && e.pointerType !== "mouse" && floorHop(e)) return;             // v41: a double-tap on the floor flies you there (V1.53: a mouse's double-click: dblclick)
     if (EMBH) { EMBH.tap(e); return; }                                        // V1: in the app, a tap names the piece to the app
@@ -276,7 +285,7 @@ if (act) {
     const r = stage.getBoundingClientRect();
     if (id.startsWith("hdoor:")) swingDoor(id.slice(6), !doorOpen(HPARTS[id.slice(6)]));   // V1.26: a tap opens or shuts it, its card says which
     if (tryOpts) { const pl = placeOf(id); if (pl) id = `opt:${pl}:${placeIx(pl, id)}`; }             // v39: Try options: what else could go here
-    openAct(id, [e.clientX - r.left, e.clientY - r.top]);
+    openAct(id, [e.clientX - r.left, e.clientY - r.top]); if (e.pointerType === "mouse") actAt = 0;   // V1.54: only a finger's tap sends its click onto the card
   });
   document.addEventListener("keydown", e => { if (e.key === "Escape" && actId) closeAct(); });
 }
