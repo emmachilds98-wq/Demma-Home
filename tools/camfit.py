@@ -1,7 +1,8 @@
 """Demma's Home V1.40 (docs/UPGRADE_REVIEW.md Next 2): stand the 3D's camera where each of the client's photos was taken. For each pair in
 compare.PAIRS it nudges the eye (x, y, z), the aim (turn, tilt) and the lens one at a time, keeping a change when the 3D's edges sit closer
 to the photo's (the F-score of edges within 4 px each way, both pictures softened first), halving the steps each pass. It prints each
-camera for compare.CAMS, where the comparison then stands; what still misses after that is the room's sizes, not the camera.
+camera for compare.CAMS, where the comparison then stands; what still misses after that is the room's sizes, not the camera. V1.41: a
+view not in compare.CAMS is swept first (nine spots in the room, eight ways each) and the best three refined.
 
 python3 tools/camfit.py [view ...]      (the site built first; about a minute and a half a view in a test browser)"""
 import http.server, io, json, math, pathlib, socketserver, sys, threading
@@ -93,22 +94,35 @@ def main(only):
             def render(c):
                 pg.evaluate("a => R3D.set({ aim: a })", cam_of(c)); pg.wait_for_timeout(350)
                 return score(P, P4, edges(Image.open(io.BytesIO(pg.screenshot())), W, H))
-            best = render(c); s0 = best; step = dict(STEP)
-            for _ in range(4):                                # each step size until a pass finds nothing better (four at most), then half
-                for _pass in range(4):
-                    moved = False
-                    for k in ("yaw", "pitch", "fov", "x", "z", "y"):
-                        for sgn in (1, -1):
-                            t = dict(c); t[k] += sgn * step[k]
-                            if (k == "fov" and not 35 <= t[k] <= 100) or not ok(t):
-                                continue
-                            s = render(t)
-                            if s > best:
-                                best, c, moved = s, t, True
-                                break
-                    if not moved:
-                        break
-                step = {k: v / 2 for k, v in step.items()}
+            def refine(c, best):
+                step = dict(STEP)
+                for _ in range(4):                            # each step size until a pass finds nothing better (four at most), then half
+                    for _pass in range(4):
+                        moved = False
+                        for k in ("yaw", "pitch", "fov", "x", "z", "y"):
+                            for sgn in (1, -1):
+                                t = dict(c); t[k] += sgn * step[k]
+                                if (k == "fov" and not 35 <= t[k] <= 100) or not ok(t):
+                                    continue
+                                s = render(t)
+                                if s > best:
+                                    best, c, moved = s, t, True
+                                    break
+                        if not moved:
+                            break
+                    step = {k: v / 2 for k, v in step.items()}
+                return c, best
+            s0 = render(c); starts = [(s0, c)]
+            if view not in compare.CAMS:                      # V1.41: no start near the photo's spot: sweep the room first (its corners, edges'
+                for x in (bx[0], (bx[0] + bx[1]) / 2, bx[1]):   # middles and middle; eight ways each), then refine the best three
+                    for z in (bx[4], (bx[4] + bx[5]) / 2, bx[5]):
+                        for yw in range(0, 360, 45):
+                            t = dict(x=x, y=fy + 155, z=z, yaw=yw, pitch=-8.0, fov=72.0); starts.append((render(t), t))
+            starts.sort(key=lambda q: -q[0]); best, c = -1, None
+            for s1, c1 in starts[:3]:
+                c2, s2 = refine(c1, s1)
+                if s2 > best:
+                    best, c = s2, c2
             out[view] = cam_of(c); render(c)
             r = Image.open(io.BytesIO(pg.screenshot())).convert("RGB"); ctx.close()
             import numpy as np
