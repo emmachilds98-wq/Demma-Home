@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.53 (4 Nov 2026)
+**Version:** V1.54 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -50,6 +50,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   lands. A walk key in a room's In it stands you there and walks (`startWalk`); Shift hurries; over the house or a room from above the keys
   glide (`glide`). The overheads: `flyTo`'s fourth is `above` (REDUCE there held them to 6 m), long lenses, framed by the real lens (`fitFov`).
   Walking no longer jumps from the kitchen to the living room over it, nor steps onto a bed's base (step-up 24). `check_site.DROP` tries it.
+  V1.54: the lower floor's views without the earth over the secret room (`HMATS.earth` off there); the overheads framed with a margin.
 - **V1.52 (V1_PLAN 2.6):** the 3D's one 6,664-line `room3d.js` split into 22 parts (`media-wall/src/room3d/NN_<part>.js`), joined into the same script (the built page byte for byte the same); `checks.py`'s sizes line checks each part parses alone.
 - **V1.50 (V1_PLAN phase 3):** tap a piece in the house: its card says its size; Change its size, a stepper each (a door: width, place),
   the 3D changes as you go, As planned puts it back. Measure rows in `edits` ({item, field, value}; Send shares them), `pull_edits.py`
