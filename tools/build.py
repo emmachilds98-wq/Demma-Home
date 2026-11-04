@@ -6,7 +6,6 @@ python3 tools/build.py --fast     keep the renders and PDFs already made (a quic
 What goes where (docs/STATE.md has the same):
   _site/index.html (and plan.html)                       the site: the house and the living room in 3D, Plan, Build, Buy (build_viewer.py)
   _site/sw.js, manifest.webmanifest                      offline and Add to Home Screen (build_viewer.pwa_files)
-  _site/artifact.html                                    the same page for the shared page (the claude.ai artifact)
   _site/data/house.json                                  the house file (house/export_house.py; tools/pull_edits.py checks against it)
   _site/data/projects/<id>.json, index.json              the projects (media-wall/src/export_project.py; room for each room's own)
   _site/media-wall/out/                                  the plan PDFs and HD pictures
@@ -27,25 +26,6 @@ def run(cmd, cwd=SRC):
     print("·", " ".join(map(str, cmd)), flush=True)
     subprocess.run([sys.executable, *map(str, cmd)], cwd=cwd, env=ENV, check=True)
     print(f"  {time.time() - t:.0f} s", flush=True)
-
-
-def artifact():
-    """the shared page (the claude.ai artifact) wraps the page in its own document: the same page without the outer tags; the PDFs
-    open from GitHub Pages (the artifact doesn't carry them)"""
-    page = (SITE / "index.html").read_text()
-    page = re.sub(r"<!doctype html>\s*<html[^>]*>\s*<head>\s*", "", page, flags=re.I)
-    page = re.sub(r'<meta charset="utf-8">\s*<meta name="viewport"[^>]*>\s*', "", page)
-    page = re.sub(r"</head>\s*<body>", "", page).replace("</body>\n</html>\n", "").replace('<link rel="manifest" href="manifest.webmanifest">\n', "")
-    # V1.9: its photos inline again; V1.30 (U5): or, with PHOTOS_URL (the photo file uploaded to the shared page's own asset store:
-    # STATE.md, "Republish"), fetched from there after the first picture, so the page is about 2 MB and not near its 16 MB limit
-    url = os.environ.get("PHOTOS_URL")
-    page = re.sub(r'<script type="application/json" id="photo-data" data-src="([^"]+)"></script>',
-                  lambda m: (f'<script type="application/json" id="photo-data" data-src="{url}"></script>' if url else
-                             '<script type="application/json" id="photo-data">' + (SITE / m.group(1)).read_text() + "</script>"), page)
-    page = page.replace('href="media-wall/out/', 'href="https://emmachilds98-wq.github.io/Demma-Home/media-wall/out/')
-    sys.path.insert(0, str(SRC)); import room3d_page                       # V1.31: the shared page keeps three from the CDN (its size limit)
-    page = re.sub(r'<script type="importmap">.*?</script>', lambda m: room3d_page.IMPORTMAP, page, count=1, flags=re.S)
-    (SITE / "artifact.html").write_text(page)
 
 
 def relabel(out):
@@ -108,7 +88,6 @@ def main(argv):
     shutil.copytree(SRC / "art", SITE / "media-wall/src/art")
     if (HOUSE / "out").exists():
         shutil.copytree(HOUSE / "out", SITE / "house/out")
-    artifact()
     (SITE / ".nojekyll").write_text("")
     size = sum(p.stat().st_size for p in SITE.rglob("*") if p.is_file())
     print(f"built {LABEL} into {SITE.relative_to(ROOT) if SITE.is_relative_to(ROOT) else SITE}: {size / 1e6:.0f} MB in {time.time() - t0:.0f} s")

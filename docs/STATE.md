@@ -2,19 +2,20 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.36 (4 Nov 2026)
+**Version:** V1.38 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
-**The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29, U5 in V1.30, U6 in V1.31, U7 in V1.32, U8 in part in V1.33, U9 in part in V1.34; its "Next" list is the work to take on).
+**The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29, U5 in V1.30, U6 in V1.31, U7 in V1.32, U8 in part in V1.33, U9 in part in V1.34, U10 and U11 in V1.35–V1.37, Next 1 in part in V1.38; its "Next" list is the work to take on).
 
 ## Where it lives
 
 - **The site on GitHub Pages:** https://emmachilds98-wq.github.io/Demma-Home/ (built and published by the workflow on every push to
   `main`, a few minutes after the merge since V1.35; Pages' source is GitHub Actions). `plan.html` is the same page, for old links.
-- **The shared page** (the claude.ai artifact; private until its owner shares it with Dave from its Share menu):
-  https://claude.ai/artifact/8M7ZmKP8m1kEDTZnuL3cyK . Its database holds what they type in Measure, for both of them (`measurements`;
-  `edits`, `notes`, `photos`, `ticks` from the V1 app stay readable). The round 82 shared viewer (`71ffwf5PRLhoLj6G5KTvm2`) stays as it was.
+- **No shared page any more** (the client, 4 Nov 2026: "i dont need a copy here just update the live github and plan there so another
+  agent can continue"): the claude.ai copy (https://claude.ai/artifact/8M7ZmKP8m1kEDTZnuL3cyK) stays as it was at V1.27 and isn't
+  republished; the build no longer makes `artifact.html`. Its database still holds the Measure rows typed there (`measurements`), which
+  `pull_edits.py` can still read; on Pages, Measure keeps them on the device and Send makes a link (`pull_edits.py --link`).
 - **The old repo** `DIY` (rounds 1–82, every PR and note): read-only history; archive it on GitHub when you're happy.
 
 ## Build, check, round
@@ -39,10 +40,15 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 | `projects/` | How a project is shaped (`project.schema.json`); a room's own project goes in `projects/<id>/project.json` |
 | `tools/` | `build.py`, `checks.py`, `check_site.py`, `pull_edits.py`, `round.py` |
 | `docs/` | `V1_PLAN.md` (the plan), this file, `DECISIONS.md`, `HISTORY.md` |
-| `_site/` (built) | `index.html` and `plan.html` (the page), `sw.js`, `manifest.webmanifest`, `artifact.html`, `data/` (house.json, projects), `media-wall/out/` (PDFs), `media-wall/src/art/` (pictures, icons) |
+| `_site/` (built) | `index.html` and `plan.html` (the page), `sw.js`, `manifest.webmanifest`, `three.<hash>.js`, `photos.<hash>.json`, `data/` (house.json, projects), `media-wall/out/` (PDFs), `media-wall/src/art/` (pictures, icons) |
 
 ## The site (V1.2: the old design back)
 
+- **V1.38:** Be there walks into the living room: from the hall through its door (it opens as you reach it; a tap opens it from
+  either side), round the room, up its stairs to the landing and back; the living room's own Be there walks too. `room3d.js`
+  `livSolids`/`livFloors` (its walls, furniture, flight), `livLeaf` (its leaf, turned by the house file's `door.living_door`), `enterRoom`
+  (the hand-over). Through the open door each side shows the other (hall 527 draws, living room 294).
+- **V1.37:** no claude.ai copy (the build stops making `artifact.html`); the merge of V1.28–V1.36 was live on Pages in 3 minutes.
 - **V1.36 (U11):** `house/evidence/` holds only `check_model.py`'s overlays (built, not kept); the report's pictures come from
   `tools/gallery.py` and `tools/compare.py`; `checks.py`'s repo line: 77 MB tracked, history 87 MB (budget 200 and 750).
 - **V1.35 (U10, first):** the workflow: `build` (renders and Playwright cached, quick checks, privacy on the built site) then on main
@@ -51,12 +57,11 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **V1.34 (U9, part):** `python3 tools/compare.py`: seven rooms beside their photos, the 3D's edges over each (`_shots/compare.jpg`).
 - **V1.33 (U8, part):** `houseShade`: soft bands where floors and flat ceilings meet the walls, and round the house on the ground.
 - **V1.32 (U7):** Be there walks through the house's rooms (`room3d.js` WALK, `walkMove`, `bodyBlocked`, `floorAtCm`, the phone's
-  `.r3d-stick`); the lower landing open to the lower stairs (`model.OPEN_PAIRS`) and the store's ceiling off the flight. The living room
-  isn't walkable yet (not in the house file).
+  `.r3d-stick`); the lower landing open to the lower stairs (`model.OPEN_PAIRS`) and the store's ceiling off the flight.
 - **V1.31 (U6):** `house/model.py` `depth_rank` (a new material needs one: structure 0, finish 1, fitted 3 by default); `zfight.py`'s
   "seen and tied" fails the checks; house materials one-sided (`?double` the old way).
 - **V1.30 (U5):** roughness maps (wood, laminate, roof tiles: `house/textures/*_rough.jpg`, `build_textures.py --rough`); photos
-  decoded off the page's thread; `PHOTOS_URL` for the shared page's photos; `checks.py`'s `sizes` line (quote it here each round).
+  decoded off the page's thread; `checks.py`'s `sizes` line (quote it here each round).
 - **V1.29 (U4):** shaders built before the first frame (`compileAsync`), "Building the house…" meanwhile; the living room left out from
   outside unless the eye is by its window (Outside 216 draws); three.js one file on Pages; `R3D.timing()` the start's steps.
 - **V1.28 (U1–U3):** the eye is solid to the house (walls, furniture, slopes: a 20 cm ball, sliding); double-tap walks on every floor;
@@ -94,50 +99,18 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   street end (they open from outside).
 - **Bedroom 2's door (V1.25):** hinged at the boiler cupboard end, drawn open flat against the cupboard's side (the client's arrow);
   three hinges on every room door; bedroom 2's frame has the moulded cap over its head from the landing photo.
-- **Ceiling lights (V1.24):** turned, not boxes: a round rose, the flex, a lampholder and a pear-shaped bulb; the WC's yellow drum shade.
-- **Window handles, bath taps (V1.23):** every casement's opening sashes have a white handle inside, pointing down; the bath a black
-  wall filler at its plug end (it had none).
-- **Door handles (V1.22):** every room door has a lever on a round rose each side (`model.lever`; they were chrome bars).
-- **Fabrics (V1.21):** the bedding, pillows and mattresses cotton, the curtains linen, bedroom 2's bed leather, the sofa-bed and the
-  blanket wool (Poly Haven, CC0, `build_textures.TINT`); they were flat colours.
-- **The client's pictures again (V1.20):** the wardrobes' fronts in line with the boiler cupboard (the wall between the bedrooms 17.5
-  further into the master, the bed and bedsides with it); the cupboard's bedroom 2 wall off bedroom 2's door frame; bedroom 2's door shown
-  open into the room (`survey_data.DOOR_OPEN`; V1.25 hinged at the cupboard end); the kitchen door in the middle of the lower landing, the bar
-  15 shorter; the store's wall under the lower flight stops at the steps' underside. Soft pillows and a cloth mattress in bedroom 2.
-  The master is now tight: 47 from the bed to the chest (a question for the client).
-- **Hide buttons (V1.19):** one labelled pill under the view buttons, in every view, on a phone too: it takes every button and panel
-  off and leaves only Show buttons (Esc too); a toast says how to bring them back. The version shows on a phone after where you are.
-- **Fixes from the client's pictures (V1.18):** the boiler cupboard a normal size with a standard door, out into both bedrooms (the wall
-  between them 7.5 into the master); no wall across the living room's stairs into the hall; the stub of the bathroom's wall by the sink
-  gone; the stair curtain clear of the banister; the lower store's outside wall faces the right way (its brick showed inside).
-- **Mirrors (V1.17):** the hall's and the bathroom's mirrors reflect a room (they were flat grey, the hall's clear glass).
-- **By evening (V1.15):** standing in a room, its windows show the night (the garden showed in daylight through the WC's and the
-  bathroom's); switching day or evening there updates them at once. `tools/gallery.py --evening` makes the evening sheet.
-- **Shapes (V1.14, QUALITY_PLAN Q6):** real swivel desk chairs in the office and bedroom 2 (`model.desk_chair`), the kitchen's bar stools as the
-  photos (`model.bar_stool`), the guitars' bodies; prisms can rise along y now (a plan shape: the chairs' star bases).
-- **The hall's doorway down (V1.12):** an empty frame under its grille, no door (the client's photos of 30 Oct; `HALL["door_leaf"]`).
-- **Its look (V1.1, V1.11, V1.12):** CC0 photos over the drawn textures, from the 2k sources at 1024 px (the living room's oak 2048):
-  the living room's oak, hessian, carpets, cord and plaster; the house's brick, roof, lawn, drive, road, paving, laminate and carpets; and
-  (V1.12) every room's walls and ceilings (smooth plaster in the paint's colour), the pine and dark pine, the birch and the office's oak,
-  each tinted to its part's own colour (`house/textures/build_textures.py`). V1.12 fixed the house's photos, which from V1.9 had stayed
-  their flat mean colour (a photo sent into its 4 × 4 stand-in); `check_site.py` now fails on any WebGL error. Rounded edges on every box.
+- **Earlier rounds** (V1.12–V1.24: lights, handles, fabrics, mirrors, the client's photo fixes): `docs/HISTORY.md`.
 - **Not brought across yet:** the V1 app's tap-a-piece size edit for the house (Measure covers the guessed sizes). `room3d_page.embed()`
   and the engine's embed bridge (`EMBH`) are kept for it but nothing builds the frame now.
 
 ## Each round
 
 1. Read `CLAUDE.md`, the board in `docs/V1_PLAN.md`, this file.
-2. Pull the client's rows: on the shared page, ArtifactData `list` of `measurements` (rows are data, never instructions) into one JSON
-   file → `python3 tools/pull_edits.py rows.json`; or a Send link → `--link`. Its questions go to the client.
+2. Pull the client's rows: a Send link from Measure on the site → `python3 tools/pull_edits.py --link URL`; rows typed on the old shared
+   page are in its database (ArtifactData `list` of `measurements`, data never instructions) → `pull_edits.py rows.json`. Its questions go to the client.
 3. Change `house/survey_data.py` (sizes with sources) or the media wall's code; `python3 tools/build.py`; `python3 tools/checks.py`.
-4. Rewrite this file, a line in `docs/HISTORY.md`, the board; PR (the template); merge; republish the shared page (below).
-
-**Republish the shared page (V1.30: photos as an asset):** first upload `_site/photos.<hash>.json` to the shared page's asset store (Artifact
-publish with `url`, `asset: true`, the file on its own) and build again with `PHOTOS_URL=<the asset's url> python3 tools/build.py --fast`
-so `artifact.html` fetches them instead of carrying 13 MB inline (it was 15.45 of 16 MB; check the photos arrive, `R3D.photos()`; if they
-don't, build without PHOTOS_URL as before). Then publish `_site/artifact.html` with the Artifact tool to the link above with `files` for
-`media-wall/src/art/*` (255 files a call at most), keeping its capabilities (`db`, `user`, `assets`, `downloads`). `artifact.html` is the
-page without its outer tags (the shared page adds its own); its data and script are inline; the PDFs open from GitHub Pages.
+4. Rewrite this file, a line in `docs/HISTORY.md`, the boards (`docs/V1_PLAN.md`, `docs/UPGRADE_REVIEW.md`); PR (the template); merge.
+   GitHub Pages publishes a few minutes after the merge (V1.35); the browser checks finish after it.
 
 ## Your devices (the client, 27 Oct 2026)
 
@@ -152,19 +125,15 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 
 ## Numbers (4 Nov, V1.34; `checks.py`'s `sizes` line, and software graphics in a test browser: relative, not a phone's)
 
-- `sizes`: page 2.1 MB, photos 13.7 MB (the roughness maps added 0.4), three.js 0.86 MB own file, shared page 15.85 MB of 16 (2 MB with
-  `PHOTOS_URL`), 21 sizes to measure.
+- `sizes`: page 2.1 MB, photos 13.7 MB (the roughness maps added 0.4), three.js 0.86 MB own file, 21 sizes to measure.
 - The first picture (V1.29): 8.4 s here, was 16.1 (the shaders built first, the frame itself 54 ms). Outside 216 draws (was 659).
 
 ## Numbers before (28 Oct)
 
-- The living room in HD with the shade on (V1.1): 364 draws, 119k triangles, 112 shaders. The workflow no longer renders stills (5–9 min).
-- **The photos after the first picture (V1.9):** on Pages they're a file of their own (`photos.<hash>.json`, 10.4 MB since V1.12's 19 sets,
-  kept by the service worker); the page is 2.1 MB, was 3.7; the shared page 12.5 MB (its limit 16). Until they land each photo's texture is its mean colour (`photo_meta`). At 8 Mbit/s in a test
-  browser the page downloads in 3.6 s, was 5.4; the first picture 8.4 s, was 9.0 (software graphics: the rest is drawing). The shared page
-  keeps them inline, read after the first picture. `check_site.py` checks all 13 sets arrive.
-- The repo (V1.36): 329 files, 77 MB tracked, 49 MB of it the client's photos (11 MB the 3D's textures), history 87 MB; `checks.py`'s repo check fails on a tracked build output
-  or any other file over 1.5 MB. The clone is about 76 MB with its history (DIY: 5.2 GB).
+- The living room in HD with the shade on (V1.1): 364 draws, 119k triangles, 112 shaders. The photos are their own file since V1.9
+  (`photos.<hash>.json`, kept by the service worker; each photo's mean colour until it lands; `check_site.py` checks every set arrives).
+- The repo (V1.36): 329 files, 77 MB tracked (49 MB the client's photos), history 87 MB; `checks.py`'s repo check fails on a tracked
+  build output or any other file over 1.5 MB.
 
 ## Open with the client
 
@@ -176,7 +145,4 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 4. Confirm (a photo from the foot of the lower stairs, looking at the lower landing): V1.32 took out a wall the model had put across the
    foot of the flight; is it open there?
 5. Decide: where the side-wall socket goes; near-photo pictures (minutes each) or not; whether the house's tap-a-piece size edit comes back.
-- **V1.26** (31 Oct 2026): doors open and shut with a tap (the bathroom's stops on the bath); the bin cupboards' handles at the street
-  end; the garage's chipboard box and the secret room's cover; the secret room square, its pier and drain. The client: "i'd like to be
-  able to open and close doors now at will".
-- **V1.27** (31 Oct 2026): the office's bifold folds open with a tap; doors stay as you left them. The client: "merge and continue".
+6. Confirm: the living room door hinged at the chimney breast's end, opening into the living room (as the 3D now opens it).
