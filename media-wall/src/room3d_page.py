@@ -68,6 +68,16 @@ CSS = """
 .r3d-actsep { flex: 1 1 100%; margin: 6px 0 -2px; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--mut); }
 .r3d-act.above::before { top: auto; bottom: -7px; }
 .r3d.editing .r3d-act { display: none; }
+/* V1.50: a piece's sizes on its card, a stepper each (tap a piece in the house, Change its size) */
+.r3d-actfields { display: grid; gap: 6px; margin: 0 0 10px; }
+.r3d-actfields .fld { display: flex; align-items: center; justify-content: space-between; gap: 8px; font: 600 13.5px Figtree, system-ui, sans-serif; }
+.r3d-actfields .stp { display: flex; align-items: center; gap: 4px; }
+.r3d-actfields .stp button { width: 36px; height: 36px; border: 0; border-radius: 50%; background: var(--soft); color: var(--ink); font: 600 18px Fredoka, system-ui, sans-serif; cursor: pointer; }
+.r3d-actfields input { width: 68px; height: 36px; border: 1.5px solid #0002; border-radius: 12px; background: #fff; color: var(--ink); font: 600 15px Figtree, system-ui, sans-serif; text-align: center; }
+.r3d-actfields .note { margin: 2px 0 0; font-size: 12.5px; color: var(--mut); }
+.r3d-act:has(.r3d-actfields) { z-index: 32; }
+.r3d-actfields input { appearance: textfield; -moz-appearance: textfield; }
+.r3d-actfields input::-webkit-inner-spin-button, .r3d-actfields input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 /* the tools and their panel. v32, client: "make tools always appear in 3D view": the six buttons are always on the room, in a pill;
    tapping one opens its panel, tapping it again closes it */
 .r3d-dock { position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); display: flex; gap: 10px; align-items: center; z-index: 30;

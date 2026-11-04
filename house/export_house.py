@@ -17,6 +17,7 @@ HERE = pathlib.Path(__file__).parent
 G = M.Gm                                                          # the measured living room (media-wall/src/geometry.py)
 FLOOR_NAME = {"lower": "Lower", "ground": "Ground", "first": "First"}
 FRAME = 6.0                                                       # a door frame's width each side (model.walls_for)
+EDITABLE = {"furniture", "door", "window", "radiator", "appliance", "switch", "socket", "decor", "light", "fitting"}   # V1.50: what a tap in the 3D can resize
 
 
 def _bboxes(export):

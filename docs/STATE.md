@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.49 (4 Nov 2026)
+**Version:** V1.50 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -44,16 +44,17 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 ## The site (V1.2: the old design back)
 
-- **V1.49:** the site check's walk waits for flies to end, closes panels, reports each leg (`check_site.WALK`); `walkMove` cancels a fly. It failed on GitHub after V1.47 and passed here: watch it.
+- **V1.50 (V1_PLAN phase 3):** tap a piece in the house: its card says its size; Change its size, a stepper each (a door: width, place),
+  the 3D changes as you go, As planned puts it back. Measure rows in `edits` ({item, field, value}; Send shares them), `pull_edits.py`
+  folds them in. `room3d.js` `PICK`, `housePiece`, `storeEdits`, `selPiece`; the pieces in `R.HOUSE3.items`; `check_site.SIZE` tries it.
+- **V1.49:** the site check's walk waits for flies to end and reports each leg (`check_site.WALK`). It passes on GitHub's main.
 - **V1.47 (the client's review):** the outside ground's slope not across the house (`outdoor`); blinds a material of their own
   (`blind_cloth`, shown when `S.blinds`; a tap: `hblinds`); the front door hinged at its b end (`DOOR_HANG`); the dormer's `hung` drawn as
   timber boards, its plaster between the cheeks; roof tiles at 2.4 m (`textures.json`); house walls' relief (`normalScale`) down; by evening a
   dusk veil (`duskVeil`) in the house's rooms; a drag in the house's rooms turns the view in place (`lookTurn`, `inPlace`).
-- **V1.45–V1.48:** the living room's whole fixed shell (walls, floor, ceiling, skirting, door, window opening, stairs, pipe boxing, radiator) drawn from `R.HOUSE3.living` (the same to the pixel). V1_PLAN phase 5 done.
-- **V1.44:** the living room's shell from the house file (`model.living_shell`, `house.json`'s living room `shell`): the walk and the shade read it; four checks hold it to the house.
+- **V1.44–V1.48:** the living room's whole fixed shell (`model.living_shell`, house.json's living `shell`, four checks) (walls, floor, ceiling, skirting, door, window opening, stairs, pipe boxing, radiator) drawn from `R.HOUSE3.living` (the same to the pixel). V1_PLAN phase 5 done.
 - **V1.43:** access (V1_PLAN phase 8): the 3D's label follows where you are; the brand's place line is read out (`aria-live`); `check_site.py` checks every control has a name.
-- **V1.40:** `tools/camfit.py` fits the 3D's camera to a photo (`compare.CAMS`: the WC, the office, the landing; V1.41 the kitchen, after a sweep; V1.42 the hall, in part); the WC's cistern
-  raised to just under its sill, as the photo.
+- **V1.40–V1.42:** `tools/camfit.py` fits the 3D's camera to a photo (`compare.CAMS`: the WC, the office, the landing, the kitchen, the hall in part).
 - **V1.39:** the shade where things meet in the living room (the foot of its walls: `livShade`) and on the first floor's ceilings (where
   flat along the walls, the back slope's crease, the dormer's sides: `model.ceiling_shade`, drawn by `houseShade`).
 - **V1.38:** Be there walks into the living room: from the hall through its door (it opens as you reach it; a tap opens it from
@@ -101,8 +102,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Bedroom 2's door (V1.25):** hinged at the boiler cupboard end, drawn open flat against the cupboard's side (the client's arrow);
   three hinges on every room door; bedroom 2's frame has the moulded cap over its head from the landing photo.
 - **Earlier rounds** (V1.12–V1.24: lights, handles, fabrics, mirrors, the client's photo fixes): `docs/HISTORY.md`.
-- **Not brought across yet:** the V1 app's tap-a-piece size edit for the house (Measure covers the guessed sizes). `room3d_page.embed()`
-  and the engine's embed bridge (`EMBH`) are kept for it but nothing builds the frame now.
+- **The embed bridge** (`room3d_page.embed()`, `EMBH`, `?embed`): kept, but nothing builds the frame now.
 
 ## Each round
 
@@ -145,5 +145,5 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
    wardrobes to the front wall; the alcove; bedroom 2's length; a stair tread; the meter and bin cupboards; the living room's side-wall socket; the garage's chipboard box's depth; the secret room's pier.
 4. Confirm (a photo from the foot of the lower stairs, looking at the lower landing): V1.32 took out a wall the model had put across the
    foot of the flight; is it open there?
-5. Decide: where the side-wall socket goes; near-photo pictures (minutes each) or not; whether the house's tap-a-piece size edit comes back.
+5. Decide: where the side-wall socket goes; near-photo pictures (minutes each) or not. Try V1.50: tap a piece in a room, Change its size.
 6. Confirm: the living room door hinged at the chimney breast's end, opening into the living room (as the 3D now opens it).

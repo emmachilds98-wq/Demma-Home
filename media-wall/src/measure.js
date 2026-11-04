@@ -109,4 +109,7 @@ document.addEventListener("click", async e => {
   try { await navigator.clipboard.writeText(url); say("Link copied: send it in a message."); } catch (er) { say(url); }
 });
 store.on(paint);
-store.init().then(paint, paint);
+/* V1.50 (V1_PLAN phase 3): the 3D's tap-a-piece size edit saves through the same store ("edits": {item, field, value}) */
+window.DemmaStore = { rows: store.rows, put: store.put, del: store.del, on: store.on, get mode() { return mode; } };
+store.on(c => window.dispatchEvent(new CustomEvent("demma-rows", { detail: c })));
+store.init().then(() => { paint(); window.dispatchEvent(new CustomEvent("demma-rows", { detail: "edits" })); }, paint);
