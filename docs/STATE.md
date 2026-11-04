@@ -2,11 +2,11 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.39 (4 Nov 2026)
+**Version:** V1.40 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
-**The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29, U5 in V1.30, U6 in V1.31, U7 in V1.32, U8 in part in V1.33, U9 in part in V1.34, U10 and U11 in V1.35–V1.37, Next 1 in part in V1.38, Next 5 in V1.39; its "Next" list is the work to take on).
+**The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29, U5 in V1.30, U6 in V1.31, U7 in V1.32, U8 in part in V1.33, U9 in part in V1.34, U10 and U11 in V1.35–V1.37, Next 1 in part in V1.38, Next 5 in V1.39, Next 2 in part in V1.40; its "Next" list is the work to take on).
 
 ## Where it lives
 
@@ -38,12 +38,14 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 | `house/` | The house: `survey_data.py` (every size, with its source) → `model.py` (the geometry, every piece tagged with its item) → `export_house.py` (the house file, `house.schema.json`); `measure.py` (what's still a guess: Measure's rows); `client_edits.py`/`.json` (the client's numbers over the guesses); `check_model.py`, `zfight.py`, `privacy_check.py`; `textures/` (the CC0 photos); the facts `HOUSE.md`, `EVIDENCE.md`, `SURVEY.md`, `BUILD_SPEC.md`, `HD_PLAN.md`, `SOURCES.md` |
 | `media-wall/inputs/` | The client's photos and plans (EXIF stripped) |
 | `projects/` | How a project is shaped (`project.schema.json`); a room's own project goes in `projects/<id>/project.json` |
-| `tools/` | `build.py`, `checks.py`, `check_site.py`, `pull_edits.py`, `round.py` |
+| `tools/` | `build.py`, `checks.py`, `check_site.py`, `pull_edits.py`, `round.py`, `compare.py` and `camfit.py` (the photos beside the 3D) |
 | `docs/` | `V1_PLAN.md` (the plan), this file, `DECISIONS.md`, `HISTORY.md` |
 | `_site/` (built) | `index.html` and `plan.html` (the page), `sw.js`, `manifest.webmanifest`, `three.<hash>.js`, `photos.<hash>.json`, `data/` (house.json, projects), `media-wall/out/` (PDFs), `media-wall/src/art/` (pictures, icons) |
 
 ## The site (V1.2: the old design back)
 
+- **V1.40:** `tools/camfit.py` fits the 3D's camera to a photo (`compare.CAMS`: the WC, the office, the landing); the WC's cistern
+  raised to just under its sill, as the photo.
 - **V1.39:** the shade where things meet in the living room (the foot of its walls: `livShade`) and on the first floor's ceilings (where
   flat along the walls, the back slope's crease, the dormer's sides: `model.ceiling_shade`, drawn by `houseShade`).
 - **V1.38:** Be there walks into the living room: from the hall through its door (it opens as you reach it; a tap opens it from
@@ -51,11 +53,9 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   `livSolids`/`livFloors` (its walls, furniture, flight), `livLeaf` (its leaf, turned by the house file's `door.living_door`), `enterRoom`
   (the hand-over). Through the open door each side shows the other (hall 527 draws, living room 294).
 - **V1.37:** no claude.ai copy (the build stops making `artifact.html`).
-- **V1.36 (U11):** old proof pictures out; the report's pictures from `tools/gallery.py` and `tools/compare.py`.
 - **V1.35 (U10, first):** the workflow: `build` (renders and Playwright cached, quick checks, privacy on the built site) then on main
   `deploy` at once; `browser` runs site, page and taps side by side (`checks.py --only`), not for documents-only changes. Locally:
   `python3 tools/build.py --keep-renders` reuses the renders already made (`tools/render_key.py` says when they're current).
-- **V1.34 (U9, part):** `python3 tools/compare.py`: seven rooms beside their photos, the 3D's edges over each (`_shots/compare.jpg`).
 - **V1.33 (U8, part):** `houseShade`: soft bands where floors and flat ceilings meet the walls, and round the house on the ground.
 - **V1.32 (U7):** Be there walks through the house's rooms (`room3d.js` WALK, `walkMove`, `bodyBlocked`, `floorAtCm`, the phone's
   `.r3d-stick`); the lower landing open to the lower stairs (`model.OPEN_PAIRS`) and the store's ceiling off the flight.

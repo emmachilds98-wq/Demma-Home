@@ -4,7 +4,7 @@ gallery is the look's (house/evidence/compare_*.jpg were made by hand before).
 
 python3 tools/compare.py [site dir]      writes _shots/compare/<view>.jpg and _shots/compare.jpg (all on one sheet); THREE_LOCAL as
 check_site.py. The views' cameras are where the photos were taken only roughly (VIEWS in room3d.js): move a view's eye to its photo's
-spot and the overlay says how close the room is. Built pictures only: nothing here is committed (the photos are already in the repo)."""
+spot and the overlay says how close the room is. V1.40: CAMS, from tools/camfit.py, stands each view where its photo was taken. Built pictures only: nothing here is committed (the photos are already in the repo)."""
 import http.server, pathlib, socketserver, sys, threading
 from functools import partial
 
@@ -20,6 +20,8 @@ PAIRS = [("kitchen", "photo_kitchen_wide_30oct.jpg"), ("bath", "photo_bathroom_f
          ("office", "photo_office_wide_25oct.jpg"), ("master", "photo_master_bed_25oct.jpg"), ("landing", "photo_landing_from_office_26oct.jpg"),
          ("wc", "photo_wc_25oct.jpg")]
 W = 720
+# V1.40 (Next 2): where each photo was taken, found by tools/camfit.py (the 3D's edges fitted to the photo's): {view: {eye, at, fov}}
+CAMS = {"office": {"eye": [263.0, 432.5, 282], "at": [369.3, 390.5, 446.1], "fov": 75.0}, "landing": {"eye": [330, 443.8, 220.0], "at": [330.9, 380.2, 30.4], "fov": 70}, "wc": {"eye": [415.0, -96.9, -132.0], "at": [423.6, -140.0, -327.1], "fov": 70}}   # the fits that read true; the hall, the bathroom, the master and the kitchen: not yet (UPGRADE_REVIEW)
 
 
 class Quiet(http.server.SimpleHTTPRequestHandler):
@@ -45,7 +47,10 @@ def main():
             pg = ctx.new_page(); pg.set_default_timeout(300000); localcdn.route(pg)
             pg.goto(f"http://127.0.0.1:{httpd.server_address[1]}/index.html?noao"); pg.wait_for_function("window.R3D && window.R3D.ready", timeout=240000)
             pg.evaluate("R3D.photos()"); pg.evaluate(f"R3D.set({{view: '{view}', tod: 'day'}})"); pg.wait_for_timeout(3500)
-            pg.evaluate("document.body.classList.add('bare'); document.querySelectorAll('.r3d-mini, .brand, .r3d-toast').forEach(e => e.style.visibility = 'hidden')")
+            if view in CAMS:                                  # V1.40: standing where the photo was taken (standing: not pulled back into the room's box)
+                pg.evaluate("document.querySelector('[data-rmode=\"stand\"]').click()"); pg.wait_for_timeout(2500)
+                pg.evaluate("a => R3D.set({ aim: a })", CAMS[view]); pg.wait_for_timeout(1500)
+            pg.evaluate("document.body.classList.add('bare'); document.querySelectorAll('.r3d-mini, .brand, .r3d-toast, .r3d-stick').forEach(e => e.style.visibility = 'hidden')")
             pg.wait_for_timeout(600)
             shot = OUT / f"{view}_3d.png"; pg.screenshot(path=str(shot)); ctx.close()
             r = Image.open(shot).convert("RGB")

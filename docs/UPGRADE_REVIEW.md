@@ -250,14 +250,24 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
   band fought it. Not done: shade along the slopes' own feet (they meet the walls low, at the eaves' boxes). **Found** (the site check's walk):
   walking out, a slide along the door's jamb flipped the view hall, living room, hall (the living room began 3 before the hall's box);
   now it takes over 12 inside the door's line, so the doorway has a gap where neither changes.
+- **V1.40 (Next 2, in part):** `tools/camfit.py` stands the 3D's camera where each photo was taken: it nudges the eye, the aim and
+  the lens one at a time, keeping a change when the 3D's edges (the strongest 6% of each picture's, its border left out) sit within 4 px
+  of the photo's (an F-score), in the room or its doorway at a phone's height, halving its steps; `_shots/camfit_<view>.jpg` shows each
+  fit. It reads true for the WC (0.49), the office (0.53) and the landing (0.48): their cameras are in `compare.CAMS`. **Found:** in the
+  WC the cistern's top sits just under the window's sill (the photo, the window, B, as its ruler: 28 tall, 84–112 up; the model had a
+  standard 78–102, 18 under the sill): now as the photo. The office's window, shelf and monitors and the landing's ceiling, door and
+  balustrade line up. **Not fitted:** the hall (it settles in the porch or by the radiator, not on the box's line where the photo was
+  taken), the bathroom (the door frame fills the photo), the master (people and clutter) and the kitchen (its fit is loose); a local
+  search needs a start near the right spot, and these need one by hand.
 
 ## Next (found while working; agents: take these in order)
 
 1. ~~A walk into the living room and up its stairs~~: done in V1.38 (below). Still to do (V1_PLAN Phase 5): its walls, doorway and
    stairs as boxes in `house/model.py` so it's one model and the shade bands cover it (V1.38 reads them from `geometry.py`'s numbers in
    `room3d.js` `livSolids`, `livFloors`).
-2. **Camera-match each view to its photo** with `tools/compare.py` (move each view's eye, aim and lens until the red lines sit on the
-   photo), then fix the sizes whose lines still miss: the accuracy pass that needs no tape measure.
+2. **Camera-match each view to its photo** (V1.40, in part: below): the WC, the office and the landing are fitted (`compare.CAMS`);
+   still to fit: the hall, the bathroom (the photo is mostly its door frame), the master (people and clutter over its lines) and the
+   kitchen, by hand from a start near the photo's spot (`compare.CAMS` is where `camfit.py` starts), or with fresh, tidy photos.
 3. **The client's iPhones' numbers**: `?perf` and `R3D.timing()` from each, then decide KTX2 (U5) and light maps (U8).
 4. ~~Republish the shared page~~: not wanted (the client, 4 Nov: "i dont need a copy here just update the live github"); the build no longer makes it (V1.37).
 5. ~~The first floor's sloped ceilings' shade~~ (U8): done in V1.39 (below). (The floor labels on a phone: done in V1.35.)
