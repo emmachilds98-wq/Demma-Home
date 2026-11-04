@@ -284,7 +284,7 @@ if (act) {
     const r = stage.getBoundingClientRect();
     if (id.startsWith("hdoor:")) swingDoor(id.slice(6), !doorOpen(HPARTS[id.slice(6)]));   // V1.26: a tap opens or shuts it, its card says which
     if (tryOpts) { const pl = placeOf(id); if (pl) id = `opt:${pl}:${placeIx(pl, id)}`; }             // v39: Try options: what else could go here
-    openAct(id, [e.clientX - r.left, e.clientY - r.top]);
+    openAct(id, [e.clientX - r.left, e.clientY - r.top]); if (e.pointerType === "mouse") actAt = 0;   // V1.54: only a finger's tap sends its click onto the card
   });
   document.addEventListener("keydown", e => { if (e.key === "Escape" && actId) closeAct(); });
 }
