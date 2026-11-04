@@ -345,9 +345,11 @@ const PEG = document.createElement("button"); PEG.type = "button"; PEG.className
 PEG.innerHTML = '<span class="ms" aria-hidden="true">person</span>'; PEG.title = "Drag me to where you want to stand";
 PEG.setAttribute("aria-label", "Drop in: drag the figure onto the house to stand there"); root.append(PEG);
 const PEGM = { id: null, moved: false, x0: 0, y0: 0, s: null, ghost: null, ring: null };
-function pegShow(e) {
+let pegRaf = 0, pegEv = null;
+function pegShow(e, now) {                  // the ghost follows at once; where it would land is worked out once a frame (a phone's moves come faster)
   const r = stage.getBoundingClientRect(), cv = canvas.getBoundingClientRect(), g = PEGM.ghost;
   g.style.left = (e.clientX - r.left) + "px"; g.style.top = (e.clientY - r.top) + "px";
+  if (!now) { pegEv = { clientX: e.clientX, clientY: e.clientY }; if (!pegRaf) pegRaf = requestAnimationFrame(() => { pegRaf = 0; if (PEGM.ghost && pegEv) pegShow(pegEv, true); }); return; }
   const over = e.clientX >= cv.left && e.clientX <= cv.right && e.clientY >= cv.top && e.clientY <= cv.bottom;
   const sp = PEGM.s = over ? spotAt(e) : null;
   g.classList.toggle("ok", !!sp); g.querySelector("b").textContent = sp ? roomName(sp.id) : over ? "Not a room to stand in" : "";
@@ -369,7 +371,7 @@ PEG.addEventListener("pointermove", e => {
 PEG.addEventListener("pointerup", e => {
   if (e.pointerId !== PEGM.id) return; PEGM.id = null;
   if (!PEGM.moved) { toast("Drag the figure onto the house to stand there"); return; }
-  if (PEGM.ghost) pegShow(e); const sp = PEGM.s; pegEnd();
+  if (PEGM.ghost) pegShow(e, true); const sp = PEGM.s; pegEnd();
   if (sp) goStand(sp.x, sp.fy, sp.z); else toast("Drop it on a room's floor");
 });
 PEG.addEventListener("pointercancel", e => { if (e.pointerId === PEGM.id) { PEGM.id = null; pegEnd(); } });

@@ -359,7 +359,7 @@ body.bare .r3d .r3d-mini .r3d-minib.r3d-bare { background: var(--page, #fbf7ef);
 /* V1.32 (U7): the walk's stick on a phone */
 /* V1.53: the drop-in figure (bottom right): drag it onto the house to stand there; while dragged, a ghost of it and the room's name */
 .r3d-peg { position: fixed; right: 18px; bottom: 18px; z-index: 30; width: 56px; height: 56px; border: 0; border-radius: 50%; background: oklch(0.86 0.12 85); color: var(--ink);
-  box-shadow: var(--shade); cursor: grab; display: grid; place-items: center; touch-action: none; }
+  box-shadow: var(--shade); cursor: grab; display: grid; place-items: center; touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }   /* iOS: no callout or selection on a long press */
 .r3d-peg .ms { font-size: 32px; }
 .r3d.pegging .r3d-peg { opacity: .35; cursor: grabbing; }
 .r3d-pegghost { position: absolute; z-index: 40; pointer-events: none; transform: translate(-50%, -100%); display: grid; justify-items: center; gap: 2px; }

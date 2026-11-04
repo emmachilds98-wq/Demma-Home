@@ -50,7 +50,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   lands. A walk key in a room's In it stands you there and walks (`startWalk`); Shift hurries; over the house or a room from above the keys
   glide (`glide`). The overheads: `flyTo`'s fourth is `above` (REDUCE there held them to 6 m), long lenses, framed by the real lens (`fitFov`).
   Walking no longer jumps from the kitchen to the living room over it, nor steps onto a bed's base (step-up 24). `check_site.DROP` tries it.
-  V1.54: the lower floor's views without the earth over the secret room (`HMATS.earth` off there); the overheads framed with a margin.
+  V1.54: the lower floor's views without the earth over the secret room (`HMATS.earth` off there). Phones (the client: "works on iPhones
+  ... mainly the 15 pro"): views from above framed between the buttons (`freeFrame`, `fromAbove`); a card opened by a tap ignores that
+  tap's click (`actAt`), and a double-tap's second tap on it still counts; iOS's own dblclick ignored; no callout on the figure.
+  Tried with real touches as an iPhone 15 Pro (3×), 15 Pro Max, SE, Pixel 7, Galaxy S24, iPad Mini; `check_site` double-taps by touch.
 - **V1.52 (V1_PLAN 2.6):** the 3D's one 6,664-line `room3d.js` split into 22 parts (`media-wall/src/room3d/NN_<part>.js`), joined into the same script (the built page byte for byte the same); `checks.py`'s sizes line checks each part parses alone.
 - **V1.50 (V1_PLAN phase 3):** tap a piece in the house: its card says its size; Change its size, a stepper each (a door: width, place),
   the 3D changes as you go, As planned puts it back. Measure rows in `edits` ({item, field, value}; Send shares them), `pull_edits.py`
@@ -62,10 +65,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   dusk veil (`duskVeil`) in the house's rooms; a drag in the house's rooms turns the view in place (`lookTurn`, `inPlace`).
 - **V1.44–V1.48:** the living room's whole fixed shell (`model.living_shell`, house.json's living `shell`, four checks) (walls, floor, ceiling, skirting, door, window opening, stairs, pipe boxing, radiator) drawn from `R.HOUSE3.living` (the same to the pixel). V1_PLAN phase 5 done.
 - **V1.40–V1.42:** `tools/camfit.py` fits the 3D's camera to a photo (`compare.CAMS`: the WC, the office, the landing, the kitchen, the hall in part).
-- **V1.38:** Be there walks into the living room: from the hall through its door (it opens as you reach it; a tap opens it from
-  either side), round the room, up its stairs to the landing and back; the living room's own Be there walks too. `room3d.js`
-  `livSolids`/`livFloors` (its walls, furniture, flight), `livLeaf` (its leaf, turned by the house file's `door.living_door`), `enterRoom`
-  (the hand-over). Through the open door each side shows the other (hall 527 draws, living room 294).
+- **V1.38:** Be there walks into the living room from the hall and up its stairs (`livSolids`, `livFloors`, `livLeaf`, `enterRoom`).
 - **V1.28 (U1–U3):** the eye is solid to the house (walls, furniture, slopes: a 20 cm ball, sliding); double-tap walks on every floor;
   zoom to the pointer; Be there's lens zooms (wheel, pinch); mode changes fly; on a phone two rows of buttons, labels a steady size,
   only the tools that work in each room (Room, Look, Edit only in the living room; Plan · Build · Buy not in the house's other rooms).

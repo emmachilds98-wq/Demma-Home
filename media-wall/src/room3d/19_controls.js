@@ -176,7 +176,7 @@ function setRmode(m, quiet) {
   if (rr) { const [x0, x1, z0, z1, fy] = rr, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0;
     // far enough that the room fills the screen, whatever its shape (a phone stands it up the screen's long side)
     const fit = (fov, sx, sy) => { const v = fitFov(fov) * Math.PI / 360, h = Math.atan(Math.tan(v) * camera.aspect); return 1.35 * Math.max(sx / 2 / Math.tan(h), sy / 2 / Math.tan(v)); };   // V1.53: a margin, the room clear of the buttons
-    if (RMODE === "above") flyTo([cx, fy + 40 + fit(32, w, d), cz + d * 0.04], [cx, fy, cz], 32, true, REDUCE);   // V1.29 (U2): flown, not cut; V1.53: a longer lens, from above (it was held to 6 m)
+    if (RMODE === "above") fromAbove(cx, fy, cz + d * 0.04, 40 + fit(32, w, d), 32);   // V1.54: between a phone's buttons   // V1.29 (U2): flown, not cut; V1.53: a longer lens, from above (it was held to 6 m)
     else { const r = 0.5 * Math.hypot(w, d, 235), v = 22.5 * Math.PI / 180, h = Math.atan(Math.tan(v) * camera.aspect), D = (camera.aspect < 1 ? 0.62 : 0.85) * r / Math.sin(Math.min(v, h));   // the room's sphere in the narrower side (v72: a phone stands closer)
       const sx = Math.sign(233 - cx) || 1, sz = Math.sign(95 - cz) || 1;   // from the house's middle: over its inside walls, the outside wall behind
       flyTo([cx + sx * D * 0.4, fy + 60 + D * 0.78, cz + sz * D * 0.48], [cx, fy + 50, cz], 45, true, REDUCE); } }

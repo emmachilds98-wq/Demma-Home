@@ -232,12 +232,18 @@ let actMoreOpen = false;
 function openAct(id, xy) {
   if (popId) closePop(); clearAim();
   if (String(id).split(":").slice(0, 2).join(":") !== String(actId || "").split(":").slice(0, 2).join(":")) actMoreOpen = false;   // v39: a new card opens folded
-  actId = id; actXY = xy; act.hidden = false; renderAct();
+  actId = id; actXY = xy; act.hidden = false; actAt = performance.now(); renderAct();
   if (!act.hidden) { const f = qs("#r3d-acts button"); if (f) f.focus({ preventScroll: true }); }
 }
+let actAt = 0;   // V1.54: when the card opened: a phone's click from the same tap lands on it (a sheet at the foot) and mustn't press its button
 function closeAct() { actId = null; if (act) act.hidden = true; clearAim(); if (!EMBED) clearSel(); }
 if (act) {
+  act.addEventListener("pointerdown", e => {   // V1.54: the second tap of a double-tap that lands on the card the first one opened: still a double-tap
+    if (e.pointerType === "mouse" || !lastTap || e.timeStamp - lastTap.t > 380 || Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) > 30) return;
+    lastTap = null; e.preventDefault(); e.stopPropagation(); closeAct(); actAt = performance.now(); floorHop(e);
+  }, true);
   act.addEventListener("click", e => {
+    if (performance.now() - actAt < 350) { e.preventDefault(); e.stopPropagation(); return; }   // V1.54: the tap that opened it, not a press
     const b = e.target.closest("button"); if (!b) return;
     if (b.classList.contains("x")) { closeAct(); return; }
     const d = b.dataset;
@@ -262,7 +268,9 @@ if (act) {
   act.addEventListener("input", e => { const el = e.target; if (!el.dataset || !el.dataset.hfield || !actId) return;   // V1.50: a typed size, kept once you pause
     const k = actId.split(":")[1], f = el.dataset.hfield, v = parseFloat(el.value); if (!isFinite(v)) return;
     clearTimeout(sizeT); sizeT = setTimeout(() => setPiece(k, f, clampF(f, cmR(v))), 450); });
-  canvas.addEventListener("dblclick", e => { if (S.edit || MEAS.on || EMBH) return; e.preventDefault(); floorHop(e); });   // V1.53: on a PC, a double-click stands you there
+  let lastPtr = "mouse";
+  canvas.addEventListener("pointerdown", e => { lastPtr = e.pointerType; }, true);
+  canvas.addEventListener("dblclick", e => { if (S.edit || MEAS.on || EMBH || lastPtr !== "mouse") return; e.preventDefault(); floorHop(e); });   // V1.53: on a PC, a double-click stands you there (a phone's double-tap is the pointerup's: iOS can send a dblclick too)
   canvas.addEventListener("pointerdown", e => { tapDown = (S.edit || e.button > 0) ? null : [e.clientX, e.clientY, e.timeStamp]; if (actId) closeAct(); });   // review after v48: the touch's own time, so a slow frame between down and up can't turn a tap into a long press
   canvas.addEventListener("pointerup", e => {
     const t = tapDown; tapDown = null;
