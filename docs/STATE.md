@@ -2,11 +2,11 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.31 (4 Nov 2026)
+**Version:** V1.32 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
-**The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29, U5 in V1.30, U6 in V1.31; work the next row).
+**The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29, U5 in V1.30, U6 in V1.31, U7 in V1.32; work the next row).
 
 ## Where it lives
 
@@ -43,6 +43,9 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 ## The site (V1.2: the old design back)
 
+- **V1.32 (U7):** Be there walks through the house's rooms (`room3d.js` WALK, `walkMove`, `bodyBlocked`, `floorAtCm`, the phone's
+  `.r3d-stick`); the lower landing open to the lower stairs (`model.OPEN_PAIRS`) and the store's ceiling off the flight. The living room
+  isn't walkable yet (not in the house file).
 - **V1.31 (U6):** `house/model.py` `depth_rank` (a new material needs one: structure 0, finish 1, fitted 3 by default); `zfight.py`'s
   "seen and tied" fails the checks; house materials one-sided (`?double` the old way).
 - **V1.30 (U5):** roughness maps (wood, laminate, roof tiles: `house/textures/*_rough.jpg`, `build_textures.py --rough`); photos
@@ -157,7 +160,9 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 3. Still to measure (all in Measure): how far the boiler cupboard sticks into bedroom 2; the bathroom's ceiling over the toilet and the slope's start, the vanity's width, the bath's length (184 drawn, from the door);
    the landing's door widths and the wall between the bedroom doors' frames; the tapestry's drop; the hall radiator; the master from the
    wardrobes to the front wall; the alcove; bedroom 2's length; a stair tread; the meter and bin cupboards; the living room's side-wall socket; the garage's chipboard box's depth; the secret room's pier.
-4. Decide: where the side-wall socket goes; near-photo pictures (minutes each) or not; whether the house's tap-a-piece size edit comes back.
+4. Confirm (a photo from the foot of the lower stairs, looking at the lower landing): V1.32 took out a wall the model had put across the
+   foot of the flight; is it open there?
+5. Decide: where the side-wall socket goes; near-photo pictures (minutes each) or not; whether the house's tap-a-piece size edit comes back.
 - **V1.26** (31 Oct 2026): doors open and shut with a tap (the bathroom's stops on the bath); the bin cupboards' handles at the street
   end; the garage's chipboard box and the secret room's cover; the secret room square, its pier and drain. The client: "i'd like to be
   able to open and close doors now at will".

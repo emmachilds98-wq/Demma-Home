@@ -2547,6 +2547,7 @@ function standIn() {
 }
 const LIVV = () => !HOUSEV(S.view) && !!VIEWS[S.view];
 function syncRmode() {
+  if (typeof syncStick === "function") try { syncStick(); } catch (e) {}   // V1.32: the walk's stick
   const rm = qs("#r3d-rmode"); if (!rm) return;
   const liv = LIVV(), cur = liv ? (S.view === "room" ? "above" : S.view === "livalone" ? "alone" : S.view === "livstand" ? "stand" : "in") : RMODE;
   rm.hidden = !(ROOMV() || liv); qsa("[data-rmode]", rm).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.rmode === cur)));
@@ -4101,7 +4102,10 @@ function hsolidSet(fk, F) {
   for (const [m, list] of Object.entries(F.boxes || {})) if (!NOSOLID.has(m)) for (const q of list) b.push(q);
   for (const L of F.lathes || []) { const r = Math.max(...L.p.map(q => q[0])), hs = L.p.map(q => q[1]);
     b.push([L.c[0] - r * L.s[0], L.c[1] + Math.min(0, ...hs), L.c[2] - r * L.s[1], L.c[0] + r * L.s[0], L.c[1] + Math.max(...hs), L.c[2] + r * L.s[1]]); }
-  HSOLID[fk] = { b, p: (F.prisms || []).filter(P => !NOSOLID.has(P.m)) };
+  const skin = new Set(["ceiling", "artex"]), w = [];   // V1.32: a walk ignores the ceilings' skins (each has a slab or the roof over it;
+  for (const [m, list] of Object.entries(F.boxes || {})) if (!NOSOLID.has(m) && !skin.has(m)) for (const q of list) w.push(q);   // the lower store's runs over the flight)
+  for (const q of b.slice(b.length - (F.lathes || []).length)) w.push(q);
+  HSOLID[fk] = { b, w, p: (F.prisms || []).filter(P => !NOSOLID.has(P.m)) };
   hLast = null;
 }
 function polyNear(pts, u, w, r) {          // inside the outline, or within r of its edge
@@ -4114,10 +4118,10 @@ function polyNear(pts, u, w, r) {          // inside the outline, or within r of
   }
   return inside || d2 < r * r;
 }
-function hBlocked(x, y, z, r = EYE_R) {    // room cm
+function hBlocked(x, y, z, r = EYE_R, all = false) {    // room cm; all: the floors not drawn too, and not the ceilings' skins (walking)
   for (const S_ of Object.values(HSOLID)) {
-    if (!S_.g || !shown(S_.g)) continue;
-    for (const q of S_.b) if (x > q[0] - r && x < q[3] + r && y > q[1] - r && y < q[4] + r && z > q[2] - r && z < q[5] + r) return true;
+    if (!S_.g || (!all && !shown(S_.g))) continue;
+    for (const q of all ? S_.w : S_.b) if (x > q[0] - r && x < q[3] + r && y > q[1] - r && y < q[4] + r && z > q[2] - r && z < q[5] + r) return true;
     for (const P of S_.p) {
       const [a, uw] = P.axis === "x" ? [x, [z, y]] : P.axis === "z" ? [z, [x, y]] : [y, [x, z]];
       if (a > P.a - r && a < P.b + r && polyNear(P.pts, uw[0], uw[1], r)) return true;
@@ -4139,6 +4143,89 @@ function houseCollide() {                   // true if it moved the eye
     if (!q) return false;
   }
   hLast = q; c.set(-q[0] * M, q[1] * M, q[2] * M); return true;
+}
+/* V1.32 (U7), the client: "review how to make the movement within the house better": Be there in the house's rooms is walking. Hold
+   W A S D or the arrows (Q and E turn) on a computer, the stick on a phone; drag to look. A body, not just an eye: it's stopped at the
+   knee, the hip and the eye (so not over a bed or through a wardrobe), steps up a stair (a rise up to 35) and follows the floor down;
+   it slides along what it meets. Walk into the next room and its name, its lights and what's drawn follow you (the eye stays where it
+   is); a door opens as you reach it. The living room is drawn on its own (not in the house file yet): its doorway stays shut to a walk,
+   and the house's views take you in */
+const WALK = { keys: new Set(), stick: [0, 0], v: new THREE.Vector2(), feet: null, doorT: 0, hinted: false };
+const walking = () => RMODE === "stand" && !!ROOMV() && !tween;
+const LIVING_BOX = () => [0, -1, R.WINDOW_Z - 12, R.W, 235, 40];   // the living room's space on the ground floor (room cm)
+function bodyBlocked(x, feet, z) {
+  const L = LIVING_BOX(); if (x > L[0] && x < L[3] && z > L[2] && z < L[5] && feet + 100 > L[1] && feet < L[4]) return true;
+  return hBlocked(x, feet + 55, z, 18, true) || hBlocked(x, feet + 105, z, 18, true) || hBlocked(x, feet + STAND_EYE, z, 12, true);   // the head 12 (a doorway's head clears it from the last stair)
+}
+function floorAtCm(x, z, feet) {            // the top of what's underfoot: the highest at or under a step up (35)
+  let best = -Infinity;
+  for (const S_ of Object.values(HSOLID)) if (S_.g) for (const q of S_.b) if (x > q[0] && x < q[3] && z > q[2] && z < q[5] && q[4] <= feet + 35 && q[4] > best) best = q[4];
+  return best;
+}
+function walkMove(side, fwd, turn, dt) {    // -1..1 each; true if the eye moved
+  const cam = camera.position, x0 = -cam.x / M, z0 = cam.z / M;
+  if (WALK.feet === null) WALK.feet = cam.y / M - STAND_EYE;
+  const d = controls.target.clone().sub(cam); d.y = 0; if (d.lengthSq() < 1e-8) d.set(0, 0, 1); d.normalize();
+  if (turn) { const a = -turn * 1.8 * dt; d.applyAxisAngle(new THREE.Vector3(0, 1, 0), a); const t = controls.target.clone().sub(cam).applyAxisAngle(new THREE.Vector3(0, 1, 0), a); controls.target.copy(cam).add(t); }
+  const sp = 140 * dt, sd = new THREE.Vector3(-d.z, 0, d.x);
+  const mv = d.clone().multiplyScalar(fwd * sp).add(sd.multiplyScalar(side * sp));    // cm in three's axes
+  let x = x0 - mv.x, z = z0 + mv.z;                                                    // room cm (x flipped)
+  if (!bodyBlocked(x0, WALK.feet, z0) && bodyBlocked(x, WALK.feet, z)) {   // free to step out of something you start in (Be there by the guitars)
+    if (!bodyBlocked(x, WALK.feet, z0)) z = z0; else if (!bodyBlocked(x0, WALK.feet, z)) x = x0; else { x = x0; z = z0; } }
+  const fl = floorAtCm(x, z, WALK.feet);
+  if (fl > -Infinity && fl > WALK.feet - 400) WALK.feet += (fl - WALK.feet) * Math.min(1, dt * 12);
+  const ny = (WALK.feet + STAND_EYE) * M, moved = Math.abs(x - x0) + Math.abs(z - z0) > 1e-4 || Math.abs(ny - cam.y) > 1e-5 || !!turn;
+  if (!moved) return false;
+  const delta = v3(x, 0, z).sub(v3(x0, 0, z0)); delta.y = ny - cam.y;
+  cam.add(delta); controls.target.add(delta); hLast = [x, ny / M, z];
+  walkRoom(x, WALK.feet, z); walkDoors(x, WALK.feet, z);
+  return true;
+}
+function walkRoom(x, feet, z) {             // walked into another room with its own view: be in it, where you stand
+  const rooms = R.HOUSE3.rooms || {};
+  for (const [id, r] of Object.entries(rooms)) {
+    if (x < r[0] || x > r[1] || z < r[2] || z > r[3] || Math.abs(feet - r[4]) > 130) continue;
+    const v = ROOM_VIEW[id]; if (v && v !== S.view && VIEWS[v] && VIEWS[v].box) enterRoom(v);
+    return;
+  }
+}
+function enterRoom(name) {
+  if (actId && typeof closeAct === "function") closeAct();
+  S.view = name; applyFloors(); placeRoomLights(); syncRmode(); store.set(KEY, S); updateCaption(); brandPlace(); outdoor(); reshadow();
+  qsa("[data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === name)));
+}
+function walkDoors(x, feet, z) {            // a shut door opens as you come up to it
+  const now = performance.now(); if (now - WALK.doorT < 200) return; WALK.doorT = now;
+  const w = new THREE.Vector3();
+  for (const [pk, P] of Object.entries(HPARTS)) {
+    if (!pk.startsWith("door.") || doorOpen(P)) continue;
+    P.g.getWorldPosition(w); const dx = -w.x / M - x, dz = w.z / M - z, dy = w.y / M - feet;
+    if (Math.hypot(dx, dz) < 95 && dy > -40 && dy < 220) swingDoor(pk, true);
+  }
+}
+function walkTick(dt) {
+  if (!walking()) { WALK.feet = null; WALK.v.set(0, 0); return false; }
+  const k = WALK.keys, f = (k.has("f") ? 1 : 0) - (k.has("b") ? 1 : 0) + WALK.stick[1], sd = (k.has("r") ? 1 : 0) - (k.has("l") ? 1 : 0) + WALK.stick[0];
+  const want = new THREE.Vector2(sd, f); if (want.lengthSq() > 1) want.normalize();
+  WALK.v.lerp(want, Math.min(1, dt * 8));   // eases in and out
+  const turn = (k.has("tr") ? 1 : 0) - (k.has("tl") ? 1 : 0);
+  if (WALK.v.lengthSq() < 1e-5 && !turn) { if (WALK.feet === null) WALK.feet = camera.position.y / M - STAND_EYE; return false; }
+  return walkMove(WALK.v.x, WALK.v.y, turn, dt);
+}
+/* V1.32: the phone's stick (bottom left, while walking): drag it the way to go */
+const COARSE = !!(window.matchMedia && matchMedia("(pointer: coarse)").matches);
+const STICK = document.createElement("div"); STICK.className = "r3d-stick"; STICK.hidden = true; STICK.setAttribute("aria-hidden", "true"); STICK.innerHTML = "<i></i>"; root.append(STICK);
+let stickId = null, stickC = [0, 0];
+function stickMove(e) { let dx = e.clientX - stickC[0], dy = e.clientY - stickC[1]; const RR = 44, l = Math.hypot(dx, dy); if (l > RR) { dx *= RR / l; dy *= RR / l; }
+  STICK.style.setProperty("--x", dx + "px"); STICK.style.setProperty("--y", dy + "px"); WALK.stick = [dx / RR, -dy / RR]; dirty(); }
+STICK.addEventListener("pointerdown", e => { stickId = e.pointerId; try { STICK.setPointerCapture(e.pointerId); } catch (err) {} const r = STICK.getBoundingClientRect(); stickC = [r.left + r.width / 2, r.top + r.height / 2]; stickMove(e); e.preventDefault(); });
+STICK.addEventListener("pointermove", e => { if (e.pointerId === stickId) stickMove(e); });
+const stickEnd = e => { if (e.pointerId !== stickId) return; stickId = null; WALK.stick = [0, 0]; STICK.style.setProperty("--x", "0px"); STICK.style.setProperty("--y", "0px"); };
+STICK.addEventListener("pointerup", stickEnd); STICK.addEventListener("pointercancel", stickEnd);
+function syncStick() {
+  const on = RMODE === "stand" && !!ROOMV(); STICK.hidden = !(on && COARSE); root.classList.toggle("walking", on && COARSE);
+  if (on && !WALK.hinted) { WALK.hinted = true; try { if (!localStorage.getItem("demma-walkhint")) { localStorage.setItem("demma-walkhint", "1");
+    setTimeout(() => toast(COARSE ? "Walk with the stick, drag to look" : "Walk with W A S D or the arrows, drag to look"), 900); } } catch (e) {} }
 }
 function collide(p = camera.position) {    // true if it moved the eye
   let moved = false;
@@ -4178,6 +4265,8 @@ function floorHop(e) {
 }
 function walk(kind, k = 1) {        // about 15 cm a press on the floor plane; turns 10°; v31: up and down 10 cm; k < 1 while a button's held
   if (tween) return;
+  if (walking()) { const m = { f: [0, 1], b: [0, -1], l: [-1, 0], r: [1, 0] }[kind], t = { tl: -1, tr: 1 }[kind];   // V1.32: as a walk, by its rules
+    if (m || t) { walkMove(m ? m[0] : 0, m ? m[1] : 0, t || 0, (t ? 0.1 : 0.11) * k); controls.update(); dirty(); syncEye(); } return; }
   walked = true; controls.maxDistance = 6;
   const fwd = controls.target.clone().sub(camera.position); fwd.y = 0;
   if (fwd.lengthSq() < 1e-8) fwd.set(0, 0, 1);
@@ -4257,8 +4346,12 @@ root.addEventListener("keydown", e => {
   if (e.altKey || e.ctrlKey || e.metaKey || /^(input|select|textarea)$/i.test(e.target.tagName)) return;
   if (e.target.tagName === "BUTTON" && !e.target.dataset.walk && e.key.startsWith("Arrow")) return;   // arrows still move between buttons
   const k = WALK_KEYS[e.key.toLowerCase()]; if (!k) return;
-  e.preventDefault(); walk(k);
+  e.preventDefault();
+  if (walking()) { if (k !== "u" && k !== "dn") WALK.keys.add(k); dirty(); return; }   // V1.32: held, not a step a press
+  walk(k);
 });
+root.addEventListener("keyup", e => { const k = WALK_KEYS[e.key.toLowerCase()]; if (k) WALK.keys.delete(k); });
+window.addEventListener("blur", () => { WALK.keys.clear(); WALK.stick = [0, 0]; });
 canvas.addEventListener("pointerdown", () => { canvas.focus({ preventScroll: true }); if (tourSt) tourEnd(); if (SH) SH.own = true; });   // v28: touching the room ends the tour; v32: "Watch it open" carries on, the camera yours
 function setView(name, instant, dur) {
   const v = VIEWS[name] || VIEWS.window, wasHouse = HOUSEV(S.view);
@@ -4898,7 +4991,8 @@ function frame(now) {
   if (cabTween(now)) need = 2;                                    // v30: the cabinet's doors swinging or sliding
   if (liftTick(now)) need = 2;                                    // v68: Lift the bed
   if (showTick(now)) need = 2;                                    // v32: "Watch it open"
-  if (!tween && !freeAbove() && (clampRoom(camera.position) | clampRoom(controls.target, true) | collide())) need = 2;   // v17: never outside the room; v41: nor in the furniture
+  { const dt = Math.min(0.05, (now - (frame.last || now)) / 1000); frame.last = now; if (walkTick(dt)) { need = 2; syncEye(); } }   // V1.32 (U7)
+  if (!tween && !freeAbove() && !walking() && (clampRoom(camera.position) | clampRoom(controls.target, true) | collide())) need = 2;   // v17: never outside the room; v41: nor in the furniture
   const active = moving || changed || !!tween;
   if (active && mvLast && now - mvLast < 250) { MV.push(now - mvLast); if (MV.length >= 24) { const m = MV.sort((a, b) => a - b)[12]; MV.length = 0;
     if (m > 28) slowDev = true; else if (m < 14 && !lowRes && HI) slowDev = false;
@@ -6187,7 +6281,7 @@ function start() {
       if (addp && CATALOGUE[addp.type]) { const a = { id: "a" + Date.now().toString(36), type: addp.type, x: addp.x, z: addp.z }; pushUndo(); addThing(a); if (addp.rot) setLayout(a.id, { rot: addp.rot }); placeAll(); store.set(KEY, S); dirty(); }
       if (showat != null) { showOpen(); if (SH) { SH.own = true; SH.paused = true; SH.t = showat; showPose(SH.t); showCard(); qs("#r3d-show").hidden = true; } }
       if (o.view) setView(o.view, true); if (aim) flyTo(aim.eye, aim.at, aim.fov || 55, !!aim.above, true); },   // v58: "above" lets a look stand off (the house)
-    still, ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { HPARTS, swingDoor, swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, collide, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG },
+    still, ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { HPARTS, swingDoor, WALK, walkMove, collide, bodyBlocked, floorAtCm,  swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, collide, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG },
     errors: () => store.get("r3d-errors", []),                                       // v35: what the trap kept
     timing: () => Object.assign({ page: Math.round(performance.now()) }, START_MS),     // V1.31: the start's steps (ms from start()), and the page's age
     perf: perfInfo,                                                                   // v35: the counts to watch each round

@@ -134,7 +134,7 @@ From the phone screenshots:
 | U4 | First picture sooner | 2.1 (house first), 2.2 (bundle), 2.3, 2.4, 2.7 | Medium | Done (V1.29) |
 | U5 | Photos | 2.5, 2.6, 3.2 (KTX2, roughness, the shared page under its limit); this is QUALITY_PLAN Q5 | Medium | Done (V1.30) |
 | U6 | Flicker | 1.5–1.7 and a stricter `zfight.py` | Small | Done (V1.31) |
-| U7 | Walk the house | 5.1, 5.2, 5.4 | Large | Not started |
+| U7 | Walk the house | 5.1, 5.2, 5.4 | Large | Done (V1.32) |
 | U8 | Baked light | 3.3, 3.5 | Large | Not started |
 | U9 | Measured | 4.1–4.3 (needs the client's scans) | Needs the client | Not started |
 
@@ -183,3 +183,13 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
   `checks.py` and `check_model.py` fail on a pair that's seen and tied (0 now). The house's materials are one-sided (the mirrored
   prisms wound back): six views against `?double` differ in under 70 pixels, no holes. **Changed from the review:** the glass stays one
   mesh a floor (looking through one window at another is rare, and it never writes depth, so nothing hides behind it).
+- **U7 (V1.32):** Be there in the house's rooms is walking: W A S D or the arrows held (Q, E turn), smooth; on a phone a stick, bottom
+  left; drag to look; the wheel or a pinch the lens. A body, not a point: stopped at the knee, the hip and the head (12 cm, so the
+  doorway at the foot of a flight clears), up a step of 35 or less, down the stairs following the treads; it slides along what it meets
+  and can step out of something it starts in (bedroom 2's spot by the guitars). Walk into a room with its own view and its name, its
+  lights and what's drawn follow; a shut door opens as you reach it (95 cm). Tested: across the hall, down the lower flight to the
+  lower landing, out of bedroom 2, the stick, the bathroom's door. **Found and fixed in the model:** a full wall across the foot of the
+  lower flight (the lower landing and the stairs were two rooms, so `walls_for` put a wall between them: `OPEN_PAIRS`), and the lower
+  store's ceiling lying across the flight's steps (it now stops at the flight, as its wall does since V1.20). **Not yet:** the living room
+  isn't in the house file (it's drawn on its own), so a walk can't go into it or up its stairs to the first floor; its doorway is shut to
+  a walk and the views take you there. Next: bring its walls, doorway and stairs into `house/model.py` (V1_PLAN Phase 5).
