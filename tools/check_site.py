@@ -97,7 +97,7 @@ def main():
         for w, h in ((393, 852), (1920, 1080)):
             phone = w < 600
             ctx = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=phone, has_touch=phone, service_workers="block")
-            if phone: ctx.add_init_script("window.__r3dDblMs = 3000;")   # V1.54: this rig hands each touch on only after a slow frame (~0.5 s), so its double-tap and tap allow longer
+            if phone: ctx.add_init_script("window.__r3dDblMs = 20000;")   # V1.54: this rig hands each touch on only after a slow frame (~0.5 s here, seconds on GitHub), so its double-tap and tap allow longer (only two taps are sent)
             pg = ctx.new_page(); pg.set_default_timeout(300000); localcdn.route(pg); errs = []   # V1.5: CI's software graphics draw the whole house at 1920 in ~20 s a frame; a screenshot took over 120 s
             pg.on("pageerror", lambda e: errs.append("pageerror: " + str(e)[:300]))
             pg.on("console", lambda m: errs.append(m.text[:300]) if (m.type == "error" and "favicon" not in m.text and "fonts.g" not in m.text) or "INVALID_" in m.text else None)   # V1.12: and any WebGL error (a photo sent into a texture too small for it, V1.9-V1.11)
