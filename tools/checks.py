@@ -26,8 +26,8 @@ def model():
 
 def zfight():
     code, out = sh(["zfight.py", "0"], HOUSE)
-    m = re.search(r"(\d+) pairs, (\d+) on the outside", out)
-    return bool(m) and m.group(2) == "0", m.group(0) if m else out[-300:]
+    m = re.search(r"(\d+) pairs, (\d+) on the outside, (\d+) can be seen, (\d+) of them tied", out)   # V1.31 (U6): and none seen and tied
+    return bool(m) and m.group(2) == "0" and m.group(4) == "0", m.group(0) if m else out[-300:]
 
 
 def clash():
@@ -53,8 +53,27 @@ def repo():
     size = {f: (ROOT / f).stat().st_size for f in files if (ROOT / f).is_file()}
     big = [f for f, n in size.items() if n > 1.5 * 2 ** 20 and not f.startswith("media-wall/inputs/")]
     photos = sum(n for f, n in size.items() if f.startswith("media-wall/inputs/"))
-    msg = f"{len(files)} files, {sum(size.values()) / 2 ** 20:.0f} MB tracked ({photos / 2 ** 20:.0f} MB the client's photos), {len(built)} built, {len(big)} over 1.5 MB"
-    return not built and not big, msg + (": " + ", ".join((built + big)[:4]) if built or big else "")
+    # V1.36 (U11), the client: "clear the unwanted old data so we keep the repo under the max size": a budget for what's tracked and
+    # for git's history (GitHub asks repositories to stay under 1 GB; a shallow checkout counts what it has)
+    hist = sum(int(l.split()[1]) for l in git("count-objects", "-v").splitlines() if l.split()[0] in ("size:", "size-pack:")) / 1024
+    tracked = sum(size.values()) / 2 ** 20
+    over = tracked > 200 or hist > 750
+    msg = (f"{len(files)} files, {tracked:.0f} MB tracked ({photos / 2 ** 20:.0f} MB the client's photos), {len(built)} built, {len(big)} over 1.5 MB, "
+           f"history {hist:.0f} MB (budget 200 tracked, 750 history)")
+    return not built and not big and not over, msg + (": " + ", ".join((built + big)[:4]) if built or big else "")
+
+
+def sizes():
+    """V1.30 (U5, U9): the numbers STATE.md quotes, from the built site, so they can't drift: the page, the photos, three.js's own
+    file, the shared page (fails at 16 MB, its limit) and the sizes still to measure"""
+    if not (SITE / "index.html").exists():
+        return True, "no site built"
+    mb = lambda f: f.stat().st_size / 1e6
+    ph = next(SITE.glob("photos.*.json"), None); tj = next(SITE.glob("three.*.js"), None); art = SITE / "artifact.html"
+    hj = json.loads((SITE / "data/house.json").read_text()) if (SITE / "data/house.json").exists() else {}
+    msg = (f"page {mb(SITE / 'index.html'):.1f} MB, photos {mb(ph) if ph else 0:.1f} MB, three.js " + (f"{mb(tj):.2f} MB own file" if tj else "from the CDN")
+           + (f", shared page {mb(art):.2f} MB of 16" if art.exists() else "") + f", {len(hj.get('measure', []))} sizes to measure")
+    return not (art.exists() and mb(art) >= 16.0), msg
 
 
 def site():
@@ -84,8 +103,12 @@ def taps():
 
 
 def main(argv):
+    """python3 tools/checks.py [--quick | --only site,page,taps]"""
     quick = "--quick" in argv
-    checks = [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("repo", repo)] + ([] if quick else [("site", site), ("page", qa), ("taps", taps)])
+    checks = [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("repo", repo), ("sizes", sizes)] + ([] if quick else [("site", site), ("page", qa), ("taps", taps)])
+    if "--only" in argv:                                         # V1.35 (U10): one or more by name (the workflow runs the browser checks side by side)
+        want = argv[argv.index("--only") + 1].split(",")
+        checks = [c for c in [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("repo", repo), ("sizes", sizes), ("site", site), ("page", qa), ("taps", taps)] if c[0] in want]
     fails = 0
     for name, fn in checks:
         t = time.time()

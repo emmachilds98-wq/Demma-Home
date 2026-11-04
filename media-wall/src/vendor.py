@@ -1,0 +1,50 @@
+"""V1.31 (U4, docs/UPGRADE_REVIEW.md): three.js and the add-ons room3d.js uses, in one minified file of their own for GitHub Pages
+(`_site/three.<hash>.js`), named by its contents so it's kept between visits. It came from the CDN as about 15 files in three waves
+(each add-on fetches three again), unminified: three.module.js alone is 1.2 MB.
+
+The page's import map points "three" and every add-on room3d.js imports at the one file, which exports them all by name (one module,
+loaded once). Without Node or the packages (`npm ci`, package.json) the build keeps the CDN's import map, as before; the shared page
+always keeps the CDN's (tools/build.py artifact(): its size limit)."""
+import hashlib, json, pathlib, re, shutil, subprocess, tempfile
+
+HERE = pathlib.Path(__file__).parent
+ROOT = HERE.parents[1]
+
+
+def addons():
+    """[(name, specifier)] for every `import { X } from "three/addons/..."` in room3d.js"""
+    src = (HERE / "room3d.js").read_text()
+    return re.findall(r'^import \{ (\w+) \} from "(three/addons/[^"]+)";', src, flags=re.M)
+
+
+def bundle(site):
+    """writes site/three.<hash>.js and gives back its import map; None when it can't (no Node, no packages)"""
+    esb = ROOT / "node_modules/.bin/esbuild"
+    if not esb.exists() or not (ROOT / "node_modules/three/package.json").exists() or not shutil.which("node"):
+        return None
+    ver = json.loads((ROOT / "node_modules/three/package.json").read_text())["version"]
+    if ver != "0.160.0":                                      # the same three as the CDN's (room3d_page.THREE)
+        return None
+    names = addons()
+    with tempfile.TemporaryDirectory(dir=ROOT / "node_modules") as d:   # inside node_modules' folder, so "three" resolves
+        entry, out = pathlib.Path(d) / "entry.js", pathlib.Path(d) / "out.js"
+        used = sorted(set(re.findall(r"\bTHREE\.([A-Za-z_]\w*)", (HERE / "room3d.js").read_text())))   # only the names room3d.js uses (836 KB, was 960 with all of three)
+        entry.write_text(f'export {{ {", ".join(used)} }} from "three";\n' + "".join(f'export {{ {n} }} from "{s}";\n' for n, s in names))
+        r = subprocess.run([str(esb), str(entry), "--bundle", "--format=esm", "--minify", "--target=es2020", "--legal-comments=none",
+                            f"--outfile={out}"], capture_output=True, text=True, cwd=ROOT)
+        if r.returncode != 0:
+            print("vendor: esbuild failed, the CDN's import map stays:", r.stderr[-400:])
+            return None
+        code = out.read_bytes()
+    name = f"three.{hashlib.sha1(code).hexdigest()[:10]}.js"
+    for old in site.glob("three.*.js"):
+        old.unlink()
+    (site / name).write_bytes(code)
+    imports = {"three": "./" + name, **{s: "./" + name for _, s in names}}
+    print(f"vendor: {name}, {len(code) // 1024} KB, {len(used)} of three {ver}'s names and {len(names)} add-ons")
+    return '<script type="importmap">' + json.dumps({"imports": imports}) + "</script>"
+
+
+if __name__ == "__main__":
+    import sys
+    print(bundle(pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "_site"))

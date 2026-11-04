@@ -2,14 +2,16 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.27 (31 Oct 2026)
+**Version:** V1.36 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
+
+**The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29, U5 in V1.30, U6 in V1.31, U7 in V1.32, U8 in part in V1.33, U9 in part in V1.34; its "Next" list is the work to take on).
 
 ## Where it lives
 
 - **The site on GitHub Pages:** https://emmachilds98-wq.github.io/Demma-Home/ (built and published by the workflow on every push to
-  `main`; Pages' source is GitHub Actions). `plan.html` is the same page, for old links.
+  `main`, a few minutes after the merge since V1.35; Pages' source is GitHub Actions). `plan.html` is the same page, for old links.
 - **The shared page** (the claude.ai artifact; private until its owner shares it with Dave from its Share menu):
   https://claude.ai/artifact/8M7ZmKP8m1kEDTZnuL3cyK . Its database holds what they type in Measure, for both of them (`measurements`;
   `edits`, `notes`, `photos`, `ticks` from the V1 app stay readable). The round 82 shared viewer (`71ffwf5PRLhoLj6G5KTvm2`) stays as it was.
@@ -24,7 +26,7 @@ python3 tools/checks.py           # every check, one verdict (--quick: no browse
 python3 tools/round.py "words"    # a client round: version up, pull their numbers, build, check, HISTORY
 python3 tools/pull_edits.py rows.json   # the client's measurements into the model (see its docstring for getting the rows)
 ```
-In a sandbox that can't reach jsDelivr, set `THREE_LOCAL` to an unpacked `three@0.160.0` npm package (`npm pack three@0.160.0`).
+`npm ci` first (V1.29: three.js and esbuild; the build bundles three into `_site/three.<hash>.js`, else it uses the CDN). In a sandbox that can't reach jsDelivr, set `THREE_LOCAL` to an unpacked `three@0.160.0` npm package (`npm pack three@0.160.0`).
 Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (`media-wall/src/pw.py`).
 
 ## What's where
@@ -40,6 +42,26 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 | `_site/` (built) | `index.html` and `plan.html` (the page), `sw.js`, `manifest.webmanifest`, `artifact.html`, `data/` (house.json, projects), `media-wall/out/` (PDFs), `media-wall/src/art/` (pictures, icons) |
 
 ## The site (V1.2: the old design back)
+
+- **V1.36 (U11):** `house/evidence/` holds only `check_model.py`'s overlays (built, not kept); the report's pictures come from
+  `tools/gallery.py` and `tools/compare.py`; `checks.py`'s repo line: 77 MB tracked, history 87 MB (budget 200 and 750).
+- **V1.35 (U10, first):** the workflow: `build` (renders and Playwright cached, quick checks, privacy on the built site) then on main
+  `deploy` at once; `browser` runs site, page and taps side by side (`checks.py --only`), not for documents-only changes. Locally:
+  `python3 tools/build.py --keep-renders` reuses the renders already made (`tools/render_key.py` says when they're current).
+- **V1.34 (U9, part):** `python3 tools/compare.py`: seven rooms beside their photos, the 3D's edges over each (`_shots/compare.jpg`).
+- **V1.33 (U8, part):** `houseShade`: soft bands where floors and flat ceilings meet the walls, and round the house on the ground.
+- **V1.32 (U7):** Be there walks through the house's rooms (`room3d.js` WALK, `walkMove`, `bodyBlocked`, `floorAtCm`, the phone's
+  `.r3d-stick`); the lower landing open to the lower stairs (`model.OPEN_PAIRS`) and the store's ceiling off the flight. The living room
+  isn't walkable yet (not in the house file).
+- **V1.31 (U6):** `house/model.py` `depth_rank` (a new material needs one: structure 0, finish 1, fitted 3 by default); `zfight.py`'s
+  "seen and tied" fails the checks; house materials one-sided (`?double` the old way).
+- **V1.30 (U5):** roughness maps (wood, laminate, roof tiles: `house/textures/*_rough.jpg`, `build_textures.py --rough`); photos
+  decoded off the page's thread; `PHOTOS_URL` for the shared page's photos; `checks.py`'s `sizes` line (quote it here each round).
+- **V1.29 (U4):** shaders built before the first frame (`compileAsync`), "Building the house…" meanwhile; the living room left out from
+  outside unless the eye is by its window (Outside 216 draws); three.js one file on Pages; `R3D.timing()` the start's steps.
+- **V1.28 (U1–U3):** the eye is solid to the house (walls, furniture, slopes: a 20 cm ball, sliding); double-tap walks on every floor;
+  zoom to the pointer; Be there's lens zooms (wheel, pinch); mode changes fly; on a phone two rows of buttons, labels a steady size,
+  only the tools that work in each room (Room, Look, Edit only in the living room; Plan · Build · Buy not in the house's other rooms).
 
 - **It opens on the whole house** in 3D. Top right: Whole house, Hide labels, Angled · Overhead, and the floors (Outside · First · Ground ·
   Lower, Gardens, Next door); a floor shows its rooms as pills, tap one to go in (In it · Above · On its own). On a phone the floors and
@@ -110,7 +132,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 3. Change `house/survey_data.py` (sizes with sources) or the media wall's code; `python3 tools/build.py`; `python3 tools/checks.py`.
 4. Rewrite this file, a line in `docs/HISTORY.md`, the board; PR (the template); merge; republish the shared page (below).
 
-**Republish the shared page:** build, then publish `_site/artifact.html` with the Artifact tool to the link above with `files` for
+**Republish the shared page (V1.30: photos as an asset):** first upload `_site/photos.<hash>.json` to the shared page's asset store (Artifact
+publish with `url`, `asset: true`, the file on its own) and build again with `PHOTOS_URL=<the asset's url> python3 tools/build.py --fast`
+so `artifact.html` fetches them instead of carrying 13 MB inline (it was 15.45 of 16 MB; check the photos arrive, `R3D.photos()`; if they
+don't, build without PHOTOS_URL as before). Then publish `_site/artifact.html` with the Artifact tool to the link above with `files` for
 `media-wall/src/art/*` (255 files a call at most), keeping its capabilities (`db`, `user`, `assets`, `downloads`). `artifact.html` is the
 page without its outer tags (the shared page adds its own); its data and script are inline; the PDFs open from GitHub Pages.
 
@@ -125,14 +150,20 @@ page without its outer tags (the shared page adds its own); its data and script 
 
 Quality is under View → More (HD or Fast). `?perf` at the end of the address shows the counts in a corner: the screenshot to send.
 
-## Numbers (28 Oct, software graphics in a test browser: relative, not a phone's)
+## Numbers (4 Nov, V1.34; `checks.py`'s `sizes` line, and software graphics in a test browser: relative, not a phone's)
+
+- `sizes`: page 2.1 MB, photos 13.7 MB (the roughness maps added 0.4), three.js 0.86 MB own file, shared page 15.85 MB of 16 (2 MB with
+  `PHOTOS_URL`), 21 sizes to measure.
+- The first picture (V1.29): 8.4 s here, was 16.1 (the shaders built first, the frame itself 54 ms). Outside 216 draws (was 659).
+
+## Numbers before (28 Oct)
 
 - The living room in HD with the shade on (V1.1): 364 draws, 119k triangles, 112 shaders. The workflow no longer renders stills (5–9 min).
 - **The photos after the first picture (V1.9):** on Pages they're a file of their own (`photos.<hash>.json`, 10.4 MB since V1.12's 19 sets,
   kept by the service worker); the page is 2.1 MB, was 3.7; the shared page 12.5 MB (its limit 16). Until they land each photo's texture is its mean colour (`photo_meta`). At 8 Mbit/s in a test
   browser the page downloads in 3.6 s, was 5.4; the first picture 8.4 s, was 9.0 (software graphics: the rest is drawing). The shared page
   keeps them inline, read after the first picture. `check_site.py` checks all 13 sets arrive.
-- The repo (V1.12): 355 files, 78 MB tracked, 46 MB of it the client's photos (9 MB the 3D's textures); `checks.py`'s repo check fails on a tracked build output
+- The repo (V1.36): 329 files, 77 MB tracked, 49 MB of it the client's photos (11 MB the 3D's textures), history 87 MB; `checks.py`'s repo check fails on a tracked build output
   or any other file over 1.5 MB. The clone is about 76 MB with its history (DIY: 5.2 GB).
 
 ## Open with the client
@@ -142,7 +173,9 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 3. Still to measure (all in Measure): how far the boiler cupboard sticks into bedroom 2; the bathroom's ceiling over the toilet and the slope's start, the vanity's width, the bath's length (184 drawn, from the door);
    the landing's door widths and the wall between the bedroom doors' frames; the tapestry's drop; the hall radiator; the master from the
    wardrobes to the front wall; the alcove; bedroom 2's length; a stair tread; the meter and bin cupboards; the living room's side-wall socket; the garage's chipboard box's depth; the secret room's pier.
-4. Decide: where the side-wall socket goes; near-photo pictures (minutes each) or not; whether the house's tap-a-piece size edit comes back.
+4. Confirm (a photo from the foot of the lower stairs, looking at the lower landing): V1.32 took out a wall the model had put across the
+   foot of the flight; is it open there?
+5. Decide: where the side-wall socket goes; near-photo pictures (minutes each) or not; whether the house's tap-a-piece size edit comes back.
 - **V1.26** (31 Oct 2026): doors open and shut with a tap (the bathroom's stops on the bath); the bin cupboards' handles at the street
   end; the garage's chipboard box and the secret room's cover; the secret room square, its pier and drain. The client: "i'd like to be
   able to open and close doors now at will".

@@ -107,6 +107,8 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
     end): drawn open, flat back against the cupboard's side. Its frame has a moulded cap over the head on the landing side (the photo). The master is tight now: where does the chest go?
   - **The kitchen door in the middle of the lower landing**, between the stairs and the WC (the client, 31 Oct); the bar 15 shorter.
   - **No wall through the lower flight:** the store's wall under it stops at the steps (the client, 31 Oct).
+  - **The lower flight opens onto the lower landing** (V1.32: the model had a wall across its foot; its ceiling over the store stops at the
+    steps too). To confirm with a photo from the foot of the stairs.
   - **The bathroom's wall over the stairs**, by the sink, about 7.5 cm further into the bathroom than drawn before, for more room over
     the stairs (the client, 29 Oct: "roughly 5-10 more cm").
 - **Both gardens:** the back (about 25 m, the photos) and the front (the agent's photo, below; sizes to come).

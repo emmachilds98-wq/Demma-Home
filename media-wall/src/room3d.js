@@ -15,6 +15,7 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { Sky } from "three/addons/objects/Sky.js";   // V1.3: the sky over the whole house   // v48 §5: the lights' glow
 
+const MOD_AT = performance.now();   // V1.31: when this script began (R3D.timing)
 const root = document.getElementById("r3d");
 const SC = JSON.parse(document.getElementById("scene3d-data").textContent);
 const R = SC.room;
@@ -311,6 +312,7 @@ controls.screenSpacePanning = false;   // v17: a right-drag slides along the flo
 // and a drag, a pinch or a scroll moves it about half as far
 controls.dampingFactor = 0.2;
 controls.rotateSpeed = 0.55; controls.zoomSpeed = 0.6; controls.panSpeed = 0.6;
+controls.zoomToCursor = true;   // V1.29 (U2), the client: "how quick the render can ... zoom": a scroll or a pinch goes towards what you point at, not the middle
 controls.addEventListener("change", () => { dirty(); if (typeof syncEye === "function") syncEye(); });
 
 /* ---------------------------------------------------------------- textures, made here so nothing loads */
@@ -497,7 +499,7 @@ function loadPhotos() {
   const el = document.getElementById("photo-data"), src = el && el.dataset.src, txt = el && el.textContent.trim();
   return (photosIn = (txt ? Promise.resolve(txt) : src ? fetch(src).then(r => r.ok ? r.text() : "{}") : Promise.resolve("{}"))
     .then(t => JSON.parse(t)).catch(() => ({})).then(P => {
-      for (const t of Object.values(P)) for (const f of ["map", "nor"]) if (typeof t[f] === "string" && t[f][0] === "@") { const [k, g] = t[f].slice(1).split("."); t[f] = P[k][g]; }   // a shared picture, sent once
+      for (const t of Object.values(P)) for (const f of ["map", "nor", "rough"]) if (typeof t[f] === "string" && t[f][0] === "@") { const [k, g] = t[f].slice(1).split("."); t[f] = P[k][g]; }   // a shared picture, sent once
       Object.assign(PHOTO, P); photosDone = true; PWAIT.splice(0).forEach(w => w());
     }));
 }
@@ -507,25 +509,31 @@ const texClone = t => { const c = t.clone(); TEX_CLONES.has(t) ? TEX_CLONES.get(
 TEX_CLONES.set(OAK_TEX, [OAK_TEX_V]);   // V1.12: the doors' upright oak, cloned before this list (it kept the drawn oak's texture: the site check's WebGL error)
 /* V1.12: dispose first: WebGL2 keeps a texture at the size it was first sent (immutable storage), so a 1024 photo sent into its 4 × 4
    stand-in never showed (V1.9 to V1.11: the house's photos stayed their mean colour); disposed, it's made again at the photo's size */
-function texSet(tex, img) { for (const t of [tex, ...(TEX_CLONES.get(tex) || [])]) { t.dispose(); t.image = img; t.needsUpdate = true; } }
+function texSet(tex, img) { const bmp = typeof ImageBitmap !== "undefined" && img instanceof ImageBitmap;   // V1.30: a bitmap comes flipped already
+  for (const t of [tex, ...(TEX_CLONES.get(tex) || [])]) { t.dispose(); t.image = img; t.flipY = !bmp; t.needsUpdate = true; } }
+/* V1.30 (U5): a photo decoded off the page's thread (createImageBitmap; it was decoded as it was first drawn, a stall each), flipped for
+   WebGL as three expects; an <img> where that isn't there */
+function decodeImg(src, flip = true) {
+  const tag = () => new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = src; });
+  if (!window.createImageBitmap) return tag();
+  return fetch(src).then(r => r.blob()).then(b => createImageBitmap(b, { imageOrientation: flip ? "flipY" : "none" })).catch(tag);
+}
 function photoInto(tex, k, f, match = true) {
   if (!PHOTOS) return;
   whenPhoto(k, f, src => {
-    const im = new Image();
-    im.onload = () => {
+    decodeImg(src, !(match && tex.image && tex.image.getContext)).then(im => {
       let out = im;
       if (match && tex.image && tex.image.getContext) {
         const avg = d => { const t = [0, 0, 0]; for (let i = 0; i < d.length; i += 4) { t[0] += d[i]; t[1] += d[i + 1]; t[2] += d[i + 2]; } return t.map(v => v / (d.length / 4) || 1); };
         const was = tex.image, want = avg(was.getContext("2d").getImageData(0, 0, was.width, was.height).data);
-        out = document.createElement("canvas"); out.width = im.naturalWidth; out.height = im.naturalHeight;
+        out = document.createElement("canvas"); out.width = im.naturalWidth || im.width; out.height = im.naturalHeight || im.height;
         const g = out.getContext("2d"); g.drawImage(im, 0, 0);
         const px = g.getImageData(0, 0, out.width, out.height), d = px.data, k = avg(d).map((v, i) => want[i] / v);
         for (let i = 0; i < d.length; i += 4) { d[i] *= k[0]; d[i + 1] *= k[1]; d[i + 2] *= k[2]; }   // clamped at 255 by the array
         g.putImageData(px, 0, 0);
       }
       texSet(tex, out); dirty();
-    };
-    im.src = src;
+    });
   });
 }
 const flatNormal = () => canvasTex(4, 4, (g, w, h) => { g.fillStyle = "#8080ff"; g.fillRect(0, 0, w, h); }, false);
@@ -2539,6 +2547,7 @@ function standIn() {
 }
 const LIVV = () => !HOUSEV(S.view) && !!VIEWS[S.view];
 function syncRmode() {
+  if (typeof syncStick === "function") try { syncStick(); } catch (e) {}   // V1.32: the walk's stick
   const rm = qs("#r3d-rmode"); if (!rm) return;
   const liv = LIVV(), cur = liv ? (S.view === "room" ? "above" : S.view === "livalone" ? "alone" : S.view === "livstand" ? "stand" : "in") : RMODE;
   rm.hidden = !(ROOMV() || liv); qsa("[data-rmode]", rm).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.rmode === cur)));
@@ -2571,6 +2580,9 @@ function placeRoomLights() {
    a texture a visit), long enough for a PC's graphics driver to give up; phones never ran it. Now one neutral room reflection, made once,
    is on the house's materials from the start (no recompiles), each surface reflecting by its finish */
 let HMATS = null, HENV = null;
+/* V1.31 (U6): the house's materials one-sided (every piece is a closed solid): half the drawing where faces turn away, and no shadow
+   acne from back faces; ?double for the old way, to compare */
+const HOUSE_SIDE = /[?&]double\b/.test(location.search) ? THREE.DoubleSide : THREE.FrontSide;
 function houseEnv() {
   if (!HENV) { const pm = new THREE.PMREMGenerator(gl), rs = new RoomEnvironment(); HENV = pm.fromScene(rs, 0.04).texture; pm.dispose(); rs.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
   return HENV;
@@ -2631,10 +2643,18 @@ function applyFloors() {
     }
   }
   drawRooms(); brandPlace(); outdoor();
+  requestAnimationFrame(() => { measureShift(!!(window.DemmaTools && window.DemmaTools.isOpen())); fadeRows(); });   // V1.30: the rows above may have changed
   dirty();
 }
+/* V1.30 (U3): a row with more to slide to fades at its right edge */
+function fadeRows() { qsa(".r3d-floors:not(.r3d-rmode)").forEach(el => el.classList.toggle("more", el.scrollWidth - el.clientWidth - el.scrollLeft > 4)); }
+document.addEventListener("scroll", e => { if (e.target.classList && e.target.classList.contains("r3d-floors")) fadeRows(); }, true);
 /* V1.2: the brand's second line says where you are: the whole house, a floor, a room */
 function brandPlace() {
+  /* V1.30 (U3): only the tools that work where you are: in the house's views Room, Look and Edit (the living room's) step aside; in the
+     house's own rooms Plan · Build · Buy too (the media wall's plan) */
+  const hv = HOUSEV(S.view), hr = !!ROOMV(); document.body.classList.toggle("hv", hv); document.body.classList.toggle("hroom", hr);
+  if (hv && window.DemmaTools && DemmaTools.isOpen() && ["room", "look"].some(k => { const d = qs("#r3d-dp-" + k); return d && !d.hidden; })) DemmaTools.close();
   const el = document.getElementById("brand-place"); if (!el) return;
   let t = "The living room";
   if (S.view === "house") t = { first: "The first floor", ground: "The ground floor", lower: "The lower floor" }[hfloor] || "The whole house";
@@ -2657,10 +2677,10 @@ function floorCam() {
   const x0 = Math.min(...rs.map(r => r[0])), x1 = Math.max(...rs.map(r => r[1])), z0 = Math.min(...rs.map(r => r[2])), z1 = Math.max(...rs.map(r => r[3]));
   const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0, y = hfloor === "all" ? 540 : fy;
   const fit = (fov, sx, sy) => { const v = fov * Math.PI / 360, h = Math.atan(Math.tan(v) * camera.aspect); return 1.1 * Math.max(sx / 2 / Math.tan(h), sy / 2 / Math.tan(v)); };
-  if (hfview === "top") { flyTo([cx, y + 60 + fit(45, w, d), cz + 1], [cx, y, cz], 45, true); return; }
+  if (hfview === "top") { flyTo([cx, y + 60 + fit(45, w, d), cz + 1], [cx, y, cz], 45, REDUCE); return; }   // V1.29 (U2): flown, not cut
   const H = VIEWS.house, dir = new THREE.Vector3(H.eye[0] - H.at[0], H.eye[1] - H.at[1], H.eye[2] - H.at[2]).normalize();
   const r = 0.5 * Math.hypot(w, d, 235), v = 25 * Math.PI / 180, hh = Math.atan(Math.tan(v) * camera.aspect), D = (camera.aspect < 1 ? 0.62 : 0.9) * r / Math.sin(Math.min(v, hh));   // the floors below show under it too
-  flyTo([cx + dir.x * D, y + dir.y * D, cz + dir.z * D], [cx, y + 40, cz], 50, true);
+  flyTo([cx + dir.x * D, y + dir.y * D, cz + dir.z * D], [cx, y + 40, cz], 50, REDUCE);
 }
 function drawRooms() {
   const box = qs("#r3d-hrooms"); if (!box) return;
@@ -3036,6 +3056,7 @@ function outdoor() {
     if (on) { const t = v3(233, 0, -900); sun.target.position.copy(t); sun.position.copy(t).addScaledVector(dayLight.position.clone().sub(dayLight.target.position).normalize(), 30); }
     else { sun.position.copy(sun.userData.p0); sun.target.position.copy(sun.userData.t0); roomKey = null; }
     c.left = c.bottom = -e; c.right = c.top = e; c.far = on ? 60 : 16; c.updateProjectionMatrix(); sun.target.updateMatrixWorld();
+    sun.shadow.normalBias = on ? 0.02 : 0.008;   // V1.28: about a texel and a half (2 cm lifted the room's shadows off its joins: light along the skirting)
     sun.intensity = sunLux(); if (!on) placeRoomLights(); reshadow();
   }
 }
@@ -4038,14 +4059,14 @@ const VIEWS = {
 let tween = null;
 /* v17: the camera stays in the room: x, y and z inside its walls, in front of the chimney breast, the alcove only within it */
 let walked = false;
-const freeAbove = () => (RMODE !== "in") || ((VIEWS[S.view] || {}).above && !walked);   // v71: Above and On its own orbit freely
+const freeAbove = () => (RMODE !== "in" && RMODE !== "stand") || ((VIEWS[S.view] || {}).above && !walked);   // v71: Above and On its own orbit freely (V1.28: Be there keeps to the room too)
 function clampRoom(p, target = false) {   // the target (what you orbit round) may sit on a wall's face or a little past it
   const KB = ROOMV();                                                          // v60: in the kitchen (v61: any room of the house), its own walls
   if (KB) { const [x0, x1, y0, y1, z0, z1] = KB, g = target ? 15 : 0, q = v3(Math.min(Math.max(-p.x / M, x0 - g), x1 + g), Math.min(Math.max(p.y / M, y0 - g), y1 + g), Math.min(Math.max(p.z / M, z0 - g), z1 + g));
     const moved = q.distanceToSquared(p) > 1e-10; p.copy(q); return moved; }
-  const lo = target ? -10 : 4, x = Math.min(Math.max(-p.x / M, lo), R.W - lo), y = Math.min(Math.max(p.y / M, target ? 0 : 20), R.CEIL - (target ? 0 : 8));
-  const zmax = target ? R.RECESS_Z + 10 : x <= R.ALC_W ? R.ALC_D - 4 : x <= R.BREAST_X[1] + 4 ? -4 : R.RECESS_Z - 4;
-  const z = Math.min(Math.max(p.z / M, R.WINDOW_Z + (target ? -30 : 6)), zmax);
+  const lo = target ? -10 : 15, x = Math.min(Math.max(-p.x / M, lo), R.W - lo), y = Math.min(Math.max(p.y / M, target ? 0 : 20), R.CEIL - (target ? 0 : 15));   // V1.28: 15 off the walls (was 4)
+  const zmax = target ? R.RECESS_Z + 10 : x <= R.ALC_W ? R.ALC_D - 15 : x <= R.BREAST_X[1] + 15 ? -15 : R.RECESS_Z - 15;
+  const z = Math.min(Math.max(p.z / M, R.WINDOW_Z + (target ? -30 : 15)), zmax);
   const q = v3(x, y, z), moved = q.distanceToSquared(p) > 1e-10;
   p.copy(q); return moved;
 }
@@ -4068,9 +4089,147 @@ function solidBoxes() {
   }
   return SOLID;
 }
+/* V1.28 (U1), the client: "fix technical issues like clipping": in the house's rooms the eye kept only inside the room's box, so it
+   could rest on a wall's face (the near plane then showed its inside), rise over a sloped ceiling into the roof and pass through beds
+   and wardrobes. Now every piece of the house (its boxes, its prisms: the slopes and eaves, its turned pieces) is solid to a 20 cm ball
+   round the eye. A move into something slides along it (each axis on its own from the last good place); a view that starts inside
+   something is pushed to the nearest free spot. Doors (the parts) stay passable */
+const HSOLID = {}, EYE_R = 20;
+const NOSOLID = new Set(["contact"]);
+function hsolidSet(fk, F) {
+  if (fk === "street") return;
+  const b = [];
+  for (const [m, list] of Object.entries(F.boxes || {})) if (!NOSOLID.has(m)) for (const q of list) b.push(q);
+  for (const L of F.lathes || []) { const r = Math.max(...L.p.map(q => q[0])), hs = L.p.map(q => q[1]);
+    b.push([L.c[0] - r * L.s[0], L.c[1] + Math.min(0, ...hs), L.c[2] - r * L.s[1], L.c[0] + r * L.s[0], L.c[1] + Math.max(...hs), L.c[2] + r * L.s[1]]); }
+  const skin = new Set(["ceiling", "artex"]), w = [];   // V1.32: a walk ignores the ceilings' skins (each has a slab or the roof over it;
+  for (const [m, list] of Object.entries(F.boxes || {})) if (!NOSOLID.has(m) && !skin.has(m)) for (const q of list) w.push(q);   // the lower store's runs over the flight)
+  for (const q of b.slice(b.length - (F.lathes || []).length)) w.push(q);
+  HSOLID[fk] = { b, w, p: (F.prisms || []).filter(P => !NOSOLID.has(P.m)) };
+  hLast = null;
+}
+function polyNear(pts, u, w, r) {          // inside the outline, or within r of its edge
+  let inside = false, d2 = Infinity;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const [ax, ay] = pts[j], [bx, by] = pts[i];
+    if ((by > w) !== (ay > w) && u < (ax - bx) * (w - by) / (ay - by) + bx) inside = !inside;
+    const ex = bx - ax, ey = by - ay, L = ex * ex + ey * ey, t = L ? Math.max(0, Math.min(1, ((u - ax) * ex + (w - ay) * ey) / L)) : 0;
+    const dx = ax + t * ex - u, dy = ay + t * ey - w; d2 = Math.min(d2, dx * dx + dy * dy);
+  }
+  return inside || d2 < r * r;
+}
+function hBlocked(x, y, z, r = EYE_R, all = false) {    // room cm; all: the floors not drawn too, and not the ceilings' skins (walking)
+  for (const S_ of Object.values(HSOLID)) {
+    if (!S_.g || (!all && !shown(S_.g))) continue;
+    for (const q of all ? S_.w : S_.b) if (x > q[0] - r && x < q[3] + r && y > q[1] - r && y < q[4] + r && z > q[2] - r && z < q[5] + r) return true;
+    for (const P of S_.p) {
+      const [a, uw] = P.axis === "x" ? [x, [z, y]] : P.axis === "z" ? [z, [x, y]] : [y, [x, z]];
+      if (a > P.a - r && a < P.b + r && polyNear(P.pts, uw[0], uw[1], r)) return true;
+    }
+  }
+  return false;
+}
+let hLast = null;                           // the eye's last free place (room cm)
+function houseCollide() {                   // true if it moved the eye
+  const c = camera.position, p = [-c.x / M, c.y / M, c.z / M];
+  if (!hBlocked(...p)) { hLast = p; return false; }
+  let q = null;
+  if (hLast && !hBlocked(...hLast)) {       // slide: each axis on its own, from the last free place
+    q = hLast.slice(); for (const k of [0, 2, 1]) { const t = q.slice(); t[k] = p[k]; if (!hBlocked(...t)) q = t; }
+  } else {                                  // a view that starts inside something: the nearest free spot round it
+    search: for (let d = 5; d <= 120; d += 5) for (let a = 0; a < 16; a++) for (const dy of [0, -d, d]) {
+      const t = [p[0] + Math.cos(a * Math.PI / 8) * d, p[1] + dy, p[2] + Math.sin(a * Math.PI / 8) * d];
+      if (!hBlocked(...t)) { q = t; break search; } }
+    if (!q) return false;
+  }
+  hLast = q; c.set(-q[0] * M, q[1] * M, q[2] * M); return true;
+}
+/* V1.32 (U7), the client: "review how to make the movement within the house better": Be there in the house's rooms is walking. Hold
+   W A S D or the arrows (Q and E turn) on a computer, the stick on a phone; drag to look. A body, not just an eye: it's stopped at the
+   knee, the hip and the eye (so not over a bed or through a wardrobe), steps up a stair (a rise up to 35) and follows the floor down;
+   it slides along what it meets. Walk into the next room and its name, its lights and what's drawn follow you (the eye stays where it
+   is); a door opens as you reach it. The living room is drawn on its own (not in the house file yet): its doorway stays shut to a walk,
+   and the house's views take you in */
+const WALK = { keys: new Set(), stick: [0, 0], v: new THREE.Vector2(), feet: null, doorT: 0, hinted: false };
+const walking = () => RMODE === "stand" && !!ROOMV() && !tween;
+const LIVING_BOX = () => [0, -1, R.WINDOW_Z - 12, R.W, 235, 40];   // the living room's space on the ground floor (room cm)
+function bodyBlocked(x, feet, z) {
+  const L = LIVING_BOX(); if (x > L[0] && x < L[3] && z > L[2] && z < L[5] && feet + 100 > L[1] && feet < L[4]) return true;
+  return hBlocked(x, feet + 55, z, 18, true) || hBlocked(x, feet + 105, z, 18, true) || hBlocked(x, feet + STAND_EYE, z, 12, true);   // the head 12 (a doorway's head clears it from the last stair)
+}
+function floorAtCm(x, z, feet) {            // the top of what's underfoot: the highest at or under a step up (35)
+  let best = -Infinity;
+  for (const S_ of Object.values(HSOLID)) if (S_.g) for (const q of S_.b) if (x > q[0] && x < q[3] && z > q[2] && z < q[5] && q[4] <= feet + 35 && q[4] > best) best = q[4];
+  return best;
+}
+function walkMove(side, fwd, turn, dt) {    // -1..1 each; true if the eye moved
+  const cam = camera.position, x0 = -cam.x / M, z0 = cam.z / M;
+  if (WALK.feet === null) WALK.feet = cam.y / M - STAND_EYE;
+  const d = controls.target.clone().sub(cam); d.y = 0; if (d.lengthSq() < 1e-8) d.set(0, 0, 1); d.normalize();
+  if (turn) { const a = -turn * 1.8 * dt; d.applyAxisAngle(new THREE.Vector3(0, 1, 0), a); const t = controls.target.clone().sub(cam).applyAxisAngle(new THREE.Vector3(0, 1, 0), a); controls.target.copy(cam).add(t); }
+  const sp = 140 * dt, sd = new THREE.Vector3(-d.z, 0, d.x);
+  const mv = d.clone().multiplyScalar(fwd * sp).add(sd.multiplyScalar(side * sp));    // cm in three's axes
+  let x = x0 - mv.x, z = z0 + mv.z;                                                    // room cm (x flipped)
+  if (!bodyBlocked(x0, WALK.feet, z0) && bodyBlocked(x, WALK.feet, z)) {   // free to step out of something you start in (Be there by the guitars)
+    if (!bodyBlocked(x, WALK.feet, z0)) z = z0; else if (!bodyBlocked(x0, WALK.feet, z)) x = x0; else { x = x0; z = z0; } }
+  const fl = floorAtCm(x, z, WALK.feet);
+  if (fl > -Infinity && fl > WALK.feet - 400) WALK.feet += (fl - WALK.feet) * Math.min(1, dt * 12);
+  const ny = (WALK.feet + STAND_EYE) * M, moved = Math.abs(x - x0) + Math.abs(z - z0) > 1e-4 || Math.abs(ny - cam.y) > 1e-5 || !!turn;
+  if (!moved) return false;
+  const delta = v3(x, 0, z).sub(v3(x0, 0, z0)); delta.y = ny - cam.y;
+  cam.add(delta); controls.target.add(delta); hLast = [x, ny / M, z];
+  walkRoom(x, WALK.feet, z); walkDoors(x, WALK.feet, z);
+  return true;
+}
+function walkRoom(x, feet, z) {             // walked into another room with its own view: be in it, where you stand
+  const rooms = R.HOUSE3.rooms || {};
+  for (const [id, r] of Object.entries(rooms)) {
+    if (x < r[0] || x > r[1] || z < r[2] || z > r[3] || Math.abs(feet - r[4]) > 130) continue;
+    const v = ROOM_VIEW[id]; if (v && v !== S.view && VIEWS[v] && VIEWS[v].box) enterRoom(v);
+    return;
+  }
+}
+function enterRoom(name) {
+  if (actId && typeof closeAct === "function") closeAct();
+  S.view = name; applyFloors(); placeRoomLights(); syncRmode(); store.set(KEY, S); updateCaption(); brandPlace(); outdoor(); reshadow();
+  qsa("[data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === name)));
+}
+function walkDoors(x, feet, z) {            // a shut door opens as you come up to it
+  const now = performance.now(); if (now - WALK.doorT < 200) return; WALK.doorT = now;
+  const w = new THREE.Vector3();
+  for (const [pk, P] of Object.entries(HPARTS)) {
+    if (!pk.startsWith("door.") || doorOpen(P)) continue;
+    P.g.getWorldPosition(w); const dx = -w.x / M - x, dz = w.z / M - z, dy = w.y / M - feet;
+    if (Math.hypot(dx, dz) < 95 && dy > -40 && dy < 220) swingDoor(pk, true);
+  }
+}
+function walkTick(dt) {
+  if (!walking()) { WALK.feet = null; WALK.v.set(0, 0); return false; }
+  const k = WALK.keys, f = (k.has("f") ? 1 : 0) - (k.has("b") ? 1 : 0) + WALK.stick[1], sd = (k.has("r") ? 1 : 0) - (k.has("l") ? 1 : 0) + WALK.stick[0];
+  const want = new THREE.Vector2(sd, f); if (want.lengthSq() > 1) want.normalize();
+  WALK.v.lerp(want, Math.min(1, dt * 8));   // eases in and out
+  const turn = (k.has("tr") ? 1 : 0) - (k.has("tl") ? 1 : 0);
+  if (WALK.v.lengthSq() < 1e-5 && !turn) { if (WALK.feet === null) WALK.feet = camera.position.y / M - STAND_EYE; return false; }
+  return walkMove(WALK.v.x, WALK.v.y, turn, dt);
+}
+/* V1.32: the phone's stick (bottom left, while walking): drag it the way to go */
+const COARSE = !!(window.matchMedia && matchMedia("(pointer: coarse)").matches);
+const STICK = document.createElement("div"); STICK.className = "r3d-stick"; STICK.hidden = true; STICK.setAttribute("aria-hidden", "true"); STICK.innerHTML = "<i></i>"; root.append(STICK);
+let stickId = null, stickC = [0, 0];
+function stickMove(e) { let dx = e.clientX - stickC[0], dy = e.clientY - stickC[1]; const RR = 44, l = Math.hypot(dx, dy); if (l > RR) { dx *= RR / l; dy *= RR / l; }
+  STICK.style.setProperty("--x", dx + "px"); STICK.style.setProperty("--y", dy + "px"); WALK.stick = [dx / RR, -dy / RR]; dirty(); }
+STICK.addEventListener("pointerdown", e => { stickId = e.pointerId; try { STICK.setPointerCapture(e.pointerId); } catch (err) {} const r = STICK.getBoundingClientRect(); stickC = [r.left + r.width / 2, r.top + r.height / 2]; stickMove(e); e.preventDefault(); });
+STICK.addEventListener("pointermove", e => { if (e.pointerId === stickId) stickMove(e); });
+const stickEnd = e => { if (e.pointerId !== stickId) return; stickId = null; WALK.stick = [0, 0]; STICK.style.setProperty("--x", "0px"); STICK.style.setProperty("--y", "0px"); };
+STICK.addEventListener("pointerup", stickEnd); STICK.addEventListener("pointercancel", stickEnd);
+function syncStick() {
+  const on = RMODE === "stand" && !!ROOMV(); STICK.hidden = !(on && COARSE); root.classList.toggle("walking", on && COARSE);
+  if (on && !WALK.hinted) { WALK.hinted = true; try { if (!localStorage.getItem("demma-walkhint")) { localStorage.setItem("demma-walkhint", "1");
+    setTimeout(() => toast(COARSE ? "Walk with the stick, drag to look" : "Walk with W A S D or the arrows, drag to look"), 900); } } catch (e) {} }
+}
 function collide(p = camera.position) {    // true if it moved the eye
   let moved = false;
-  if (ROOMV()) return false;   // v60: the living room's furniture isn't in the other rooms
+  if (ROOMV()) return p === camera.position ? houseCollide() : false;   // v60: the living room's furniture isn't in the other rooms; V1.28: the house's own pieces are
   for (const b of solidBoxes()) {
     if (p.y > b.max.y + 0.05 || p.y < b.min.y - 0.2) continue;
     if (p.x <= b.min.x || p.x >= b.max.x || p.z <= b.min.z || p.z >= b.max.z) continue;
@@ -4086,6 +4245,16 @@ let lastTap = null;
 function floorHop(e) {
   ray.setFromCamera(ndc(e), camera);
   const hit = ray.intersectObjects(scene.children, true).find(h => h.object.isMesh && shown(h.object) && !clippedAt(h.point));
+  const KB = ROOMV();
+  if (KB) {   // V1.28: in the house's rooms too (it used the living room's floor, at 0: only the ground floor answered)
+    if (!hit || !hit.face || RMODE === "above" || RMODE === "alone") return false;
+    const n = hit.face.normal.clone().transformDirection(hit.object.matrixWorld), rr = (R.HOUSE3.rooms || {})[VIEW_ROOM[S.view]], fy = rr ? rr[4] : KB[2];
+    if (n.y < 0.7 || hit.point.y / M > fy + 40) return false;                       // only the floor (or a rug on it)
+    const x = -hit.point.x / M, z = hit.point.z / M, d = controls.target.clone().sub(camera.position); d.y = 0;
+    if (d.lengthSq() < 1e-8) d.set(0, 0, 1); d.normalize();
+    flyTo([x, fy + STAND_EYE, z], [x - d.x / M, fy + STAND_EYE - 10, z + d.z / M], baseFov, false, false, 700); walked = true;
+    return true;
+  }
   const f = floorAt(e); if (!f || (hit && hit.point.y > 0.03)) return false;     // only the floor itself
   const p = v3(f.x, 155, f.z); clampRoom(p); collide(p); const x = -p.x / M, z = p.z / M;
   const cx = R.W / 2, cz = (R.WINDOW_Z + R.ALC_D) / 2, far = Math.hypot(x - cx, z - cz) < 60;
@@ -4096,6 +4265,8 @@ function floorHop(e) {
 }
 function walk(kind, k = 1) {        // about 15 cm a press on the floor plane; turns 10°; v31: up and down 10 cm; k < 1 while a button's held
   if (tween) return;
+  if (walking()) { const m = { f: [0, 1], b: [0, -1], l: [-1, 0], r: [1, 0] }[kind], t = { tl: -1, tr: 1 }[kind];   // V1.32: as a walk, by its rules
+    if (m || t) { walkMove(m ? m[0] : 0, m ? m[1] : 0, t || 0, (t ? 0.1 : 0.11) * k); controls.update(); dirty(); syncEye(); } return; }
   walked = true; controls.maxDistance = 6;
   const fwd = controls.target.clone().sub(camera.position); fwd.y = 0;
   if (fwd.lengthSq() < 1e-8) fwd.set(0, 0, 1);
@@ -4148,11 +4319,20 @@ function syncEye() {         // the height slider follows the camera
 }
 function applyPad() { const p = qs("#r3d-pad"); if (p) p.hidden = !S.pad; }
 let wheelAcc = 0;            // looking round, the wheel (or a two-finger scroll) walks
+/* V1.29 (U2): in Be there the wheel and a pinch change the lens (25°–100°, like a phone's camera), since you walk there with a double-tap
+   or the keys; looking round elsewhere the wheel walks as far as it turns (it went in 15 cm jumps) */
+const lens = f => { if (tween) return; camera.fov = Math.max(25, Math.min(100, f)); camera.updateProjectionMatrix(); dirty(); };   // the lens as seen (a phone's portrait widening included)
 canvas.addEventListener("wheel", e => {
   if (S.cam !== "look") return;
-  e.preventDefault(); wheelAcc += e.deltaY;
-  if (Math.abs(wheelAcc) >= 60) { walk(wheelAcc < 0 ? "f" : "b"); wheelAcc = 0; }
+  e.preventDefault();
+  if (RMODE === "stand" || S.view === "livstand") { lens(camera.fov * Math.exp(e.deltaY * 0.0012)); return; }
+  const k = Math.min(1.5, Math.abs(e.deltaY) / 100); if (k > 0.02) walk(e.deltaY < 0 ? "f" : "b", k);
 }, { passive: false });
+const PINCH = new Map(); let pinch0 = null;
+canvas.addEventListener("pointerdown", e => { if (e.pointerType === "touch") PINCH.set(e.pointerId, [e.clientX, e.clientY]); if (PINCH.size === 2) { const [a, b] = [...PINCH.values()]; pinch0 = [Math.hypot(a[0] - b[0], a[1] - b[1]), camera.fov]; } });
+canvas.addEventListener("pointermove", e => { if (!PINCH.has(e.pointerId)) return; PINCH.set(e.pointerId, [e.clientX, e.clientY]);
+  if (pinch0 && PINCH.size === 2 && S.cam === "look" && (RMODE === "stand" || S.view === "livstand")) { const [a, b] = [...PINCH.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (d > 10) lens(pinch0[1] * pinch0[0] / d); } });
+["pointerup", "pointercancel", "pointerleave"].forEach(t => canvas.addEventListener(t, e => { PINCH.delete(e.pointerId); if (PINCH.size < 2) pinch0 = null; }));
 ["pointerdown", "pointermove", "keydown", "wheel"].forEach(t => root.addEventListener(t, e => { if (t !== "pointermove" || e.buttons) PRE.idleT = performance.now(); }, { passive: true, capture: true }));   // v39: a mouse just moving over the room doesn't hold up the warm-up   // v35: the shader warm-up waits while you use the room
 let padT = null;             // a move button held down keeps moving, in smaller steps
 const padStop = () => { if (padT) { clearTimeout(padT.t); clearInterval(padT.i); padT = null; } };
@@ -4166,15 +4346,21 @@ root.addEventListener("keydown", e => {
   if (e.altKey || e.ctrlKey || e.metaKey || /^(input|select|textarea)$/i.test(e.target.tagName)) return;
   if (e.target.tagName === "BUTTON" && !e.target.dataset.walk && e.key.startsWith("Arrow")) return;   // arrows still move between buttons
   const k = WALK_KEYS[e.key.toLowerCase()]; if (!k) return;
-  e.preventDefault(); walk(k);
+  e.preventDefault();
+  if (walking()) { if (k !== "u" && k !== "dn") WALK.keys.add(k); dirty(); return; }   // V1.32: held, not a step a press
+  walk(k);
 });
+root.addEventListener("keyup", e => { const k = WALK_KEYS[e.key.toLowerCase()]; if (k) WALK.keys.delete(k); });
+window.addEventListener("blur", () => { WALK.keys.clear(); WALK.stick = [0, 0]; });
 canvas.addEventListener("pointerdown", () => { canvas.focus({ preventScroll: true }); if (tourSt) tourEnd(); if (SH) SH.own = true; });   // v28: touching the room ends the tour; v32: "Watch it open" carries on, the camera yours
 function setView(name, instant, dur) {
-  const v = VIEWS[name] || VIEWS.window, wasHouse = HOUSEV(S.view); S.view = name;
+  const v = VIEWS[name] || VIEWS.window, wasHouse = HOUSEV(S.view);
+  if (name !== S.view && actId && typeof closeAct === "function") closeAct();   // V1.28: a piece's card doesn't follow you to another room
+  S.view = name;
   if (RMODE !== "in") setRmode("in", true);                               // v71: a new view starts in the room
   standLook(!!v.stand);                                                     // V1.6: the living room's Be there looks round from where you stand
   let p = (S.site === "C" && S.cab === "sliding" && v.Cs) || v[S.site] || v;   // v30: "Cs", the sliding cabinet's own eye
-  if (name === "house" && camera.aspect < 1.2) { const f = Math.min(1.25, 0.6 / camera.aspect);   // v54: a phone stands further back to take in every floor
+  if (name === "house" && camera.aspect < 1.2) { const f = Math.min(0.95, 0.42 / camera.aspect);   // v54: a phone stands further back to take in every floor (V1.30: less far: the buttons take less room)
     p = { eye: p.at.map((a, i) => a + (p.eye[i] - a) * f), at: p.at }; }
   flyTo(p.eye, p.at, R.HOUSE3 && v.box ? Math.max(v.fov, 82) : v.fov, !!v.above, instant, dur);   // v71: the house's rooms wide
   if (!houseG && R.HOUSE && HOUSEV(name)) { buildHouse(); reshadow(); }   // v69 (B6): built the first time (the living room starts without it)
@@ -4190,6 +4376,7 @@ function setView(name, instant, dur) {
 /* the camera to an eye and a point to look at (room cm); v32: also a piece's own close look (R3D.set's "aim") */
 function flyTo(e, a, fov, above, instant, dur) {
   walked = false; controls.maxDistance = above ? (S.view === "house" ? 90 : 16) : 6;   // v54: the whole house from further off
+  hLast = null;                                                                            // V1.28: the new place is checked afresh
   const eye = v3(...e), at = v3(...a);
   const from = { eye: camera.position.clone(), at: controls.target.clone(), fov: camera.fov };
   setAbove(!above);
@@ -4762,6 +4949,10 @@ function measureShift(open) {
     const r = p.getBoundingClientRect(); cover = r;
     if (innerWidth >= 900) shift.x = Math.round(Math.max(0, w - r.left - railR) / 2);
     else shift.y = Math.round(Math.max(0, h - r.top) / 4);
+  } else if (S.view === "house" && innerWidth < 600 && w) {   // V1.30 (U3): on a phone the house sits in the middle of the space under the buttons
+    let top = 0; for (const el of document.querySelectorAll(".r3d-mini > :not([hidden]), .brand")) { const r = el.getBoundingClientRect(); if (r.height) top = Math.max(top, r.bottom); }
+    const dock = document.querySelector(".r3d-dock"), bot = dock ? dock.getBoundingClientRect().top : h;
+    if (top > 0 && bot > top) shift.y = -Math.round(((top + bot) / 2 - h / 2));
   }
   applyShift(); dirty();
 }
@@ -4771,8 +4962,35 @@ requestAnimationFrame(() => { measureShift(false); setLabels(labelsOn); });
 new ResizeObserver(sizeRenderer).observe(canvas);
 controls.addEventListener("start", () => { moving = true; });
 controls.addEventListener("end", () => { moving = false; });
+/* V1.31 (U4): from outside (The whole house, Outside) the living room's furniture, lights and fittings were drawn behind the house's
+   walls: about 440 of 659 draws. They're left out unless the eye is near its window at the back, where you can see in */
+const LIVING = []; let livOut = false;
+function livingFromOutside() {
+  const x = -camera.position.x / M, z = camera.position.z / M, wx = (R.WINDOW_X[0] + R.WINDOW_X[1]) / 2;
+  const want = !!R.HOUSE3 && S.view === "house" && hfloor === "all" && !tween && !(z < R.WINDOW_Z - 20 && Math.hypot(x - wx, z - R.WINDOW_Z) < 1400);
+  if (want === livOut) return false;
+  livOut = want;
+  for (const o of LIVING) { if (o === view) continue; if (want) { o.userData.livWas = o.visible; o.visible = false; } else if (o.userData.livWas !== undefined) { o.visible = o.userData.livWas; delete o.userData.livWas; } }
+  if (!want) applyFloors();   // the floor or the room you've gone to hides what it hides (Lower, a room's own view) again
+  reshadow(); return true;
+}
+/* V1.35, found in V1.30: on a phone a floor's room names overlapped (the landing's and the boiler cupboard's). Where two would, the
+   smaller room's steps aside until there's room again */
+function declutter() {
+  if (!houseG || !houseG.visible || !canvas.clientWidth) return;
+  const L = []; houseG.traverseVisible(o => { if (o.isSprite && o.userData.hlabel && o.userData.px) L.push(o); });
+  if (L.length < 2) return;
+  const W = canvas.clientWidth, H = canvas.clientHeight, v = new THREE.Vector3(), kept = [];
+  L.sort((a, b) => (b.userData.area || 1e9) - (a.userData.area || 1e9));
+  for (const s_ of L) {
+    s_.getWorldPosition(v).project(camera); const [w, h] = s_.userData.px, x = (v.x + 1) / 2 * W, y = (1 - v.y) / 2 * H;
+    const r = [x - w / 2, y - h / 2, x + w / 2, y + h / 2], hit = v.z > 1 || kept.some(q => r[0] < q[2] && r[2] > q[0] && r[1] < q[3] && r[3] > q[1]);
+    s_.material.visible = !hit; if (!hit) kept.push(r);
+  }
+}
 function frame(now) {
   requestAnimationFrame(frame);
+  if (livingFromOutside()) need = 2;
   if (!canvas.clientWidth) return;
   if (tween) {
     const k = Math.min(1, (now - tween.t0) / (tween.dur || 900)), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
@@ -4787,7 +5005,8 @@ function frame(now) {
   if (cabTween(now)) need = 2;                                    // v30: the cabinet's doors swinging or sliding
   if (liftTick(now)) need = 2;                                    // v68: Lift the bed
   if (showTick(now)) need = 2;                                    // v32: "Watch it open"
-  if (!tween && !freeAbove() && (clampRoom(camera.position) | clampRoom(controls.target, true) | collide())) need = 2;   // v17: never outside the room; v41: nor in the furniture
+  { const dt = Math.min(0.05, (now - (frame.last || now)) / 1000); frame.last = now; if (walkTick(dt)) { need = 2; syncEye(); } }   // V1.32 (U7)
+  if (!tween && !freeAbove() && !walking() && (clampRoom(camera.position) | clampRoom(controls.target, true) | collide())) need = 2;   // v17: never outside the room; v41: nor in the furniture
   const active = moving || changed || !!tween;
   if (active && mvLast && now - mvLast < 250) { MV.push(now - mvLast); if (MV.length >= 24) { const m = MV.sort((a, b) => a - b)[12]; MV.length = 0;
     if (m > 28) slowDev = true; else if (m < 14 && !lowRes && HI) slowDev = false;
@@ -4804,7 +5023,7 @@ function frame(now) {
   if (glLost || (document.body.classList.contains("sheet-open") && !SH && !tween)) return;   // v35: nothing drawn behind the Plan's sheets (the last picture stays)
   if (need > 0) {
     const t = probe > 0 && !lowRes ? performance.now() : 0;
-    const f0 = performance.now(); syncRig(); draw(); FT.calls = gl.info.render.calls; FT.tris = gl.info.render.triangles; need--; placeStickers(); FT[FT.n++ % 60] = performance.now() - f0;
+    const f0 = performance.now(); syncRig(); declutter(); draw(); if (!START_MS.firstAt) { START_MS.firstAt = Math.round(performance.now()); START_MS.firstMs = Math.round(performance.now() - f0); } FT.calls = gl.info.render.calls; FT.tris = gl.info.render.triangles; need--; placeStickers(); FT[FT.n++ % 60] = performance.now() - f0;
     if (t) { const c = gl.getContext(); c.readPixels(0, 0, 1, 1, c.RGBA, c.UNSIGNED_BYTE, PX); probeT.push(performance.now() - t); probe--; if (!probe) autoQuality(); }
   }
 }
@@ -5261,7 +5480,7 @@ function setRmode(m, quiet) {
     if (RMODE === "alone") planes.push(P(1, 0, 0, x1 + g), P(-1, 0, 0, -(x0 - g)), P(0, 1, 0, -(fy - 30)), P(0, 0, 1, -(z0 - g)), P(0, 0, -1, z1 + g)); }
   RPLANES = planes;
   for (const m_ of Object.values(HMATS || {})) { m_.clippingPlanes = planes; m_.clipIntersection = false; m_.clipShadows = planes.length > 0; m_.needsUpdate = true; }   // union: outside any plane goes
-  for (const k of ["tile", "ceiling"]) if (HMATS && HMATS[k]) HMATS[k].visible = !rr;   // v81: the roof's tiles off too (its low eaves lay over the bathroom's corner from above); v82 the ceilings and slopes below the cut (the bathroom's dormer ceiling)
+  for (const k of ["tile", "ceiling", "shade_ceil"]) if (HMATS && HMATS[k]) HMATS[k].visible = !rr;   // V1.33: and the ceilings' shade   // v81: the roof's tiles off too (its low eaves lay over the bathroom's corner from above); v82 the ceilings and slopes below the cut (the bathroom's dormer ceiling)
   hidMode.forEach(o => o.visible = true); hidMode = []; applyFloors();
   if (rr && (RMODE === "alone" || rr[4] < 0)) scene.children.forEach(o => { if (o !== houseG && o !== lightRig && !o.isLight && o !== (sun && sun.target) && o.visible) { o.visible = false; hidMode.push(o); } });
   if (rr && RMODE === "alone") { const fk = { "-260": "lower", "0": "ground", "260": "first" }[String(rr[4])];   // only the room's own floor
@@ -5270,10 +5489,10 @@ function setRmode(m, quiet) {
   if (rr) { const [x0, x1, z0, z1, fy] = rr, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0;
     // far enough that the room fills the screen, whatever its shape (a phone stands it up the screen's long side)
     const fit = (fov, sx, sy) => { const v = fov * Math.PI / 360, h = Math.atan(Math.tan(v) * camera.aspect); return 1.12 * Math.max(sx / 2 / Math.tan(h), sy / 2 / Math.tan(v)); };
-    if (RMODE === "above") flyTo([cx, fy + 40 + fit(50, w, d), cz + d * 0.08], [cx, fy, cz], 50, true);
+    if (RMODE === "above") flyTo([cx, fy + 40 + fit(50, w, d), cz + d * 0.08], [cx, fy, cz], 50, REDUCE);   // V1.29 (U2): flown, not cut
     else { const r = 0.5 * Math.hypot(w, d, 235), v = 22.5 * Math.PI / 180, h = Math.atan(Math.tan(v) * camera.aspect), D = (camera.aspect < 1 ? 0.62 : 0.85) * r / Math.sin(Math.min(v, h));   // the room's sphere in the narrower side (v72: a phone stands closer)
       const sx = Math.sign(233 - cx) || 1, sz = Math.sign(95 - cz) || 1;   // from the house's middle: over its inside walls, the outside wall behind
-      flyTo([cx + sx * D * 0.4, fy + 60 + D * 0.78, cz + sz * D * 0.48], [cx, fy + 50, cz], 45, true); } }
+      flyTo([cx + sx * D * 0.4, fy + 60 + D * 0.78, cz + sz * D * 0.48], [cx, fy + 50, cz], 45, REDUCE); } }
   else if (RMODE === "stand") standIn();
   else if (!quiet) setView(S.view);
   reshadow(); dirty();
@@ -5462,8 +5681,10 @@ function houseTex(k) {
   const pkey = { party: "brick", soldier: "brick", pillow: "duvet", mattress: "duvet" }[k] || k, pm = PMETA[pkey];   // V1.21: the bedding's one cotton
   if (pm && pm.map) {   // V1.9: its mean colour and a flat relief until the photos land (loadPhotos), then the photo in the same texture
     const img = (f, srgb, fill) => { const t = canvasTex(4, 4, g => { g.fillStyle = fill; g.fillRect(0, 0, 4, 4); }, srgb);   // V1.11: as sharp at a slant as the card allows (was 4)
-      whenPhoto(pkey, f, src => { const im = new Image(); im.onload = () => { texSet(t, im); reshadow(); dirty(); }; im.src = src; }); return t; };
-    return (HTEX[k] = { map: img("map", true, pm.avg || "#888888"), normal: pm.nor ? img("nor", false, "#8080ff") : null, size: [pm.size, pm.size], bump: 0 });
+      whenPhoto(pkey, f, src => { decodeImg(src).then(im => { texSet(t, im); reshadow(); dirty(); }); }); return t; };
+    const rg = pm.rough ? Math.round(pm.rough * 255) : 0, grey = `rgb(${rg},${rg},${rg})`;   // V1.30 (U5): its roughness map, if it has one
+    return (HTEX[k] = { map: img("map", true, pm.avg || "#888888"), normal: pm.nor ? img("nor", false, "#8080ff") : null, size: [pm.size, pm.size], bump: 0,
+      rough: pm.rough && !LOWD ? img("rough", false, grey) : null, roughMean: pm.rough || 0 });
   }
   let s = 7 + k.length * 101; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
   const noise = (g, w, h, n, a, cols) => { for (let i = 0; i < n; i++) { g.fillStyle = cols[i % cols.length]; g.globalAlpha = a * rnd(); g.fillRect(rnd() * w, rnd() * h, 1 + rnd() * 2, 1 + rnd() * 2); } g.globalAlpha = 1; };
@@ -5817,6 +6038,38 @@ function worldUV(geo, k, off) {
   }
   geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2)); return geo;
 }
+/* V1.33 (U8, docs/UPGRADE_REVIEW.md), the client: "better in quality": the shade where things meet, made once: a soft dark band along
+   every room's floor at its walls (and along its ceiling where the ceiling is flat: the lower and ground floors), and round the house
+   where it meets the ground (the drive in front, the garden behind), so it sits on the ground and its rooms have corners. One mesh a
+   floor; on every device (the live shade, GTAO, is only on the capable ones in HD); never in the way of a tap */
+function houseShade(H3, m3) {
+  const tex = canvasTex(4, 64, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h);
+    gr.addColorStop(0, "rgba(0,0,0,0.36)"); gr.addColorStop(0.35, "rgba(0,0,0,0.13)"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.clearRect(0, 0, w, h); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, false);
+  tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+  const mk = () => { const m = reg(new THREE.MeshBasicMaterial({ color: "#000000", alphaMap: null, map: tex, transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide,
+    polygonOffset: true, polygonOffsetFactor: 0, polygonOffsetUnits: -10 })); m.clippingPlanes = []; return m; };
+  const matF = m3.shade_floor = mk(), matC = m3.shade_ceil = mk();
+  const band = (pos, uv, a, b, inward, y, w, up) => {   // a quad from the edge a-b (room cm, at height y) w cm towards inward (unit [dx, dz])
+    const P = [a, b, [b[0] + inward[0] * w, b[1] + inward[1] * w], [a[0] + inward[0] * w, a[1] + inward[1] * w]].map(([x, z]) => v3(x, y, z));
+    const tri = up ? [0, 2, 1, 0, 3, 2] : [0, 1, 2, 0, 2, 3], U = [[0, 1], [1, 1], [1, 0], [0, 0]];   // v 1 (the canvas's dark top) at the wall
+    for (const i of tri) { pos.push(P[i].x, P[i].y, P[i].z); uv.push(U[i][0], U[i][1]); } };
+  const mesh = (pos, uv, mat, into) => { if (!pos.length) return; const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); g.computeVertexNormals();
+    const me = new THREE.Mesh(g, mat); me.raycast = () => {}; me.renderOrder = 1; into.add(me); };
+  const FK = { "-260": "lower", "0": "ground", "260": "first" }, per = {};
+  for (const [id, r] of Object.entries(H3.rooms || {})) {
+    const fk = FK[String(r[4])]; if (!fk || !HFLOOR[fk]) continue;
+    const [x0, x1, z0, z1, fy] = r, W = Math.min(26, (x1 - x0) / 3, (z1 - z0) / 3), P = per[fk] = per[fk] || { f: [[], []], c: [[], []] };
+    const edges = [[[x0, z0], [x1, z0], [0, 1]], [[x1, z1], [x0, z1], [0, -1]], [[x0, z1], [x0, z0], [1, 0]], [[x1, z0], [x1, z1], [-1, 0]]];
+    for (const [a, b, n] of edges) band(P.f[0], P.f[1], a, b, n, fy + 0.3, W, true);
+    if (fk !== "first") for (const [a, b, n] of edges) band(P.c[0], P.c[1], a, b, n, fy + (H3.ceil || 235) - 0.3, W * 0.8, false);   // flat ceilings only (the first floor's slope)
+  }
+  for (const [fk, P] of Object.entries(per)) { mesh(P.f[0], P.f[1], matF, HFLOOR[fk]); mesh(P.c[0], P.c[1], matC, fk === "lower" ? HFLOOR.ground : HFLOOR[fk] === HFLOOR.ground ? (HFLOOR.first || HFLOOR.ground) : HFLOOR[fk]); }
+  // round the house, on the ground: the drive's level in front, the garden's behind (the outline's outer faces, zfight.OUTER)
+  const pos = [], uv = [], fr = H3.front || 527.4, bk = H3.back || -337, dr = (H3.drive ?? -15) + 0.3, lw = (H3.lawn ?? -260) + 0.3;
+  band(pos, uv, [482, fr], [-28, fr], [0, 1], dr, 70, true); band(pos, uv, [-28, bk], [482, bk], [0, -1], lw, 90, true);
+  mesh(pos, uv, mk(), houseG);
+}
 function buildHouse() {
   const HS = R.HOUSE; if (!HS) return;
   houseG = new THREE.Group(); houseG.visible = false; scene.add(houseG);
@@ -5831,9 +6084,14 @@ function buildHouse() {
     g.fillStyle = "rgba(255,252,245,0.92)"; g.beginPath(); g.roundRect ? g.roundRect(4, 4, 504, 152, 40) : g.rect(4, 4, 504, 152); g.fill();
     g.fillStyle = "#1d2a22"; g.textAlign = "center"; g.font = "600 52px Figtree, system-ui, sans-serif"; g.fillText(lines[0], 256, lines[1] ? 70 : 96);
     if (lines[1]) { g.font = "400 36px Figtree, system-ui, sans-serif"; g.fillStyle = "#4b5650"; g.fillText(lines[1], 256, 122); }
+    if (SMALL) { cv.height = 112; g.clearRect(0, 0, 512, 160); g.fillStyle = "rgba(255,252,245,0.94)"; g.beginPath(); g.roundRect ? g.roundRect(4, 4, 504, 104, 52) : g.rect(4, 4, 504, 104); g.fill();
+      g.fillStyle = "#1d2a22"; g.textAlign = "center"; g.font = "600 60px Figtree, system-ui, sans-serif"; g.fillText(lines[0], 256, 78); }   // V1.30: a phone shows the name only, larger
     const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
-    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, toneMapped: false })); sp.renderOrder = 999;
-    sp.scale.set(wcm * M, wcm * M * 160 / 512, 1); sp.position.copy(v3(x, y, z)); sp.userData.hlabel = true; cur.add(sp); };
+    /* V1.30 (U3): the same size on screen however far off (they were a few pixels tall on a phone, from a floor's view) */
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, toneMapped: false, sizeAttenuation: false })); sp.renderOrder = 999;
+    const px = SMALL ? 30 : 46, asp = cv.width / cv.height;   // its height in screen pixels, whatever the lens
+    sp.onBeforeRender = (r, sc, cam) => { const k = 2 * px / Math.max(200, canvas.clientHeight) * Math.tan((cam.fov || 50) * Math.PI / 360); if (sp.scale.y !== k) { sp.scale.set(k * asp, k, 1); sp.updateMatrixWorld(); } };
+    sp.scale.set(0.05 * asp, 0.05, 1); sp.position.copy(v3(x, y, z)); sp.userData.hlabel = true; sp.userData.px = [px * asp, px]; cur.add(sp); };
   const FLOOR = { kitchen: "#d6cfc2", bathroom: "#c3d6dc", wc: "#c3d6dc", garage: "#aaa69e", secret: "#8d8880", porch: "#b9a58e" }, WALL = "#f2eee6", WH = 110;
   const H3 = R.HOUSE3;
   if (H3) {
@@ -5847,11 +6105,13 @@ function buildHouse() {
       const m = reg(new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, toneMapped: false }));
       m.clippingPlanes = []; m.userData.hk = "contact"; return m; };
     const m3 = {}, mat3 = k => m3[k] || (m3[k] = k === "contact" ? contactMat() : (() => { const [c, r] = H3.mats[k] || ["#cccccc", 0.9], gl3 = k === "glass", T = houseTex(k);
-      const m = reg(new THREE.MeshStandardMaterial({ color: T ? "#ffffff" : c, map: T ? T.map : null, bumpMap: T && T.bump ? T.map : null, bumpScale: T ? T.bump : 1, normalMap: T && T.normal || null, roughness: r, metalness: k === "brass" || k === "chrome" || k === "steel" ? 0.8 : k === "mirror" ? 0.25 : 0, transparent: gl3, opacity: gl3 ? 0.14 : 1,   /* V1.13: clear (0.3 tinted the outside blue-green) */ depthWrite: !gl3, side: THREE.DoubleSide,
+      const m = reg(new THREE.MeshStandardMaterial({ color: T ? "#ffffff" : c, map: T ? T.map : null, bumpMap: T && T.bump ? T.map : null, bumpScale: T ? T.bump : 1, normalMap: T && T.normal || null, roughness: T && T.rough ? Math.min(1, r / T.roughMean) : r, roughnessMap: T && T.rough || null, metalness: k === "brass" || k === "chrome" || k === "steel" ? 0.8 : k === "mirror" ? 0.25 : 0, transparent: gl3, opacity: gl3 ? 0.14 : 1,   /* V1.13: clear (0.3 tinted the outside blue-green) */ depthWrite: !gl3, side: HOUSE_SIDE,
         emissive: { led: "#ffffff", pc_glow: "#cfe0ff", screen: "#1b2433" }[k] || "#000000", emissiveIntensity: { led: 1.5, pc_glow: 0.9, screen: 0.6 }[k] || 0 }));   // v60: the kitchen's LED battens glow; v61: the PC's glass, the screens
       m.envMapIntensity = 0.15;   // v60: the reflections are the living room's (its LEDs tinted the kitchen's white walls pink)
       if (!LOWD) { m.userData.hk = k; m.envMap = houseEnv(); m.envMapIntensity = finishEnv(m); }   // v73: one neutral room, made once (V1.13: the iPhones too)
       if (k === "mirror") { m.color.set("#ffffff"); m.map = MIRROR_SHEEN; }   // V1.17: the hall's and the bathroom's mirrors as the living room's (grey before; as metal, black)
+      const rk = (H3.depth_rank || {})[k] ?? 3;   // V1.31 (U6): where faces lie in one plane the higher rank is drawn (house/model.py depth_rank); constant, so nothing shows through at a slant
+      if (rk) { m.polygonOffset = true; m.polygonOffsetFactor = 0; m.polygonOffsetUnits = -2 * rk; }
       m.clippingPlanes = []; m.userData.hk = k; return m; })());
     HMATS = m3;
     const put = (g, geos, m) => { if (!geos.length) return; const me = new THREE.Mesh(worldUV(mergeGeometries(geos), m.userData.hk), m); me.receiveShadow = true;
@@ -5902,14 +6162,18 @@ function buildHouse() {
         if (P.axis === "x") mx.set(0, 0, -1, -P.a * M, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1);
         else if (P.axis === "y") mx.set(-1, 0, 0, 0, 0, 0, 1, P.a * M, 0, 1, 0, 0, 0, 0, 0, 1);   // V1.14: a plan shape (x, z) raised from a to b (a chair's star base)
         else mx.set(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, P.a * M, 0, 0, 0, 1);
-        g.applyMatrix4(mx); return g; };
+        g.applyMatrix4(mx);
+        if (P.axis === "z") { const A = Object.values(g.attributes);   // V1.31 (U6): mirrored (x flipped), so its faces turned inside out: wound back
+          for (let i = 0; i + 2 < g.attributes.position.count; i += 3) for (const a of A) for (let c = 0; c < a.itemSize; c++) { const t = a.array[(i + 1) * a.itemSize + c]; a.array[(i + 1) * a.itemSize + c] = a.array[(i + 2) * a.itemSize + c]; a.array[(i + 2) * a.itemSize + c] = t; } }
+        return g; };
       for (const P of F.prisms) (byMat[P.m] = byMat[P.m] || []).push(prismGeo(P));
       for (const [mk, geos] of Object.entries(byMat)) put(cur, geos, mat3(mk));
       const byL = {};                                 // v70: the suite's turned shapes (pans, seats, bowls)
       for (const L of F.lathes || []) { const g = new THREE.LatheGeometry(L.p.map(([r, h]) => new THREE.Vector2(r * M, h * M)), LOWD ? 12 : 28);
         g.scale(L.s[0], 1, L.s[1]); const c = v3(L.c[0], L.c[1], L.c[2]); g.translate(c.x, c.y, c.z); (byL[L.m] = byL[L.m] || []).push(g); }
       for (const [mk, geos] of Object.entries(byL)) put(cur, geos, mat3(mk));
-      if (fresh) for (const L of F.labels || []) label([L.name, [L.use, `about ${L.w.toFixed(1)} × ${L.d.toFixed(1)} m`].filter(Boolean).join(" · ")], L.x, L.y, L.z, 190);
+      if (fresh) for (const L of F.labels || []) { label([L.name, [L.use, `about ${L.w.toFixed(1)} × ${L.d.toFixed(1)} m`].filter(Boolean).join(" · ")], L.x, L.y, L.z, 190);
+        cur.children[cur.children.length - 1].userData.area = L.w * L.d; }   // V1.35: the bigger room's name wins where two overlap
       const partG = (P, into, at) => {                 // a part's group on its pivot, its own parts inside it (V1.26b: a bifold's second panel)
         const pv = v3(...P.pivot), g = new THREE.Group(); g.position.copy(pv).sub(at); into.add(g);
         for (const [mk, list] of Object.entries(P.boxes)) put(g, list.map(([x0, y0, z0, x1, y1, z1]) => houseBox(mk, x0, y0, z0, x1, y1, z1).translate(-pv.x, -pv.y, -pv.z)), mat3(mk));
@@ -5925,8 +6189,10 @@ function buildHouse() {
         partPose(HPARTS[pk]);
       }
       if (EMBH) EMBH.pickable(fk, F);
+      hsolidSet(fk, F); if (HSOLID[fk]) HSOLID[fk].g = cur;   // V1.28: solid to the eye (shown with its floor)
     };
     for (const [fk, F] of Object.entries(H3.floors)) HBUILD(fk, editedFloor(fk, F));
+    houseShade(H3, m3);
   }
   for (const F of H3 ? [] : HS) {
     cur = HFLOOR[F.id] = new THREE.Group(); houseG.add(cur);
@@ -6007,6 +6273,7 @@ function buildSun() {
   scene.add(sun, sun.target);
   if (R.HOUSE3) for (let k = 0; k < 2; k++) { const l = new THREE.PointLight("#ffcf98", 0, 7, 2); l.visible = false; l.userData.houseLight = true; scene.add(l); ROOMLIGHTS.push(l); }   // v69 (B3): at the start, so the set never changes
 }
+const START_MS = {};
 function start() {
   started = true;
   const t0 = performance.now();
@@ -6016,21 +6283,34 @@ function start() {
   buildSun();
   gl.localClippingEnabled = true;
   scene.add(lightRig);                                                                  // v35: the fixed set of lights
-  buildShell(); buildLights(); buildFurniture(); buildSuggest(); buildSeatAndPouf();   // v69 (B6): the house is built the first time it's looked at
-  bar1 = buildBar(R.BAR1, lights.bar1, "bar1");
+  const TM = START_MS, tm = k => { TM[k] = Math.round(performance.now() - t0); }; TM.modAt = Math.round(MOD_AT); TM.startAt = Math.round(t0);   // V1.31 (U4): where the start's time goes (R3D.timing)
+  tm("env"); buildShell(); tm("shell"); buildLights(); tm("lights"); buildFurniture(); tm("furniture"); buildSuggest(); tm("suggest"); buildSeatAndPouf();   // v69 (B6): the house is built the first time it's looked at
+  bar1 = buildBar(R.BAR1, lights.bar1, "bar1"); tm("bar");
+  scene.children.forEach(o => { if (!o.isLight && o !== lightRig && o !== sun && o !== sun.target) LIVING.push(o); });   // V1.31: the living room's own
   gl.shadowMap.enabled = S.quality === "hd";
   cabSnap = true; applyState(); cabSnap = false;          // v30: the doors start where they are, no swing
   syncButtons();
   scene.traverse(o => { if (o.isMesh || o.isPoints || o.isLine) [].concat(o.material).forEach(m => m && !m.clippingPlanes && clipMat(m)); });   // v21: the cutaway
-  setView(S.view, true);
+  tm("state"); setView(S.view, true); tm("view");
   applyCam(S.cam === "look"); applyPad();                                               // v31
   sizeRenderer();
   // v81: no gl.compile here: it ran before the cutaway's clipping was set, so its 28 programs never matched the first frame's (which made
   // its own): 60 compiled for 32 used, about 1.7 s of a 15 s start here (more on a phone)
-  msg.hidden = true;
   root.classList.add("ready");
-  requestAnimationFrame(frame);
-  requestAnimationFrame(() => setTimeout(loadPhotos, 30));                              // V1.9: the photos once the first picture is up
+  /* V1.31 (U4): two thirds of the start was building shaders, all at the first frame (the page froze). Now they're built first with
+     compileAsync: in parallel where the browser can (KHR_parallel_shader_compile), the page still answering meanwhile; then the first
+     frame. For the right ones: after the cutaway's clipping is set (v81's lesson), and into a target like the shade's composer when it's
+     on (its shaders differ from the screen's). Never more than 8 s' wait */
+  const first = () => { if (first.done) return; first.done = true; START_MS.compiled = Math.round(performance.now() - t0); msg.hidden = true;
+    requestAnimationFrame(frame); requestAnimationFrame(() => setTimeout(loadPhotos, 30)); };   // V1.9: the photos once the first picture is up
+  if (gl.compileAsync && !/[?&]nocompile\b/.test(location.search)) {
+    msg.textContent = "Building the house…"; msg.hidden = false;
+    const was = gl.getRenderTarget();
+    try {
+      if (aoLive()) { if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }); gl.setRenderTarget(PRE.rtAO); }
+      Promise.race([gl.compileAsync(scene, camera), new Promise(r => setTimeout(r, 8000))]).then(first, first);
+    } catch (e) { first(); } finally { gl.setRenderTarget(was); }
+  } else first();
   precompile();                                                                         // v35: hidden parts' shaders, while the room's idle
   lookFromHash();                                                                       // v28: a shared #look- link (after the first compile, so its note shows)
   try {                                                                                 // v30: once, say the room's things can be tapped
@@ -6049,8 +6329,9 @@ function start() {
       if (addp && CATALOGUE[addp.type]) { const a = { id: "a" + Date.now().toString(36), type: addp.type, x: addp.x, z: addp.z }; pushUndo(); addThing(a); if (addp.rot) setLayout(a.id, { rot: addp.rot }); placeAll(); store.set(KEY, S); dirty(); }
       if (showat != null) { showOpen(); if (SH) { SH.own = true; SH.paused = true; SH.t = showat; showPose(SH.t); showCard(); qs("#r3d-show").hidden = true; } }
       if (o.view) setView(o.view, true); if (aim) flyTo(aim.eye, aim.at, aim.fov || 55, !!aim.above, true); },   // v58: "above" lets a look stand off (the house)
-    still, ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { HPARTS, swingDoor, swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, collide, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG },
+    still, ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { HPARTS, swingDoor, WALK, walkMove, collide, bodyBlocked, floorAtCm,  swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, collide, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG },
     errors: () => store.get("r3d-errors", []),                                       // v35: what the trap kept
+    timing: () => Object.assign({ page: Math.round(performance.now()) }, START_MS),     // V1.31: the start's steps (ms from start()), and the page's age
     perf: perfInfo,                                                                   // v35: the counts to watch each round
     photos: () => loadPhotos().then(() => Object.keys(PHOTO).length),               // V1.9: how many photo sets landed
     bench(n = 30) {   // ms per frame while orbiting at full resolution, for tuning

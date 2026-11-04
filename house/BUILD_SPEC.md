@@ -96,7 +96,7 @@ Each phase: write `media-wall/UPGRADE_PLAN_vNN.md` → merge → build → check
 - The neighbours: the terrace to the west and the detached house to the east as massing (walls, roof, windows) from the front and rear
   photos.
 - **Done when:** stills from the front, the back and the alley match `photo_house_front_25oct.png` and `photo_house_rear_24oct.jpg`
-  side by side (save both as `house/evidence/compare_*.jpg`); draw calls within budget.
+  side by side (`tools/compare.py`, V1.34); draw calls within budget.
 
 ### Phase 3 · Materials
 
@@ -203,7 +203,7 @@ their photo was taken, the photo in `EVIDENCE.md`).
 - `cd media-wall/src && python3 clash.py && python3 qa.py <dir> && python3 taptest.py <dir>` (errors and fails []); headless needs
   `THREE_LOCAL` (three@0.160 package) and Chromium at `/opt/pw-browsers/chromium`.
 - Add `house/check_model.py` (phase 1) and a house screenshot script (`house/shots.py`: every floor, every room, phone and PC, day and
-  dusk) whose output goes in `house/evidence/now_*.jpg` each round, so the next agent sees the current state.
+  dusk) whose output (`tools/gallery.py`, `tools/compare.py`, into `_shots/`) the report takes each round, so the next agent sees the current state.
 - **Flicker (v65):** `python3 house/zfight.py` lists every pair of faces in one plane facing the same way (they flicker); `check_model.py`
   fails on any outside the walls (the outside faces, the roof edges, the street). Fix by trimming or nudging one face 0.3–0.6, never by
   moving a whole wall.

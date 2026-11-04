@@ -281,10 +281,12 @@ check("entrance: a 240 L bin in the bin cupboard", b["w"] <= iw_, f"{iw_:.0f} wi
 import zfight
 ps = zfight.pairs()
 check("no flicker on the outside", not zfight.outside(ps), f"{len(zfight.outside(ps))} pairs on the outside faces, roof edges or street ({len(ps)} inside walls and floors, out of sight)")
+rk = Mo.depth_rank(); tied = [v for v in zfight.visible(ps) if rk.get(v[1][3]) == rk.get(v[1][5])]   # V1.31 (U6): seen and tied flickers
+check("no flicker that can be seen", not tied, f"{len(tied)} pairs seen and tied" + (": " + ", ".join(f"{k[3]}/{k[5]}" for _, k, _ in tied[:4]) if tied else " (model.depth_rank settles the rest)"))
 
 # --------------------------------------------------------------------- the drawings
 OUT = ROOT / "out"; OUT.mkdir(exist_ok=True)
-EV = ROOT / "evidence"
+EV = ROOT / "evidence"; EV.mkdir(exist_ok=True)   # V1.36: only the overlays go here now (built, not kept)
 for f in Mo.FLOOR_Y:
     rs = Mo.rooms(f); s = 0.8
     w, h = 560 * s, 900 * s

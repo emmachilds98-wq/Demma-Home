@@ -36,10 +36,24 @@ def artifact():
     page = re.sub(r"<!doctype html>\s*<html[^>]*>\s*<head>\s*", "", page, flags=re.I)
     page = re.sub(r'<meta charset="utf-8">\s*<meta name="viewport"[^>]*>\s*', "", page)
     page = re.sub(r"</head>\s*<body>", "", page).replace("</body>\n</html>\n", "").replace('<link rel="manifest" href="manifest.webmanifest">\n', "")
-    page = re.sub(r'<script type="application/json" id="photo-data" data-src="([^"]+)"></script>',   # V1.9: its photos inline again
-                  lambda m: '<script type="application/json" id="photo-data">' + (SITE / m.group(1)).read_text() + "</script>", page)
+    # V1.9: its photos inline again; V1.30 (U5): or, with PHOTOS_URL (the photo file uploaded to the shared page's own asset store:
+    # STATE.md, "Republish"), fetched from there after the first picture, so the page is about 2 MB and not near its 16 MB limit
+    url = os.environ.get("PHOTOS_URL")
+    page = re.sub(r'<script type="application/json" id="photo-data" data-src="([^"]+)"></script>',
+                  lambda m: (f'<script type="application/json" id="photo-data" data-src="{url}"></script>' if url else
+                             '<script type="application/json" id="photo-data">' + (SITE / m.group(1)).read_text() + "</script>"), page)
     page = page.replace('href="media-wall/out/', 'href="https://emmachilds98-wq.github.io/Demma-Home/media-wall/out/')
+    sys.path.insert(0, str(SRC)); import room3d_page                       # V1.31: the shared page keeps three from the CDN (its size limit)
+    page = re.sub(r'<script type="importmap">.*?</script>', lambda m: room3d_page.IMPORTMAP, page, count=1, flags=re.S)
     (SITE / "artifact.html").write_text(page)
+
+
+def relabel(out):
+    """V1.35 (U10): kept renders carry the version they were made at in their names; name them for this one"""
+    for f in out.glob("Media wall V* - *.png"):
+        new = re.sub(r"^Media wall V[0-9.]+ - ", f"Media wall {LABEL} - ", f.name)
+        if new != f.name:
+            (out / new).unlink(missing_ok=True); f.rename(out / new)
 
 
 def prune(out):
@@ -64,8 +78,11 @@ def main(argv):
     SITE.mkdir(parents=True, exist_ok=True)
     (SRC.parent / "out").mkdir(exist_ok=True)
     have_pdfs = any((SRC.parent / "out").glob(f"Demmas_Home_{LABEL}_Plan.pdf"))
-    if not (fast and (SRC / "art/art_join_mint.webp").exists()):
+    keep = fast or "--keep-renders" in argv                               # V1.35 (U10): the workflow's cached renders (tools/render_key.py)
+    if not (keep and (SRC / "art/art_join_mint.webp").exists()):
         run(["make_images.py"])                                           # the drawn renders, the diagrams, art/
+    else:
+        relabel(SRC.parent / "out")
     run(["export3d.py"])                                                  # the 3D's data (the house with its pieces' tags)
     if not (fast and have_pdfs):
         run(["build_doc.py"])                                             # the plan and the build guide (PDFs)

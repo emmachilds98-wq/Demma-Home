@@ -28,15 +28,18 @@ def md(p, drop_first_heading=True):
     return markdown.markdown(t, extensions=["tables", "fenced_code"])
 
 
-NOW = [("now_living_room_whole.jpg", "The living room as modelled now: measured, your plan, its lights."),
-       ("now_living_room_window.jpg", "Out of the window: a plain sky for now; the view comes back properly in phase 5."),
-       ("now_living_room_sun_june_morning.jpg", "The real sun: a June morning, low from the right (the back faces 14° east of north)."),
-       ("now_house_all.jpg", "The whole house built (v58): brick, the roof, the windows and doors, sized from the living room and the photos."),
-       ("compare_front.jpg", "The front: the agent's photo and the model."), ("compare_kitchen.jpg", "The kitchen: your photo and the Kitchen view."), ("compare_wc.jpg", "The WC: your photo and the WC view, the yellow suite."), ("compare_hall.jpg", "The hall: your photo and the Entrance hall view, the door down to the lower stairs."), ("compare_landing.jpg", "The landing: your photo and the Landing view."), ("compare_office.jpg", "The office: your photo and the Office view, the two setups side by side."), ("now_hall.jpg", "The hall to the living room's door, the stairs plastered off."), ("now_front_gate.jpg", "The front: the step, the drive and lawn level with the street, the alley gate."), ("compare_bath.jpg", "The bathroom: your photo and the Bathroom view."), ("now_porch.jpg", "The entrance: the step, the bin cupboards each side, the front door ahead."), ("now_bed2.jpg", "The music room: the keyboard, the studio desk under the window, the guitars and amp under the slope, the day bed."), ("now_master.jpg", "The master bedroom: the wardrobe frames in the alcove, in line with the boiler cupboard."), ("compare_back.jpg", "The back: the agent's photo and the model."),
-       ("now_house_first.jpg", "First: the roof off."), ("now_house_ground.jpg", "Ground: the first floor off; the living room as measured."),
-       ("now_house_lower.jpg", "The lower ground floor, under the living room."),
-       ("now_first_fittings.jpg", "From above: the bathroom (sink cabinet, toilet, bath) and bedroom 2's roof slope."),
-       ("now_lower_fittings.jpg", "From above: the WC's toilet and small sink, beside the kitchen.")]
+def now_pictures():
+    """V1.36 (U11): the model as it is now, from this round's gallery and comparison (tools/gallery.py, tools/compare.py) when they've
+    been made; the old proof shots in house/evidence showed rounds long gone (they're in git)"""
+    shots = ROOT / "_shots"
+    found = [(f, f"{f.stem.replace('_', ' ').capitalize()}: the photo, the 3D, the 3D's edges over the photo.") for f in sorted((shots / "compare").glob("*.jpg"))]
+    found += [(f, f.stem.replace("_", " ").capitalize()) for f in sorted((shots / "gallery").glob("*.jpg"))]
+    if not found:
+        return ('<p>Open the site to see it as it is: https://emmachilds98-wq.github.io/Demma-Home/ (the pictures here come from '
+                '<code>tools/gallery.py</code> and <code>tools/compare.py</code> when they\'ve been run).</p>')
+    return '<div class="grid">' + "".join(pic(f, c, 1100) for f, c in found) + "</div>"
+
+
 PLANS = [("plan_lower_ground_corrected_25oct.jpg", "Lower ground floor, your corrections: the kitchen's window (purple), the cupboard by the store (black), the WC's small sink (maroon), the secret room."),
          ("plan_ground_corrected_25oct.jpg", "Ground floor, your corrections: the living room's window (orange), the chimney breast and solid walls (black)."),
          ("plan_first_corrected_25oct.jpg", "First floor, your corrections: the toilet (blue), the sink cabinet (maroon), the landing (green), bedroom 2's roof slope (black).")]
@@ -68,7 +71,7 @@ def build():
               "Make sure the plan also has supporting evidence and photos needed in the report and it's a clear build for another [developer] to takeover from you and make this the best possible Hd model."]
     body = [f'<section class="cover"><h1>The whole house in HD</h1><p class="lead">The plan to a real-looking model of every floor and both gardens: what we have, what we need, and how it gets built.</p><p>{when}</p></section>',
             "<h2>What you asked</h2>" + "".join(f"<blockquote>“{q}”</blockquote>" for q in quotes),
-            '<h2>Where the model is now</h2><div class="grid">' + "".join(pic(EV / f, c, 1100) for f, c in NOW if (EV / f).exists()) + "</div>",
+            '<h2>Where the model is now</h2>' + now_pictures(),
             '<h2 class="pb">The evidence: your plans</h2>' + "".join(pic(IN / f, c, 1300) for f, c in PLANS),
             '<h2 class="pb">The evidence: photos</h2><div class="grid">' + "".join(pic(IN / f, c, 1100) for f, c in PHOTOS) + "</div>",
             '<h2 class="pb">The evidence in full</h2>' + md(H / "EVIDENCE.md"),

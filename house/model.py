@@ -20,6 +20,9 @@ GROUP = {"lower_store_2": "lower_store", "master_b": "master", "master_1": "mast
 SPLIT = {"kitchen": [(420, 285, 985, 700), (420, 700, 535, 830), (690, 700, 985, 830)]}   # the kitchen round its cupboard (the plan)
 VOID = {"first_stairs"}                                                     # the stairwell: no floor
 NO_WALLS = {"living", "first_stairs"}
+# V1.32: rooms open to each other, no wall where they meet: the lower flight runs on to the lower landing (a full wall stood across the
+# foot of the stairs, found walking down them; to confirm with the client's photo from the foot of the lower stairs)
+OPEN_PAIRS = {frozenset(("lower_stairs", "lower_landing"))}
 ROOF_E, ROOF_B = D.ROOF["eaves_front"], D.ROOF["eaves_back"]
 DM = D.ROOF["dormer"]
 
@@ -342,7 +345,7 @@ def walls_for(o, floor, rs, ds, y0, y1):
                 qline = (q["z0"] if out_dir > 0 else q["z1"]) if axis == "x" else (q["x0"] if out_dir > 0 else q["x1"])
                 gap = (qline - line) * out_dir
                 if -1 <= gap <= 30:
-                    if q["room"] == r["room"] and gap < 3:
+                    if (q["room"] == r["room"] or frozenset((q["room"], r["room"])) in OPEN_PAIRS) and gap < 3:
                         skip.append((max(a0, qa0), min(a1, qa1)))
                     elif q["room"] in VOID and r["room"] == "landing" and gap < 3:
                         # v77, the client: "There is no door on the stairwell to the upstairs": the landing is open to the stairwell (the
@@ -2031,9 +2034,11 @@ def lower_ceilings(o):
     still looks in from above."""
     y = FLOOR_Y["lower"] + CEIL
     for r in rooms("lower"):
-        if r["id"] in ("lower_stairs",):
+        if r["id"] in ("lower_stairs", "lower_store_2"):   # V1.32: nor under the flight's top steps
             continue
-        o.box("artex" if r["id"] in D.ARTEX else "ceiling", r["x0"], y - 2, r["z0"], r["x1"], y, r["z1"])   # V1.13: artex where the photos show it
+        # V1.32: the store's ceiling stops at the flight (408, the hall floor's opening), as its wall does (V1.20): it lay across the steps
+        x1 = min(r["x1"], 408.0) if r["room"] == "lower_store" else r["x1"]
+        o.box("artex" if r["id"] in D.ARTEX else "ceiling", r["x0"], y - 2, r["z0"], x1, y, r["z1"])   # V1.13: artex where the photos show it
 
 
 def build():
@@ -2109,7 +2114,20 @@ def export():
     for f in FLOOR_Y:                                            # v69: the rooms' ceiling lights
         if f in out:
             out[f]["lights"] = room_lights(f)
-    return dict(mats=MATS, floors=out, ridge=[round(RIDGE_Z, 1), round(RIDGE_Y, 1)], est=True)
+    return dict(mats=MATS, floors=out, ridge=[round(RIDGE_Z, 1), round(RIDGE_Y, 1)], est=True, depth_rank=depth_rank())
+
+
+# V1.31 (U6, docs/UPGRADE_REVIEW.md): where two materials' faces lie in one plane (a wall's paint on its blockwork, a frame flush with
+# its reveal) they flickered as you moved. Each material has a rank: where faces tie, the higher is drawn (room3d.js turns it into a
+# polygon offset, constant: no bleed at a slant). The structure under the finishes under everything fitted; a few pairs by name
+STRUCTURE = {"brick", "brick_buff", "party", "slab", "eaves", "felt", "hung", "lead", "earth", "concrete", "timber", "chipboard", "soldier", "quarry"}
+FINISH = {"paint", "ceiling", "artex", "porch_in"}
+RANK_BY_NAME = {"party": -1, "ceiling": 1.5, "artex": 1.5, "wardrobe_back": 2, "tapestry_dark": 2, "gap": 4, "skirting": 4, "metro": 4, "stone": 4,
+                "contact": 6}
+
+
+def depth_rank():
+    return {m: RANK_BY_NAME.get(m, 0 if m in STRUCTURE else 1 if m in FINISH else 3) for m in MATS}
 
 
 

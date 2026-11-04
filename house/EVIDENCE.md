@@ -65,49 +65,12 @@ the agent's sizes (149, 150, 146 px a metre). The tracing is ±10 cm at best.
 | The house's location (not stored) | about 51.5 N (for the sun) | high |
 | NOAA solar position formulas | The sun into the back windows only on spring and summer mornings (05:30–08:30 BST at midsummer), from the right | high |
 
-## 5. The model as it is now (v72)
+## 5. The model as it is now
 
-| File | What it shows |
-|---|---|
-| `house/evidence/now_living_room_whole.jpg` | The living room, the one room modelled in detail (measured, its plan, its lights) |
-| `house/evidence/now_living_room_window.jpg` | Out of the window: the plain sky for now (the garden photo is off until phase 5) |
-| `house/evidence/now_living_room_sun_june_morning.jpg` | The real sun: a June morning, low from the right |
-| `house/evidence/now_house_all.jpg` | The whole house built (v58, Outside): walls, windows, doors, the roof and dormer, both gardens, the alley |
-| `house/evidence/compare_front.jpg`, `compare_back.jpg` | The agent's photos beside the model from about the same place (phase 2's proof) |
-| `house/evidence/now_house_first.jpg`, `now_house_ground.jpg`, `now_house_lower.jpg` | The floor picker: the roof and the floors above off |
-| `house/evidence/overlay_*.jpg` | The model's rooms over the client's corrected plans |
-| `house/evidence/compare_kitchen.jpg`, `now_kitchen.jpg` | The client's kitchen photo beside the Kitchen view (v60) |
-| `house/evidence/now_office.jpg` | The Office view: the new straight oak desk (v61) |
-| `house/evidence/v82_bathroom_beam.jpg` | v82: the client's photo from the bathroom's door beside the model (the slope up to the beam, the lower ceiling over the toilet, the mirror); the bathroom from above |
-| `media-wall/inputs/photo_bathroom_from_door_27oct.jpg`, `photo_landing_doors_27oct.jpg` | The client's photos (27 Oct): the bathroom from its door; the landing's three doors (the chalkboard's writing blurred). V1.25: bedroom 2's handle at the bathroom end (so hinged at the cupboard's, as the client's arrow), its frame's moulded head cap |
-| The client's pictures and photos, 31 Oct (in the chat; not stored) | The garage's back corner marked over the model; two photos down the secret room's hatch (bare buff brick, the pier off the back wall, the drain) and its outline, pier and drain marked over the model: `GARAGE_BOX`, `SECRET`, `FIT` (the box's depth and the pier's length in Measure) |
-| `house/evidence/v81_curtain_hall_bath.jpg` | v81: the curtain round the foot of the stairs (an option); the hall's radiator, switch and whole-wall tapestry; the bathroom's slope before and after, beside the client's photo |
-| `house/evidence/v80_lower_stairs_ground_view.jpg` | v80: the lower flight's top steps before (through the wall) and after (inside it); the ground floor's Overhead with the living room |
-| `house/evidence/v79_cupboard_stairs_views.jpg` | v79: the boiler cupboard's wider door, the top of the stairs, the steeper flight; the living room's In it, Above, On its own |
-| `house/evidence/v78_landing_doors_curtain.jpg` | v78: the landing's doors frame to frame, the office's fanlight, the master's bed clear, the stair curtain (an option) |
-| `house/evidence/v72_landing.jpg`, `v72_master.jpg`, `v72_bed2.jpg`, `v72_first.jpg` | v72: the landing's doors in the client's order, the master smaller, bedroom 2 bigger |
-| `house/evidence/v71_phone_in.jpg`, `v71_phone_above.jpg`, `v71_master_alone.jpg`, `v71_kitchen_alone.jpg`, `v71_bed_card.jpg` | v71: a room three ways (in it, above, on its own) and the bed's card, on a phone and a computer |
-| `house/evidence/v70_front.jpg`, `v70_back.jpg`, `v70_bath.jpg`, `v70_wc.jpg` | v70: the photo-textures outside (brick, roof); the turned toilets and the hollow bath |
-| `house/evidence/compare_v69_bath.jpg`, `compare_v69_hall.jpg`, `compare_v69_office.jpg`, `compare_v69_kitchen.jpg`, `compare_v69_landing.jpg` | v69 B7: the client's photo beside each room's view |
-| `house/evidence/b4_master_evening.jpg`, `b4_bath_evening.jpg`, `b4_bed2_evening.jpg`, `b5_landing_switch_day.jpg` | v69 B4/B5: rounded furniture and soft bedding; a light switch by the door |
-| `house/evidence/b2_master_evening.jpg`, `b2_bed2_evening.jpg`, `b2_hall_evening.jpg`, `b2_bath_evening.jpg` | v69 B2: the drawn materials (pine grain, fabrics, the textured ceiling) |
-| `house/evidence/b1_master_evening.jpg`, `b1_bed2_evening.jpg`, `b1_kitchen_evening.jpg`, `b1_office_evening.jpg` | v69 B1/B3: each room by evening with its own ceiling light and the house casting shadows |
-| `house/evidence/now_dormer_v69.jpg`, `now_bath_v69.jpg`, `now_hall_v69.jpg` | The dormer from the garden (no white box or lines, its new top); the bathroom's corner; the hall's tapestry (v69) |
-| `house/evidence/now_master.jpg`, `now_master_lift.jpg` | The master bedroom's storage for two; Lift the bed: the four boxes in the ottoman (v68) |
-| `house/evidence/now_bed2.jpg` | The music room (v68): the L desk and keyboard tray, the chair-bed, the Kallax with drawers, the guitars and amp |
-| `house/evidence/now_office.jpg`, `now_house_first.jpg`, `now_kitchen.jpg` | The office at 2.25 m; the first floor from Whole house; the kitchen (v68) |
-| `house/evidence/compare_wc.jpg`, `compare_hall.jpg`, `compare_landing.jpg` | The client's WC, hall and landing photos beside their views (v67) |
-| `house/evidence/compare_office.jpg`, `now_office.jpg` | The client's office photo beside the Office view: the two setups side by side (v66) |
-| `house/evidence/now_hall.jpg`, `now_landing.jpg` | The entrance hall to the living room's door; the first-floor landing (v66) |
-| `house/evidence/now_front_gate.jpg` | The front: the step, the drive and lawn on the street's level, the alley gate (v66) |
-| `house/evidence/compare_bath.jpg`, `now_bath.jpg` | The client's bathroom photo beside the Bathroom view (v65) |
-| `house/evidence/now_bed2.jpg` | Bedroom 2 as the music room (v66: cleared, the keyboard, the studio desk, the guitars and amp) |
-| `house/evidence/now_master.jpg` | The master bedroom: the wardrobes as open frames in the alcove (v65) |
-| `house/evidence/now_porch.jpg` | The entrance: the step, the porch, the bin cupboards' doors, the front door ahead (v65) |
-| `house/evidence/now_first_fittings.jpg`, `now_lower_fittings.jpg` | From above (v57): the bathroom's fittings and bedroom 2's roof slope; the WC's toilet and small sink |
-
-What the draft lacks (the gap the build closes): measured sizes for every room but the living room; wall thickness; real windows, doors
-and stairs; the outside walls and roof; materials; per-room light; the slope as ground; the neighbours; the view out.
+Pictures of the model are made fresh, not kept: `python3 tools/gallery.py` (every room by day, `_shots/gallery.jpg`) and
+`python3 tools/compare.py` (each room's view beside the client's photo, the 3D's edges over it, `_shots/compare.jpg`); the whole-house
+report puts them in when they're there. The proof shots of rounds v58 to V1.27 (`house/evidence/now_*`, `compare_*`, `v69`–`v82`, `b1`–`b5`)
+were kept here until V1.36 (5.9 MB); they're in git: `git show 7d8ec00:house/evidence/<name>` (the list: `git ls-tree 7d8ec00 house/evidence/`).
 
 ## 5a. Fitted (v64, the client: "Just fit everything now to best scaling and I'll add better measures later")
 
