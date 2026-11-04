@@ -384,6 +384,10 @@ body.hv #r3d-dt-room, body.hv #r3d-dt-look, body.hv #r3d-editbtn, body.hroom .hn
 .ms-cam { position: relative; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--soft); color: var(--ink); cursor: pointer; }
 .ms-cam.has { background: oklch(0.85 0.1 150); }
 .ms-cam input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.ms-elist { display: grid; gap: 8px; }   /* V1.51: the sizes changed in the 3D */
+.ms-erow { grid-template-columns: minmax(0, 1fr) auto; }
+.ms-erow .ms-ego { border: 0; padding: 0; background: none; text-align: left; cursor: pointer; }
+.ms-erow .btn { min-height: 44px; }
 .ms-go { border: 0; padding: 0; background: none; color: inherit; font: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 2px; }
 .ms-go .ms { font-size: 16px; }
 @keyframes r3dLost { 50% { box-shadow: 0 0 0 6px oklch(0.8 0.12 85 / .55), var(--shade); } }
@@ -454,6 +458,7 @@ def measure_panel():
                        f'<label class="ms-cam" title="Add a photo"><span class="ms" aria-hidden="true">photo_camera</span>'
                        f'<input type="file" accept="image/*" capture="environment" data-mphoto="{m["id"]}" aria-label="A photo of {what.lower()}"></label></div>')
         out.append("</div>")
+    out.append('<div class="grp" id="ms-edits" hidden><span class="label">Changed in the 3D</span><div class="ms-elist" id="ms-elist"></div></div>')   # V1.51: room3d.js fills it
     out.append('<div class="grp"><div class="seg"><button type="button" class="btn primary" id="ms-send"><span class="ms" aria-hidden="true">send</span> Send to the plan</button></div>'
                '<span class="caption" id="ms-st" aria-live="polite">Saved on this device as you type.</span></div>')
     return "".join(out)
