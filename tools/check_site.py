@@ -18,12 +18,15 @@ WALK = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   const at = () => { const c = D.camera.position; return [-c.x * 100, c.z * 100]; };
   const go = async (x, z, n, done) => { for (let i = 0; i < n && !done(); i++) { const c = D.camera.position, dx = -x / 100 - c.x, dz = z / 100 - c.z, l = Math.hypot(dx, dz) || 1;
     D.controls.target.set(c.x + dx / l, c.y - 0.05, c.z + dz / l); D.controls.update(); D.walkMove(0, 1, 0, 0.1); if (seen[seen.length - 1] !== D.S.view) seen.push(D.S.view); if (i % 4 == 3) await sl(220); } };
-  R3D.set({ view: "hall" }); await sl(1500); document.querySelector('[data-rmode="stand"]').click(); await sl(2500);
-  await go(357, -100, 60, () => at()[1] < -60); await go(437, -100, 30, () => at()[0] > 432); await go(437, -60, 10, () => at()[1] > -62);
-  await go(437, 600, 40, () => D.WALK.feet > 255 && at()[1] > 215); const top = D.WALK.feet;
-  await go(330, 230, 12, () => at()[0] < 340); await go(437, 230, 12, () => at()[0] > 432); await go(437, -300, 40, () => at()[1] < -70);
+  const settle = async () => { await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(200); await sl(300); };   // V1.48: until the fly in ends (a slow machine's frames outlast a fixed wait)
+  if (window.DemmaTools && DemmaTools.isOpen()) DemmaTools.close();   // V1.48: no panel re-framing the view while walking
+  R3D.set({ view: "hall" }); await settle(); document.querySelector('[data-rmode="stand"]').click(); await settle();
+  const legs = [], leg = n => legs.push(n + " " + at().map(Math.round).join(",") + " " + Math.round(D.WALK.feet ?? -1) + " " + D.S.view);
+  await go(357, -100, 60, () => at()[1] < -60); leg("in"); await go(437, -100, 30, () => at()[0] > 432); await go(437, -60, 10, () => at()[1] > -62); leg("foot");
+  await go(437, 600, 40, () => D.WALK.feet > 255 && at()[1] > 215); const top = D.WALK.feet; leg("top");
+  await go(330, 230, 12, () => at()[0] < 340); await go(437, 230, 12, () => at()[0] > 432); await go(437, -300, 40, () => at()[1] < -70); leg("down");
   await go(357, -10, 20, () => at()[0] < 362); await go(357, 400, 30, () => at()[1] > 150);
-  return { seen, top: Math.round(top), end: D.S.view }; }"""
+  leg("out"); return { seen, top: Math.round(top), end: D.S.view, legs }; }"""
 # V1.43 (V1_PLAN phase 8, access): every visible control has a name; the 3D's label says where you are (the brand's second line)
 ACCESS = """() => { const vis = el => { const r = el.getBoundingClientRect(), cs = getComputedStyle(el); return r.width > 0 && r.height > 0 && cs.visibility !== "hidden" && !el.closest("[hidden]"); };
   const noname = [...document.querySelectorAll("button, a[href], [role=button], input, select, textarea")].filter(el => vis(el) && !(el.getAttribute("aria-label") || el.getAttribute("title") || el.textContent || el.value || (el.labels && el.labels[0] && el.labels[0].textContent) || "").trim()).map(el => el.outerHTML.slice(0, 80));
@@ -92,7 +95,7 @@ def main():
                 wk = pg.evaluate(WALK)
                 want = ["hall", "livstand", "landing", "livstand", "hall"]
                 got = [v for i, v in enumerate(wk["seen"]) if i == 0 or v != wk["seen"][i - 1]]
-                if got != want or wk["top"] < 255: fails.append(f"{w}: the walk into the living room went {got}, its feet up to {wk['top']} (want {want}, 260)")
+                if got != want or wk["top"] < 255: fails.append(f"{w}: the walk into the living room went {got}, its feet up to {wk['top']} (want {want}, 260); legs {wk['legs']}")
                 pg.screenshot(path=str(SHOTS / f"site-{w}-walk.png"))
             if errs: fails.append(f"{w}: errors: {errs[:4]}")
             ctx.close()
