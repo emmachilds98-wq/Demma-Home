@@ -883,10 +883,13 @@ function buildShell() {
   const doorW = reg(new THREE.MeshStandardMaterial({ color: "#efece5", roughness: 0.35 })), frameW = reg(new THREE.MeshStandardMaterial({ color: "#f3f1eb", roughness: 0.4 }));
   cube(dx0 - 6, 0, RZ - 1.5, 6, R.DOOR_H + 6, 2, frameW); cube(dx1, 0, RZ - 1.5, 6, R.DOOR_H + 6, 2, frameW);
   cube(dx0 - 6, R.DOOR_H, RZ - 1.5, dx1 - dx0 + 12, 6, 2, frameW);
-  cube(dx0, 0, RZ + 1, dx1 - dx0, R.DOOR_H, 4, doorW);
-  for (const [y0, y1] of [[14, 98], [112, 186]]) cube(dx0 + 9, y0, RZ + 0.6, dx1 - dx0 - 18, y1 - y0, 0.5, doorW);
+  // V1.38: the leaf on its hinge at the breast's end (the house's door.living_door turns it: a walk opens it, or a tap)
   const brass = reg(new THREE.MeshStandardMaterial({ color: "#c9b58a", metalness: 0.9, roughness: 0.3 }));
-  cube(dx1 - 12, 100, RZ - 1.6, 9, 1.4, 2.6, brass);
+  livLeaf = new THREE.Group(); livLeaf.name = "livLeaf"; livLeaf.position.copy(v3(dx0, 0, RZ + 1)); shell.add(livLeaf);
+  const leafBox = (x, y, z, w, h, d, m) => { const me = new THREE.Mesh(new THREE.BoxGeometry(w * M, h * M, d * M), m); me.position.copy(v3(x + w / 2, y + h / 2, z + d / 2)).sub(livLeaf.position); livLeaf.add(shadow(me)); };
+  leafBox(dx0, 0, RZ + 1, dx1 - dx0, R.DOOR_H, 4, doorW);
+  for (const [y0, y1] of [[14, 98], [112, 186]]) leafBox(dx0 + 9, y0, RZ + 0.6, dx1 - dx0 - 18, y1 - y0, 0.5, doorW);
+  leafBox(dx1 - 12, 100, RZ - 1.6, 9, 1.4, 2.6, brass);
   // the window: white frame, glass, a sill, the view out
   const white = reg(new THREE.MeshStandardMaterial({ color: "#f1efe9", roughness: 0.45 }));
   const fw = 6, mid = (wx0 + wx1) / 2;
@@ -2633,14 +2636,19 @@ function applyFloors() {
       for (const [k, g] of Object.entries(HFLOOR)) if (!see.has(k) && g.visible) { g.visible = false; hidReal.push(g); }
       // v81: the hall and the garage don't see it either (its door is shut; the hall has the door's own face): 600 draws there, now 160
       const lr = o => o !== houseG && o !== garden3d && o !== lightRig && !o.isLight && o !== (sun && sun.target) && o !== view && o.visible;
-      if (rid !== "landing") scene.children.forEach(o => { if (lr(o)) { o.visible = false; hidReal.push(o); } });
-      else {   // v81: from the landing (its eye at x 402 or less) the living room shows only down the stairwell (from 408): each piece clear of
+      const peek = rid === "hall" && doorOpen(HPARTS["door.living_door"]);   // V1.38: its door open, the living room through it
+      if (rid !== "landing" && !peek) scene.children.forEach(o => { if (lr(o)) { o.visible = false; hidReal.push(o); } });
+      else if (rid === "landing") {   // v81: from the landing (its eye at x 402 or less) the living room shows only down the stairwell (from 408): each piece clear of
         // the flight's side is left out of the camera's layer (not hidden, so a switch on or off meanwhile still holds): 556 draws, now about 250
         const lim = -(R.STAIR_X[0] - 3) * M, bb = new THREE.Box3(); scene.updateMatrixWorld();
         scene.children.forEach(o => { if (lr(o)) o.traverse(m => { if ((m.isMesh || m.isPoints || m.isLine) && !m.isInstancedMesh && m.layers.isEnabled(0)) {
           const g = m.geometry; if (!g.boundingBox) g.computeBoundingBox();
           if (bb.copy(g.boundingBox).applyMatrix4(m.matrixWorld).min.x > lim) { m.layers.disable(0); hidLay.push(m); } } }); }); }
     }
+  }
+  if (houseG && R.HOUSE3 && S.view === "livstand") {   // V1.38: standing in the living room with its door open: the ground floor through it
+    houseG.visible = doorOpen(HPARTS["door.living_door"]);
+    if (houseG.visible) for (const [k, g] of Object.entries(HFLOOR)) if (k !== "ground" && g.visible) { g.visible = false; hidReal.push(g); }
   }
   drawRooms(); brandPlace(); outdoor();
   requestAnimationFrame(() => { measureShift(!!(window.DemmaTools && window.DemmaTools.isOpen())); fadeRows(); });   // V1.30: the rows above may have changed
@@ -2704,6 +2712,7 @@ document.addEventListener("click", e => {
   const L = ((R.HOUSE3.floors[hfloor] || {}).labels || []).find(l => l.id === id); if (!L) return;
   flyTo([L.x + 30, L.y + 520, L.z + 280], [L.x, L.y - 150, L.z], 50, true);
 });
+let livLeaf = null;   // V1.38: the living room door's leaf (turned with the house's door.living_door)
 let winGlass, sun, view, ledMat, ceilGlow, ceilMat, lboxFace, laserDots, runLed, curtOpen, curtShut, pcGlow, pcLight;
 // v17: the PC lit up behind its clear side window: glowing fan rings (three front, one rear), an RGB strip along the top, a light inside
 function pcLit() {
@@ -4148,18 +4157,45 @@ function houseCollide() {                   // true if it moved the eye
    W A S D or the arrows (Q and E turn) on a computer, the stick on a phone; drag to look. A body, not just an eye: it's stopped at the
    knee, the hip and the eye (so not over a bed or through a wardrobe), steps up a stair (a rise up to 35) and follows the floor down;
    it slides along what it meets. Walk into the next room and its name, its lights and what's drawn follow you (the eye stays where it
-   is); a door opens as you reach it. The living room is drawn on its own (not in the house file yet): its doorway stays shut to a walk,
-   and the house's views take you in */
+   is); a door opens as you reach it. V1.38: the living room too (below) */
 const WALK = { keys: new Set(), stick: [0, 0], v: new THREE.Vector2(), feet: null, doorT: 0, hinted: false };
-const walking = () => RMODE === "stand" && !!ROOMV() && !tween;
-const LIVING_BOX = () => [0, -1, R.WINDOW_Z - 12, R.W, 235, 40];   // the living room's space on the ground floor (room cm)
+const walking = () => (RMODE === "stand" && !!ROOMV() || S.view === "livstand") && !tween;   // V1.38: and the living room's Be there
+/* V1.38 (UPGRADE_REVIEW Next 1), the client: "review how to make the movement within the house better": the living room is drawn on its
+   own (geometry.py's measured room, not the house file), so a walk takes its walls, its furniture and its flight from that: in through
+   its door from the hall (the door opens as you reach it), round the room, up its stairs to the landing, and back down */
+const FLIGHT = () => { const n = R.STAIR_N || 13, z0 = R.STAIR_FRONT + 6, zl = z0 + (n - 1) * R.STAIR_GOING;
+  return { x0: R.STAIR_X[0], x1: R.STAIR_X[1], z0, zl, zl1: zl + (R.LANDING_D || 90), n, r: R.STAIR_RISE, g: R.STAIR_GOING }; };
+function livSolids() {                      // room cm [x0, y0, z0, x1, y1, z1], none over its ceiling (the rooms over it): its walls (the door's gap), the flight's open side, the ceiling, what stands in it
+  const TOP = R.CEIL + 10, W = R.W, WZ = R.WINDOW_Z, AD = R.ALC_D, [B0, B1] = R.BREAST_X, RZ = R.RECESS_Z, [dx0, dx1] = R.DOOR_X, sx0 = R.STAIR_X[0], F = R.STAIR_FRONT;
+  const b = [[-40, -60, WZ - 40, W + 40, TOP, WZ], [-40, -60, WZ, 0, TOP, AD + 10], [W, -60, WZ, W + 40, 520, FLIGHT().zl1],
+    [0, -60, AD, B0, TOP, AD + 20], [B0, -60, 0, B1, TOP, RZ + 6], [B1, -60, RZ, dx0, TOP, RZ + 6], [dx1, -60, RZ, sx0, TOP, RZ + 6],
+    [dx0, R.DOOR_H, RZ, dx1, TOP, RZ + 6], [sx0 - 7, -60, F + 2, sx0, R.CEIL, RZ + 6], [0, R.CEIL, WZ, R.WELL_X0 || sx0, TOP, RZ]];
+  const PB = R.PIPE_BOX; if (PB) b.push([PB.x[0], -60, PB.z[0], PB.x[1], TOP, PB.z[1]]);
+  if (!doorOpen(HPARTS["door.living_door"])) b.push([dx0, -60, RZ, dx1, R.DOOR_H, RZ + 6]);   // its door shut (it opens as you reach it)
+  for (const q of solidBoxes()) b.push([-q.max.x / M, q.min.y / M, q.min.z / M, -q.min.x / M, q.max.y / M, q.max.z / M]);   // three's x flipped
+  return b;
+}
+function livFloors() {                      // its floor, each tread and the top landing (to walk on, not solid: a body rises onto them)
+  const L = FLIGHT(), f = [[0, -10, R.WINDOW_Z, R.W, 0, R.RECESS_Z + 6]];
+  for (let i = 1; i < L.n; i++) f.push([L.x0, i * L.r - 3, L.z0 + (i - 1) * L.g - 1.5, L.x1, i * L.r, L.z0 + i * L.g]);
+  f.push([L.x0, L.n * L.r - 3, L.zl - 1.5, L.x1, L.n * L.r, L.zl1]);
+  return f;
+}
+const nearLiving = (x, y, z) => x > -60 && x < R.W + 60 && z > R.WINDOW_Z - 60 && z < FLIGHT().zl1 + 30 && y < 560;
+function livBlocked(x, y, z, r) {
+  if (!nearLiving(x, y, z)) return false;
+  for (const q of livSolids()) if (x > q[0] - r && x < q[3] + r && y > q[1] - r && y < q[4] + r && z > q[2] - r && z < q[5] + r) return true;
+  return false;
+}
 function bodyBlocked(x, feet, z) {
-  const L = LIVING_BOX(); if (x > L[0] && x < L[3] && z > L[2] && z < L[5] && feet + 100 > L[1] && feet < L[4]) return true;
-  return hBlocked(x, feet + 55, z, 18, true) || hBlocked(x, feet + 105, z, 18, true) || hBlocked(x, feet + STAND_EYE, z, 12, true);   // the head 12 (a doorway's head clears it from the last stair)
+  for (const [h, r] of [[55, 18], [105, 18], [STAND_EYE, 12]]) if (hBlocked(x, feet + h, z, r, true) || livBlocked(x, feet + h, z, r)) return true;   // the head 12 (a doorway's head clears it from the last stair)
+  return false;
 }
 function floorAtCm(x, z, feet) {            // the top of what's underfoot: the highest at or under a step up (35)
   let best = -Infinity;
-  for (const S_ of Object.values(HSOLID)) if (S_.g) for (const q of S_.b) if (x > q[0] && x < q[3] && z > q[2] && z < q[5] && q[4] <= feet + 35 && q[4] > best) best = q[4];
+  const under = q => { if (x > q[0] && x < q[3] && z > q[2] && z < q[5] && q[4] <= feet + 35 && q[4] > best) best = q[4]; };
+  for (const S_ of Object.values(HSOLID)) if (S_.g) S_.b.forEach(under);
+  if (nearLiving(x, feet, z)) livFloors().forEach(under);
   return best;
 }
 function walkMove(side, fwd, turn, dt) {    // -1..1 each; true if the eye moved
@@ -4170,8 +4206,9 @@ function walkMove(side, fwd, turn, dt) {    // -1..1 each; true if the eye moved
   const sp = 140 * dt, sd = new THREE.Vector3(-d.z, 0, d.x);
   const mv = d.clone().multiplyScalar(fwd * sp).add(sd.multiplyScalar(side * sp));    // cm in three's axes
   let x = x0 - mv.x, z = z0 + mv.z;                                                    // room cm (x flipped)
-  if (!bodyBlocked(x0, WALK.feet, z0) && bodyBlocked(x, WALK.feet, z)) {   // free to step out of something you start in (Be there by the guitars)
-    if (!bodyBlocked(x, WALK.feet, z0)) z = z0; else if (!bodyBlocked(x0, WALK.feet, z)) x = x0; else { x = x0; z = z0; } }
+  const blk = (x_, z_) => bodyBlocked(x_, Math.max(WALK.feet, floorAtCm(x_, z_, WALK.feet)), z_);   // V1.38: tested where it will stand, a step up taken
+  if (!blk(x0, z0) && blk(x, z)) {   // free to step out of something you start in (Be there by the guitars)
+    if (!blk(x, z0)) z = z0; else if (!blk(x0, z)) x = x0; else { x = x0; z = z0; } }
   const fl = floorAtCm(x, z, WALK.feet);
   if (fl > -Infinity && fl > WALK.feet - 400) WALK.feet += (fl - WALK.feet) * Math.min(1, dt * 12);
   const ny = (WALK.feet + STAND_EYE) * M, moved = Math.abs(x - x0) + Math.abs(z - z0) > 1e-4 || Math.abs(ny - cam.y) > 1e-5 || !!turn;
@@ -4182,6 +4219,10 @@ function walkMove(side, fwd, turn, dt) {    // -1..1 each; true if the eye moved
   return true;
 }
 function walkRoom(x, feet, z) {             // walked into another room with its own view: be in it, where you stand
+  const L = FLIGHT();
+  if (x > L.x0 - 4 && x < L.x1 && z > L.z0 - 12 && z < L.zl1 && feet < 200) {   // V1.38: on the living room's flight: its room low down, the landing's view higher
+    const want = feet < 60 ? "livstand" : "landing"; if (want !== S.view) enterRoom(want); return; }
+  if (x > 0 && x < R.W && z > R.WINDOW_Z && z < R.RECESS_Z + 2 && feet < 120) { if (S.view !== "livstand") enterRoom("livstand"); return; }   // V1.38: in the living room
   const rooms = R.HOUSE3.rooms || {};
   for (const [id, r] of Object.entries(rooms)) {
     if (x < r[0] || x > r[1] || z < r[2] || z > r[3] || Math.abs(feet - r[4]) > 130) continue;
@@ -4191,7 +4232,12 @@ function walkRoom(x, feet, z) {             // walked into another room with its
 }
 function enterRoom(name) {
   if (actId && typeof closeAct === "function") closeAct();
-  S.view = name; applyFloors(); placeRoomLights(); syncRmode(); store.set(KEY, S); updateCaption(); brandPlace(); outdoor(); reshadow();
+  const was = HOUSEV(S.view); S.view = name;
+  if (VIEWS[name] && VIEWS[name].box) RMODE = "stand";   // V1.38: walked out of the living room into the house's rooms: still walking
+  if (houseG && was !== HOUSEV(name)) {                   // V1.38: between the living room (drawn on its own) and the house's rooms
+    houseG.visible = HOUSEV(name); setAbove(true); if (garden3d) garden3d.visible = HOUSEV(name);
+    if (started) { applyLight(); sizeRenderer(); } }
+  applyFloors(); placeRoomLights(); syncRmode(); store.set(KEY, S); updateCaption(); brandPlace(); outdoor(); reshadow();
   qsa("[data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === name)));
 }
 function walkDoors(x, feet, z) {            // a shut door opens as you come up to it
@@ -4205,6 +4251,7 @@ function walkDoors(x, feet, z) {            // a shut door opens as you come up 
 }
 function walkTick(dt) {
   if (!walking()) { WALK.feet = null; WALK.v.set(0, 0); return false; }
+  if (!houseG && R.HOUSE && (WALK.keys.size || WALK.stick[0] || WALK.stick[1])) { buildHouse(); reshadow(); applyFloors(); }   // V1.38: the living room opened on its own: the house to walk out into
   const k = WALK.keys, f = (k.has("f") ? 1 : 0) - (k.has("b") ? 1 : 0) + WALK.stick[1], sd = (k.has("r") ? 1 : 0) - (k.has("l") ? 1 : 0) + WALK.stick[0];
   const want = new THREE.Vector2(sd, f); if (want.lengthSq() > 1) want.normalize();
   WALK.v.lerp(want, Math.min(1, dt * 8));   // eases in and out
@@ -4223,7 +4270,7 @@ STICK.addEventListener("pointermove", e => { if (e.pointerId === stickId) stickM
 const stickEnd = e => { if (e.pointerId !== stickId) return; stickId = null; WALK.stick = [0, 0]; STICK.style.setProperty("--x", "0px"); STICK.style.setProperty("--y", "0px"); };
 STICK.addEventListener("pointerup", stickEnd); STICK.addEventListener("pointercancel", stickEnd);
 function syncStick() {
-  const on = RMODE === "stand" && !!ROOMV(); STICK.hidden = !(on && COARSE); root.classList.toggle("walking", on && COARSE);
+  const on = RMODE === "stand" && !!ROOMV() || S.view === "livstand"; STICK.hidden = !(on && COARSE); root.classList.toggle("walking", on && COARSE);
   if (on && !WALK.hinted) { WALK.hinted = true; try { if (!localStorage.getItem("demma-walkhint")) { localStorage.setItem("demma-walkhint", "1");
     setTimeout(() => toast(COARSE ? "Walk with the stick, drag to look" : "Walk with W A S D or the arrows, drag to look"), 900); } } catch (e) {} }
 }
@@ -4265,6 +4312,7 @@ function floorHop(e) {
 }
 function walk(kind, k = 1) {        // about 15 cm a press on the floor plane; turns 10°; v31: up and down 10 cm; k < 1 while a button's held
   if (tween) return;
+  if (!houseG && R.HOUSE && walking()) { buildHouse(); reshadow(); applyFloors(); }   // V1.38: as walkTick
   if (walking()) { const m = { f: [0, 1], b: [0, -1], l: [-1, 0], r: [1, 0] }[kind], t = { tl: -1, tr: 1 }[kind];   // V1.32: as a walk, by its rules
     if (m || t) { walkMove(m ? m[0] : 0, m ? m[1] : 0, t || 0, (t ? 0.1 : 0.11) * k); controls.update(); dirty(); syncEye(); } return; }
   walked = true; controls.maxDistance = 6;
@@ -4668,6 +4716,7 @@ function pickItem(e) {
   const BL = HPARTS.bed_lift;                                                    // v71: the master's ottoman bed: its card
   if (BL && houseG && houseG.visible) { const bx = new THREE.Box3().setFromObject(BL.g); bx.min.y -= 0.6; bx.expandByScalar(0.03); if (bx.containsPoint(p)) return "hbed"; }
   if (houseG && houseG.visible) for (const [k, P] of Object.entries(HPARTS)) if (k.startsWith("door.") && under(o, P.g)) return "hdoor:" + k;   // V1.26
+  if (HPARTS["door.living_door"] && under(o, livLeaf)) return "hdoor:door.living_door";   // V1.38: the living room's side of its door
   if (S.site === "C" && (under(o, cab) || under(o, optC))) return "cab";
   if (under(o, lamp)) return "lamp";
   if (under(o, bar1)) return "bar1";
@@ -5422,6 +5471,7 @@ function liftBed(on) {
 function partPose(P, t) {   // three's x is flipped: the foot rises (about z), a door turns into its room (about y); its own parts with it
   t = t ?? P.t;
   if (P.axis === "y") P.g.rotation.y = -t * P.angle * Math.PI / 180; else P.g.rotation.z = -t * P.angle * Math.PI / 180;
+  if (livLeaf && P === HPARTS["door.living_door"]) livLeaf.rotation.y = P.g.rotation.y;   // V1.38: the room's own leaf with it
   for (const K of P.kids || []) partPose(K, t);
 }
 function liftTick(now) {   // each frame while a part moves (the frame loop, like the cabinet's doors)
@@ -5438,6 +5488,7 @@ function swingDoor(k, on) {
   const P = HPARTS[k]; if (!P) return;
   P.tw = { a: P.t, to: on ? 1 : 0, t0: performance.now() }; dirty();
   S.doors = Object.assign({}, S.doors, { [k]: on ? 1 : 0 }); store.set(KEY, S);   // V1.26b: remembered
+  if (k === "door.living_door") setTimeout(() => { applyFloors(); reshadow(); }, on ? 0 : 950);   // V1.38: what's seen through it (once it's shut)
 }
 function swingAll(on) { for (const k of Object.keys(HPARTS)) if (k.startsWith("door.")) swingDoor(k, on); if (actId) renderAct(); }
 /* v71, the client: "three ways to view the room": in it (wide), from above (the ceiling and the floors over it cut away), and the room on
@@ -6329,7 +6380,7 @@ function start() {
       if (addp && CATALOGUE[addp.type]) { const a = { id: "a" + Date.now().toString(36), type: addp.type, x: addp.x, z: addp.z }; pushUndo(); addThing(a); if (addp.rot) setLayout(a.id, { rot: addp.rot }); placeAll(); store.set(KEY, S); dirty(); }
       if (showat != null) { showOpen(); if (SH) { SH.own = true; SH.paused = true; SH.t = showat; showPose(SH.t); showCard(); qs("#r3d-show").hidden = true; } }
       if (o.view) setView(o.view, true); if (aim) flyTo(aim.eye, aim.at, aim.fov || 55, !!aim.above, true); },   // v58: "above" lets a look stand off (the house)
-    still, ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { HPARTS, swingDoor, WALK, walkMove, collide, bodyBlocked, floorAtCm,  swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, collide, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG },
+    still, ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { HPARTS, swingDoor, WALK, walkMove, collide, bodyBlocked, floorAtCm, HSOLID, livSolids, livFloors,  swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, collide, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG },
     errors: () => store.get("r3d-errors", []),                                       // v35: what the trap kept
     timing: () => Object.assign({ page: Math.round(performance.now()) }, START_MS),     // V1.31: the start's steps (ms from start()), and the page's age
     perf: perfInfo,                                                                   // v35: the counts to watch each round

@@ -1,6 +1,6 @@
 """Demma's Home V1.2: the front door's check, on the built site (index.html, the old design back). At the iPhone 15 Pro's size (393 × 852,
 touch) and a desktop's (1920 × 1080): no script errors, nothing off the right edge, it opens on the whole house and the brand says so, the
-floors pill is one row on the phone, the photos arrive after the first picture (V1.9), and the dock's Measure lists every open size, keeps a number typed in and counts it. Screenshots go
+floors pill is one row on the phone, the photos arrive after the first picture (V1.9), a walk goes from the hall into the living room, up its stairs and back (V1.38), and the dock's Measure lists every open size, keeps a number typed in and counts it. Screenshots go
 to _shots/ (the workflow keeps them with the run).
 
 python3 tools/check_site.py [site dir]      exits non-zero on any failure; THREE_LOCAL serves three.js where the CDN is blocked"""
@@ -13,6 +13,17 @@ import pw, localcdn  # noqa: E402
 
 SITE = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else ROOT / "_site").resolve()
 SHOTS = ROOT / "_shots"
+# V1.38: a walk from the hall into the living room, up its stairs to the landing (feet at the first floor), back down and out to the hall
+WALK = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), seen = [];
+  const at = () => { const c = D.camera.position; return [-c.x * 100, c.z * 100]; };
+  const go = async (x, z, n, done) => { for (let i = 0; i < n && !done(); i++) { const c = D.camera.position, dx = -x / 100 - c.x, dz = z / 100 - c.z, l = Math.hypot(dx, dz) || 1;
+    D.controls.target.set(c.x + dx / l, c.y - 0.05, c.z + dz / l); D.controls.update(); D.walkMove(0, 1, 0, 0.1); if (seen[seen.length - 1] !== D.S.view) seen.push(D.S.view); if (i % 4 == 3) await sl(220); } };
+  R3D.set({ view: "hall" }); await sl(1500); document.querySelector('[data-rmode="stand"]').click(); await sl(2500);
+  await go(357, -100, 60, () => at()[1] < -60); await go(437, -100, 30, () => at()[0] > 432); await go(437, -60, 10, () => at()[1] > -62);
+  await go(437, 600, 40, () => D.WALK.feet > 255 && at()[1] > 215); const top = D.WALK.feet;
+  await go(330, 230, 12, () => at()[0] < 340); await go(437, 230, 12, () => at()[0] > 432); await go(437, -300, 40, () => at()[1] < -70);
+  await go(357, -10, 20, () => at()[0] < 362); await go(357, 400, 30, () => at()[1] > 150);
+  return { seen, top: Math.round(top), end: D.S.view }; }"""
 OFF = """() => { const W = document.documentElement.clientWidth, out = [];
   for (const el of document.querySelectorAll("body *")) { const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
     if (!r.width || cs.display === "none" || cs.visibility === "hidden" || cs.position === "fixed" || el.closest("[hidden], .sheet, .r3d-panel, .r3d-floors, .lightbox, .r3d-stage")) continue;
@@ -68,12 +79,19 @@ def main():
             cnt = pg.evaluate("() => document.getElementById('ms-count').textContent")
             if not cnt.startswith("1 of"): fails.append(f"{w}: Measure counts {cnt!r}")
             pg.screenshot(path=str(SHOTS / f"site-{w}-measure.png"))
+            if phone:                                           # V1.38: walk into the living room, up to the landing and back out (the small screen: quicker frames)
+                pg.click("#r3d-dt-measure"); pg.wait_for_timeout(500)
+                wk = pg.evaluate(WALK)
+                want = ["hall", "livstand", "landing", "livstand", "hall"]
+                got = [v for i, v in enumerate(wk["seen"]) if i == 0 or v != wk["seen"][i - 1]]
+                if got != want or wk["top"] < 255: fails.append(f"{w}: the walk into the living room went {got}, its feet up to {wk['top']} (want {want}, 260)")
+                pg.screenshot(path=str(SHOTS / f"site-{w}-walk.png"))
             if errs: fails.append(f"{w}: errors: {errs[:4]}")
             ctx.close()
         b.close()
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
-    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, Measure keeps a number, {len(fails)} failed; screenshots in _shots/")
+    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, Measure keeps a number, a walk into the living room and up its stairs, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
 

@@ -1902,8 +1902,11 @@ def hall(o):
     # just proud of the living room's own leaf (z 40-44), so the two never share a face
     o.item("living_door", "The living room door", "hall", kind="door", src="M", axis="x", measure=False)
     ld = next(d for d in doors("ground") if d["id"] == "living_door"); hz = next(r["z0"] for r in rooms("ground") if r["id"] == "hall")
-    o.box("door_white", ld["a"], y + 0.5, hz - 0.6, ld["b"], y + D.DOOR_H - 0.8, hz - 0.1)
-    o.box("chrome", ld["b"] - 12, y + 100, hz - 0.1, ld["b"] - 3, y + 102, hz + 3.7)
+    # V1.38 (Next 1, a walk into the living room): it opens, hinged at the breast's end (geometry.OVERDOOR's open_gap) into the living
+    # room, about the room's own leaf's hinge (its room face, z RECESS_Z + 1), so the viewer turns that leaf with it
+    p = o.part("door.living_door", (ld["a"], y, Gm.BREAST_D_WEST + 1.0), "y", 90.0, label=DOOR_NAMES["living_door"][0])
+    p.box("door_white", ld["a"], y + 0.5, hz - 0.6, ld["b"], y + D.DOOR_H - 0.8, hz - 0.1)
+    p.box("chrome", ld["b"] - 12, y + 100, hz - 0.1, ld["b"] - 3, y + 102, hz + 3.7)
 
 
 # v70: the suite's turned shapes, radius 16 at the rim (stretched to each piece's size)

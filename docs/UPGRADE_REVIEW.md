@@ -231,10 +231,23 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
   build job 2 min 45 (its render cache missed: a pull request's caches can't be read from main, so the next merge's will hit); the
   browser checks run after, side by side. V1.37 also stops making the shared page's copy (16 MB less in every Pages upload).
 
+- **V1.38 (Next 1, in part), walking into the living room:** the living room's door is a hinged part in the house file
+  (`door.living_door`, at the breast's end, into the room, as `geometry.OVERDOOR`'s open gap says); `room3d.js` turns the room's own
+  leaf with it (`livLeaf`), so a tap on either face or a walk up to it opens both. A walk takes the living room's walls (the door's gap
+  only when it's open), the flight's open side, the ceiling, the pipe box and the furniture that's showing (`livSolids`) and its floor,
+  13 treads and the top landing (`livFloors`). Crossing its doorway hands the walk between the hall's Be there and the living room's
+  (`enterRoom`: the house shown or not, its light), the flight's lower part is the living room's, past 60 up the landing's; its own Be
+  there walks as well (keys, the stick). Through the open door: from the hall the living room (527 draws, under a phone's 600; 336 shut),
+  from the living room the ground floor (294; 132 shut). Opened on its own (`?room`), the house is built on the first step. **Found:** the
+  first floor's slab (z 191) overhangs the flight's top step (196) by 5, so the knee caught it two steps from the top: the body is now
+  tested where it will stand once a step up is taken. Tested by walking (hall → living room → up to the landing → back down → hall)
+  in a test browser.
+
 ## Next (found while working; agents: take these in order)
 
-1. **The living room into the house file** (V1_PLAN Phase 5): its walls, doorway and stairs as boxes in `house/model.py`, so a walk goes
-   in and up to the first floor, the eye's collision and the shade bands cover it, and it's one model.
+1. ~~A walk into the living room and up its stairs~~: done in V1.38 (below). Still to do (V1_PLAN Phase 5): its walls, doorway and
+   stairs as boxes in `house/model.py` so it's one model and the shade bands cover it (V1.38 reads them from `geometry.py`'s numbers in
+   `room3d.js` `livSolids`, `livFloors`).
 2. **Camera-match each view to its photo** with `tools/compare.py` (move each view's eye, aim and lens until the red lines sit on the
    photo), then fix the sizes whose lines still miss: the accuracy pass that needs no tape measure.
 3. **The client's iPhones' numbers**: `?perf` and `R3D.timing()` from each, then decide KTX2 (U5) and light maps (U8).
