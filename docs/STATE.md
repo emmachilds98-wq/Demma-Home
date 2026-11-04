@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.50 (4 Nov 2026)
+**Version:** V1.51 (4 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -46,8 +46,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 - **V1.50 (V1_PLAN phase 3):** tap a piece in the house: its card says its size; Change its size, a stepper each (a door: width, place),
   the 3D changes as you go, As planned puts it back. Measure rows in `edits` ({item, field, value}; Send shares them), `pull_edits.py`
-  folds them in. `room3d.js` `PICK`, `housePiece`, `storeEdits`, `selPiece`; the pieces in `R.HOUSE3.items`; `check_site.SIZE` tries it.
-- **V1.49:** the site check's walk waits for flies to end and reports each leg (`check_site.WALK`). It passes on GitHub's main.
+  folds them in. `room3d.js` `PICK`, `housePiece`, `storeEdits`, `selPiece`; the pieces in `R.HOUSE3.items`; `check_site.SIZE` tries it. (V1.49: the walk check waits for flies.)
+  V1.51: Measure lists them under "Changed in the 3D" (`paintEdits`: a name flies there and outlines it, As planned), and Send sends them.
 - **V1.47 (the client's review):** the outside ground's slope not across the house (`outdoor`); blinds a material of their own
   (`blind_cloth`, shown when `S.blinds`; a tap: `hblinds`); the front door hinged at its b end (`DOOR_HANG`); the dormer's `hung` drawn as
   timber boards, its plaster between the cheeks; roof tiles at 2.4 m (`textures.json`); house walls' relief (`normalScale`) down; by evening a

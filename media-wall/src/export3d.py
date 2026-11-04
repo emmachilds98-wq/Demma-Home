@@ -68,7 +68,7 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
         k = 2 if it["axis"] == "z" else 0
         a0 = it["opening"]["a"] if it.get("opening") else it["box"][k]
         s = it["size"]
-        e["items"][it["id"]] = dict(n=it["name"], k=it["kind"], ax=it["axis"], b=it["box"], s=[s["w"], s["h"], s["up"]], g=it["measure"],
+        e["items"][it["id"]] = dict(n=it["name"], k=it["kind"], r=it["room"], ax=it["axis"], b=it["box"], s=[s["w"], s["h"], s["up"]], g=it["measure"],
                                     al=round(a0 - rbox[it["room"]][k], 1) if it["room"] in rbox else round(a0, 1),
                                     op=dict((q, it["opening"][q]) for q in ("axis", "line", "a", "b", "y0", "y1")) if it.get("opening") else None)
     e.update(front=model.RO["s"], back=model.RO["n"], garage=[0.0, next(r["x1"] for r in model.rooms("ground") if r["id"] == "garage")], hall=[model.D.WALL_HALL, model.RO["w"]], drive=model.D.LEVELS["drive"], lawn=model.D.LEVELS["lawn"])   # V1.3: the ground beyond, at the street's and the garden's levels

@@ -42,8 +42,9 @@ SIZE = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   const card = D.actId, b = document.querySelector('#r3d-act [data-actopen^="hsize:"]'); if (!b) return { card };
   b.click(); await sl(200); document.querySelector('#r3d-act [data-hstep="w"][data-by="1"]').click(); await sl(600);
   const row = JSON.parse(localStorage.getItem('demma-v1:edits') || '{}')['office.desk~w'], ed = !!D.HEDITS['office.desk'];
+  const listed = !document.getElementById('ms-edits').hidden && document.getElementById('ms-elist').textContent.includes('The oak desk');   // V1.51: Measure lists it
   document.querySelector('#r3d-act [data-hreset]').click(); await sl(600);
-  return { card, row: row ? row.value : null, ed, after: Object.keys(D.HEDITS).length };
+  return { card, row: row ? row.value : null, ed, listed, after: Object.keys(D.HEDITS).length, gone: document.getElementById('ms-edits').hidden };
 }"""
 OFF = """() => { const W = document.documentElement.clientWidth, out = [];
   for (const el of document.querySelectorAll("body *")) { const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
@@ -106,8 +107,8 @@ def main():
             if phone:                                           # V1.50: tap a piece, change its size, put it back
                 pg.click("#r3d-dt-measure"); pg.wait_for_timeout(500)
                 sz = pg.evaluate(SIZE)
-                if sz.get("card") != "hitem:office.desk" or not sz.get("row") or not sz.get("ed") or sz.get("after"):
-                    fails.append(f"{w}: tapping the office desk and widening it: {sz} (want its card, a row of 223.9, the 3D changed, then back as planned)")
+                if sz.get("card") != "hitem:office.desk" or not sz.get("row") or not sz.get("ed") or not sz.get("listed") or sz.get("after") or not sz.get("gone"):
+                    fails.append(f"{w}: tapping the office desk and widening it: {sz} (want its card, a row of 223.9, the 3D changed, Measure listing it, then back as planned)")
                 pg.screenshot(path=str(SHOTS / f"site-{w}-size.png"))
             if phone:                                           # V1.38: walk into the living room, up to the landing and back out (the small screen: quicker frames)
                 wk = pg.evaluate(WALK)

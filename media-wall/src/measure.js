@@ -100,10 +100,11 @@ document.addEventListener("change", async e => {
 });
 document.addEventListener("click", async e => {
   if (!e.target.closest("#ms-send")) return;
-  const ids = Object.keys(store.rows("measurements")).filter(id => answer(id).cm != null);
-  if (!ids.length) { say("Type a number first."); return; }
+  const ids = Object.keys(store.rows("measurements")).filter(id => answer(id).cm != null), ne = new Set(Object.values(store.rows("edits")).map(r => r.item)).size;
+  if (!ids.length && !ne) { say("Type a number first, or change a piece's size in the 3D."); return; }
   for (const id of ids) await store.put("measurements", id, Object.assign({}, answer(id), { sent: true }));
-  if (mode === "shared") { say(`Sent: ${ids.length} measurement${ids.length === 1 ? "" : "s"}. The next round puts them in.`); return; }
+  const n = (k, w) => `${k} ${w}${k === 1 ? "" : "s"}`, what = [ids.length && n(ids.length, "measurement"), ne && n(ne, "change")].filter(Boolean).join(" and ");   // V1.51: the 3D's changes go too
+  if (mode === "shared") { say(`Sent: ${what}. The next round puts them in.`); return; }
   const url = store.shareLink();
   try { if (navigator.share) { await navigator.share({ title: "Demma's Home: measurements", url }); say("Shared."); return; } } catch (er) { if (er && er.name === "AbortError") return; }
   try { await navigator.clipboard.writeText(url); say("Link copied: send it in a message."); } catch (er) { say(url); }

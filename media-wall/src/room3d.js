@@ -2625,7 +2625,24 @@ function storeEdits() {   // Measure's rows, as the engine's edits (HEDITS)
   const was = JSON.stringify(HEDITS), now = JSON.stringify(out);
   if (was !== now) applyHEdits(out);
 }
-window.addEventListener("demma-rows", e => { if (e.detail !== "edits") return; storeEdits();
+function paintEdits() {   // V1.51: Measure's list of the sizes changed in the 3D: a piece's name flies to it, As planned puts it back
+  const box = document.getElementById("ms-elist"), grp = document.getElementById("ms-edits"); if (!box || !grp || !DS()) return;
+  const ids = [...new Set(Object.values(DS().rows("edits") || {}).map(v => v && v.item))].filter(id => HIT(id) && pieceDelta(id).some(Boolean));
+  grp.hidden = !ids.length;
+  const W = { w: "wide", h: "high", up: "up", along: "along" };
+  box.innerHTML = ids.map(id => { const it = HIT(id), c = pieceNow(id), was = { w: it.s[0], h: it.s[1], up: it.s[2], along: it.al };
+    const ch = Object.keys(W).filter(k => Math.abs(c[k] - was[k]) > 0.05).map(k => `${cmR(c[k])} ${W[k]}, was ${cmR(was[k])}`).join(" · ");
+    return `<div class="ms-row ms-erow"><button type="button" class="t ms-ego" data-epiece="${id}">${it.n}<small>${ch}</small></button><button type="button" class="btn" data-ereset="${id}">As planned</button></div>`; }).join("");
+}
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-epiece]"), x = e.target.closest("[data-ereset]"); if (!g && !x) return;
+  const id = (g || x).dataset[g ? "epiece" : "ereset"], ds = DS(); if (!HIT(id) || !ds) return;
+  if (x) { Object.entries(ds.rows("edits")).filter(([, v]) => v && v.item === id).forEach(([rid]) => ds.del("edits", rid)); return; }
+  const v = ROOM_VIEW[HIT(id).r]; if (window.DemmaTools) window.DemmaTools.close();
+  if (v && v !== S.view) setView(v);
+  let n = 0; const mark = () => (tween && n++ < 60) ? setTimeout(mark, 150) : selOf(id); setTimeout(mark, 300);   // outlined once the fly ends
+});
+window.addEventListener("demma-rows", e => { if (e.detail !== "edits") return; storeEdits(); paintEdits();
   if (actId && /^hsize:|^hitem:/.test(actId)) { const id = actId.split(":")[1]; selOf(id); const st = qs("#r3d-act-st"); if (st) st.textContent = actItems(actId)[1]; } });
 const cmR = v => Math.round(v * 10) / 10;
 const clampF = (f, v) => Math.max(f === "along" || f === "up" ? -500 : 1, Math.min(1000, v));
