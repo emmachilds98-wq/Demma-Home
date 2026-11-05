@@ -14,7 +14,7 @@ from diagrams import (light_scene, leaf_case, fliptop, sub_box, drawer_layouts, 
 
 HERE = pathlib.Path(__file__).parent
 VERSION = (pathlib.Path(__file__).resolve().parents[2] / "VERSION").read_text().strip()   # V1: one file at the root ("1.0", "1.1" ...)
-LABEL = "V" + (VERSION[:-2] if VERSION.endswith(".0") else VERSION)                           # how it shows: "V1", "V1.1"
+LABEL = "V" + VERSION                                                                    # how it shows: "V2.0", "V2.1" (the client: "make this now V2.0")
 REVISION = "77: the bathroom's slope up to its beam, the lower ceiling over the toilet, the mirror"
 PDF_NAME = f"Demmas_Home_{LABEL}_Plan.pdf"
 GUIDE_NAME = f"Demmas_Home_{LABEL}_Build_Guide.pdf"

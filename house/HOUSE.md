@@ -28,7 +28,7 @@ back of the house faces 14° east of north** (north-north-east; OpenStreetMap bu
 | `media-wall/inputs/photo_view_full_24oct.jpg` | The whole view out of the back from upstairs (ultra-wide, overcast, spring): the best one |
 | `media-wall/inputs/photo_view_wide_24oct.jpg`, `photo_view_centre_24oct.jpg`, `photo_view_right_24oct.jpg` | The same view: wide, centre (looking down) and right |
 | `media-wall/inputs/room_sketch_accurate_mm.png` | The client's measured sketch of the living room (mm) |
-| `media-wall/inputs/photo_stairs_*`, `room_photo_*`, `photo_current_living_room.png` | The living room and the stairs up from it |
+| `media-wall/inputs/photo_stairs_*`, `room_photo_*`, `photo_current_living_room.jpg` | The living room and the stairs up from it |
 
 ## How the floors stack (the client, 25 Oct 2026)
 

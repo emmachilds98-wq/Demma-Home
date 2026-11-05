@@ -17,7 +17,7 @@ SITE = pathlib.Path(os.environ.get("DEMMA_SITE") or ROOT / "_site")
 SRC = ROOT / "media-wall/src"
 HOUSE = ROOT / "house"
 VERSION = (ROOT / "VERSION").read_text().strip()
-LABEL = "V" + (VERSION[:-2] if VERSION.endswith(".0") else VERSION)
+LABEL = "V" + VERSION
 ENV = dict(os.environ, DEMMA_SITE=str(SITE), PYTHONDONTWRITEBYTECODE="1")
 
 
