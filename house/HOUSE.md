@@ -114,7 +114,10 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
     the treads a guess.
   - **The wall up the stairs** (the party wall beside the living room's flight) is to be painted the living room's stair-wall colour all
     the way up to the landing's ceiling (the client, 5 Nov): drawn so, to the landing's corner by bedroom 3.
-  - **The stairwell over the living room's flight is 10 cm wider** than the flight at the first floor, the banister 10 over (the client, 5 Nov).
+  - **The stairwell at the first floor, measured (the client, 5 Nov, V2.24):** 85 cm wide from the party wall, not counting the banister;
+    93 from that wall to the outside of the banister's posts (so the posts 8 square); 85 from the top stair to bedroom 3's wall (as drawn
+    already). The banister's posts are plain and square with flat tops (no round caps). The short wall by the bathroom door is now 18
+    (the bathroom door's 68 is a guess: measure it). Still to confirm: is the living room's flight itself 85 wide too (it's drawn 59)?
   - **Walls smooth, ceilings artex** (the client, 5 Nov): every wall flat emulsion; every ceiling the popcorn artex, white in the house (the living room's as picked in Look).
   - **The store under the lower stairs runs back to the line of the wall past the stairs' top step** (the client, 5 Nov, wall D on our
     plan): its back wall one straight line with that one; a washer dryer fits in the corner there with the store door still opening.
@@ -122,7 +125,7 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
   - **Light switches (the client, 5 Nov):** the bathroom's is a pull cord from the ceiling, on the right as you walk in (no wall switch by
     its door; the cord's length a guess, in Measure); the lower stairs' is at their foot on the left-hand wall looking down.
   - **The bathroom's wall over the stairs**, by the sink, about 7.5 cm further into the bathroom than drawn before, for more room over
-  - **The bathroom's corner over the stairs (the client, 5 Nov, an overhead picture with a red line):** its front wall steps back to the wall over the stairs at the stairwell's edge (x 398, in line with the banister), a clean L; it had stayed 10 out over the stairwell when the stairwell was widened (V2.2).
+  - **The bathroom's corner over the stairs (the client, 5 Nov, an overhead picture with a red line):** its front wall steps back to the wall over the stairs at the stairwell's edge (x 382 since V2.24's measured stairwell, in line with the banister), a clean L; it had stayed 10 out over the stairwell when the stairwell was widened (V2.2).
     the stairs (the client, 29 Oct: "roughly 5-10 more cm").
 - **Both gardens:** the back (about 25 m, the photos) and the front (the agent's photo, below; sizes to come).
 
@@ -291,6 +294,9 @@ wall as I put in the plans." Photo: `media-wall/inputs/photo_bedroom2_25oct.jpg`
   the landing wall; £250–450, E), an IKEA LYCKSELE chair-bed against the front wall (80 × 100, a bed 80 × 188), the Kallax 2 × 4 across
   the alcove with four 2-drawer inserts, the guitars and amp in the front corner, panels, a rug. Checks: the double bed (190) and the
   door's swing (73) fit the 270 with 7 to spare; the drawers pull out clear; the chair-bed opens clear of the desk.
+  V2.24 (the client: "bedroom 2 has a floating plugsocket and things should be moved back towards the real wall between it and the master
+  bedroom"): the chair-bed, the amp, the guitars and the socket by the chair-bed back against that wall (z 79.5 since V1.20; they'd stayed
+  25 out on its old line).
 
 ## The master bedroom (the client's photo, 25 Oct 2026: `media-wall/inputs/photo_master_bed_25oct.jpg`)
 

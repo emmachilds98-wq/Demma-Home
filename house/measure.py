@@ -42,6 +42,7 @@ ROWS = [
     ("airing_bed2", "bed2", "How far the boiler cupboard sticks into the room", "from the wall beside it", lambda: D.AIRING["into_bed2"], ("set", ("AIRING", "into_bed2"))),
     ("bed2_long", "bed2", "Bathroom wall to the wall behind the wardrobes", "along the carpet, the longest way", lambda: 388.0, None),   # V1.20: the wall 25 into the master
     ("stairs_tread", "living", "One stair tread's depth", "nose to nose", lambda: __import__("model").Gm.STAIR_GOING, None),
+    ("stairs_width", "living", "The stairs' width in the living room", "wall to the banister, not counting it", lambda: (lambda g: g.STAIR_X[1] - g.STAIR_X[0])(__import__("model").Gm), None),   # V2.24: the first floor's stairwell measured 85; the flight drawn 59
     ("meters", "hall", "The meter cupboard's width", "inside", lambda: 38.0, None),
     ("bins", "porch", "The bin cupboard's width", "inside", lambda: 39.0, None),
     ("living_socket", "living", "The side-wall socket, from the corner", "along the wall", lambda: None, None),

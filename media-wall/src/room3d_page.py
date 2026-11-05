@@ -345,11 +345,13 @@ details.r3d-more[open] > summary::before { content: "– "; }
 /* V1.19, the client: "I need to be able to take more buttons off easily and make it clear how to do this": Hide buttons, in every view,
    its words showing on a phone too, takes every button and panel off; only Show buttons stays, where Hide buttons was (v74 folded the
    floors and rooms only, on the whole house only) */
-.r3d .r3d-mini .r3d-minib.r3d-bare { width: auto; padding: 0 13px 0 10px; background: var(--ink, #1d2a22); color: #fff; }
+/* V2.24: in the cream of the buttons beside it (it was the one dark button, the loudest for the least-used thing); dark only as Show
+   buttons, when it's the one button left */
+.r3d .r3d-mini .r3d-minib.r3d-bare { width: auto; padding: 0 13px 0 10px; }
 .r3d .r3d-mini .r3d-minib.r3d-bare .t { position: static; width: auto; height: auto; overflow: visible; clip: auto; font: 600 13px Figtree, system-ui, sans-serif; }
 body.bare .brand, body.bare .hnav, body.bare .r3d-dock, body.bare .r3d-panel, body.bare .r3d-stickers, body.bare .r3d-planbar,
 body.bare .r3d-mini > :not(#r3d-pick) { display: none !important; }
-body.bare .r3d .r3d-mini .r3d-minib.r3d-bare { background: var(--page, #fbf7ef); color: var(--ink, #1d2a22); box-shadow: 0 4px 18px rgba(0,0,0,.18); }
+body.bare .r3d .r3d-mini .r3d-minib.r3d-bare { background: var(--ink, #1d2a22); color: #fff; box-shadow: 0 4px 18px rgba(0,0,0,.18); }
 .r3d-hrooms button { min-height: 30px; padding: 0 10px; font-size: 12.5px; }
 .r3d-floors button { min-height: 32px; padding: 0 11px; border: 0; border-radius: 999px; background: transparent; color: var(--ink, #1d2a22); font: 600 13px Figtree, system-ui, sans-serif; cursor: pointer; }
 .r3d-floors button[aria-pressed="true"] { background: var(--ink, #1d2a22); color: #fff; }
@@ -357,7 +359,7 @@ body.bare .r3d .r3d-mini .r3d-minib.r3d-bare { background: var(--page, #fbf7ef);
 .r3d-rmode { flex-wrap: nowrap; border-radius: 999px; }
 .r3d-rmode button { display: inline-flex; align-items: center; gap: 5px; transition: background .2s, color .2s; }
 .r3d-rmode .ms { font-size: 17px; }
-@media (max-width: 640px) { .r3d-rmode .t { display: none; } .r3d-rmode button { padding: 0 9px; } }
+@media (max-width: 640px) { .r3d-rmode .t { display: none; } .r3d-rmode button { padding: 0 7px; } }   /* V2.24: 7 (was 9), so Hide buttons shares their row on a phone */
 .r3d-mini { position: fixed; top: max(72px, calc(env(safe-area-inset-top) + 60px)); right: 16px; z-index: 31; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; transition: right .3s; }
 .r3d .r3d-mini .r3d-minib { position: static; display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px 0 9px; border: 0; border-radius: 999px;
   background: color-mix(in oklab, var(--cream) 92%, transparent); color: var(--ink); font: 600 13px Figtree, system-ui, sans-serif; box-shadow: var(--shade); cursor: pointer; transition: transform .25s var(--spring); }

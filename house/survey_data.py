@@ -243,7 +243,11 @@ HALL = dict(door=(410.0, 465.0), door_leaf=False, mirror=dict(z=(354.4, 390.4), 
             radiator=dict(z=(276.4, 364.4), y=(15.0, 72.0)), switch_z=368.0, tapestry=dict(z=None, y=(3.0, 233.0)),
             src="client's photos (what goes where) + standard sizes (E)")
 # the landing: a white post-and-rail balustrade along the stairwell, the loft hatch, a pendant and a smoke alarm, the bathroom door's fanlight.
-LANDING = dict(rail_x=(393.0, 398.0), rail_h=92.0, hatch=dict(x=(300.0, 355.0), z=(115.0, 185.0)), fanlight=(205.0, 228.0),   # v73: the hatch overhead near the office end (both landing photos)
+# V2.24, the client measured (M): "stairwell from ground to floor one, west wall to the outside edge of the bannister post is 93cm and the
+# stairwell itself is 85cm wide not including the bannister": the stairwell x 382-467 (85), the posts 8 square (x 374-382, their outside
+# face 93 from the party wall); "85cm from top stair to the wall of the bedroom 3": the top tread's front (z 176.75) to the office's wall
+# (261.7) is 85 already. "square bannister posts not circle tops" (the landing photos): plain square posts, flat tops (V2.20's caps gone).
+LANDING = dict(rail_x=(376.0, 381.0), rail_h=92.0, hatch=dict(x=(300.0, 355.0), z=(115.0, 185.0)), fanlight=(205.0, 228.0),   # v73: the hatch overhead near the office end (both landing photos)
                src="client's photos + standard sizes (E: balustrade 900 high, Approved Document K)")
 PENDANTS = {"hall": (345.0, 355.0), "landing": (345.0, 120.0), "bed3": (375.0, 372.0), "wc": (420.0, -215.0)}
 
@@ -294,10 +298,11 @@ WALL_HALL = 303.5     # the hall's face of the wall to the garage (M: the living
 # needed. It also actually just houses towels and boxes for stuff no boiler": the cupboard 60 (58.5-118.5, a 48 door), so the bathroom
 # end (its wall, door and the box over the stairs, in one line) 18.2 back: the landing's end z -32.5, the bathroom about 1.8 x 2.7;
 # bedroom 2's door with it, still in the corner; the master's door and its gaps as they were. Bedroom 2's door's nook gone (BED2_1 None).
-FIT = {"first": {"bathroom": dict(x1=398.0, z1=-38.8), "bed2": dict(z1=79.5), "airing": dict(x0=202.0, z0=58.5, z1=143.5), "master": dict(x1=202.0, z0=85.5),
+FIT = {"first": {"bathroom": dict(x1=382.0, z1=-38.8), "bed2": dict(z1=79.5), "airing": dict(x0=202.0, z0=58.5, z1=143.5), "master": dict(x1=202.0, z0=85.5),
                  "master_b": dict(x0=202.0, z0=149.5, z1=268.1), "bed3": dict(x0=263.7),
-                 "landing": dict(x1=398.0, z0=-32.5), "first_stairs": dict(x0=398.0, z0=-41.0, z1=196.0), "landing_top": dict(x0=398.0, z0=196.0)},
+                 "landing": dict(x1=382.0, z0=-32.5), "first_stairs": dict(x0=382.0, z0=-41.0, z1=196.0), "landing_top": dict(x0=382.0, z0=196.0)},
                  # V2.2, the client: "bannister could be moved over slightly too. the stairwell is wider. another 10cm maybe": 10 wider (was 408)
+                 # V2.24, the client measured it: 85 wide (x 382), the banister's posts outside it (LANDING)
                  # v66: the stairwell over the flight; v67 (the landing photos): open to the flight's top step (the plans read 170)
        "ground": {"hall": dict(x0=WALL_HALL), "front_store_e": dict(x0=WALL_HALL), "garage": dict(x1=round(WALL_HALL - 12.6, 1))},
        "lower": {"lower_store": dict(z1=251.7),   # V2.2 (STORE_TO_STAIRS): its back wall in line with the one past the flight's top step
@@ -349,7 +354,8 @@ FIT_DOOR_LINE = {"bath_door": -35.65}                # v76: in the bathroom's fr
 # alcove above the stairs, by roughly 5-10 more cm": its wall over the stairs 7.5 further into the bathroom (was -44.15)
 # V2.16, the client (an overhead picture, a red line along the bathroom's corner over the stairs): the step from the bathroom's front wall
 # back to its wall over the stairs at the stairwell's edge (398, V2.2's 10 wider), not 10 out over the stairwell (it was 408: a notch)
-BATH_1 = dict(x=(398.0, 467.0), z=(-309.0, -51.65))
+# V2.24: with the stairwell measured 85 wide (x 382), the step at its new edge, still in line with the banister
+BATH_1 = dict(x=(382.0, 467.0), z=(-309.0, -51.65))
 BED2_1 = None                                         # v76: bedroom 2's door fits its front wall again (v75's nook gone)
 # V1.8, the client: "the boiler cupboard on first floor also sticks out into both bedrooms, it is inline with the wardrobe front in the
 # master bedroom and stick out in the bedroom 2 although unsure of size" ("adjust as needed"): its side in the master flush with the
@@ -384,7 +390,7 @@ METERS = dict(electric=dict(w=28.0, h=50.0, d=18.0, y=115.0), gas=dict(w=26.0, h
 # room's side, where along it, height)
 SOCKETS = [("first", "z", 0.0, 1, 223.5, 75.0), ("first", "z", 0.0, 1, 429.5, 75.0),        # the master: over each bedside
            ("first", "z", 467.0, -1, 300.0, 90.0), ("first", "z", 467.0, -1, 440.0, 90.0),   # the office: over the desk
-           ("first", "z", 270.0, -1, -150.0, 95.0), ("first", "x", 54.5, -1, 60.0, 30.0),    # the music room: the return, by the chair-bed
+           ("first", "z", 270.0, -1, -150.0, 95.0), ("first", "x", 79.5, -1, 90.0, 30.0),    # the music room: the return, by the chair-bed (V2.24: on the wall, z 79.5)
            ("lower", "z", 0.0, 1, -60.0, 105.0), ("lower", "z", 0.0, 1, -230.0, 105.0),      # the kitchen: over the worktop
            ("ground", "z", 467.0, -1, 300.0, 30.0), ("ground", "z", 0.0, 1, 250.0, 100.0)]   # the hall; the garage
 BIFOLD = {"bed3_door"}   # v69, the client: "we have a bifold white door on the bedroom 3 office too"
@@ -413,12 +419,15 @@ MUSIC = dict(desk=dict(x=(102.0, 270.0), z=(-288.0, -218.0), h=80.0, t=3.0, rise
                        tray=dict(y=58.0, d=40.0)),
              keyboard=dict(x=(118.0, 250.0), d=30.0, h=15.0, key_y=72.0), chair=(170.0, -185.0),
              monitors=[(106.0, -286.0), (247.0, -286.0)],
-             chairbed=dict(x=(100.0, 180.0), z1=54.5, d=100.0, h=87.0, bed_l=188.0),
+             chairbed=dict(x=(100.0, 180.0), z1=79.5, d=100.0, h=87.0, bed_l=188.0),
              kallax=dict(x=(6.0, 83.0), z0=-219.5, d=39.0, h=147.0, cols=2, rows=4, drawers=4, drawer_d=33.0),
-             amp=dict(x=(2.0, 26.0), z=(6.5, 53.5), h=43.0), guitars=[(60.0, -30.0), (60.0, -2.0)],
+             amp=dict(x=(2.0, 26.0), z=(31.5, 78.5), h=43.0), guitars=[(60.0, -5.0), (60.0, 23.0)],
              panels=[("x", 269.0, -205.0, 125.0), ("x", 269.0, -140.0, 125.0), ("c", 103.0, -262.0, 135.0)],
              rug=dict(x=(95.0, 200.0), z=(-205.0, -75.0)), double_bed=dict(w=135.0, l=190.0),
              src="client (the music room, the guitars, the amp, the keyboard) + ikea.com (LYCKSELE, KALLAX) + standard sizes (E)")
+# V2.24, the client: "bedroom 2 has a floating plugsocket and things should be moved back towards the real wall between it and the master
+# bedroom": that wall stands at z 79.5 since V1.20 (FIT bed2), but the chair-bed, the amp, the guitars and the socket by the chair-bed were
+# still on its old line (54.5): all 25 back, against it (check_model: every socket on a wall)
 # V1 (Phase 3): the client's own numbers from the app (house/client_edits.json, written by tools/pull_edits.py) replace the guesses above
 __import__("client_edits").apply(globals())
 
