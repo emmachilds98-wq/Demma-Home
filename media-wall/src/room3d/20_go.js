@@ -522,7 +522,7 @@ function buildHouse() {
     const mx = new THREE.Matrix4();
     /* v69 (B4), the client: "more realistic like our living room": furniture, fittings and soft things with rounded edges (cm by
        material: the whites and woods a little, the suite and cushions a lot); walls, floors and frames stay sharp */
-    const ROUND = { pine: 0.8, pine_dark: 0.3, knob: 1.4, handle_black: 0.7, monitor_back: 1.5, mouse: 1.5, key_dark: 0.25, key_pink: 0.25, book0: 0.3, book1: 0.3, book2: 0.3, book3: 0.3, book4: 0.3, book5: 0.3, birch: 0.6, oak: 0.6, wardrobe: 0.5, gloss: 0.8, door_white: 0.4, door_wood: 0.4, fitting: 6, porcelain: 1,
+    const ROUND = { pine: 0.8, pine_dark: 0.3, knob: 1.4, handle_black: 0.7, newel: 1.2, rail_white: 1.8, monitor_back: 1.5, mouse: 1.5, key_dark: 0.25, key_pink: 0.25, book0: 0.3, book1: 0.3, book2: 0.3, book3: 0.3, book4: 0.3, book5: 0.3, birch: 0.6, oak: 0.6, wardrobe: 0.5, gloss: 0.8, door_white: 0.4, door_wood: 0.4, fitting: 6, porcelain: 1,
       primrose: 4, duvet: 3, pot: 4, lycksele: 3, storebox: 1.5, leather: 2, check: 1, curtain: 1, mattress: 4, pillow: 6 };
     const SOFT = { pillow: 4, mattress: 3, duvet: 3 };
     const CLOTH = { pillow: 1, mattress: 1, duvet: 1, cloth0: 1, cloth1: 1, cloth2: 1, cloth3: 1, cloth4: 1, cloth5: 1, cloth6: 1 };   // V2.17: drawn as cloth (clothBox)   // V1.20: the soft things' edges round in steps (one step read as a chamfer: slabs)
