@@ -12,6 +12,21 @@ const FIN_FLOORS = [["carpet_grey", "Grey carpet"], ["carpet", "Oatmeal carpet"]
 const FIN_FLOOR_KEYS = new Set(["carpet_grey", "carpet", "laminate", "board", "oak", "pine", "tile_f", "marble", "quarry", "concrete", "vinyl", "earth"]);
 const finFloorCol = k => { const pm = ((R.HOUSE3 || {}).photo_meta || {})[k]; return (pm && pm.avg) || ((((R.HOUSE3 || {}).mats || {})[k]) || ["#999999"])[0]; };
 let FIN_LAID = [];
+/* V2.9 (F5, in part): a room's bulbs: their colour (warm 2700 K to daylight 5000 K) and how bright, on the room's ceiling lights. On the
+   ceiling's card and a light's own card; the two ceiling lights that follow you (09_house_views.js placeRoomLights) take them */
+const FIN_BULBS = [["2700", "Warm"], ["3000", "Neutral"], ["4000", "Cool"], ["5000", "Daylight"]], FIN_LUX = [["0.6", "Soft"], ["1", "Normal"], ["1.4", "Bright"]];
+function kelvinHex(k) {   // a bulb's colour temperature as a colour (Tanner Helland's fit)
+  const t = k / 100; let r = 255, g, b;
+  if (t <= 66) { g = 99.47 * Math.log(t) - 161.12; b = t <= 19 ? 0 : 138.52 * Math.log(t - 10) - 305.04; }
+  else { r = 329.7 * Math.pow(t - 60, -0.133); g = 288.12 * Math.pow(t - 60, -0.0755); b = 255; }
+  const c = v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0"); return "#" + c(r) + c(g) + c(b);
+}
+function finBulb(room) { const o = (S.fin || {})[room] || {}; return { k: o[6] || null, lux: o[7] ? +o[7] : 1 }; }
+function finBulbTray(room) {
+  const b = finBulb(room), chips = (L, a, cur) => L.map(([v, t]) => `<button type="button" data-${a}="${v}" aria-pressed="${String(cur) === v}">${t}</button>`).join("");
+  return `<div class="r3d-finsc" role="group" aria-label="The bulbs">${chips(FIN_BULBS, "finbulb", b.k || "2700")}</div>`
+    + `<div class="r3d-finsc" role="group" aria-label="How bright">${chips(FIN_LUX, "finlux", b.lux === 1 ? "1" : String(b.lux))}</div>`;
+}
 function finFloorApply() {   // every room with a floor chosen: a thin floor on its pieces, in that material (only then: nothing added otherwise)
   if (!finSetup() || !FIN.mat3 || !houseG) return;
   for (const m of FIN_LAID) { m.parent && m.parent.remove(m); m.geometry.dispose(); } FIN_LAID = [];
@@ -51,7 +66,7 @@ function finGet(room, slot) { return ((S.fin || {})[room] || {})[slot] || null; 
 function finApplyAll() {   // what's kept, into the palette (on start, after Undo)
   if (!finSetup()) return; finish(null, "walls", null); finish(null, "ceiling", null);
   for (const [room, sl] of Object.entries(S.fin || {})) for (const [s, hex] of Object.entries(sl)) if (+s < 5 && FIN.rooms.includes(room)) finish(room, FIN_NAMES[+s], hex);
-  finFloorApply();
+  finFloorApply(); if (typeof placeRoomLights === "function") { roomKey = ""; placeRoomLights(); }
 }
 function finSet(room, slot, hex) {   // by the scope: this wall, this room's walls (or ceiling), the whole house's
   FIN_UNDO.push(JSON.stringify(S.fin || {})); if (FIN_UNDO.length > 20) FIN_UNDO.shift();
@@ -85,7 +100,8 @@ function finCard(id) {   // [title, now, buttons, -, the tray]
   const scopes = ceil ? [["room", "This room"], ["house", "Whole house"]] : [["wall", "This wall"], ["room", "This room"], ["house", "Whole house"]];
   const tray = `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Where it goes">${scopes.map(([k, t]) => `<button type="button" data-finsc="${k}" aria-pressed="${finScope === k}">${t}</button>`).join("")}</div>`
     + `<div class="r3d-fintray" role="group" aria-label="Colours">${finSwatches().map(([h, t]) => `<button type="button" class="sw" data-finc="${h}" style="--c:${h}" aria-pressed="${!!now && now.toLowerCase() === h.toLowerCase()}" title="${t}" aria-label="${t}"><i></i><span>${finShort(t)}</span></button>`).join("")}`
-    + `<label class="sw any" title="Any colour"><input type="color" data-finany="1" value="${now || "#f4f3ef"}" aria-label="Any colour"><span>Any</span></label></div></div>`;
+    + `<label class="sw any" title="Any colour"><input type="color" data-finany="1" value="${now || "#f4f3ef"}" aria-label="Any colour"><span>Any</span></label></div>`
+    + (ceil ? `<span class="r3d-finlab">The bulbs</span>${finBulbTray(room)}` : "") + `</div>`;
   return [`${roomName(room)}: ${ceil ? "the ceiling" : finScope === "wall" ? `the ${FIN_NAMES[slot]} wall` : "the walls"}`, nm,
     [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), btn("As it is (hold)", { finhold: "1" }), ...(now ? [btn("As drawn", { finc: "" })] : [])], null, tray];
 }
@@ -97,6 +113,16 @@ function finHold(on) {   // As it is: while held, the palette empty (the house a
 }
 if (act) {
   act.addEventListener("click", e => {
+    const bb = e.target.closest("[data-finbulb],[data-finlux]");
+    if (bb && actId && (actId.startsWith("fin:") || actId.startsWith("hitem:"))) { e.stopPropagation();
+      const room = actId.startsWith("fin:") ? actId.split(":")[1] : (HIT(actId.slice(6)) || {}).r; if (!room) return;
+      FIN_UNDO.push(JSON.stringify(S.fin || {})); S.fin = S.fin || {}; const o = S.fin[room] = S.fin[room] || {};
+      if (bb.dataset.finbulb) { if (bb.dataset.finbulb === "2700") delete o[6]; else o[6] = bb.dataset.finbulb; }
+      else { if (bb.dataset.finlux === "1") delete o[7]; else o[7] = bb.dataset.finlux; }
+      if (!Object.keys(o).length) delete S.fin[room];
+      store.set(KEY, S); roomKey = ""; placeRoomLights(); dirty();
+      const fb = finBulb(room); toast(`${roomName(room)}: ${(FIN_BULBS.find(([v]) => v === (fb.k || "2700")) || [0, ""])[1].toLowerCase()} bulbs, ${(FIN_LUX.find(([v]) => +v === fb.lux) || [0, "normal"])[1].toLowerCase()}`);
+      renderAct(); return; }
     const b = e.target.closest("[data-finc],[data-finf],[data-finsc],[data-finundo]"); if (!b || !actId || !actId.startsWith("fin:")) return;
     e.stopPropagation(); const [, room, s] = actId.split(":");
     if (b.dataset.finsc) finScope = b.dataset.finsc;
