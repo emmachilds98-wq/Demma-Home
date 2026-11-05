@@ -47,8 +47,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **V1.55–V1.56:** a walk steps down only on purpose (`walkMove` `badDown`: not sliding along a wall, the living room's flight only facing
   down it, never off an edge); stopped dead at a door's frame with an opening just to one side, it eases toward it and through.
   V1.57: in the hall under the living room's stairs no longer the living room (`walkRoom`: your feet at its tread); down the lower stairs, the kitchen's view (`WALK_VIEW`).
-  V1.58 (every door walked both ways, `check_site.DOORS`): a foot not a point (doorways' hairline gaps); chairs and stools and the stair
-  drawers not in a walk's way; furniture at its true size to the body; a step down tests head and chest below, knee where it is.
+  V1.58 (`check_site.DOORS` walks every door): a foot not a point; chairs, stools, stair drawers not in the way; a step down's head tested below.
 - **V1.53 (the client: double-click to go there, W A S D to walk, a drop-in figure, better overheads):** a double-click (`dblclick`; a
   double-tap on a phone) on any floor you see stands you there in Be there (`room3d/14_views_walk.js` `spotAt`, `goStand`, `freeSpot`;
   through a roof, the first floor down); the figure bottom right (`#r3d-peg`) drags onto the house, a ring and the room's name where it
