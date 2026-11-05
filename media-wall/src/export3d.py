@@ -53,6 +53,10 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
     # v71: each room's outline and floor level (the viewer's From above and On its own views cut the house to it)
     e["rooms"] = {rid: [r["x0"], r["x1"], r["z0"], r["z1"], model.FLOOR_Y[r["floor"]]] for rid, r in model.room_sizes().items()}
     e["ceil"] = model.CEIL
+    # V2.5 (FINISHES_PLAN F2): each room's pieces by floor, for the palette's plan of the rooms (house/surfaces.py: the stairwell is the landing's)
+    import surfaces as _surf
+    e["finish_rooms"] = sorted({rid for f in model.FLOOR_Y for rid, *_ in _surf.PIECES[f]})
+    e["finish_pieces"] = {f: [[e["finish_rooms"].index(rid), x0, x1, z0, z1] for rid, x0, x1, z0, z1 in _surf.PIECES[f]] for f in model.FLOOR_Y}
     e["plants"] = getattr(model.D, "PLANTS", [])                # V1.3: the gardens' plants (survey_data.PLANTS: where, how big, the source)
     e["beyond"] = getattr(model.D, "BEYOND", None)               # V1.4: past the far fence (survey_data.BEYOND): the low building, the hill
     e["things"] = getattr(model.D, "GARDEN_THINGS", [])          # V1.6: the table and chairs, next door's trampoline and sheds
