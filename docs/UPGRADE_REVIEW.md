@@ -280,3 +280,7 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
 4. ~~Republish the shared page~~: not wanted (the client, 4 Nov: "i dont need a copy here just update the live github"); the build no longer makes it (V1.37).
 5. ~~The first floor's sloped ceilings' shade~~ (U8): done in V1.39 (below). (The floor labels on a phone: done in V1.35.)
 6. **A photo from the foot of the lower stairs** to confirm V1.32's opening (STATE.md's questions).
+7. ~~**Walls cut away when they needn't be, from above and at an angle**~~ (the client, 5 Nov: "when in overhead and angled views, sometimes
+   walls are clipping out when not necessary for viewing"): done in V2.10. A first-floor room On its own, and the first floor on its own,
+   hid the roof's group, where the first floor's gable, the dormer's cheeks and the slopes are: kept now, the roof's coverings and the
+   ceilings off, cut at the ceiling's height. If more turn up, the rule: a view hides a group only when nothing in it is a wall of what's shown.
