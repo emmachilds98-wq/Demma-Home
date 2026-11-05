@@ -116,6 +116,8 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
     the way up to the landing's ceiling (the client, 5 Nov): drawn so, to the landing's corner by bedroom 3.
   - **The stairwell over the living room's flight is 10 cm wider** than the flight at the first floor, the banister 10 over (the client, 5 Nov).
   - **Walls smooth, ceilings artex** (the client, 5 Nov): every wall flat emulsion; every ceiling the popcorn artex, white in the house (the living room's as picked in Look).
+  - **The store under the lower stairs runs back to the line of the wall past the stairs' top step** (the client, 5 Nov, wall D on our
+    plan): its back wall one straight line with that one; a washer dryer fits in the corner there with the store door still opening.
   - **The WC:** its door opens in toward the outside wall (hinged at that end); its light a pull cord just inside on the right as you walk in (the client, 5 Nov, a picture; the cord's length a guess, in Measure).
   - **Light switches (the client, 5 Nov):** the bathroom's is a pull cord from the ceiling, on the right as you walk in (no wall switch by
     its door; the cord's length a guess, in Measure); the lower stairs' is at their foot on the left-hand wall looking down.
