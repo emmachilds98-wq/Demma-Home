@@ -1514,8 +1514,15 @@ def bathroom(o):
     v = B["vanity"]; za, zb = v["z"]; xc = xw - v["d"]
     o.box("gloss", xc + 3, y, za + 1, xw, y + 10, zb - 1)          # plinth, set back
     o.box("gloss", xc, y + 10, za, xw, y + v["top"] - 4, zb)        # carcass
-    o.box("fitting", xw - v["basin_d"], y + v["top"] - 4, za - 1, xw, y + v["top"], zb + 1)      # the basin's top
-    o.box("porcelain", xw - v["basin_d"] + 6, y + v["top"] + 0.1, za + 8, xw - 10, y + v["top"] + 0.4, zb - 8)   # its bowl, seen from above
+    # V2.17 (REAL_PLAN R4): the basin's top round an opening, the basin itself sunk in it (its sides, its floor, the plughole), not a plate
+    bx0_, bx1_, bz0_, bz1_ = xw - v["basin_d"] + 6, xw - 10, za + 8, zb - 8
+    yt, yb = y + v["top"], y + v["top"] - 13
+    for (x0_, x1_, z0_, z1_) in ((xw - v["basin_d"], bx0_, za - 1, zb + 1), (bx1_, xw, za - 1, zb + 1), (bx0_, bx1_, za - 1, bz0_), (bx0_, bx1_, bz1_, zb + 1)):
+        o.box("fitting", x0_, yt - 4, z0_, x1_, yt, z1_)
+    for (x0_, x1_, z0_, z1_) in ((bx0_, bx0_ + 1.2, bz0_, bz1_), (bx1_ - 1.2, bx1_, bz0_, bz1_), (bx0_ + 1.2, bx1_ - 1.2, bz0_, bz0_ + 1.2), (bx0_ + 1.2, bx1_ - 1.2, bz1_ - 1.2, bz1_)):
+        o.box("porcelain", x0_, yb, z0_, x1_, yt - 0.05, z1_)
+    o.box("porcelain", bx0_ + 1.2, yb, bz0_ + 1.2, bx1_ - 1.2, yb + 1.2, bz1_ - 1.2)
+    o.lathe("chrome", (bx0_ + bx1_) / 2, yb + 1.2, (bz0_ + bz1_) / 2, [(0, 0), (2, 0), (2, 0.2), (0, 0.2)])
     sec = [za, za + 28, za + 56.5, zb]                              # a drawer over a door at the far end, two doors nearer the door
     for zz in sec[1:-1]:
         o.box("gap", xc - 0.3, y + 11, zz - 0.3, xc, y + v["top"] - 5, zz + 0.3)
@@ -1524,8 +1531,8 @@ def bathroom(o):
         o.box("chrome", xc - 2.5, y + 40, zz - 0.6, xc, y + 56, zz + 0.6)
     o.box("chrome", xc - 2.5, y + 72, (sec[0] + sec[1]) / 2 - 7, xc, y + 73.2, (sec[0] + sec[1]) / 2 + 7)
     zt = (za + zb) / 2                                              # the black waterfall tap
-    o.box("black", xw - 8, y + v["top"], zt - 1.5, xw - 4, y + v["top"] + 22, zt + 1.5)
-    o.box("black", xw - 16, y + v["top"] + 18, zt - 2.5, xw - 4, y + v["top"] + 22, zt + 2.5)
+    o.box("handle_black", xw - 8, y + v["top"], zt - 1.5, xw - 4, y + v["top"] + 22, zt + 1.5)      # V2.17: rounded
+    o.box("handle_black", xw - 16, y + v["top"] + 18, zt - 2.5, xw - 4, y + v["top"] + 22, zt + 2.5)
     o.item("bath.slim", "The slim cabinet", "bathroom", src="client's photo + E", data=("BATH", "slim"), axis="z")
     sl = B["slim"]; s0, s1 = sl["z"]                                # the slim cabinet, its round vents
     o.box("gloss", xw - sl["d"], y + 0.3, s0, xw, y + sl["h"], s1)
@@ -1535,7 +1542,7 @@ def bathroom(o):
     t = B["toilet"]; tx0, tx1 = t["x"]                              # the close-coupled toilet under the window
     o.box("fitting", tx0, y + 40, zi + 0.5, tx1, y + t["cistern_h"], zi + 18)
     toilet(o, "fitting", tx0 + 2, tx1 - 2, zi + 18, zi + t["d"], y, y + 40)   # v70: the pan and the seat, turned
-    o.box("duvet", tx0 + 6, y + t["cistern_h"], zi + 3, tx0 + 17, y + t["cistern_h"] + 10, zi + 14)   # the roll on the cistern
+    o.lathe("paper", tx0 + 11.5, y + t["cistern_h"], zi + 8.5, [(2, 0), (5.3, 0), (5.5, 0.4), (5.5, 9.6), (5.3, 10), (2, 10)])   # the roll on the cistern (V2.17: a roll)
     o.item("bath.bath", "The bath, rail and curtain", "bathroom", src="client's photo + E (170?)", data=("BATH", "bath"), axis="z")
     b = B["bath"]; bx0, bx1 = b["x"]; bz0, bz1 = zi + 0.3, zi + b["l"]   # the bath, its panel and rim
     hb_ = b["h"] - 3                                                # v70: the bath hollow: its panel, its sides, the tub's floor
@@ -1545,16 +1552,16 @@ def bathroom(o):
     o.box("fitting", bx0 + 6, y + 12, bz0 + 6, bx1 - 6, y + 13, bz1 - 6)
     for (x0, x1, z0, z1) in ((bx0, bx1, bz0, bz0 + 6), (bx0, bx1, bz1 - 6, bz1), (bx0, bx0 + 6, bz0, bz1), (bx1 - 6, bx1, bz0, bz1)):
         o.box("fitting", x0, y + b["h"] - 3, z0, x1, y + b["h"], z1)
-    o.box("black", (bx0 + bx1) / 2 - 3, y + 13, bz0 + 22, (bx0 + bx1) / 2 + 3, y + 13.3, bz0 + 28)   # the plug, in the tub
+    o.lathe("chrome", (bx0 + bx1) / 2, y + 13, bz0 + 25, [(0, 0), (2.6, 0), (2.6, 0.3), (0, 0.3)])   # the plug, in the tub (V2.17: round)
     ry = y + B["rail_y"]; rx = bx1 - 1                              # the rail: along the bath's open side and across its end
     o.box("chrome", rx - 1, ry, bz0 + 4, rx + 1, ry + 2, bz1)
     o.box("chrome", bx0 + 0.5, ry, bz1 - 2, rx + 1, ry + 2, bz1)
     for (cx, cz) in ((rx, bz0 + 6), (rx, bz1 - 1), (bx0 + 3, bz1 - 1)):        # v82: up to the dormer's ceiling (the beam's, by the door end)
         o.box("chrome", cx - 0.5, ry + 2, cz - 0.5, cx + 0.5, y + (B["beam_y"] if cz < DORMER_BACK else CEIL), cz + 0.5)
-    for k in range(6):                                             # the curtain, drawn back to the door end (v69: in folds)
-        za_ = bz1 - 16 + k * 2.4; dx = 1.6 * (k % 2)
-        o.box("curtain", rx - 2.5 + dx, y + 50 + (k % 3), za_, rx - 0.5 + dx, ry, za_ + 2.6)
-    o.box("black", bx0 + 0.6, y + 120, bz1 - 22, bx0 + 2.5, y + 192, bz1 - 20)    # the riser and the black shower head
+    for k in range(12):                                            # the curtain, drawn back to the door end (v69: in folds; V2.17: finer)
+        za_ = bz1 - 17 + k * 1.3; dx = 1.4 * math.sin(k * 1.3)
+        o.box("curtain", rx - 2 + dx, y + 50 + (k % 3), za_, rx - 0.8 + dx, ry, za_ + 1.5)
+    o.lathe("black", bx0 + 1.6, y + 120, bz1 - 21, [(0, 0), (1.2, 0), (1.2, 2), (0.9, 2.4), (0.9, 70), (1.2, 70.4), (1.2, 72), (0, 72)])   # the riser (V2.17: turned)
     # V1.23 (Q6): the bath filler, black to match the shower, on the wall at the plug end (it had no taps): a plate, the spout, two levers
     yt_ = y + b["h"] + 14
     o.box("black", bx0 + 0.2, yt_ - 4, bz0 + 17, bx0 + 1.4, yt_ + 4, bz0 + 33)
@@ -1562,7 +1569,8 @@ def bathroom(o):
     o.box("black", bx0 + 13, yt_ - 4, bz0 + 23.5, bx0 + 15, yt_ - 1.2, bz0 + 26.5)
     for zc in (bz0 + 19, bz0 + 31):
         o.box("black", bx0 + 1.4, yt_ - 1, zc - 1, bx0 + 7, yt_ + 1, zc + 1)
-    o.box("black", bx0 + 2.5, y + 190, bz1 - 28, bx0 + 14, y + 194, bz1 - 14)
+    o.box("handle_black", bx0 + 1.4, y + 191.5, bz1 - 22, bx0 + 8, y + 193, bz1 - 20)            # the arm, and the round shower head (V2.17)
+    o.lathe("black", bx0 + 11, y + 189.5, bz1 - 21, [(0, 0), (6.5, 0), (7, 0.8), (7, 2.4), (5.5, 3.4), (1, 3.6), (0, 3.6)])
     o.item("bath.tiles", "The wall tiles and the tiled box", "bathroom", kind="finish", src="client's photo + E", data=("BATH", "tiles"), measure=False)
     T, til = "stone", B["tiles"]                                   # the wall tiles, just proud of each wall
     op = next(p for p in D.OPENINGS if p["id"] == "bath_window")
@@ -2059,12 +2067,13 @@ def landing(o):
     x0, x1 = L["rail_x"]; h = L["rail_h"]
     za = max(fs["z0"], next(r for r in rooms("first") if r["id"] == "landing")["z0"])        # v77: from the short wall by the bathroom door
     o.item("landing.banister", "The banister", "landing", kind="fitting", src="client's photos + E", data=("LANDING", "rail_x"), axis="z")
-    for zz in (za, (za + fs["z1"]) / 2 - 4.5, fs["z1"] - 9):                                   # the posts
-        o.box("upvc", x0 - 2, y, zz, x1 + 1, y + h + 8, zz + 9)
-    o.box("upvc", x0 - 1, y + h - 7, za, x1 + 0.5, y + h, fs["z1"])                          # the top rail, two rails under it
+    for zz in (za, (za + fs["z1"]) / 2 - 4.5, fs["z1"] - 9):                                   # the posts (V2.17, REAL_PLAN R4: their edges eased,
+        o.box("newel", x0 - 2, y, zz, x1 + 1, y + h + 8, zz + 9)                              # a turned cap on each)
+        o.lathe("newel", (x0 + x1) / 2 - 0.5, y + h + 8, zz + 4.5, [(0, 0), (5.2, 0), (5.2, 1.2), (4, 2), (3.2, 3.6), (3.8, 5.4), (2.6, 7.2), (0, 7.6)])
+    o.box("rail_white", x0 - 1, y + h - 7, za, x1 + 0.5, y + h, fs["z1"])                   # the top rail (rounded), two rails under it
     for yy in (35.0, 62.0):
-        o.box("upvc", x0, y + yy, za, x1 - 1, y + yy + 9, fs["z1"])
-    o.box("upvc", x0, y, za, x1 - 1, y + 9, fs["z1"])                                         # its foot
+        o.box("rail_white", x0, y + yy, za, x1 - 1, y + yy + 9, fs["z1"])
+    o.box("rail_white", x0, y, za, x1 - 1, y + 9, fs["z1"])                                   # its foot
     # v77: the side of the short wall by the bathroom door (in line with the door, the banister ends at it), back to the bathroom's wall
     # over the stairs (the stairwell opens a little further back than the landing, for the headroom)
     o.end()
@@ -2209,7 +2218,7 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "laminate": ("#a9a39a", 0.7), "oak": ("#b8844f", 0.55), "screen": ("#0d0f12", 0.15), "pc_white": ("#eeeeec", 0.3), "pc_glow": ("#dfe6ff", 0.2),
     "pegboard": ("#f4f4f2", 0.6), "ivy": ("#2f5a2b", 0.8), "blind": ("#4a4d52", 0.9), "blind_cloth": ("#4a4d52", 0.9), "books": ("#8a3b2e", 0.8), "jar": ("#d9a441", 0.4), "pot": ("#e8e3d8", 0.5),
     "carpet_grey": ("#6f6f73", 1.0), "red_gloss": ("#c8201e", 0.15), "red_back": ("#9d1714", 0.4), "cat": ("#bdbcb8", 1.0), "sisal": ("#cdb88f", 0.9),
-    "pink": ("#e8607a", 0.8), "pine": ("#c99a55", 0.55), "pine_dark": ("#7a5a30", 0.6), "knob": ("#7a5a30", 0.45), "handle_black": ("#151517", 0.4), "bin_white": ("#f1f1ef", 0.3), "paper": ("#f7f6f2", 0.9), "monitor_back": ("#202124", 0.45), "mouse": ("#1a1a1c", 0.35), "key_dark": ("#2b2c30", 0.55), "key_pink": ("#f6cddb", 0.5),
+    "pink": ("#e8607a", 0.8), "pine": ("#c99a55", 0.55), "pine_dark": ("#7a5a30", 0.6), "knob": ("#7a5a30", 0.45), "newel": ("#f4f3ef", 0.35), "rail_white": ("#f4f3ef", 0.35), "handle_black": ("#151517", 0.4), "bin_white": ("#f1f1ef", 0.3), "paper": ("#f7f6f2", 0.9), "monitor_back": ("#202124", 0.45), "mouse": ("#1a1a1c", 0.35), "key_dark": ("#2b2c30", 0.55), "key_pink": ("#f6cddb", 0.5),
     "book0": ("#7a2f2f", 0.8), "book1": ("#2f4a6b", 0.8), "book2": ("#d9cfb8", 0.85), "book3": ("#3c5a3a", 0.8), "book4": ("#1f1f22", 0.7), "book5": ("#b8873d", 0.8), "wardrobe": ("#f2f1ec", 0.35), "duvet": ("#e9e6df", 0.95), "leather": ("#1f1d1d", 0.45), "check": ("#7d7e86", 0.95),
     "lawn": ("#5f7043", 1.0), "paving": ("#bdb8ae", 0.95), "road": ("#59595c", 0.95), "fence": ("#6b5644", 0.9),
 }
@@ -2310,7 +2319,7 @@ def export():
 # polygon offset, constant: no bleed at a slant). The structure under the finishes under everything fitted; a few pairs by name
 STRUCTURE = {"brick", "brick_buff", "party", "slab", "eaves", "felt", "hung", "lead", "earth", "concrete", "timber", "chipboard", "soldier", "quarry"}
 FINISH = {"paint", "ceiling", "artex", "porch_in"}
-RANK_BY_NAME = {"party": -1, "stairpaint": 2, "ceiling": 1.5, "artex": 1.5, "wardrobe_back": 2, "tapestry_dark": 2, "gap": 4, "skirting": 4, "metro": 4, "stone": 4,
+RANK_BY_NAME = {"party": -1, "stairpaint": 2, "newel": 1, "ceiling": 1.5, "artex": 1.5, "wardrobe_back": 2, "tapestry_dark": 2, "gap": 4, "skirting": 4, "metro": 4, "stone": 4,
                 "contact": 6, "blind_cloth": 2}   # V1.47: the roller over its cloth
 
 
