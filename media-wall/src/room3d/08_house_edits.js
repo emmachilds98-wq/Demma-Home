@@ -126,7 +126,7 @@ const FIELDS = [["w", "Width"], ["h", "Height"], ["up", "Up from the floor"], ["
 function pieceNow(id) {
   const it = HIT(id), e = {}, ds = DS();
   if (ds) for (const v of Object.values(ds.rows("edits") || {})) if (v && v.item === id && typeof v.value === "number") e[v.field] = v.value;
-  return { w: e.w ?? it.s[0], h: e.h ?? it.s[1], up: e.up ?? it.s[2], along: e.along ?? it.al };
+  return { w: e.w ?? it.s[0], h: e.h ?? it.s[1], up: e.up ?? it.s[2], along: e.along ?? it.al, off: e.removed ?? 0 };
 }
 function pieceDelta(id) { const it = HIT(id), c = pieceNow(id); return [c.along - it.al, c.w - it.s[0], c.h - it.s[1], c.up - it.s[2]]; }
 function pieceBox(id) {
@@ -137,6 +137,7 @@ function storeEdits() {   // Measure's rows, as the engine's edits (HEDITS)
   if (!DS() || !R.HOUSE3) return;
   const out = {};
   for (const [id, it] of Object.entries(R.HOUSE3.items || {})) {
+    if (pieceNow(id).off > 0) { out[id] = { from: it.b, to: it.b, removed: true }; continue; }   // V2.24 (REAL_PLAN R6): taken out
     const [dA, dW, dH, dU] = pieceDelta(id); if (!dA && !dW && !dH && !dU) continue;
     const E = { from: it.b, to: pieceBox(id) }, o = it.op;
     if (o) E.op = { axis: o.axis, line: o.line, a: o.a, b: o.b, y0: o.y0, y1: o.y1, a2: o.a + dA, b2: o.b + dA + dW, y02: o.y0 + dU, y12: o.y1 + dU + dH };
@@ -147,11 +148,11 @@ function storeEdits() {   // Measure's rows, as the engine's edits (HEDITS)
 }
 function paintEdits() {   // V1.51: Measure's list of the sizes changed in the 3D: a piece's name flies to it, As planned puts it back
   const box = document.getElementById("ms-elist"), grp = document.getElementById("ms-edits"); if (!box || !grp || !DS()) return;
-  const ids = [...new Set(Object.values(DS().rows("edits") || {}).map(v => v && v.item))].filter(id => HIT(id) && pieceDelta(id).some(Boolean));
+  const ids = [...new Set(Object.values(DS().rows("edits") || {}).map(v => v && v.item))].filter(id => HIT(id) && (pieceDelta(id).some(Boolean) || pieceNow(id).off > 0));
   grp.hidden = !ids.length;
   const W = { w: "wide", h: "high", up: "up", along: "along" };
   box.innerHTML = ids.map(id => { const it = HIT(id), c = pieceNow(id), was = { w: it.s[0], h: it.s[1], up: it.s[2], along: it.al };
-    const ch = Object.keys(W).filter(k => Math.abs(c[k] - was[k]) > 0.05).map(k => `${cmR(c[k])} ${W[k]}, was ${cmR(was[k])}`).join(" · ");
+    const ch = c.off > 0 ? "taken out" : Object.keys(W).filter(k => Math.abs(c[k] - was[k]) > 0.05).map(k => `${cmR(c[k])} ${W[k]}, was ${cmR(was[k])}`).join(" · ");
     return `<div class="ms-row ms-erow"><button type="button" class="t ms-ego" data-epiece="${id}">${it.n}<small>${ch}</small></button><button type="button" class="btn" data-ereset="${id}">As planned</button></div>`; }).join("");
 }
 document.addEventListener("click", e => {
@@ -172,7 +173,7 @@ const pieceLine = id => { const it = HIT(id), c = pieceNow(id), ed = pieceDelta(
 let sizeT = 0;
 async function setPiece(id, field, v) {
   const it = HIT(id), ds = DS(); if (!it || !ds) return;
-  const base = field === "along" ? it.al : it.s[["w", "h", "up"].indexOf(field)], rid = `${id}~${field}`;
+  const base = field === "removed" ? 0 : field === "along" ? it.al : it.s[["w", "h", "up"].indexOf(field)], rid = `${id}~${field}`;
   try { if (v == null || Math.abs(v - base) < 0.05) { if (ds.rows("edits")[rid]) await ds.del("edits", rid); }
         else await ds.put("edits", rid, { item: id, field, value: v }); }
   catch (e) { toast("That didn't save: try again"); }

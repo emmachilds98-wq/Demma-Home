@@ -55,7 +55,8 @@ function actItems(id) {     // [title, how it is now, buttons]
       btn(up ? "Lower the bed" : "Lift the bed", { hbed: up ? "down" : "up" }), ...(ROOMV() && RMODE !== "above" ? [btn("See it from above", { rmode: "above" })] : [])]]; }
   if (id.startsWith("fin:")) return finCard(id);   // V2.6: a wall's or a ceiling's colours (23_finish.js)
   if (id.startsWith("hitem:")) { const k = id.slice(6), it = HIT(k); if (!it) return null;   // V1.50: a piece in the house, its size
-    return [it.n, pieceLine(k), [btn("Change its size", { actopen: "hsize:" + k }), ...(pieceDelta(k).some(Boolean) ? [btn("As planned", { hreset: k })] : [])], null,
+    const canOff = !["door", "window", "switch", "socket", "finish", "radiator"].includes(it.k);   // V2.24 (REAL_PLAN R6): a piece can be taken out
+    return [it.n, pieceLine(k), [btn("Change its size", { actopen: "hsize:" + k }), ...(canOff ? [btn("Take it out", { hoff: k })] : []), ...(pieceDelta(k).some(Boolean) ? [btn("As planned", { hreset: k })] : [])], null,
       it.k === "light" && it.r ? `<div class="r3d-fin"><span class="r3d-finlab">The bulbs</span>${finBulbTray(it.r)}${finFitTray(it.r)}</div>` : null]; }   // V2.9: a light's bulbs; V2.15: its fitting
   if (id.startsWith("hsize:")) { const k = id.slice(6), it = HIT(k); if (!it) return null; const c = pieceNow(k), door = it.k === "door";
     return [it.n, pieceLine(k), [btn("Done", { actopen: "hitem:" + k }), btn("As planned", { hreset: k })],
@@ -263,6 +264,7 @@ if (act) {
     if (d.actopen) { actId = d.actopen; renderAct(); if (d.actopen.startsWith("hsize:")) { const f = qs(".r3d-actfields input"); if (f) f.focus({ preventScroll: true }); } return; }
     if (d.hstep && actId) { const k = actId.split(":")[1], f = d.hstep, v = clampF(f, cmR(pieceNow(k)[f] + +d.by)), inp = qs(`.r3d-actfields [data-hfield="${f}"]`);   // V1.50
       if (inp) inp.value = v; setPiece(k, f, v); return; }
+    if (d.hoff) { const k = d.hoff, it = HIT(k); if (!it || !DS()) return; setPiece(k, "removed", 1).then(() => { closeAct(); toast(`${it.n}: taken out (Measure puts it back)`); }); return; }
     if (d.hreset) { const k = d.hreset, ds = DS(); if (!ds) return;
       Promise.all(Object.entries(ds.rows("edits")).filter(([, v]) => v && v.item === k).map(([rid]) => ds.del("edits", rid))).then(() => { if (actId) renderAct(); }); return; }
     if (d.nowp) { S.nowp = ((S.nowp || 0) + +d.nowp + NOWP.length) % NOWP.length; applyNow(); store.set(KEY, S); renderAct(); return; }

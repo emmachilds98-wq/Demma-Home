@@ -65,7 +65,7 @@ def plan(raw, when):
             by.setdefault(r["item"], {})[r["field"]] = r.get("value")
     for iid, f in by.items():
         it = items[iid]; s = it["size"]
-        if f.get("removed") is True:
+        if f.get("removed") is True or f.get("removed") == 1:   # V2.24: the site stores it as 1
             questions.append(f"{it['name']} ({it['room']}): taken out in the app: is it gone for good?")
             continue
         room = next((r for r in XH.rooms() if r["id"] == it["room"]), None)
