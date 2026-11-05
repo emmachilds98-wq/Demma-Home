@@ -33,12 +33,16 @@ function outdoor() {
     u.sunPosition.value.copy(dayLight.position).sub(dayLight.target.position).normalize();
     sky.raycast = () => {}; scene.add(sky);
     const H = R.HOUSE3, g = OUT.ground = new THREE.Group(); g.name = "ground";
-    const mat = reg(new THREE.MeshStandardMaterial({ color: "#56633f", roughness: 1, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 4, polygonOffsetUnits: 4 })); mat.clippingPlanes = [];
+    /* V2.28, the client: "best version with best performance and quality should be on pc": the ground round the house was one flat
+       colour, 3 km of it, washed to khaki by the sun on a PC; now the lawn's own photo and relief, in metres (worldUV), as the gardens' lawn */
+    const LT = houseTex("lawn");
+    const mat = reg(new THREE.MeshStandardMaterial({ color: LT ? "#ffffff" : "#56633f", map: LT ? LT.map : null, normalMap: LT && LT.normal || null, roughness: 1, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 4, polygonOffsetUnits: 4 })); mat.clippingPlanes = [];
     const yt = (H.drive ?? -15) - 2, yb = (H.lawn ?? -260) - 2, A0 = -125, A1 = -28, E = 300000, zf = H.front, zb = H.back;   // V1.4: 3 km out (was 80 m), under the haze   // the alley (x -125 to -28)
     const quad = (x0, x1, z0, y0, z1, y1, alley, slope) => {   // a strip of ground from (z0, y0) to (z1, y1), level across x
       const g2 = new THREE.BufferGeometry(), P = [x0, y0, z0, x1, y0, z0, x1, y1, z1, x0, y1, z1].map((v, i) => i % 3 === 0 ? -v * M : v * M);
       g2.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); g2.setIndex([0, 1, 2, 0, 2, 3]);
       g2.setAttribute("normal", new THREE.Float32BufferAttribute([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0], 3));   // lit as level ground: the slope doesn't read as a lighter band
+      worldUV(g2, "lawn");
       const m = new THREE.Mesh(g2, mat); m.receiveShadow = true; m.raycast = () => {}; m.userData.alley = !!alley; m.userData.slope = !!slope; g.add(m); };
     quad(-E, E, -E, yb, zb, yb);                                                                    // the gardens' side, a storey down
     quad(-E, A0, zb, yb, zf, yt, false, true); quad(A0, A1, zb, yb, zf, yt, true, true); quad(482, E, zb, yb, zf, yt, false, true);   // the slope the terrace is built into (by it, the alley's own steps with Gardens on); V1.47, the client: "the garden green floor can be seen through the window of the kitchen": not across the house (A1 to its party wall, 482), where it ran through the lower floor's rooms
