@@ -190,11 +190,11 @@ def main():
             if phone:                                           # V2.13 (FINISHES F6): a scheme saved, another set, the first back in one tap
                 sc = pg.evaluate("""async () => { const sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), was = R3D.finishes();
                   try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {}
-                  R3D.setFinishes({ bed2: { 0: '#899081', 5: 'oak' } }); await sl(200); q('#r3d-finschname').value = 'A'; q('#r3d-finschsave').click();
+                  R3D.setFinishes({ bed2: { 0: '#899081', 5: 'oak', 8: 'dome' } }); await sl(200); q('#r3d-finschname').value = 'A'; q('#r3d-finschsave').click();
                   R3D.setFinishes({ landing: { 4: '#e8c0c8' } }); await sl(200); q('[data-finsch="0"]').click(); await sl(300);
                   const got = JSON.stringify(R3D.finishes()); try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {} R3D.setFinishes(was); return got; }""")
-                if sc != '{"bed2":{"0":"#899081","5":"oak"}}':
-                    fails.append(f"{w}: the house's colours saved as a scheme, others set, the scheme back: {sc} (want bedroom 2's back wall and oak floor)")
+                if sc != '{"bed2":{"0":"#899081","5":"oak","8":"dome"}}':
+                    fails.append(f"{w}: the house's colours saved as a scheme, others set, the scheme back: {sc} (want bedroom 2's back wall, oak floor and flush dome)")
             if phone:                                           # V1.53: the floor from overhead, then the figure dropped in
                 dr = pg.evaluate(DROP)
                 if dr.get("off") or dr.get("said") != "Bedroom 3" or dr.get("view") != "office" or dr.get("mode") != "stand" or abs(dr.get("eye", 0) - 420) > 15:

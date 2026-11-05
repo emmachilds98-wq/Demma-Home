@@ -48,7 +48,7 @@ function placeRoomLights() {
   const rr = b && R.HOUSE3.rooms && R.HOUSE3.rooms[VIEW_ROOM[S.view]], area = rr ? (rr[1] - rr[0]) * (rr[3] - rr[2]) / 1e4 : 10;
   const ks = Math.min(1.3, Math.max(0.75, Math.sqrt(area / 10)));   // v72 (B2): a big room's light reaches its corners, a small one doesn't glare
   const fb = typeof finBulb === "function" && VIEW_ROOM[S.view] ? finBulb(VIEW_ROOM[S.view]) : { k: null, lux: 1 };   // V2.9: the room's bulbs (23_finish.js)
-  ROOMLIGHTS.forEach((l, k) => { const L = list[k]; l.visible = !!L; if (L) { l.position.copy(v3(L.x, L.y - 40, L.z)); l.intensity = (day ? 1.2 : 3.2) * ks * fb.lux;
+  ROOMLIGHTS.forEach((l, k) => { const L = list[k]; l.visible = !!L; if (L) { l.position.copy(v3(L.x, L.y - (typeof finFitDrop === "function" ? finFitDrop(L.room) : 40), L.z)); l.intensity = (day ? 1.2 : 3.2) * ks * fb.lux;
     l.color.set(fb.k ? kelvinHex(+fb.k) : "#ffcf98"); } });
   const key = b ? b.join() : "";
   if (key === roomKey) return; roomKey = key;
@@ -70,6 +70,7 @@ function houseEnv() {
 }
 const finishEnv = m => m.userData.hk === "glass" ? 0.3 : m.roughness <= 0.3 ? 0.9 : m.roughness <= 0.6 ? 0.6 : 0.45;   // v72 (B3): gloss, satin, matt
 let RMODE = "in", hidMode = [], RPLANES = [];   // v71: how a room of the house is seen (in it, above, on its own) and what that put away
+const FIN_PEND = {};   // V2.15 (FINISHES F5): each room's own ceiling light, its own group (20_go.js), for a fitting to stand in for it
 const HPARTS = {};     // v68: the house's moving pieces (the master bedroom's ottoman lid), each its own group on its hinge
 /* v55: the floor picker. All lifts the floors apart (the first floor up, the lower ground floor down) so each one shows; First, Ground and
    Lower show the house up to that floor, the ones above taken off (Lower takes the living room itself off too); only the top floor's
