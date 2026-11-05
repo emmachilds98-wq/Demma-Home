@@ -251,33 +251,10 @@ def paint_table():
 
 
 
-# v27: the flip-top's rows (v15–v26), out of the buy list since the dining cabinet became the plan; section 5 costs the alternative with them
-FLIPTOP_ROWS = [
-    ("To buy", "Solid oak for the flip-top: two panels 110 × 80 × 2.7 with pegged breadboard ends, the top and the half (edge-glued staves from a timber merchant, who can also radius the corners) <b>(changed in v15: the half replaces the leaf)</b>", "6 Dining wall", "1 set", 280, 480),
-    ("To buy", "Two Häfele Hebgo heavy-duty folding brackets, 287.43.428 (580 arm, 500 kg a pair) <b>(new)</b>", "6 Dining wall", "2", 70, 120),
-    ("To buy", "Union PowerLoad lift-off hinges, 100 × 88, one 3-pack (all the same hand) <b>(new)</b>", "6 Dining wall", "1", 16, 20),
-    ("To buy", "The gate leg: two tapered oak legs 73.3 × 4.5 to 3 and a 94 × 7 × 2 oak apron (from the cutting list), two 75 mm butt hinges, two folding locking stays <b>(new in v15: instead of eight legs and the leaf's leg case)</b>", "6 Dining wall", "1", 40, 90),
-    ("To buy", "Oak for the hinge rail (110 × 4 × 7.3), two oak turn buttons, a magnetic catch, felt pads <b>(changed in v15)</b>", "6 Dining wall", "1", 15, 30),
-    ("To buy", "Folding chairs, IKEA FRÖSVI (TERJE's successor, the same size) or similar with a hole in the back for a hook, four, or six for six at the table (skip if yours fit: seat about 45–48) <b>(changed in v20)</b>", "6 Dining wall", "4–6", 100, 240),
-    ("To buy", "The chair cupboard beside the table: oak (or oak-faced ply) for its two sides, top, floor and shelf and two doors (cutting list), a 6 mm back, four concealed soft-close hinges, two push latches, two screws and plugs for its top rail <b>(new in v20)</b>", "6 Dining wall", "1", 120, 240),
-    ("To do", "Fix the backboard and hinge rail, hang the brackets and the top, fit the half on its flip-top hinges and the gate leg under it; check it opens, locks, folds and folds up", "6 Dining wall", "", None, None),
-    ("To do", "Build the chair cupboard and stand it in the gap between the table's window end and the pipe boxing: level it, screw its top rail to the wall, hang the doors to swing towards the table; stand two folded chairs on its floor and two on its shelf <b>(new in v20)</b>", "6 Dining wall", "", None, None),
-]
 
 
-# v30: the sliding cabinet (v29) is the alternative; its own rows, out of the buy list, cost it in section 5
-SLIDE_ROWS = [
-    ("To buy", "The dining cabinet: oak-faced ply cut to size, 18 mm for its two ends, floor, partition, chair shelf, linen floor, the drawer front and the two sliding doors (98.7 × 183.3), 19 mm for the top (it carries the track); a 6 mm ply back; 12 mm ply for the drawer box (the cutting list) <b>(changed in v29: two sliding doors across the front)</b>", "6 Dining wall", "1 set", 300, 540),
-    ("To buy", "Oak for the cabinet's hinge rail (91 × 19.2 × 7), the eight apron rails and the four tapered legs (6.5 × 4.5) <b>(changed in v29)</b>", "6 Dining wall", "1", 35, 70),
-    ("To buy", "The doors' sliding gear: Häfele Slido Classic 40 IF C, the fitting set for two doors with soft close (402.33.027), a 2.5 m double top track for a groove (402.33.652) and a bottom guide track (402.30.802), both cut to 194.4; a pair of 150 mm drawer runners, two magnetic catches and a knob for the folded table, two steel angle brackets for the wall <b>(changed in v29: sliding doors, so no door hinges or door knobs)</b>", "6 Dining wall", "1", 110, 190),
-]
-CAB_ONLY = ("The dining cabinet: oak-faced ply", "Oak for the cabinet's hinge rail", "The doors' hinges and catches")
 
 
-def slide_cost():
-    """The sliding cabinet's cost: the buy list's shared dining rows (the table, its hinges, legs, chairs) and its own three."""
-    rows = [r for r in cabinet_rows() if not _plain_txt(r[1]).startswith(CAB_ONLY)] + SLIDE_ROWS
-    return sum(r[4] or 0 for r in rows), sum(r[5] or 0 for r in rows)
 
 
 
@@ -660,24 +637,8 @@ DIAGRAMS = {"front": "front", "section": "section", "drawer_layouts": "drawer_la
             "cab_carcass": "cab_carcass", "cab_section": "cab_section", "cab_elevation": "cab_elevation", "cab_plan": "cab_plan"}   # v30: the compact cabinet
 
 
-def need_html(st):
-    cols = [(lab, st.get(k, [])) for k, lab in (("parts", "Parts"), ("hardware", "Hardware and fixings"), ("tools", "Tools"))]
-    cols = [(lab, items) for lab, items in cols if items]
-    if not cols:
-        return ""
-    return ("<div class='need'>" + "".join(f"<div><h5>{lab}</h5><ul>" + "".join(f"<li>{i}</li>" for i in items) + "</ul></div>" for lab, items in cols)
-            + "</div>")
 
 
-def full_html(st):
-    """Every instruction for one step, numbered straight through its sub-assemblies."""
-    if not st.get("parts_full"):
-        return "<ol>" + "".join(f"<li>{d}</li>" for d in st["do"]) + "</ol>"
-    out, k = [], 1
-    for head, items in st["parts_full"]:
-        out.append(f"<h5>{head}</h5><ol start='{k}'>" + "".join(f"<li>{i}</li>" for i in items) + "</ol>")
-        k += len(items)
-    return "".join(out)
 
 
 # v17: the build guide PDF stands alone. Each cut-list part belongs to one step (matched on the start of its name),
@@ -688,53 +649,12 @@ CUT_STEP = {"Uprights": 9, "High shelf": 9, "Series X shelf": 9, "Record ledge":
             "Dining": 11, "Table top": 11, "Breadboard": 11, "Gate": 11, "Turn buttons": 11, "Häfele": 11, "Lift-off": 11, "Flip-top": 11,
             "Cabinet": 11, "Table halves": 11, "Apron": 11, "Table legs": 11, "Hinge rail": 11, "Piano": 11, "Leg brackets": 11, "Tabletop": 11, "Drawer box": 11,
             "Door stops": 11, "Door hinges": 11, "Catches, magnets": 11, "Wall brackets (the cabinet)": 11}   # v27; v30: the compact cabinet's rows
-SEE_FIG = {("wall", "Front view"): ("render_v13_join_key_scene.png", "The media wall with its parts numbered"),
-           ("wall", "Drawer layouts"): ("render_v13_drawers.png", "Every drawer out, in place"),
-           ("wall", "Built to your alcove"): ("render_v13_join_clean.png", "The finished media wall"),
-           ("wall", "The side wall"): ("render_v13_side.png", "The side-wall run and the PC end"),
-           ("dining", "The dining wall"): ("render_v39_3d_c_six.png", "The dining cabinet open for six"),
-           ("overview", "The room"): ("render_v39_3d_room.png", "The whole room")}
 
 
-def step_cuts(k):
-    """The cut-list rows for step k (parts not matched elsewhere are the base's fit-out, step 8)."""
-    rows = []
-    for grp, note, items in cuts():
-        for r in items:
-            hit = next((v for pre, v in CUT_STEP.items() if r[0].startswith(pre)), 8 if r[4] == "Media wall" else None)
-            if hit == k:
-                rows.append((grp,) + r[:4])
-    return rows
 
 
-def step_cuts_html(k):
-    rows = step_cuts(k)
-    if not rows:
-        return ""
-    return ("<h5>Cut list for this step</h5><table class='tight cuts'><tr><th>Part</th><th>From</th><th>Size (cm)</th><th>Qty</th><th>Notes</th></tr>"
-            + "".join(f"<tr><td>{a}</td><td>{g}</td><td class='num'>{b}</td><td class='num'>{c}</td><td>{d}</td></tr>" for g, a, b, c, d in rows)
-            + "</table>")
 
 
-def full_steps_html(pdf=False):
-    """The PDF's step-by-step section: each step with what you need, its drawings and every instruction.
-    pdf=True (the build guide PDF, v17): each step also carries its cut list and the picture its "see" link points to."""
-    import diagrams as D
-    out = []
-    for st in steps():
-        out.append(f"<div class='fstep'><h3 class='pb'>Step {st['n']} · {st['title']} <span class='note'>· {st['who']} · {st['time']}</span></h3><p>{part_chip(st['part'])}</p>")
-        if st["buy"]:
-            out.append(f"<p class='note'>Buy first: {', '.join(st['buy'])} (the buy list).</p>")
-        out.append(need_html(st))
-        if pdf:
-            out.append("".join(f"<figure class='render small'>{img(SEE_FIG[k][0], SEE_FIG[k][1])}<figcaption>{SEE_FIG[k][1]}.</figcaption></figure>"
-                               for k in st.get("see", []) if k in SEE_FIG))
-        out.append("".join(f"<figure>{getattr(D, DIAGRAMS[d])()}</figure>" for d in st.get("draw", [])))
-        if pdf:
-            out.append(step_cuts_html(st["n"]))
-        out.append(full_html(st))
-        out.append(f"<p class='callout'><b>Check before moving on:</b> {st['check']}</p></div>")
-    return "\n".join(out)
 
 
 def steps_table_html():

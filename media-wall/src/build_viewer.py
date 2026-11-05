@@ -339,7 +339,7 @@ summary .part { font-weight: 400; }
 /* v22: build steps one at a time: the head (number, title, who and how long, Done) always shows; the rest opens */
 .shead { cursor: pointer; }
 .step:not(.open) { padding-block: 10px; }
-@media (max-width: 560px) { .shead { grid-template-columns: 2.2rem minmax(0, 1fr); } .shead .sdone, .shead .sopen { grid-column: 2; justify-self: start; } .shead .sopen { margin-top: -4px; } }
+@media (max-width: 560px) { .shead { grid-template-columns: 2.2rem minmax(0, 1fr); } .shead .sdone { grid-column: 2; justify-self: start; } }
 .shead { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr) auto; gap: 12px; align-items: center; }
 .sn { width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--chip); display: grid; place-items: center; font-size: 1.15rem; }
 .step.done .sn { background: var(--ok); color: var(--surface); }
@@ -397,8 +397,7 @@ summary .pf a { color: var(--oak); }
   background: linear-gradient(transparent, rgba(0,0,0,0.72)); }
 .d3d:hover span { text-decoration: underline; }
 @media (max-width: 860px) { .dash { grid-template-columns: repeat(3, minmax(0, 1fr)); } .d3d { grid-column: 1 / -1; aspect-ratio: 16 / 7; min-height: 0; } }
-@media (max-width: 520px) { .dash { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .dcard { padding: 10px 12px; } .dcard strong { font-size: 1.2rem; }
-  .dash .dcard:last-child { grid-column: 1 / -1; } }
+@media (max-width: 520px) { .dash { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } }
 .opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
 .opt { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; display: grid; grid-template-rows: auto 1fr; min-width: 0; }
 .opt img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #0d100e; }
@@ -1176,8 +1175,6 @@ const SITE = {json.dumps(site)};
     return uniq_svgs(page)
 
 
-# v23: the page looks (the header's "Page look" buttons) and larger text, kept on each device
-SKINS = [("card", "Card Room", "#2f4a3c"), ("oak", "Oak & linen", "#6b4a2b"), ("blue", "Sofa blue", "#2c4466"), ("plain", "Plain", "#eef0ea")]
 
 
 # v46: Build by place and piece. Each piece's card has a tick per task (this device: mw46-tasks) and per thing to buy (the buy list's own
