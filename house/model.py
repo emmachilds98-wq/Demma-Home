@@ -2071,9 +2071,8 @@ def landing(o):
     x0, x1 = L["rail_x"]; h = L["rail_h"]
     za = max(fs["z0"], next(r for r in rooms("first") if r["id"] == "landing")["z0"])        # v77: from the short wall by the bathroom door
     o.item("landing.banister", "The banister", "landing", kind="fitting", src="client's photos + E", data=("LANDING", "rail_x"), axis="z")
-    for zz in (za, (za + fs["z1"]) / 2 - 4.5, fs["z1"] - 9):                                   # the posts (V2.17, REAL_PLAN R4: their edges eased,
-        o.box("newel", x0 - 2, y, zz, x1 + 1, y + h + 8, zz + 9)                              # a turned cap on each)
-        o.lathe("newel", (x0 + x1) / 2 - 0.5, y + h + 8, zz + 4.5, [(0, 0), (5.2, 0), (5.2, 1.2), (4, 2), (3.2, 3.6), (3.8, 5.4), (2.6, 7.2), (0, 7.6)])
+    for zz in (za, (za + fs["z1"]) / 2 - 4, fs["z1"] - 8):                                     # the posts, 8 square, flat-topped (V2.24, the client:
+        o.box("newel", x0 - 2, y, zz, x1 + 1, y + h + 8, zz + 8)                              # "square bannister posts not circle tops"; the photos)
     o.box("rail_white", x0 - 1, y + h - 7, za, x1 + 0.5, y + h, fs["z1"])                   # the top rail (rounded), two rails under it
     for yy in (35.0, 62.0):
         o.box("rail_white", x0, y + yy, za, x1 - 1, y + yy + 9, fs["z1"])

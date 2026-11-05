@@ -164,7 +164,9 @@ for did, rid in (("bed2_door", "bed2"), ("airing_door", "airing"), ("master_door
 # ends at beside it, the stairwell open to the landing and a little further back than it (the bathroom's corner over the bottom step)
 rs_ = {r["id"]: r for r in Mo.rooms("first")}; bd_ = next(q for q in Mo.doors("first") if q["id"] == "bath_door")
 pier_ = rs_["landing"]["x1"] - (bd_["b"] + 6)
-check("landing: the bathroom door in the corner by bedroom 2's, the short wall beside it", 0 <= bd_["a"] - 6 - rs_["landing"]["x0"] <= 5 and 30 <= pier_ <= 50,
+# V2.24: the stairwell measured 85 wide (the client) leaves the short wall 18 (was 34, read off the photo with the door's 68 an estimate):
+# the end post (8) must fit beside the door's frame; the door's width is in Measure
+check("landing: the bathroom door in the corner by bedroom 2's, the short wall beside it", 0 <= bd_["a"] - 6 - rs_["landing"]["x0"] <= 5 and D.LANDING["rail_x"][1] - D.LANDING["rail_x"][0] + 5 <= pier_ <= 50,
       f"{bd_['a'] - 6 - rs_['landing']['x0']:.1f} from the corner, the short wall {pier_:.1f}")
 check("landing: open to the stairwell, the stairwell from the bottom step", rs_["first_stairs"]["z0"] < rs_["landing"]["z0"] and rs_["first_stairs"]["z0"] == -41.0,
       f"the stairwell from {rs_['first_stairs']['z0']:.1f}, the landing from {rs_['landing']['z0']:.1f} (the living room's stair front -41)")
@@ -266,7 +268,21 @@ check("kitchen: the wall cupboards: 2 left of the oven 5 from the wall, 3 right,
       f"left {wu_['east'][0][0]}–{wu_['east'][0][1]} ×{wu_['east'][0][2]}, right {wu_['east'][1][0]}–{wu_['east'][1][1]} ×{wu_['east'][1][2]}, front ×{wu_['south'][0][2]}")
 # v66: the stairs and the hall line up with the living room's measured door and flight (the client)
 st = Mo.stair(); fs = next(r for r in Mo.rooms("first") if r["id"] == "first_stairs")
-check("stairs: both stairwells over the living room's flight (59 wide; the first floor's 10 wider, the client)", st["x0"] == Gm.STAIR_X[0] and fs["x0"] == Gm.STAIR_X[0] - 10, f"lower flight x {st['x0']:.0f}–{st['x1']:.0f}, the first floor's stairwell from {fs['x0']:.0f}, the flight {Gm.STAIR_X[0]:.0f}–{Gm.STAIR_X[1]:.0f}")
+check("stairs: the lower stairwell over the living room's flight; the first floor's stairwell 85 wide, the banister's posts 93 from the wall (the client measured)",
+      st["x0"] == Gm.STAIR_X[0] and fs["x1"] - fs["x0"] == 85.0 and fs["x1"] - (D.LANDING["rail_x"][0] - 2) == 93.0,
+      f"lower flight x {st['x0']:.0f}–{st['x1']:.0f}, the first floor's stairwell {fs['x0']:.0f}–{fs['x1']:.0f}, the posts from {D.LANDING['rail_x'][0] - 2:.0f}")
+_top_tread = Gm.ALC_D - Gm.STAIR_D + 6 + (Gm.STAIR_N - 2) * Gm.STAIR_GOING
+_bed3 = next(r for r in Mo.rooms("first") if r["id"] == "landing_top")["z1"]
+check("stairs: 85 from the top tread to the office's wall (the client measured)", abs(_bed3 - _top_tread - 85) < 0.5, f"the top tread from z {_top_tread:.2f}, the wall at {_bed3:.1f}: {_bed3 - _top_tread:.1f}")
+# V2.24, the client: "bedroom 2 has a floating plugsocket": every socket on a wall's face, the room it serves on its side
+def _on_wall(f, axis, line, out, pos):
+    for r in Mo.rooms(f):
+        a0, a1, b0, b1 = (r["x0"], r["x1"], r["z0"], r["z1"]) if axis == "z" else (r["z0"], r["z1"], r["x0"], r["x1"])
+        if b0 - 0.5 <= pos <= b1 + 0.5 and ((out > 0 and abs(a0 - line) < 0.5) or (out < 0 and abs(a1 - line) < 0.5)):
+            return True
+    return False
+_float = [s_ for s_ in D.SOCKETS if not _on_wall(*s_[:5])]
+check("sockets: every one on a wall (none floating in a room)", not _float, f"{len(D.SOCKETS)} sockets" + (f"; off a wall: {_float}" if _float else ""))
 check("hall: floor all across the living room's door", Gm.DOOR_X[1] <= Gm.STAIR_X[0] - 2.2, f"the door x {Gm.DOOR_X[0]:.1f}–{Gm.DOOR_X[1]:.1f}, the stairs' wall from x {Gm.STAIR_X[0] - 2.2:.1f}")
 # 11. v65: the cupboards either side of the porch; v69: the garage side's the meters, the other the bins (the client)
 rs = {r["id"]: r for r in Mo.rooms("ground")}
