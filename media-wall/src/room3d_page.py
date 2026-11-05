@@ -132,7 +132,7 @@ CSS = """
 .r3d-ui .grp { display: grid; gap: 6px; min-width: 0; }
 .r3d-ui .label { font: 600 13px Figtree, system-ui, sans-serif; color: var(--mut); }
 .r3d-ui .seg { display: flex; flex-wrap: wrap; gap: 6px; }
-.r3d-ui .seg button, .r3d-ui .chip, .r3d-ui .btn, .r3d-foot button { min-height: 40px; border: 0; border-radius: 999px; padding: 8px 14px; background: var(--soft); color: var(--ink);
+.r3d-ui .seg button, .r3d-ui .chip, .r3d-ui .btn { min-height: 40px; border: 0; border-radius: 999px; padding: 8px 14px; background: var(--soft); color: var(--ink);
   font: 500 14px Figtree, system-ui, sans-serif; cursor: pointer; transition: transform .25s var(--spring), background .2s; }
 .r3d-ui .seg button:hover, .r3d-ui .chip:hover { transform: scale(1.04); }
 .r3d-ui .seg button[aria-pressed=true], .r3d-ui .chip[aria-pressed=true] { background: var(--ink); color: var(--cream); }
@@ -184,8 +184,6 @@ details.r3d-more[open] > summary::before { content: "– "; }
 .r3d-decrow > span { font-size: 13px; color: var(--mut); font-weight: 600; }
 .r3d-picklist { margin: 0; font-size: 14px; }
 .r3d-cost { font-size: 13px; color: var(--mut); font-variant-numeric: tabular-nums; }
-.r3d-foot { flex: none; display: flex; gap: 8px; justify-content: flex-end; margin: 0 18px; padding: 10px 0 14px; border-top: 2px dashed #e5dccb; flex-wrap: wrap; align-items: center; }
-.r3d-foot .r3d-litst { margin-right: auto; font-size: 13px; color: var(--mut); }
 .r3d.nogl .r3d-dock, .r3d.nogl .r3d-panel { display: none; }
 /* Edit room: the bar, the add list and the selection panel over the canvas, as cream pills */
 .r3d-edit { position: absolute; top: 84px; left: 50%; transform: translateX(-50%); width: min(760px, calc(100% - 24px)); display: grid; gap: 8px; justify-items: center; pointer-events: none; z-index: 5; }
@@ -200,7 +198,6 @@ details.r3d-more[open] > summary::before { content: "– "; }
 .r3d-sel b { font: 600 16px Fredoka, system-ui, sans-serif; margin: 0 4px 0 8px; }
 .r3d-sel label { font-size: 13px; display: inline-flex; gap: 6px; align-items: center; }
 .r3d-sel .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
-.r3d-wallpick { margin-bottom: 8px; } .r3d-wallpick .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: -2px; background: var(--c, #2c5643); box-shadow: inset 0 0 0 1px rgba(0,0,0,.2); }
 .r3d-size { font-size: 12.5px; color: var(--mut); font-variant-numeric: tabular-nums; }
 .r3d.editing canvas { cursor: pointer; }
 @media (min-width: 900px) {
@@ -219,26 +216,17 @@ details.r3d-more[open] > summary::before { content: "– "; }
   .r3d-pop::before { display: none; }
   body.sheet-open .r3d-stickers, body.tools-open .r3d-stickers { display: none; }
 }
-/* v33, the phone home ("On a phone the room is small and buried"): numbered pins, the places in a strip, the set-ups as chips, Menu in the dock */
-.r3d-phone, .r3d-menub { display: none !important; }
+/* v33, the phone home ("On a phone the room is small and buried"): named pins, Menu in the dock */
+.r3d-menub { display: none !important; }
 @media (max-width: 599px) {
   .stk { padding: 8px 12px; gap: 6px; min-height: 40px; } .stk b { width: 9px; height: 9px; } .stk .t { display: inline; }   /* v39: three named places */
   .r3d-lbl { padding: 0; width: 44px; justify-content: center; } .r3d-lbl .t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  .r3d-phone { display: grid !important; position: fixed; left: 0; right: 0; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 76px); z-index: 5; gap: 6px; pointer-events: none; }
-  .r3d-moms, .r3d-places { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 10px; pointer-events: auto; }
-  .r3d-moms::-webkit-scrollbar, .r3d-places::-webkit-scrollbar { display: none; }
-  .r3d-moms button, .r3d-places button { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 13px 0 8px; border: 0; border-radius: 999px;
-    background: var(--cream); color: var(--ink); font: 600 13px Fredoka, system-ui, sans-serif; box-shadow: var(--shade); cursor: pointer; }
-  .r3d-moms button { background: rgba(43, 38, 56, .82); color: var(--cream); padding: 0 13px 0 10px; } .r3d-moms .ms { font-size: 17px; }
-  .r3d-places b { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: oklch(0.8 0.11 var(--h)); font-weight: 600; }
-  .r3d-places button[aria-pressed=true] { background: oklch(0.92 0.06 var(--h)); box-shadow: 0 0 0 2px var(--ink); }
   .r3d-menub:not([hidden]) { display: grid !important; }
   .r3d-pop { bottom: calc(max(8px, env(safe-area-inset-bottom)) + 76px) !important; z-index: 7; }
   body:not(.sheet-open) .rail:not(.open) { display: none; }
   body:not(.sheet-open) .rail.open { top: auto; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 80px); left: 8px; }
   body:not(.sheet-open) .rail.open .rail-tog { display: none; }
   body:not(.sheet-open) .rail.open .rail-list { border-top: 0; padding-top: 0; }
-  .r3d.tools-open .r3d-phone, body.sheet-open .r3d-phone, .r3d.touring .r3d-phone, .r3d.editing .r3d-phone, .r3d.nogl .r3d-phone, .r3d.popped .r3d-phone, .r3d:has(.r3d-act:not([hidden])) .r3d-phone { display: none !important; }
 }
 /* v28: the tour's card, the link's toast, the versions */
 .r3d-tour { position: fixed; left: 50%; bottom: 104px; transform: translateX(-50%); width: min(520px, calc(100vw - 24px)); z-index: 32; background: var(--cream); color: var(--ink);

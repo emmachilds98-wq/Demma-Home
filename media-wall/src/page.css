@@ -38,8 +38,6 @@ a { color: var(--oak); }
 .rail button i { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: oklch(0.92 0.06 var(--h)); font-style: normal; transition: transform .3s var(--spring), background .2s; }
 .rail button:hover i { transform: scale(1.1); }
 .rail button[aria-current=true] i { background: oklch(0.8 0.11 var(--h)); }
-.badge { position: absolute; top: 0; right: 8px; min-width: 20px; height: 20px; border-radius: 999px; padding: 0 5px; box-sizing: border-box; background: oklch(0.7 0.16 25); color: var(--ink);
-  font: 600 12px/20px var(--display); text-align: center; }
 @media (max-width: 899px) {
   .rail { left: 12px; top: calc(max(12px, env(safe-area-inset-top)) + 62px); transform: none; padding: 6px; }
   .rail button { min-width: 52px; }
@@ -50,8 +48,6 @@ a { color: var(--oak); }
   .brand b { font-size: 16px; } .brand .ver { display: none; }
   /* V1.19, the client: "The version number doesn't appear on the mobile version": after where you are, on the second line */
   .brand small::after { content: " · " attr(data-ver); color: var(--mut2); font-weight: 500; }
-  .bbar { position: fixed; left: 8px; right: 8px; bottom: max(8px, env(safe-area-inset-bottom)); z-index: 45; display: none; align-items: center; gap: 2px; justify-content: space-between;
-    padding: 6px 8px 6px 6px; border-radius: 30px; background: var(--page); box-shadow: var(--shadow); }
 }
 /* sheets: they slide up over the room */
 .sheet { position: fixed; z-index: 40; top: 16px; bottom: 16px; left: 112px; right: 16px; border-radius: 32px; background: var(--page); box-shadow: var(--shadow);

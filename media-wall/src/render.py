@@ -204,7 +204,6 @@ GH = 'filter="url(#grainH)"'; GV = 'filter="url(#grainV)"'
 
 OAK = "#c48c57"; OAK_T = "#d9a46c"; OAK_S = "#9c6a3f"; OAK_D = "#a87443"
 
-BLK = "#18191a"; BLK_T = "#2a2c2e"; BLK_S = "#0e0f10"
 
 WHT = "#ece9e2"; WHT_T = "#f7f5f0"; WHT_S = "#cfcac0"
 
