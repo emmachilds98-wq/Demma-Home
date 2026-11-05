@@ -72,11 +72,24 @@ function finClean(o) {
   return out;
 }
 function finImport(o) { const c = finClean(o); if (!Object.keys(c).length) return false; FIN_UNDO.push(JSON.stringify(S.fin || {})); S.fin = c; store.set(KEY, S); finApplyAll(); toast("Their colours, floors and bulbs"); return true; }
+/* V2.12 (F7): what the choices take, from each room's surfaces' areas (house/surfaces.py via R.HOUSE3.finish_areas): the walls by colour
+   (two coats at about 12 m² a litre, in 2.5 L tins), the ceiling the same, the floor's m² with 10% for cutting; in Measure */
+function finTakes() {
+  const box = qs("#ms-takes"), list = qs("#ms-tlist"), A = (R.HOUSE3 || {}).finish_areas || {}; if (!box || !list) return;
+  const paint = hex => (finSwatches().find(([h]) => h.toLowerCase() === String(hex).toLowerCase()) || [0, hex])[1];
+  const lit = m2 => Math.ceil(m2 * 2 / 12 * 2) / 2, tins = l => Math.ceil(l / 2.5), rows = [];
+  for (const [room, sl] of Object.entries(S.fin || {})) { const a = A[room]; if (!a) continue;
+    const by = {}; for (const [side, i] of [["back", 0], ["front", 1], ["east", 2], ["west", 3]]) { const w = a.walls[side]; if (!sl[i] || !w || w[1] === "stairpaint") continue; by[sl[i]] = (by[sl[i]] || 0) + w[0]; }
+    for (const [hex, m2] of Object.entries(by)) { const l = lit(m2); rows.push(`<div class="ms-erow"><b>${roomName(room)}</b> walls, ${paint(hex)}: ${m2.toFixed(1)} m², about ${l} L (${tins(l)} × 2.5 L)</div>`); }
+    if (sl[4] && a.ceiling) { const l = lit(a.ceiling); rows.push(`<div class="ms-erow"><b>${roomName(room)}</b> ceiling, ${paint(sl[4])}: ${a.ceiling.toFixed(1)} m², about ${l} L (${tins(l)} × 2.5 L)</div>`); }
+    if (sl[5] && a.floor) { const f = FIN_FLOORS.find(([k]) => k === sl[5]); rows.push(`<div class="ms-erow"><b>${roomName(room)}</b> floor, ${f ? f[1] : sl[5]}: ${a.floor.toFixed(1)} m², ${(a.floor * 1.1).toFixed(1)} m² to buy</div>`); } }
+  list.innerHTML = rows.join(""); box.hidden = !rows.length;
+}
 function finGet(room, slot) { return ((S.fin || {})[room] || {})[slot] || null; }
 function finApplyAll() {   // what's kept, into the palette (on start, after Undo)
   if (!finSetup()) return; finish(null, "walls", null); finish(null, "ceiling", null);
   for (const [room, sl] of Object.entries(S.fin || {})) for (const [s, hex] of Object.entries(sl)) if (+s < 5 && FIN.rooms.includes(room)) finish(room, FIN_NAMES[+s], hex);
-  finFloorApply(); if (typeof placeRoomLights === "function") { roomKey = ""; placeRoomLights(); }
+  finFloorApply(); if (typeof placeRoomLights === "function") { roomKey = ""; placeRoomLights(); } finTakes();
 }
 function finSet(room, slot, hex) {   // by the scope: this wall, this room's walls (or ceiling), the whole house's
   FIN_UNDO.push(JSON.stringify(S.fin || {})); if (FIN_UNDO.length > 20) FIN_UNDO.shift();

@@ -485,6 +485,8 @@ def measure_panel():
                        f'<input type="file" accept="image/*" capture="environment" data-mphoto="{m["id"]}" aria-label="A photo of {what.lower()}"></label></div>')
         out.append("</div>")
     out.append('<div class="grp" id="ms-edits" hidden><span class="label">Changed in the 3D</span><div class="ms-elist" id="ms-elist"></div></div>')   # V1.51: room3d.js fills it
+    out.append('<div class="grp" id="ms-takes" hidden><span class="label">What your colours and floors take</span><div class="ms-elist" id="ms-tlist"></div>'
+               '<p class="caption">Two coats at about 12 m² a litre (a typical emulsion, E); floors with 10% for cutting. Areas from the plan, so rough until measured.</p></div>')   # V2.12 (F7): 23_finish.js fills it
     out.append('<div class="grp"><div class="seg"><button type="button" class="btn primary" id="ms-send"><span class="ms" aria-hidden="true">send</span> Send to the plan</button></div>'
                '<span class="caption" id="ms-st" aria-live="polite">Saved on this device as you type.</span></div>')
     return "".join(out)
