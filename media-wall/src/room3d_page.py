@@ -71,6 +71,18 @@ CSS = """
 .r3d.editing .r3d-act { display: none; }
 /* V1.50: a piece's sizes on its card, a stepper each (tap a piece in the house, Change its size) */
 .r3d-actfields { display: grid; gap: 6px; margin: 0 0 10px; }
+.r3d-fin { display: grid; gap: 8px; margin: 0 0 10px; }
+@media (max-width: 599px) { .r3d.actopen .r3d-peg { display: none; } }
+.r3d-finsc { display: flex; gap: 4px; flex-wrap: wrap; }
+.r3d-finsc button { font: 600 12.5px Figtree, system-ui, sans-serif; padding: 5px 10px; border-radius: 999px; border: 1px solid #d9d4ca; background: #fff; color: #2a2723; min-height: 30px; }
+.r3d-finsc button[aria-pressed="true"] { background: #2a2723; color: #fff; border-color: #2a2723; }
+.r3d-fintray { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 6px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
+.r3d-fintray .sw { flex: 0 0 auto; display: grid; justify-items: center; gap: 3px; width: 58px; padding: 0; border: 0; background: none; font: 500 11px Figtree, system-ui, sans-serif; color: #2a2723; cursor: pointer; }
+.r3d-fintray .sw i, .r3d-fintray .sw.any input { width: 40px; height: 40px; border-radius: 50%; background: var(--c); box-shadow: inset 0 0 0 1px rgba(0,0,0,.15); display: block; }
+.r3d-fintray .sw[aria-pressed="true"] i { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2a2723; }
+.r3d-fintray .sw span { max-width: 58px; text-align: center; line-height: 1.15; overflow-wrap: anywhere; }
+.r3d-fintray .sw.any input { padding: 0; border: 0; -webkit-appearance: none; appearance: none; background: conic-gradient(#e66, #ee6, #6e6, #6ee, #66e, #e6e, #e66); cursor: pointer; }
+.r3d-fintray .sw.any input::-webkit-color-swatch-wrapper { padding: 0; } .r3d-fintray .sw.any input::-webkit-color-swatch { border: 0; border-radius: 50%; opacity: 0; }
 .r3d-actfields .fld { display: flex; align-items: center; justify-content: space-between; gap: 8px; font: 600 13.5px Figtree, system-ui, sans-serif; }
 .r3d-actfields .stp { display: flex; align-items: center; gap: 4px; }
 .r3d-actfields .stp button { width: 36px; height: 36px; border: 0; border-radius: 50%; background: var(--soft); color: var(--ink); font: 600 18px Fredoka, system-ui, sans-serif; cursor: pointer; }

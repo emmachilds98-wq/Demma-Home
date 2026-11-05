@@ -18,6 +18,7 @@ function pickItem(e) {
   if (houseG && houseG.visible) for (const [k, P] of Object.entries(HPARTS)) if (k.startsWith("door.") && under(o, P.g)) return "hdoor:" + k;   // V1.26
   if (houseG && houseG.visible && o.material && /^blind/.test(o.material.userData.hk || "")) return "hblinds";   // V1.47: a blind (or its roller): its card
   if (houseG && houseG.visible && DS() && under(o, houseG)) { const k = housePiece([hit], q => cutAway(q)); if (k && HIT(k)) return "hitem:" + k; }   // V1.50: a piece: its size
+  if (houseG && houseG.visible && under(o, houseG)) { const fa = finAt(hit); if (fa) return "fin:" + fa.room + ":" + fa.slot; }   // V2.6 (FINISHES F3): a wall or a ceiling: its colour
   if (HPARTS["door.living_door"] && under(o, livLeaf)) return "hdoor:door.living_door";   // V1.38: the living room's side of its door
   if (S.site === "C" && (under(o, cab) || under(o, optC))) return "cab";
   if (under(o, lamp)) return "lamp";
@@ -52,6 +53,7 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id === "hbed") { const P_ = HPARTS.bed_lift, up = !!(P_ && (P_.tw ? P_.tw.to === 1 : P_.t > 0.5));   // v71, the client: the bed as a card, like the living room's
     return ["Your ottoman bed", up ? "Lifted on its struts: four storage boxes inside" : "Pine, the base lifts from the foot", [
       btn(up ? "Lower the bed" : "Lift the bed", { hbed: up ? "down" : "up" }), ...(ROOMV() && RMODE !== "above" ? [btn("See it from above", { rmode: "above" })] : [])]]; }
+  if (id.startsWith("fin:")) return finCard(id);   // V2.6: a wall's or a ceiling's colours (23_finish.js)
   if (id.startsWith("hitem:")) { const k = id.slice(6), it = HIT(k); if (!it) return null;   // V1.50: a piece in the house, its size
     return [it.n, pieceLine(k), [btn("Change its size", { actopen: "hsize:" + k }), ...(pieceDelta(k).some(Boolean) ? [btn("As planned", { hreset: k })] : [])]]; }
   if (id.startsWith("hsize:")) { const k = id.slice(6), it = HIT(k); if (!it) return null; const c = pieceNow(k), door = it.k === "door";
@@ -198,7 +200,8 @@ function renderAct() {
   qs("#r3d-act-h").textContent = title; qs("#r3d-act-st").textContent = st;
   qsa(".r3d-actmore", act).forEach(m => m.remove());
   const box = qs("#r3d-acts"); box.textContent = "";
-  qsa(".r3d-actfields").forEach(m => m.remove());
+  qsa(".r3d-actfields").forEach(m => m.remove()); qsa(".r3d-fin", act).forEach(m => m.remove());
+  if (items[4]) { const w = document.createElement("div"); w.innerHTML = items[4]; box.before(w.firstElementChild); }   // V2.6: a wall's colours
   if (items[3]) { const w = document.createElement("div"); w.className = "r3d-actfields";   // V1.50: a piece's sizes, a stepper each
     w.innerHTML = items[3].map(([f, t, v]) => `<div class="fld"><span>${t}</span><span class="stp"><button type="button" data-hstep="${f}" data-by="-1" aria-label="${t}: 1 cm less">−</button>`
       + `<input type="number" inputmode="decimal" step="1" value="${v}" data-hfield="${f}" aria-label="${t} in cm"><button type="button" data-hstep="${f}" data-by="1" aria-label="${t}: 1 cm more">+</button></span></div>`).join("")
@@ -232,12 +235,12 @@ let actMoreOpen = false;
 function openAct(id, xy) {
   if (popId) closePop(); clearAim();
   if (String(id).split(":").slice(0, 2).join(":") !== String(actId || "").split(":").slice(0, 2).join(":")) actMoreOpen = false;   // v39: a new card opens folded
-  actId = id; actXY = xy; act.hidden = false; actAt = performance.now(); renderAct();
+  actId = id; actXY = xy; act.hidden = false; actAt = performance.now(); root.classList.add("actopen"); renderAct();   // V2.6: (the figure steps aside on a phone)
   if (!act.hidden) { const f = qs("#r3d-acts button"); if (f) f.focus({ preventScroll: true }); }
 }
 const DBL_MS = +(window.__r3dDblMs || 380);   // a double-tap's two taps within this (a test rig whose touches wait on slow frames can widen it)
 let actAt = 0;   // V1.54: when the card opened: a phone's click from the same tap lands on it (a sheet at the foot) and mustn't press its button
-function closeAct() { actId = null; if (act) act.hidden = true; clearAim(); if (!EMBED) clearSel(); }
+function closeAct() { actId = null; root.classList.remove("actopen"); if (act) act.hidden = true; clearAim(); if (!EMBED) clearSel(); }
 if (act) {
   act.addEventListener("pointerdown", e => {   // V1.54: the second tap of a double-tap that lands on the card the first one opened: still a double-tap
     if (e.pointerType === "mouse" || !lastTap || e.timeStamp - lastTap.t > DBL_MS || Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) > 30) return;

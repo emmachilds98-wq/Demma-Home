@@ -514,7 +514,7 @@ function buildHouse() {
       const rk = (H3.depth_rank || {})[k] ?? 3;   // V1.31 (U6): where faces lie in one plane the higher rank is drawn (house/model.py depth_rank); constant, so nothing shows through at a slant
       if (rk) { m.polygonOffset = true; m.polygonOffsetFactor = 0; m.polygonOffsetUnits = -2 * rk; }
       m.clippingPlanes = []; m.userData.hk = k; return finPatch(m, k); })());
-    HMATS = m3; blindsApply(); hceilApply();
+    HMATS = m3; blindsApply(); hceilApply(); finApplyAll();   // V2.6: the colours kept for the house's rooms
     const put = (g, geos, m) => { if (!geos.length) return; const me = new THREE.Mesh(worldUV(mergeGeometries(geos), m.userData.hk), m); me.receiveShadow = m.userData.hk !== "stairpaint";   // V2.2: the stair wall one even colour (the landing's edge drew a hard band)
       me.castShadow = !m.transparent; g.add(me); geos.forEach(q => q.dispose()); };   // v69: the house's walls and pieces cast the sun's shadow (as the living room's)
     const mx = new THREE.Matrix4();
