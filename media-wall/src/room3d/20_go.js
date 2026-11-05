@@ -25,7 +25,7 @@ function hceilApply() {
    of the rooms (a picture, 2 cm a pixel, one band per floor: which room each spot is) and a palette (a picture, a row per room: back, front,
    east, west, ceiling). The walls' and ceilings' shader looks up the room 3 cm in front of each face and its side from the face's normal; a
    palette pixel with no colour leaves the face as drawn. R3D.finish(room, "walls" | side | "ceiling", "#hex" | null) writes one pixel. */
-const FIN = { W: 234, H: 404, map: null, pal: null, rooms: [], kind: { paint: 0, stairpaint: 0, ceiling: 1, artex: 1 } };
+const FIN = { W: 234, H: 404, map: null, pal: null, rooms: [], kind: { paint: 0, ceiling: 1, artex: 1 } };   // V2.8: not the stair wall: it's the living room's (Look)
 function finSetup() {
   if (FIN.map || !R.HOUSE3 || !R.HOUSE3.finish_pieces) return FIN.map;
   FIN.rooms = R.HOUSE3.finish_rooms;
@@ -40,7 +40,7 @@ function finSetup() {
 }
 function finPatch(m, k) {   // the walls' and ceilings' materials read the palette (their program keyed apart, so nothing else changes)
   if (!(k in FIN.kind) || !finSetup()) return m;
-  const room = k === "stairpaint" ? FIN.rooms.indexOf("landing") + 1 : -1, scale = m.map ? 1 / 0.95 : 1;
+  const room = -1, scale = m.map ? 1 / 0.95 : 1;
   m.customProgramCacheKey = () => "finish" + FIN.kind[k] + (room > 0 ? "r" : "");
   m.onBeforeCompile = sh => {
     Object.assign(sh.uniforms, { finMap: { value: FIN.map }, finPal: { value: FIN.pal }, finKind: { value: FIN.kind[k] }, finRoom: { value: room }, finScale: { value: scale } });
@@ -502,7 +502,7 @@ function buildHouse() {
     // V2.0: the stair wall up to the landing in the living room's own stair-wall paint (a copy, so Look's colour follows it up the stairs)
     const stairMat = () => { const m = paintMat(lum("#2d5a46") / BASE_L, false, false, "w:stairs").clone(); paintMats.set("house:stairs", reg(m));
       const rk = (H3.depth_rank || {}).stairpaint ?? 2; m.polygonOffset = true; m.polygonOffsetFactor = 0; m.polygonOffsetUnits = -2 * rk;
-      m.clippingPlanes = []; m.userData.hk = "stairpaint"; return finPatch(m, "stairpaint"); };
+      m.clippingPlanes = []; m.userData.hk = "stairpaint"; return m; };   // V2.8, the client: "first floor landing west wall should match the living room west wall and act as one wall": never the landing's palette
     const m3 = {}, mat3 = k => m3[k] || (m3[k] = k === "contact" ? contactMat() : k === "stairpaint" ? stairMat() : (() => { const [c, r] = H3.mats[k] || ["#cccccc", 0.9], gl3 = k === "glass", T = houseTex(k);
       const m = reg(new THREE.MeshStandardMaterial({ color: T ? "#ffffff" : c, map: T ? T.map : null, bumpMap: T && T.bump ? T.map : null, bumpScale: T ? T.bump : 1, normalMap: T && T.normal || null, roughness: T && T.rough ? Math.min(1, r / T.roughMean) : r, roughnessMap: T && T.rough || null, metalness: k === "brass" || k === "chrome" || k === "steel" ? 0.8 : k === "mirror" ? 0.25 : 0, transparent: gl3, opacity: gl3 ? 0.14 : 1,   /* V1.13: clear (0.3 tinted the outside blue-green) */ depthWrite: !gl3, side: HOUSE_SIDE,
         emissive: { led: "#ffffff", pc_glow: "#cfe0ff", screen: "#1b2433" }[k] || "#000000", emissiveIntensity: { led: 1.5, pc_glow: 0.9, screen: 0.6 }[k] || 0 }));   // v60: the kitchen's LED battens glow; v61: the PC's glass, the screens
@@ -515,7 +515,7 @@ function buildHouse() {
       if (rk) { m.polygonOffset = true; m.polygonOffsetFactor = 0; m.polygonOffsetUnits = -2 * rk; }
       m.clippingPlanes = []; m.userData.hk = k; return finPatch(m, k); })());
     HMATS = m3; FIN.mat3 = mat3; blindsApply(); hceilApply(); finApplyAll();   // V2.7: (mat3 for a floor laid by the tray)   // V2.6: the colours kept for the house's rooms
-    const put = (g, geos, m) => { if (!geos.length) return; const me = new THREE.Mesh(worldUV(mergeGeometries(geos), m.userData.hk), m); me.receiveShadow = m.userData.hk !== "stairpaint";   // V2.2: the stair wall one even colour (the landing's edge drew a hard band)
+    const put = (g, geos, m) => { if (!geos.length) return; const me = new THREE.Mesh(worldUV(mergeGeometries(geos), m.userData.hk), m); me.receiveShadow = true;   // V2.8: the stair wall takes shadows as the living room's stair wall below it does (V2.2 took them off: two shades along the flight)
       me.castShadow = !m.transparent; g.add(me); geos.forEach(q => q.dispose()); };   // v69: the house's walls and pieces cast the sun's shadow (as the living room's)
     const mx = new THREE.Matrix4();
     /* v69 (B4), the client: "more realistic like our living room": furniture, fittings and soft things with rounded edges (cm by

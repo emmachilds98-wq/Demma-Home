@@ -40,8 +40,7 @@ function finAt(hit) {   // a tap on a wall or a ceiling of the house: its room a
   if (!(hk in FIN.kind) || !finSetup() || !hit.face) return null;
   const p = hit.point, n = hit.face.normal, xc = -p.x / M, zc = p.z / M, yc = p.y / M, ceil = FIN.kind[hk] === 1;
   let ri;
-  if (hk === "stairpaint") ri = FIN.rooms.indexOf("landing") + 1;
-  else { const o = ceil ? 0 : 3, fl = yc < 0 ? 0 : yc < 260 ? 1 : 2;
+  { const o = ceil ? 0 : 3, fl = yc < 0 ? 0 : yc < 260 ? 1 : 2;
     const i = Math.max(0, Math.min(FIN.W - 1, Math.floor((xc - n.x * o) / 2))), j = Math.max(0, Math.min(FIN.H - 1, Math.floor((zc + n.z * o + 309) / 2)));
     ri = FIN.map.image.data[(fl * FIN.H + j) * FIN.W + i]; }
   if (!ri) return null;
