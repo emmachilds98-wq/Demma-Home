@@ -20,7 +20,8 @@ function standIn() {
   standLook(true);
   if (standSpot) { const [x, z, dx, dz] = standSpot; standSpot = null;
     flyTo([x, fy + STAND_EYE, z], [x + dx * 100, fy + STAND_EYE - 10, z + dz * 100], STAND_FOV, false, false, 900); return; }
-  flyTo([v.eye[0], fy + STAND_EYE, v.eye[2]], [v.at[0], fy + STAND_EYE - 10, v.at[2]], STAND_FOV, false);
+  const [x, z] = R.HOUSE3 ? freeSpot(v.eye[0], fy, v.eye[2]) : [v.eye[0], v.eye[2]];   // V1.59: not inside a worktop or a desk
+  flyTo([x, fy + STAND_EYE, z], [v.at[0] + x - v.eye[0], fy + STAND_EYE - 10, v.at[2] + z - v.eye[2]], STAND_FOV, false);
 }
 const LIVV = () => !HOUSEV(S.view) && !!VIEWS[S.view];
 function syncRmode() {

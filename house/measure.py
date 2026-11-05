@@ -27,6 +27,7 @@ ROWS = [
     ("bath_ceiling", "bathroom", "The ceiling over the toilet", "up from the floor", lambda: D.BATH["beam_y"], ("set", ("BATH", "beam_y"))),
     ("bath_slope", "bathroom", "Where the slope starts over the tiled box", "up from the floor", lambda: D.BATH["slope_y0"], ("set", ("BATH", "slope_y0"))),
     ("bath_vanity", "bathroom", "The vanity's width", "along its front", lambda: round(D.BATH["vanity"]["z"][1] - D.BATH["vanity"]["z"][0], 1), ("length", ("BATH", "vanity", "z"))),
+    ("bath_cord", "bathroom", "The light's pull cord", "ceiling to the bob", lambda: D.PULL_CORDS[0]["drop"], ("set", ("PULL_CORDS", 0, "drop"))),
     ("bath_bath", "bathroom", "The bath's length", "along its rim", lambda: D.BATH["bath"]["l"], ("set", ("BATH", "bath", "l"))),
     ("bath_door", "landing", "The bathroom door's width", "inside the frame", lambda: _door("bath_door"), ("length", ("FIT_DOORS", "bath_door"))),
     ("landing_gap", "landing", "Bedroom 2's frame to the master's", "along the wall", _landing_gap, None),

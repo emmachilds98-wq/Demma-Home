@@ -308,7 +308,15 @@ function buildStairs() {
   const prof = [[z0, 0]];                    // the body: risers and treads (under the boards) down to the floor, the landing on top
   for (let i = 1; i < n; i++) prof.push([z0 + (i - 1) * gq, i * r - tb], [z0 + i * gq, i * r - tb]);
   prof.push([zl, top - tb], [zl1, top - tb], [zl1, 0]);
-  solid(prof, sx0 + 0.2, sx1 - 0.2, body);
+  /* V1.59, the client: "when on ground floor view and looking down the stairs there is strange clipping and green blocks": past the living
+     room's back wall the flight runs on over the hall and the lower stairs, where the house has its own walls round it; there its body
+     fought those walls and showed the living room's green. That part is the hall's off-white now, and drawn behind the house's walls */
+  const RZ = R.RECESS_Z, steps = prof.slice(1, -1), yAt = z => { let y = 0; for (const [pz, py] of steps) if (pz <= z + 1e-6) y = py; return y; };
+  const inner = [[z0, 0], ...steps.filter(([pz]) => pz < RZ), [RZ, yAt(RZ)], [RZ, 0]];
+  const outer = [[RZ, 0], [RZ, yAt(RZ)], ...steps.filter(([pz]) => pz > RZ), [zl1, 0]];
+  solid(inner, sx0 + 0.2, sx1 - 0.2, body);
+  const hallSide = noClip(reg(new THREE.MeshStandardMaterial({ color: "#e9e5dd", roughness: 0.85, polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 4 })));
+  solid(outer, sx0 + 0.6, sx1 - 0.6, hallSide);
   for (let i = 1; i < n; i++) solid([[z0 + (i - 1) * gq - nose, i * r - tb], [z0 + i * gq, i * r - tb], [z0 + i * gq, i * r], [z0 + (i - 1) * gq - nose, i * r]], sx0, sx1, oak);
   solid([[zl - nose, top - tb], [zl1, top - tb], [zl1, top], [zl - nose, top]], sx0, sx1, oak);   // the landing's boards
   const pitch = z => r + (z - z0) / gq * r, zf = z0 + (21 - r) / r * gq;   // the string: 24 deep along the pitch line, capped 3 over it

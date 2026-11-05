@@ -361,6 +361,13 @@ BED2_1 = None                                         # v76: bedroom 2's door fi
 AIRING = dict(into_bed2=21.0, into_master=0.0, wall_bed2=4.0, wall_master=6.0)
 MASTER_1 = dict(x=(202.0, 251.0), z=(268.1, 499.4))   # v73: the master past its alcove by the door (the wall 19 in for the office)
 SWITCHES_AT = {("master_door", "landing"): 237.4}   # v72, the client: the master's switch in the middle of the gap to the corridor's end
+# V1.59, the client: "the light switch for the bathroom is in the bathroom and is a string on the ceiling on the right as you walk in": no
+# switch on the wall by its door, a pull cord from the ceiling just inside on the right (walking in toward the back: the low-x side)
+NO_DOOR_SWITCH = {"bath_door"}
+PULL_CORDS = [dict(id="bathroom", floor="first", room="bathroom", x=302.0, z=-62.0, drop=125.0, src="client (where: their words; the cord's length E)")]
+# V1.59, the client: "the stairway switch is at the bottom of the stairs on the side wall on the left" (looking down the lower stairs to
+# the WC, their picture): on the party wall at the stairs' foot, 117 up as the others
+SWITCHES_EXTRA = [dict(id="lower_stairs", floor="lower", room="lower_landing", axis="z", face=467.0, out=-1, pos=-52.0, src="client (where: their words; 117 up E)")]
 METERS = dict(electric=dict(w=28.0, h=50.0, d=18.0, y=115.0), gas=dict(w=26.0, h=36.0, d=16.0, y=25.0),   # v69: to fit the 38-wide cupboard
               src="client (the electric box and the gas meter in it) + standard meter boxes (E)")
 # v70: double sockets (E: 30 up, over a worktop 105, over a desk 90, over a bedside 75): (floor, the wall runs along x|z, its line, the
