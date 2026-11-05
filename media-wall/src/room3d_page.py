@@ -384,7 +384,7 @@ body.bare .r3d .r3d-mini .r3d-minib.r3d-bare { background: var(--ink, #1d2a22); 
 .r3d-pegghost b { font: 600 13px Figtree, system-ui, sans-serif; color: var(--ink); background: var(--cream); border-radius: 999px; padding: 3px 10px; white-space: nowrap; box-shadow: var(--shade); }
 .r3d-pegghost b:empty { display: none; }
 @media (max-width: 899px) { .r3d-peg { right: 12px; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 84px); width: 48px; height: 48px; } .r3d.tools-open .r3d-peg { display: none; } }
-body.bare .r3d-peg, .r3d.embed .r3d-peg, .r3d.editing .r3d-peg { display: none; }
+body.bare .r3d-peg, .r3d.editing .r3d-peg { display: none; }
 .r3d-stick { position: fixed; left: 16px; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 96px); z-index: 31; width: 112px; height: 112px; border-radius: 50%;
   background: color-mix(in oklab, var(--cream, #fbf7ef) 55%, transparent); box-shadow: 0 4px 18px rgba(0,0,0,.18); touch-action: none; }
 .r3d-stick[hidden], body.bare .r3d-stick, .r3d.tools-open .r3d-stick { display: none; }
@@ -916,52 +916,6 @@ def standalone(path=HERE / "room3d_test.html"):
     return path
 
 
-EMBED_CSS = """
-/* V1 (Demma's Home): the room as the app's 3D component (?embed): none of this page's own controls; the app's sheets and tabs do it all.
-   Look and Room (the living room's paints, lights and options) open this page's own panel on request, over the room. */
-html, body { margin: 0; height: 100%; background: #e9e4d8; overflow: hidden; }
-.r3d.embed .r3d-stage { background: #e9e4d8; }
-.r3d.embed .r3d-dock, .r3d.embed .r3d-mini, .r3d.embed .r3d-stickers, .r3d.embed .r3d-planbar, .r3d.embed .r3d-back, .r3d.embed #r3d-pop,
-.r3d.embed #r3d-act, .r3d.embed #r3d-tour, .r3d.embed .r3d-toast, .r3d.embed .r3d-pad, .r3d.embed .r3d-cap { display: none !important; }
-.r3d.embed:not(.emb-panel) .r3d-panel { display: none !important; }
-.r3d.embed:not(.emb-edit) .r3d-edit { display: none !important; }
-.r3d.embed .r3d-msg { color: #1d2a22; text-shadow: none; font: 600 15px Figtree, system-ui, sans-serif; }
-.r3d.embed .r3d-poster { opacity: 1; }
-"""
-
-
-def embed(path, art="../art/"):
-    """V1: the 3D room as its own page for the app's frame (_site/room/index.html): the room and the house, driven by messages (room3d.js,
-    the bridge at its end). The pictures its panels show come from `art`.
-    V1 (Phase 4, load in parts): the 3D's data and script are files of their own, named by their contents (scene.<hash>.json,
-    room3d.<hash>.js), so a phone keeps them (the service worker, the browser's cache) until a round changes them: the page itself is
-    small, and a second visit starts without downloading 2 MB again."""
-    import hashlib
-    out = pathlib.Path(path).parent; out.mkdir(parents=True, exist_ok=True)
-    for old in list(out.glob("scene.*.json")) + list(out.glob("room3d.*.js")):
-        old.unlink()
-    data = json.dumps(json.loads((HERE / "scene3d.json").read_text()), separators=(",", ":"))
-    js = room3d_src.js()
-    h = lambda s: hashlib.sha256(s.encode()).hexdigest()[:10]
-    scene, script = f"scene.{h(data)}.json", f"room3d.{h(js)}.js"
-    (out / scene).write_text(data); (out / script).write_text(js)
-    body = section()
-    i = body.index('<script type="application/json" id="scene3d-data">'); j = body.index("</script>", i)
-    body = body[:i] + '<script type="application/json" id="scene3d-data">' + body[j:]
-    boot = (f'<script type="module">const r = await fetch({json.dumps(scene)}); document.getElementById("scene3d-data").textContent = await r.text();'
-            f' await import({json.dumps("./" + script)});</script>')
-    i = body.index('<script type="module">'); j = body.index("</script>", i) + len("</script>")
-    body = body[:i] + boot + body[j:]
-    head = (f'<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">'
-            f'<title>Demma\'s Home: the 3D room</title>{IMPORTMAP}'
-            '<link rel="preconnect" href="https://fonts.googleapis.com">'
-            '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Fredoka:wght@500;600&display=swap">'
-            '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,500,1,0&display=block">'
-            f'<style>{CSS}{EMBED_CSS}</style>'
-            f'<script>function arts(el) {{ if (el) el.querySelectorAll("img[data-art]:not([src])").forEach(im => {{ im.src = {json.dumps(art)} + im.dataset.art + ".webp"; }}); }}'
-            'document.addEventListener("DOMContentLoaded", () => arts(document.body));</script></head><body>')
-    pathlib.Path(path).write_text(head + body.replace('<div class="r3d" id="r3d">', '<div class="r3d embed" id="r3d">', 1) + "</body></html>")
-    return path
 
 
 if __name__ == "__main__":

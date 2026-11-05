@@ -2,9 +2,9 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V2.25 (5 Nov 2026)
+**Version:** V2.26 (5 Nov 2026)
 
-**The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status. **The finishes plan** (the client said go 5 Nov: tap a wall, floor or light in any room to change it): `docs/FINISHES_PLAN.md`, F1–F4 done (V2.4–V2.7), F5 done (V2.9 bulbs, V2.15 fittings), F6 done (V2.11 sending, V2.13 schemes and copying a room, V2.14 a colour from a photo), F7 m² and litres (V2.12); prices next (they need the client's paints and floors). **The real rooms plan** (the client, 5 Nov: render quality, items as real as the living room's, the house's decor theirs to edit): `docs/REAL_PLAN.md`, R1–R8; the rooms in the client's order (the master bedroom, the office, the kitchen, the bathrooms, the hallways); V2.17 the master bedroom's shapes and the HD room shadows, V2.18 the office's, V2.19 the kitchen's, V2.20 the bathroom's and the landing's; V2.21 the rooms' evening light (`houseEnvK`); V2.22 the hall's shoes and the WC's roll and pipes; V2.23 the shade where walls and ceilings meet (`finPatch` `finAt`). V2.24 the client's measured stairwell (85 wide, square flat-topped posts 93 from the party wall: `FIT` first_stairs x 382, `LANDING.rail_x`), bedroom 2's chair-bed, amp, guitars and socket back on its real wall (z 79.5), and a check that no socket floats; Hide buttons in the cream of its row (dark only as Show buttons), on one row with the view buttons on a phone. V2.25 the PCs at their best: a real graphics card (`BIG_GPU`, any window width) opens in HD every visit and never steps itself down (`houseLite`, `autoQuality`'s Fast, `slowDev`, a lost context no longer saves Fast), the house as sharp as a room (1.5–2×); 390 lines nothing used gone (16 functions, 28 constants, `questions.py`, unused imports, 76 CSS rules that matched nothing), the build's outputs the same.
+**The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status. **The finishes plan** (the client said go 5 Nov: tap a wall, floor or light in any room to change it): `docs/FINISHES_PLAN.md`, F1–F4 done (V2.4–V2.7), F5 done (V2.9 bulbs, V2.15 fittings), F6 done (V2.11 sending, V2.13 schemes and copying a room, V2.14 a colour from a photo), F7 m² and litres (V2.12); prices next (they need the client's paints and floors). **The real rooms plan** (the client, 5 Nov: render quality, items as real as the living room's, the house's decor theirs to edit): `docs/REAL_PLAN.md`, R1–R8; the rooms in the client's order (the master bedroom, the office, the kitchen, the bathrooms, the hallways); V2.17 the master bedroom's shapes and the HD room shadows, V2.18 the office's, V2.19 the kitchen's, V2.20 the bathroom's and the landing's; V2.21 the rooms' evening light (`houseEnvK`); V2.22 the hall's shoes and the WC's roll and pipes; V2.23 the shade where walls and ceilings meet (`finPatch` `finAt`). V2.24 the client's measured stairwell (85 wide, square flat-topped posts 93 from the party wall: `FIT` first_stairs x 382, `LANDING.rail_x`), bedroom 2's chair-bed, amp, guitars and socket back on its real wall (z 79.5), and a check that no socket floats; Hide buttons in the cream of its row (dark only as Show buttons), on one row with the view buttons on a phone. V2.25 the PCs at their best: a real graphics card (`BIG_GPU`, any window width) opens in HD every visit and never steps itself down (`houseLite`, `autoQuality`'s Fast, `slowDev`, a lost context no longer saves Fast), the house as sharp as a room (1.5–2×); 390 lines nothing used gone (16 functions, 28 constants, `questions.py`, unused imports, 76 CSS rules that matched nothing), the build's outputs the same. V2.26: the old app's `?embed` mode out (`21_embed.js`, its hooks, `room3d_page.embed`, its CSS: 139 lines; the 3D in 22 parts again).
 
 **The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29, U5 in V1.30, U6 in V1.31, U7 in V1.32, U8 in part in V1.33, U9 in part in V1.34, U10 and U11 in V1.35–V1.37, Next 1 in part in V1.38, Next 5 in V1.39, Next 2 in part in V1.40–V1.42; its "Next" list is the work to take on).
 
@@ -34,7 +34,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 | Path | What |
 |---|---|
-| `media-wall/src/` | The site: `build_viewer.py` (the page: brand, Plan · Build · Buy and their sheets, offline, icons), `page.css`, `room3d_page.py` (the 3D's controls: the stickers, the dock's View · Room · Look · Measure · Edit and their panels), `room3d/` (the 3D, in 22 parts joined in order by `room3d_src.py`: setup, renderer, textures, ... house_edits, views_walk, cards, controls, go, embed; "`room3d.js`" in older notes means these), `measure.js` (Measure's saving). The living room and the media wall project: `geometry.py`, `fit.py`, the renders and PDFs (`make_images.py`, `build_doc.py`), `export_project.py` |
+| `media-wall/src/` | The site: `build_viewer.py` (the page: brand, Plan · Build · Buy and their sheets, offline, icons), `page.css`, `room3d_page.py` (the 3D's controls: the stickers, the dock's View · Room · Look · Measure · Edit and their panels), `room3d/` (the 3D, in 22 parts joined in order by `room3d_src.py`: setup, renderer, textures, ... house_edits, views_walk, cards, controls, go, finish; "`room3d.js`" in older notes means these), `measure.js` (Measure's saving). The living room and the media wall project: `geometry.py`, `fit.py`, the renders and PDFs (`make_images.py`, `build_doc.py`), `export_project.py` |
 | `house/` | The house: `survey_data.py` (every size, with its source) → `model.py` (the geometry, every piece tagged with its item) → `export_house.py` (the house file, `house.schema.json`); `measure.py` (what's still a guess: Measure's rows); `client_edits.py`/`.json` (the client's numbers over the guesses); `check_model.py`, `zfight.py`, `privacy_check.py`; `textures/` (the CC0 photos); the facts `HOUSE.md`, `EVIDENCE.md`, `SURVEY.md`, `BUILD_SPEC.md`, `HD_PLAN.md`, `SOURCES.md` |
 | `media-wall/inputs/` | The client's photos and plans (EXIF stripped) |
 | `projects/` | How a project is shaped (`project.schema.json`); a room's own project goes in `projects/<id>/project.json` |
@@ -105,7 +105,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   street end (they open from outside).
 - **Bedroom 2's door (V1.25):** hinged at the boiler cupboard end, drawn open flat against the cupboard's side (the client's arrow);
   three hinges on every room door; bedroom 2's frame has the moulded cap over its head from the landing photo.
-- **Earlier rounds** (V1.12–V1.24: lights, handles, fabrics, mirrors, the client's photo fixes): `docs/HISTORY.md`. `?embed` (`EMBH`): kept, unused.
+- **Earlier rounds** (V1.12–V1.24: lights, handles, fabrics, mirrors, the client's photo fixes): `docs/HISTORY.md`. `?embed` (the old app's frame) taken out in V2.26.
 
 ## Each round
 
@@ -127,22 +127,19 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 Quality is under View → More (HD or Fast). `?perf` at the end of the address shows the counts in a corner: the screenshot to send.
 
-## Numbers (4 Nov, V1.34; `checks.py`'s `sizes` line, and software graphics in a test browser: relative, not a phone's)
+## Numbers (5 Nov, V2.25; software graphics in a test browser: relative, not a real card's)
 
-- `sizes`: page 2.1 MB, photos 13.7 MB (the roughness maps added 0.4), three.js 0.86 MB own file, 21 sizes to measure.
-- The first picture (V1.29): 8.4 s here, was 16.1 (the shaders built first, the frame itself 54 ms). Outside 216 draws (was 659).
-
-## Numbers before (28 Oct)
-- The living room in HD with the shade on (V1.1): 364 draws, 119k triangles, 112 shaders. The photos are their own file since V1.9
-  (`photos.<hash>.json`, kept by the service worker; each photo's mean colour until it lands; `check_site.py` checks every set arrives).
-- The repo (V2.0): 352 files, 60 MB tracked (32 MB the client's photos: big PNGs now JPEG), history 94 MB; `checks.py`'s repo check fails on a tracked
-  build output or any other file over 1.5 MB.
+- `sizes`: page 2.3 MB, photos 12.7 MB (WebP tried: 15% bigger on these textures), three.js 0.86 MB own file, 24 sizes to measure.
+- Draws in HD: the house 350 (187k triangles), the living room 447 (18 lights lit, 120 shaders), the landing 409, the hall 312, bedroom 2 173,
+  the kitchen 188. Still: 0–1 frames a second (drawn only on change; spare moments build the hidden pieces' shaders ahead).
+- The repo: 351 files, 59 MB tracked (32 MB the client's photos), history 83 MB; `checks.py`'s repo check fails on a tracked build output
+  or any other file over 1.5 MB.
 
 ## Open with the client
 
 1. When happy, archive `DIY` (Settings → Archive).
 1. Measure (V2.24): is the living room's flight itself 85 wide like the stairwell over it (drawn 59, which leaves the living room's door its 83)? And the bathroom door's width: the short wall beside it is 18 now (the banister's end post takes 8).
-2. From each iPhone, the site with `?perf` added, after opening the house once: a screenshot of the corner box (Phase 4's real numbers).
+2. From each iPhone and PC, the site with `?perf` added, after opening the house once: a screenshot of the corner box (Phase 4's real numbers).
 3. Still to measure (all in Measure): how far the boiler cupboard sticks into bedroom 2; the bathroom's ceiling over the toilet and the slope's start, the vanity's width, the bath's length (184 drawn, from the door);
    the landing's door widths and the wall between the bedroom doors' frames; the tapestry's drop; the hall radiator; the master from the
    wardrobes to the front wall; the alcove; bedroom 2's length; a stair tread; the meter and bin cupboards; the living room's side-wall socket; the garage's chipboard box's depth; the secret room's pier.

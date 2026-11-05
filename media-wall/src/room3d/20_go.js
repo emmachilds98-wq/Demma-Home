@@ -781,8 +781,7 @@ function start() {
   precompile();                                                                         // v35: hidden parts' shaders, while the room's idle
   lookFromHash();                                                                       // v28: a shared #look- link (after the first compile, so its note shows)
   try {                                                                                 // v30: once, say the room's things can be tapped
-    if (EMBED) {}                                                                       // V1: the app gives its own hints
-    else if (!localStorage.getItem("mw41-taphint") && !/^#look-/.test(location.hash)) { setTimeout(() => toast("Tap things to work them. Double-tap the floor to walk."), 1800); localStorage.setItem("mw41-taphint", "1"); localStorage.setItem("mw31-camhint", "1"); }
+    if (!localStorage.getItem("mw41-taphint") && !/^#look-/.test(location.hash)) { setTimeout(() => toast("Tap things to work them. Double-tap the floor to walk."), 1800); localStorage.setItem("mw41-taphint", "1"); localStorage.setItem("mw31-camhint", "1"); }
     else if (!localStorage.getItem("mw31-camhint") && !/^#look-/.test(location.hash)) { setTimeout(() => toast("View → Move round sets your eye height"), 1800); localStorage.setItem("mw31-camhint", "1"); }   // v31
   } catch (e) {}
   // for the headless stills (shot3d.py): set the options and a view, then take a picture
@@ -809,7 +808,6 @@ function start() {
     },
   };
   if (window.__r3dPending) { window.R3D.set(window.__r3dPending); window.__r3dPending = null; }
-  if (EMBH) EMBH.ready();
 }
 window.addEventListener("r3d-set", e => { if (window.R3D) window.R3D.set(e.detail); else window.__r3dPending = e.detail; });
 

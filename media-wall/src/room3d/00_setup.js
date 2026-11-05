@@ -99,7 +99,7 @@ S.edit = false;
 if (!S.seen21) { S.view = "room"; S.seen21 = true; }   // v21: everyone starts once on the new whole-room view
 // V1.2, the client (28 Oct 2026): "Old style, rebuilt" and "The whole house in 3D" first: the page opens on the house, not the room it was
 // left in (?room opens the living room; a #look- link opens its look as before)
-if (!/[?&](embed|room)\b/.test(location.search) && !/^#look-/.test(location.hash)) S.view = "house";
+if (!/[?&]room\b/.test(location.search) && !/^#look-/.test(location.hash)) S.view = "house";
 if (!S.seen27) { if (S.site === "B") S.site = "C"; S.seen27 = true; }   // v27: the dining cabinet is the plan now: the old default moves to it once
 if (S.dining === "eight") S.dining = "six";                              // v27: the cabinet seats six (v26 had eight)
 if (!(S.paint in R.PAINTS) && S.paint !== "custom") S.paint = DEF.paint;
