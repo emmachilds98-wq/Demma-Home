@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.55 (4 Nov 2026)
+**Version:** V1.56 (5 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -44,8 +44,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 ## The site (V1.2: the old design back)
 
-- **V1.55:** a walk steps down only on purpose (`walkMove` `badDown`): never by sliding along a wall (it slid down the living room's
-  stairs from their top, into the living room, on the way to bedroom 2), the living room's flight only facing down it, never off an edge.
+- **V1.55–V1.56:** a walk steps down only on purpose (`walkMove` `badDown`: not sliding along a wall, the living room's flight only facing
+  down it, never off an edge); stopped dead at a door's frame with an opening just to one side, it eases toward it and through.
 - **V1.53 (the client: double-click to go there, W A S D to walk, a drop-in figure, better overheads):** a double-click (`dblclick`; a
   double-tap on a phone) on any floor you see stands you there in Be there (`room3d/14_views_walk.js` `spotAt`, `goStand`, `freeSpot`;
   through a roof, the first floor down); the figure bottom right (`#r3d-peg`) drags onto the house, a ring and the room's name where it
