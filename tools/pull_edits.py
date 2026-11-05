@@ -135,6 +135,11 @@ def main(argv):
         if not src:
             print(__doc__); return 2
         raw = json.loads(pathlib.Path(src).read_text())
+    fin = raw.get("finishes") if isinstance(raw, dict) else None   # V2.11 (FINISHES F6): the house's colours, floors and bulbs: kept as they are
+    if fin and "--dry-run" not in argv:
+        FIN = HOUSE / "client_finishes.json"
+        FIN.write_text(json.dumps({"from": f"the client, in the app, {when}", "rooms": fin}, indent=1, ensure_ascii=False) + "\n")
+        print(f"kept    the colours, floors and bulbs of {len(fin)} rooms (house/client_finishes.json)")
     changes, questions, notes = plan(raw, when)
     for c in changes:
         print(f"change  {'.'.join(map(str, c['path']))} = {c['value']}   ({c['what']})")
