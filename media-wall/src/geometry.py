@@ -34,7 +34,6 @@ RECESS_W = 104.5      # breast to the stair box, about (to confirm)
 STAIR_X = (BREAST_X[1] + RECESS_W, ROOM_W)  # 408 .. 467, the stair box in the south-west corner (to confirm)
 STAIR_STRING = 24.0                          # v23: the closed string's board, along the rake; below it the brick side wall (client)
 STAIR_D = 79.0        # from the alcove's back-wall line into the room (to confirm)
-STAIRS_UP = True      # v13, client: the stairs by the door go UP to the first floor (v12 drew them going down)
 STAIR_RISE, STAIR_GOING = 19.5, 19.25     # typical UK domestic stair (Approved Document K: rise up to 22, going at least 22); v78b, the
 # client: "pull steps back slightly making more room on the landing, there is roughly at least double this amount of space to stand at
 # the top": the top step 33 back (z 196), so the treads 19.25 (a steep older stair, under ADK's 22: count the steps and measure one)
@@ -108,7 +107,6 @@ TV_TOP = TV_BOTTOM + TV_H                  # 151.7
 TV_CENTRE = (TV_BOTTOM + TV_TOP) / 2       # 116.55
 TV_PANEL_Z = (26.0, 26.0 + TV_D)           # panel 12 cm off the back wall, on its stand
 UPRIGHT_LEN = CEIL - WORKTOP               # 159
-SIDE_ZONE = 0.0                            # v10's left zone is gone
 
 # the right-hand zone: the turntable on the worktop, the Series X on an oak shelf above it
 RZ = (UP_R[1], ALC_W)                      # 135.5 .. 186
@@ -138,7 +136,6 @@ HIGH_UNDER = HIGH_TOP - HIGH_T             # 192
 
 SOUNDBAR = (92.0, 6.0, 9.0)                # W, H, D  (Hisense AX5100G)
 SUB = (21.4, 29.4, 30.4)                   # W, H, D  (Hisense AX5100G subwoofer, rear port)
-TEN_GANG = (56.0, 4.5, 6.0)                # assumed, lying flat behind the TV (length to confirm)
 
 # ---------------------------------------------------------------- records (the v9/v10 trays, now in bay 3 under the deck)
 TRAY_LOWER = (2.3, 3.5, 34.4)              # box underside, base top, sleeve tops
@@ -155,7 +152,6 @@ PC_SHELF_D, PC_SHELF_T = 28.0, 4.0
 PC_SHELF_TOP = LEDGE_TOP                   # one line with the ledge
 PC_CASE = (23.0, 46.6, 45.3)               # W (off the wall), H, D (along the wall): client: 'average gaming case' = a mid-tower like the Corsair 4000D, 230 × 466 × 453 mm
 PC_Z = (-134.0, -134.0 - PC_CASE[2])       # front faces the alcove
-PAD_DOCK = (18.0, 2.2, 9.0)
 PC_SCREEN_SLAT = (2.1, 1.2)                # v6.1's slatted screen: oak slats 2.1 wide, 1.2 gaps, open top
 KB_TRAY = dict(h=7.0, out=25.0, runners=30.0)   # v6.1's roll-out keyboard tray: 7 cm housing under the PC shelf, rolls 25 cm out
 SPINE = (6.0, 6.0)                          # slatted oak spine over the PC's cable drop: off the wall, along the wall
@@ -166,14 +162,12 @@ PLAIN = True                                # v13, client: "less cladding all ov
 # ---------------------------------------------------------------- the L-sofa (assumed until measured) and the sub
 SOFA_W, SOFA_D, SOFA_SEAT_D, SOFA_H = 266.0, 168.0, 95.0, 80.0   # v15 client: "my sofa goes to around 40cm before the end of the window" (window ends at 308, so 268 from the side wall: 266 long from x 2); the return along the side wall (168) still assumed
 DOOR_HINGE, DOOR_OPENS_IN = "breast", True  # v12.1 client: hinged on the chimney-breast side, opens into the room
-WALLS_SOLID = True                          # v12.1 client: the side wall and the chimney breast are solid
 SOFA_X = (2.0, 2.0 + SOFA_W)               # 2 .. 249 along the window wall
 SOFA_BACK_Z = WINDOW_Z + 13.0              # -296: v17 13 off the window wall (was 10), clear of the curtains at 11
 SOFA_FRONT_Z = SOFA_BACK_Z + SOFA_SEAT_D   # -204: the main run's front
 CHAISE_X = (SOFA_X[0], SOFA_X[0] + SOFA_SEAT_D)   # 2 .. 97 along the side wall
 CHAISE_END_Z = SOFA_BACK_Z + SOFA_D        # -131
 SUB_BOX = dict(x=(207.5, 259.5), z=(-30.0, 0.0), h=42.0)   # v12: slatted oak box over the sub and its riser, between the folded arms
-SUB_RISER = dict(x=(212.5, 247.0), z=(-25.4, 0.0), h=5.0)   # v13: the sub on a plain oak riser (replaced in v13.1 by SUB_HOOD)
 # v13.1, client: "a box with an open front or something that won't restrict the sound but stops people spilling on it or knocking
 # it over". The AX5100G's driver fires out of its front and its port out of its back (Trusted/Expert Reviews), and it stands sideways
 # under the table, so the box is open at both ENDS (the driver and the port fire straight out), with a solid oak top (spill shield,
@@ -247,14 +241,12 @@ LEG_CLIP_FROM_FOOT = 8.0                    # the leg is about 3.2 square there:
 LEG_PITCH = 6.0                             # the stored legs' centres across the frame
 LEG_STORE_W = 7 * LEG_PITCH + LEG_CLIP[1]   # 47.6 across, clips included
 LEAF_LEG_IN = (7.5, 6.5)                    # the leaf's own four inserts: in from its 60 and 80 edges, clear inside the frame's corners
-LEAF_KIT_KG = None                          # computed in fit.py
 CHAIR = (44.0, 51.0, 77.0, 46.0)           # W, D, H, seat height. v31: IKEA FRÖSVI in solid beech, slatted seat, no cushion (v15–v30: 43 × 49 × 78, seat 48: TERJE, and FRÖSVI's padded version)
 DINE_W = 60.0                              # table edge per diner (UK guide)
 CLEAR_MIN, CLEAR_OK, CLEAR_WALK = 60.0, 75.0, 100.0   # table edge to wall: tight minimum, aim, walk behind
 FREE_Z = (-75.0, -155.0)                   # v13.1: where the table stands for six or eight: 75 off the breast (the figure to aim for)
 SIX_LEAF = True                            # v13.1: six use the leaf too (170 × 80): 85 of edge each on the long sides, 80 at each end
 SIX_X = (232.0, 402.0)                     # clear of the sub's box (x 217–252) on the breast side, 65 to the west wall
-SIX_CHAIR_BACK = CHAIR[1]                   # breast-side chairs at the table's edge: their backs reach 49 of the 60 cm to the breast
 EIGHT_X = SIX_X                            # eight: the same 170 × 80, three a side
 
 FRAMES_Y = 165.0                           # two framed LPs on the breast above the folded table
@@ -347,9 +339,6 @@ SOFA_OTTOMAN = 20.0                          # v17, client: "the end sofa seat c
                                              # at the end there and towards the wall making that ottoman 'feet out' type space. it then just has
                                              # no end open sofa about 20cm after that": the last 20 cm of the return has no back
 
-# "i'd like the media wall drawers for vinyl to be for vinyl large only": one trough the tray's full width, the LPs centred in it with
-# finger room either side to flip with both hands (LP 31.4 in 52.1 inside: 10.3 each side); no divider, no singles.
-TRAY_LP_ONLY = True
 
 # v16, client: "vinyl drawer adjusted but lots of empty space in that drawer now ... a better use of space for something else. i want the
 # ideal media wall now you have the specs and info". Bay 3 splits in two with a 12 mm ply divider: on the right, under the turntable,
@@ -378,10 +367,6 @@ NOW_LEDGE = dict(x=(BREAST_X[0] + 6.0, BREAST_X[1] - 6.0), top=104.0, d=7.0, t=2
 # "i'd like the bar lights to run in the other direction ie tv to window on both fixtures": both bars turn 90°, so they run along z
 # (from the media wall towards the window); their heads are spaced along the bar the same 21 cm apart.
 BAR_AXIS = "z"
-# "make these lights also smart rgb because they will be": the Wolston bar takes 4 × E14 (SES) bulbs, 6 W max (Dunelm). Smart colour E14
-# bulbs: WiZ Colour P45 E14, 4.9 W, 4.5 × 10.1 cm (Philips/WiZ), or the shorter Philips Hue E14 lustre, 5.1 W, 4.5 × 7.7 cm. Smart bulbs
-# need full power, so the two wall dimmers are dropped: the wall switches stay on and the app (or a smart button) sets level and colour.
-SMART_BARS = True
 BULB_E14 = {"wiz": ("WiZ Colour P45 E14", 4.9, (4.5, 10.1)), "hue": ("Philips Hue White and Colour E14 lustre", 5.1, (4.5, 7.7))}
 BAR_MAX_W = 6.0
 # the lamp: "bright red, it has rgb lights mainly stay on green on top then pink then purple going down"
@@ -596,7 +581,6 @@ OPTC["open_c"] = (_za - OPTC["door_w"], _zb)                    # the chair bay'
 OPTC["chair_z"] = [round((OPTC["open_c"][0] + OPTC["open_c"][1]) / 2 + s * (CHAIR_FOLDED[0] / 2 + 1.0), 2) for s in (1, -1)]   # two across, centred in that opening
 OPTC["door_kg"] = OPTC["door_w"] * OPTC["door_h"] * _c["door"] * 0.70 / 1000      # oak-faced ply about 700 kg/m³
 del _c, _cb_z0, _cb_z1, _lin, _za, _zb
-DINE_SQUEEZE = 55.0                                             # table edge per diner at a squeeze (UK guide: 60 to aim for)
 DINE_COMFORT = 58.0                                             # v27: near the guide's 60: what we call "in comfort" here
 CHAIR_TUCK = 8.0                                                # chairs pushed 8 under the edge: their backs 41 behind it (as for A and B)
 # Legs and seats. The inner half's legs stand near the joint, 32 in from each side, so knees miss them; the outer half's pair in the far

@@ -1182,8 +1182,6 @@ SOURCES["valspar"] = ("B&Q: paint mixing, any colour mixed in Valspar (diy.com/s
                       "(valsparpaint.co.uk/colour-tools/colour-match); Valspar V700 Premium Blend Walls & Ceilings, 2.5 L, about £28–29 mixed "
                       "(SheerLuxe; B&Q full price as listed), a 2.5 L tin covers up to 35 m² a coat (valsparpaint.co.uk ready-mix paint)")
 ORDER.append("valspar")
-_GLASSRAIL_V37 = ("Dan Murphy's: Bev-Equip single-row glass hanger, chrome, 400 mm long, a 110 × 15 mm mount plate, 36 mm high, about four "
-                        "or five wine glasses (danmurphys.com.au, BEVCH-400)")
 SOURCES["wineglass"] = ("Stemmed wine glasses, makers' sizes: Rosendahl Grand Cru red 20.5 and 22.2 tall; CB2 Joplin 22.9; most 20 to 23 "
                         "(culinaris.de, cb2.ca, dimensions.com)")
 SOURCES["trones"] = ("IKEA UK: TRONES shoe cabinet/storage, white, 52 × 18 × 39 cm, a pack of two £25, about four pairs each; must be fixed to "

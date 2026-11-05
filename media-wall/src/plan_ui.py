@@ -7,7 +7,6 @@ The plan page's new parts, as data and markup for build_viewer.py; page.js runs 
 - build day: a step as a phone screen, its room, its tasks to tick, its tools, its parts, Done.
 Every number comes from geometry, fit, ideas, costs or the buy list."""
 import html
-import json
 
 import geometry as G
 import fit

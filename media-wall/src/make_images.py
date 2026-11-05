@@ -16,7 +16,6 @@ HERE = pathlib.Path(__file__).parent
 OUT = HERE.parent / "out"
 ART = HERE / "art"
 FONT = "/usr/share/fonts/opentype/inter/Inter-SemiBold.otf"
-FONT_R = "/usr/share/fonts/opentype/inter/Inter-Regular.otf"
 ART_SCALE = 1.5     # v13.5: the page's renders in HD, 3300 wide
 
 

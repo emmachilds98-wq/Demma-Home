@@ -8,7 +8,7 @@ On claude.ai the page declares: db (answers/, tracker/), user (who saved what), 
 import hashlib, html, json, pathlib, re, urllib.parse
 import geometry as G
 import fit
-from build_doc import TRACK, money, phase_totals, plan_sections, steps, GUIDE_RULES, GUIDE_TIME, GUIDE_TECHNIQUES, GUIDE_PITFALLS, guide_tools, cuts_html, cuts_text, need_html, full_html, DIAGRAMS, PARTS, PHASE_PART, part_chip
+from build_doc import TRACK, money, phase_totals, plan_sections, steps, GUIDE_TIME, GUIDE_TECHNIQUES, GUIDE_PITFALLS, guide_tools, cuts_html, cuts_text, PARTS, PHASE_PART, part_chip
 
 HERE = pathlib.Path(__file__).parent
 OUT = HERE.parent / "out"
@@ -131,12 +131,9 @@ header { display: grid; gap: 10px; min-width: 0; background: var(--hero); color:
 :root[data-skin="plain"] header { padding: 0; border-radius: 0; }
 header::after { content: ""; position: absolute; inset: auto -60px -90px auto; width: 300px; height: 300px; border-radius: 50%;
   background: radial-gradient(circle, var(--hero-chip), transparent 70%); pointer-events: none; }
-header .eyebrow, header .lede, header .caption { color: var(--hero-muted); }
+header .lede, header .caption { color: var(--hero-muted); }
 header a:not(.btn) { color: var(--hero-link); }
 header .notice { background: var(--hero-note); color: var(--hero-ink); }
-header .hlinks a.btn { background: var(--hero-chip); color: var(--hero-ink); }
-header .hlinks a.btn:first-child { background: var(--oak); color: var(--surface); }
-:root[data-skin="plain"] header .hlinks a.btn:not(:first-child) { background: var(--chip); color: var(--ink); }
 .skin { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13.5px; color: var(--hero-muted); position: relative; z-index: 1; }
 .skin button { font: inherit; font-size: 13px; border: 1px solid #ffffff33; background: transparent; color: var(--hero-ink); border-radius: 999px; padding: 4px 10px 4px 6px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
 .skin button[aria-pressed="true"] { background: var(--hero-chip); border-color: var(--hero-link); }
@@ -247,7 +244,6 @@ table.fit sup { color: var(--muted); font-size: 10px; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --paper: #ebe8de; --paper-line: #c9c4b4; } }
 :root[data-theme="dark"] { --paper: #ebe8de; --paper-line: #c9c4b4; }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
-.eyebrow { margin: 0; font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 .tabs { min-width: 0; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); margin-top: -12px; }
 .tabs .tl { display: flex; gap: 4px; overflow-x: auto; padding-block: 8px; scrollbar-width: thin; }
 .tabs button { font: inherit; font-size: 14.5px; white-space: nowrap; background: none; border: 0; border-radius: 999px; padding: 7px 13px; color: var(--muted); cursor: pointer; flex: none; }
@@ -301,7 +297,7 @@ a.chip:hover, button.chip:hover { box-shadow: inset 0 0 0 1px var(--oak); }
 .doc figure.dia { background: var(--paper); border: 1px solid var(--paper-line); border-radius: 10px; padding: 12px; overflow-x: auto; }
 .doc figure.dia svg { display: block; width: 100%; min-width: 640px; height: auto; }
 .doc figcaption { color: var(--muted); font-size: 14px; margin-top: 8px; max-width: 78ch; }
-.doc .decision, .doc .why, .doc .callout { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin: 0 0 16px; max-width: 78ch; }
+.doc .why, .doc .callout { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; margin: 0 0 16px; max-width: 78ch; }
 .doc .callout ul, .doc .why ul { margin: 8px 0 0; }
 .doc .confirm { background: var(--note); border-radius: 8px; padding: 10px 14px; font-size: 15px; }
 .doc ul.checks, .doc ul.agreed { list-style: none; padding-left: 0; }
@@ -319,13 +315,7 @@ details.changes { background: var(--surface); border: 1px solid var(--line); bor
 details.changes > summary { cursor: pointer; padding: 10px 14px; font-weight: 700; }
 details.changes > .doc { padding: 4px 14px 2px; }
 /* how the build runs */
-.runlist { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 8px; }
-.runlist li { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; display: grid; gap: 2px; min-width: 0; }
-.runlist a { color: var(--ink); text-decoration: none; font-weight: 700; display: flex; gap: 10px; align-items: baseline; }
-.runlist a:hover { color: var(--oak); }
-.runlist .rn, .sn { font-family: var(--display); font-weight: 700; font-variant-numeric: tabular-nums; }
-.runlist .rn { color: var(--oak); min-width: 1.4rem; }
-.runlist .rm { font-size: 13.5px; color: var(--muted); padding-left: 2.0rem; }
+.sn { font-family: var(--display); font-weight: 700; font-variant-numeric: tabular-nums; }
 /* v13.6: part labels and the one-part filter */
 .part { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.04em; text-transform: uppercase;
   line-height: 1.3; padding: 2px 8px; border-radius: 999px; color: var(--ink); white-space: nowrap; vertical-align: middle;
@@ -333,12 +323,7 @@ details.changes > .doc { padding: 4px 14px 2px; }
 .part::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--pc); flex: none; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .part::before { background: color-mix(in srgb, var(--pc) 60%, white); } }
 :root[data-theme="dark"] .part::before { background: color-mix(in srgb, var(--pc) 60%, white); }
-.sparts { margin: 0 0 3px; display: flex; flex-wrap: wrap; gap: 4px; }
-.runlist .rp { padding-left: 2.0rem; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
-.runlist li { align-content: start; }
 summary .part { font-weight: 400; }
-.pfilter { margin: 4px 0 14px; display: grid; gap: 6px; }
-.pfilter .seg { flex-wrap: wrap; }
 .step[hidden] { display: none; }
 /* v13.7: lighting scenes */
 .scenes { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; margin: 8px 0 18px; }
@@ -353,14 +338,7 @@ summary .part { font-weight: 400; }
 .step.done { border-color: var(--ok); }
 /* v22: build steps one at a time: the head (number, title, who and how long, Done) always shows; the rest opens */
 .shead { cursor: pointer; }
-.sopen { font: inherit; font-size: 14px; border: 1px solid var(--line); background: var(--chip); color: var(--ink); border-radius: 999px; padding: 5px 12px; cursor: pointer; }
-.sopen:focus-visible { outline: 2px solid var(--oak); outline-offset: 2px; }
-.sbody { display: grid; gap: 10px; min-width: 0; }
-.sbody > * { min-width: 0; }   /* v29.1: a step's drawing (640 wide, it scrolls) no longer widens its Buy first and Parts boxes past a phone */
-.sbody[hidden] { display: none; }
 .step:not(.open) { padding-block: 10px; }
-.snext { margin: 0; }
-.sall { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; margin: 4px 0 10px; }
 @media (max-width: 560px) { .shead { grid-template-columns: 2.2rem minmax(0, 1fr); } .shead .sdone, .shead .sopen { grid-column: 2; justify-self: start; } .shead .sopen { margin-top: -4px; } }
 .shead { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr) auto; gap: 12px; align-items: center; }
 .sn { width: 2.6rem; height: 2.6rem; border-radius: 50%; background: var(--chip); display: grid; place-items: center; font-size: 1.15rem; }
@@ -372,19 +350,12 @@ summary .part { font-weight: 400; }
 .sbuy { margin: 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .sbuy .label { margin-right: 4px; }
 .sbuy .chip { background: var(--tight-bg); }
-.sdo { margin: 0; padding-left: 1.3rem; display: grid; gap: 6px; max-width: 80ch; }
-.scheck { margin: 0; background: var(--ok-bg); border-radius: 8px; padding: 8px 12px; font-size: 15px; max-width: 80ch; }
-.ssee { margin: 0; font-size: 14px; color: var(--muted); }
 .need { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px 18px; background: var(--note); border-radius: 8px; padding: 10px 14px; }
 .need h5 { margin: 0 0 4px; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
 .need ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 3px; font-size: 14.5px; }
 details.sdraw > summary { cursor: pointer; font-size: 14px; color: var(--oak); font-weight: 700; padding: 2px 0; }
 details.sdraw figure.dia { margin: 8px 0 0; background: var(--paper); border: 1px solid var(--paper-line); border-radius: 10px; padding: 10px; overflow-x: auto; }
 details.sdraw figure.dia svg { display: block; width: 100%; min-width: 640px; height: auto; }
-.sfull { display: grid; gap: 4px; max-width: 80ch; }
-.sfull h5 { margin: 10px 0 2px; font-family: var(--display); font-size: 1.02rem; font-weight: 700; }
-.sfull ol { margin: 0; padding-left: 1.6rem; display: grid; gap: 6px; }
-.sfull li::marker { font-variant-numeric: tabular-nums; color: var(--muted); }
 /* cost by phase */
 .chart { display: grid; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
 .crow { display: grid; grid-template-columns: minmax(8rem, 13rem) minmax(0, 1fr) 9.5rem; gap: 4px 14px; align-items: center; }
@@ -416,19 +387,10 @@ details.sdraw figure.dia svg { display: block; width: 100%; min-width: 640px; he
 #tracker.f-left li.done, #tracker.f-left li[data-kind="job"], #tracker.f-jobs li[data-kind="buy"], #tracker.f-buys li[data-kind="job"], #tracker.f-jobs li.picknote { display: none; }
 summary .pf a { color: var(--oak); }
 /* v14: tab groups, the overview's dashboard, the table's two options, the 3D room and its gallery */
-.hlinks { display: flex; flex-wrap: wrap; gap: 8px; margin: 2px 0 0; }
-.hlinks a.btn { text-decoration: none; }
-.hlinks a.btn:first-child { background: var(--oak); color: var(--surface); }
 .tabs .tg { flex: none; align-self: center; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted);
   padding: 0 4px 0 12px; margin-left: 6px; border-left: 1px solid var(--line); }
 .tabs .tg:first-child { border-left: 0; margin-left: 0; padding-left: 2px; }
 .dash { display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)); gap: 12px; }
-.dcard { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 6px; align-content: start; min-width: 0; }
-.dcard strong { font-family: var(--display); font-size: 1.6rem; line-height: 1.1; font-variant-numeric: tabular-nums; }
-.dcard a.caption { color: var(--oak); text-decoration: none; }
-.dcard a.caption:hover { text-decoration: underline; }
-.dbar { height: 8px; border-radius: 4px; background: var(--chip); overflow: hidden; }
-.dbar i { display: block; height: 100%; width: 0; background: var(--ok); }
 .d3d { position: relative; padding: 0; overflow: hidden; text-decoration: none; color: #fff; min-height: 150px; background: #0d100e; }
 .d3d img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .d3d span { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 14px 10px; font-family: var(--display); font-weight: 700; font-size: 1.15rem;
@@ -473,13 +435,13 @@ summary .pf a { color: var(--oak); }
 .doc p, .doc li { line-height: 1.62; }
 .doc figure { margin-bottom: 22px; }
 .doc figure img, .doc figure.dia { border-radius: 14px; }
-.doc .decision, .doc .why, .doc .callout { border-radius: 14px; }
+.doc .why, .doc .callout { border-radius: 14px; }
 .ptitle::before { content: ""; display: block; width: 28px; height: 3px; border-radius: 2px; background: var(--oak); margin-bottom: 10px; }
 .qhead .ptitle::before { display: none; }
 .tscroll { border-radius: 14px; box-shadow: var(--shadow); }
 .tscroll th { background: var(--chip); position: sticky; top: 0; }
 .tscroll tr:nth-child(even) td { background: color-mix(in srgb, var(--chip) 38%, transparent); }
-.dcard, .opt, details.phase, details.zone, details.changes, .step { border-radius: 16px; box-shadow: var(--shadow); }
+.opt, details.phase, details.zone, details.changes, .step { border-radius: 16px; box-shadow: var(--shadow); }
 .opt img { transition: transform .4s ease; }
 .opt:hover img { transform: scale(1.02); }
 @media (prefers-reduced-motion: reduce) { .opt img { transition: none; } .opt:hover img { transform: none; } }
@@ -529,7 +491,6 @@ STYLE_V25 = re.sub(r':root\[data-(?:theme="dark"|skin="[a-z]+")\][^{]*\{[^}]*\}'
 
 TABS = [("overview", "Overview"), ("room", "Room in 3D"), ("views", "Drawn views"), ("ideas", "Ideas"), ("wall", "Media wall"), ("dining", "Dining table"), ("paint", "Paint & light"),
         ("network", "Network & power"), ("build", "Build steps"), ("buy", "Buy & costs"), ("checks", "Checks & sources")]
-TAB_GROUPS = {"overview": "See it", "wall": "The plan", "build": "Do it"}   # v14: the tab bar in four groups
 CAP3D = {"3d_room": "The whole room from above the window side, the window wall cut away",
          "3d_wall_film": "The media wall with the Film preset: bias light on, bar 1 off, the strips low",
          "3d_wall_drawers": "Every drawer out, the Cosy preset: the LP crates under the turntable, a slim game drawer beside them",
@@ -654,14 +615,6 @@ def _tabs(key, panes):
     return f'<div class="tabs" role="tablist" aria-label="Buy, cut, build">{bt}</div>{ps}'
 
 
-def buy_list(rows):
-    """A chapter's buy rows for a phone: name and £ on one line, the full text and the shop under it."""
-    if not rows:
-        return "<p class='note'>Nothing to buy.</p>"
-    li = "".join(f'<li><span class="bq">{html.escape(str(q))}</span><b>{nm}</b><span class="bm">£{money(a, b)}</span><small>{full} · <i>{w}</i></small></li>'
-                 for q, nm, full, a, b, w in rows)
-    return (f'<ul class="blist">{li}<li class="tot"><span></span><b>Total</b><span class="bm">£{money(sum(r[3] for r in rows), sum(r[4] for r in rows))}</span></li></ul>'
-            '<p><a href="#buy" data-go="buy">Tick them off in Buy</a></p>')
 
 
 def piece_cards(rows):
@@ -758,33 +711,6 @@ def cost_overview():
             f'<textarea id="co-text" hidden>{html.escape(costs.text(TRACK, money))}</textarea>')
 
 
-def chairs_card():
-    """v20, client: "is it not possible to build the chair storage into the table setup. i want it to be a fully pack away setup": the chair
-    cupboard built in beside the table, flush with the pipe boxing; the open hooks stay as the cheap way; chairs five and six."""
-    g = G
-    CB = g.CHAIR_STORE["cupboard"]
-    w = CB["z"][0] - CB["z"][1]
-    sh = json.dumps({'site': 'B', 'dining': 'folded', 'chairs': 'cupboard', 'view': 'dining', 'scene': 'bright'})
-    op = json.dumps({'site': 'B', 'dining': 'folded', 'chairs': 'open', 'view': 'chairs', 'scene': 'bright'})
-    return f"""<div class="opts">
-  <article class="opt"><img data-art="3d_chairs_shut" alt="{html.escape(CAP3D['3d_chairs_shut'])}" loading="lazy">
-    <div class="ob"><span class="label">With the flip-top (the alternative) · about £120–240</span><h3>A chair cupboard, built in beside the table</h3>
-    <ul><li>Oak, {w:.0f} wide × {CB['d']:.0f} deep × {CB['h']:.0f} tall, in the gap at the table's window end, flush with the pipe boxing and under your shelf.</li>
-    <li>Four folded chairs inside: two on its floor, two on its shelf, one behind the other. Two doors on push latches.</li>
-    <li>The table and its chairs pack away together: the wall reads as one built-in piece.</li>
-    <li class="minus">Six fit if it's built {CB['d6']:.0f} deep: it then stands {CB['d6'] - CB['d']:.0f} cm proud of the boxing.</li></ul>
-    <button type="button" class="btn" data-r3d='{sh}'>See it shut in 3D</button> <button type="button" class="btn" data-r3d='{op}'>See it open</button></div></article>
-  <article class="opt"><img data-art="3d_chairs" alt="{html.escape(CAP3D['3d_chairs'])}" loading="lazy">
-    <div class="ob"><span class="label">Using it</span><h3>Doors open, four chairs inside</h3>
-    <ul><li>Its doors are hinged on the table's side and open right back (165°), so the chairs come straight out to the table.</li>
-    <li>Open the table first, then take the chairs out; fold the table last.</li>
-    <li class="minus">The open hooks (about £8–15) still work if you'd rather not build it.</li></ul></div></article>
-  <article class="opt noimg"><div class="ob"><span class="label">More ways (v23) · options</span><h3>Behind the folded top, or a fold-down seat</h3>
-    <ul><li>Four more chairs can hang behind the folded top on a backboard {g.BEHIND_TOP['gap']:.0f} cm deeper: with the cupboard, all six (or eight) pack away.</li>
-    <li>A fold-down oak seat in the {g.CHAIR_STORE['stair_gap'][0] - g.CHAIR_STORE['stair_gap'][1]:.0f} cm gap at the stair end: a fifth place that's always there.</li>
-    <li class="minus">Behind the top, the table stands {g.BEHIND_TOP['gap']:.0f} cm further into the room. Under the stairs is brick: chairs five and six otherwise go in the garage.</li></ul>
-    <button type="button" class="btn" data-r3d='{json.dumps({"site": "B", "dining": "folded", "view": "dining", "seat": "down"})}'>See the seat in 3D</button></div></article>
-</div>"""
 
 
 def options_card():
@@ -829,7 +755,6 @@ def gallery3d():
                    f'<figcaption>{html.escape(CAP3D[k])}</figcaption></figure>' for k, *_ in SHOTS3D if not k.startswith(("3d_ideas_", "3d_case_", "3d_decor", "3d_suggest", "3d_seat", "3d_id_", "3d_sg_", "3d_add_")))
     return f'<div class="gallery">{figs}</div>'
 
-TABNAME = dict(TABS)
 SEC_TAB = {"1": "overview", "2": "overview", "3": "wall", "4": "wall", "5": "dining", "6": "wall", "7": "wall", "8": "paint",
            "9": "network", "10": "build", "11": "buy", "12": "checks"}
 
@@ -1019,7 +944,6 @@ def _page(site=False):
     """v25 (Demma's Home, option 1c "Room as map"): the 3D room is the home screen; a rail (a bottom bar on phones) opens
     the Plan, Build, Buy and Ideas sheets over it (v30: the Ask sheet is gone); the Tools button holds every 3D control. Every v24 panel id, data-* hook and
     saved key is kept: the panels live inside the sheets now."""
-    import diagrams as D
     prefix = "media-wall/src/" if site else ""
     imgs = {k: f"{prefix}art/{k}.webp" for k in [f"art_{s}_{p}" for s in ("join", "four", "six", "side", "drawers") for p in ("mint", "card_room", "deep", "sage", "treron")] + ["key_join", "doc_paint", "doc_skirt"]}
     imgs.update({f"dims_{v}": f"{prefix}art/dims_{v}.webp" for v in ("join", "four", "six", "drawers", "side")})
@@ -1254,15 +1178,6 @@ const SITE = {json.dumps(site)};
 
 # v23: the page looks (the header's "Page look" buttons) and larger text, kept on each device
 SKINS = [("card", "Card Room", "#2f4a3c"), ("oak", "Oak & linen", "#6b4a2b"), ("blue", "Sofa blue", "#2c4466"), ("plain", "Plain", "#eef0ea")]
-SKIN_BTNS = "".join(f'<button type="button" data-skin="{k}" aria-pressed="false"><i style="background:{c}"></i>{n}</button>' for k, n, c in SKINS)
-SKIN_JS = r"""(() => {
-  const d = document.documentElement, bs = [...document.querySelectorAll(".skin [data-skin]")], big = document.getElementById("big-text");
-  const sync = () => bs.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.skin === (d.dataset.skin || "card"))));
-  bs.forEach(b => b.addEventListener("click", () => { d.dataset.skin = b.dataset.skin; try { localStorage.setItem("mw23-skin", b.dataset.skin); } catch (e) {} sync(); }));
-  if (big) { big.checked = d.classList.contains("bigtext");
-    big.addEventListener("change", () => { d.classList.toggle("bigtext", big.checked); try { localStorage.setItem("mw23-big", big.checked ? "1" : "0"); } catch (e) {} }); }
-  sync();
-})();"""
 
 
 # v46: Build by place and piece. Each piece's card has a tick per task (this device: mw46-tasks) and per thing to buy (the buy list's own

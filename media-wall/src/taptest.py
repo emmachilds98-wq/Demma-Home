@@ -1,7 +1,7 @@
 """v30: taps things in the 3D room (the cabinet, its doors, its two widths (v33), the media wall, the lamp, the curtains) at 1280 and 390
 and prints what each card offers and what each button did (v34: the blind, the vinyl stand, the trolley, a suggestion's versions, the
 storage ottoman's lid, the drinks case's flap; v36: the bar by the sofa, the lift-top coffee table).  python3 taptest.py [screenshot folder]"""
-import sys, json, threading, functools, http.server, pathlib
+import sys, threading, functools, http.server, pathlib
 from playwright.sync_api import sync_playwright
 import localcdn
 ROOT = pathlib.Path(__import__("os").environ.get("DEMMA_SITE") or pathlib.Path(__file__).resolve().parents[2] / "_site"); OUT = sys.argv[1] if len(sys.argv) > 1 else "."

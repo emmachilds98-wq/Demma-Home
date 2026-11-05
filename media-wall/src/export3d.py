@@ -153,23 +153,6 @@ def state(dining="folded", game=0.0, rec_up=0.0, rec_lo=0.0, plinth=0.0, slim=0.
     R.SOFA_GHOST = False
 
 
-def to_site_b(items):
-    """Turn the dining wall from the breast (along +x, out towards -z) onto the west wall (along -z, out towards -x),
-    about the table's centre: x' = ROOM_W + z, z' = TABLE_B_CZ - (x - TABLE_CX)."""
-    W, CX, CZ = G.ROOM_W, G.TABLE_CX, G.TABLE_B_CZ
-    out = []
-    for it in items:
-        if it[0] == "b":
-            _, x, y, z, w, h, d, *rest = it
-            out.append(["b", round(W + z, 2), y, round(CZ - (x + w - CX), 2), d, h, w, *rest])
-        elif it[0] == "p":
-            c = it[1]
-            nc = []
-            for i in range(0, len(c), 3):
-                x, y, z = c[i:i + 3]
-                nc += [round(W + z, 2), y, round(CZ - (x - CX), 2)]
-            out.append(["p", nc, *it[2:]])
-    return out
 
 
 def strip(items, drop):
@@ -237,7 +220,7 @@ def scene():
     room_spec["CAB80"] = G.CAB80   # v33: the more compact version, an 80-wide table
     room_spec["CHAIR_PADDED"] = G.CHAIR_PADDED   # v33: the grey padded chairs, drawn at the table
     room_spec["BESIDE"] = G.BESIDE             # v31: what could stand beside it
-    from build_doc import VERSION, LABEL
+    from build_doc import LABEL
     room_spec["VERSION"] = LABEL             # v30: the plan's version, for the name of a picture saved from the 3D room
     room_spec.update(REAR_SPK=G.REAR_SPK, REAR_STAND=G.REAR_STAND, REAR_SPOTS=G.REAR_SPOTS)   # v27: your rear speakers on their stands
     room_spec["CHAIR"] = G.CHAIR; room_spec["SOFA_POUF"] = G.SOFA_POUF
