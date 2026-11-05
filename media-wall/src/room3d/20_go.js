@@ -46,6 +46,7 @@ function finPatch(m, k) {   // the walls' and ceilings' materials read the palet
     Object.assign(sh.uniforms, { finMap: { value: FIN.map }, finPal: { value: FIN.pal }, finKind: { value: FIN.kind[k] }, finRoom: { value: room }, finScale: { value: scale } });
     sh.vertexShader = "varying vec3 vFinP;\nvarying vec3 vFinN;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n vFinP = transformed; vFinN = objectNormal;");
     sh.fragmentShader = "uniform sampler2D finMap;\nuniform sampler2D finPal;\nuniform float finKind;\nuniform float finRoom;\nuniform float finScale;\nvarying vec3 vFinP;\nvarying vec3 vFinN;\n" +
+      `int finAt(vec2 c, int fl) { ivec2 t = ivec2(int(clamp(floor(c.x / 2.0), 0.0, ${FIN.W - 1}.0)), int(clamp(floor((c.y + 309.0) / 2.0), 0.0, ${FIN.H - 1}.0)) + fl * ${FIN.H}); return int(texelFetch(finMap, t, 0).r * 255.0 + 0.5); }\n` +
       sh.fragmentShader.replace("vec4 diffuseColor = vec4( diffuse, opacity );", `vec3 finD = diffuse;
   { vec3 fn = normalize(vFinN); float xc = -vFinP.x * 100.0, zc = vFinP.z * 100.0, yc = vFinP.y * 100.0;
     int fl = yc < 0.0 ? 0 : (yc < 260.0 ? 1 : 2); int rm = int(finRoom);
@@ -53,7 +54,22 @@ function finPatch(m, k) {   // the walls' and ceilings' materials read the palet
       ivec2 t = ivec2(int(clamp(floor((xc - fn.x * o) / 2.0), 0.0, ${FIN.W - 1}.0)), int(clamp(floor((zc + fn.z * o + 309.0) / 2.0), 0.0, ${FIN.H - 1}.0)) + fl * ${FIN.H});
       rm = int(texelFetch(finMap, t, 0).r * 255.0 + 0.5); }
     if (rm > 0) { float nx = -fn.x, nz = fn.z; int sl = finKind > 0.5 ? 4 : (abs(nx) > abs(nz) ? (nx > 0.0 ? 2 : 3) : (nz > 0.0 ? 0 : 1));
-      vec4 fc = texelFetch(finPal, ivec2(sl, rm), 0); if (fc.a > 0.5) finD = fc.rgb * finScale; } }
+      vec4 fc = texelFetch(finPal, ivec2(sl, rm), 0); if (fc.a > 0.5) finD = fc.rgb * finScale;
+      /* V2.23 (REAL_PLAN R2): the shade a real room has where its surfaces meet: a wall darker at its foot, a little at its top and into
+         a corner; a ceiling a little at its edges (where the room ends in the plan the palette reads); worked out here, nothing baked */
+      float hh = yc - (fl == 0 ? -260.0 : (fl == 1 ? 0.0 : 260.0)), shd = 1.0, cn = 0.0;
+      vec2 c0 = vec2(xc - fn.x * (finKind < 0.5 ? 3.0 : 0.0), zc + fn.z * (finKind < 0.5 ? 3.0 : 0.0));
+      if (finKind < 0.5) {
+        shd -= 0.11 * exp(-max(hh, 0.0) / 14.0) + 0.07 * exp(-max(235.0 - hh, 0.0) / 16.0);
+        vec2 tg = abs(fn.x) > abs(fn.z) ? vec2(0.0, 1.0) : vec2(1.0, 0.0);
+        for (int d = 3; d >= 1; d--) { float dd = float(d) * 7.0; if (finAt(c0 + tg * dd, fl) != rm || finAt(c0 - tg * dd, fl) != rm) cn = 1.0 - float(d - 1) / 3.0; }
+        shd -= 0.09 * cn;
+      } else {
+        for (int d = 3; d >= 1; d--) { float dd = float(d) * 8.0;
+          if (finAt(c0 + vec2(dd, 0.0), fl) != rm || finAt(c0 - vec2(dd, 0.0), fl) != rm || finAt(c0 + vec2(0.0, dd), fl) != rm || finAt(c0 - vec2(0.0, dd), fl) != rm) cn = 1.0 - float(d - 1) / 3.0; }
+        shd -= 0.08 * cn;
+      }
+      finD *= shd; } }
   vec4 diffuseColor = vec4( finD, opacity );`);
   };
   return m;
