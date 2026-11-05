@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.56 (5 Nov 2026)
+**Version:** V1.57 (5 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -46,6 +46,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 - **V1.55–V1.56:** a walk steps down only on purpose (`walkMove` `badDown`: not sliding along a wall, the living room's flight only facing
   down it, never off an edge); stopped dead at a door's frame with an opening just to one side, it eases toward it and through.
+  V1.57: in the hall under the living room's stairs no longer the living room (`walkRoom`: your feet at its tread); down the lower stairs, the kitchen's view (`WALK_VIEW`).
 - **V1.53 (the client: double-click to go there, W A S D to walk, a drop-in figure, better overheads):** a double-click (`dblclick`; a
   double-tap on a phone) on any floor you see stands you there in Be there (`room3d/14_views_walk.js` `spotAt`, `goStand`, `freeSpot`;
   through a roof, the first floor down); the figure bottom right (`#r3d-peg`) drags onto the house, a ring and the room's name where it
@@ -61,10 +62,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   the 3D changes as you go, As planned puts it back. Measure rows in `edits` ({item, field, value}; Send shares them), `pull_edits.py`
   folds them in. `room3d.js` `PICK`, `housePiece`, `storeEdits`, `selPiece`; the pieces in `R.HOUSE3.items`; `check_site.SIZE` tries it. (V1.49: the walk check waits for flies.)
   V1.51: Measure lists them under "Changed in the 3D" (`paintEdits`: a name flies there and outlines it, As planned), and Send sends them.
-- **V1.47 (the client's review):** the outside ground's slope not across the house (`outdoor`); blinds a material of their own
-  (`blind_cloth`, shown when `S.blinds`; a tap: `hblinds`); the front door hinged at its b end (`DOOR_HANG`); the dormer's `hung` drawn as
-  timber boards, its plaster between the cheeks; roof tiles at 2.4 m (`textures.json`); house walls' relief (`normalScale`) down; by evening a
-  dusk veil (`duskVeil`) in the house's rooms; a drag in the house's rooms turns the view in place (`lookTurn`, `inPlace`).
+- **V1.47 (the client's review):** no garden ground in the kitchen; blinds (`blind_cloth`, `hblinds`); front door hinged at b; the dormer
+  clad in timber boards; smoother walls; by evening a dusk veil; a drag in a room turns the view in place (`lookTurn`).
 - **V1.44–V1.48:** the living room's whole fixed shell (`model.living_shell`, house.json's living `shell`, four checks) (walls, floor, ceiling, skirting, door, window opening, stairs, pipe boxing, radiator) drawn from `R.HOUSE3.living` (the same to the pixel). V1_PLAN phase 5 done.
 - **V1.28 (U1–U3):** the eye is solid to the house (walls, furniture, slopes: a 20 cm ball, sliding); double-tap walks on every floor;
   zoom to the pointer; Be there's lens zooms (wheel, pinch); mode changes fly; on a phone two rows of buttons, labels a steady size,
