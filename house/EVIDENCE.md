@@ -19,6 +19,7 @@ photo or plan (to confirm) · **E** our estimate.
 | 25 Oct | "This is a few images of the kitchen and how it looks currently. The chalkboard doors show how the two cupboards appear on your right as you walk in the kitchen. We've done this chalkboard style with the top floor boiler cupboard too." | The kitchen as built (v60), the cubby's two chalkboard doors, the airing cupboard's chalkboard door |
 | 5 Nov | "lower cupboard needs to have a box on the side and underneath of the stairs" (a picture) | The store's boxed side and underside of the lower flight (its line under the treads E) |
 | 5 Nov | "the light switch for the bathroom is in the bathroom and is a string on the ceiling on the right as you walk in. the stairway switch is at the bottom of the stairs on the side wall on the left" | The bathroom's pull cord (its length E, in Measure), no wall switch by its door; the lower stairs' switch at their foot, 117 up (E) |
+| 5 Nov | "wall d moved back in line with the wall on its upper left" (our plan of the lower floor), "i am able to fit a washer dryer in this corner and still open the store door" | The store's back wall in line with the one past the stairs' top step (`survey_data.STORE_TO_STAIRS`) |
 
 ## 2. Floor plans
 

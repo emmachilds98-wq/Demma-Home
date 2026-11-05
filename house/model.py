@@ -46,6 +46,8 @@ def footprint(floor):
     cx, cz, *_ = cal("lower")
     xs, zs = round(cx(555), 1), round(cz(1110), 1)
     st = stair(); ze = round(st["z1"] + 2, 1)            # v80: round the flight's top two steps (they ran on through the store's end wall
+    if ze > zs and D.STORE_TO_STAIRS:                    # V2.2, the client: the store's back wall in line with the one past the top step
+        return [(0.0, BACK), (WIDTH, BACK), (WIDTH, ze), (xs, ze), (xs, FRONT), (0.0, FRONT)]
     if ze > zs:                                          # to the hall's door down): the store under them, the wall in front of the top step
         return [(0.0, BACK), (WIDTH, BACK), (WIDTH, ze), (st["x0"], ze), (st["x0"], zs), (xs, zs), (xs, FRONT), (0.0, FRONT)]
     return [(0.0, BACK), (WIDTH, BACK), (WIDTH, zs), (xs, zs), (xs, FRONT), (0.0, FRONT)]
@@ -115,7 +117,7 @@ def rooms(floor):
         out.append(dict(id="master_1", room="master", x0=m1["x"][0], x1=m1["x"][1], z0=m1["z"][0], z1=m1["z"][1], name="", use=""))
     if floor == "lower":                                         # v80: the store on under the flight's top steps, to the hall's door down
         fp = footprint("lower"); st = stair()
-        if len(fp) > 6:
+        if len(fp) > 6:                                          # (V2.2: not with the store's wall moved back: the store reaches it)
             out.append(dict(id="lower_store_2", room="lower_store", x0=st["x0"], x1=WIDTH, z0=fp[4][1], z1=fp[2][1], name="", use=""))
     if floor == "ground":                                        # the measured living room, a neighbour only
         out.append(dict(id="living", room="living", x0=0.0, x1=WIDTH, z0=BACK, z1=38.0, name="", use=""))

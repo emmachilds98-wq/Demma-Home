@@ -300,7 +300,8 @@ FIT = {"first": {"bathroom": dict(x1=408.0, z1=-38.8), "bed2": dict(z1=79.5), "a
                  # V2.2, the client: "bannister could be moved over slightly too. the stairwell is wider. another 10cm maybe": 10 wider (was 408)
                  # v66: the stairwell over the flight; v67 (the landing photos): open to the flight's top step (the plans read 170)
        "ground": {"hall": dict(x0=WALL_HALL), "front_store_e": dict(x0=WALL_HALL), "garage": dict(x1=round(WALL_HALL - 12.6, 1))},
-       "lower": {"kitchen": dict(z1=-23.8), "kitchen_1": dict(z0=-23.8), "kitchen_2": dict(z0=-23.8), "kitchen_cupboard": dict(z0=-23.8),
+       "lower": {"lower_store": dict(z1=251.7),   # V2.2 (STORE_TO_STAIRS): its back wall in line with the one past the flight's top step
+                 "kitchen": dict(z1=-23.8), "kitchen_1": dict(z0=-23.8), "kitchen_2": dict(z0=-23.8), "kitchen_cupboard": dict(z0=-23.8),
                  "secret": dict(z1=327.0)}}   # V1.26, the client: "secret room seems to be square not rectangle" (its 277.7 width deep, was 450)
 FIT_DOORS = {"kitchen_door": (-115.5, -52.1),   # V1.20, the client: "kitchen door more centre with the area space between stairs and bathroom, this means shift up the table end": in the middle of the landing (the bar 15 shorter)
              # v73 (-100.5 to -37.1), the client: "shift the door": to the landing's stairs end, clear of the bar and the boiler
@@ -328,6 +329,9 @@ FIT_DOORS = {"kitchen_door": (-115.5, -52.1),   # V1.20, the client: "kitchen do
 # the house end, the handle at the street end, opening into the porch. The front door into the hall, its lever at the a end (V1.47: the
 # client, and photo_hall_to_front_door_30oct: on the left from inside; it was drawn at the b end, mirrored).
 BATH_DOOR_GAP = 15.0
+# V2.2, the client (our plan of the lower floor, wall D): "wall d moved back in line with the wall on its upper left" (the store's back wall
+# in line with the one past the flight's top step), "i am able to fit a washer dryer in this corner and still open the store door"
+STORE_TO_STAIRS = True
 # V2.2, the client (a picture from inside the WC): "door opens into the bathroom towards the outside wall": hinged at its outside-wall end (b)
 DOOR_HANG = {"bed2_door": dict(hinge="b", open=1), "bath_door": dict(hinge="a", deg=None), "wc_door": dict(hinge="b"),
              "store_w": dict(hinge="a", side=-1), "store_e": dict(hinge="a", side=1), "hall_porch": dict(hinge="b", side=-1)}   # V1.47, the client: "front door's handle is on the right hand side and opens inwards" (from outside; the hall photo: on the left from inside)
