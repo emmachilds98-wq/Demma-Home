@@ -37,6 +37,14 @@ function outdoor() {
        colour, 3 km of it, washed to khaki by the sun on a PC; now the lawn's own photo and relief, in metres (worldUV), as the gardens' lawn */
     const LT = houseTex("lawn");
     const mat = reg(new THREE.MeshStandardMaterial({ color: LT ? "#ffffff" : "#56633f", map: LT ? LT.map : null, normalMap: LT && LT.normal || null, roughness: 1, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 4, polygonOffsetUnits: 4 })); mat.clippingPlanes = [];
+    if (LT) {   // V2.29: no repeat to the horizon: the photo mixed with itself turned and scaled, and a slow lighter-darker over metres
+      mat.customProgramCacheKey = () => "grass";
+      mat.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace("#include <map_fragment>", `#ifdef USE_MAP
+        vec4 sampledDiffuseColor = mix(texture2D(map, vMapUv), texture2D(map, mat2(0.8, -0.6, 0.6, 0.8) * vMapUv * 0.43 + 0.37), 0.5);
+        float gm = dot(texture2D(map, vMapUv * 0.037 + 0.11, 4.0).rgb, vec3(0.333)), ga = dot(textureLod(map, vec2(0.5), 12.0).rgb, vec3(0.333));
+        sampledDiffuseColor.rgb *= clamp(gm / max(ga, 0.01), 0.8, 1.2); diffuseColor *= sampledDiffuseColor;
+      #endif`); };
+    }
     const yt = (H.drive ?? -15) - 2, yb = (H.lawn ?? -260) - 2, A0 = -125, A1 = -28, E = 300000, zf = H.front, zb = H.back;   // V1.4: 3 km out (was 80 m), under the haze   // the alley (x -125 to -28)
     const quad = (x0, x1, z0, y0, z1, y1, alley, slope) => {   // a strip of ground from (z0, y0) to (z1, y1), level across x
       const g2 = new THREE.BufferGeometry(), P = [x0, y0, z0, x1, y0, z0, x1, y1, z1, x0, y1, z1].map((v, i) => i % 3 === 0 ? -v * M : v * M);
