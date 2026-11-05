@@ -9,15 +9,6 @@ import geometry as G
 
 WZ = G.WINDOW_Z
 
-# v34, client: "i like the large glass display case on the chimney breast": it is in the plan now (build_doc TRACK, section 4,
-# step 9), so it left IDEAS; its own words stay here for the plan
-CASE_IDEA = ("case", "A tall glass display case on the chimney breast",
-     "90 wide × 85 tall × 12 deep, three glass shelves", (90, 170),
-     "For collectibles, boxed games, 7-inch singles, small plants or ceramics, lit from inside, without a cabinet on the floor: 12 deep, so it "
-     "stands no further out than a picture ledge. Oak frame from the offcuts (or painted black or white), a 4 mm toughened glass front that "
-     "lifts off, three 6 mm glass shelves on pins, an LED strip under the top on the strips' app. Hung on a French cleat: about 16 kg empty. "
-     "It takes the place of the two framed LPs, above the “now playing” ledge. In the 3D room, try what's inside it and its frame.",
-     "On the breast, centred, from 137 to 222 (just clear of the sleeves on the “now playing” ledge, 13 under the ceiling); with the table by the stairs only.", True)
 
 # (id, title, size, rough cost £, why it suits the room, where it goes, in 3D)
 IDEAS = [
@@ -79,14 +70,6 @@ def low_high():
     return sum(i[3][0] for i in idea_options()), sum(i[3][1] for i in idea_options())
 
 
-def pdf_html():
-    """The plan PDF's appendix: one paragraph per idea."""
-    lo, hi = low_high()
-    rows = "".join(f"<tr><td><b>{t}</b><br><span class='note'>{size}</span></td><td>{why} <i>{where}</i></td><td class='num'>{c[0]}–{c[1]}</td></tr>"
-                   for _, t, size, c, why, where, _3d in IDEAS)
-    return (f"<p>Suggestions only, for later: they aren't in the plan, the buy list or the costs (all of them together would be about "
-            f"£{lo}–{hi}). The first three can be seen in the 3D room with the “Ideas (not in the plan)” buttons, all off until you turn them on.</p>"
-            f"<table class='tight'><tr><th>Idea</th><th>Why, and where</th><th>About £</th></tr>{rows}</table>")
 
 
 # v21, client: "i also want expansion of the suggested furniture and decor making sure i can choose to have it or not": pieces placed
@@ -316,14 +299,6 @@ def suggest_low_high():
     return sum(i[3][0] for i in options()), sum(i[3][1] for i in options())
 
 
-def suggest_html():
-    """v21: the plan PDF's table of the suggested furniture and decor."""
-    lo, hi = suggest_low_high()
-    vers = lambda k: ", ".join(n for _v, n, _c in SUGG_VARS[k]).lower().capitalize()
-    rows = "".join(f"<tr><td><b>{t}</b><br><span class='note'>{size}</span><br><span class='note'>{vers(k)}</span></td><td>{why} <i>{where}</i></td><td class='num'>{c[0]}–{c[1]}</td></tr>"
-                   for k, t, size, c, why, where in options())
-    return (f"<p>Not in the plan or the costs: all {len(options())} together would be about £{lo}–{hi}. Each has its own button in the 3D room, all off until you turn them on, and two or three versions to try.</p>"
-            f"<table class='tight'><tr><th>Suggestion</th><th>Why, and where</th><th>About £</th></tr>{rows}</table>")
 
 
 # v36, client: "make sure its clear how to manage all these options in the 3D room": the same suggestions, grouped by what they're for.

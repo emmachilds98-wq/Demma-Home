@@ -2,8 +2,7 @@
 the headless stills (shot3d.py). Three.js comes from jsDelivr, pinned."""
 import html, json, pathlib
 import room3d_src
-import scenes
-import ideas
+import scenes, ideas
 import render as R
 import geometry as G
 
@@ -453,8 +452,6 @@ def rules_json():
 LIGHTS = [("strip", "Ceiling LED strip", None), ("uprights", "Upright grooves and the side shelf (smart colour strips)", "strips"), ("bias", "TV bias light", None),
           ("bar1", "Bar 1, TV to window (smart colour)", "bar1"), ("bar2", "Bar 2, by the stairs (smart colour)", "bar2"),
           ("lamp", "Red lamp: top, middle, bottom", "lamp"), ("accent", "Accents: the glass case, the bar, the PC", None)]   # v46
-CEIL_PRESETS = [("match", "Same as the walls"), ("#f2f0ea", "White")]
-SKIRT_PRESETS = [("match", "Same as the walls"), ("#ece8dd", "Off-white"), ("#5e6a5b", "Green Smoke")]
 # v25: the five Tools tabs (were v22's drawers): (key, name, icon, hue)
 # v37, client: "Relocate the lights controls so they sit under 'View' in the main buttons menu": four tabs, the lights in Views
 DRAWERS = [("views", "View", "photo_camera", 235), ("room", "Room", "chair", 50), ("look", "Look", "palette", 165),

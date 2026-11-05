@@ -617,9 +617,9 @@ qs("#r3d-picksave")?.addEventListener("click", () => {
    the way out if it doesn't come back */
 let glLost = false;
 canvas.addEventListener("webglcontextlost", e => {
-  e.preventDefault(); glLost = true; S.quality = "fast"; S.picked = true; store.set(KEY, S);
+  e.preventDefault(); glLost = true; if (!BIG_GPU) { S.quality = "fast"; S.picked = true; store.set(KEY, S); }   // V2.25: a real card comes back in HD
   msg.hidden = false; root.classList.remove("ready");
-  msg.innerHTML = 'The 3D room ran out of graphics memory; bringing it back in Fast… <button type="button" class="btn" onclick="location.reload()">Reload it</button>';
+  msg.innerHTML = `The 3D room ran out of graphics memory; bringing it back${BIG_GPU ? "" : " in Fast"}… <button type="button" class="btn" onclick="location.reload()">Reload it</button>`;
   noteError("context", "WebGL context lost");
 });
 canvas.addEventListener("webglcontextrestored", () => {

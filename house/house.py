@@ -34,12 +34,6 @@ FLOORS = {
         dict(id="landing", name="Landing", size=None, notes=["more square than the plan shows (client)", "the green mark at the top of the stairs is its rough size (client)"]),
     ]),
 }
-GARDENS = {
-    "back": dict(length_m=25.0, notes=["lawn the width of the house, path down the left, patio by the house, fences both sides (photos)"]),
-    "front": dict(length_m=None, notes=["end of terrace; porch with a white pediment on the left, white up-and-over garage door on the right",
-                                        "concrete drive in front of the garage; a small lawn left of it with a low brick wall; a lawn strip right, by "
-                                        "the neighbour's fence, with a young tree (photo_house_front_25oct.png); sizes to come"]),
-}
 
 if __name__ == "__main__":
     for k, f in FLOORS.items():

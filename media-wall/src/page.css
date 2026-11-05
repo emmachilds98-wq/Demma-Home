@@ -34,14 +34,12 @@ a { color: var(--oak); }
 .rail .rail-list { display: none; gap: 6px; }
 .rail.open .rail-list { display: grid; padding-top: 4px; border-top: 2px dashed #e5dccb; }
 .rail-tog[aria-expanded=true] i { background: oklch(0.8 0.11 var(--h)); }
-.rail button, .bbar button { position: relative; display: grid; justify-items: center; gap: 2px; border: 0; background: none; color: var(--ink); cursor: pointer; font: 600 11.5px var(--body); padding: 4px 2px; min-width: 60px; }
-.rail button i, .bbar button i { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: oklch(0.92 0.06 var(--h)); font-style: normal; transition: transform .3s var(--spring), background .2s; }
-.rail button:hover i, .bbar button:hover i { transform: scale(1.1); }
-.rail button[aria-current=true] i, .bbar button[aria-current=true] i { background: oklch(0.8 0.11 var(--h)); }
+.rail button { position: relative; display: grid; justify-items: center; gap: 2px; border: 0; background: none; color: var(--ink); cursor: pointer; font: 600 11.5px var(--body); padding: 4px 2px; min-width: 60px; }
+.rail button i { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: oklch(0.92 0.06 var(--h)); font-style: normal; transition: transform .3s var(--spring), background .2s; }
+.rail button:hover i { transform: scale(1.1); }
+.rail button[aria-current=true] i { background: oklch(0.8 0.11 var(--h)); }
 .badge { position: absolute; top: 0; right: 8px; min-width: 20px; height: 20px; border-radius: 999px; padding: 0 5px; box-sizing: border-box; background: oklch(0.7 0.16 25); color: var(--ink);
   font: 600 12px/20px var(--display); text-align: center; }
-.badge[hidden] { display: none; }
-.bbar { display: none; }
 @media (max-width: 899px) {
   .rail { left: 12px; top: calc(max(12px, env(safe-area-inset-top)) + 62px); transform: none; padding: 6px; }
   .rail button { min-width: 52px; }
@@ -54,10 +52,6 @@ a { color: var(--oak); }
   .brand small::after { content: " · " attr(data-ver); color: var(--mut2); font-weight: 500; }
   .bbar { position: fixed; left: 8px; right: 8px; bottom: max(8px, env(safe-area-inset-bottom)); z-index: 45; display: none; align-items: center; gap: 2px; justify-content: space-between;
     padding: 6px 8px 6px 6px; border-radius: 30px; background: var(--page); box-shadow: var(--shadow); }
-  body.sheet-open .bbar { display: flex; }   /* v32: on a phone the bar switches between the sheets; in the room the tools have the bottom */
-  .bbar button { min-width: 0; flex: 1; min-height: 52px; }
-  .bbar .toolsb { flex: none; width: 58px; height: 58px; border-radius: 22px; background: oklch(0.8 0.13 25); display: grid; place-items: center; font-size: 11.5px; }
-  .bbar .toolsb i { background: none; width: auto; height: auto; }
 }
 /* sheets: they slide up over the room */
 .sheet { position: fixed; z-index: 40; top: 16px; bottom: 16px; left: 112px; right: 16px; border-radius: 32px; background: var(--page); box-shadow: var(--shadow);
@@ -92,7 +86,7 @@ body.sheet-open .r3d-dock, body.sheet-open .r3d-panel { display: none; }
 .caption { color: var(--mut2); }
 .notice { background: var(--butter); border: 0; border-radius: 18px; color: var(--ink); }
 .label { color: var(--mut2); font-family: var(--body); text-transform: none; letter-spacing: 0; font-weight: 600; }
-.opt, .dcard, details.phase, details.zone, details.changes, .step, .q, .tiles div, .chart, .tscroll { border: 0 !important; border-radius: 24px !important; box-shadow: none !important; background: var(--surface); }
+.opt, details.phase, details.zone, details.changes, .step, .q, .tiles div, .chart, .tscroll { border: 0 !important; border-radius: 24px !important; box-shadow: none !important; background: var(--surface); }
 .opt img { border-radius: 24px 24px 0 0; }
 .opt li::marker { content: "+  "; color: oklch(0.5 0.13 165); }
 .opt li.minus::marker { content: "–  "; color: oklch(0.55 0.15 25); }
@@ -160,7 +154,6 @@ details.fold > summary { cursor: pointer; font: 600 16px var(--display); padding
 .sdone input { appearance: none; -webkit-appearance: none; width: 30px; height: 30px; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 2px var(--line); margin: 0; display: grid; place-items: center; cursor: pointer; }
 .sdone input:checked { background: oklch(0.62 0.13 165); box-shadow: none; }
 .sdone input:checked::after { content: "✓"; color: #fff; font-weight: 700; }
-.sopen { border: 0 !important; border-radius: 999px !important; background: oklch(0.92 0.06 50) !important; min-height: 40px; }
 .items input[type=checkbox] { appearance: none; -webkit-appearance: none; width: 28px; height: 28px; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 2px var(--line); margin: 0; cursor: pointer; display: grid; place-items: center; }
 .items input[type=checkbox]:checked { background: oklch(0.62 0.13 165); box-shadow: none; }
 .items input[type=checkbox]:checked::after { content: "✓"; color: #fff; font-weight: 700; }
@@ -172,19 +165,7 @@ details.fold > summary { cursor: pointer; font: 600 16px var(--display); padding
 .q.answered { background: oklch(0.92 0.06 var(--h, 235)) !important; }
 .q h3 { font-size: 18px; }
 .q h3 .n { font-family: var(--display); background: oklch(0.92 0.06 var(--h, 235)); border-radius: 999px; padding: 0 10px; }
-.qrow { display: grid; gap: 6px; margin: 10px 0 0; }
-.qrow .label { font-size: 13px; }
-.qchips { display: flex; flex-wrap: wrap; gap: 6px; }
-.qc { min-height: 44px; border: 0; border-radius: 999px; padding: 8px 16px; background: var(--soft); color: var(--ink); font: 500 14.5px var(--body); cursor: pointer; transition: transform .25s var(--spring), background .2s; }
-.q.answered .qc { background: #ffffffb0; }
-.qc:hover { transform: scale(1.05); }
-.qc[aria-pressed=true] { background: var(--ink) !important; color: var(--page); }
-.qc .ms { font-size: 18px; vertical-align: -4px; margin-right: 4px; }
 details.qwhy > summary { cursor: pointer; font-weight: 600; font-size: 14px; color: var(--mut2); margin-top: 10px; }
-.qans { margin: 10px 0 0; font-weight: 600; font-size: 14.5px; }
-.qans:empty { display: none; }
-.qprog { height: 12px; border-radius: 999px; background: var(--soft); overflow: hidden; }
-.qprog i { display: block; height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, oklch(0.8 0.11 235), oklch(0.8 0.11 300), oklch(0.8 0.11 345)); transition: width .6s var(--sheet); }
 /* the celebration */
 .toast { position: fixed; left: 50%; bottom: 120px; z-index: 90; transform: translate(-50%, 40px); opacity: 0; pointer-events: none; display: inline-flex; gap: 8px; align-items: center;
   padding: 12px 22px; border-radius: 999px; background: var(--ink); color: var(--page); font: 600 17px var(--display); box-shadow: var(--shadow); transition: transform .45s var(--spring), opacity .25s; }
@@ -203,7 +184,6 @@ details.qwhy > summary { cursor: pointer; font-weight: 600; font-size: 14px; col
 .part { font-family: var(--body) !important; text-transform: none !important; letter-spacing: 0 !important; font-size: 12.5px !important; font-weight: 600; }
 #build .meter .bar { display: none; }
 #build .meter { font-weight: 600; }
-.sopen { padding: 8px 16px !important; font-weight: 600 !important; color: var(--ink) !important; }
 .q h3 { display: flex; gap: 10px; align-items: flex-start; margin: 0 0 4px; }
 .q h3 .n { flex: none; display: inline-grid; place-items: center; min-width: 34px; height: 28px; padding: 0 8px; font-size: 14px; }
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
@@ -263,7 +243,6 @@ details.qwhy > summary { cursor: pointer; font-weight: 600; font-size: 14px; col
 .shortbar b { font: 600 18px var(--display); } .shortbar .btn { background: oklch(0.92 0.06 165) !important; color: var(--ink) !important; }
 .btn.addplan[aria-pressed=true] { background: var(--ink) !important; color: var(--page) !important; }
 .btn.addplan .ms { font-size: 18px; vertical-align: -4px; }
-.sbday { margin: 0 0 10px; }
 /* the two widths side by side */
 .cmp2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)) !important; }
 .cmp2 .opt.on { box-shadow: 0 0 0 3px var(--ink) !important; }
@@ -302,7 +281,7 @@ dl.cmp dt { color: var(--mut2); } dl.cmp dd { margin: 0; }
   .ov { padding: 0; } .ovc { width: 100%; height: 100dvh; max-height: none; border-radius: 0; }
   .dcopts { grid-template-columns: 1fr; } .dcopts button { flex-direction: row; } .dcopts img, .dcopts .sw { width: 112px; aspect-ratio: auto; height: 84px; flex: none; }
 }
-body.ov-open .r3d-dock, body.ov-open .r3d-phone { visibility: hidden; }
+body.ov-open .r3d-dock { visibility: hidden; }
 /* v33: the Plan home's next three things (one to decide, one to build, one to buy) */
 .next3 { margin: 14px 0 6px; } .next3 h2 { margin: 0 0 10px; font-size: 20px; }
 .n3s { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
@@ -315,7 +294,7 @@ body.ov-open .r3d-dock, body.ov-open .r3d-phone { visibility: hidden; }
 
 /* v39 (the redesign the client approved, 23 Oct): Plan · Build · Buy at the top right instead of the Menu rail and the phone's bottom bar;
    the same three as tabs at the top of each sheet */
-.rail, .bbar { display: none !important; }
+.rail { display: none !important; }
 .hnav, .shnav { display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: var(--page); box-shadow: var(--shadow); }
 .hnav { position: fixed; top: max(16px, env(safe-area-inset-top)); right: 16px; z-index: 36; }
 .hnav button, .shnav button { min-height: 44px; padding: 0 16px; border: 0; border-radius: 999px; background: none; color: var(--ink); font: 600 15px var(--body); cursor: pointer; }
@@ -348,8 +327,6 @@ body.sheet-open .hnav { display: none; }
 #part-filter { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
 #part-filter button { flex: none; }
 .sr-only { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.qhead .sall { min-height: 36px; padding: 3px 12px 3px 4px; font-size: 14px; }
-.qhead .sall input { width: 26px; height: 26px; }
 
 /* v44: Build in cards, one per thing you make; tabs Buy · Cut · Build */
 .mks { display: grid; gap: 10px; }
@@ -362,8 +339,6 @@ details.mk > summary::-webkit-details-marker { display: none; }
 .mkt { display: grid; gap: 2px; min-width: 0; }
 .mkt b { font: 600 17px/1.2 var(--display); }
 .mkt small { font-size: 13.5px; color: var(--mut2, #5e5868); }
-.mkd { font-size: 26px; color: var(--line, #d8d0c0); }
-details.mk.done .mkd { color: oklch(0.62 0.13 165); }
 details.mk[open] > summary { background: oklch(0.95 0.04 var(--h, 50)); }
 .mkb { padding: 4px 16px 16px; }
 .mkb .lede { margin: 10px 0; }
@@ -372,8 +347,6 @@ details.mk[open] > summary { background: oklch(0.95 0.04 var(--h, 50)); }
 .tabs button[aria-selected=true] { background: var(--ink); color: var(--page); }
 .tp { padding-top: 6px; }
 .tp .cutfig svg { width: 100%; height: auto; }
-.bnext { display: flex; align-items: baseline; gap: 10px; padding: 12px 16px; border-radius: 22px; background: oklch(0.92 0.06 50); margin: 8px 0 10px; }
-.bnext a { color: var(--ink); text-decoration: none; } .bnext a b { text-decoration: underline; text-underline-offset: 3px; }
 #order .steps-list { gap: 4px; padding-bottom: 10px; }
 #order .step { padding: 4px 0; background: none; }
 #order .shead { grid-template-columns: 36px minmax(0, 1fr) auto !important; gap: 10px; }
@@ -383,12 +356,6 @@ details.mk[open] > summary { background: oklch(0.95 0.04 var(--h, 50)); }
 #order .smeta { font-size: 13px; color: var(--mut2, #5e5868); }
 #order .sdone { background: none; padding: 0; min-height: 44px; grid-column: auto !important; }
 .step.done .sgo h3 { text-decoration: line-through; text-decoration-color: #0005; }
-.blist { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 6px; }
-.blist li { display: grid; grid-template-columns: 2.6em minmax(0, 1fr) auto; gap: 2px 8px; padding: 10px 12px; border-radius: 16px; background: var(--soft); align-items: baseline; }
-.blist .bq { font-size: 13.5px; color: var(--mut2, #5e5868); }
-.blist .bm { font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
-.blist small { grid-column: 2 / -1; font-size: 13px; color: var(--mut2, #5e5868); }
-.blist li.tot { background: none; }
 .tp figure.cutfig { overflow-x: auto; margin: 0 0 12px; }
 .tp figure.cutfig svg { min-width: 560px; }
 /* v46: Build by place and piece: a progress ring on each card, a tick per task and per thing to buy; on a PC the cards sit two across

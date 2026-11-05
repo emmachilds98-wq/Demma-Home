@@ -6,7 +6,7 @@ a scroller), step 11 open, the dining cabinet's states in the 3D room.
 import json, sys, threading, functools, http.server, pathlib, urllib.request
 from playwright.sync_api import sync_playwright
 import localcdn
-from build_doc import VERSION, LABEL
+from build_doc import LABEL
 
 ROOT = pathlib.Path(__import__("os").environ.get("DEMMA_SITE") or pathlib.Path(__file__).resolve().parents[2] / "_site")   # V1: the built site (tools/build.py)
 OUT = sys.argv[1] if len(sys.argv) > 1 else "."

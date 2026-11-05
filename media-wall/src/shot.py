@@ -1,7 +1,7 @@
 """Rasterise SVG/HTML files to PNG with headless Chromium.
 python3 shot.py in.svg out.png width height [scale]
 From Python: shots([(in, out, w, h, scale), ...]) renders many with one browser."""
-import sys, glob, pathlib
+import sys, pathlib
 from playwright.sync_api import sync_playwright
 
 

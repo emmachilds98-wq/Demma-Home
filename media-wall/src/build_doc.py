@@ -2,15 +2,11 @@
 The plan reads in build order: decision, room, media wall and fit proof, records and turntable, dining wall, side wall,
 joinery, paint and light, power and network, build guide, buy list, then what's agreed, later ideas and sources.
 Numbers come from geometry.py and fit.py."""
-import base64, html as html_lib, pathlib, re
+import base64, pathlib, re
 import geometry as G
-import fit
-import ideas
-import tidy
-from diagrams import (light_scene, leaf_case, fliptop, sub_box, drawer_layouts, storage, network, front, drawer, sound, game_drawer, av, power, routes, pc_shelf, section, joints, house,
-                      living_plan, why_layout, seating, dining_section, dining_sites, chair_storage, chair_options,
-                      option_c_elevation, option_c_section, option_c_plan, option_c_carcass, option_c_halves,
-                      cab_elevation, cab_carcass, cab_section, cab_plan)
+import fit, ideas, tidy
+from diagrams import (light_scene, drawer_layouts, storage, network, front, drawer, sound, game_drawer, av, power, routes, pc_shelf, section, joints, house, living_plan, option_c_halves, cab_elevation,
+                      cab_carcass, cab_section, cab_plan)
 
 HERE = pathlib.Path(__file__).parent
 VERSION = (pathlib.Path(__file__).resolve().parents[2] / "VERSION").read_text().strip()   # V1: one file at the root ("1.0", "1.1" ...)
@@ -75,17 +71,6 @@ def thumb(name, alt=""):
     return f'<img src="data:image/jpeg;base64,{base64.b64encode(buf.getvalue()).decode()}" alt="{alt}">'
 
 
-def item_gallery():
-    """v32, client: "i want all suggested extra items, furniture and more to have full renders, nothing half HD or drawn": every idea,
-    suggestion and piece in Edit room's Add list, each from its own close look in the 3D room (item_shots.py; full size in ../out)."""
-    import item_shots as IS
-    heads = {"idea": "Ideas", "sugg": "Suggested furniture and decor", "add": "Edit room's Add list"}
-    out = []
-    for kind in ("idea", "sugg", "add"):
-        cells = "".join(f'<figure class="thumb">{thumb(f"render_v99_{stem}.png", html_lib.escape(t))}<figcaption>{html_lib.escape(t)}</figcaption></figure>'
-                        for stem, kd, _k, t, _o in IS.items() if kd == kind)
-        out.append(f'<h4>{heads[kind]}, each on its own</h4><div class="thumbs">{cells}</div>')
-    return "".join(out)
 
 
 def n(x):
@@ -264,15 +249,6 @@ def paint_table():
             '<p class="caption">Trying a different colour on one wall in the 3D room (Look): that wall needs one 2.5 L tin.</p>')
 
 
-def scenes_v24_html():
-    """v25: the five scenes of v13.7 to v24, for the appendix."""
-    import scenes as SC
-    head = "<tr><th>Light</th>" + "".join(f"<th>{s[1]}</th>" for s in SC.SCENES_V24) + "</tr>"
-    rows = "".join(f"<tr><td>{name}</td>" + "".join(f"<td class='num'>{SC.level_word(s[3][k])}</td>" for s in SC.SCENES_V24) + "</tr>" for k, name, _c in SC.LAYERS)
-    where = "; ".join(f"{s[1]} → {dict((k, n) for k, n, *_ in SC.SCENES)[SC.OLD_TO_NEW[s[0]]]}" for s in SC.SCENES_V24)
-    return (f"<h3>The five lighting scenes</h3><p>Six buttons (these five and Daytime) mixed moods, an activity that depends on the table, and the time of day. "
-            f"They became three presets and two rules. Where each went: {where}, with the table rule for dinner; Daytime is now a switch.</p>"
-            f"<table class='tight'>{head}{rows}</table>")
 
 
 # v27: the flip-top's rows (v15–v26), out of the buy list since the dining cabinet became the plan; section 5 costs the alternative with them
@@ -304,10 +280,6 @@ def slide_cost():
     return sum(r[4] or 0 for r in rows), sum(r[5] or 0 for r in rows)
 
 
-def fliptop_cost():
-    """The flip-top's cost (v15–v26 rows), with the three flip-top hinges it shares with the cabinet's buy list."""
-    rows = FLIPTOP_ROWS + [r for r in TRACK if _plain_txt(r[1]).startswith("Three Lee Valley 40574")]
-    return sum(r[4] or 0 for r in rows), sum(r[5] or 0 for r in rows)
 
 
 def cabinet_rows():
@@ -383,95 +355,10 @@ def cab_html():
 """
 
 
-def cab_review_html():
-    """v31, client: "review if there's any further optimisation we can do to the dining cabinet, we want the best compact build that doesnt
-    bulk up the living room while keeping as many chairs as we can in the unit": every lever we tried, and what it would save."""
-    import fit as F
-    C, O = G.CAB, G.OPTC
-    sup = lambda *k: "<sup>" + ",".join(str(F.ORDER.index(x) + 1) for x in k) + "</sup>"
-    cw, cdep, ch = G.CHAIR_PADDED["folded"]                       # v33: your grey padded chairs, folded 47 × 10 × 90
-    fw, fdep, fh = G.CHAIR_FOLDED                                  # the beech FRÖSVI
-    need6 = (C["in_d"] - 0.4) / 6                                  # how thin six chairs lying two deep... six deep would have to be
-    behind = C["in_d"] - C["stack"] - C["pads"]
-    boxing = G.PIPE_BOX["x"][1] - G.PIPE_BOX["x"][0]
-    rows = [
-        (f"{n(C['d'])} deep, for your padded chairs two deep", f"it stands {n(C['d'] - boxing)} proud of the pipe boxing",
-         f"<b>Needed:</b> they fold to {n(cdep)}, so two need {n(2 * cdep + 0.8)} inside; the folded table has {n(behind)} behind it."),
-        (f"The beech FRÖSVI instead: it folds to {n(fdep)} × {n(fh)} × {n(fw)}" + sup("frosvi"), f"{n(C['d'] - 22)} of depth (22, flush with the boxing) and {n(C['bay_c'] - 46)} of length",
-         "Your call: the padded chairs are comfier for that 1.4 cm, and need no tie-on pads."),
-        ("No chair box: all six chairs lying under the folded table", f"{n(C['z_c'][0] - C['z_c'][1])} off the length",
-         f"Six would have to fold to {need6:.1f} each; the slimmest folding chair made, the Plia" + sup("plia") + ", is 5.4, and £325 each."),
-        ("A narrower table: 185 × 80 instead of 90", f"{n(C['len'] - G.CAB80['len'])} off the length ({n(G.CAB80['len'])} long)", "<b>Drawn: the more compact version, below.</b> Six still sit, but serving dishes get tight, and its base is too narrow for the two chairs lying down: four go inside, not six."),
-        ("Three chairs deep in the chair box", "Nothing in length", f"It would be {n(cdep)} deeper, standing out from the pipe boxing: bulkier, not smaller."),
-        ("Taller, three chairs high", "Nothing", f"Under your shelf {n(C['h'])} is the most: a chair stands {n(ch)} folded."),
-    ]
-    tr = "".join(f"<tr><td>{a}</td><td>{b}</td><td>{c}</td></tr>" for a, b, c in rows)
-    return f"""<h3>Could it be smaller? What we checked</h3>
-<p>You asked for "the best compact build that doesnt bulk up the living room while keeping as many chairs as we can in the unit". All six chairs are inside, so we went through every way it could take less room. With your padded chairs it's {n(C['d'])} deep, {n(C['d'] - (G.PIPE_BOX['x'][1] - G.PIPE_BOX['x'][0]))} proud of the pipe boxing's face (with the FRÖSVI it was 22, flush). For a {n(C['len_open'])} × {n(C['top'][0])} table and six folding chairs, the rest is already as small as it goes. The table's width sets the table box, one chair's width the chair box, and two folded chairs the depth.</p>
-<table class="tight"><tr><th>Change</th><th>What it would save</th><th>Our call</th></tr>{tr}</table>
-<p>Against the long sliding cabinet we set aside ({n(O['z'][0] - O['z'][1])} × {n(O['d'])}), it takes {(1 - C['len'] * C['d'] / ((O['z'][0] - O['z'][1]) * O['d'])) * 100:.0f}% less floor along the wall.</p>
-<figure class="render">{img("render_v39_3d_c_foot.png", "From above: the cabinet folded, and the floor it needs open")}
-<figcaption>From above, folded, with the floor it needs once it's open drawn on the carpet.</figcaption></figure>
-"""
 
 
-def beside_html():
-    """v31, client: "explore what could go next to the dining cabinet in the compact version which is now our primary option"."""
-    import fit as F
-    C, B = G.CAB, G.BESIDE
-    sup = lambda *k: "<sup>" + ",".join(str(F.ORDER.index(x) + 1) for x in k) + "</sup>"
-    covered = C["z"][1] - B["door_end"]
-    m, tr, d = B["mirror"], B["trolley"], B["dresser"]
-    return f"""<h3>What could go beside it</h3>
-<p>Between the cabinet's window end and the pipe boxing there's <b>{n(B['len'])} cm of wall</b> under your shelf. While you eat, the table door lies back over the first {n(covered)} of it, {n(C['d'])} off the wall. So anything here stays no deeper than the cabinet, and your trailing plant hangs over its far end, its longest strands about {n(B['strands'])} up. Four ways to use it, all in the 3D room under Layout, "Beside the cabinet"; none is in the buy list or the totals:</p>
-<ul>
-<li><b>Left clear (the plan):</b> the open door's landing, and a breathing space before the plant stand.</li>
-<li><b>A tall mirror, our pick:</b> IKEA NISSEDAL{sup("nissedal")}, {n(m['w'])} × {n(m['h'])}, black like your shelf, £25, on the wall from {n(m['y0'])} to {n(m['y0'] + m['h'])}. It bounces the window's light into the darkest corner and makes the room feel bigger, and it takes no floor at all. The open door lies in front of it while you eat.</li>
-<li><b>A slim trolley:</b> VASAGLE's 4-tier slim trolley{sup("vasagle")}, {n(tr['w'])} long × {n(tr['d'])} deep × {n(tr['h'])}, £35.99. It parks here, and for dinner it pulls out, before the table door opens, to stand behind the window-side diners with the plates, the glasses and a jug (it can't reach the table's far end: with six sat down the sofa's end and the chairs leave no way past). Its top reaches {n(tr['h'] - B['strands'])} into the plant's longest strands, so trim them a little.</li>
-<li><b>A low oak shelf:</b> one more box in the cabinet's oak-faced ply, {n(d['w'])} × {n(d['d'])} × {n(d['h'])}, open to the room: six dinner plates on edge{sup("plates")}, glasses and three bottles, its top under the strands. The open door covers {n(covered)} of its {n(d['w'])}, so take what you need out before the table comes down. About £40–80 more in ply and oil, from the cabinet's sheets.</li>
-</ul>
-<figure class="render">{img("render_v39_3d_beside_mirror.png", "Beside the cabinet: a tall mirror")}
-<figcaption>Beside the cabinet with the mirror: IKEA NISSEDAL, 40 × 150, between the cabinet and the pipe boxing.</figcaption></figure>
-<figure class="render">{img("render_v39_3d_beside_trolley.png", "Beside the cabinet: a slim trolley")}
-<figcaption>The slim trolley parked beside the cabinet, ready to pull out for dinner.</figcaption></figure>
-"""
 
 
-def cab80_html():
-    """v33, client: "The compact cabinet is our only choice for the table now or any upgraded more compact version for this as we're trying
-    to optimise space": the same cabinet round an 80-wide table, its fit rows (fit.cab80_zone) and the two widths side by side."""
-    import fit as F
-    C, C8 = G.CAB, G.CAB80
-    st, s8 = F.optc_seats(C), F.optc_seats(C8)
-    sup = lambda *k: "<sup>" + ",".join(str(F.ORDER.index(x) + 1) for x in k) + "</sup>"
-    cw, cdep, ch = G.CHAIR_PADDED["folded"]
-    plate = 27.0
-    head, _what, rows = F.cab80_zone()
-    fr = "".join(f"<tr><td>{a}</td><td>{b}</td><td>{d}</td><td>{e}</td><td>{r}</td></tr>" for a, b, _s, d, e, r in rows)
-    side = [("On the wall", f"{n(C['len'])} × {n(C['d'])} × {n(C['h'])}", f"{n(C8['len'])} × {n(C8['d'])} × {n(C8['h'])}"),
-            ("Bare wall left by the pipe boxing", n(C['freed']), n(C8['freed'])),
-            ("The table, open", f"{n(C['len_open'])} × {n(C['top'][0])}", f"{n(C8['len_open'])} × {n(C8['top'][0])}"),
-            ("At the table", f"{st['comfort']} in comfort, {st['stair'][1]:.1f} of edge each", f"{s8['comfort']} in comfort, {s8['stair'][1]:.1f} of edge each"),
-            ("Down the middle, between two 27 plates" + sup("plates"), n(C['top'][0] - 2 * plate), n(C8['top'][0] - 2 * plate)),
-            ("Chairs inside", "all six: four standing, two lying in the base", "four standing; two live elsewhere"),
-            ("The table door", f"{n(C['door_tw'])} wide", f"{n(C8['door_tw'])} wide"),
-            ("The window edge to the sofa's front, open", n(C['tz'][1] - G.SOFA_FRONT_Z), n(C8['tz'][1] - G.SOFA_FRONT_Z))]
-    tr = "".join(f"<tr><td>{a}</td><td>{b}</td><td>{c}</td></tr>" for a, b, c in side)
-    return f"""<h3>The more compact version: an {n(C8['top'][0])}-wide table</h3>
-<p>You said the compact cabinet is "our only choice for the table now or any upgraded more compact version for this as we're trying to optimise space". So the long sliding cabinet and the flip-top are set aside (appendix), and here is the one way it gets shorter still: <b>the same two oak boxes round a table {n(C8['top'][0])} wide instead of {n(C['top'][0])}</b>. The folded halves stand {n(C['top'][0] - C8['top'][0])} narrower, so the table box is {n(C['bay_t'] - C8['bay_t'])} shorter and the cabinet is <b>{n(C8['len'])} long</b>, {n(C8['freed'])} cm of bare wall back by the pipe boxing instead of {n(C['freed'])}. Six still sit, three a side: the table's length doesn't change.</p>
-<p><b>The catch is the chairs.</b> In the plan two of your padded chairs{sup("padded")} lie on their sides in the table box's base, and a folded one stands {n(ch)} tall, so they need {n(ch + 1)}. The narrower base is {n(C8['bay_t'])}: <b>four chairs go inside, not six</b>, and the other two live in the garage or folded behind a door. Down the middle of the table, between two places, there's {n(C8['top'][0] - 2 * plate)} for dishes instead of {n(C['top'][0] - 2 * plate)}: a jug and one dish at a time. The buy list is the same, with a little less oak and ply.</p>
-<figure class="render">{img("render_v39_3d_c80_folded.png", "The more compact version packed away")}
-<figcaption>The more compact version packed away, in the 3D room.</figcaption></figure>
-<figure class="render">{img("render_v39_3d_c80_six.png", "The more compact version open for six")}
-<figcaption>Open for six: the table {n(C8['len_open'])} × {n(C8['top'][0])}, three a side, the table door turned back flat.</figcaption></figure>
-<figure class="render">{img("render_v39_3d_c80_tdoor.png", "The more compact version, the table door open")}
-<figcaption>The table door open, the table folded: the base under it is too narrow for the two chairs lying down.</figcaption></figure>
-<h3>The two widths side by side</h3>
-<table class="tight"><tr><th></th><th>{n(C['top'][0])} wide (the plan)</th><th>{n(C8['top'][0])} wide (the more compact version)</th></tr>{tr}</table>
-<h3>The more compact version, checked</h3>
-<table class="tight"><tr><th>Check</th><th>Item</th><th>Space</th><th>Left</th><th>Fits</th></tr>{fr}</table>
-<p><b>Our call:</b> keep the {n(C['top'][0])}-wide table. The {n(C['len'] - C8['len'])} cm it saves isn't worth two chairs in the garage and a tighter table, and that bare wall already takes a mirror, a slim trolley or a low shelf (above). Pick either on the plan page's <b>Plan</b> home, under "Waiting on you": the buy list and the 3D room follow your pick.</p>
-"""
 
 
 def other_options_html():
@@ -518,26 +405,6 @@ OPT_OWN = {"barcase", "bartrolley", "barside", "cotswoldbasket", "liftcoffee", "
            "growlights", "curtainmotor", "lpledges", "cordlamp", "stairscurtain"}
 
 
-def slide_html():
-    """v27–v29: the sliding cabinet, the plan until v30; now the alternative in section 5, shorter."""
-    import fit as F
-    C = G.OPTC
-    lo, hi = slide_cost()
-    L = C["z"][0] - C["z"][1]
-    return f"""
-<h3>The alternative: the sliding cabinet</h3>
-<p>Before the compact cabinet, the plan was one long cabinet with <b>two sliding oak doors</b>, {n(L)} × {n(C['d'])} × {n(C['h'])}. It stays here, drawn, checked and costed, in case you'd rather have it: about £{money(lo, hi)} with the chairs. It holds the same table and the same six chairs, but it's {n(L - G.CAB['len'])} cm longer. In return, nothing ever swings: door A slides over door B and the table comes down; door B slides behind A and the chairs come out. It also has a drawer for the mats under the folded table. The doors run on a soft-close Häfele Slido double track<sup>{F.ORDER.index("slido") + 1}</sup>. Its fit checks are in section 3. In the 3D room, tap the cabinet and choose "Show the sliding one", or pick it under Layout, "The dining cabinet: which version".</p>
-<figure class="render">{img("render_v39_3d_s_folded.png", "The sliding cabinet packed away")}
-<figcaption>The sliding cabinet packed away: two sliding doors between two oak ends, reaching almost to the pipe boxing.</figcaption></figure>
-<figure>{option_c_elevation()}</figure>
-<figure class="render">{img("render_v39_3d_s_six.png", "The sliding cabinet open for six")}
-<figcaption>Open for six: door A slid over door B, the linen shelf behind it.</figcaption></figure>
-<ul>
-<li><b>Inside:</b> the table bay at the stair end, with the drawer under the folded table and the linen shelf over it. The chair bay at the window end has four chairs on its floor, two side by side and two deep, two on its shelf and the pads on edge in front of them.</li>
-<li><b>The doors:</b> two {n(C['door_w'])} × {n(C['door_h'])} panels, about {C['door_kg']:.0f} kg each, between the ends. The 19 mm top carries the track in a groove.</li>
-<li><b>To build it instead,</b> swap the buy list's cabinet ply, hinge rail and hinges rows for the sliding gear (about £110–190) and the longer carcass. Say if you'd rather have it, and its cutting list and step 11 come back.</li>
-</ul>
-"""
 
 
 def cost_pieces_html():
@@ -579,16 +446,6 @@ def phase_totals():
     return "\n".join(rows), tl, th
 
 
-def tracker_rows():
-    out, cur = [], None
-    for st, item, ph, q, lo, hi in TRACK:
-        if ph != cur:
-            out.append(f"<tr class='ph'><td colspan='5'>{part_chip(PHASE_PART[ph])} {ph}</td></tr>")
-            cur = ph
-        box = "☑" if st == "Done" else "☐"
-        est = money(lo, hi) if lo is not None else ""
-        out.append(f"<tr><td class='st'>{box} {st}</td><td>{item}</td><td class='num'>{q}</td><td class='num'>{est}</td><td class='paid'></td></tr>")
-    return "\n".join(out)
 
 
 def key_table():
@@ -1132,9 +989,6 @@ def guide_html():
             + GUIDE_TIME + GUIDE_PITFALLS + "<h3>The cutting list</h3>" + cuts_html() + nest_html())
 
 
-def guide_pdf_html():
-    """The build guide PDF: the guide, then every step in full."""
-    return guide_html() + "<h2 class='pb'>Step by step, in full</h2>" + full_steps_html(pdf=True)
 
 
 CT = ideas.ctable_parts()   # v43: the C-table's parts
@@ -1604,7 +1458,7 @@ PDF_BREAK = ("2 · ", "3 · ", "5 · ", "9 · ", "11 · ")   # v44: a new page o
 
 
 def concise(html):
-    import re, chapters
+    import re
     def drop(m):
         title = re.sub(r"<[^>]+>", "", m.group(2))
         return "" if title.startswith(PDF_DROP) else m.group(0)
@@ -1649,7 +1503,6 @@ def plan_sections():
 def build():
     html, tl, th, c, css = _plan()
     (HERE / "plan.html").write_text(html)
-    import chapters                       # v42: one chapter per thing you make (buy, cut, build), then the jobs
     guide = f"""<!doctype html><html><head><meta charset="utf-8"><title>Build Guide</title><style>{css}</style></head><body class="guide">
 <h1>Media Wall &amp; Dining Wall: Build Guide</h1>
 <p class="byline">{LABEL} · for Emma and Dave · sizes in cm</p>

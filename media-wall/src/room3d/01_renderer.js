@@ -14,8 +14,11 @@ gl.toneMapping = THREE.AgXToneMapping;   // v44: AgX over ACES: the wall reads n
    asks for the high-performance GPU; a PC whose browser reports a real graphics card starts in HD (no Fast-then-HD second set of shaders
    to build) and keeps full resolution while you move unless its frames actually slow down. */
 const GPU = (() => { try { const c = gl.getContext(), e = c.getExtension("WEBGL_debug_renderer_info"); return String(e ? c.getParameter(e.UNMASKED_RENDERER_WEBGL) : c.getParameter(c.RENDERER)); } catch (e) { return ""; } })();
-const BIG_GPU = !SMALL && /nvidia|geforce|rtx|gtx|quadro|radeon\s*(rx|pro|r9)|radeon\(tm\) rx|intel.*\barc\b|apple m\d/i.test(GPU) && !/swiftshader|llvmpipe|software|basic render/i.test(GPU);
-if (BIG_GPU && !S.picked) S.quality = "hd";
+const BIG_GPU = !matchMedia("(pointer: coarse)").matches && /nvidia|geforce|rtx|gtx|quadro|radeon\s*(rx|pro|r9)|radeon\(tm\) rx|intel.*\barc\b|apple m\d/i.test(GPU) && !/swiftshader|llvmpipe|software|basic render/i.test(GPU);
+/* V2.25, the client: "the main access point will be a gaming pc with a graphics card (5070 & 3060) so no lighter model should be used on
+   pc ... best version with best performance and quality should be on pc": a real card (whatever the window's width) opens in HD on every
+   visit, a saved Fast too (a driver reset used to save one for good), and never steps itself down (17_render_loop, 13_edit_room) */
+if (BIG_GPU) S.quality = "hd";
 /* v39, client: "Mobile ... is slow and doesn't render full quality expected". Phones drew at 0.85 of a CSS pixel (a third of a 3× screen's
    sharpness) and never left Fast. Now a phone draws at its own sharpness (2× on a capable chip, 1.5× otherwise; halved only while you
    move), and a capable chip (any iPhone's Apple GPU, Adreno 6xx and up, Mali-G57 and up, Immortalis, Xclipse) goes on to HD when its

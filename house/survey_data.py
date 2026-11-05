@@ -25,7 +25,6 @@ PLAN_PX = {
 # cupboards keep the plans' depth and the hall runs on (measure them).
 INSIDE = dict(w=467.0, d=808.4, plan_d=780.0, back=-309.0)   # P + client: the front inside face at -309 + 808.4 = 499.4
 FRONT_OUT = {"lower": 440.0, "ground": 380.0, "first": 440.0}
-AGENT_OVER = round((4.95 / 4.67 + 3.65 / 3.47) / 2, 3)  # the agent's labels read ~5% big (4.95 × 3.65 against the measured 4.67 × 3.47)
 
 # Levels (E unless said): the living room's measured 235 ceiling with 25 of floor between storeys; the garage and the drive a step down.
 LEVELS = dict(lower=-260.0, ground=0.0, first=260.0, ceil=235.0, slab=25.0, garage=-15.0, drive=-15.0, lawn=-260.0)
@@ -56,7 +55,6 @@ GARDEN_THINGS = [dict(id="table", kind="table", own="ours", x=360.0, z=-575.0, d
                  dict(id="trampoline", kind="trampoline", own="next", x=-370.0, z=-1650.0, d=305.0),
                  dict(id="shed_east", kind="shed", own="next", x=(-560.0, -230.0), z=(-2560.0, -2830.0), eave=-30.0, ridge=30.0, wall="#7a5a3e", roof="#5d5f62"),
                  dict(id="shed_west", kind="shed", own="next", x=(770.0, 960.0), z=(-2580.0, -2830.0), eave=-50.0, ridge=-10.0, wall="#a0603a", roof="#3a3b3d")]
-GARDEN_THINGS_SRC = "B: the view photos (photo_view_full_24oct.jpg), sized by eye against the fences (E)"
 
 # V1.4: beyond the far fence (the view photos; E): a long low building with grey sheet roofs just past the fences, standing a little
 # lower than the lawn, its roofs about 3 m over it (they show at the sheds' height from upstairs); then the valley, and the hill

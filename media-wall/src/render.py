@@ -186,7 +186,6 @@ def text(x, y, s, size=13, anchor="start", weight=500, fill="#f3ead8", op=1.0, e
             f'paint-order="stroke" stroke="#10241b" stroke-opacity="0.55" stroke-width="3" '
             f'stroke-linejoin="round" {extra}>{s}</text>')
 
-G_WALL   = "#2f5b46"   # deep green, lit wall facing camera
 
 G_LEFT0  = "#21443a"   # left wall, near camera (darker)
 
@@ -194,15 +193,12 @@ G_LEFT1  = "#2a5141"   # left wall, near alcove
 
 G_REVR   = "#28503e"
 
-G_REVT   = "#1d3d30"
 
 G_FELT   = "#16271f"
 
 G_FRAME  = "#2d5a44"
 
-G_FRAME_T = "#3a6b53"
 
-G_FRAME_S = "#244a38"
 
 GH = 'filter="url(#grainH)"'; GV = 'filter="url(#grainV)"'
 
@@ -2583,7 +2579,6 @@ def _build(with_dims=True, numbered=False, game_open=0.0, rec_open=0.0, style="j
 # ------------------------------------------------------------- v12: the PC side wall, seen from the room
 CAM_SIDE = (-125.0, 1300.0, 3.6, 60)   # eye along the wall (z), x of the wall at px, px/cm, shift
 SIDE_EYE_Y = 125.0
-SOFA_COL = ("#8c8276", "#a0968a", "#776e63")
 
 
 def sofa_pouf():
