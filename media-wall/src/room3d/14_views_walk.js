@@ -183,6 +183,18 @@ function walkMove(side, fwd, turn, dt) {    // -1..1 each; true if the eye moved
   if (!blk(x0, z0) && blk(x, z)) {   // free to step out of something you start in (Be there by the guitars)
     slid = true; if (!blk(x, z0)) z = z0; else if (!blk(x0, z)) x = x0; else { x = x0; z = z0; } }
   if ((x !== x0 || z !== z0) && badDown(x, z, slid)) { x = x0; z = z0; }
+  /* V1.56: stopped dead (a door's frame, a bed's corner) with an opening a little to one side: ease toward it, as you would, and on
+     through (it took steering to the pixel on a phone's stick). Only when the way 25 cm on from there is clear, never down a step */
+  if (x === x0 && z === z0 && (fwd || side)) {
+    const dx_ = -mv.x, dz_ = mv.z, l_ = Math.hypot(dx_, dz_) || 1, ux = dx_ / l_, uz = dz_ / l_, px = -uz, pz = ux;
+    for (const o of [8, -8, 16, -16, 24, -24, 32, -32]) {
+      const ax = x0 + px * o + ux * 25, az = z0 + pz * o + uz * 25;
+      if (blk(ax, az) || badDown(ax, az, true) || blk(x0 + px * o, z0 + pz * o)) continue;
+      const st = Math.sign(o) * Math.min(Math.abs(o), sp * 0.8), nx = x0 + px * st, nz = z0 + pz * st;
+      if (!blk(nx, nz) && !badDown(nx, nz, true)) { x = nx; z = nz; }
+      break;
+    }
+  }
   const fl = floorAtCm(x, z, WALK.feet);
   if (fl > -Infinity && fl > WALK.feet - 400) WALK.feet += (fl - WALK.feet) * Math.min(1, dt * 12);
   const ny = (WALK.feet + STAND_EYE) * M, moved = Math.abs(x - x0) + Math.abs(z - z0) > 1e-4 || Math.abs(ny - cam.y) > 1e-5 || !!turn;
