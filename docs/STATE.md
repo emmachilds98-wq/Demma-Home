@@ -4,7 +4,7 @@ Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and i
 
 **Version:** V2.1 (5 Nov 2026)
 
-**The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
+**The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status. **The finishes plan** (proposed 5 Nov: tap a wall, floor or light in any room to change it): `docs/FINISHES_PLAN.md`.
 
 **The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29, U5 in V1.30, U6 in V1.31, U7 in V1.32, U8 in part in V1.33, U9 in part in V1.34, U10 and U11 in V1.35–V1.37, Next 1 in part in V1.38, Next 5 in V1.39, Next 2 in part in V1.40–V1.42; its "Next" list is the work to take on).
 
