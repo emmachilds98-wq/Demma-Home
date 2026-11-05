@@ -1308,9 +1308,9 @@ def master(o):
         for k in range(3):
             yy = y + 8 + k * 17
             o.box("pine_dark", 35, yy + 15.5, za + 1, 35.3, yy + 16.5, zb - 1)
-            o.box("pine_dark", 35, yy + 7, (za + zb) / 2 - 1.5, 37.5, yy + 10, (za + zb) / 2 + 1.5)
-        for fx, fz in ((4, za + 4), (31, za + 4), (4, zb - 4), (31, zb - 4)):
-            o.box("pine_dark", fx - 2.5, y, fz - 2.5, fx + 2.5, y + 6, fz + 2.5)
+            o.box("knob", 35, yy + 7, (za + zb) / 2 - 1.5, 37.8, yy + 10, (za + zb) / 2 + 1.5)    # V2.17: a round wooden knob (the photo)
+        for fx, fz in ((4, za + 4), (31, za + 4), (4, zb - 4), (31, zb - 4)):                 # V2.17: turned bun feet (the photo), not blocks
+            o.lathe("pine_dark", fx, y, fz, [(0, 0), (2.2, 0), (3.1, 1.2), (3.3, 2.8), (2.9, 4.6), (2.2, 5.6), (2.4, 6), (0, 6)])
     o.item("master.chest", "The pine chest of drawers", "master", src="E", data=("MASTER", "chest"), axis="x")
     c = M_["chest"]                                                # under the window, its drawers facing the room
     o.box("pine", c["x"][0], y + 6, c["z"][0], c["x"][1], y + c["h"], c["z"][1])
@@ -1320,7 +1320,7 @@ def master(o):
     for k in range(4):
         yy = y + 6 + (c["h"] - 6) * (k + 0.5) / 4
         for fx in (c["x"][0] + 20, c["x"][1] - 20):
-            o.box("pine_dark", fx - 1.5, yy - 1.5, c["z"][0] - 2.5, fx + 1.5, yy + 1.5, c["z"][0])
+            o.box("knob", fx - 1.5, yy - 1.5, c["z"][0] - 2.8, fx + 1.5, yy + 1.5, c["z"][0])    # V2.17: round knobs
     cols = ["#3d4a5c", "#b9b2a6", "#7a2f2f", "#2f3b2f", "#d8d2c4", "#555555", "#9b8b6e"]
     w = M_["wardrobes"]; zb_ = next(r["z0"] for r in rooms("first") if r["id"] == "master") + 0.5   # the alcove's back wall (v69: fitted)
     # v65, the client: "only the frames with no doors right now"; v68 one each, fitted out alike
@@ -1341,7 +1341,10 @@ def master(o):
         o.box("chrome", xa + T_, y + 165, zb_ + w["d"] / 2 - 1, xb - T_, y + 167, zb_ + w["d"] / 2 + 1)
         for i in range(10):
             cx_ = xa + 8 + i * (w["w"] - 16) / 10
-            o.box("cloth%d" % ((i + 3 * k) % len(cols)), cx_, y + 90 + (i % 3) * 12, zb_ + 8, cx_ + 5.5, y + 163, zb_ + w["d"] - 8)
+            o.box("cloth%d" % ((i + 3 * k) % len(cols)), cx_, y + 90 + (i % 3) * 12, zb_ + 8, cx_ + 5.5, y + 162, zb_ + w["d"] - 8)
+            hz = zb_ + w["d"] / 2                                      # V2.17: each on its hanger: the bar across its shoulders, the hook up to the rail
+            o.box("chrome", cx_ + 2.4, y + 161.4, hz - 17, cx_ + 3.1, y + 162.1, hz + 17)
+            o.box("chrome", cx_ + 2.4, y + 162.1, hz - 0.35, cx_ + 3.1, y + 166, hz + 0.35)
         for i in range(2):                                         # folded on the top shelf; boxes on top of the frame to the ceiling
             o.box("cloth%d" % ((i + k) % len(cols)), xa + 10 + i * 42, y + 176.8, zb_ + 8, xa + 44 + i * 42, y + 190, zb_ + 42)
             o.box("storebox", xa + 3 + i * 47, y + w["h"], zb_ + 4, xa + 47 + i * 47, y + w["h"] + w["top_boxes"], zb_ + w["d"] - 6)
@@ -2162,7 +2165,7 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "laminate": ("#a9a39a", 0.7), "oak": ("#b8844f", 0.55), "screen": ("#0d0f12", 0.15), "pc_white": ("#eeeeec", 0.3), "pc_glow": ("#dfe6ff", 0.2),
     "pegboard": ("#f4f4f2", 0.6), "ivy": ("#2f5a2b", 0.8), "blind": ("#4a4d52", 0.9), "blind_cloth": ("#4a4d52", 0.9), "books": ("#8a3b2e", 0.8), "jar": ("#d9a441", 0.4), "pot": ("#e8e3d8", 0.5),
     "carpet_grey": ("#6f6f73", 1.0), "red_gloss": ("#c8201e", 0.15), "red_back": ("#9d1714", 0.4), "cat": ("#bdbcb8", 1.0), "sisal": ("#cdb88f", 0.9),
-    "pink": ("#e8607a", 0.8), "pine": ("#c99a55", 0.55), "pine_dark": ("#7a5a30", 0.6), "wardrobe": ("#f2f1ec", 0.35), "duvet": ("#e9e6df", 0.95), "leather": ("#1f1d1d", 0.45), "check": ("#7d7e86", 0.95),
+    "pink": ("#e8607a", 0.8), "pine": ("#c99a55", 0.55), "pine_dark": ("#7a5a30", 0.6), "knob": ("#7a5a30", 0.45), "wardrobe": ("#f2f1ec", 0.35), "duvet": ("#e9e6df", 0.95), "leather": ("#1f1d1d", 0.45), "check": ("#7d7e86", 0.95),
     "lawn": ("#5f7043", 1.0), "paving": ("#bdb8ae", 0.95), "road": ("#59595c", 0.95), "fence": ("#6b5644", 0.9),
 }
 

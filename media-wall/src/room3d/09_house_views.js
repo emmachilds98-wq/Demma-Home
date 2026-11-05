@@ -48,8 +48,10 @@ function placeRoomLights() {
   const rr = b && R.HOUSE3.rooms && R.HOUSE3.rooms[VIEW_ROOM[S.view]], area = rr ? (rr[1] - rr[0]) * (rr[3] - rr[2]) / 1e4 : 10;
   const ks = Math.min(1.3, Math.max(0.75, Math.sqrt(area / 10)));   // v72 (B2): a big room's light reaches its corners, a small one doesn't glare
   const fb = typeof finBulb === "function" && VIEW_ROOM[S.view] ? finBulb(VIEW_ROOM[S.view]) : { k: null, lux: 1 };   // V2.9: the room's bulbs (23_finish.js)
+  const was = ROOMLIGHTS[0] ? ROOMLIGHTS[0].position.clone() : null;
   ROOMLIGHTS.forEach((l, k) => { const L = list[k]; l.visible = !!L; if (L) { l.position.copy(v3(L.x, L.y - (typeof finFitDrop === "function" ? finFitDrop(L.room) : 40), L.z)); l.intensity = (day ? 1.2 : 3.2) * ks * fb.lux;
     l.color.set(fb.k ? kelvinHex(+fb.k) : "#ffcf98"); } });
+  if (was && ROOMLIGHTS[0].position.distanceToSquared(was) > 1e-6) reshadow();   // V2.17: its shadows follow it (a fitting's height, the next room)
   const key = b ? b.join() : "";
   if (key === roomKey) return; roomKey = key;
   const d = b ? v3((b[0] + b[1]) / 2, 0, (b[4] + b[5]) / 2).sub(sun.userData.t0).setY(0) : new THREE.Vector3();

@@ -65,7 +65,7 @@ The tools are there already: GTAO (ambient occlusion) in `01_renderer.js`, HD sh
 
 ## 4. Needs the client
 
-- Which room first for R4 and R5 (suggested: the master bedroom, then the kitchen, the bathroom, bedroom 2, the office, the hall).
+- ~~Which room first~~: the client, 5 Nov: "start with master bedroom then bedroom 3 / office, then kitchen and then bathrooms and hallways"; and "you dont have to use images for this, you can just increase quality and functions inc rendering items in hd" (so photos help but don't hold a room up).
 - Close photos of that room's furniture and things (straight on, in daylight), and any product names (the bed, the wardrobes, the
   desk, the sofa-bed), for their real shapes and sizes.
 - For R7, what you'd like to try in each room (a rug, curtains, bedding colours), names or photos.
@@ -74,10 +74,10 @@ The tools are there already: GTAO (ambient occlusion) in `01_renderer.js`, HD sh
 
 | # | Phase | Status | What |
 |---|---|---|---|
-| R1 | Light each room as it's lit | Not started | The room's ceiling light a real light, its lamps, its windows' daylight; one shadow-casting light; AO for small rooms |
+| R1 | Light each room as it's lit | **In part** (V2.17: the room's light casts its shadows in HD) | The room's ceiling light a real light, its lamps, its windows' daylight; one shadow-casting light; AO for small rooms |
 | R2 | Things sit on the floor | Not started | Baked shade in corners, along skirting and beside pieces, from the house file |
 | R3 | Surfaces | Not started | Every house material with its photo, relief and shine (CC0) |
-| R4 | Real shapes | Not started | One room a PR, in the client's order |
+| R4 | Real shapes | **In part** (V2.17: the master bedroom) | One room a PR: the master bedroom, the office, the kitchen, the bathrooms, the hallways. V2.17: the soft things as cloth (`clothBox`: pillows plumped, the duvet in folds, the mattress crowned, the hanging clothes with shoulders and folds) in every room; the master's bedsides with round knobs and turned bun feet, the chest's knobs round, every garment on a hanger |
 | R5 | The things in a room | Not started | The client's photos' small things (core); suggestions as options |
 | R6 | Change the furniture in any room | Not started | Edit room in every room (FINISHES F10) |
 | R7 | One Look for every room | Not started | The living room joined (FINISHES F8), then Look in each room |
