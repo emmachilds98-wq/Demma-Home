@@ -563,7 +563,7 @@ function setView(name, instant, dur) {
   flyTo(p.eye, p.at, R.HOUSE3 && v.box ? Math.max(v.fov, 82) : v.fov, !!v.above, instant, dur);   // v71: the house's rooms wide
   if (!houseG && R.HOUSE && HOUSEV(name)) { buildHouse(); reshadow(); }   // v69 (B6): built the first time (the living room starts without it)
   if (houseG) { houseG.visible = HOUSEV(name); view.visible = !v.above; applyFloors(); setAbove(!v.above); }   // v56: the sky only from inside
-  if ((wasHouse !== HOUSEV(name) || EMBED) && started) { applyLight(); sizeRenderer(); }   // V1: in the app the house is by day, its rooms as they are   // v58: the outside's daylight on or off; v73: and the house's resolution
+  if (wasHouse !== HOUSEV(name) && started) { applyLight(); sizeRenderer(); }   // V1: in the app the house is by day, its rooms as they are   // v58: the outside's daylight on or off; v73: and the house's resolution
   placeRoomLights();                                                        // v69: the room's own lights, the sun's shadows over it
   if (garden3d) garden3d.visible = HOUSEV(name) && (name !== "house" || !!S.hgarden);   // v64: in The whole house only when Gardens is on                             // v56: the garden ground only with the whole house (in the room's own views it read as a room clipped on) // v54: the whole house, a draft (the garden photo steps aside: the lawn and fences show it)
   qsa("[data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === name)));

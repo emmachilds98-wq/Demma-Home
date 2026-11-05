@@ -1,9 +1,5 @@
 let garden3d = null;   // v53: the back garden as ground, in the views from above
 let HBUILD = null;     // V1: builds (or rebuilds, with edits) one floor of the house
-/* V1 (Demma's Home): the room as a component of the app. ?embed hides every control of this page (the app has its own); the app drives it
-   with messages (EMB below) and hears back what was tapped */
-const EMBED = /[?&]embed\b/.test(location.search);
-let EMBH = null;       // V1: the app's bridge (set at the end of this file when ?embed)
 const HEDITS = {};     // V1 (Phase 3): the client's edits, {item id: {from: box, to: box, op?: the opening's old and new edges}}
 const mapAx = (v, f0, f1, t0, t1) => (f1 - f0 < 0.01 ? v + (t0 - f0) : t0 + (v - f0) * (t1 - t0) / (f1 - f0));
 function editXf(E) {   // one edited piece's boxes: a door or window keeps its frames' widths (piecewise along its wall), the rest scale
@@ -121,7 +117,7 @@ function applyHEdits(map) {
     for (const fk of fs) HBUILD(fk, editedFloor(fk, R.HOUSE3.floors[fk])); solidDirty(); reshadow(); dirty(); });
 }
 const HIT = id => (((R.HOUSE3 || {}).items) || {})[id];
-const DS = () => (!EMBED && window.DemmaStore) || null;
+const DS = () => window.DemmaStore || null;
 const FIELDS = [["w", "Width"], ["h", "Height"], ["up", "Up from the floor"], ["along", "Along the wall"]];
 function pieceNow(id) {
   const it = HIT(id), e = {}, ds = DS();

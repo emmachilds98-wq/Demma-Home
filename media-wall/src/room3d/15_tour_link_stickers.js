@@ -177,7 +177,6 @@ const pop = qs("#r3d-pop"), stage = qs(".r3d-stage");
 let popId = null;
 const _p = new THREE.Vector3();
 let labelsOn = true; try { labelsOn = localStorage.getItem("mw26-labels") !== "off"; } catch (e) {}
-if (EMBED) labelsOn = false;                                                  // V1: no words over the 3D in the app (its lists are the labels)
 function setLabels(on) {
   labelsOn = on; try { localStorage.setItem("mw26-labels", on ? "on" : "off"); } catch (e) {}
   if (!on) { closePop(); Object.values(stickEls).forEach(el => { el.hidden = true; }); }

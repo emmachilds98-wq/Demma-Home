@@ -208,7 +208,7 @@ function renderAct() {
       + `<input type="number" inputmode="decimal" step="1" value="${v}" data-hfield="${f}" aria-label="${t} in cm"><button type="button" data-hstep="${f}" data-by="1" aria-label="${t}: 1 cm more">+</button></span></div>`).join("")
       + `<p class="note">${DS() && DS().mode === "shared" ? "Saved for you both as you go" : "Saved on this device · Send in Measure shares it"}</p>`;
     box.before(w); }
-  if (/^(hitem|hsize):/.test(actId)) selOf(actId.split(":")[1]); else if (!EMBED) clearSel();
+  if (/^(hitem|hsize):/.test(actId)) selOf(actId.split(":")[1]); else clearSel();
   // v39 (the approved redesign): a card shows its first three buttons; everything else sits under Details
   let shownN = 0, into = box, more = null;
   for (const b of bs) {
@@ -241,7 +241,7 @@ function openAct(id, xy) {
 }
 const DBL_MS = +(window.__r3dDblMs || 380);   // a double-tap's two taps within this (a test rig whose touches wait on slow frames can widen it)
 let actAt = 0;   // V1.54: when the card opened: a phone's click from the same tap lands on it (a sheet at the foot) and mustn't press its button
-function closeAct() { actId = null; root.classList.remove("actopen"); if (act) act.hidden = true; clearAim(); if (!EMBED) clearSel(); }
+function closeAct() { actId = null; root.classList.remove("actopen"); if (act) act.hidden = true; clearAim(); clearSel(); }
 if (act) {
   act.addEventListener("pointerdown", e => {   // V1.54: the second tap of a double-tap that lands on the card the first one opened: still a double-tap
     if (e.pointerType === "mouse" || !lastTap || e.timeStamp - lastTap.t > DBL_MS || Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) > 30) return;
@@ -275,7 +275,7 @@ if (act) {
     clearTimeout(sizeT); sizeT = setTimeout(() => setPiece(k, f, clampF(f, cmR(v))), 450); });
   let lastPtr = "mouse";
   canvas.addEventListener("pointerdown", e => { lastPtr = e.pointerType; }, true);
-  canvas.addEventListener("dblclick", e => { if (S.edit || MEAS.on || EMBH || lastPtr !== "mouse") return; e.preventDefault(); floorHop(e); });   // V1.53: on a PC, a double-click stands you there (a phone's double-tap is the pointerup's: iOS can send a dblclick too)
+  canvas.addEventListener("dblclick", e => { if (S.edit || MEAS.on || lastPtr !== "mouse") return; e.preventDefault(); floorHop(e); });   // V1.53: on a PC, a double-click stands you there (a phone's double-tap is the pointerup's: iOS can send a dblclick too)
   canvas.addEventListener("pointerdown", e => { tapDown = (S.edit || e.button > 0) ? null : [e.clientX, e.clientY, e.timeStamp]; if (actId) closeAct(); });   // review after v48: the touch's own time, so a slow frame between down and up can't turn a tap into a long press
   canvas.addEventListener("pointerup", e => {
     const t = tapDown; tapDown = null;
@@ -284,7 +284,6 @@ if (act) {
     const now = e.timeStamp, dbl = lastTap && now - lastTap.t < DBL_MS && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30;
     lastTap = dbl ? null : { t: now, x: e.clientX, y: e.clientY };
     if (dbl && e.pointerType !== "mouse" && floorHop(e)) return;             // v41: a double-tap on the floor flies you there (V1.53: a mouse's double-click: dblclick)
-    if (EMBH) { EMBH.tap(e); return; }                                        // V1: in the app, a tap names the piece to the app
     let id = pickItem(e); if (!id) return;
     const r = stage.getBoundingClientRect();
     if (id.startsWith("hdoor:")) swingDoor(id.slice(6), !doorOpen(HPARTS[id.slice(6)]));   // V1.26: a tap opens or shuts it, its card says which
