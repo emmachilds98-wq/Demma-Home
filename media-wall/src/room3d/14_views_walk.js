@@ -230,6 +230,7 @@ function walkRoom(x, feet, z) {             // walked into another room with its
   const rooms = R.HOUSE3.rooms || {};
   for (const [id, r] of Object.entries(rooms)) {
     if (x < r[0] || x > r[1] || z < r[2] || z > r[3] || Math.abs(feet - r[4]) > 130) continue;
+    if (id !== hereRoom) { hereRoom = id; brandPlace(); }
     const v = ROOM_VIEW[id] || WALK_VIEW[id]; if (v && v !== S.view && VIEWS[v] && VIEWS[v].box) enterRoom(v);
     return;
   }
@@ -370,6 +371,7 @@ function goStand(x, fy, z, look, dur) {      // Be there at (x, z) on the floor 
   if (Math.hypot(dx, dz) < 1) { dx = 0; dz = -1; }
   const l = Math.hypot(dx, dz); dx /= l; dz /= l;
   if (actId && typeof closeAct === "function") closeAct();
+  hereRoom = r[0];
   const v = r[0] === "living" ? "livstand" : ROOM_VIEW[r[0]] || WALK_VIEW[r[0]];
   if (v === "livstand") { if (S.view !== v) setView(v); standLook(true);
     flyTo([x, STAND_EYE, z], [x + dx * 100, STAND_EYE - 10, z + dz * 100], STAND_FOV, false, false, dur || 900); }

@@ -21,6 +21,7 @@ function standIn() {
   if (standSpot) { const [x, z, dx, dz] = standSpot; standSpot = null;
     flyTo([x, fy + STAND_EYE, z], [x + dx * 100, fy + STAND_EYE - 10, z + dz * 100], STAND_FOV, false, false, 900); return; }
   const [x, z] = R.HOUSE3 ? freeSpot(v.eye[0], fy, v.eye[2]) : [v.eye[0], v.eye[2]];   // V1.59: not inside a worktop or a desk
+  hereRoom = ((R.HOUSE3 && standRoomAt(x, fy + 1, z)) || [VIEW_ROOM[S.view]])[0]; brandPlace();
   flyTo([x, fy + STAND_EYE, z], [v.at[0] + x - v.eye[0], fy + STAND_EYE - 10, v.at[2] + z - v.eye[2]], STAND_FOV, false);
 }
 const LIVV = () => !HOUSEV(S.view) && !!VIEWS[S.view];
@@ -133,6 +134,8 @@ function applyFloors() {
 function fadeRows() { qsa(".r3d-floors:not(.r3d-rmode)").forEach(el => el.classList.toggle("more", el.scrollWidth - el.clientWidth - el.scrollLeft > 4)); }
 document.addEventListener("scroll", e => { if (e.target.classList && e.target.classList.contains("r3d-floors")) fadeRows(); }, true);
 /* V1.2: the brand's second line says where you are: the whole house, a floor, a room */
+let hereRoom = null;                                   // V1.60: the room you stand in (walkRoom, goStand)
+const HERE_NAME = { lower_landing: "Lower landing", lower_stairs: "Lower stairs" };
 function brandPlace() {
   /* V1.30 (U3): only the tools that work where you are: in the house's views Room, Look and Edit (the living room's) step aside; in the
      house's own rooms Plan · Build · Buy too (the media wall's plan) */
@@ -141,6 +144,8 @@ function brandPlace() {
   const el = document.getElementById("brand-place"); if (!el) return;
   let t = "The living room";
   if (S.view === "house") t = { first: "The first floor", ground: "The ground floor", lower: "The lower floor" }[hfloor] || "The whole house";
+  else if (ROOMV() && RMODE === "stand" && hereRoom && hereRoom !== "living" && (ROOM_VIEW[hereRoom] || WALK_VIEW[hereRoom]) === S.view)
+    t = HERE_NAME[hereRoom] || roomName(hereRoom) || t;   // V1.60: standing, the room you're in (the lower landing has the kitchen's view)
   else if (ROOMV()) { const id = VIEW_ROOM[S.view], L = id && id !== "living" && Object.values(R.HOUSE3.floors).flatMap(F => F.labels || []).find(l => l.id === id); t = (L && L.name) || (VIEWS[S.view] || {}).label || t; }
   el.textContent = t;
   canvas.setAttribute("aria-label", `${t} in 3D: drag to look round, scroll or pinch to zoom; standing (Be there), W A S D or the arrow keys walk, Q and E turn`);   // V1.43: says where you are (it always said the living room)
