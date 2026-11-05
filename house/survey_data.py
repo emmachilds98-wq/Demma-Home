@@ -294,7 +294,7 @@ WALL_HALL = 303.5     # the hall's face of the wall to the garage (M: the living
 # needed. It also actually just houses towels and boxes for stuff no boiler": the cupboard 60 (58.5-118.5, a 48 door), so the bathroom
 # end (its wall, door and the box over the stairs, in one line) 18.2 back: the landing's end z -32.5, the bathroom about 1.8 x 2.7;
 # bedroom 2's door with it, still in the corner; the master's door and its gaps as they were. Bedroom 2's door's nook gone (BED2_1 None).
-FIT = {"first": {"bathroom": dict(x1=408.0, z1=-38.8), "bed2": dict(z1=79.5), "airing": dict(x0=202.0, z0=58.5, z1=143.5), "master": dict(x1=202.0, z0=85.5),
+FIT = {"first": {"bathroom": dict(x1=398.0, z1=-38.8), "bed2": dict(z1=79.5), "airing": dict(x0=202.0, z0=58.5, z1=143.5), "master": dict(x1=202.0, z0=85.5),
                  "master_b": dict(x0=202.0, z0=149.5, z1=268.1), "bed3": dict(x0=263.7),
                  "landing": dict(x1=398.0, z0=-32.5), "first_stairs": dict(x0=398.0, z0=-41.0, z1=196.0), "landing_top": dict(x0=398.0, z0=196.0)},
                  # V2.2, the client: "bannister could be moved over slightly too. the stairwell is wider. another 10cm maybe": 10 wider (was 408)
@@ -347,7 +347,9 @@ FIT_DOOR_LINE = {"bath_door": -35.65}                # v76: in the bathroom's fr
 # the bathroom's corner over the stairs (this piece) ends 3.15 short of it for that wall. Bedroom 2's door round the corner as before.
 # V1.8, the client: "make the wall that comes into the bathroom next to the sink come further into the room leaving more space in the
 # alcove above the stairs, by roughly 5-10 more cm": its wall over the stairs 7.5 further into the bathroom (was -44.15)
-BATH_1 = dict(x=(408.0, 467.0), z=(-309.0, -51.65))
+# V2.16, the client (an overhead picture, a red line along the bathroom's corner over the stairs): the step from the bathroom's front wall
+# back to its wall over the stairs at the stairwell's edge (398, V2.2's 10 wider), not 10 out over the stairwell (it was 408: a notch)
+BATH_1 = dict(x=(398.0, 467.0), z=(-309.0, -51.65))
 BED2_1 = None                                         # v76: bedroom 2's door fits its front wall again (v75's nook gone)
 # V1.8, the client: "the boiler cupboard on first floor also sticks out into both bedrooms, it is inline with the wardrobe front in the
 # master bedroom and stick out in the bedroom 2 although unsure of size" ("adjust as needed"): its side in the master flush with the

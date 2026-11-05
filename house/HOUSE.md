@@ -122,6 +122,7 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
   - **Light switches (the client, 5 Nov):** the bathroom's is a pull cord from the ceiling, on the right as you walk in (no wall switch by
     its door; the cord's length a guess, in Measure); the lower stairs' is at their foot on the left-hand wall looking down.
   - **The bathroom's wall over the stairs**, by the sink, about 7.5 cm further into the bathroom than drawn before, for more room over
+  - **The bathroom's corner over the stairs (the client, 5 Nov, an overhead picture with a red line):** its front wall steps back to the wall over the stairs at the stairwell's edge (x 398, in line with the banister), a clean L; it had stayed 10 out over the stairwell when the stairwell was widened (V2.2).
     the stairs (the client, 29 Oct: "roughly 5-10 more cm").
 - **Both gardens:** the back (about 25 m, the photos) and the front (the agent's photo, below; sizes to come).
 

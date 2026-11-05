@@ -511,7 +511,14 @@ def outer_walls(o, floor):
             wall(o, "paint", axis, min(inner), max(inner), lo - pa, hi + pb, y0, top, holes)
         elif axis == "z":                                    # v66: past the living room (it draws its own), the hall's and the garage's walls plastered
             wall(o, "paint", axis, min(inner), max(inner), 38.0, hi + pb, y0, top, holes)
-        wall(o, "party" if side == "w" else "brick", axis, min(brick), max(brick), a0, a1, y0, top, holes)
+            if side == "w":                                  # V2.16, the client: "i can also see west brick wall ... within the stairwell": looking down the
+                wall(o, "stairpaint", axis, min(inner), max(inner), lo - pa, 38.0, y0, top, holes)   # stairwell from the first floor (the living room's own walls not drawn there) its stair wall's paint, 1 behind the room's own wall
+        party_cap = side == "w" and t_out < T_OUT and floor == "ground"
+        wall(o, "party" if side == "w" else "brick", axis, min(brick), max(brick), a0, a1, y0, top - (2 if party_cap else 0), holes)
+        if party_cap:                                        # V2.16: its cut top plastered (the slab stops at our side), the last 2 next door's brick
+            bi, bo = (min(brick), max(brick) - 2) if out > 0 else (min(brick) + 2, max(brick))
+            wall(o, "paint", axis, bi, bo, a0, a1, top - 2, top, [])
+            wall(o, "party", axis, *((bo, max(brick)) if out > 0 else (min(brick), bi)), a0, a1, top - 2, top, [])
         o.end()
         for op in ops:
             if op.get("skip") and op["side"] == side and axis == "x" and abs(line - BACK) < 1:
