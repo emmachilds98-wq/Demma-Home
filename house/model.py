@@ -1014,12 +1014,12 @@ def kitchen(o):
             o.box(m, x1, ya, z0 + inset, x1 + 1.8, yb, z1 - inset)
     def handle(face, x0, x1, z0, z1, y, along=None):
         c = along if along is not None else ((x0 + x1) / 2 if face != "+x" else (z0 + z1) / 2)
-        if face == "+z":
-            o.box("black", c - 0.8, y - 5, z1 + 1.8, c + 0.8, y + 5, z1 + 4.5)
+        if face == "+z":                                           # V2.17 (REAL_PLAN R4): the photos' black bar handles, rounded
+            o.box("handle_black", c - 0.8, y - 5, z1 + 1.8, c + 0.8, y + 5, z1 + 4.5)
         elif face == "-z":
-            o.box("black", c - 0.8, y - 5, z0 - 4.5, c + 0.8, y + 5, z0 - 1.8)
+            o.box("handle_black", c - 0.8, y - 5, z0 - 4.5, c + 0.8, y + 5, z0 - 1.8)
         else:
-            o.box("black", x1 + 1.8, y - 5, c - 0.8, x1 + 4.5, y + 5, c + 0.8)
+            o.box("handle_black", x1 + 1.8, y - 5, c - 0.8, x1 + 4.5, y + 5, c + 0.8)
     o.item("kitchen.units", "The kitchen units and appliances", "kitchen", src="client's photos + standard sizes (E)", data=("KITCHEN",), measure=False)
     for run in ("north", "east", "south"):
         for kind, a, b in K[run]:
@@ -1036,14 +1036,26 @@ def kitchen(o):
             if kind in ("washer", "dishwasher", "cooker"):
                 col = {"washer": "black_app", "dishwasher": "gloss", "cooker": "black_app"}[kind]
                 o.box(col, x0 + 0.5, Y(0), z0 + 1, x1 - 0.5, Y(85 if kind != "cooker" else 90.5), z1 - 1)   # v65: the hob just proud of the worktop
-                if kind == "washer":
-                    o.prism("glass_dark", "z", z1 - 1, z1 + 0.5, [(x0 + 30 + 17 * math.cos(i * math.pi / 4), Y(42) + 17 * math.sin(i * math.pi / 4)) for i in range(8)])
+                if kind == "washer":                                   # V2.17: its round door (a chrome rim, the glass), the dial, the drawer
+                    circ = lambda cx_, cy_, r_, n=28: [(cx_ + r_ * math.cos(i * 2 * math.pi / n), cy_ + r_ * math.sin(i * 2 * math.pi / n)) for i in range(n)]
+                    o.prism("chrome", "z", z1 - 1, z1 + 1.0, circ(x0 + 30, Y(42), 19.5))
+                    o.prism("glass_dark", "z", z1 + 1.0, z1 + 1.6, circ(x0 + 30, Y(42), 15.5))
+                    o.prism("chrome", "z", z1 - 1, z1 + 2.2, circ(x0 + 47, Y(77), 3.2, 20))
+                    o.box("gloss", x0 + 4, Y(73), z1 - 1, x0 + 24, Y(81), z1 + 0.6)
                 if kind == "cooker":
                     front(face, x0, x1, z0, z1, Y(18), Y(62), "glass_dark", inset=6)
-                    for i, (u, v) in enumerate(((0.3, 0.3), (0.7, 0.3), (0.3, 0.7), (0.7, 0.7))):
-                        cx_, cz_ = x0 + (x1 - x0) * u, z0 + (z1 - z0) * v
-                        o.box("ring", cx_ - 8, Y(90.5), cz_ - 8, cx_ + 8, Y(91.3), cz_ + 8)
+                    for i, (u, v) in enumerate(((0.3, 0.3), (0.7, 0.3), (0.3, 0.7), (0.7, 0.7))):   # V2.17: the photos' four raised round hotplates
+                        cx_, cz_ = x0 + (x1 - x0) * u, z0 + (z1 - z0) * v; rp = 7.2 if i % 3 else 9.0
+                        o.lathe("chrome", cx_, Y(90.5), cz_, [(0, 0), (rp + 1.0, 0), (rp + 1.0, 0.5), (0, 0.5)])
+                        o.lathe("ring", cx_, Y(90.5), cz_, [(0, 0), (rp, 0), (rp, 1.1), (rp - 0.6, 1.5), (0, 1.5)])
                     front(face, x0, x1, z0, z1, Y(72), Y(84), "black", inset=3)
+                    if face == "+x":                                   # its knobs along the panel, the oven door's bar handle
+                        for i in range(6):
+                            kz = z0 + 7 + i * (z1 - z0 - 14) / 5
+                            o.prism("black_app", "x", x1 + 1.8, x1 + 4.2, [(kz + 1.9 * math.cos(t * math.pi / 8), Y(78) + 1.9 * math.sin(t * math.pi / 8)) for t in range(16)])
+                        o.box("chrome", x1 + 4, Y(63), z0 + 6, x1 + 5.4, Y(64.6), z1 - 6)
+                        for hz in (z0 + 7, z1 - 8):
+                            o.box("chrome", x1 + 1.8, Y(63.2), hz, x1 + 4, Y(64.4), hz + 1)
                 if kind == "dishwasher":
                     front(face, x0, x1, z0, z1, Y(78), Y(84), "gap", inset=3)
                 continue
@@ -1064,7 +1076,8 @@ def kitchen(o):
     s0, s1 = K["sink"]
     o.box("steel", s0, Y(TOP), BACK + 8, s1, Y(TOP + 0.5), BACK + 50)
     o.box("steel_dark", s0 + 4, Y(TOP + 0.2), BACK + 12, s1 - 4, Y(TOP + 0.6), BACK + 46)
-    o.box("steel", (s0 + s1) / 2 - 1.5, Y(TOP), BACK + 4, (s0 + s1) / 2 + 1.5, Y(TOP + 38), BACK + 7)          # the spring tap
+    o.lathe("chrome", (s0 + s1) / 2, Y(TOP + 0.6), BACK + 29, [(0, 0), (2.3, 0), (2.3, 0.2), (0, 0.2)])       # V2.17: the plughole
+    o.lathe("steel", (s0 + s1) / 2, Y(TOP), BACK + 5.5, [(0, 0), (3.2, 0), (3.2, 2.2), (1.7, 3.2), (1.6, 37), (1.9, 38), (0, 38)])   # the spring tap, turned
     o.box("steel", (s0 + s1) / 2 - 1.5, Y(TOP + 35), BACK + 4, (s0 + s1) / 2 + 1.5, Y(TOP + 38), BACK + 26)
     # the metro tiles: worktop to the wall units on the east and front walls, to the ceiling behind the cooker
     o.item("kitchen.tiles", "The metro tiles", "kitchen", kind="finish", src="client's photos", measure=False)
@@ -1098,6 +1111,14 @@ def kitchen(o):
     for lx, lz in ((B["x"][0] + 8, B["z"][0] + 8), (B["x"][0] + 8, B["z"][1] - 8)):        # v73: fixed to the wall, legs on the room side
         o.box("chrome", lx - 1.5, Y(0), lz - 1.5, lx + 1.5, Y(B["h"] - 3.8), lz + 1.5)
     o.box("chrome", B["x"][1] - 3, Y(B["h"] - 8), B["z"][0] + 10, B["x"][1], Y(B["h"] - 3.8), B["z"][1] - 10)   # the batten on the wall
+    o.item("kitchen.bin", "The pedal bin", "kitchen", kind="decor", src="client's photo (25 Oct) + E (a 30 L pedal bin)", measure=False)
+    o.lathe("bin_white", 215, Y(0), -42, [(0, 0), (12.5, 0), (13.2, 2), (14, 58), (14.2, 60), (0, 60)])           # V2.17: by the fridge, its bag over the rim
+    o.lathe("black", 215, Y(58.5), -42, [(13.6, 0), (14.7, 0), (14.7, 2.2), (13.6, 2.2)])
+    o.lathe("bin_white", 215, Y(60.5), -42, [(0, 0), (14.4, 0), (14.4, 1.5), (13, 3.5), (0, 4.2)])
+    o.box("chrome", 209, Y(1), -57.5, 221, Y(3), -55)                                                             # the pedal
+    o.item("kitchen.roll", "The kitchen roll", "kitchen", kind="decor", src="client's photo (25 Oct) + E", measure=False)
+    o.lathe("chrome", 118, Y(TOP), 21, [(0, 0), (7, 0), (7, 1), (0.6, 1.2), (0.6, 30), (1.2, 30.5), (0, 31)])     # on the worktop by the corner
+    o.lathe("paper", 118, Y(TOP + 1.5), 21, [(2, 0), (5.8, 0), (6, 0.4), (6, 23.6), (5.8, 24), (2, 24)])
     o.item("kitchen.boiler", "The boiler", "kitchen", kind="fitting", src="client v73 + E (combi)", data=("KITCHEN", "boiler"), axis="z")
     bo = K["boiler"]; xw = B["x"][1]                                                    # v73: the boiler over the bar, by the door
     o.box("fitting", xw - bo["d"], Y(bo["y"][0]), bo["z"][0], xw, Y(bo["y"][1]), bo["z"][1])
@@ -2188,7 +2209,7 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "laminate": ("#a9a39a", 0.7), "oak": ("#b8844f", 0.55), "screen": ("#0d0f12", 0.15), "pc_white": ("#eeeeec", 0.3), "pc_glow": ("#dfe6ff", 0.2),
     "pegboard": ("#f4f4f2", 0.6), "ivy": ("#2f5a2b", 0.8), "blind": ("#4a4d52", 0.9), "blind_cloth": ("#4a4d52", 0.9), "books": ("#8a3b2e", 0.8), "jar": ("#d9a441", 0.4), "pot": ("#e8e3d8", 0.5),
     "carpet_grey": ("#6f6f73", 1.0), "red_gloss": ("#c8201e", 0.15), "red_back": ("#9d1714", 0.4), "cat": ("#bdbcb8", 1.0), "sisal": ("#cdb88f", 0.9),
-    "pink": ("#e8607a", 0.8), "pine": ("#c99a55", 0.55), "pine_dark": ("#7a5a30", 0.6), "knob": ("#7a5a30", 0.45), "monitor_back": ("#202124", 0.45), "mouse": ("#1a1a1c", 0.35), "key_dark": ("#2b2c30", 0.55), "key_pink": ("#f6cddb", 0.5),
+    "pink": ("#e8607a", 0.8), "pine": ("#c99a55", 0.55), "pine_dark": ("#7a5a30", 0.6), "knob": ("#7a5a30", 0.45), "handle_black": ("#151517", 0.4), "bin_white": ("#f1f1ef", 0.3), "paper": ("#f7f6f2", 0.9), "monitor_back": ("#202124", 0.45), "mouse": ("#1a1a1c", 0.35), "key_dark": ("#2b2c30", 0.55), "key_pink": ("#f6cddb", 0.5),
     "book0": ("#7a2f2f", 0.8), "book1": ("#2f4a6b", 0.8), "book2": ("#d9cfb8", 0.85), "book3": ("#3c5a3a", 0.8), "book4": ("#1f1f22", 0.7), "book5": ("#b8873d", 0.8), "wardrobe": ("#f2f1ec", 0.35), "duvet": ("#e9e6df", 0.95), "leather": ("#1f1d1d", 0.45), "check": ("#7d7e86", 0.95),
     "lawn": ("#5f7043", 1.0), "paving": ("#bdb8ae", 0.95), "road": ("#59595c", 0.95), "fence": ("#6b5644", 0.9),
 }
