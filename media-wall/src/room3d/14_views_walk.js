@@ -204,9 +204,11 @@ function walkMove(side, fwd, turn, dt) {    // -1..1 each; true if the eye moved
   walkRoom(x, WALK.feet, z); walkDoors(x, WALK.feet, z);
   return true;
 }
+const WALK_VIEW = { lower_landing: "kitchen", lower_stairs: "kitchen" };   // V1.57: walked down the lower stairs, the lower floor's view (it stayed the hall's)
 function walkRoom(x, feet, z) {             // walked into another room with its own view: be in it, where you stand
   const L = FLIGHT();
-  if (x > L.x0 - 4 && x < L.x1 && z > L.z0 - 12 && z < L.zl1 && feet < 200 && feet > -60) {   // V1.53: not from the kitchen under it   // V1.38: on the living room's flight: its room low down, the landing's view higher
+  // V1.57: and only with your feet at its tread there: the flight climbs over the hall, and walking in the hall under it took you into the living room
+  if (x > L.x0 - 4 && x < L.x1 && z > L.z0 - 12 && z < L.zl1 && feet < 200 && feet > -60 && feet > L.r * Math.max(0, (z - L.z0) / L.g) - 45) {   // V1.53: not from the kitchen under it   // V1.38: on the living room's flight: its room low down, the landing's view higher
     const want = feet < 60 ? "livstand" : "landing"; if (want !== S.view) enterRoom(want); return; }
   const LB = LIV().box;
   if (x > LB[0] && x < LB[1] && z > LB[2] && z < LB[3] + 2 && feet < 120 && feet > -60) {   // V1.38: in the living room (V1.53: not the kitchen under it)
@@ -214,7 +216,7 @@ function walkRoom(x, feet, z) {             // walked into another room with its
   const rooms = R.HOUSE3.rooms || {};
   for (const [id, r] of Object.entries(rooms)) {
     if (x < r[0] || x > r[1] || z < r[2] || z > r[3] || Math.abs(feet - r[4]) > 130) continue;
-    const v = ROOM_VIEW[id]; if (v && v !== S.view && VIEWS[v] && VIEWS[v].box) enterRoom(v);
+    const v = ROOM_VIEW[id] || WALK_VIEW[id]; if (v && v !== S.view && VIEWS[v] && VIEWS[v].box) enterRoom(v);
     return;
   }
 }
@@ -312,9 +314,9 @@ function standRoomAt(x, y, z) {             // [the room, its floor's level] at 
   let best = null;
   for (const [id, r] of Object.entries(R.HOUSE3.rooms || {})) {
     if (x < r[0] || x > r[1] || z < r[2] || z > r[3] || y < r[4] - 30 || y > r[4] + 245) continue;
-    if (!best || (ROOM_VIEW[id] && !ROOM_VIEW[best[0]])) best = [id, r[4]];
+    if (!best || ((ROOM_VIEW[id] || WALK_VIEW[id]) && !(ROOM_VIEW[best[0]] || WALK_VIEW[best[0]]))) best = [id, r[4]];
   }
-  return best && ROOM_VIEW[best[0]] ? best : null;
+  return best && (ROOM_VIEW[best[0]] || WALK_VIEW[best[0]]) ? best : null;
 }
 function spotAt(e) {                        // where a double-click or the figure would stand you: {x, z, fy, id}, or null
   if (!R.HOUSE3) return null;
@@ -354,7 +356,7 @@ function goStand(x, fy, z, look, dur) {      // Be there at (x, z) on the floor 
   if (Math.hypot(dx, dz) < 1) { dx = 0; dz = -1; }
   const l = Math.hypot(dx, dz); dx /= l; dz /= l;
   if (actId && typeof closeAct === "function") closeAct();
-  const v = r[0] === "living" ? "livstand" : ROOM_VIEW[r[0]];
+  const v = r[0] === "living" ? "livstand" : ROOM_VIEW[r[0]] || WALK_VIEW[r[0]];
   if (v === "livstand") { if (S.view !== v) setView(v); standLook(true);
     flyTo([x, STAND_EYE, z], [x + dx * 100, STAND_EYE - 10, z + dz * 100], STAND_FOV, false, false, dur || 900); }
   else { standSpot = [x, z, dx, dz]; if (S.view !== v) setView(v); setRmode("stand"); }

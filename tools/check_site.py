@@ -28,7 +28,11 @@ WALK = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   await go(437, 230, 15, () => at()[1] > 226);
   await go(330, 230, 12, () => at()[0] < 340); await go(437, 230, 12, () => at()[0] > 432); await go(437, -300, 40, () => at()[1] < -70); leg("down");
   await go(357, -10, 20, () => at()[0] < 362); await go(357, 400, 30, () => at()[1] > 150);
-  leg("out"); return { seen, top: Math.round(top), stay, end: D.S.view, legs }; }"""
+  leg("out");
+  await go(445, 320, 30, () => false); await go(450, 250, 20, () => false); leg("under");   // V1.57: in the hall under the living room's stairs: still the hall
+  await go(430, 320, 30, () => at()[1] > 315); await go(430, -90, 160, () => D.WALK.feet < -250); const low = Math.round(D.WALK.feet); leg("lower");   // down the lower stairs: the lower floor
+  await go(430, 330, 160, () => D.WALK.feet > -5 && at()[1] > 300); leg("back");
+  return { seen, top: Math.round(top), stay, low, end: D.S.view, legs }; }"""
 # V1.43 (V1_PLAN phase 8, access): every visible control has a name; the 3D's label says where you are (the brand's second line)
 ACCESS = """() => { const vis = el => { const r = el.getBoundingClientRect(), cs = getComputedStyle(el); return r.width > 0 && r.height > 0 && cs.visibility !== "hidden" && !el.closest("[hidden]"); };
   const noname = [...document.querySelectorAll("button, a[href], [role=button], input, select, textarea")].filter(el => vis(el) && !(el.getAttribute("aria-label") || el.getAttribute("title") || el.textContent || el.value || (el.labels && el.labels[0] && el.labels[0].textContent) || "").trim()).map(el => el.outerHTML.slice(0, 80));
@@ -150,8 +154,9 @@ def main():
                     fails.append(f"{w}: a double-tap (touches) on the master bedroom from overhead: {tp} (want standing in it at 420, no card)")
             if phone:                                           # V1.38: walk into the living room, up to the landing and back out (the small screen: quicker frames)
                 wk = pg.evaluate(WALK)
-                want = ["hall", "livstand", "landing", "livstand", "hall"]
+                want = ["hall", "livstand", "landing", "livstand", "hall", "kitchen", "hall"]
                 got = [v for i, v in enumerate(wk["seen"]) if i == 0 or v != wk["seen"][i - 1]]
+                if wk.get("low", 0) > -250: fails.append(f"{w}: down the lower stairs from the hall the feet got to {wk.get('low')} (want -260); legs {wk['legs']}")
                 if wk.get("stay", 0) < 255: fails.append(f"{w}: heading for bedroom 2 from the top of the living room's stairs took the walk down them (feet {wk.get('stay')}); legs {wk['legs']}")
                 if got != want or wk["top"] < 255: fails.append(f"{w}: the walk into the living room went {got}, its feet up to {wk['top']} (want {want}, 260); legs {wk['legs']}")
                 pg.screenshot(path=str(SHOTS / f"site-{w}-walk.png"))
@@ -160,7 +165,7 @@ def main():
         b.close()
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
-    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a piece resized from a tap, the figure dropped in, a double-tap there, a walk into the living room and up its stairs, {len(fails)} failed; screenshots in _shots/")
+    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a piece resized from a tap, the figure dropped in, a double-tap there, a walk into the living room and up its stairs, down to the lower floor and back, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
 
