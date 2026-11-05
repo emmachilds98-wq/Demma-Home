@@ -73,7 +73,7 @@ function houseTex(k) {
   if (k === "paint") return (HTEX[k] = null);   // V2.2, the client: "ensure walls are all smooth": flat emulsion, no plaster relief
   /* v70 (BUILD_SPEC phase 3): CC0 photo-textures (Poly Haven, house/SOURCES.md) where we have them, inline so the shared page shows them
      too (loading from elsewhere failed there in v50); the drawn ones below stay for everything else and as the fallback */
-  const pkey = { party: "brick", soldier: "brick", pillow: "duvet", mattress: "duvet", ceiling: "artex" }[k] || k, pm = PMETA[pkey];   // V1.21: the bedding's one cotton
+  const pkey = { party: "brick", soldier: "brick", pillow: "duvet", mattress: "duvet", ceiling: "artex", knob: "pine_dark" }[k] || k, pm = PMETA[pkey];   // V1.21: the bedding's one cotton
   if (pm && pm.map) {   // V1.9: its mean colour and a flat relief until the photos land (loadPhotos), then the photo in the same texture
     const img = (f, srgb, fill) => { const t = canvasTex(4, 4, g => { g.fillStyle = fill; g.fillRect(0, 0, 4, 4); }, srgb);   // V1.11: as sharp at a slant as the card allows (was 4)
       whenPhoto(pkey, f, src => { decodeImg(src).then(im => { texSet(t, im); reshadow(); dirty(); }); }); return t; };
@@ -522,9 +522,10 @@ function buildHouse() {
     const mx = new THREE.Matrix4();
     /* v69 (B4), the client: "more realistic like our living room": furniture, fittings and soft things with rounded edges (cm by
        material: the whites and woods a little, the suite and cushions a lot); walls, floors and frames stay sharp */
-    const ROUND = { pine: 0.8, pine_dark: 0.3, birch: 0.6, oak: 0.6, wardrobe: 0.5, gloss: 0.8, door_white: 0.4, door_wood: 0.4, fitting: 6, porcelain: 1,
+    const ROUND = { pine: 0.8, pine_dark: 0.3, knob: 1.4, birch: 0.6, oak: 0.6, wardrobe: 0.5, gloss: 0.8, door_white: 0.4, door_wood: 0.4, fitting: 6, porcelain: 1,
       primrose: 4, duvet: 3, pot: 4, lycksele: 3, storebox: 1.5, leather: 2, check: 1, curtain: 1, mattress: 4, pillow: 6 };
-    const SOFT = { pillow: 4, mattress: 3, duvet: 3 };   // V1.20: the soft things' edges round in steps (one step read as a chamfer: slabs)
+    const SOFT = { pillow: 4, mattress: 3, duvet: 3 };
+    const CLOTH = { pillow: 1, mattress: 1, duvet: 1, cloth0: 1, cloth1: 1, cloth2: 1, cloth3: 1, cloth4: 1, cloth5: 1, cloth6: 1 };   // V2.17: drawn as cloth (clothBox)   // V1.20: the soft things' edges round in steps (one step read as a chamfer: slabs)
     /* v78: a face that exactly meets a neighbour's (two pieces of one wall, side by side) is never seen, but drawn it showed edge-on
        as a bright hairline up the wall (the landing's, above each door). The faces two square pieces share, from opposite sides: */
     const fkey = (ax, p, a0, a1, b0, b1) => ax + "|" + p + "|" + a0 + "|" + a1 + "|" + b0 + "|" + b1;
@@ -547,8 +548,42 @@ function buildHouse() {
             b.groups.forEach((gp, f) => { if (!SHARED.has(keys[f])) for (let j = gp.start; j < gp.start + gp.count; j++) keep.push(I[j]); });
             b.setIndex(keep); b.clearGroups(); } }
         return b; }
+      if (CLOTH[mk] && !LOWD) return clothBox(mk, x0, y0, z0, x1, y1, z1, r);
       const b = new RoundedBoxGeometry(w * M, h * M, d * M, SOFT[mk] || 1, Math.max(0.0005, Math.min(r, Math.min(w, h, d) / 2 - 0.05)) * M);
       b.translate(c.x, c.y, c.z); return b; };
+    /* V2.17 (docs/REAL_PLAN.md R4, the master bedroom first; the client: "increase quality and functions inc rendering items in hd"): the
+       soft things as cloth, not slabs: a finely divided box, its edges rounded, then shaped: a pillow plumped (full in the middle, thin at
+       its edges), a duvet in soft folds (two crossing waves along the bed, by where it lies, so a bed's folds stay put), a mattress's top
+       crowned, a hanging garment narrowing to its shoulders with a fall of folds */
+    const clothBox = (mk, x0, y0, z0, x1, y1, z1, r) => {
+      const w = x1 - x0, h = y1 - y0, d = z1 - z0, a = w / 2, bb = h / 2, cc = d / 2, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, cz = (z0 + z1) / 2;
+      const seg = v => Math.min(40, Math.max(3, Math.round(v / 3))), B = new THREE.BoxGeometry(w, h, d, seg(w), seg(h), seg(d));
+      const rr = Math.max(0.05, Math.min(r, a - 0.05, bb - 0.05, cc - 0.05)), P0 = B.attributes.position, I0 = B.index.array, map = new Map(), pos = [], idx = [];
+      const remap = new Int32Array(P0.count);
+      for (let i = 0; i < P0.count; i++) { const k = Math.round(P0.getX(i) * 100) + "," + Math.round(P0.getY(i) * 100) + "," + Math.round(P0.getZ(i) * 100);
+        let j = map.get(k); if (j === undefined) { j = pos.length / 3; map.set(k, j); pos.push(P0.getX(i), P0.getY(i), P0.getZ(i)); } remap[i] = j; }
+      for (let i = 0; i < I0.length; i++) idx.push(remap[I0[i]]);
+      B.dispose();
+      const hang = mk.startsWith("cloth") && h > 40 && Math.min(w, d) < 12;   // a garment on its hanger (seen edge on), not a folded pile
+      for (let i = 0; i < pos.length; i += 3) {
+        let x = pos[i], y = pos[i + 1], z = pos[i + 2];
+        const sx = x / a, sy = y / bb, sz = z / cc;
+        if (hang) { const top = Math.max(0, sy - 0.62) / 0.38, dd = d > w;   // the shoulders slope in to the hanger's hook, the hem falls in folds
+          if (dd) z *= 1 - 0.55 * top * top; else x *= 1 - 0.55 * top * top;
+          const f = Math.sin((dd ? z : x) * 0.9 + y * 0.05) * 0.5 * (1 - top); if (dd) x += f * Math.sign(x || 1) * 0.4; else z += f * Math.sign(z || 1) * 0.4; }
+        const ix = Math.max(-(a - rr), Math.min(a - rr, x)), iy = Math.max(-(bb - rr), Math.min(bb - rr, y)), iz = Math.max(-(cc - rr), Math.min(cc - rr, z));
+        let nx = x - ix, ny = y - iy, nz = z - iz; const ln = Math.hypot(nx, ny, nz);
+        if (ln > 1e-6) { nx /= ln; ny /= ln; nz /= ln; x = ix + nx * rr; y = iy + ny * rr; z = iz + nz * rr; } else { nx = 0; ny = 1; nz = 0; }
+        if (mk === "pillow") { y *= 1 - 0.38 * (Math.pow(Math.abs(sx), 3) + Math.pow(Math.abs(sz), 3)) * 0.5 - 0.12 * Math.abs(sx * sz); }
+        else if (mk === "mattress") { if (ny > 0.5) y += 0.9 * (1 - sx * sx) * (1 - sz * sz); }
+        else if (mk === "duvet") { const wx = cx + x, wz = cz + z;
+          const f = 1.25 * Math.sin(wx * 0.15 + Math.sin(wz * 0.045) * 1.9) * Math.sin(wz * 0.11 + 0.6) + 0.45 * Math.sin(wx * 0.41 - wz * 0.27) + 0.2 * Math.sin(wz * 0.9 + wx * 0.2);
+          x += nx * f * (ny > 0.5 ? 0.6 : 1); y += ny * f; z += nz * f * (ny > 0.5 ? 0.6 : 1); }
+        pos[i] = -(cx + x) * M; pos[i + 1] = (cy + y) * M; pos[i + 2] = (cz + z) * M;
+      }
+      const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+      g.setIndex(idx.map((v, i) => idx[i - (i % 3) + [0, 2, 1][i % 3]]));   // x is mirrored into the world (v3), so each face is wound back
+      g.computeVertexNormals(); g.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(pos.length / 3 * 2), 2)); return g; };
     /* V1 (Phase 3): a floor can be built again with the client's edits (editedFloor: the edited pieces moved and sized, the walls round a
        door or a window following it); the floor keeps its group, so what's shown and hidden stays as it was */
     HBUILD = (fk, F) => {
@@ -683,7 +718,11 @@ function buildSun() {
   sun.castShadow = true; const sm = BIG_GPU ? 4096 : HI || !SMALL ? 2048 : 1024; sun.shadow.mapSize.set(sm, sm); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02; sun.shadow.radius = 3;   // V1.11: the sun's 4096 on a real graphics card (BUILD_SPEC phase 7)
   const c = sun.shadow.camera; c.left = -5.5; c.right = 5.5; c.top = 5.5; c.bottom = -5.5; c.near = 0.5; c.far = 16; c.updateProjectionMatrix();   // the whole room: outside it the sun shone through walls
   scene.add(sun, sun.target);
-  if (R.HOUSE3) for (let k = 0; k < 2; k++) { const l = new THREE.PointLight("#ffcf98", 0, 7, 2); l.visible = false; l.userData.houseLight = true; scene.add(l); ROOMLIGHTS.push(l); }   // v69 (B3): at the start, so the set never changes
+  if (R.HOUSE3) for (let k = 0; k < 2; k++) { const l = new THREE.PointLight("#ffcf98", 0, 7, 2); l.visible = false; l.userData.houseLight = true; scene.add(l); ROOMLIGHTS.push(l);   // v69 (B3): at the start, so the set never changes
+    /* V2.17 (REAL_PLAN R1, the client: "rendering items in hd"): the room's own light casts its shadows in HD (the bed under its
+       light, the walls keeping it in its room); drawn only when the room changes (autoUpdate off), from the start (no shader rebuilds) */
+    if (k === 0) { l.castShadow = true; const ms = BIG_GPU ? 1024 : 512; l.shadow.mapSize.set(ms, ms); l.shadow.bias = -0.002; l.shadow.normalBias = 0.03; l.shadow.radius = 4;
+      l.shadow.camera.near = 0.05; l.shadow.camera.far = 7; } }
 }
 const START_MS = {};
 function start() {
