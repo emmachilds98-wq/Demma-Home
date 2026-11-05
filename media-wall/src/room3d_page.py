@@ -83,6 +83,8 @@ CSS = """
 .r3d-fintray .sw[aria-pressed="true"] i { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #2a2723; }
 .r3d-fintray .sw span { max-width: 58px; text-align: center; line-height: 1.15; overflow-wrap: anywhere; }
 .r3d-fintray .sw.any input { padding: 0; border: 0; -webkit-appearance: none; appearance: none; background: conic-gradient(#e66, #ee6, #6e6, #6ee, #66e, #e6e, #e66); cursor: pointer; }
+.r3d-fintray .sw.pic i { display: grid; place-items: center; background: #efe7d8; } .r3d-fintray .sw.pic input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.r3d-finpic { display: grid; gap: 4px; } .r3d-finpic img { width: 100%; max-height: 220px; object-fit: contain; border-radius: 12px; cursor: crosshair; touch-action: manipulation; }
 .r3d-fintray .sw.any input::-webkit-color-swatch-wrapper { padding: 0; } .r3d-fintray .sw.any input::-webkit-color-swatch { border: 0; border-radius: 50%; opacity: 0; }
 .r3d-actfields .fld { display: flex; align-items: center; justify-content: space-between; gap: 8px; font: 600 13.5px Figtree, system-ui, sans-serif; }
 .r3d-actfields .stp { display: flex; align-items: center; gap: 4px; }

@@ -110,6 +110,26 @@ function finCopyBtns(room) {   // on a room's card: Copy this room (when it has 
   if (Object.keys((S.fin || {})[room] || {}).length) L.push(btn("Copy this room", { fincopy: "1" }));
   return L;
 }
+/* V2.13 (F6): a colour from a photo: choose one (it stays on this device, drawn small), tap a spot in it, and that's the colour (a 7 px
+   average, so one stray pixel doesn't decide it) */
+let FIN_PIC = null;
+function finPicLoad(file) {
+  if (!file || !/^image\//.test(file.type)) return;
+  const url = URL.createObjectURL(file), img = new Image();
+  img.onload = () => { const k = Math.min(1, 480 / Math.max(img.width, img.height)), cv = document.createElement("canvas");
+    cv.width = Math.max(1, Math.round(img.width * k)); cv.height = Math.max(1, Math.round(img.height * k)); cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+    URL.revokeObjectURL(url); FIN_PIC = { cv, url: cv.toDataURL("image/jpeg", 0.85) }; renderAct(); };
+  img.onerror = () => { URL.revokeObjectURL(url); toast("That photo wouldn't open"); };
+  img.src = url;
+}
+function finPicAt(el, e) {   // the colour under a tap on the photo
+  if (!FIN_PIC) return null; const r = el.getBoundingClientRect(), cv = FIN_PIC.cv;
+  const sc = Math.min(r.width / cv.width, r.height / cv.height), ox = (r.width - cv.width * sc) / 2, oy = (r.height - cv.height * sc) / 2;
+  const x = Math.round((e.clientX - r.left - ox) / sc), y = Math.round((e.clientY - r.top - oy) / sc); if (x < 0 || y < 0 || x >= cv.width || y >= cv.height) return null;
+  const x0 = Math.max(0, x - 3), y0 = Math.max(0, y - 3), d = cv.getContext("2d").getImageData(x0, y0, Math.min(7, cv.width - x0), Math.min(7, cv.height - y0)).data, t = [0, 0, 0];
+  for (let i = 0; i < d.length; i += 4) { t[0] += d[i]; t[1] += d[i + 1]; t[2] += d[i + 2]; }
+  const n = d.length / 4; return "#" + t.map(v => Math.round(v / n).toString(16).padStart(2, "0")).join("");
+}
 function finGet(room, slot) { return ((S.fin || {})[room] || {})[slot] || null; }
 function finApplyAll() {   // what's kept, into the palette (on start, after Undo)
   if (!finSetup()) return; finish(null, "walls", null); finish(null, "ceiling", null);
@@ -148,7 +168,9 @@ function finCard(id) {   // [title, now, buttons, -, the tray]
   const scopes = ceil ? [["room", "This room"], ["house", "Whole house"]] : [["wall", "This wall"], ["room", "This room"], ["house", "Whole house"]];
   const tray = `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Where it goes">${scopes.map(([k, t]) => `<button type="button" data-finsc="${k}" aria-pressed="${finScope === k}">${t}</button>`).join("")}</div>`
     + `<div class="r3d-fintray" role="group" aria-label="Colours">${finSwatches().map(([h, t]) => `<button type="button" class="sw" data-finc="${h}" style="--c:${h}" aria-pressed="${!!now && now.toLowerCase() === h.toLowerCase()}" title="${t}" aria-label="${t}"><i></i><span>${finShort(t)}</span></button>`).join("")}`
-    + `<label class="sw any" title="Any colour"><input type="color" data-finany="1" value="${now || "#f4f3ef"}" aria-label="Any colour"><span>Any</span></label></div>`
+    + `<label class="sw any" title="Any colour"><input type="color" data-finany="1" value="${now || "#f4f3ef"}" aria-label="Any colour"><span>Any</span></label>`
+    + `<label class="sw pic" title="A colour from a photo"><i><span class="ms" aria-hidden="true">photo_camera</span></i><input type="file" accept="image/*" data-finpic="1" aria-label="A colour from a photo"><span>Photo</span></label></div>`
+    + (FIN_PIC ? `<div class="r3d-finpic"><img src="${FIN_PIC.url}" data-finpicimg="1" alt="Your photo: tap a colour in it"><span class="r3d-finlab">Tap a colour in your photo</span></div>` : "")
     + (ceil ? `<span class="r3d-finlab">The bulbs</span>${finBulbTray(room)}` : "") + `</div>`;
   return [`${roomName(room)}: ${ceil ? "the ceiling" : finScope === "wall" ? `the ${FIN_NAMES[slot]} wall` : "the walls"}`, nm,
     [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), btn("As it is (hold)", { finhold: "1" }), ...(now ? [btn("As drawn", { finc: "" })] : []), ...finCopyBtns(room)], null, tray];
@@ -177,6 +199,8 @@ if (act) {
       store.set(KEY, S); roomKey = ""; placeRoomLights(); dirty();
       const fb = finBulb(room); toast(`${roomName(room)}: ${(FIN_BULBS.find(([v]) => v === (fb.k || "2700")) || [0, ""])[1].toLowerCase()} bulbs, ${(FIN_LUX.find(([v]) => +v === fb.lux) || [0, "normal"])[1].toLowerCase()}`);
       renderAct(); return; }
+    const pi = e.target.closest("[data-finpicimg]");
+    if (pi && actId && actId.startsWith("fin:")) { e.stopPropagation(); const hex = finPicAt(pi, e); if (hex) { const [, room, s] = actId.split(":"); finSet(room, +s, hex); renderAct(); } return; }
     const b = e.target.closest("[data-finc],[data-finf],[data-finsc],[data-finundo],[data-fincopy],[data-finpaste]"); if (!b || !actId || !actId.startsWith("fin:")) return;
     e.stopPropagation(); const [, room, s] = actId.split(":");
     if (b.dataset.finsc) finScope = b.dataset.finsc;
@@ -188,7 +212,7 @@ if (act) {
     else finSet(room, +s, b.dataset.finc || null);
     renderAct();
   }, true);
-  act.addEventListener("change", e => { if (e.target.dataset.finany && actId && actId.startsWith("fin:")) { const [, room, s] = actId.split(":"); finSet(room, +s, e.target.value); renderAct(); } });
+  act.addEventListener("change", e => { if (e.target.dataset.finpic) { finPicLoad(e.target.files && e.target.files[0]); return; } if (e.target.dataset.finany && actId && actId.startsWith("fin:")) { const [, room, s] = actId.split(":"); finSet(room, +s, e.target.value); renderAct(); } });
   act.addEventListener("pointerdown", e => { if (e.target.closest("[data-finhold]")) { e.preventDefault(); finHold(true); } });
   for (const ev of ["pointerup", "pointerleave", "pointercancel"]) act.addEventListener(ev, () => finHold(false));
   act.addEventListener("keydown", e => { if ((e.key === " " || e.key === "Enter") && e.target.closest("[data-finhold]")) { e.preventDefault(); finHold(true); } });
