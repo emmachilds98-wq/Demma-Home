@@ -59,10 +59,11 @@ first thing to build (F1), and it's all in the build: the rooms' outlines are al
    default is the room. It answers the paint apps' top complaint in two taps.
 4. **Undo** in the toast ("Bedroom 2: walls Card Room Green · Undo"), and **As it is**, a button you hold down: while held, the house as
    it is today; let go, your choice. (A spring-loaded mode: you can never get stuck in it.)
-5. **One fact on each swatch:** the name in their words ("Your pale mint") and, held or hovered, its brand, LRV and price. Nothing more.
-6. **Schemes:** every choice lands in the current scheme ("Our plan" to start). Name another, switch between them in the dock's Look
+5. **Colours that go with it:** under a picked paint, a short row of paints that suit it (section 3.4). One tap tries one.
+6. **One fact on each swatch:** the name in their words ("Your pale mint") and, held or hovered, its brand, LRV and price. Nothing more.
+7. **Schemes:** every choice lands in the current scheme ("Our plan" to start). Name another, switch between them in the dock's Look
    panel, which becomes the whole house's (today it's only the living room's): *A room's scheme*, *Copy to another room*, *Send to us*.
-7. **The payoff, at the end:** Send lists what changed and **what it takes**: "Bedroom 2, walls: Card Room Green, 2 coats, 31 m², 2 × 2.5
+8. **The payoff, at the end:** Send lists what changed and **what it takes**: "Bedroom 2, walls: Card Room Green, 2 coats, 31 m², 2 × 2.5
    L, about £90". The model knows every face's area, so litres and square metres come from it, not a guess. (An option stays an option:
    it goes into the plan's Buy list only when the client says "make it the plan", as `CLAUDE.md`'s core-vs-options rule says.)
 
@@ -78,6 +79,9 @@ this widens them from the living room to the house.
 | Floor | carpets (grey, oatmeal, ...), laminate, oak boards, tiles, a tint each | the texture library, tinted |
 | Ceiling light | pendant, flush, spotlights, a shade style | turned shapes (`o.lathe`, as the pendants now) |
 | Bulb | warm 2700 K, neutral 3000 K, cool 4000 K, brightness | the room's light colour and strength |
+| Wallpaper and patterns (F9) | wallpapers (name, maker, repeat, roll size, price), a few patterns (stripes, panels, a mural) on any wall | the pattern's photo at its real repeat, tinted where it allows |
+| Furniture, every room (F10) | move, turn, swap or add a piece in any room; the catalogue Edit room has today | the house's pieces as parts (as the doors are) |
+| The outside (F12) | the front door's outside, the window frames, our fences' stain, the garden's lawn, paths and plants | the outside's materials, through the same palette |
 | Later (F8) | door handles, blinds and curtains, radiators, worktops, wall tiles | the same card and tray |
 
 Each entry: its name, where it's from, its price and a link (`fit.SOURCES` style). A new paint or carpet is **a line of data**, never
@@ -104,6 +108,23 @@ code.
   `S.walls`, `S.ceil`, `S.skirt` become the same rows (its walls are surfaces too), so the living room's Look and the house's are one.
 - **The living room** keeps every option it has (the feature wall, the oak, the decor, the lights' sliders); its paints move into the
   catalogue, the client's words kept ("pale mint", "artisan oak").
+
+### 3.4 The four more (F9–F12)
+
+- **Wallpaper and patterns (F9):** in the same tray as the paints, under This wall (wallpaper is mostly one wall). Drawn at its real repeat
+  (its maker's figure), lined up from the wall's corner. What it takes counts rolls, not litres: the wall's height and width, the repeat and
+  the roll's size, plus one roll spare. Patterns from photos with their source, as the textures are now (`house/SOURCES.md`).
+- **Furniture in every room (F10):** Edit room's moves (drag, turn, swap, add from its catalogue: `13_edit_room.js` `CATALOGUE`) in every
+  room, not just the living room. Today the house's furniture is merged into its floor, so a piece that can move becomes its own part, as
+  the doors did in V1.26; only when it's tapped, so the draws stay inside a phone's 600. The walk and the checks read where it now stands
+  (a moved bed is solid where it stands). Sent as rows `{item, x, z, turn}` with the size edits (V1.50), folded in by `pull_edits.py`. A
+  move is an option to look at; it goes into the plan only when the client says so.
+- **Colours that go with it (F11):** for each paint in the catalogue, the colours its own maker suggests with it (Farrow & Ball, Little
+  Greene and Dulux publish these), entered by hand with the source; for any colour, a lighter and a darker of the same shade for the
+  ceiling and the woodwork. A short row under the picked paint, never a page of them.
+- **The outside (F12):** the front door's outside face, the window frames, our own fences' stain, the lawn, paths and the garden's
+  plants, through the same tap, tray and palette. Only ours: next door's and the street stay as they are. Privacy holds (`CLAUDE.md`):
+  colours and finishes only, nothing that names the house or where it is.
 
 ## 4. Why this shape (the design reasons, in brief)
 
@@ -135,5 +156,10 @@ code.
 | F6 | Schemes and sending | Not started | Name, switch and copy schemes (the dock's Look, the whole house); Send rows; `pull_edits.py` → `client_finishes.json`; a colour picked from a photo |
 | F7 | What it takes | Not started | Send's litres, m² and rough cost from the surfaces' areas; into the Buy list only when the client makes a scheme the plan |
 | F8 | The living room joined, more slots | Not started | The living room's Look on the same rows (pixel for pixel as before); then handles, blinds, radiators, worktops, tiles |
+| F9 | Wallpaper and patterns | Not started | Wallpapers and patterns in the tray (This wall), at their real repeat; What it takes counts rolls |
+| F10 | Furniture in every room | Not started | Edit room's move, turn, swap and add in any room; a tapped piece becomes its own part; the walk and the checks follow it; rows sent and folded in |
+| F11 | Colours that go with it | Not started | The makers' own suggested colours per paint (with sources), a lighter and darker for any colour; a short row under the picked paint |
+| F12 | The outside | Not started | The front door's outside, the window frames, our fences, lawn, paths and plants; ours only |
 
-**Needs the client:** the paints, carpets and fittings they'd like in the catalogue to start (names or photos), and which room first.
+**Needs the client:** the paints, carpets and fittings they'd like in the catalogue to start (names or photos), and which room first; for
+F9, any wallpapers they like (name or photo); for F12, a photo of the front door from outside if they'd like it matched first.
