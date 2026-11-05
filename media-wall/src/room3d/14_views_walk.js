@@ -55,7 +55,8 @@ let SOLID = null;
 const solidDirty = () => { SOLID = null; };
 function solidBoxes() {
   if (SOLID) return SOLID;
-  const objs = [G.sofa, S.drawers ? G.unit_out : G.unit_in, cab, ...Object.values(MOV).map(m => m && m.pivot), ...Object.values(BES || {}), ...Object.values(SUGG_G)];
+  // V1.57: not the drawers in the stairs' bottom steps (you walk on them: they're the treads), their box stood across the stairs' foot
+  const objs = [G.sofa, S.drawers ? G.unit_out : G.unit_in, cab, ...Object.values(MOV).map(m => m && m.pivot), ...Object.values(BES || {}), ...Object.entries(SUGG_G).filter(([k]) => k !== "stairdrawers").map(([, g]) => g)];
   SOLID = [];
   for (const o of objs) {
     if (!o || !o.isObject3D || !shown(o)) continue;
@@ -81,9 +82,12 @@ function hsolidSet(fk, F) {
   for (const L of F.lathes || []) { const r = Math.max(...L.p.map(q => q[0])), hs = L.p.map(q => q[1]);
     b.push([L.c[0] - r * L.s[0], L.c[1] + Math.min(0, ...hs), L.c[2] - r * L.s[1], L.c[0] + r * L.s[0], L.c[1] + Math.max(...hs), L.c[2] + r * L.s[1]]); }
   const skin = new Set(["ceiling", "artex"]), w = [];   // V1.32: a walk ignores the ceilings' skins (each has a slab or the roof over it;
-  for (const [m, list] of Object.entries(F.boxes || {})) if (!NOSOLID.has(m) && !skin.has(m)) for (const q of list) w.push(q);   // the lower store's runs over the flight)
-  for (const q of b.slice(b.length - (F.lathes || []).length)) w.push(q);
-  HSOLID[fk] = { b, w, p: (F.prisms || []).filter(P => !NOSOLID.has(P.m)) };
+  // V1.57: and the chairs and stools (the office's stood in its doorway, a step in: you'd push past one), not the eye's view of them
+  const tags = F.tags || [], soft = t => t != null && t >= 0 && /\.(chairs?|stools?)$/.test(tags[t] || "");
+  for (const [m, list] of Object.entries(F.boxes || {})) if (!NOSOLID.has(m) && !skin.has(m)) { const bt = (F.bt || {})[m] || []; list.forEach((q, i) => { if (!soft(bt[i])) w.push(q); }); }   // the lower store's runs over the flight)
+  const nl = (F.lathes || []).length; b.slice(b.length - nl).forEach((q, i) => { if (!soft(F.lathes[i].t)) w.push(q); });
+  const p = (F.prisms || []).filter(P => !NOSOLID.has(P.m));
+  HSOLID[fk] = { b, w, p, pw: p.filter(P => !soft(P.t)) };
   hLast = null;
 }
 function polyNear(pts, u, w, r) {          // inside the outline, or within r of its edge
@@ -100,7 +104,7 @@ function hBlocked(x, y, z, r = EYE_R, all = false) {    // room cm; all: the flo
   for (const S_ of Object.values(HSOLID)) {
     if (!S_.g || (!all && !shown(S_.g))) continue;
     for (const q of all ? S_.w : S_.b) if (x > q[0] - r && x < q[3] + r && y > q[1] - r && y < q[4] + r && z > q[2] - r && z < q[5] + r) return true;
-    for (const P of S_.p) {
+    for (const P of (all ? S_.pw || S_.p : S_.p)) {
       const [a, uw] = P.axis === "x" ? [x, [z, y]] : P.axis === "z" ? [z, [x, y]] : [y, [x, z]];
       if (a > P.a - r && a < P.b + r && polyNear(P.pts, uw[0], uw[1], r)) return true;
     }
@@ -137,7 +141,7 @@ const FLIGHT = () => LIV().flight;
 function livSolids() {                      // room cm [x0, y0, z0, x1, y1, z1]: its walls (the door's gap), the flight's open side, the ceiling, the pipe box; what stands in it
   const L = LIV(), b = L.solids.slice(), d = L.door;
   if (!doorOpen(HPARTS["door.living_door"])) b.push([d.a, -60, d.line, d.b, d.h, d.line + 6]);   // its door shut (it opens as you reach it)
-  for (const q of solidBoxes()) b.push([-q.max.x / M, q.min.y / M, q.min.z / M, -q.min.x / M, q.max.y / M, q.max.z / M]);   // three's x flipped
+  for (const q of solidBoxes()) b.push([-q.max.x / M + 12, q.min.y / M, q.min.z / M + 12, -q.min.x / M - 12, q.max.y / M, q.max.z / M - 12]);   // three's x flipped; V1.57: without the eye's 12 cm (the body has its own 18: the two closed the stairs' foot)
   return b;
 }
 const livFloors = () => LIV().floors;      // its floor, each tread and the top landing (to walk on, not solid: a body rises onto them)
@@ -147,11 +151,17 @@ function livBlocked(x, y, z, r) {
   for (const q of livSolids()) if (x > q[0] - r && x < q[3] + r && y > q[1] - r && y < q[4] + r && z > q[2] - r && z < q[5] + r) return true;
   return false;
 }
-function bodyBlocked(x, feet, z) {
-  for (const [h, r] of [[55, 18], [105, 18], [STAND_EYE, 12]]) if (hBlocked(x, feet + h, z, r, true) || livBlocked(x, feet + h, z, r)) return true;   // the head 12 (a doorway's head clears it from the last stair)
+const BODY = [[55, 18], [105, 18], [STAND_EYE, 12]];
+function bodyBlocked(x, feet, z, hs = BODY) {
+  for (const [h, r] of hs) if (hBlocked(x, feet + h, z, r, true) || livBlocked(x, feet + h, z, r)) return true;   // the head 12 (a doorway's head clears it from the last stair)
   return false;
 }
-function floorAtCm(x, z, feet) {            // the top of what's underfoot: the highest at or under a step up (24: the stairs' 20, not a bed's base: V1.53)
+function floorAtCm(x, z, feet) {            // V1.57: a foot, not a point: a hairline gap in a doorway's floor (bedrooms 2 and 3, the master) stopped a walk dead
+  const f = floorAt1(x, z, feet); if (f > feet - 30) return f;
+  let b = f; for (const [dx, dz] of [[8, 0], [-8, 0], [0, 8], [0, -8]]) b = Math.max(b, floorAt1(x + dx, z + dz, feet));
+  return b > feet - 30 ? b : f;
+}
+function floorAt1(x, z, feet) {             // the top of what's underfoot: the highest at or under a step up (24: the stairs' 20, not a bed's base: V1.53)
   let best = -Infinity;
   const under = q => { if (x > q[0] && x < q[3] && z > q[2] && z < q[5] && q[4] <= feet + 24 && q[4] > best) best = q[4]; };
   for (const S_ of Object.values(HSOLID)) if (S_.g) S_.b.forEach(under);
@@ -167,7 +177,11 @@ function walkMove(side, fwd, turn, dt) {    // -1..1 each; true if the eye moved
   const sp = 140 * dt * (WALK.fast ? 2.2 : 1), sd = new THREE.Vector3(-d.z, 0, d.x);   // V1.53: Shift hurries
   const mv = d.clone().multiplyScalar(fwd * sp).add(sd.multiplyScalar(side * sp));    // cm in three's axes
   let x = x0 - mv.x, z = z0 + mv.z;                                                    // room cm (x flipped)
-  const blk = (x_, z_) => bodyBlocked(x_, Math.max(WALK.feet, floorAtCm(x_, z_, WALK.feet)), z_);   // V1.38: tested where it will stand, a step up taken
+  const blk = (x_, z_) => { const f_ = floorAtCm(x_, z_, WALK.feet);   // V1.38: tested where it will stand, a step up taken
+    if (!(f_ < WALK.feet - 6 && f_ > WALK.feet - 45)) return bodyBlocked(x_, Math.max(WALK.feet, f_), z_);
+    // V1.57: a step down: the chest and head where they'll be (tested a step higher, the living room's stairs over the lower stairs met your
+    // head), the knee where it is (a step lower, it met the edge of the step just left)
+    return bodyBlocked(x_, f_, z_, BODY.slice(1)) || bodyBlocked(x_, WALK.feet, z_, BODY.slice(0, 1)); };
   /* V1.55, the client: "on mobile version I tried to walk into the first floor bedroom two and clipped into the living room without wanting
      to": heading from the top of the living room's stairs for bedroom 2's door, the wall beside the stairs stopped the walk and its slide
      along that wall took it down the stairs, a tread at a time, into the living room. A step down is now only taken on purpose: never by a
@@ -198,7 +212,7 @@ function walkMove(side, fwd, turn, dt) {    // -1..1 each; true if the eye moved
   const fl = floorAtCm(x, z, WALK.feet);
   if (fl > -Infinity && fl > WALK.feet - 400) WALK.feet += (fl - WALK.feet) * Math.min(1, dt * 12);
   const ny = (WALK.feet + STAND_EYE) * M, moved = Math.abs(x - x0) + Math.abs(z - z0) > 1e-4 || Math.abs(ny - cam.y) > 1e-5 || !!turn;
-  if (!moved) return false;
+  if (!moved) { walkDoors(x0, WALK.feet, z0); return false; }   // V1.57: a shut door you're stopped against opens too (it opened only once a step had gone)
   const delta = v3(x, 0, z).sub(v3(x0, 0, z0)); delta.y = ny - cam.y;
   cam.add(delta); controls.target.add(delta); hLast = [x, ny / M, z];
   walkRoom(x, WALK.feet, z); walkDoors(x, WALK.feet, z);
