@@ -220,11 +220,11 @@ function photoInto(tex, k, f, match = true) {
   });
 }
 const flatNormal = () => canvasTex(4, 4, (g, w, h) => { g.fillStyle = "#8080ff"; g.fillRect(0, 0, w, h); }, false);
-const OAK_NRM = flatNormal(), CORD_NRM = flatNormal(), PLASTER_NRM = flatNormal();
+const OAK_NRM = flatNormal(), CORD_NRM = flatNormal(), ARTEX_NRM = flatNormal();
 CORD_NRM.repeat.set(1.44, 0.6);          // the photo's 100 ribs a copy: 144 across a cushion, as the drawn cord's
-PLASTER_NRM.repeat.set(0.625, 0.625);    // 1.6 m of plaster a copy
+ARTEX_NRM.repeat.set(8, 8);              // V2.2: the living room's ceiling in artex (the house's stipple, 0.5 m a copy on a ~4 m piece)
 photoInto(OAK_TEX, "lr_oak", "map"); photoInto(OAK_NRM, "lr_oak", "nor", false);
-photoInto(HESSIAN, "lr_hessian", "map"); photoInto(CORD_NRM, "lr_cord", "nor", false); photoInto(PLASTER_NRM, "lr_plaster", "nor", false);
+photoInto(HESSIAN, "lr_hessian", "map"); photoInto(CORD_NRM, "lr_cord", "nor", false); photoInto(ARTEX_NRM, "artex", "nor", false);
 photoInto(CARPET, "carpet_grey", "map"); photoInto(OATMEAL, "carpet", "map");   // the house's Carpet012, in your grey and the oatmeal
 // v16: the client's light box is an IKEA OBEGRÄNSAD: a black panel with a 16 x 16 grid of white LEDs that shows blocky black-and-white
 // pictures, "like pharmacy LED ads". Drawn showing a pixel music note; the unlit LEDs are dark grey dots on the black face.

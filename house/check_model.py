@@ -266,7 +266,7 @@ check("kitchen: the wall cupboards: 2 left of the oven 5 from the wall, 3 right,
       f"left {wu_['east'][0][0]}–{wu_['east'][0][1]} ×{wu_['east'][0][2]}, right {wu_['east'][1][0]}–{wu_['east'][1][1]} ×{wu_['east'][1][2]}, front ×{wu_['south'][0][2]}")
 # v66: the stairs and the hall line up with the living room's measured door and flight (the client)
 st = Mo.stair(); fs = next(r for r in Mo.rooms("first") if r["id"] == "first_stairs")
-check("stairs: both stairwells over the living room's flight (59 wide)", st["x0"] == Gm.STAIR_X[0] and fs["x0"] == Gm.STAIR_X[0], f"lower flight x {st['x0']:.0f}–{st['x1']:.0f}, the first floor's stairwell from {fs['x0']:.0f}, the flight {Gm.STAIR_X[0]:.0f}–{Gm.STAIR_X[1]:.0f}")
+check("stairs: both stairwells over the living room's flight (59 wide; the first floor's 10 wider, the client)", st["x0"] == Gm.STAIR_X[0] and fs["x0"] == Gm.STAIR_X[0] - 10, f"lower flight x {st['x0']:.0f}–{st['x1']:.0f}, the first floor's stairwell from {fs['x0']:.0f}, the flight {Gm.STAIR_X[0]:.0f}–{Gm.STAIR_X[1]:.0f}")
 check("hall: floor all across the living room's door", Gm.DOOR_X[1] <= Gm.STAIR_X[0] - 2.2, f"the door x {Gm.DOOR_X[0]:.1f}–{Gm.DOOR_X[1]:.1f}, the stairs' wall from x {Gm.STAIR_X[0] - 2.2:.1f}")
 # 11. v65: the cupboards either side of the porch; v69: the garage side's the meters, the other the bins (the client)
 rs = {r["id"]: r for r in Mo.rooms("ground")}

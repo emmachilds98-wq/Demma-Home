@@ -13,11 +13,20 @@ const SUNCFG = { lux: 80, out: 0.5 };   // tuned on stills: the bars' shadows re
    world so a brick is a brick on every wall: stretcher-bond brick in the photos' reds, concrete roof tiles in rows, the dormer's hung
    tiles, lawn, concrete, paving, road, carpet, the kitchen's floor tiles, boards. Each: the canvas and the metres it covers */
 const HTEX = {}, HI_T = new Set(["paint", "ceiling", "stone", "marble", "metro", "tile_w", "tile_f", "pine", "oak", "birch", "door_wood", "chalk"]);
+/* V2.2, the client: "make sure ceilings are all white with ability to customise other than our living room picks so far": the house's
+   ceilings (flat and artex) white, or the colour picked in View (the living room's ceiling keeps Look's) */
+function hceilApply() {
+  if (!HMATS) return; const hex = /^#[0-9a-f]{6}$/i.test(S.hceil || "") ? S.hceil : null;
+  for (const k of ["ceiling", "artex"]) { const m = HMATS[k]; if (!m) continue;
+    if (!m.userData.c0) m.userData.c0 = m.color.clone();
+    if (hex) m.color.set(hex).multiplyScalar(m.map ? 1 / 0.95 : 1); else m.color.copy(m.userData.c0); }
+}
 function houseTex(k) {
   if (k in HTEX) return HTEX[k];
+  if (k === "paint") return (HTEX[k] = null);   // V2.2, the client: "ensure walls are all smooth": flat emulsion, no plaster relief
   /* v70 (BUILD_SPEC phase 3): CC0 photo-textures (Poly Haven, house/SOURCES.md) where we have them, inline so the shared page shows them
      too (loading from elsewhere failed there in v50); the drawn ones below stay for everything else and as the fallback */
-  const pkey = { party: "brick", soldier: "brick", pillow: "duvet", mattress: "duvet" }[k] || k, pm = PMETA[pkey];   // V1.21: the bedding's one cotton
+  const pkey = { party: "brick", soldier: "brick", pillow: "duvet", mattress: "duvet", ceiling: "artex" }[k] || k, pm = PMETA[pkey];   // V1.21: the bedding's one cotton
   if (pm && pm.map) {   // V1.9: its mean colour and a flat relief until the photos land (loadPhotos), then the photo in the same texture
     const img = (f, srgb, fill) => { const t = canvasTex(4, 4, g => { g.fillStyle = fill; g.fillRect(0, 0, 4, 4); }, srgb);   // V1.11: as sharp at a slant as the card allows (was 4)
       whenPhoto(pkey, f, src => { decodeImg(src).then(im => { texSet(t, im); reshadow(); dirty(); }); }); return t; };
@@ -129,10 +138,6 @@ function houseTex(k) {
       g.fillStyle = gr; g.fillRect(k * bw, 0, bw, h); }
     for (let k = 0; k < 160; k++) { g.fillStyle = `rgba(${rnd() < 0.5 ? "70,55,40" : "200,180,150"},${0.06 + rnd() * 0.1})`; g.fillRect(rnd() * w, rnd() * h, 1 + rnd() * 1.5, 30 + rnd() * 140); }
     for (const yy of [0.12, 0.88]) { g.fillStyle = "rgba(0,0,0,0.12)"; g.fillRect(0, h * yy, w, 6); } }];
-  T.paint = [0.8, 0.8, (g, w, h) => { g.fillStyle = "#f1ede5"; g.fillRect(0, 0, w, h);   // emulsion, a roller's stipple
-    for (let i = 0; i < 14; i++) { const x = rnd() * w, y = rnd() * h, r = 40 + rnd() * 90, gr = g.createRadialGradient(x, y, 1, x, y, r);   // v72 (B3): the roller's faint laps
-      gr.addColorStop(0, rnd() < 0.5 ? "rgba(255,255,255,0.05)" : "rgba(200,192,178,0.04)"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.fillRect(x - r, y - r, 2 * r, 2 * r); }
-    noise(g, w, h, 16000, 0.06, ["#d9d3c7", "#ffffff"]); }];
   T.ceiling = [0.6, 0.6, (g, w, h) => { g.fillStyle = "#f3f2ee"; g.fillRect(0, 0, w, h); noise(g, w, h, 26000, 0.14, ["#d6d3cb", "#ffffff", "#e6e3dc"]); }];   // textured (the photos' artex)
   T.pine = [0.9, 0.5, (g, w, h) => { grain(g, w, h, "#c99a55", "rgba(140,90,40,", 80, 18);
     for (let i = 0; i < 3; i++) { const x = rnd() * w, y = rnd() * h; const r = g.createRadialGradient(x, y, 1, x, y, 10 + rnd() * 8); r.addColorStop(0, "rgba(90,55,25,0.8)"); r.addColorStop(1, "rgba(90,55,25,0)"); g.fillStyle = r; g.fillRect(x - 20, y - 20, 40, 40); } }];
@@ -462,8 +467,8 @@ function buildHouse() {
       const rk = (H3.depth_rank || {})[k] ?? 3;   // V1.31 (U6): where faces lie in one plane the higher rank is drawn (house/model.py depth_rank); constant, so nothing shows through at a slant
       if (rk) { m.polygonOffset = true; m.polygonOffsetFactor = 0; m.polygonOffsetUnits = -2 * rk; }
       m.clippingPlanes = []; m.userData.hk = k; return m; })());
-    HMATS = m3; blindsApply();
-    const put = (g, geos, m) => { if (!geos.length) return; const me = new THREE.Mesh(worldUV(mergeGeometries(geos), m.userData.hk), m); me.receiveShadow = true;
+    HMATS = m3; blindsApply(); hceilApply();
+    const put = (g, geos, m) => { if (!geos.length) return; const me = new THREE.Mesh(worldUV(mergeGeometries(geos), m.userData.hk), m); me.receiveShadow = m.userData.hk !== "stairpaint";   // V2.2: the stair wall one even colour (the landing's edge drew a hard band)
       me.castShadow = !m.transparent; g.add(me); geos.forEach(q => q.dispose()); };   // v69: the house's walls and pieces cast the sun's shadow (as the living room's)
     const mx = new THREE.Matrix4();
     /* v69 (B4), the client: "more realistic like our living room": furniture, fittings and soft things with rounded edges (cm by
