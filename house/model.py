@@ -1983,7 +1983,10 @@ def hall(o):
         for k in range(n):
             yy = y + 6 + k * (h - 8) / n
             o.box("black", x0 + 1.5, yy, z0 + 1.5, x1 - 1.5, yy + 1, z1 - 1.5)
-            o.box(("cloth4", "cloth0", "cloth5", "duvet")[k % 4], x0 + 3, yy + 1, z0 + 3, x1 - 3, yy + 9, z1 - 3)
+            sm = ("shoe_black", "shoe_white", "shoe_tan", "shoe_grey")[(k + int(x0)) % 4]   # V2.22 (REAL_PLAN R4): a pair of shoes, not a bundle
+            zc_ = (z0 + z1) / 2; sl = min(2.3, (z1 - z0 - 3) / 9.2)
+            for sx_ in ((x0 + x1) / 2 - 5.2, (x0 + x1) / 2 + 5.2):
+                o.lathe(sm, sx_, yy + 1, zc_, [(0, 0), (4.4, 0), (4.6, 1.2), (4.4, 3.4), (3.4, 5.6), (1.8, 6.6), (0, 6.8)], 1.0, sl)
     o.item("hall.radiator", "The hall radiator", "hall", kind="radiator", src="client's photo + E", data=("HALL", "radiator"), axis="z")
     r = Hh["radiator"]
     radiator(o, "z", D.WALL_HALL, 1, r["z"][0], r["z"][1], y + r["y"][0], y + r["y"][1])   # v69: on the moved wall
@@ -2038,10 +2041,11 @@ def wc(o):
         for ya_, yb_ in ((tl["y"][0], ym - 0.3), (ym + 0.3, tl["y"][1])):
             o.box("tile_w", xe - 0.2, y + ya_, za_, xe + 0.6, y + yb_, zb_)
     o.box("chrome", xe, y + 92, z0 - 32, xe + 7, y + 94, z0 - 14)                              # the roll holder
-    o.box("duvet", xe + 2, y + 80, z0 - 28, xe + 6, y + 92, z0 - 18)
+    ring = lambda cx_, cy_, r_, n=20: [(cx_ + r_ * math.cos(i * 2 * math.pi / n), cy_ + r_ * math.sin(i * 2 * math.pi / n)) for i in range(n)]
+    o.prism("paper", "z", z0 - 28, z0 - 18, ring(xe + 5.8, y + 86.5, 5.5))                    # V2.22 (REAL_PLAN R4): a roll, round, under its bar
     o.item("wc.pipes", "The pipes", "wc", kind="fitting", src="client's photo", measure=False)
-    o.box("upvc", 374.6 + 1, y + 60, zb, WIDTH - 1, y + 63, zb + 3)                             # the white pipes
-    o.box("upvc", WIDTH - 5, y + 60, zb, WIDTH - 2, y + 200, zb + 3)
+    o.prism("upvc", "x", 374.6 + 1, WIDTH - 1, [(zb + 1.5 + 1.6 * math.cos(i * math.pi / 6), y + 61.5 + 1.6 * math.sin(i * math.pi / 6)) for i in range(12)])   # the white pipes (V2.22: round)
+    o.lathe("upvc", WIDTH - 3.5, y + 60, zb + 1.5, [(0, 0), (1.6, 0), (1.6, 140), (0, 140)])
 
 
 def stair_wall(o):
@@ -2218,7 +2222,7 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "laminate": ("#a9a39a", 0.7), "oak": ("#b8844f", 0.55), "screen": ("#0d0f12", 0.15), "pc_white": ("#eeeeec", 0.3), "pc_glow": ("#dfe6ff", 0.2),
     "pegboard": ("#f4f4f2", 0.6), "ivy": ("#2f5a2b", 0.8), "blind": ("#4a4d52", 0.9), "blind_cloth": ("#4a4d52", 0.9), "books": ("#8a3b2e", 0.8), "jar": ("#d9a441", 0.4), "pot": ("#e8e3d8", 0.5),
     "carpet_grey": ("#6f6f73", 1.0), "red_gloss": ("#c8201e", 0.15), "red_back": ("#9d1714", 0.4), "cat": ("#bdbcb8", 1.0), "sisal": ("#cdb88f", 0.9),
-    "pink": ("#e8607a", 0.8), "pine": ("#c99a55", 0.55), "pine_dark": ("#7a5a30", 0.6), "knob": ("#7a5a30", 0.45), "newel": ("#f4f3ef", 0.35), "rail_white": ("#f4f3ef", 0.35), "handle_black": ("#151517", 0.4), "bin_white": ("#f1f1ef", 0.3), "paper": ("#f7f6f2", 0.9), "monitor_back": ("#202124", 0.45), "mouse": ("#1a1a1c", 0.35), "key_dark": ("#2b2c30", 0.55), "key_pink": ("#f6cddb", 0.5),
+    "pink": ("#e8607a", 0.8), "pine": ("#c99a55", 0.55), "pine_dark": ("#7a5a30", 0.6), "knob": ("#7a5a30", 0.45), "shoe_black": ("#1b1b1d", 0.45), "shoe_white": ("#ecebe6", 0.5), "shoe_tan": ("#8a5a34", 0.55), "shoe_grey": ("#6b6e73", 0.75), "newel": ("#f4f3ef", 0.35), "rail_white": ("#f4f3ef", 0.35), "handle_black": ("#151517", 0.4), "bin_white": ("#f1f1ef", 0.3), "paper": ("#f7f6f2", 0.9), "monitor_back": ("#202124", 0.45), "mouse": ("#1a1a1c", 0.35), "key_dark": ("#2b2c30", 0.55), "key_pink": ("#f6cddb", 0.5),
     "book0": ("#7a2f2f", 0.8), "book1": ("#2f4a6b", 0.8), "book2": ("#d9cfb8", 0.85), "book3": ("#3c5a3a", 0.8), "book4": ("#1f1f22", 0.7), "book5": ("#b8873d", 0.8), "wardrobe": ("#f2f1ec", 0.35), "duvet": ("#e9e6df", 0.95), "leather": ("#1f1d1d", 0.45), "check": ("#7d7e86", 0.95),
     "lawn": ("#5f7043", 1.0), "paving": ("#bdb8ae", 0.95), "road": ("#59595c", 0.95), "fence": ("#6b5644", 0.9),
 }
