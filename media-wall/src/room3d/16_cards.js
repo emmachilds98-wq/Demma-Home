@@ -55,7 +55,8 @@ function actItems(id) {     // [title, how it is now, buttons]
       btn(up ? "Lower the bed" : "Lift the bed", { hbed: up ? "down" : "up" }), ...(ROOMV() && RMODE !== "above" ? [btn("See it from above", { rmode: "above" })] : [])]]; }
   if (id.startsWith("fin:")) return finCard(id);   // V2.6: a wall's or a ceiling's colours (23_finish.js)
   if (id.startsWith("hitem:")) { const k = id.slice(6), it = HIT(k); if (!it) return null;   // V1.50: a piece in the house, its size
-    return [it.n, pieceLine(k), [btn("Change its size", { actopen: "hsize:" + k }), ...(pieceDelta(k).some(Boolean) ? [btn("As planned", { hreset: k })] : [])]]; }
+    return [it.n, pieceLine(k), [btn("Change its size", { actopen: "hsize:" + k }), ...(pieceDelta(k).some(Boolean) ? [btn("As planned", { hreset: k })] : [])], null,
+      it.k === "light" && it.r ? `<div class="r3d-fin"><span class="r3d-finlab">The bulbs</span>${finBulbTray(it.r)}</div>` : null]; }   // V2.9: a light's bulbs
   if (id.startsWith("hsize:")) { const k = id.slice(6), it = HIT(k); if (!it) return null; const c = pieceNow(k), door = it.k === "door";
     return [it.n, pieceLine(k), [btn("Done", { actopen: "hitem:" + k }), btn("As planned", { hreset: k })],
       FIELDS.filter(([f]) => !(door && (f === "h" || f === "up"))).map(([f, t]) => [f, t, cmR(c[f])])]; }
