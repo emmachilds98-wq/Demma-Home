@@ -65,6 +65,8 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
                 for b in L:
                     if b[0] <= cx <= b[3] and b[2] <= cz <= b[5] and abs(b[4] - model.FLOOR_Y[f]) <= 20: best = b[4] if best is None else max(best, b[4])
         return round(best if best is not None else model.FLOOR_Y[f], 1)
+    _cf = pathlib.Path(model.__file__).resolve().parent / "client_finishes.json"   # V2.11 (F6): the client's scheme, kept by pull_edits.py
+    e["client_finishes"] = _j.loads(_cf.read_text()).get("rooms", {}) if _cf.exists() else {}
     e["finish_floor_y"] = {f: [_floor_top(f, x0, x1, z0, z1) for rid, x0, x1, z0, z1 in _surf.PIECES[f]] for f in model.FLOOR_Y}
     e["plants"] = getattr(model.D, "PLANTS", [])                # V1.3: the gardens' plants (survey_data.PLANTS: where, how big, the source)
     e["beyond"] = getattr(model.D, "BEYOND", None)               # V1.4: past the far fence (survey_data.BEYOND): the low building, the hill

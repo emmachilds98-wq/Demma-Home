@@ -26,6 +26,7 @@ const store = {
     for (const c of COLS) cache[c] = local.load(c);
     const fromLink = readLink();
     if (fromLink) for (const [c, rows] of Object.entries(fromLink)) if (cache[c]) { Object.assign(cache[c], rows); local.save(c); }
+    if (fromLink && fromLink.finishes) { if (window.R3D && window.R3D.setFinishes) window.R3D.setFinishes(fromLink.finishes); else window.__finPending = fromLink.finishes; }   // V2.11
     db = await useCap("db");
     if (!db) return;
     const user = await useCap("user");
@@ -45,6 +46,7 @@ const store = {
   },
   shareLink() {                                            // what's on this device, for the other person (not photos)
     const pick = {}; for (const c of ["measurements", "edits", "notes", "ticks"]) if (Object.keys(cache[c]).length) pick[c] = cache[c];
+    try { const f = window.R3D && window.R3D.finishes && window.R3D.finishes(); if (f && Object.keys(f).length) pick.finishes = f; } catch (e) {}   // V2.11: the house's colours, floors and bulbs
     const enc = btoa(unescape(encodeURIComponent(JSON.stringify(pick)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
     return location.href.split("#")[0] + "#share=" + enc;
   },
@@ -101,9 +103,10 @@ document.addEventListener("change", async e => {
 document.addEventListener("click", async e => {
   if (!e.target.closest("#ms-send")) return;
   const ids = Object.keys(store.rows("measurements")).filter(id => answer(id).cm != null), ne = new Set(Object.values(store.rows("edits")).map(r => r.item)).size;
-  if (!ids.length && !ne) { say("Type a number first, or change a piece's size in the 3D."); return; }
+  let nf = 0; try { nf = Object.keys((window.R3D && window.R3D.finishes && window.R3D.finishes()) || {}).length; } catch (er) {}   // V2.11: rooms with colours
+  if (!ids.length && !ne && !nf) { say("Type a number first, or change a piece's size or a room's colours in the 3D."); return; }
   for (const id of ids) await store.put("measurements", id, Object.assign({}, answer(id), { sent: true }));
-  const n = (k, w) => `${k} ${w}${k === 1 ? "" : "s"}`, what = [ids.length && n(ids.length, "measurement"), ne && n(ne, "change")].filter(Boolean).join(" and ");   // V1.51: the 3D's changes go too
+  const n = (k, w) => `${k} ${w}${k === 1 ? "" : "s"}`, what = [ids.length && n(ids.length, "measurement"), ne && n(ne, "change"), nf && `${nf} room${nf === 1 ? "'s" : "s'"} colours`].filter(Boolean).join(" and ");   // V1.51: the 3D's changes go too
   if (mode === "shared") { say(`Sent: ${what}. The next round puts them in.`); return; }
   const url = store.shareLink();
   try { if (navigator.share) { await navigator.share({ title: "Demma's Home: measurements", url }); say("Shared."); return; } } catch (er) { if (er && er.name === "AbortError") return; }
@@ -111,6 +114,6 @@ document.addEventListener("click", async e => {
 });
 store.on(paint);
 /* V1.50 (V1_PLAN phase 3): the 3D's tap-a-piece size edit saves through the same store ("edits": {item, field, value}) */
-window.DemmaStore = { rows: store.rows, put: store.put, del: store.del, on: store.on, get mode() { return mode; } };
+window.DemmaStore = { rows: store.rows, put: store.put, del: store.del, on: store.on, shareLink: () => store.shareLink(), get mode() { return mode; } };
 store.on(c => window.dispatchEvent(new CustomEvent("demma-rows", { detail: c })));
 store.init().then(() => { paint(); window.dispatchEvent(new CustomEvent("demma-rows", { detail: "edits" })); }, paint);

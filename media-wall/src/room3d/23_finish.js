@@ -62,6 +62,16 @@ function finAt(hit) {   // a tap on a wall or a ceiling of the house: its room a
   const nx = -n.x, nz = n.z, slot = ceil ? 4 : Math.abs(nx) > Math.abs(nz) ? (nx > 0 ? 2 : 3) : (nz > 0 ? 0 : 1);
   return { room: FIN.rooms[ri - 1], slot };
 }
+/* V2.11 (F6, in part): the finishes go with Measure's Send link (measure.js) and come in from one; checked as data: rooms and slots by
+   their shape, colours as #hex, floors and bulbs from the trays' own lists */
+function finClean(o) {
+  const out = {}, floors = new Set(FIN_FLOORS.map(([k]) => k)), bulbs = new Set(FIN_BULBS.map(([v]) => v)), lux = new Set(FIN_LUX.map(([v]) => v));
+  for (const [room, sl] of Object.entries(o && typeof o === "object" ? o : {})) { if (!/^[a-z0-9_]{1,30}$/.test(room) || !sl || typeof sl !== "object") continue;
+    for (const [s, v] of Object.entries(sl)) { const k = +s, ok = k <= 4 ? /^#[0-9a-f]{6}$/i.test(v) : k === 5 ? floors.has(v) : k === 6 ? bulbs.has(v) : k === 7 ? lux.has(v) : false;
+      if (ok) (out[room] = out[room] || {})[k] = v; } }
+  return out;
+}
+function finImport(o) { const c = finClean(o); if (!Object.keys(c).length) return false; FIN_UNDO.push(JSON.stringify(S.fin || {})); S.fin = c; store.set(KEY, S); finApplyAll(); toast("Their colours, floors and bulbs"); return true; }
 function finGet(room, slot) { return ((S.fin || {})[room] || {})[slot] || null; }
 function finApplyAll() {   // what's kept, into the palette (on start, after Undo)
   if (!finSetup()) return; finish(null, "walls", null); finish(null, "ceiling", null);
