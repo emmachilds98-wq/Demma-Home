@@ -2075,6 +2075,24 @@ def upper_ceilings(o):
     o.box("ceiling", bx0, yb_, DORMER_BACK - 2, WIDTH, y + 2, DORMER_BACK)
 
 
+def ground_ceilings(o):
+    """V2.4 (FINISHES_PLAN F1), the client: "make sure ceilings are all white": the ground floor's rooms showed the first floor's slab as
+    their ceiling (its grey, and no colour could reach it): their own ceilings now, in the first floor's group (as the lower floor's are in
+    the ground's), open over the stairwell."""
+    y = FLOOR_Y["ground"] + CEIL
+    fs = next(r for r in rooms("first") if r["id"] == "first_stairs")
+    for r in rooms("ground"):
+        if r["room"] == "living":
+            continue
+        x0, x1, z0, z1 = r["x0"], r["x1"], r["z0"], r["z1"]
+        parts = [(x0, x1, z0, z1)]
+        if x1 > fs["x0"] and x0 < fs["x1"] and z1 > fs["z0"] and z0 < fs["z1"]:   # round the stairwell
+            parts = [(x0, fs["x0"], z0, z1), (fs["x0"], x1, z0, fs["z0"]), (fs["x0"], x1, fs["z1"], z1)]
+        for a, b, c, d in parts:
+            if b - a > 1 and d - c > 1:
+                o.box("ceiling", a, y - 2, c, b, y, d)
+
+
 def lower_ceilings(o):
     """The lower floor's ceilings, under the floor above (they were open to it): white, in the ground floor's group so the Lower button
     still looks in from above."""
@@ -2106,7 +2124,7 @@ def build():
             steps += [lambda: office(o), lambda: bed2(o), lambda: master(o), lambda: boiler(o), lambda: bathroom(o), lambda: music(o), lambda: landing(o)]
         steps += [lambda: chalk_doors(o, floor), lambda: pendants(o, floor), lambda: switches(o, floor), lambda: sockets(o, floor), lambda: contacts(o, floor)]
         if floor == "first":
-            steps += [lambda: first_floor_slopes(o), lambda: stair_wall(o)]
+            steps += [lambda: first_floor_slopes(o), lambda: stair_wall(o), lambda: ground_ceilings(o)]
         if floor == "ground":
             steps.append(lambda: porch(o))
         for step in steps:                                   # V1: no piece's tag runs on into the next builder

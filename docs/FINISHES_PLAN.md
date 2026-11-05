@@ -4,7 +4,8 @@ Written 5 Nov 2026 (V2.1), at the client's request: "review the repo and use res
 models to suggest a upgrade for the demma home repo to improve the way it is used in order to customise different areas of the house in
 a fluid way, ie colour of walls. light fixtures, carpet, and other options we might want."
 
-**Agents: this is a proposal until the client says go.** When they do, work the board (section 6) top to bottom, one phase a PR. The
+**Agents: the client said go (5 Nov 2026: "continue onto the next upgrade ... keep running the upgrade cycles").** Work the board
+(section 6) top to bottom, one phase a PR, merged to main when its checks pass. The
 rules in `CLAUDE.md` hold above everything here: privacy first, the old design (the 3D is the site, floating pills and panels, no
 dashboards or side menus), say less, core plan vs options, every size and price from a source.
 
@@ -149,7 +150,7 @@ code.
 
 | # | Phase | Status | What |
 |---|---|---|---|
-| F1 | Surfaces in the house file | Not started | Every wall, ceiling and floor face knows its room (`export_house.py`); each room's surfaces with their areas in `house.json` and its schema; checks: every face has a surface, every surface has faces. Nothing on the site changes |
+| F1 | Surfaces in the house file | **Done** (V2.4) | Every wall, ceiling and floor face knows its room (`export_house.py`); each room's surfaces with their areas in `house.json` and its schema; checks: every face has a surface, every surface has faces. Nothing on the site changes. V2.4: `house/surfaces.py` (a face's room 1 cm out from it, split by storey and by room; the stair wall's paint not counted twice); `house.json` rooms' `surfaces`; 4 model checks. Found and fixed on the way: the ground floor's rooms had no ceiling of their own (the slab's grey showed; `model.ground_ceilings`) |
 | F2 | The palette | Not started | The walls, ceilings and trim drawn through one palette per floor; `R3D.finish(room, surface, hex)` changes one in 1 pixel; the gallery the same to the pixel before any change |
 | F3 | Tap a surface | Not started | The card's Finish row: the swatch tray, the scope chips, Undo, hold As it is; `check_site.py` taps a wall in three rooms |
 | F4 | Floors | Not started | A room's floor its own mesh, the carpets, laminate, boards, tiles from the texture library in the tray |

@@ -353,6 +353,31 @@ check("living room: its top step a step from the first floor", 0 <= Mo.FLOOR_Y["
 _hi = [q for q in _L["solids"] if q[4] > Mo.FLOOR_Y["first"] + 50 and q[0] < Mo.WIDTH - 1]
 check("living room: nothing of it over its ceiling (the first floor walks there)", not _hi, f"{len(_hi)} too high" if _hi else f'{len(_L["solids"])} solids, {len(_L["floors"])} floors')
 
+# V2.4 (docs/FINISHES_PLAN.md F1): every room's surfaces, each face in a room, and the areas fit the room (a ceiling and a floor about its
+# outline's area; its walls about its outline's length times the ceiling's height)
+import surfaces as _S
+_sr, _sz = _S.by_room(), Mo.room_sizes()
+_rooms = [rid for rid, r in _sz.items() if r["name"]] + ["living"]
+_miss = [rid for rid in _rooms if not _sr.get(rid) or not _sr[rid]["walls"] or not _sr[rid]["floor"]]
+check("surfaces: every room has walls and a floor, with their areas (F1)", not _miss, f"{len(_rooms)} rooms" + (f"; missing {_miss}" if _miss else ""))
+_noc = [rid for rid in _rooms if not _sr.get(rid, {}).get("ceiling") and rid != "lower_stairs"]   # the strip under the flight: the flight is its ceiling
+check("surfaces: every room has a ceiling (the strip under the lower flight has the flight)", not _noc, f"missing {_noc}" if _noc else "all")
+def _area(rid):
+    return sum((p["x1"] - p["x0"]) * (p["z1"] - p["z0"]) for f in Mo.FLOOR_Y for p in Mo.rooms(f) if (_S.JOIN.get(p["room"], p["room"])) == rid) / 1e4
+_off = []
+for rid in _rooms:
+    if rid == "living" or not _sr.get(rid):
+        continue
+    A = _area(rid)
+    for k in ("floor", "ceiling"):
+        v = (_sr[rid].get(k) or {}).get("area")
+        if v is not None and A > 0.2 and not (0.55 * A <= v <= 1.15 * A):
+            _off.append(f"{rid} {k} {v} of {A:.2f}")
+check("surfaces: each floor and ceiling about its room's area", not _off, "; ".join(_off) if _off else f"{len(_rooms)} rooms")
+_empty = [f"{rid} {s_.get('side', k)}" for rid, R in _sr.items() for k in ("walls", "ceiling", "floor") for s_ in (R[k] if k == "walls" else [R[k]] if R[k] else [])
+          if s_["faces"] < 1 or s_["area"] <= 0]
+check("surfaces: every surface has faces and an area", not _empty, "; ".join(_empty) if _empty else f"{sum(len(R['walls']) + bool(R['ceiling']) + bool(R['floor']) for R in _sr.values())} surfaces")
+
 w = max(len(r[1]) for r in rows)
 for st_, n, note in rows:
     print(f"{st_:4}  {n:<{w}}  {note}")
