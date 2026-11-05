@@ -243,7 +243,7 @@ HALL = dict(door=(410.0, 465.0), door_leaf=False, mirror=dict(z=(354.4, 390.4), 
             radiator=dict(z=(276.4, 364.4), y=(15.0, 72.0)), switch_z=368.0, tapestry=dict(z=None, y=(3.0, 233.0)),
             src="client's photos (what goes where) + standard sizes (E)")
 # the landing: a white post-and-rail balustrade along the stairwell, the loft hatch, a pendant and a smoke alarm, the bathroom door's fanlight.
-LANDING = dict(rail_x=(403.0, 408.0), rail_h=92.0, hatch=dict(x=(300.0, 355.0), z=(115.0, 185.0)), fanlight=(205.0, 228.0),   # v73: the hatch overhead near the office end (both landing photos)
+LANDING = dict(rail_x=(393.0, 398.0), rail_h=92.0, hatch=dict(x=(300.0, 355.0), z=(115.0, 185.0)), fanlight=(205.0, 228.0),   # v73: the hatch overhead near the office end (both landing photos)
                src="client's photos + standard sizes (E: balustrade 900 high, Approved Document K)")
 PENDANTS = {"hall": (345.0, 355.0), "landing": (345.0, 120.0), "bed3": (375.0, 372.0), "wc": (420.0, -215.0)}
 
@@ -296,7 +296,8 @@ WALL_HALL = 303.5     # the hall's face of the wall to the garage (M: the living
 # bedroom 2's door with it, still in the corner; the master's door and its gaps as they were. Bedroom 2's door's nook gone (BED2_1 None).
 FIT = {"first": {"bathroom": dict(x1=408.0, z1=-38.8), "bed2": dict(z1=79.5), "airing": dict(x0=202.0, z0=58.5, z1=143.5), "master": dict(x1=202.0, z0=85.5),
                  "master_b": dict(x0=202.0, z0=149.5, z1=268.1), "bed3": dict(x0=263.7),
-                 "landing": dict(x1=408.0, z0=-32.5), "first_stairs": dict(x0=408.0, z0=-41.0, z1=196.0), "landing_top": dict(x0=408.0, z0=196.0)},
+                 "landing": dict(x1=398.0, z0=-32.5), "first_stairs": dict(x0=398.0, z0=-41.0, z1=196.0), "landing_top": dict(x0=398.0, z0=196.0)},
+                 # V2.2, the client: "bannister could be moved over slightly too. the stairwell is wider. another 10cm maybe": 10 wider (was 408)
                  # v66: the stairwell over the flight; v67 (the landing photos): open to the flight's top step (the plans read 170)
        "ground": {"hall": dict(x0=WALL_HALL), "front_store_e": dict(x0=WALL_HALL), "garage": dict(x1=round(WALL_HALL - 12.6, 1))},
        "lower": {"kitchen": dict(z1=-23.8), "kitchen_1": dict(z0=-23.8), "kitchen_2": dict(z0=-23.8), "kitchen_cupboard": dict(z0=-23.8),
@@ -327,7 +328,8 @@ FIT_DOORS = {"kitchen_door": (-115.5, -52.1),   # V1.20, the client: "kitchen do
 # the house end, the handle at the street end, opening into the porch. The front door into the hall, its lever at the a end (V1.47: the
 # client, and photo_hall_to_front_door_30oct: on the left from inside; it was drawn at the b end, mirrored).
 BATH_DOOR_GAP = 15.0
-DOOR_HANG = {"bed2_door": dict(hinge="b", open=1), "bath_door": dict(hinge="a", deg=None),
+# V2.2, the client (a picture from inside the WC): "door opens into the bathroom towards the outside wall": hinged at its outside-wall end (b)
+DOOR_HANG = {"bed2_door": dict(hinge="b", open=1), "bath_door": dict(hinge="a", deg=None), "wc_door": dict(hinge="b"),
              "store_w": dict(hinge="a", side=-1), "store_e": dict(hinge="a", side=1), "hall_porch": dict(hinge="b", side=-1)}   # V1.47, the client: "front door's handle is on the right hand side and opens inwards" (from outside; the hall photo: on the left from inside)
 # V1.25, the client's photo of the landing doors (27 Oct): bedroom 2's frame has a moulded cap over its head, wider than its legs (E: 35 deep,
 # 25 past each leg), on the landing's side
@@ -363,8 +365,10 @@ MASTER_1 = dict(x=(202.0, 251.0), z=(268.1, 499.4))   # v73: the master past its
 SWITCHES_AT = {("master_door", "landing"): 237.4}   # v72, the client: the master's switch in the middle of the gap to the corridor's end
 # V1.59, the client: "the light switch for the bathroom is in the bathroom and is a string on the ceiling on the right as you walk in": no
 # switch on the wall by its door, a pull cord from the ceiling just inside on the right (walking in toward the back: the low-x side)
-NO_DOOR_SWITCH = {"bath_door"}
-PULL_CORDS = [dict(id="bathroom", floor="first", room="bathroom", x=302.0, z=-62.0, drop=125.0, src="client (where: their words; the cord's length E)")]
+NO_DOOR_SWITCH = {"bath_door", "wc_door"}
+PULL_CORDS = [dict(id="bathroom", floor="first", room="bathroom", x=302.0, z=-62.0, drop=125.0, src="client (where: their words; the cord's length E)"),
+              # V2.2, the client: "light switch is a rope pull on the right as you walk in like this in lower bathroom" (their picture: just inside, by the kitchen wall)
+              dict(id="wc", floor="lower", room="wc", x=384.0, z=-150.0, drop=125.0, src="client (where: their words and picture; the cord's length E)")]
 # V1.59, the client: "the stairway switch is at the bottom of the stairs on the side wall on the left" (looking down the lower stairs to
 # the WC, their picture): on the party wall at the stairs' foot, 117 up as the others
 SWITCHES_EXTRA = [dict(id="lower_stairs", floor="lower", room="lower_landing", axis="z", face=467.0, out=-1, pos=-52.0, src="client (where: their words; 117 up E)")]

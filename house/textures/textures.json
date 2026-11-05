@@ -71,12 +71,6 @@
   "url": "https://polyhaven.com/a/ribbed_corduroy",
   "licence": "CC0"
  },
- "lr_plaster": {
-  "asset": "white_plaster_02",
-  "size": 1.6,
-  "url": "https://polyhaven.com/a/white_plaster_02",
-  "licence": "CC0"
- },
  "pine": {
   "asset": "coated_pine",
   "size": 1.0,
@@ -99,18 +93,6 @@
   "asset": "oak_veneer_01",
   "size": 1.0,
   "url": "https://polyhaven.com/a/oak_veneer_01",
-  "licence": "CC0"
- },
- "paint": {
-  "asset": "white_plaster_02",
-  "size": 1.6,
-  "url": "https://polyhaven.com/a/white_plaster_02",
-  "licence": "CC0"
- },
- "ceiling": {
-  "asset": "white_plaster_02",
-  "size": 1.6,
-  "url": "https://polyhaven.com/a/white_plaster_02",
   "licence": "CC0"
  },
  "worktop": {

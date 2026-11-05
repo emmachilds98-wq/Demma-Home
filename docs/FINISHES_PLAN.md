@@ -12,7 +12,7 @@ dashboards or side menus), say less, core plan vs options, every size and price 
 
 ## 1. What we have today
 
-**The living room can be changed; nothing else can.**
+**The living room can be changed; the rest of the house, only its ceilings, all at once.**
 
 - **The living room's Look** (`room3d_page.py` `"look"`, `room3d/03_materials.js`, `room3d/19_controls.js`): five paints (`render.py`
   `PAINTS`, the client's pale mint first) plus any colour; a wall picker (six walls, a hand-written list); the ceiling and the skirting
@@ -21,7 +21,7 @@ dashboards or side menus), say less, core plan vs options, every size and price 
   `#look-` link and Save my plan.
 - **Every other room** is drawn from `house/model.py` with **one `paint` material for every room's walls**, one `ceiling`, and the floors
   from `FLOOR_FINISH` (a room → a material), all merged per floor and material (`room3d/20_go.js`, `HMATS`). The ceiling lights are one
-  standard pendant each (`model.pendants`, a rose, flex and bulb). Nothing there can be changed in the site.
+  standard pendant each (`model.pendants`, a rose, flex and bulb). The one thing that can be changed there (V2.2): **all the house's ceilings at once**, white or any colour (View → More, `S.hceil`); one colour for every room.
 - **Each option is code in three places:** a Python list (the paints, the walls, `DECOR`), the panel's HTML, and its apply function in
   the 3D. A new paint or a new floor is a code change and a round.
 - **What's ready to build on:** the photo-texture library (`house/textures/textures.json`: carpets, laminate, oak, pine, birch, tiles,
@@ -98,7 +98,8 @@ code.
 - **One material, a palette:** the walls stay one merged `paint` material per floor (no new draws), with a surface number on each corner
   of each face and a small palette picture (one pixel per surface) the shader reads its colour from. A paint change writes one pixel: no
   shader rebuilt, no geometry rebuilt, instant on the iPhones. The same for the ceilings and the trim. (`onBeforeCompile` on the existing
-  `MeshStandardMaterial`, so the plaster's relief, the sun and the shade are untouched.)
+  `MeshStandardMaterial`, so the ceilings' artex, the sun and the shade are untouched.) V2.2's house ceiling colour (`S.hceil`) becomes
+  the Whole house chip on a ceiling, and its saved choice carries over.
 - **Floors:** a room's floor is its own small mesh (about 20 rooms, about 20 draws, inside the 600 a phone's budget allows), so a carpet
   swap is a material swap. The materials are made once at start, so swapping never builds a shader.
 - **Light fittings:** the fitting is a part (as the doors are) built from a profile in the catalogue; swapping rebuilds that one

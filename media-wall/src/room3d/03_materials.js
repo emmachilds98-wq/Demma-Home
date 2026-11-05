@@ -31,7 +31,8 @@ function paintColour(ratio, ch = "wall") {
 }
 function paintMat(ratio, eggshell, both, ch = "wall") {
   const k = ratio.toFixed(2) + (eggshell ? "e" : "") + (both ? "d" : "") + ch;
-  const relief = eggshell ? {} : PHOTOS ? { normalMap: PLASTER_NRM, normalScale: new THREE.Vector2(0.18, 0.18) } : { bumpMap: WALL_BUMP, bumpScale: 0.6 };   // V1.1: real plaster
+  // V2.2, the client: "ensure walls are all smooth but ceilings have the popcorn artex type ceiling": the walls flat emulsion, the ceilings artex
+  const relief = eggshell || ch !== "ceil" ? {} : PHOTOS ? { normalMap: ARTEX_NRM, normalScale: new THREE.Vector2(0.8, 0.8) } : { bumpMap: WALL_BUMP, bumpScale: 0.6 };
   if (!paintMats.has(k)) paintMats.set(k, reg(new THREE.MeshStandardMaterial({ color: paintColour(ratio, ch), roughness: eggshell ? 0.45 : 0.92,
     ...relief, side: both ? THREE.DoubleSide : THREE.FrontSide, userData: { ratio, ch } })));
   return paintMats.get(k);
