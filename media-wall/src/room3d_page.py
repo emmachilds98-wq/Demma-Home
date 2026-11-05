@@ -389,7 +389,7 @@ body.bare .r3d-peg, .r3d.embed .r3d-peg, .r3d.editing .r3d-peg { display: none; 
 .r3d-stick i { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%; background: var(--ink, #1d2a22);
   transform: translate(var(--x, 0px), var(--y, 0px)); }
 /* V1.30 (U3): only the tools that work where you are (room3d.js brandPlace) */
-body.hv #r3d-dt-room, body.hv #r3d-dt-look, body.hv #r3d-editbtn, body.hroom .hnav { display: none !important; }
+body.hv #r3d-dt-room, body.hv #r3d-editbtn, body.hv #r3d-dp-look > :not(h2):not(#r3d-finsch), body.hroom .hnav { display: none !important; }
 @media (max-width: 899px) { body.hv .r3d-bubbles { justify-content: center; gap: 28px; } body.hv .r3d-bub { flex: 0 0 auto; } }
 /* V1.30: on a phone the small buttons share a row (six rows were the top half of the screen); the floors and rooms a row each, a fade
    where there's more to slide to */
@@ -743,7 +743,9 @@ def controls(gallery=""):
             '<button type="button" class="btn" id="r3d-plancopy"><span class="ms" aria-hidden="true">content_copy</span> Copy</button>'
             '<button type="button" class="btn" id="r3d-plansave" hidden><span class="ms" aria-hidden="true">cloud_upload</span> Save for us</button></div></div>']),
         "measure": measure_panel(),
-        "look": swatches + '<div class="grp"><span class="label">A feature wall</span><div class="seg" role="group" aria-label="A feature wall">'
+        "look": ('<div class="grp" id="r3d-finsch"><span class="label">The house\'s colours</span><div class="seg" id="r3d-finschl"></div>'
+                 '<div class="seg r3d-find"><input type="text" id="r3d-finschname" placeholder="Our scheme" aria-label="Name for the house\'s colours" maxlength="24">'
+                 '<button type="button" class="chip" id="r3d-finschsave">Save these colours</button></div></div>') + swatches + '<div class="grp"><span class="label">A feature wall</span><div class="seg" role="group" aria-label="A feature wall">'
                  '<button type="button" data-feature="breast">The breast in Green Smoke</button><button type="button" data-feature="media">The media wall in Green Smoke</button>'
                  '<button type="button" data-feature="none">All one colour</button></div></div>' + decor_main + '<details class="r3d-more r3d-fold"><summary>More: the oak, the floor, cushions, curtains</summary>' + trims + decor_g + '</details>',
     }

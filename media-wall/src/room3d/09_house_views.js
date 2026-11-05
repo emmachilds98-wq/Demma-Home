@@ -158,10 +158,10 @@ document.addEventListener("scroll", e => { if (e.target.classList && e.target.cl
 let hereRoom = null;                                   // V1.60: the room you stand in (walkRoom, goStand)
 const HERE_NAME = { lower_landing: "Lower landing", lower_stairs: "Lower stairs" };
 function brandPlace() {
-  /* V1.30 (U3): only the tools that work where you are: in the house's views Room, Look and Edit (the living room's) step aside; in the
+  /* V1.30 (U3): only the tools that work where you are: in the house's views Room and Edit (the living room's) step aside, and Look keeps only the house's colours (V2.13); in the
      house's own rooms Plan · Build · Buy too (the media wall's plan) */
   const hv = HOUSEV(S.view), hr = !!ROOMV(); document.body.classList.toggle("hv", hv); document.body.classList.toggle("hroom", hr);
-  if (hv && window.DemmaTools && DemmaTools.isOpen() && ["room", "look"].some(k => { const d = qs("#r3d-dp-" + k); return d && !d.hidden; })) DemmaTools.close();
+  if (hv && window.DemmaTools && DemmaTools.isOpen() && ["room"].some(k => { const d = qs("#r3d-dp-" + k); return d && !d.hidden; })) DemmaTools.close();
   const el = document.getElementById("brand-place"); if (!el) return;
   let t = "The living room";
   if (S.view === "house") t = { first: "The first floor", ground: "The ground floor", lower: "The lower floor" }[hfloor] || "The whole house";
