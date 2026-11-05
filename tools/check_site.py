@@ -39,6 +39,20 @@ ACCESS = """() => { const vis = el => { const r = el.getBoundingClientRect(), cs
   const c = document.querySelector(".r3d-stage canvas"), place = (document.getElementById("brand-place") || {}).textContent || "";
   return { noname: noname.slice(0, 4), label: c && c.getAttribute("aria-label").startsWith(place) ? "" : (c && c.getAttribute("aria-label")) }; }"""
 # V1.53: the first floor from overhead fits the screen (flyTo had held it to 6 m), and the figure dropped on bedroom 3 stands you there
+FIN3 = """async () => { const sl = ms => new Promise(r => setTimeout(r, ms)), cv = document.querySelector('.r3d canvas'), out = {};   // V2.6 (FINISHES F3)
+  const settle = async () => { await sl(300); for (let i = 0; i < 150 && R3D._dbg.flying; i++) await sl(200); await sl(600); };
+  const tap = (x, y) => { const r = cv.getBoundingClientRect(), o = { clientX: r.left + x, clientY: r.top + y, bubbles: true, pointerId: 1, button: 0, isPrimary: true, pointerType: 'mouse' };
+    cv.dispatchEvent(new PointerEvent('pointerdown', o)); cv.dispatchEvent(new PointerEvent('pointerup', o)); cv.dispatchEvent(new MouseEvent('click', o)); };
+  const card = () => { const a = document.querySelector('#r3d-act'); return a && !a.hidden ? a.querySelector('#r3d-act-h').textContent : null; };
+  for (const [view, name] of [['bed2', 'Bedroom 2'], ['master', 'Master bedroom'], ['kitchen', 'Kitchen']]) {
+    R3D.set({ view }); await settle(); let got = null;
+    for (const fy of [0.3, 0.2, 0.4, 0.15]) { for (const fx of [0.15, 0.85, 0.3, 0.7, 0.5]) { tap(cv.clientWidth * fx, cv.clientHeight * fy); await sl(350);
+      const h = card(); if (h && h.startsWith(name + ': the')) { got = h; break; } const c = document.querySelector('#r3d-act button'); if (h && c) c.click(); await sl(150); } if (got) break; }
+    if (got) { const sw = document.querySelector('[data-finc="#899081"]'); if (sw) sw.click(); await sl(300);
+      const kept = JSON.stringify((R3D._dbg.S.fin || {})); out[view] = [got, kept.includes('#899081')];
+      const un = document.querySelector('[data-finundo]'); if (un) un.click(); await sl(200); const c = document.querySelector('#r3d-act button'); if (c) c.click(); await sl(150); }
+    else out[view] = [null, false]; }
+  return out; }"""
 DROP = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), cv = document.querySelector('.r3d canvas');
   const settle = async () => { await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(200); await sl(300); };
   if (window.DemmaTools && DemmaTools.isOpen()) DemmaTools.close();
@@ -168,6 +182,11 @@ def main():
                 fn = pg.evaluate("() => [R3D.finish('bed2', 'walls', '#3a6b5a'), R3D.finish('bed2', 'ceiling', '#e8c0c8'), R3D.finish('nowhere', 'walls', '#000000'), R3D.finish(null, 'walls', null), R3D.finish(null, 'ceiling', null)]")
                 if fn != [True, True, False, True, True]:
                     fails.append(f"{w}: R3D.finish on bedroom 2's walls and ceiling, a room that isn't, then all back: {fn} (want [true, true, false, true, true])")
+            if not phone:                                       # V2.6 (FINISHES F3): tap a wall in three rooms, a colour, Undo
+                f3 = pg.evaluate(FIN3)
+                bad = {k: v for k, v in f3.items() if not v[0] or not v[1]}
+                if bad:
+                    fails.append(f"{w}: tapping a wall and a colour in three rooms: {f3} (want each room's walls' card, the colour kept, then undone)")
             if phone:                                           # V1.53: the floor from overhead, then the figure dropped in
                 dr = pg.evaluate(DROP)
                 if dr.get("off") or dr.get("said") != "Bedroom 3" or dr.get("view") != "office" or dr.get("mode") != "stand" or abs(dr.get("eye", 0) - 420) > 15:
@@ -196,7 +215,7 @@ def main():
         b.close()
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
-    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a piece resized from a tap, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, down to the lower floor and back, {len(fails)} failed; screenshots in _shots/")
+    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a piece resized from a tap, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, down to the lower floor and back, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
 

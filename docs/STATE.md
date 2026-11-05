@@ -2,9 +2,9 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V2.5 (5 Nov 2026)
+**Version:** V2.6 (5 Nov 2026)
 
-**The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status. **The finishes plan** (the client said go 5 Nov: tap a wall, floor or light in any room to change it): `docs/FINISHES_PLAN.md`, F1 (V2.4) and F2 (V2.5) done, F3 next.
+**The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status. **The finishes plan** (the client said go 5 Nov: tap a wall, floor or light in any room to change it): `docs/FINISHES_PLAN.md`, F1–F3 done (V2.4–V2.6), F4 (floors) next.
 
 **The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29, U5 in V1.30, U6 in V1.31, U7 in V1.32, U8 in part in V1.33, U9 in part in V1.34, U10 and U11 in V1.35–V1.37, Next 1 in part in V1.38, Next 5 in V1.39, Next 2 in part in V1.40–V1.42; its "Next" list is the work to take on).
 
@@ -51,7 +51,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   V1.59: Be there starts clear of furniture (`standIn` uses `freeSpot`); walls above the ceiling or past the living room draw as `above` (no green in the stairwell).
   V1.60: standing, the brand names the room you're in (`hereRoom`: the lower landing, not the kitchen whose view it shares). V2.0: `flyTo` clears `WALK.feet`.
   V2.1: the landing's ceiling over the stairwell (`upper_ceilings`: VOID is a floor only); the stair wall in the living room's paint up to the landing (`model.stair_wall`, `stairpaint` = a copy of the room's `w:stairs` paint); the living room's view draws the first floor above the landing's floor (`livClip`).
-  V2.2: walls flat (no plaster relief: `paintMat` relief only for `ceil`; the house's `paint` untextured), every ceiling artex (`ARTEX_NRM`; the house's `ceiling` uses the artex photo), the house's ceilings white or a colour (View → More, `S.hceil`, `hceilApply`); the stairwell 10 wider; the WC's door and pull cord. V2.3: the lower store's back wall in line with the one past the stairs' top step (`STORE_TO_STAIRS`, `footprint`). V2.4: each room's surfaces in `house.json` (`house/surfaces.py`); the ground floor's rooms' own ceilings (`ground_ceilings`). V2.5: the palette, `R3D.finish(room, surface, hex)` (`finPatch`).
+  V2.2: walls flat (no plaster relief: `paintMat` relief only for `ceil`; the house's `paint` untextured), every ceiling artex (`ARTEX_NRM`; the house's `ceiling` uses the artex photo), the house's ceilings white or a colour (View → More, `S.hceil`, `hceilApply`); the stairwell 10 wider; the WC's door and pull cord. V2.3: the lower store's back wall in line with the one past the stairs' top step (`STORE_TO_STAIRS`, `footprint`). V2.4: each room's surfaces in `house.json` (`house/surfaces.py`); the ground floor's rooms' own ceilings (`ground_ceilings`). V2.5: the palette, `R3D.finish(room, surface, hex)` (`finPatch`). V2.6: tap a wall or ceiling, its colours card (`23_finish.js`, `S.fin`).
 - **V1.53 (the client: double-click to go there, W A S D to walk, a drop-in figure, better overheads):** a double-click (`dblclick`; a
   double-tap on a phone) on any floor you see stands you there in Be there (`room3d/14_views_walk.js` `spotAt`, `goStand`, `freeSpot`;
   through a roof, the first floor down); the figure bottom right (`#r3d-peg`) drags onto the house, a ring and the room's name where it
