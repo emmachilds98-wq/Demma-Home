@@ -75,3 +75,4 @@ take one out (to `docs/HISTORY.md`) when they change their mind.
 - **The cordyline (palm) is in their garden**, by the path, not next door's (29 Oct 2026, V1.8: "the palm tree is in my garden and not next door").
 - **The alley gate** between their house and next door (25 Oct 2026, v66).
 - **No claude.ai copy of the site any more** (4 Nov 2026, V1.37): "i dont need a copy here just update the live github and plan there so another agent can continue". GitHub Pages is the site; the plan and its boards in this repo are where an agent picks up.
+- **The next upgrade is real rooms** (5 Nov 2026, V2.16): "focus on a plan for the next upgrade that makes the render quality better, items look more real like the living room and im able to adjust and edit the houses decor and look": `docs/REAL_PLAN.md` (R1–R8). The house's shape is right now ("the shape and way the house looks matches the house now").
