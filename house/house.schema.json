@@ -7,6 +7,8 @@
   "required": ["version", "units", "floors", "rooms", "items", "measure"],
   "$defs": {
     "box": { "type": "array", "items": { "type": "number" }, "minItems": 6, "maxItems": 6 },
+    "surface": { "type": "object", "required": ["area", "faces", "finish"],
+      "properties": { "side": { "enum": ["back", "front", "east", "west"] }, "area": { "type": "number", "description": "m²" }, "faces": { "type": "integer" }, "finish": { "type": "string" } } },
     "src": { "type": "string", "minLength": 1, "description": "Where the size comes from: M measured, P the plans, F/B the photos, client, fitted, E our estimate, or 'the client, in the app, <date>'" }
   },
   "properties": {
@@ -27,6 +29,9 @@
           "src": { "$ref": "#/$defs/src" }, "project": { "type": ["string", "null"] },
           "pieces": { "type": "array", "description": "the room's outline as rectangles [x0, z0, x1, z1]" },
           "shell": { "type": "object", "description": "V1.44, the living room only: its walls (solids), floors and treads, the foot of its walls (edges), its door and its flight, room cm (house/model.py living_shell)" },
+          "surfaces": { "type": ["object", "null"], "description": "V2.4 (docs/FINISHES_PLAN.md F1): its walls by side (back, front, east, west: the way they look into it), its ceiling and its floor, each with its area in m² net of the holes, how many faces and its finish (house/surfaces.py)",
+            "properties": { "walls": { "type": "array", "items": { "$ref": "#/$defs/surface" } }, "ceiling": { "oneOf": [{ "$ref": "#/$defs/surface" }, { "type": "null" }] },
+              "floor": { "oneOf": [{ "$ref": "#/$defs/surface" }, { "type": "null" }] } } },
           "to_measure": { "type": "integer" }, "items": { "type": "integer" } } }
     },
     "items": {

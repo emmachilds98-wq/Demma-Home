@@ -12,6 +12,7 @@ import model as M
 import survey_data as D
 import measure
 import client_edits
+import surfaces
 
 HERE = pathlib.Path(__file__).parent
 G = M.Gm                                                          # the measured living room (media-wall/src/geometry.py)
@@ -121,16 +122,16 @@ def living_items():
 
 
 def rooms():
-    sizes = M.room_sizes()
+    sizes, surf = M.room_sizes(), surfaces.by_room()   # V2.4 (FINISHES_PLAN F1): each room's walls, ceiling and floor with their areas
     out = [dict(id="living", name="Living room", floor="ground", use="the media wall project", box=[0.0, 0.0, G.WINDOW_Z, G.ROOM_W, G.CEIL, G.ALC_D],
                 w=G.ROOM_W, d=G.ROOM_D, ceil=G.CEIL, src="M", project="media-wall", pieces=[[0.0, G.WINDOW_Z, G.ROOM_W, G.ALC_D]],
-                shell=M.living_shell())]   # V1.44: its walls, floors and flight as data (model.living_shell)
+                shell=M.living_shell(), surfaces=surf.get("living"))]   # V1.44: its walls, floors and flight as data (model.living_shell)
     for rid, r in sizes.items():
         if not r["name"]:
             continue
         pcs = [[p["x0"], p["z0"], p["x1"], p["z1"]] for p in M.rooms(r["floor"]) if p["room"] == rid]
         out.append(dict(id=rid, name=r["name"], floor=r["floor"], use=r["use"], box=[r["x0"], M.FLOOR_Y[r["floor"]], r["z0"], r["x1"], M.FLOOR_Y[r["floor"]] + M.CEIL, r["z1"]],
-                        w=round(r["x1"] - r["x0"], 1), d=round(r["z1"] - r["z0"], 1), ceil=M.CEIL, src="P + fitted", pieces=pcs))
+                        w=round(r["x1"] - r["x0"], 1), d=round(r["z1"] - r["z0"], 1), ceil=M.CEIL, src="P + fitted", pieces=pcs, surfaces=surf.get(rid)))
     return out
 
 
