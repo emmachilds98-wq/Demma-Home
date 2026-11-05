@@ -27,6 +27,39 @@ function finBulbTray(room) {
   return `<div class="r3d-finsc" role="group" aria-label="The bulbs">${chips(FIN_BULBS, "finbulb", b.k || "2700")}</div>`
     + `<div class="r3d-finsc" role="group" aria-label="How bright">${chips(FIN_LUX, "finlux", b.lux === 1 ? "1" : String(b.lux))}</div>`;
 }
+/* V2.15 (F5): the fitting: what hangs at the room's ceiling point, in place of the one drawn (the photos' pendant, or none): a bare bulb,
+   a drum shade, an opal globe, a flush dome or four spots (E: typical sizes: a 40 drum, a 25 globe, a 32 dome, GU10 spots 45 out) */
+const FIN_FITS = [["bare", "Bare bulb"], ["drum", "Drum shade"], ["globe", "Globe"], ["dome", "Flush dome"], ["spots", "Four spots"]];
+const FIT_DROP = { bare: 40, drum: 36, globe: 33, dome: 9, spots: 5 };   // how far below the ceiling the room's light sits
+let FIT_LAID = [], FIT_SHADE = null;
+function finFitDrop(room) { const k = finGet(room, 8); return k ? FIT_DROP[k] : 40; }
+function finFitApply() {
+  if (!FIN.mat3 || !houseG) return;
+  for (const m of FIT_LAID) { m.parent && m.parent.remove(m); m.geometry.dispose(); } FIT_LAID = [];
+  for (const [r, g] of Object.entries(FIN_PEND)) g.visible = !finGet(r, 8);
+  const seg = typeof LOWD !== "undefined" && LOWD ? 12 : 28, lathe = (prof, x, y, z) => { const g = new THREE.LatheGeometry(prof.map(([a, b]) => new THREE.Vector2(a * M, b * M)), seg), c = v3(x, y, z); g.translate(c.x, c.y, c.z); return g; };
+  const rod = (x, y0, y1, z) => { const g = new THREE.CylinderGeometry(0.35 * M, 0.35 * M, (y1 - y0) * M, 6), c = v3(x, (y0 + y1) / 2, z); g.translate(c.x, c.y, c.z); return g; };
+  FIT_SHADE = FIT_SHADE || new THREE.MeshStandardMaterial({ color: "#efe7d8", roughness: 0.95, side: THREE.DoubleSide, emissive: "#ffe2b8", emissiveIntensity: 0.12 });
+  for (const [f, F] of Object.entries((R.HOUSE3 || {}).floors || {})) { const into = HFLOOR[f]; if (!into) continue;
+    for (const L of F.lights || []) { const k = finGet(L.room, 8); if (!k) continue; const { x, z } = L, y = L.y + 2, white = [], glow = [], shade = [];
+      const rose = () => white.push(lathe([[0, 0], [4, 0], [5, 0.6], [5, 1.7], [0, 1.7]], x, y - 2, z));
+      const bulb = d => { white.push(rod(x, y - d, y - 2, z), lathe([[0, 0], [1.7, 0], [1.7, 4], [1.2, 4.6], [0, 4.6]], x, y - d - 4, z));
+        glow.push(lathe([[0, 0], [1.6, 0.3], [2.7, 1.4], [3.1, 3], [2.7, 4.8], [1.6, 6.6], [1.3, 8.5], [0, 8.5]], x, y - d - 12.5, z)); };
+      if (k === "bare") { rose(); bulb(33); }
+      else if (k === "drum") { rose(); bulb(26); shade.push(lathe([[20, 0], [20, 22], [19.6, 22], [19.6, 0.4]], x, y - 44, z)); }
+      else if (k === "globe") { rose(); white.push(rod(x, y - 22, y - 2, z)); glow.push(lathe([[0, 0], [5, 0.6], [9.5, 4], [12.5, 10], [12.5, 15], [9.5, 21], [4, 24.3], [3, 25], [0, 25]], x, y - 47, z)); }
+      else if (k === "dome") { white.push(lathe([[0, 0], [16.5, 0], [16.5, 1.2], [0, 1.2]], x, y - 1.2, z)); glow.push(lathe([[0, 0], [8, 0.6], [13, 2.6], [15.8, 5.4], [16, 7.2], [0, 7.2]], x, y - 8.4, z)); }
+      else if (k === "spots") for (const [dx, dz] of [[-45, -45], [45, -45], [-45, 45], [45, 45]]) { white.push(lathe([[0, 0], [4.3, 0], [4.3, 0.8], [0, 0.8]], x + dx, y - 0.8, z + dz));
+        glow.push(lathe([[0, 0], [3.2, 0], [3.2, 0.9], [0, 0.9]], x + dx, y - 1.7, z + dz)); }
+      for (const [geos, mat] of [[white, FIN.mat3("upvc")], [glow, FIN.mat3("led")], [shade, FIT_SHADE]]) if (geos.length) {
+        const me = new THREE.Mesh(mergeGeometries(geos), mat); geos.forEach(q => q.dispose()); me.castShadow = false; me.userData.finFit = L.room; into.add(me); FIT_LAID.push(me); } } }
+  dirty();
+}
+function finFitTray(room) {
+  const now = finGet(room, 8) || "";
+  return `<span class="r3d-finlab">The light</span><div class="r3d-finsc" role="group" aria-label="The light">`
+    + [["", "As it is"], ...FIN_FITS].map(([v, t]) => `<button type="button" data-finfit="${v}" aria-pressed="${now === v}">${t}</button>`).join("") + `</div>`;
+}
 function finFloorApply() {   // every room with a floor chosen: a thin floor on its pieces, in that material (only then: nothing added otherwise)
   if (!finSetup() || !FIN.mat3 || !houseG) return;
   for (const m of FIN_LAID) { m.parent && m.parent.remove(m); m.geometry.dispose(); } FIN_LAID = [];
@@ -37,7 +70,7 @@ function finFloorApply() {   // every room with a floor chosen: a thin floor on 
       ((by[room + "|" + k] = by[room + "|" + k] || { room, k, geos: [] }).geos).push(geo); });
     for (const { room, k, geos } of Object.values(by)) { const mat = FIN.mat3(k), me = new THREE.Mesh(worldUV(mergeGeometries(geos), k), mat);
       me.receiveShadow = true; me.userData.finRoom = room; me.userData.finFloor = f; geos.forEach(q => q.dispose()); g.add(me); FIN_LAID.push(me); } });
-  dirty();
+  finFitApply(); dirty();
 }
 function finSwatches() {   // the paints to start with: the living room's (the client's pale mint first), and white
   const L = [["#f4f3ef", "White"]];
@@ -67,7 +100,7 @@ function finAt(hit) {   // a tap on a wall or a ceiling of the house: its room a
 function finClean(o) {
   const out = {}, floors = new Set(FIN_FLOORS.map(([k]) => k)), bulbs = new Set(FIN_BULBS.map(([v]) => v)), lux = new Set(FIN_LUX.map(([v]) => v));
   for (const [room, sl] of Object.entries(o && typeof o === "object" ? o : {})) { if (!/^[a-z0-9_]{1,30}$/.test(room) || !sl || typeof sl !== "object") continue;
-    for (const [s, v] of Object.entries(sl)) { const k = +s, ok = k <= 4 ? /^#[0-9a-f]{6}$/i.test(v) : k === 5 ? floors.has(v) : k === 6 ? bulbs.has(v) : k === 7 ? lux.has(v) : false;
+    for (const [s, v] of Object.entries(sl)) { const k = +s, ok = k <= 4 ? /^#[0-9a-f]{6}$/i.test(v) : k === 5 ? floors.has(v) : k === 6 ? bulbs.has(v) : k === 7 ? lux.has(v) : k === 8 ? FIN_FITS.some(([f]) => f === v) : false;
       if (ok) (out[room] = out[room] || {})[k] = v; } }
   return out;
 }
@@ -171,14 +204,14 @@ function finCard(id) {   // [title, now, buttons, -, the tray]
     + `<label class="sw any" title="Any colour"><input type="color" data-finany="1" value="${now || "#f4f3ef"}" aria-label="Any colour"><span>Any</span></label>`
     + `<label class="sw pic" title="A colour from a photo"><i><span class="ms" aria-hidden="true">photo_camera</span></i><input type="file" accept="image/*" data-finpic="1" aria-label="A colour from a photo"><span>Photo</span></label></div>`
     + (FIN_PIC ? `<div class="r3d-finpic"><img src="${FIN_PIC.url}" data-finpicimg="1" alt="Your photo: tap a colour in it"><span class="r3d-finlab">Tap a colour in your photo</span></div>` : "")
-    + (ceil ? `<span class="r3d-finlab">The bulbs</span>${finBulbTray(room)}` : "") + `</div>`;
+    + (ceil ? `<span class="r3d-finlab">The bulbs</span>${finBulbTray(room)}${finFitTray(room)}` : "") + `</div>`;
   return [`${roomName(room)}: ${ceil ? "the ceiling" : finScope === "wall" ? `the ${FIN_NAMES[slot]} wall` : "the walls"}`, nm,
     [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), btn("As it is (hold)", { finhold: "1" }), ...(now ? [btn("As drawn", { finc: "" })] : []), ...finCopyBtns(room)], null, tray];
 }
 function finHold(on) {   // As it is: while held, the palette empty (the house as drawn); let go, your colours back
   if (!FIN.pal) return;
-  if (on && !finHeld) { finHeld = FIN.pal.image.data.slice(); for (let i = 3; i < finHeld.length; i += 4) FIN.pal.image.data[i] = 0; FIN_LAID.forEach(m => m.visible = false); }
-  else if (!on && finHeld) { FIN.pal.image.data.set(finHeld); finHeld = null; FIN_LAID.forEach(m => m.visible = true); }
+  if (on && !finHeld) { finHeld = FIN.pal.image.data.slice(); for (let i = 3; i < finHeld.length; i += 4) FIN.pal.image.data[i] = 0; FIN_LAID.forEach(m => m.visible = false); FIT_LAID.forEach(m => m.visible = false); Object.values(FIN_PEND).forEach(g => g.visible = true); }
+  else if (!on && finHeld) { FIN.pal.image.data.set(finHeld); finHeld = null; FIN_LAID.forEach(m => m.visible = true); FIT_LAID.forEach(m => m.visible = true); for (const [r, g] of Object.entries(FIN_PEND)) g.visible = !finGet(r, 8); }
   FIN.pal.needsUpdate = true; dirty();
 }
 qs("#r3d-finschsave")?.addEventListener("click", finSchSave);
@@ -189,6 +222,13 @@ qs("#r3d-finschl")?.addEventListener("click", e => { const b = e.target.closest(
 finSchDraw();
 if (act) {
   act.addEventListener("click", e => {
+    const ff = e.target.closest("[data-finfit]");
+    if (ff && actId && (actId.startsWith("fin:") || actId.startsWith("hitem:"))) { e.stopPropagation();
+      const room = actId.startsWith("fin:") ? actId.split(":")[1] : (HIT(actId.slice(6)) || {}).r; if (!room) return;
+      FIN_UNDO.push(JSON.stringify(S.fin || {})); S.fin = S.fin || {}; const o = S.fin[room] = S.fin[room] || {};
+      if (ff.dataset.finfit) o[8] = ff.dataset.finfit; else delete o[8]; if (!Object.keys(o).length) delete S.fin[room];
+      store.set(KEY, S); finFitApply(); roomKey = ""; placeRoomLights();
+      toast(`${roomName(room)}: ${ff.dataset.finfit ? (FIN_FITS.find(([v]) => v === ff.dataset.finfit) || [0, ""])[1].toLowerCase() : "the light as it is"}`); renderAct(); return; }
     const bb = e.target.closest("[data-finbulb],[data-finlux]");
     if (bb && actId && (actId.startsWith("fin:") || actId.startsWith("hitem:"))) { e.stopPropagation();
       const room = actId.startsWith("fin:") ? actId.split(":")[1] : (HIT(actId.slice(6)) || {}).r; if (!room) return;

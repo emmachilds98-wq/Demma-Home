@@ -557,7 +557,13 @@ function buildHouse() {
       else { cur = HFLOOR[fk] = new THREE.Group(); houseG.add(cur); }
       const fresh = !cur.userData.built; cur.userData.built = true;
       SHARED = sharedFaces(F);
-      for (const [mk, list] of Object.entries(F.boxes)) put(cur, list.map(([x0, y0, z0, x1, y1, z1]) => houseBox(mk, x0, y0, z0, x1, y1, z1)), mat3(mk));
+      /* V2.15 (FINISHES F5): each room's ceiling light (its item "light.<room>") its own group, so a fitting chosen in the tray can stand in for it */
+      const tg = F.tags || [], lid = t => (t != null && t >= 0 && typeof tg[t] === "string" && tg[t].startsWith("light.")) ? tg[t].slice(6) : null, LG = {};
+      const lgOf = r => LG[r] || (LG[r] = (() => { const g = new THREE.Group(); g.userData.finLight = r; cur.add(g); FIN_PEND[r] = g; return g; })());
+      for (const [mk, list] of Object.entries(F.boxes)) { const bt = (F.bt || {})[mk] || [], main = [], by = {};
+        list.forEach((q, i) => { const r = lid(bt[i]); (r ? (by[r] = by[r] || []) : main).push(q); });
+        put(cur, main.map(([x0, y0, z0, x1, y1, z1]) => houseBox(mk, x0, y0, z0, x1, y1, z1)), mat3(mk));
+        for (const [r, L] of Object.entries(by)) put(lgOf(r), L.map(([x0, y0, z0, x1, y1, z1]) => houseBox(mk, x0, y0, z0, x1, y1, z1)), mat3(mk)); }
       SHARED = new Set();
       const byMat = {};
       const prismGeo = P => {                         // a profile extruded: along x the profile is (z, y), along z it is (x, y)
@@ -571,10 +577,12 @@ function buildHouse() {
         return g; };
       for (const P of F.prisms) (byMat[P.m] = byMat[P.m] || []).push(prismGeo(P));
       for (const [mk, geos] of Object.entries(byMat)) put(cur, geos, mat3(mk));
-      const byL = {};                                 // v70: the suite's turned shapes (pans, seats, bowls)
+      const byL = {}, lL = {};                        // v70: the suite's turned shapes (pans, seats, bowls); V2.15: a room's light's in its group
       for (const L of F.lathes || []) { const g = new THREE.LatheGeometry(L.p.map(([r, h]) => new THREE.Vector2(r * M, h * M)), LOWD ? 12 : 28);
-        g.scale(L.s[0], 1, L.s[1]); const c = v3(L.c[0], L.c[1], L.c[2]); g.translate(c.x, c.y, c.z); (byL[L.m] = byL[L.m] || []).push(g); }
+        g.scale(L.s[0], 1, L.s[1]); const c = v3(L.c[0], L.c[1], L.c[2]); g.translate(c.x, c.y, c.z); const r = lid(L.t);
+        const into = r ? (lL[r] = lL[r] || {}) : byL; (into[L.m] = into[L.m] || []).push(g); }
       for (const [mk, geos] of Object.entries(byL)) put(cur, geos, mat3(mk));
+      for (const [r, by] of Object.entries(lL)) for (const [mk, geos] of Object.entries(by)) put(lgOf(r), geos, mat3(mk));
       if (fresh) for (const L of F.labels || []) { label([L.name, [L.use, `about ${L.w.toFixed(1)} × ${L.d.toFixed(1)} m`].filter(Boolean).join(" · ")], L.x, L.y, L.z, 190);
         cur.children[cur.children.length - 1].userData.area = L.w * L.d; }   // V1.35: the bigger room's name wins where two overlap
       const partG = (P, into, at) => {                 // a part's group on its pivot, its own parts inside it (V1.26b: a bifold's second panel)
