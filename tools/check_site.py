@@ -22,7 +22,7 @@ WALK = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   if (window.DemmaTools && DemmaTools.isOpen()) DemmaTools.close();   // V1.48: no panel re-framing the view while walking
   R3D.set({ view: "hall" }); await settle(); document.querySelector('[data-rmode="stand"]').click(); await settle();
   const legs = [], leg = n => legs.push(n + " " + at().map(Math.round).join(",") + " " + Math.round(D.WALK.feet ?? -1) + " " + D.S.view);
-  await go(357, -100, 60, () => at()[1] < -60); leg("in"); await go(437, -100, 30, () => at()[0] > 432); await go(437, -60, 10, () => at()[1] > -62); leg("foot");
+  await go(357, -100, 60, () => at()[1] < -60); leg("in"); await go(400, -55, 20, () => at()[0] > 396); await go(437, -55, 15, () => at()[0] > 432); leg("foot");   // V1.57: to the stairs' foot, not into the cabinet by them (437, -100 was inside it)
   await go(437, 600, 40, () => D.WALK.feet > 255 && at()[1] > 215); const top = D.WALK.feet; leg("top");
   await go(437, 205, 10, () => at()[1] < 207); await go(300, 60, 15, () => false); await sl(400); const stay = Math.round(D.WALK.feet); leg("bed2way");   // V1.55: for bedroom 2 from the stairs' top: still on the landing
   await go(437, 230, 15, () => at()[1] > 226);
@@ -61,6 +61,30 @@ TAPAT = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTime
   return [c.left + (v.x + 1) / 2 * cv.clientWidth, c.top + (1 - v.y) / 2 * cv.clientHeight + 15]; }"""
 STOOD = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)); await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(200); await sl(300);
   return { view: D.S.view, mode: D.RMODE, card: D.actId, eye: Math.round(D.camera.position.y * 100) }; }"""
+# V1.57: through every door between two rooms you stand in, both ways: you end in the far room's view at its floor (bedroom 3's chair
+# and three doorways' hairline floor gaps stopped a walk dead); the cupboards' doors aren't walked
+DOORS = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), M = 0.01;
+  const settle = async () => { await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(150); await sl(200); };
+  if (window.DemmaTools && DemmaTools.isOpen()) DemmaTools.close();
+  const RV = { living: "livstand", kitchen: "kitchen", bed3: "office", bed2: "bed2", master: "master", bathroom: "bath", landing: "landing", hall: "hall", wc: "wc", lower_landing: "kitchen" };
+  const roomOf = (x, y, z) => { const L = D.H3.living.box; if (x > L[0] && x < L[1] && z > L[2] && z < L[3] && y > -30 && y < 240) return "living";
+    for (const [id, r] of Object.entries(D.H3.rooms)) if (RV[id] && x >= r[0] && x <= r[1] && z >= r[2] && z <= r[3] && y >= r[4] - 30 && y <= r[4] + 240) return id; return null; };
+  const bad = []; let n = 0;
+  for (const [id, it] of Object.entries(D.H3.items)) {
+    if (it.k !== "door" || !it.op || /cupboard|airing/.test(id)) continue;
+    const o = it.op, mid = (o.a + o.b) / 2, fy = o.y0, P = s => o.axis === "x" ? [mid, o.line + s] : [o.line + s, mid], A = P(-60), B = P(60);
+    const ra = roomOf(A[0], fy + 1, A[1]), rb = roomOf(B[0], fy + 1, B[1]); if (!ra || !rb || ra === rb) continue;
+    for (const [S0, S1, r1, r0] of [[A, B, rb, ra], [B, A, ra, rb]]) {
+      R3D.set({ view: RV[r0] }); await settle(); if (RV[r0] !== "livstand") { document.querySelector('[data-rmode=stand]').click(); await settle(); }
+      D.camera.position.set(-S0[0] * M, (fy + 160) * M, S0[1] * M); D.WALK.feet = fy; D.controls.target.set(-S1[0] * M, (fy + 150) * M, S1[1] * M); D.controls.update();
+      for (let i = 0; i < 60; i++) { const c = D.camera.position, dx = -S1[0] * M - c.x, dz = S1[1] * M - c.z, l = Math.hypot(dx, dz); if (l < 0.06) break;
+        D.controls.target.set(c.x + dx / l, c.y - 0.05, c.z + dz / l); D.controls.update(); D.walkMove(0, 1, 0, 0.1); if (i % 5 == 4) await sl(40); }
+      await sl(300); n++;
+      if (D.S.view !== RV[r1] || Math.abs(D.WALK.feet - fy) > 10) bad.push(`${id} ${r0}->${r1}: ended in ${D.S.view} at ${Math.round(D.WALK.feet)}`);
+    }
+  }
+  return { n, bad };
+}"""
 SIZE = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), cv = document.querySelector('.r3d canvas');
   if (window.DemmaTools) window.DemmaTools.close();
   R3D.set({ view: 'office' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
@@ -160,12 +184,15 @@ def main():
                 if wk.get("stay", 0) < 255: fails.append(f"{w}: heading for bedroom 2 from the top of the living room's stairs took the walk down them (feet {wk.get('stay')}); legs {wk['legs']}")
                 if got != want or wk["top"] < 255: fails.append(f"{w}: the walk into the living room went {got}, its feet up to {wk['top']} (want {want}, 260); legs {wk['legs']}")
                 pg.screenshot(path=str(SHOTS / f"site-{w}-walk.png"))
+            if phone:                                           # V1.57: every door, both ways (after the walk: it moves the walker by hand)
+                dr = pg.evaluate(DOORS)
+                if dr.get("bad") or dr.get("n", 0) < 10: fails.append(f"{w}: walking through the doors ({dr.get('n')} walks): {dr.get('bad')}")
             if errs: fails.append(f"{w}: errors: {errs[:4]}")
             ctx.close()
         b.close()
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
-    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a piece resized from a tap, the figure dropped in, a double-tap there, a walk into the living room and up its stairs, down to the lower floor and back, {len(fails)} failed; screenshots in _shots/")
+    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a piece resized from a tap, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, down to the lower floor and back, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
 
