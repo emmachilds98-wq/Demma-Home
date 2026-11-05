@@ -57,6 +57,15 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
     import surfaces as _surf
     e["finish_rooms"] = sorted({rid for f in model.FLOOR_Y for rid, *_ in _surf.PIECES[f]})
     e["finish_pieces"] = {f: [[e["finish_rooms"].index(rid), x0, x1, z0, z1] for rid, x0, x1, z0, z1 in _surf.PIECES[f]] for f in model.FLOOR_Y}
+    def _floor_top(f, x0, x1, z0, z1):   # V2.7 (F4): the top of the floor a piece stands on (the garage's at the street's level), for a new floor laid on it
+        cx, cz, best = (x0 + x1) / 2, (z0 + z1) / 2, None
+        for G in e["floors"].values():
+            for m, L in G["boxes"].items():
+                if m not in _surf.FLOORS: continue
+                for b in L:
+                    if b[0] <= cx <= b[3] and b[2] <= cz <= b[5] and abs(b[4] - model.FLOOR_Y[f]) <= 20: best = b[4] if best is None else max(best, b[4])
+        return round(best if best is not None else model.FLOOR_Y[f], 1)
+    e["finish_floor_y"] = {f: [_floor_top(f, x0, x1, z0, z1) for rid, x0, x1, z0, z1 in _surf.PIECES[f]] for f in model.FLOOR_Y}
     e["plants"] = getattr(model.D, "PLANTS", [])                # V1.3: the gardens' plants (survey_data.PLANTS: where, how big, the source)
     e["beyond"] = getattr(model.D, "BEYOND", None)               # V1.4: past the far fence (survey_data.BEYOND): the low building, the hill
     e["things"] = getattr(model.D, "GARDEN_THINGS", [])          # V1.6: the table and chairs, next door's trampoline and sheds
