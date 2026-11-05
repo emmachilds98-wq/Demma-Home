@@ -172,7 +172,7 @@ function setRmode(m, quiet) {
   hidMode.forEach(o => o.visible = true); hidMode = []; applyFloors();
   if (rr && (RMODE === "alone" || rr[4] < 0)) scene.children.forEach(o => { if (o !== houseG && o !== lightRig && !o.isLight && o !== (sun && sun.target) && o.visible) { o.visible = false; hidMode.push(o); } });
   if (rr && RMODE === "alone") { const fk = { "-260": "lower", "0": "ground", "260": "first" }[String(rr[4])];   // only the room's own floor
-    for (const [k, g] of Object.entries(HFLOOR)) if (k !== fk && g.visible) { g.visible = false; hidMode.push(g); } }
+    for (const [k, g] of Object.entries(HFLOOR)) if (k !== fk && !(fk === "first" && k === "roof") && g.visible) { g.visible = false; hidMode.push(g); } }   // V2.10, the client: "walls are clipping out when not necessary": a first-floor room's walls under the roof (its gable, dormer cheeks, slopes) are in the roof's group: kept, the planes trim it
   rmodeDress(rr, rid);
   if (rr) { const [x0, x1, z0, z1, fy] = rr, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0;
     // far enough that the room fills the screen, whatever its shape (a phone stands it up the screen's long side)

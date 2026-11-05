@@ -77,7 +77,16 @@ const HPARTS = {};     // v68: the house's moving pieces (the master bedroom's o
 function applyFloors() {
   if (!houseG) return;
   const on = S.view === "house", sel = on ? hfloor : "all", ex = sel === "all" && !R.HOUSE3 ? 330 : 0;   // v58: Outside, the house closed (no lifting)
-  if (HFLOOR.roof) HFLOOR.roof.visible = sel === "all";
+  /* V2.10, the client: "when in overhead and angled views, sometimes walls are clipping out when not necessary": the first floor on its
+     own kept its roof's group (its gable, the dormer's cheeks and the slopes are in it) with only the roof's coverings and the ceilings off */
+  const roofWalls = sel === "first";
+  if (HFLOOR.roof) HFLOOR.roof.visible = sel === "all" || roofWalls;
+  if (HMATS) for (const k of ["tile", "ridge", "felt", "lead", "ceiling", "artex", "shade_ceil"]) { const m = HMATS[k]; if (!m) continue;
+    if (roofWalls && m.visible) { m.visible = false; m.userData.offForFloor = true; } else if (!roofWalls && m.userData.offForFloor) { m.visible = true; m.userData.offForFloor = false; } }
+  if (HMATS && !livClipOn) {   // and cut at its ceiling's height (the party wall's plaster runs on up the gable to the ridge)
+    if (!FLCLIP) FLCLIP = [new THREE.Plane(new THREE.Vector3(0, -1, 0), ((R.HOUSE3 && R.HOUSE3.rooms.landing) ? R.HOUSE3.rooms.landing[4] + (R.HOUSE3.ceil || 235) + 3 : 498) * M)];
+    for (const m of Object.values(HMATS)) { const want = roofWalls ? FLCLIP : (m.clippingPlanes === FLCLIP ? RPLANES : m.clippingPlanes);
+      if (want !== m.clippingPlanes) { m.clippingPlanes = want; m.clipIntersection = false; m.clipShadows = want.length > 0; m.needsUpdate = true; } } }
   if (HFLOOR.first) { HFLOOR.first.position.y = ex * M; HFLOOR.first.visible = sel === "all" || sel === "first"; }
   if (HFLOOR.lower) HFLOOR.lower.position.y = -ex * M;
   if (HFLOOR.ground) HFLOOR.ground.visible = sel !== "lower";
@@ -135,7 +144,7 @@ function applyFloors() {
   requestAnimationFrame(() => { measureShift(!!(window.DemmaTools && window.DemmaTools.isOpen())); fadeRows(); });   // V1.30: the rows above may have changed
   dirty();
 }
-let LIVCLIP = null, livClipOn = false;   // V2.0: in the living room's own view the house only above the landing's floor over the room
+let LIVCLIP = null, livClipOn = false, FLCLIP = null;   // V2.0: in the living room's own view the house only above the landing's floor over the room
 function livClip(on) {
   if (!HMATS || (!on && !livClipOn)) return; livClipOn = on;   // (setRmode may have put its own planes back meanwhile)
   if (on && !LIVCLIP) LIVCLIP = [new THREE.Plane(new THREE.Vector3(0, 1, 0), -R.HOUSE3.rooms.landing[4] * M + 0.01), new THREE.Plane(new THREE.Vector3(0, 0, 1), -(R.RECESS_Z + 2) * M)];
