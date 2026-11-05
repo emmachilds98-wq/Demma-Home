@@ -571,6 +571,7 @@ function setView(name, instant, dur) {
 function flyTo(e, a, fov, above, instant, dur) {
   walked = false; controls.maxDistance = above ? (S.view === "house" ? 90 : 16) : 6;   // v54: the whole house from further off
   hLast = null;                                                                            // V1.28: the new place is checked afresh
+  WALK.feet = null;                                         // V2.0: a walk after it starts from the new place's floor (an instant view kept the last room's: from the master to the hall, the feet stayed upstairs)
   const eye = v3(...e), at = v3(...a);
   const from = { eye: camera.position.clone(), at: controls.target.clone(), fov: camera.fov };
   setAbove(!above);

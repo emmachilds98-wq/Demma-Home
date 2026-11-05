@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.60 (5 Nov 2026)
+**Version:** V2.0 (5 Nov 2026; the client: "make this now V2.0")
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -49,7 +49,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   V1.57: in the hall under the living room's stairs no longer the living room (`walkRoom`: your feet at its tread); down the lower stairs, the kitchen's view (`WALK_VIEW`).
   V1.58 (`check_site.DOORS` walks every door): a foot not a point; chairs, stools, stair drawers not in the way; a step down's head tested below.
   V1.59: Be there starts clear of furniture (`standIn` uses `freeSpot`); walls above the ceiling or past the living room draw as `above` (no green in the stairwell).
-  V1.60: standing, the brand names the room you're in (`hereRoom`: the lower landing, not the kitchen whose view it shares).
+  V1.60: standing, the brand names the room you're in (`hereRoom`: the lower landing, not the kitchen whose view it shares). V2.0: `flyTo` clears `WALK.feet`.
 - **V1.53 (the client: double-click to go there, W A S D to walk, a drop-in figure, better overheads):** a double-click (`dblclick`; a
   double-tap on a phone) on any floor you see stands you there in Be there (`room3d/14_views_walk.js` `spotAt`, `goStand`, `freeSpot`;
   through a roof, the first floor down); the figure bottom right (`#r3d-peg`) drags onto the house, a ring and the room's name where it
@@ -134,7 +134,7 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 
 - The living room in HD with the shade on (V1.1): 364 draws, 119k triangles, 112 shaders. The photos are their own file since V1.9
   (`photos.<hash>.json`, kept by the service worker; each photo's mean colour until it lands; `check_site.py` checks every set arrives).
-- The repo (V1.36): 329 files, 77 MB tracked (49 MB the client's photos), history 87 MB; `checks.py`'s repo check fails on a tracked
+- The repo (V2.0): 352 files, 60 MB tracked (32 MB the client's photos: big PNGs now JPEG), history 94 MB; `checks.py`'s repo check fails on a tracked
   build output or any other file over 1.5 MB.
 
 ## Open with the client
