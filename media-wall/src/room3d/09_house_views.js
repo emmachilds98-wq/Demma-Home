@@ -49,7 +49,7 @@ function placeRoomLights() {
   const ks = Math.min(1.3, Math.max(0.75, Math.sqrt(area / 10)));   // v72 (B2): a big room's light reaches its corners, a small one doesn't glare
   const fb = typeof finBulb === "function" && VIEW_ROOM[S.view] ? finBulb(VIEW_ROOM[S.view]) : { k: null, lux: 1 };   // V2.9: the room's bulbs (23_finish.js)
   const was = ROOMLIGHTS[0] ? ROOMLIGHTS[0].position.clone() : null;
-  ROOMLIGHTS.forEach((l, k) => { const L = list[k]; l.visible = !!L; if (L) { l.position.copy(v3(L.x, L.y - (typeof finFitDrop === "function" ? finFitDrop(L.room) : 40), L.z)); l.intensity = (day ? 1.2 : 3.2) * ks * fb.lux;
+  ROOMLIGHTS.forEach((l, k) => { const L = list[k]; l.visible = !!L; if (L) { l.position.copy(v3(L.x, L.y - (typeof finFitDrop === "function" ? finFitDrop(L.room) : 40), L.z)); l.intensity = (day ? 1.2 : 5.4) * ks * fb.lux;
     l.color.set(fb.k ? kelvinHex(+fb.k) : "#ffcf98"); } });
   if (was && ROOMLIGHTS[0].position.distanceToSquared(was) > 1e-6) reshadow();   // V2.17: its shadows follow it (a fitting's height, the next room)
   const key = b ? b.join() : "";
@@ -71,6 +71,12 @@ function houseEnv() {
   return HENV;
 }
 const finishEnv = m => m.userData.hk === "glass" ? 0.3 : m.roughness <= 0.3 ? 0.9 : m.roughness <= 0.6 ? 0.6 : 0.45;   // v72 (B3): gloss, satin, matt
+let HENVK = 1;
+function houseEnvK(k) {   // V2.21 (REAL_PLAN R1): the house's reflections scaled (an evening in a room: its own light leads)
+  if (!HMATS || k === HENVK) return; HENVK = k;
+  for (const m of Object.values(HMATS)) if (m && m.envMap && "envMapIntensity" in m) m.envMapIntensity = finishEnv(m) * k;
+  for (const m of paintMats.values()) if (m && m.envMap && m.userData.hk) m.envMapIntensity = finishEnv(m) * k;
+}
 let RMODE = "in", hidMode = [], RPLANES = [];   // v71: how a room of the house is seen (in it, above, on its own) and what that put away
 const FIN_PEND = {};   // V2.15 (FINISHES F5): each room's own ceiling light, its own group (20_go.js), for a fitting to stand in for it
 const HPARTS = {};     // v68: the house's moving pieces (the master bedroom's ottoman lid), each its own group on its hinge

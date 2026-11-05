@@ -150,7 +150,10 @@ function applyLight() {
   skyFill.intensity = outside ? (day ? 2.6 : 0.5) : 0;
   const inK = !!ROOMV();                                                                // v60: in a room of the house, light off its pale floor and walls,
   skyFill.groundColor.set(inK ? "#d9d3c9" : "#5d5446");                                 // and the living room's own lights stay upstairs
-  if (inK) { scene.traverse(l => { if (l.isLight && l !== skyFill) l.intensity = 0; }); hemi.intensity = 0.5; }   // every light of the living room's, the spots too
+  if (inK) { scene.traverse(l => { if (l.isLight && l !== skyFill) l.intensity = 0; }); hemi.intensity = day ? 0.5 : 0.2; }   // every light of the living room's, the spots too
+  /* V2.21 (REAL_PLAN R1): by evening in a room of the house its own ceiling light lights it: the even fill and the studio's reflections
+     down (they lit every corner alike), the light up (09_house_views.js placeRoomLights): a warm pool, the corners falling off */
+  if (typeof houseEnvK === "function") houseEnvK(inK && !day ? 0.35 : 1);
   scene.background.set(outside && R.HOUSE3 ? (day ? "#c6d6e3" : "#1b2233") : "#0d100e");             // and a sky behind it
   if (gl.shadowMap.enabled !== hd) { gl.shadowMap.enabled = hd; MATS.forEach(m => m.needsUpdate = true); sizeRenderer(); if (LIVE && started) precompile(); }
   if (started) { if (ROOMV() && S.tod !== lastTod) applyFloors(); else outdoor(); lastTod = S.tod; }   // V1.5: day or evening changes the living room's window; V1.15: and a room's (applyFloors ends in outdoor), only when it changes (not each slider move)
