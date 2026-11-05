@@ -191,7 +191,11 @@ function walkMove(side, fwd, turn, dt) {    // -1..1 each; true if the eye moved
   const badDown = (x_, z_, slid) => {
     const f = floorAtCm(x_, z_, WALK.feet); if (!(f < ref - 6)) return false;    // level, or up a step: fine
     if (f < ref - 45 || slid) return true;
-    return onFlight(x_, z_) && (z_ - z0) > -0.6 * Math.hypot(x_ - x0, z_ - z0);   // the flight runs down toward -z
+    /* V2.24: from its top landing onto the treads only facing squarely down them (within about 30°): with the first floor's stairwell
+       measured 85 (wider than the flight), heading across it for bedroom 2 stepped onto the top tread at 46° and along the stair box's
+       wall top beside it; now it eases along the landing round the stairwell. On the flight itself, as before */
+    const onto = z0 >= L.zl - 1.5 && z_ < L.zl - 1.5;
+    return onFlight(x_, z_) && (z_ - z0) > -(onto ? 0.86 : 0.6) * Math.hypot(x_ - x0, z_ - z0);   // the flight runs down toward -z
   };
   let slid = false;
   if (!blk(x0, z0) && blk(x, z)) {   // free to step out of something you start in (Be there by the guitars)
