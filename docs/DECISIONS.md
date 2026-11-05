@@ -11,6 +11,8 @@ take one out (to `docs/HISTORY.md`) when they change their mind.
   personal details aren't obvious or putting me at risk"; "put photos in, I need them all. People don't matter" (photos go in, EXIF stripped).
 - **Demma's Home V1** (27 Oct 2026): "change the name to Demma's Home V1 and we will start from the beginning now we have a good whole
   house app". Versions from now: V1, V1.1, V1.2 ...
+- **Walls smooth, ceilings artex** (5 Nov 2026): "ensure walls are all smooth but ceilings have the popcorn artex type ceiling"; "make sure
+  ceilings are all white with ability to customise other than our living room picks so far" (View → More: the house's ceilings).
 - **The wall up the stairs** (5 Nov 2026): "we will paint the wall up the stairs there the same colour so need smooth connection": the
   living room's stair-wall paint up to the landing's ceiling (Look's colour follows it).
 - **V2.0** (5 Nov 2026): "merge everything to main and make this now V2.0 and compress files or get rid of old bulk file history to

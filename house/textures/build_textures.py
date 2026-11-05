@@ -21,7 +21,8 @@ TINT = {"carpet_grey": ("Carpet012", 0.5, "#6f6f73"), "carpet": ("Carpet012", 0.
         # plaster is all but even: its look is the relief; the pine's knots softened; the oak's fine grain brought up)
         "pine": ("coated_pine", 1.0, "#c99a55", 1, 0.55), "pine_dark": ("coated_pine", 1.0, "#7a5a30", 1, 0.55),
         "birch": ("white_maple_veneer", 0.8, "#dcc8a2", 1, 1.3), "oak": ("oak_veneer_01", 1.0, "#b9864f", 1, 1.6),
-        "paint": ("white_plaster_02", 1.6, "#f1ede5", 1, 0.08), "ceiling": ("white_plaster_02", 1.6, "#f3f2ee", 1, 0.08),   # V1.13: the relief as photographed (4× read as rough render up close)
+        # V2.2, the client: "ensure walls are all smooth but ceilings have the popcorn artex type ceiling": no plaster photo (the walls flat
+        # emulsion, every ceiling the artex below)
         "worktop": ("granite_tile_03", 0.6, "#26282a", 1, 1.4),   # V1.13 (QUALITY_PLAN Q2): the kitchen's black speckled worktop (one tile of it)
         # V1.21 (Q1/Q6): the soft things' real weave in their colours (they were flat): the bedding cotton poplin (the pillows and mattresses
         # share it: room3d.js), the curtains linen, bedroom 2's bed leather, the sofa-bed and the blanket wool
@@ -38,7 +39,7 @@ PX = {}                                                          # sizes other t
 # relief). The oak is turned a quarter so its grain runs along the boards, as the drawn oak's does; 0 px leaves that picture out. Veneer
 # and smooth plaster have only a hair of relief, gone at 256-512 px: relief scales it so it reads at the room's distance
 PLAIN = {"lr_oak": ("oak_veneer_01", 0.6, 2048, 1024, True, 6), "lr_hessian": ("hessian_380", 0.6, 1024, 1024, False, 1.5),   # V1.11: twice as sharp
-         "lr_cord": ("ribbed_corduroy", 0.6, 0, 1024, False, 1.5), "lr_plaster": ("white_plaster_02", 1.6, 0, 1024, False, 6)}
+         "lr_cord": ("ribbed_corduroy", 0.6, 0, 1024, False, 1.5)}
 
 
 def turn(im, normal):

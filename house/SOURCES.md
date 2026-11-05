@@ -17,7 +17,6 @@ the area one copy of the picture covers.
 | The living room's oak (V1.1: the media wall, the cabinet, every oak part) | [oak_veneer_01](https://polyhaven.com/a/oak_veneer_01) | 0.6 m | turned so the grain runs along the boards; in the page, scaled to each part's own oak colour |
 | The living room's curtains (V1.1) | [hessian_380](https://polyhaven.com/a/hessian_380) | 0.6 m | in the page, scaled to the curtains' colour |
 | The sofa's corduroy (V1.1, its ribs only) | [ribbed_corduroy](https://polyhaven.com/a/ribbed_corduroy) | 0.6 m | relief only (the sofa keeps its blue) |
-| The living room's painted walls (V1.1, the plaster's relief only) | [white_plaster_02](https://polyhaven.com/a/white_plaster_02) | 1.6 m | relief only (the walls keep your pale mint) |
 | The living room's carpet and the oatmeal (V1.1) | Carpet012, as above | 0.5 m | in the page, scaled to your grey and the oatmeal |
 
 V1.30 (`docs/UPGRADE_REVIEW.md` U5): the **roughness maps** of the same CC0 assets (Poly Haven's API, 1k, made 512 px grey by

@@ -235,7 +235,7 @@ function syncButtons() {
   qsa("[data-lookwall]").forEach(b => { const k = b.dataset.lookwall; b.setAttribute("aria-pressed", String(k === lookWall)); const i = b.querySelector("i"); if (i) i.style.setProperty("--c", k === "all" ? paintHex() : chHex("w:" + k)); });
   const wm = qs("[data-wallmatch]"); if (wm) { wm.hidden = lookWall === "all"; wm.disabled = !S.walls[lookWall]; }
   press("drawers", S.drawers ? "out" : "in"); press("quality", S.quality); press("view", S.view);
-  press("ceil", S.ceil); press("skirt", S.skirt); press("plants", S.plants); press("chairs", S.chairs); press("seat", S.seat);
+  press("ceil", S.ceil); press("skirt", S.skirt); press("hceil", S.hceil && S.hceil !== "white" ? "" : "white"); press("plants", S.plants); press("chairs", S.chairs); press("seat", S.seat);
   press("cab", S.cab); press("cabw", S.cabw); press("tdoor", S.tdoor ? "open" : "shut");                                   // v30
   press("cam", S.cam); press("pad", S.pad ? "on" : "off"); press("foot", S.foot ? "on" : "off"); press("beside", S.beside); syncEye();   // v31
   qsa("[data-tog]").forEach(b => b.setAttribute("aria-pressed", String(!!S[b.dataset.tog])));
@@ -248,6 +248,7 @@ function syncButtons() {
   qs("#r3d-custom").value = lookWall === "all" ? S.custom : chHex("w:" + lookWall);
   qsa("[data-paintcustom]").forEach(b => b.setAttribute("aria-pressed", String(lookWall === "all" ? S.paint === "custom" && S.custom.toLowerCase() === b.dataset.paintcustom.toLowerCase() : wh === b.dataset.paintcustom.toLowerCase())));
   if (S.ceil !== "match" && qs("#r3d-ceil")) qs("#r3d-ceil").value = S.ceil;
+  if (/^#[0-9a-f]{6}$/i.test(S.hceil || "") && qs("#r3d-hceil")) qs("#r3d-hceil").value = S.hceil;
   if (S.skirt !== "match" && qs("#r3d-skirt")) qs("#r3d-skirt").value = S.skirt;
   const warmWord = w => w < 25 ? "candle" : w < 45 ? "warm" : w <= 55 ? "warm white" : w < 80 ? "soft white" : "neutral";
   qsa("[data-lv]").forEach(i => { const k = i.dataset.lv, v = k === "master" ? S.master : k === "warm" ? (S.warm ?? 50) : (S.lv[k] ?? 0); i.value = v;
@@ -277,6 +278,7 @@ root.addEventListener("click", e => {
   else if (d.scene) S.scene = d.scene, S.lv = Object.assign({}, SCENES[d.scene].levels), S.master = 100, applyLight(), updateCaption(), store.set(KEY, S);   // tapping the tile again resets it
   else if (d.tod) S.tod = d.tod, applyLight(), updateCaption(), store.set(KEY, S);
   else if (d.ceil) S.ceil = d.ceil, repaint(), store.set(KEY, S), dirty();
+  else if (d.hceil) S.hceil = d.hceil, hceilApply(), syncButtons(), store.set(KEY, S), dirty();   // V2.2: the house's ceilings white again
   else if (d.skirt) S.skirt = d.skirt, repaint(), store.set(KEY, S), dirty();
   else if (d.colreset) S.col[d.colreset] = WARM, applyLight(), store.set(KEY, S);
   else if (d.tog) S[d.tog] = !S[d.tog], applyLight(), store.set(KEY, S);
@@ -341,6 +343,7 @@ root.addEventListener("input", e => {
   if (d.lv) { const v = +t.value; if (d.lv === "master") S.master = v; else if (d.lv === "warm") S.warm = v; else S.lv[d.lv] = v; syncButtons(); applyLight(); updateCaption(); store.set(KEY, S); }
   else if (d.col) { S.col[d.col] = t.value; applyLight(); }
   else if (t.id === "r3d-ceil") { S.ceil = t.value; press("ceil", ""); repaint(); dirty(); }
+  else if (t.id === "r3d-hceil") { S.hceil = t.value; press("hceil", ""); hceilApply(); dirty(); }
   else if (t.id === "r3d-skirt") { S.skirt = t.value; press("skirt", ""); repaint(); dirty(); }
   else if (t.id === "r3d-eye") { lift(+t.value); const o = qs("#r3d-eyeout"); if (o) o.textContent = `${t.value} cm`; return; }   // v31
   else return;

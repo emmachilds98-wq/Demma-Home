@@ -665,6 +665,9 @@ def controls(gallery=""):
                  + '<h3 class="r3d-sub" id="r3d-lightsh">Lights <span class="r3d-litst" id="r3d-litst"></span></h3>' + lights
                  + '<details class="r3d-more r3d-fold"><summary>More: quality, moving round, sharing, pictures</summary>'
                  + seg("quality", [("hd", "HD, with shadows"), ("fast", "Fast")], "Quality")
+                 # V2.2, the client: "make sure ceilings are all white with ability to customise other than our living room picks so far"
+                 + seg("hceil", [("white", "White")], "The house's ceilings (the living room's are in Look)",
+                       '<label class="chip r3d-anycol">Any colour <input type="color" id="r3d-hceil" value="#f4f3ef" aria-label="The house\'s ceilings: any colour"></label>')
                  + '<h3 class="r3d-sub">Moving round and sharing</h3>'
                  # v31, client: "make camera movement easier within the 3d render. being able to adjust height would be good"
                  + '<div class="grp r3d-move"><span class="label">Move round</span>'
