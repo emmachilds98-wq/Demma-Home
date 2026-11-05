@@ -1151,8 +1151,14 @@ def office(o):
     o.item("office.shelf", "The shelf over the desk", "bed3", src="F (the photo)", data=("OFFICE", "shelf"), axis="z")
     s = O["shelf"]
     o.box("black", W - s["d"], y0 + s["y"], s["z"][0], W, y0 + s["y"] + s["t"], s["z"][1])
-    for z in (s["z"][0] + 20, s["z"][0] + 60, s["z"][1] - 40):    # a few things on it: books, a jar, a pot
-        o.box(("books", "jar", "pot")[int(z) % 3], W - 18, y0 + s["y"] + s["t"], z, W - 4, y0 + s["y"] + s["t"] + 16, z + 14)
+    ys = y0 + s["y"] + s["t"]                                      # V2.17 (REAL_PLAN R4): a row of books (their spines), a jar and a pot
+    zb = s["z"][0] + 16
+    for i, (wb, hb) in enumerate(((3.2, 22), (2.4, 20), (4.1, 24), (2.8, 19), (3.6, 23), (2.2, 21), (3.0, 18), (4.4, 24), (2.6, 22))):
+        o.box("book%d" % (i * 5 % 6), W - 17, ys, zb, W - 3, ys + hb, zb + wb - 0.2); zb += wb
+    o.box("book2", W - 17, ys, zb + 1, W - 3, ys + 4, zb + 25); o.box("book0", W - 16, ys + 4, zb + 2, W - 4, ys + 7, zb + 24)   # two lying flat
+    o.lathe("jar", W - 10, ys, s["z"][0] + 72, [(0, 0), (4.5, 0), (5, 1), (5, 11), (3.5, 12.5), (3.5, 14), (0, 14)])
+    o.lathe("pot", W - 10, ys, s["z"][1] - 32, [(0, 0), (4, 0), (5.5, 9), (6, 11), (0, 11)])
+    o.lathe("ivy", W - 10, ys + 11, s["z"][1] - 32, [(0, 0), (6.5, 1), (8, 5), (6, 10), (2, 12), (0, 12)])
     o.item("office.ivy", "The ivy along the top", "bed3", kind="decor", src="client's photo", measure=False)
     o.box("ivy", W - 3, y0 + CEIL - 12, BACK + 583, W, y0 + CEIL - 4, FRONT)          # the ivy along the top of the wall
     o.box("ivy", 283, y0 + CEIL - 12, FRONT - 3, W, y0 + CEIL - 4, FRONT)
@@ -1166,18 +1172,20 @@ def office(o):
     o.box("black", W - 12, y0 + d["h"], zc - 2, W - 8, y0 + m["y0"] + 2 * m["h"] + m["gap"] + 2, zc + 2)   # the pole
     for k in range(2):
         yb = y0 + m["y0"] + k * (m["h"] + m["gap"])
-        o.box("black", W - 18, yb, m["z"][0], W - 15, yb + m["h"], m["z"][1])
-        o.box("screen", W - 18.3, yb + 1.5, m["z"][0] + 1.5, W - 18, yb + m["h"] - 1.5, m["z"][1] - 1.5)
-    o.box("pink", d["x"][0] + 6, y0 + d["h"], zc - 18, d["x"][0] + 19, y0 + d["h"] + 3, zc + 18)             # its pink keyboard
+        o.box("black", W - 18, yb, m["z"][0], W - 17, yb + m["h"], m["z"][1])                 # V2.17: a slim bezel, the back's housing rounded
+        o.box("monitor_back", W - 17, yb + 3, m["z"][0] + 4, W - 13.5, yb + m["h"] - 3, m["z"][1] - 4)
+        o.box("screen", W - 18.3, yb + 0.8, m["z"][0] + 0.8, W - 18, yb + m["h"] - 0.8, m["z"][1] - 0.8)
+    keyboard(o, "pink", "key_pink", d["x"][0] + 6, d["x"][0] + 19, zc - 18, zc + 18, y0 + d["h"])             # its pink keyboard
     o.item("office.dual", "The side-by-side setup", "bed3", src="E (24-inch)", data=("OFFICE", "dual"), axis="z")
     du = O["dual"]; zm = (du["z"][0] + du["z"][1]) / 2                # v66: the second setup, side by side, by the window
     o.box("black", W - 22, y0 + d["h"], zm - 12, W - 6, y0 + d["h"] + 1.5, zm + 12)                          # the stand's foot
     o.box("black", W - 15, y0 + d["h"], zm - 2, W - 11, y0 + du["y0"] + du["h"] / 2, zm + 2)
     for za, zb in ((du["z"][0], zm - 0.5), (zm + 0.5, du["z"][1])):
-        o.box("black", W - 21, y0 + du["y0"], za, W - 18, y0 + du["y0"] + du["h"], zb)
-        o.box("screen", W - 21.3, y0 + du["y0"] + 1.2, za + 1.2, W - 21, y0 + du["y0"] + du["h"] - 1.2, zb - 1.2)
-    o.box("black", d["x"][0] + 6, y0 + d["h"], zm - 22, d["x"][0] + 20, y0 + d["h"] + 3, zm + 22)           # its black keyboard
-    o.box("black", d["x"][0] + 8, y0 + d["h"], zm + 28, d["x"][0] + 14, y0 + d["h"] + 3, zm + 34)
+        o.box("black", W - 21, y0 + du["y0"], za, W - 20, y0 + du["y0"] + du["h"], zb)
+        o.box("monitor_back", W - 20, y0 + du["y0"] + 3, za + 3, W - 17, y0 + du["y0"] + du["h"] - 3, zb - 3)
+        o.box("screen", W - 21.3, y0 + du["y0"] + 0.8, za + 0.8, W - 21, y0 + du["y0"] + du["h"] - 0.8, zb - 0.8)
+    keyboard(o, "black", "key_dark", d["x"][0] + 6, d["x"][0] + 20, zm - 22, zm + 22, y0 + d["h"])           # its black keyboard
+    o.box("mouse", d["x"][0] + 7.5, y0 + d["h"], zm + 29, d["x"][0] + 14.5, y0 + d["h"] + 3.2, zm + 33)
     mz = du["z"][1] - 6                                                                                       # the mic on its boom arm
     o.box("black", W - 6, y0 + d["h"], mz - 3, W - 2, y0 + d["h"] + 40, mz + 3)
     o.box("black", W - 30, y0 + d["h"] + 38, mz - 1.5, W - 4, y0 + d["h"] + 41, mz + 1.5)
@@ -1186,7 +1194,7 @@ def office(o):
     p2 = O["pc2"]                                                                                             # its glass PC under the desk
     o.box("pc_white", p2["x"][0], y0, p2["z"][0], p2["x"][1], y0 + p2["h"], p2["z"][1])
     o.box("pc_glow", p2["x"][0] - 0.3, y0 + 3, p2["z"][0] + 2, p2["x"][0], y0 + p2["h"] - 3, p2["z"][1] - 2)
-    o.box("black", d["x"][0] + 8, y0 + d["h"], zc + 24, d["x"][0] + 14, y0 + d["h"] + 3, zc + 30)            # the mouse
+    o.box("mouse", d["x"][0] + 7.5, y0 + d["h"], zc + 25, d["x"][0] + 14.5, y0 + d["h"] + 3.2, zc + 29)      # the mouse (V2.17: rounded)
     o.item("office.pc", "The white PC", "bed3", src="E (mid-tower)", data=("OFFICE", "pc"), axis="z")
     pc = O["pc"]
     o.box("pc_white", pc["x"][0], y0, pc["z"][0], pc["x"][1], y0 + pc["h"], pc["z"][1])
@@ -1201,6 +1209,21 @@ def office(o):
     op = next(p for p in D.OPENINGS if p["id"] == "bed3_window")
     o.box("blind_cloth", op["x"][0] + 4, y0 + op["sill"] + 20, FRONT - 1.5, op["x"][1] - 4, y0 + op["head"], FRONT - 0.5)   # V1.47: shown when the blinds are down (rolled up to start)
     o.box("blind", op["x"][0] + 2, y0 + op["head"] - 2, FRONT - 6, op["x"][1] - 2, y0 + op["head"] + 6, FRONT - 0.5)
+
+
+def keyboard(o, base, key, x0, x1, z0, z1, y):
+    """V2.17 (REAL_PLAN R4): a keyboard as itself: a low case and its rows of keys (E: 19 mm keys, 5 rows, a wider space bar)."""
+    o.box(base, x0, y, z0, x1, y + 1.6, z1)
+    rows, pitch = 5, (x1 - x0 - 1.6) / 5
+    for r in range(rows):
+        xa = x0 + 0.8 + r * pitch
+        if r == 0:                                                 # the front row: the space bar between the corner keys
+            o.box(key, xa + 0.2, y + 1.6, (z0 + z1) / 2 - 6, xa + pitch - 0.2, y + 2.5, (z0 + z1) / 2 + 6)
+            continue
+        n = max(4, int((z1 - z0 - 1.2) // 1.9)); kw = (z1 - z0 - 1.2) / n
+        for i in range(n):
+            za = z0 + 0.6 + i * kw
+            o.box(key, xa + 0.2, y + 1.6, za + 0.15, xa + pitch - 0.2, y + 2.5, za + kw - 0.15)
 
 
 def bed2(o):
@@ -2165,7 +2188,8 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "laminate": ("#a9a39a", 0.7), "oak": ("#b8844f", 0.55), "screen": ("#0d0f12", 0.15), "pc_white": ("#eeeeec", 0.3), "pc_glow": ("#dfe6ff", 0.2),
     "pegboard": ("#f4f4f2", 0.6), "ivy": ("#2f5a2b", 0.8), "blind": ("#4a4d52", 0.9), "blind_cloth": ("#4a4d52", 0.9), "books": ("#8a3b2e", 0.8), "jar": ("#d9a441", 0.4), "pot": ("#e8e3d8", 0.5),
     "carpet_grey": ("#6f6f73", 1.0), "red_gloss": ("#c8201e", 0.15), "red_back": ("#9d1714", 0.4), "cat": ("#bdbcb8", 1.0), "sisal": ("#cdb88f", 0.9),
-    "pink": ("#e8607a", 0.8), "pine": ("#c99a55", 0.55), "pine_dark": ("#7a5a30", 0.6), "knob": ("#7a5a30", 0.45), "wardrobe": ("#f2f1ec", 0.35), "duvet": ("#e9e6df", 0.95), "leather": ("#1f1d1d", 0.45), "check": ("#7d7e86", 0.95),
+    "pink": ("#e8607a", 0.8), "pine": ("#c99a55", 0.55), "pine_dark": ("#7a5a30", 0.6), "knob": ("#7a5a30", 0.45), "monitor_back": ("#202124", 0.45), "mouse": ("#1a1a1c", 0.35), "key_dark": ("#2b2c30", 0.55), "key_pink": ("#f6cddb", 0.5),
+    "book0": ("#7a2f2f", 0.8), "book1": ("#2f4a6b", 0.8), "book2": ("#d9cfb8", 0.85), "book3": ("#3c5a3a", 0.8), "book4": ("#1f1f22", 0.7), "book5": ("#b8873d", 0.8), "wardrobe": ("#f2f1ec", 0.35), "duvet": ("#e9e6df", 0.95), "leather": ("#1f1d1d", 0.45), "check": ("#7d7e86", 0.95),
     "lawn": ("#5f7043", 1.0), "paving": ("#bdb8ae", 0.95), "road": ("#59595c", 0.95), "fence": ("#6b5644", 0.9),
 }
 
