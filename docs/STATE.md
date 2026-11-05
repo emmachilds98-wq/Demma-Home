@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V2.0 (5 Nov 2026; the client: "make this now V2.0")
+**Version:** V2.1 (5 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -50,6 +50,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   V1.58 (`check_site.DOORS` walks every door): a foot not a point; chairs, stools, stair drawers not in the way; a step down's head tested below.
   V1.59: Be there starts clear of furniture (`standIn` uses `freeSpot`); walls above the ceiling or past the living room draw as `above` (no green in the stairwell).
   V1.60: standing, the brand names the room you're in (`hereRoom`: the lower landing, not the kitchen whose view it shares). V2.0: `flyTo` clears `WALK.feet`.
+  V2.1: the landing's ceiling over the stairwell (`upper_ceilings`: VOID is a floor only); the stair wall in the living room's paint up to the landing (`model.stair_wall`, `stairpaint` = a copy of the room's `w:stairs` paint); the living room's view draws the first floor above the landing's floor (`livClip`).
 - **V1.53 (the client: double-click to go there, W A S D to walk, a drop-in figure, better overheads):** a double-click (`dblclick`; a
   double-tap on a phone) on any floor you see stands you there in Be there (`room3d/14_views_walk.js` `spotAt`, `goStand`, `freeSpot`;
   through a roof, the first floor down); the figure bottom right (`#r3d-peg`) drags onto the house, a ring and the room's name where it
@@ -144,6 +145,5 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 3. Still to measure (all in Measure): how far the boiler cupboard sticks into bedroom 2; the bathroom's ceiling over the toilet and the slope's start, the vanity's width, the bath's length (184 drawn, from the door);
    the landing's door widths and the wall between the bedroom doors' frames; the tapestry's drop; the hall radiator; the master from the
    wardrobes to the front wall; the alcove; bedroom 2's length; a stair tread; the meter and bin cupboards; the living room's side-wall socket; the garage's chipboard box's depth; the secret room's pier.
-4. Confirm: the foot of the lower flight open to the lower landing (V1.32); the bathroom cord's length (Measure).
-5. Decide: where the side-wall socket goes; near-photo pictures (minutes each) or not. Try V1.50: tap a piece in a room, Change its size.
+4. Confirm: the foot of the lower flight open to the lower landing (V1.32); the bathroom cord's length (Measure). Decide: where the side-wall socket goes; near-photo pictures (minutes each) or not. Try V1.50: tap a piece in a room, Change its size.
 6. Confirm: the living room door hinged at the chimney breast's end, opening into the living room (as the 3D now opens it).

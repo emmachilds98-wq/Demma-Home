@@ -123,12 +123,22 @@ function applyFloors() {
     }
   }
   if (houseG && R.HOUSE3 && S.view === "livstand") {   // V1.38: standing in the living room with its door open: the ground floor through it
-    houseG.visible = doorOpen(HPARTS["door.living_door"]);
-    if (houseG.visible) for (const [k, g] of Object.entries(HFLOOR)) if (k !== "ground" && g.visible) { g.visible = false; hidReal.push(g); }
+    /* V2.0, the client: "ensure ceilings are complete on first floor": looking up the stairs from the room, the landing and its ceiling
+       (it was black there); the house's floors cut away below the landing over the room (its slab lay on the room's ceiling) */
+    const open = doorOpen(HPARTS["door.living_door"]); houseG.visible = true;
+    for (const [k, g] of Object.entries(HFLOOR)) if (!(k === "first" || k === "roof" || (open && k === "ground")) && g.visible) { g.visible = false; hidReal.push(g); }
   }
+  livClip(!!(houseG && houseG.visible && R.HOUSE3 && S.view === "livstand"));
   drawRooms(); brandPlace(); outdoor();
   requestAnimationFrame(() => { measureShift(!!(window.DemmaTools && window.DemmaTools.isOpen())); fadeRows(); });   // V1.30: the rows above may have changed
   dirty();
+}
+let LIVCLIP = null, livClipOn = false;   // V2.0: in the living room's own view the house only above the landing's floor over the room
+function livClip(on) {
+  if (!HMATS || (!on && !livClipOn)) return; livClipOn = on;   // (setRmode may have put its own planes back meanwhile)
+  if (on && !LIVCLIP) LIVCLIP = [new THREE.Plane(new THREE.Vector3(0, 1, 0), -R.HOUSE3.rooms.landing[4] * M + 0.01), new THREE.Plane(new THREE.Vector3(0, 0, 1), -(R.RECESS_Z + 2) * M)];
+  for (const m of Object.values(HMATS)) { const P = on && m.userData.hk !== "stairpaint" ? LIVCLIP : RPLANES;   // the stair wall goes down to the room's ceiling (not over it)
+    if (m.clippingPlanes !== P || m.clipIntersection !== (P === LIVCLIP)) { m.clippingPlanes = P; m.clipIntersection = P === LIVCLIP; m.clipShadows = P.length > 0; m.needsUpdate = true; } }
 }
 /* V1.30 (U3): a row with more to slide to fades at its right edge */
 function fadeRows() { qsa(".r3d-floors:not(.r3d-rmode)").forEach(el => el.classList.toggle("more", el.scrollWidth - el.clientWidth - el.scrollLeft > 4)); }

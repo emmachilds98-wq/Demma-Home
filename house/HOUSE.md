@@ -112,6 +112,8 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
     steps too). To confirm with a photo from the foot of the stairs.
   - **Under the lower flight, a boxed side and underside** on the store's side (the client, 5 Nov, a picture): painted, its line under
     the treads a guess.
+  - **The wall up the stairs** (the party wall beside the living room's flight) is to be painted the living room's stair-wall colour all
+    the way up to the landing's ceiling (the client, 5 Nov): drawn so, to the landing's corner by bedroom 3.
   - **Light switches (the client, 5 Nov):** the bathroom's is a pull cord from the ceiling, on the right as you walk in (no wall switch by
     its door; the cord's length a guess, in Measure); the lower stairs' is at their foot on the left-hand wall looking down.
   - **The bathroom's wall over the stairs**, by the sink, about 7.5 cm further into the bathroom than drawn before, for more room over

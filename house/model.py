@@ -1980,6 +1980,21 @@ def wc(o):
     o.box("upvc", WIDTH - 5, y + 60, zb, WIDTH - 2, y + 200, zb + 3)
 
 
+def stair_wall(o):
+    """V2.0, the client: "the transition from first floor wall and living room wall are the same, it looks like a clean cut off line. we
+    will paint the wall up the stairs there the same colour so need smooth connection": the party wall beside the stairs, from the living
+    room's ceiling up to the first floor's, from the bathroom's wall over the stairs to the landing's corner, in the living room's stair
+    wall paint (the 3D gives it that wall's own material, so Look's colour follows up the stairs)."""
+    fs = next(r for r in rooms("first") if r["id"] == "first_stairs")
+    top = next(r for r in rooms("first") if r["id"] == "landing_top")
+    fl, rz = living_shell()["flight"], Gm.BREAST_D_WEST                  # past the room's back wall only above the treads (the hall runs on under them)
+    yl = lambda z: FLOOR_Y["ground"] + fl["r"] * ((z - fl["z0"]) / fl["g"] + 1) - 25
+    y1, yc, yf = FLOOR_Y["first"] + CEIL, FLOOR_Y["ground"] + Gm.CEIL, FLOOR_Y["first"]
+    o.item("landing.stair_wall", "The stair wall (the living room's paint)", "landing", kind="finish", src="client (5 Nov: one colour up the stairs)", axis="z")
+    o.prism("stairpaint", "x", WIDTH - 0.3, WIDTH, [(fs["z0"], yc), (rz, yc), (rz, yl(rz)), (fs["z1"], yl(fs["z1"])), (fs["z1"], yf),
+                                                     (top["z1"], yf), (top["z1"], y1), (fs["z0"], y1)])
+
+
 def landing(o):
     """v67: the landing as its photos: the white post-and-rail balustrade along the stairwell, the loft hatch, a smoke alarm, the
     bathroom door's fanlight."""
@@ -2040,9 +2055,7 @@ def upper_ceilings(o):
     """The first floor's ceilings (they were open to the roof): in the roof's group, so First still looks in from above."""
     y = FLOOR_Y["first"] + CEIL
     zc = ZC_BACK                                                     # where the back slope reaches the ceiling
-    for r in rooms("first"):
-        if r["room"] in VOID:
-            continue
+    for r in rooms("first"):                                         # V2.0: the stairwell too (VOID is its floor only: the roof showed over the stairs)
         # v65, the client saw "a flat sheet through the top dormer roof": a flat ceiling only where the room is full height (under the
         # dormer, or past where the slope reaches it); elsewhere the slope is the ceiling (first_floor_slopes)
         cuts = sorted({r["x0"], r["x1"], *[c for c in DM["x"] if r["x0"] < c < r["x1"]]})
@@ -2091,7 +2104,7 @@ def build():
             steps += [lambda: office(o), lambda: bed2(o), lambda: master(o), lambda: boiler(o), lambda: bathroom(o), lambda: music(o), lambda: landing(o)]
         steps += [lambda: chalk_doors(o, floor), lambda: pendants(o, floor), lambda: switches(o, floor), lambda: sockets(o, floor), lambda: contacts(o, floor)]
         if floor == "first":
-            steps.append(lambda: first_floor_slopes(o))
+            steps += [lambda: first_floor_slopes(o), lambda: stair_wall(o)]
         if floor == "ground":
             steps.append(lambda: porch(o))
         for step in steps:                                   # V1: no piece's tag runs on into the next builder
@@ -2109,7 +2122,7 @@ def build():
 
 
 MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textures)
-    "brick": ("#9a4b36", 0.92), "party": ("#9a4b36", 0.92), "soldier": ("#83402e", 0.9), "paint": ("#f1ede5", 0.85),
+    "brick": ("#9a4b36", 0.92), "party": ("#9a4b36", 0.92), "soldier": ("#83402e", 0.9), "paint": ("#f1ede5", 0.85), "stairpaint": ("#2d5a46", 0.92),
     "upvc": ("#f5f5f2", 0.35), "glass": ("#dfe9ee", 0.03), "artex": ("#f3f2ee", 0.97), "door_cream": ("#e8ddc2", 0.4), "mirror": ("#eef2f3", 0.12), "brass": ("#c9b58a", 0.3), "rib": ("#e2e2de", 0.5),
     "tile": ("#7b5a4b", 0.85), "ridge": ("#6d4c3f", 0.85), "hung": ("#6f4636", 0.85), "felt": ("#3d3b3a", 0.9),
     "slab": ("#cfc8bb", 0.95), "carpet": ("#cdbfa6", 1.0), "tile_f": ("#d9d4cb", 0.6), "vinyl": ("#cdd8da", 0.6), "concrete": ("#a8a49c", 0.95),
@@ -2222,7 +2235,7 @@ def export():
 # polygon offset, constant: no bleed at a slant). The structure under the finishes under everything fitted; a few pairs by name
 STRUCTURE = {"brick", "brick_buff", "party", "slab", "eaves", "felt", "hung", "lead", "earth", "concrete", "timber", "chipboard", "soldier", "quarry"}
 FINISH = {"paint", "ceiling", "artex", "porch_in"}
-RANK_BY_NAME = {"party": -1, "ceiling": 1.5, "artex": 1.5, "wardrobe_back": 2, "tapestry_dark": 2, "gap": 4, "skirting": 4, "metro": 4, "stone": 4,
+RANK_BY_NAME = {"party": -1, "stairpaint": 2, "ceiling": 1.5, "artex": 1.5, "wardrobe_back": 2, "tapestry_dark": 2, "gap": 4, "skirting": 4, "metro": 4, "stone": 4,
                 "contact": 6, "blind_cloth": 2}   # V1.47: the roller over its cloth
 
 

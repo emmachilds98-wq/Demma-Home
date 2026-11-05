@@ -213,7 +213,8 @@ function buildGroup(items, name) {
     // house's views it showed through them as green blocks (seen from the living room, it still stands)
     const high = it[0] === "p" && (Math.min(...it[1].filter((_, i) => i % 3 === 1)) >= R.CEIL - 0.5 || Math.min(...it[1].filter((_, i) => i % 3 === 2)) >= R.RECESS_Z + 0.5);
     if (kind === "paint") {
-      const m = new THREE.Mesh(geo, paintMat(lum(fill) / BASE_L, it[0] === "b", it[0] === "p", (flags || "").includes("s") ? "w:stairs" : "wall"));
+      const st = (flags || "").includes("s");   // V2.0: the stair wall past the room in the room's own stair-wall paint (its 2D shade drew a line part-way up the stairs)
+      const m = new THREE.Mesh(geo, paintMat((st && it[0] === "p" ? lum("#2d5a46") : lum(fill)) / BASE_L, it[0] === "b", it[0] === "p", st ? "w:stairs" : "wall"));
       shadow(m); (high ? above : grp).add(m); continue;
     }
     const key = kind + (it[0] === "p" ? "p" : "") + (high ? "h" : "");
