@@ -2,7 +2,7 @@
 
 Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
 
-**Version:** V1.59 (5 Nov 2026)
+**Version:** V1.60 (5 Nov 2026)
 
 **The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status.
 
@@ -49,6 +49,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   V1.57: in the hall under the living room's stairs no longer the living room (`walkRoom`: your feet at its tread); down the lower stairs, the kitchen's view (`WALK_VIEW`).
   V1.58 (`check_site.DOORS` walks every door): a foot not a point; chairs, stools, stair drawers not in the way; a step down's head tested below.
   V1.59: Be there starts clear of furniture (`standIn` uses `freeSpot`); walls above the ceiling or past the living room draw as `above` (no green in the stairwell).
+  V1.60: standing, the brand names the room you're in (`hereRoom`: the lower landing, not the kitchen whose view it shares).
 - **V1.53 (the client: double-click to go there, W A S D to walk, a drop-in figure, better overheads):** a double-click (`dblclick`; a
   double-tap on a phone) on any floor you see stands you there in Be there (`room3d/14_views_walk.js` `spotAt`, `goStand`, `freeSpot`;
   through a roof, the first floor down); the figure bottom right (`#r3d-peg`) drags onto the house, a ring and the room's name where it
@@ -102,8 +103,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   street end (they open from outside).
 - **Bedroom 2's door (V1.25):** hinged at the boiler cupboard end, drawn open flat against the cupboard's side (the client's arrow);
   three hinges on every room door; bedroom 2's frame has the moulded cap over its head from the landing photo.
-- **Earlier rounds** (V1.12–V1.24: lights, handles, fabrics, mirrors, the client's photo fixes): `docs/HISTORY.md`.
-- **The embed bridge** (`room3d_page.embed()`, `EMBH`, `?embed`): kept, but nothing builds the frame now.
+- **Earlier rounds** (V1.12–V1.24: lights, handles, fabrics, mirrors, the client's photo fixes): `docs/HISTORY.md`. `?embed` (`EMBH`): kept, unused.
 
 ## Each round
 

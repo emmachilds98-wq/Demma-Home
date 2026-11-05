@@ -160,6 +160,7 @@ function rmodeDress(rr, rid) {
 function setRmode(m, quiet) {
   RMODE = ROOMV() && m !== "in" ? m : "in";
   if (RMODE !== "stand") standLook(false);
+  if (typeof brandPlace === "function") brandPlace();   // V1.60: standing names the room you're in
   const rid = VIEW_ROOM[S.view], rr = (RMODE === "above" || RMODE === "alone") && R.HOUSE3 && (R.HOUSE3.rooms || {})[rid];
   const planes = [];
   if (rr) { const [x0, x1, z0, z1, fy] = rr, top = fy + (R.HOUSE3.ceil || 235) - 3, g = 15, P = (x, y, z, c) => new THREE.Plane(new THREE.Vector3(x, y, z), c * M);
