@@ -664,6 +664,17 @@ def stairs(o):
     yl = lambda z: y0 + (z - st["z0"]) / st["going"] * st["rise"]                        # v67: the handrail on the left going down
     za, zb = st["z0"] + st["going"], st["z1"] - st["going"]
     o.prism("upvc", "x", WIDTH - 7, WIDTH - 2, [(za, yl(za) + 88), (zb, yl(zb) + 88), (zb, yl(zb) + 96), (za, yl(za) + 96)])
+    # V1.59, the client: "lower cupboard needs to have a box on the side and underneath of the stairs": from the store under it the flight
+    # showed each tread's block, stepped, underneath and up its open side; it's boxed in as an understairs cupboard is, a painted soffit
+    # just under the treads' lowest corners and a panel up the open side to their fronts (the store keeps its room under them)
+    o.item("lower.stair_box", "The box under the stairs", "lower_store", kind="fixed", src="client (its line under the treads: E)", axis="z")
+    rise, going, z0, z1 = st["rise"], st["going"], st["z0"], st["z1"]
+    sof = lambda z: yl(z) - rise - 14                                    # the line through the treads' back-bottom corners
+    zf = z0 + (rise + 17) / rise * going                                 # where the soffit's underside meets the floor
+    o.prism("paint", "x", st["x0"] - 0.5, st["x1"] - 1, [(zf, y0), (z1, sof(z1) - 3), (z1, sof(z1)), (zf - 3 * going / rise, y0)])
+    o.prism("paint", "x", st["x0"] - 2.5, st["x0"] - 0.5, [(z0, y0), (z0, y0 + rise), (z1 - going, y0 + st["n"] * rise), (z1, y0 + st["n"] * rise),
+                                                          (z1, sof(z1) - 3), (zf, y0)])
+    o.end()
 
 
 def first_floor_slopes(o):
@@ -1700,7 +1711,7 @@ def switches(o, floor):
     y = FLOOR_Y[floor] + 117
     rs = [r for r in rooms(floor) if r["id"] not in NO_WALLS and r["room"] not in VOID]
     for d in doors(floor):
-        if any(k in d["id"] for k in ("store", "cupboard", "airing", "porch", "front")):
+        if any(k in d["id"] for k in ("store", "cupboard", "airing", "porch", "front")) or d["id"] in D.NO_DOOR_SWITCH:   # V1.59: the bathroom's a pull cord
             continue
         L, a, b = d["line"], d["a"], d["b"]
         for r in rs:
@@ -1725,6 +1736,23 @@ def switches(o, floor):
                 o.box("fitting", face + out * 0.1, y, p0, face + out * 0.9, y + 8.5, p0 + 8.5)
             else:
                 o.box("fitting", p0, y, face + out * 0.1, p0 + 8.5, y + 8.5, face + out * 0.9)
+    for s_ in D.SWITCHES_EXTRA:                                        # V1.59: switches the client placed away from a door (the stairs')
+        if s_["floor"] != floor:
+            continue
+        o.item(f"switch.{s_['id']}", "A light switch", s_["room"], kind="switch", src=s_["src"], axis=s_["axis"])
+        f_, out, p0 = s_["face"], s_["out"], s_["pos"]
+        if s_["axis"] == "z":
+            o.box("fitting", f_ + out * 0.1, y, p0, f_ + out * 0.9, y + 8.5, p0 + 8.5)
+        else:
+            o.box("fitting", p0, y, f_ + out * 0.1, p0 + 8.5, y + 8.5, f_ + out * 0.9)
+    for c in D.PULL_CORDS:                                             # V1.59: a pull cord: its ceiling switch, the cord, the bob at its end
+        if c["floor"] != floor:
+            continue
+        top = FLOOR_Y[floor] + CEIL
+        o.item(f"pull.{c['id']}", "The light's pull cord", c["room"], kind="switch", src=c["src"])
+        o.box("fitting", c["x"] - 4, top - 2.5, c["z"] - 4, c["x"] + 4, top, c["z"] + 4)
+        o.box("fitting", c["x"] - 0.25, top - 2.5 - c["drop"], c["z"] - 0.25, c["x"] + 0.25, top - 2.5, c["z"] + 0.25)
+        o.box("fitting", c["x"] - 0.9, top - 7.5 - c["drop"], c["z"] - 0.9, c["x"] + 0.9, top - 2.5 - c["drop"], c["z"] + 0.9)
 
 
 def sockets(o, floor):

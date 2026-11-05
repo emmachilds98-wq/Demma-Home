@@ -110,6 +110,10 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
   - **No wall through the lower flight:** the store's wall under it stops at the steps (the client, 31 Oct).
   - **The lower flight opens onto the lower landing** (V1.32: the model had a wall across its foot; its ceiling over the store stops at the
     steps too). To confirm with a photo from the foot of the stairs.
+  - **Under the lower flight, a boxed side and underside** on the store's side (the client, 5 Nov, a picture): painted, its line under
+    the treads a guess.
+  - **Light switches (the client, 5 Nov):** the bathroom's is a pull cord from the ceiling, on the right as you walk in (no wall switch by
+    its door; the cord's length a guess, in Measure); the lower stairs' is at their foot on the left-hand wall looking down.
   - **The bathroom's wall over the stairs**, by the sink, about 7.5 cm further into the bathroom than drawn before, for more room over
     the stairs (the client, 29 Oct: "roughly 5-10 more cm").
 - **Both gardens:** the back (about 25 m, the photos) and the front (the agent's photo, below; sizes to come).

@@ -17,6 +17,8 @@ photo or plan (to confirm) · **E** our estimate.
 | 25 Oct | "Maroon is the sink cabinet. Green mark at top of the stairs is rough landing area size. Black block on bedroom 2 is the dormer roof as the rooms are built in a loft conversion when it was built originally. Flat top roof on the bathroom and bedroom 2 side. the maroon mark on the kitchen toilet is where the small sink is." | The bathroom's sink cabinet (maroon), the landing's size (green), bedroom 2's roof slope (black), the flat-roofed rear dormer, the WC's small sink (maroon) |
 | 25 Oct | "keep it blank if need be through the window for now until the model of the whole house is done" | The living room's window shows a plain sky until phase 5 |
 | 25 Oct | "This is a few images of the kitchen and how it looks currently. The chalkboard doors show how the two cupboards appear on your right as you walk in the kitchen. We've done this chalkboard style with the top floor boiler cupboard too." | The kitchen as built (v60), the cubby's two chalkboard doors, the airing cupboard's chalkboard door |
+| 5 Nov | "lower cupboard needs to have a box on the side and underneath of the stairs" (a picture) | The store's boxed side and underside of the lower flight (its line under the treads E) |
+| 5 Nov | "the light switch for the bathroom is in the bathroom and is a string on the ceiling on the right as you walk in. the stairway switch is at the bottom of the stairs on the side wall on the left" | The bathroom's pull cord (its length E, in Measure), no wall switch by its door; the lower stairs' switch at their foot, 117 up (E) |
 
 ## 2. Floor plans
 

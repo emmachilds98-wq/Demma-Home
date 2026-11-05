@@ -209,7 +209,9 @@ function buildGroup(items, name) {
     if (fill === "screen" || fill === null) continue;
     if (it[0] === "b") { kind = SOFT.has(fill) ? "fabric" : kindOf(fill, flags, Math.max(it[4], it[5], it[6])); geo = boxGeo(it); }
     else { kind = kindOf(fill, flags); geo = polyGeo(it); }
-    const high = it[0] === "p" && Math.min(...it[1].filter((_, i) => i % 3 === 1)) >= R.CEIL - 0.5;
+    // V1.59: and a wall wholly past the room's back wall (the stairwell's, over the hall): the house has its own walls there, so in the
+    // house's views it showed through them as green blocks (seen from the living room, it still stands)
+    const high = it[0] === "p" && (Math.min(...it[1].filter((_, i) => i % 3 === 1)) >= R.CEIL - 0.5 || Math.min(...it[1].filter((_, i) => i % 3 === 2)) >= R.RECESS_Z + 0.5);
     if (kind === "paint") {
       const m = new THREE.Mesh(geo, paintMat(lum(fill) / BASE_L, it[0] === "b", it[0] === "p", (flags || "").includes("s") ? "w:stairs" : "wall"));
       shadow(m); (high ? above : grp).add(m); continue;
