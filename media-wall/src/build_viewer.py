@@ -1333,16 +1333,20 @@ def pwa_files():
         "background_color": "#151a16", "theme_color": "#2f4a3c",
         "icons": [{"src": f"media-wall/src/art/icon-{n}.png", "sizes": f"{n}x{n}", "type": "image/png", "purpose": "any maskable"} for n in (192, 512)]}, indent=1))
     (root / "sw.js").write_text(f"""// v39: the page opens from the device after the first visit (network first for the page, so a new round shows; cache first for the
-// rest: three.js from its CDN, the fonts and the pictures). {LABEL}.
-const C = "demma-{LABEL}";
+// rest: three.js from its CDN, the fonts and the pictures). V2.45: a file named by its contents (photos.<hash>.json, three.<hash>.js, a
+// CDN file at its version) is kept across versions (K), so a new round doesn't fetch the 13 MB of photos again; its older copy goes. {LABEL}.
+const C = "demma-{LABEL}", K = "demma-keep", HASHED = /\\.[0-9a-f]{{10}}\\.[a-z]+$|@\\d+\\.\\d+\\.\\d+\\//;
+const stem = u => new URL(u).pathname.replace(/\\.[0-9a-f]{{10}}\\.[a-z]+$/, "");
 self.addEventListener("install", e => {{ self.skipWaiting(); e.waitUntil(caches.open(C).then(c => c.addAll(["./", "manifest.webmanifest"]).catch(() => {{}}))); }});
-self.addEventListener("activate", e => {{ e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C).map(k => caches.delete(k)))).then(() => self.clients.claim())); }});
+self.addEventListener("activate", e => {{ e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C && k !== K).map(k => caches.delete(k)))).then(() => self.clients.claim())); }});
 self.addEventListener("fetch", e => {{
   const r = e.request; if (r.method !== "GET") return;
   const u = new URL(r.url), page = r.mode === "navigate" || (u.origin === location.origin && (u.pathname.endsWith("/") || u.pathname.endsWith("index.html")));
   if (page) {{ e.respondWith(fetch(r).then(res => {{ const cp = res.clone(); caches.open(C).then(c => c.put(r, cp)); return res; }}).catch(() => caches.match(r).then(m => m || caches.match("./")))); return; }}
   if (/\\.pdf$/.test(u.pathname)) return;                                   // the PDFs come from the network
-  e.respondWith(caches.match(r).then(m => m || fetch(r).then(res => {{ if (res.ok || res.type === "opaque") {{ const cp = res.clone(); caches.open(C).then(c => c.put(r, cp)); }} return res; }})));
+  const keep = HASHED.test(u.pathname), into = keep ? K : C;
+  e.respondWith(caches.match(r).then(m => m || fetch(r).then(res => {{ if (res.ok || res.type === "opaque") {{ const cp = res.clone();
+    caches.open(into).then(async c => {{ if (keep) for (const k of await c.keys()) if (k.url !== r.url && stem(k.url) === stem(r.url)) await c.delete(k); return c.put(r, cp); }}); }} return res; }})));
 }});
 """)
 
