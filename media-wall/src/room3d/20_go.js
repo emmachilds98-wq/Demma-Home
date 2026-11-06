@@ -553,8 +553,13 @@ function buildHouse() {
         for (const [r, L] of Object.entries(by)) put(lgOf(r), L.map(([x0, y0, z0, x1, y1, z1]) => houseBox(mk, x0, y0, z0, x1, y1, z1)), mat3(mk)); }
       SHARED = new Set();
       const byMat = {};
+      const PSOFT = { lycksele: 2.2, pillow: 3, cloth: 0.7 };   // V2.46 (N6): the cloth profiles (the chair-bed, the garments) with soft edges, kept to their outline
       const prismGeo = P => {                         // a profile extruded: along x the profile is (z, y), along z it is (x, y)
-        const g = new THREE.ExtrudeGeometry(new THREE.Shape(P.pts.map(([u, w]) => new THREE.Vector2(u * M, w * M))), { depth: (P.b - P.a) * M, bevelEnabled: false });
+        const r = SMALL && !GOOD_PHONE ? 0 : Math.min(PSOFT[P.m] ?? (P.m.startsWith("cloth") ? PSOFT.cloth : 0), (P.b - P.a) / 2 - 0.1);
+        const g = new THREE.ExtrudeGeometry(new THREE.Shape(P.pts.map(([u, w]) => new THREE.Vector2(u * M, w * M))), r > 0
+          ? { depth: (P.b - P.a - 2 * r) * M, bevelEnabled: true, bevelThickness: r * M, bevelSize: r * M, bevelOffset: -r * M, bevelSegments: 2 }
+          : { depth: (P.b - P.a) * M, bevelEnabled: false });
+        if (r > 0) g.translate(0, 0, r * M);
         if (P.axis === "x") mx.set(0, 0, -1, -P.a * M, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1);
         else if (P.axis === "y") mx.set(-1, 0, 0, 0, 0, 0, 1, P.a * M, 0, 1, 0, 0, 0, 0, 0, 1);   // V1.14: a plan shape (x, z) raised from a to b (a chair's star base)
         else mx.set(-1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, P.a * M, 0, 0, 0, 1);

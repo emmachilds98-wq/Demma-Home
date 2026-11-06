@@ -1030,9 +1030,26 @@ def kitchen(o):
             else:
                 o.item("kitchen.units", "The kitchen units and appliances", "kitchen")
             if kind == "fridge":
-                o.box("gloss", x0 + 1, Y(1), z0 + 1, x1 - 1, Y(180), z1 - 1)
-                o.box("gap", x0 + 1, Y(118), z0 - 0.3, x1 - 1, Y(119), z1 + 0.3) if face != "+x" else None
-                front(face, x0, x1, z0, z1, Y(130), Y(152), "steel_dark", inset=16)        # its water dispenser
+                # V2.46 (REAL_PLAN N6), the photos of 30 Oct: the freezer door below (to about 80), the cream grip strip between the
+                # doors (their handle), the fridge door above with the cream water dispenser left of its middle at about 98 to 126; the
+                # doors proud of the cabinet, a dark kick at the floor. at(): along the front (from x0 / z0), d out of the front (- in)
+                def at(m, a0, a1, ya, yb, d0, d1):
+                    if face == "-z":
+                        o.box(m, x0 + a0, ya, z0 - d1, x0 + a1, yb, z0 - d0)
+                    elif face == "+z":
+                        o.box(m, x0 + a0, ya, z1 + d0, x0 + a1, yb, z1 + d1)
+                    else:
+                        o.box(m, x1 + d0, ya, z0 + a0, x1 + d1, yb, z0 + a1)
+                W_ = (x1 - x0) if face != "+x" else (z1 - z0); dc = 0.42 * W_     # the dispenser's middle
+                at("gloss", 1, W_ - 1, Y(2), Y(180), -59, -2.4)                   # the cabinet
+                at("black", 3, W_ - 3, Y(0), Y(2), -55, -4)                       # the kick and feet
+                at("gloss", 1.2, W_ - 1.2, Y(2), Y(80), -2.4, 0)                  # the freezer door
+                at("door_cream", 1.2, W_ - 1.2, Y(80.4), Y(84.6), -2.4, -1.2)     # the grip strip, set in
+                at("gloss", 1.2, W_ - 1.2, Y(85), Y(179.6), -2.4, 0)              # the fridge door
+                at("door_cream", dc - 7, dc + 7, Y(98), Y(126), 0, 0.4)           # the dispenser: its panel, the dark recess,
+                at("black", dc - 5, dc + 5, Y(102), Y(118), 0.4, 0.55)            # the paddle and the drip tray
+                at("door_cream", dc - 2, dc + 2, Y(108), Y(116), 0.55, 2.0)
+                at("door_cream", dc - 5, dc + 5, Y(98.6), Y(100), 0.4, 2.6)
                 continue
             if kind in ("washer", "dishwasher", "cooker"):
                 col = {"washer": "black_app", "dishwasher": "gloss", "cooker": "black_app"}[kind]
@@ -1399,13 +1416,27 @@ def master(o):
             o.box("knob", fx - 1.5, y0_ + hd / 2 - 1.5, cz0 - 3.1, fx + 1.5, y0_ + hd / 2 + 1.5, cz0 - 0.3)    # V2.17: round knobs
     cols = ["#3d4a5c", "#b9b2a6", "#7a2f2f", "#2f3b2f", "#d8d2c4", "#555555", "#9b8b6e"]
     w = M_["wardrobes"]; zb_ = next(r["z0"] for r in rooms("first") if r["id"] == "master") + 0.5   # the alcove's back wall (v69: fitted)
-    # v65, the client: "only the frames with no doors right now"; v68 one each, fitted out alike
+    # v65, the client: "only the frames with no doors right now"; v68 one each, fitted out alike. V2.46 (REAL_PLAN N6): built as a PAX
+    # frame is (ikea.com: sides and top 1.8, the base panel over a plinth set back as a kick), an oval rail in its two end sockets, and the
+    # clothes as garments on their hangers (shirts, tees, a coat, a dress, trousers; they were flat slabs), folded piles on the top shelf
     T_, zf_ = 1.8, zb_ + w["d"] - 0.3
+    hz = zb_ + w["d"] / 2; yb = y + 161.5                            # the rail's line; a hanger's bar
+    # a garment's outline (along the rail's depth, down from its hanger's bar), its thickness on the rail
+    tee = [(-6, 5.4), (-20, 0.8), (-24.5, -3), (-24, -16), (-18.5, -18.5), (-17.2, -14), (-17.5, -68), (17.5, -68), (17.2, -14), (18.5, -18.5), (24, -16), (24.5, -3), (20, 0.8), (6, 5.4), (0, 3)]
+    shirt = [(-6, 5.4), (-19.5, 0.8), (-21.5, -2), (-22.5, -60), (-18.2, -60.5), (-17, -20), (-17.5, -78), (17.5, -78), (17, -20), (18.2, -60.5), (22.5, -60), (21.5, -2), (19.5, 0.8), (6, 5.4), (0, 2.6)]
+    coat = [(-6.5, 5.4), (-20, 0.8), (-22, -2), (-23.5, -62), (-19.4, -62.5), (-17.5, -22), (-20, -100), (20, -100), (17.5, -22), (19.4, -62.5), (23.5, -62), (22, -2), (20, 0.8), (6.5, 5.4), (0, 1.5)]
+    dress = [(-5, 5.4), (-13, 2), (-15, -10), (-14, -30), (-15, -50), (-21, -95), (21, -95), (15, -50), (14, -30), (15, -10), (13, 2), (5, 5.4), (0, 1)]
+    trousers = [(-6, 5.4), (-17, 1.5), (-16, -58), (16, -58), (17, 1.5), (6, 5.4), (0, 3)]
+    rack = [(shirt, 3.0), (tee, 2.5), (shirt, 3.0), (coat, 6.0), (tee, 2.5), (trousers, 3.0), (shirt, 3.0), (dress, 3.5), (tee, 2.5), (shirt, 3.0)]
+    hanger = [(-21, -0.6), (0, 6.6), (21, -0.6), (21, 0.6), (0, 7.8), (-21, 0.6)]
+    rail = [(hz + 1.0 * math.cos(t * math.pi / 6), y + 166 + 1.5 * math.sin(t * math.pi / 6)) for t in range(12)]
     for k in range(w["n"]):
         o.item(f"master.wardrobe{k + 1}", "Wardrobe " + str(k + 1), "master", src="client (two 1 m) + E", data=("MASTER", "wardrobes"), axis="x")
         xa, xb = w["x0"] + k * w["w"] + 0.5, w["x0"] + (k + 1) * w["w"] - 0.5
-        o.box("wardrobe", xa, y, zb_, xa + T_, y + w["h"], zf_); o.box("wardrobe", xb - T_, y, zb_, xb, y + w["h"], zf_)
-        o.box("wardrobe", xa + T_, y + w["h"] - T_, zb_, xb - T_, y + w["h"], zf_); o.box("wardrobe", xa + T_, y, zb_ + 2, xb - T_, y + 8, zf_)
+        o.box("wardrobe", xa, y, zb_, xa + T_, y + w["h"], zf_); o.box("wardrobe", xb - T_, y, zb_, xb, y + w["h"], zf_)   # the sides
+        o.box("wardrobe", xa + T_, y + w["h"] - T_, zb_, xb - T_, y + w["h"], zf_)                                       # the top
+        o.box("wardrobe", xa + T_, y + 6.2, zb_ + 0.6, xb - T_, y + 8, zf_)                                              # the base panel
+        o.box("wardrobe", xa + T_, y, zb_ + 2, xb - T_, y + 6.2, zf_ - 2.5)                                              # the plinth, set back
         o.box("wardrobe_back", xa + T_, y + 8, zb_, xb - T_, y + w["h"] - T_, zb_ + 0.6)
         for d_ in range(w["drawers"]):                             # three KOMPLEMENT drawers at the bottom, white fronts, a pull each
             ya = y + 8 + d_ * w["drawer_h"]
@@ -1414,17 +1445,19 @@ def master(o):
         yd = y + 8 + w["drawers"] * w["drawer_h"]
         o.box("wardrobe", xa + T_, yd, zb_ + 0.6, xb - T_, yd + 1.8, zf_)
         o.box("wardrobe", xa + T_, y + 175, zb_ + 0.6, xb - T_, y + 176.8, zf_)            # the top shelf, the rail under it
-        o.box("chrome", xa + T_, y + 165, zb_ + w["d"] / 2 - 1, xb - T_, y + 167, zb_ + w["d"] / 2 + 1)
-        for i in range(10):
-            cx_ = xa + 8 + i * (w["w"] - 16) / 10
-            o.box("cloth%d" % ((i + 3 * k) % len(cols)), cx_, y + 90 + (i % 3) * 12, zb_ + 8, cx_ + 5.5, y + 162, zb_ + w["d"] - 8)
-            hz = zb_ + w["d"] / 2                                      # V2.17: each on its hanger: the bar across its shoulders, the hook up to the rail
-            o.box("chrome", cx_ + 2.4, y + 161.4, hz - 17, cx_ + 3.1, y + 162.1, hz + 17)
-            o.box("chrome", cx_ + 2.4, y + 162.1, hz - 0.35, cx_ + 3.1, y + 166, hz + 0.35)
-        for i in range(2):                                         # folded on the top shelf; boxes on top of the frame to the ceiling
-            o.box("cloth%d" % ((i + k) % len(cols)), xa + 10 + i * 42, y + 176.8, zb_ + 8, xa + 44 + i * 42, y + 190, zb_ + 42)
+        o.prism("chrome", "x", xa + T_ + 1.2, xb - T_ - 1.2, rail)
+        for ex in (xa + T_, xb - T_ - 1.2):                                                 # the rail's end sockets
+            o.box("chrome", ex, y + 163.8, hz - 2, ex + 1.2, y + 168.2, hz + 2)
+        for i, (g, t) in enumerate(rack[k:] + rack[:k]):
+            xc = xa + 10.75 + i * (w["w"] - 16) / 10                                        # each on its hanger, the hook over the rail
+            o.prism("cloth%d" % ((i + 3 * k) % len(cols)), "x", xc - t / 2, xc + t / 2, [(hz + u, yb + v) for u, v in g])
+            o.prism("chrome", "x", xc - 0.35, xc + 0.35, [(hz + u, yb + v) for u, v in hanger])
+            o.box("chrome", xc - 0.35, yb + 7.8, hz - 0.35, xc + 0.35, y + 167.8, hz + 0.35)
+        for i in range(2):                                         # folded piles on the top shelf; boxes on top of the frame to the ceiling
+            for j in range(3):
+                fx, fz = xa + 10 + i * 42 + (j % 2) * 1.2, zb_ + 8 + (j % 2) * 1.5
+                o.box("cloth%d" % ((i + j + k) % len(cols)), fx, y + 176.8 + j * 4.4, fz, fx + 33, y + 181 + j * 4.4, fz + 33)
             o.box("storebox", xa + 3 + i * 47, y + w["h"], zb_ + 4, xa + 47 + i * 47, y + w["h"] + w["top_boxes"], zb_ + w["d"] - 6)
-
 
 def music(o):
     """v66: bedroom 2 as the best music room for the space (the client: "remove everything ... 2 guitars, amp, large keyboard with more to
@@ -1436,12 +1469,24 @@ def music(o):
     r = Mu["rug"]
     o.box("rug", r["x"][0], y, r["z"][0], r["x"][1], y + 1, r["z"][1])
     o.item("music.chairbed", "The LYCKSELE chair-bed", "bed2", src="IKEA LYCKSELE (E placed)", data=("MUSIC", "chairbed"), axis="x")
-    cb = Mu["chairbed"]; x0, x1 = cb["x"]; z1 = cb["z1"]; z0 = z1 - cb["d"]   # LYCKSELE: a black frame, a fold-out cushion, its back
-    o.box("black", x0, y, z0 + 4, x0 + 3, y + 20, z1 - 4); o.box("black", x1 - 3, y, z0 + 4, x1, y + 20, z1 - 4)
-    o.box("black", x0, y + 18, z0 + 4, x1, y + 21, z0 + 7)
-    o.box("lycksele", x0 + 2, y + 21, z0, x1 - 2, y + 42, z1 - 22)                  # the seat
-    o.box("lycksele", x0 + 2, y + 21, z1 - 22, x1 - 2, y + cb["h"], z1 - 2)         # the back, leaning on the wall
-    o.box("pillow", x0 + 8, y + 42, z1 - 34, x1 - 8, y + 62, z1 - 22)               # a cushion
+    cb = Mu["chairbed"]; x0, x1 = cb["x"]; z1 = cb["z1"]; z0 = z1 - cb["d"]; h = cb["h"]
+    # V2.46 (REAL_PLAN N6): LYCKSELE as it is (ikea.com, 80 × 100 × 87): a black steel tube frame, each side a front leg, a back leg, the
+    # seat rail and the back's stay leaning to the wall, rails across; the folded mattress as a rounded seat and a leaning back, a cushion
+    for xs in (x0, x1 - 2.5):
+        o.box("black", xs, y, z0 + 6, xs + 2.5, y + 21, z0 + 8.5)                       # the front leg
+        o.box("black", xs, y, z1 - 24, xs + 2.5, y + 21, z1 - 21.5)                     # the back leg
+        o.box("black", xs, y + 18.5, z0 + 8.5, xs + 2.5, y + 21, z1 - 24)               # the seat rail
+        o.prism("black", "x", xs, xs + 2.5, [(z1 - 24, y + 21), (z1 - 21.5, y + 21), (z1 - 5.5, y + h - 6), (z1 - 8, y + h - 6)])   # the back's stay
+    for za in (z0 + 6, z1 - 24):
+        o.box("black", x0 + 2.5, y + 18.5, za, x1 - 2.5, y + 21, za + 2.5)               # the rails across
+    q = [i * math.pi / 8 for i in range(5)]
+    o.prism("lycksele", "x", x0 + 2.5, x1 - 2.5, [(z0 + 8 - 6 * math.sin(a_), y + 27 - 6 * math.cos(a_)) for a_ in q]
+            + [(z0 + 8 - 6 * math.cos(a_), y + 36 + 6 * math.sin(a_)) for a_ in q]
+            + [(z1 - 25, y + 42), (z1 - 22, y + 39), (z1 - 22, y + 21)])               # the seat, its front rolled
+    o.prism("lycksele", "x", x0 + 2.5, x1 - 2.5, [(z1 - 23, y + 41), (z1 - 7.5, y + 41), (z1 - 1.5, y + h - 6), (z1 - 2, y + h - 2),
+                                                  (z1 - 4.5, y + h), (z1 - 8.5, y + h - 0.5), (z1 - 10.5, y + h - 3)])   # the back, leaning on the wall
+    o.prism("pillow", "x", x0 + 9, x1 - 9, [(z1 - 35, y + 42), (z1 - 23.5, y + 42), (z1 - 19.5, y + 52), (z1 - 17.5, y + 61),
+                                            (z1 - 20.5, y + 64.5), (z1 - 29, y + 63), (z1 - 34, y + 56), (z1 - 36, y + 47)])   # a cushion
     o.item("music.desk", "The L desk", "bed2", src="E (custom)", data=("MUSIC", "desk"), axis="x")
     dk = Mu["desk"]; dx0, dx1 = dk["x"]; dz0, dz1 = dk["z"]; dy = y + dk["h"]        # the L desk in birch ply
     rt = dk["ret"]
@@ -1480,25 +1525,35 @@ def music(o):
     hx, hz = Mu["chair"]                                           # the chair, facing the desk
     desk_chair(o, hx, hz, y, "-z")                                 # V1.14: a real swivel chair
     o.item("music.kallax", "The Kallax with drawers", "bed2", src="IKEA KALLAX (E placed)", data=("MUSIC", "kallax"), axis="x")
-    kx = Mu["kallax"]; ka, kb_ = kx["x"]; kz0, kz1 = kx["z0"], kx["z0"] + kx["d"]; T = 3.8   # the Kallax, white, open to the room
-    for xa in (ka, (ka + kb_) / 2 - 0.8, kb_ - T):
-        o.box("wardrobe", xa, y, kz0, xa + (1.6 if xa not in (ka, kb_ - T) else T), y + kx["h"], kz1)
-    cell = (kx["h"] - T) / kx["rows"]
-    for k in range(kx["rows"] + 1):
-        o.box("wardrobe", ka, y + k * cell, kz0, kb_, y + k * cell + T, kz1)
-    o.box("wardrobe_back", ka, y, kz0, kb_, y + kx["h"], kz0 + 0.6)
-    cw = (kb_ - ka - 2 * T - 1.6) / 2
+    kx = Mu["kallax"]; ka, kb_ = kx["x"]; kz0, kz1 = kx["z0"], kx["z0"] + kx["d"]; T, t_ = 3.8, 1.6   # the Kallax, white, open to the room
+    # V2.46 (REAL_PLAN N6): as KALLAX is (ikea.com): the outer frame 3.8 thick, the shelves and the divider 1.6 (they were all 3.8), cells
+    # about 33.5 square; the two-drawer inserts set just in; DRÖNA boxes with their hand hole and a row of records in the top cells
+    o.box("wardrobe", ka, y, kz0, ka + T, y + kx["h"], kz1); o.box("wardrobe", kb_ - T, y, kz0, kb_, y + kx["h"], kz1)
+    o.box("wardrobe", ka + T, y, kz0, kb_ - T, y + T, kz1); o.box("wardrobe", ka + T, y + kx["h"] - T, kz0, kb_ - T, y + kx["h"], kz1)
+    o.box("wardrobe", (ka + kb_ - t_) / 2, y + T, kz0, (ka + kb_ + t_) / 2, y + kx["h"] - T, kz1)
+    cell = (kx["h"] - 2 * T - (kx["rows"] - 1) * t_) / kx["rows"]
+    for k in range(1, kx["rows"]):
+        yy = y + T + k * (cell + t_) - t_
+        o.box("wardrobe", ka + T, yy, kz0, kb_ - T, yy + t_, kz1)
+    o.box("wardrobe_back", ka + T, y + T, kz0, kb_ - T, y + kx["h"] - T, kz0 + 0.6)
+    cw = (kb_ - ka - 2 * T - t_) / 2
     n = 0
     for k in range(kx["rows"]):                                    # the drawer inserts in the bottom rows, two drawers each
         for c in range(kx["cols"]):
-            xa = ka + T + c * (cw + 1.6); ya = y + k * cell + T
+            xa = ka + T + c * (cw + t_); ya = y + T + k * (cell + t_)
             if n < kx["drawers"]:
                 for dd in range(2):
-                    yy = ya + dd * (cell - T) / 2
-                    o.box("wardrobe", xa + 0.4, yy + 0.4, kz1 - 1.6, xa + cw - 0.4, yy + (cell - T) / 2 - 0.4, kz1)
-                    o.box("chrome", xa + cw / 2 - 5, yy + (cell - T) / 4 - 0.6, kz1, xa + cw / 2 + 5, yy + (cell - T) / 4 + 0.6, kz1 + 1.2)
-            elif (k + c) % 2:
-                o.box("cloth%d" % ((k + c) % 7), xa + 3, ya, kz0 + 6, xa + cw - 3, ya + 22, kz1 - 6)   # a box, records
+                    yy = ya + dd * cell / 2
+                    o.box("wardrobe", xa + 0.3, yy + 0.3, kz1 - 1.9, xa + cw - 0.3, yy + cell / 2 - 0.3, kz1 - 0.3)
+                    o.box("chrome", xa + cw / 2 - 5, yy + cell / 4 - 0.6, kz1 - 0.3, xa + cw / 2 + 5, yy + cell / 4 + 0.6, kz1 + 0.9)
+            elif (k + c) % 2:                                      # a DRÖNA box (33 × 38 × 33), its hand hole
+                o.box("cloth%d" % (0 if c else 6), xa + 0.4, ya, kz0 + 1.5, xa + cw - 0.4, ya + cell - 0.6, kz1 - 1.2)
+                o.box("black", xa + cw / 2 - 5, ya + cell - 9, kz1 - 1.2, xa + cw / 2 + 5, ya + cell - 6, kz1 - 1.0)
+            else:                                                  # records on end, their spines to the room
+                xx = xa + 0.6
+                for j, th in enumerate((2.4, 1.2, 3.0, 1.6, 2.2, 1.0, 2.8, 1.8, 2.0, 1.4)):
+                    o.box("book%d" % (j % 6), xx, ya, kz1 - 32.5, xx + th, ya + 31.5, kz1 - 1.5)
+                    xx += th + 0.1
             n += 1
     o.item("music.amp", "The amp", "bed2", src="E (1 × 12 combo)", data=("MUSIC", "amp"), axis="z")
     a = Mu["amp"]; ax0, ax1 = a["x"]; az0, az1 = a["z"]            # the amp, a 1 × 12 combo, its face to the room
