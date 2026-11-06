@@ -160,5 +160,29 @@
   "size": 0.4,
   "url": "",
   "licence": "ours"
+ },
+ "upvc": {
+  "asset": "made by build_textures.finishes",
+  "size": 0.5,
+  "url": "",
+  "licence": "ours"
+ },
+ "gloss": {
+  "asset": "made by build_textures.finishes",
+  "size": 0.5,
+  "url": "",
+  "licence": "ours"
+ },
+ "brushed": {
+  "asset": "made by build_textures.finishes",
+  "size": 0.3,
+  "url": "",
+  "licence": "ours"
+ },
+ "hung": {
+  "asset": "made by build_textures.finishes",
+  "size": 0.6,
+  "url": "",
+  "licence": "ours"
  }
 }
