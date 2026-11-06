@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.50 (6 Nov 2026)
+**Version:** V2.51 (6 Nov 2026)
 
 **Work from:** `docs/REAL_PLAN.md` section 6, the next round's tasks (N1–N10) in workstreams that run side by side (Speed, Look, Shapes,
 Edit, Light, UI), one task a PR. Its section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards (one line a row).
