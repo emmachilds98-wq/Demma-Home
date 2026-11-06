@@ -1149,8 +1149,8 @@ def kitchen(o):
         bar_stool(o, cx_, cz_, Y(0), "+x")
     # the LED battens on the ceiling (the photo)
     o.item("kitchen.lights", "The LED battens", "kitchen", kind="light", src="client's photo", measure=False)
-    for zc in (-200.0, -90.0):
-        o.box("led", 100, Y(CEIL - 5), zc - 3, 250, Y(CEIL - 1), zc + 3)
+    for zc in D.BATTENS["z"]:
+        o.box("led", D.BATTENS["x"][0], Y(CEIL - 5), zc - 3, D.BATTENS["x"][1], Y(CEIL - 1), zc + 3)
 
 
 def chalk_doors(o, floor):
@@ -1229,6 +1229,10 @@ def office(o):
     o.box("black", W - 6, y0 + d["h"], mz - 3, W - 2, y0 + d["h"] + 40, mz + 3)
     o.box("black", W - 30, y0 + d["h"] + 38, mz - 1.5, W - 4, y0 + d["h"] + 41, mz + 1.5)
     o.box("steel", W - 34, y0 + d["h"] + 22, mz - 3, W - 28, y0 + d["h"] + 38, mz + 3)
+    L = D.LAMPS["bed3"]                                                                                        # V2.48 (R1): the purple lamp
+    o.item("office.lamp", L["name"], "bed3", kind="light", src=L["src"], measure=False)
+    o.lathe("black", L["x"], y0 + d["h"], L["z"], [(0, 0), (4.5, 0), (4.5, 1.2), (2, 2.4), (0, 2.4)])                 # its foot
+    o.lathe("lamp_purple", L["x"], y0 + d["h"] + 2, L["z"], [(0, 0), (2.5, 0.4), (4.6, 1.8), (5.9, 4), (6, 6), (5.6, 8.2), (4.2, 10.3), (2.2, 11.6), (0, 12)])   # the glowing globe
     o.item("office.pc2", "The glass PC", "bed3", src="E (mid-tower)", data=("OFFICE", "pc2"), axis="z")
     p2 = O["pc2"]                                                                                             # its glass PC under the desk
     o.box("pc_white", p2["x"][0], y0, p2["z"][0], p2["x"][1], y0 + p2["h"], p2["z"][1])
@@ -1625,6 +1629,8 @@ def bathroom(o):
     o.box("oak", xw - 2.6, y + my0, m0, xw - 0.4, y + my1, m1)
     o.box("mirror", xw - 3.0, y + my0 + 1.5, m0 + 1.5, xw - 2.6, y + my1 - 1.5, m1 - 1.5)  # the glass (V1.17: a mirror, it was grey steel)
     o.box("black", xw - 5, y + my1 + 1, (m0 + m1) / 2 - 20, xw - 0.4, y + my1 + 3.5, (m0 + m1) / 2 + 20)
+    o.item("light.bathroom_bar", D.LAMPS["bathroom"]["name"], "bathroom", kind="light", src=D.LAMPS["bathroom"]["src"], measure=False)
+    o.box("led", xw - 4.6, y + my1 + 0.6, (m0 + m1) / 2 - 19, xw - 1.4, y + my1 + 1, (m0 + m1) / 2 + 19)   # V2.48 (R1): its lit strip underneath
 
 
 SKIRT_ROOMS = {"hall", "landing", "landing_top", "bed3", "master", "master_b", "master_1", "bed2", "kitchen", "kitchen_1", "kitchen_2", "wc", "lower_landing"}
@@ -2268,7 +2274,7 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "gloss": ("#f4f4f1", 0.12), "gap": ("#9b9a95", 0.6), "black": ("#1d1d1f", 0.5), "black_app": ("#1f2023", 0.35), "glass_dark": ("#17191c", 0.1),
     "ring": ("#2b2c2e", 0.6), "steel": ("#c8cacc", 0.25), "steel_dark": ("#8e9195", 0.35), "worktop": ("#26282a", 0.35), "metro": ("#111214", 0.12),
     "chrome": ("#d9dbde", 0.15), "porcelain": ("#e4e6e8", 0.2), "primrose": ("#e3cf5c", 0.25), "tile_w": ("#f2f2ef", 0.2), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "rug": ("#5b5e66", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
-    "cloth0": ("#3d4a5c", 0.95), "cloth1": ("#b9b2a6", 0.95), "cloth2": ("#7a2f2f", 0.95), "cloth3": ("#2f3b2f", 0.95), "cloth4": ("#d8d2c4", 0.95), "cloth5": ("#555555", 0.95), "cloth6": ("#9b8b6e", 0.95), "curtain": ("#f4f3ef", 0.9), "stone": ("#cbc6bd", 0.5), "marble": ("#141416", 0.15), "led": ("#ffffff", 0.3), "chalk": ("#222423", 0.85), "storebox": ("#c9c1b2", 0.95), "contact": ("#000000", 1.0), "mattress": ("#f0eee8", 0.9), "pillow": ("#f4f1eb", 0.95), "trim": ("#5a5d60", 0.5), "gutter": ("#f2f2ef", 0.4), "lead": ("#6c7072", 0.55), "birch": ("#dcc8a2", 0.7), "lycksele": ("#5b6b78", 0.95), "grille": ("#e8dcc4", 0.6), "ceiling": ("#f3f2ee", 0.95),
+    "cloth0": ("#3d4a5c", 0.95), "cloth1": ("#b9b2a6", 0.95), "cloth2": ("#7a2f2f", 0.95), "cloth3": ("#2f3b2f", 0.95), "cloth4": ("#d8d2c4", 0.95), "cloth5": ("#555555", 0.95), "cloth6": ("#9b8b6e", 0.95), "curtain": ("#f4f3ef", 0.9), "stone": ("#cbc6bd", 0.5), "marble": ("#141416", 0.15), "led": ("#ffffff", 0.3), "lamp_purple": ("#c9a6ff", 0.3), "chalk": ("#222423", 0.85), "storebox": ("#c9c1b2", 0.95), "contact": ("#000000", 1.0), "mattress": ("#f0eee8", 0.9), "pillow": ("#f4f1eb", 0.95), "trim": ("#5a5d60", 0.5), "gutter": ("#f2f2ef", 0.4), "lead": ("#6c7072", 0.55), "birch": ("#dcc8a2", 0.7), "lycksele": ("#5b6b78", 0.95), "grille": ("#e8dcc4", 0.6), "ceiling": ("#f3f2ee", 0.95),
     "laminate": ("#a9a39a", 0.7), "oak": ("#b8844f", 0.55), "screen": ("#0d0f12", 0.15), "pc_white": ("#eeeeec", 0.3), "pc_glow": ("#dfe6ff", 0.2),
     "pegboard": ("#f4f4f2", 0.6), "ivy": ("#2f5a2b", 0.8), "blind": ("#4a4d52", 0.9), "blind_cloth": ("#4a4d52", 0.9), "books": ("#8a3b2e", 0.8), "jar": ("#d9a441", 0.4), "pot": ("#e8e3d8", 0.5),
     "carpet_grey": ("#6f6f73", 1.0), "red_gloss": ("#c8201e", 0.15), "red_back": ("#9d1714", 0.4), "cat": ("#bdbcb8", 1.0), "sisal": ("#cdb88f", 0.9),
@@ -2286,9 +2292,19 @@ def room_lights(floor):
     for rid, r in room_sizes().items():
         if r["floor"] != floor or any(k in rid for k in ("store_", "airing", "stairs", "cupboard", "porch")):
             continue
+        if rid == "kitchen":                                       # V2.48 (R1): its two LED battens (survey_data.BATTENS), not a pendant
+            out += [dict(room=rid, x=round(sum(D.BATTENS["x"]) / 2, 1), y=round(y - 2, 1), z=zc, drop=12) for zc in D.BATTENS["z"]]   # flush: lit 12 under
+            continue
         px, pz = D.PENDANTS.get(rid, ((r["x0"] + r["x1"]) / 2, (r["z0"] + r["z1"]) / 2))
         out.append(dict(room=rid, x=round(px, 1), y=round(y - (2 if floor != "first" else 2), 1), z=round(pz, 1)))
     return out
+
+
+def room_lamps(floor):
+    """V2.48 (REAL_PLAN R1): the lamps the client has (survey_data.LAMPS), each lit by evening: the viewer's second room light goes to it
+    where the room has one ceiling light (so the lights the shaders are built for never change)."""
+    ids = {r["id"] for r in rooms(floor)}
+    return [dict(room=rid, x=L["x"], y=FLOOR_Y[floor] + L["y"], z=L["z"], col=L["col"], k=L["k"], reach=L["reach"]) for rid, L in D.LAMPS.items() if rid in ids]
 
 
 def living_shell():
@@ -2364,7 +2380,7 @@ def export():
     out = {k: v.json() for k, v in build().items()}
     for f in FLOOR_Y:                                            # v69: the rooms' ceiling lights
         if f in out:
-            out[f]["lights"] = room_lights(f)
+            out[f]["lights"] = room_lights(f); out[f]["lamps"] = room_lamps(f)
     return dict(mats=MATS, floors=out, ridge=[round(RIDGE_Z, 1), round(RIDGE_Y, 1)], est=True, depth_rank=depth_rank(), shade_ceil=ceiling_shade(), living=living_shell())
 
 

@@ -58,8 +58,15 @@ function placeRoomLights() {
   const ks = Math.min(1.3, Math.max(0.75, Math.sqrt(area / 10)));   // v72 (B2): a big room's light reaches its corners, a small one doesn't glare
   const fb = typeof finBulb === "function" && VIEW_ROOM[S.view] ? finBulb(VIEW_ROOM[S.view]) : { k: null, lux: 1 };   // V2.9: the room's bulbs (23_finish.js)
   const was = ROOMLIGHTS[0] ? ROOMLIGHTS[0].position.clone() : null;
-  ROOMLIGHTS.forEach((l, k) => { const L = list[k]; l.visible = !!L; if (L) { l.position.copy(v3(L.x, L.y - (typeof finFitDrop === "function" ? finFitDrop(L.room) : 40), L.z)); l.intensity = (day ? 1.2 : 5.4) * ks * fb.lux;
-    l.color.set(fb.k ? kelvinHex(+fb.k) : "#ffcf98"); } });
+  /* V2.48 (R1, N8): a lamp the client has (house/survey_data.LAMPS: the office's purple one, the bathroom mirror's light bar) takes the
+     second light where the room has one ceiling light, lit by evening, at its own colour and reach (the set of lights never changes) */
+  const lamp = b && list.length < 2 && Object.values(R.HOUSE3.floors).flatMap(F => F.lamps || []).find(L => L.room === VIEW_ROOM[S.view]);
+  if (lamp) list[1] = lamp;
+  ROOMLIGHTS.forEach((l, k) => { const L = list[k]; l.visible = !!L; if (!L) return; l.distance = L.reach ? L.reach * M : 7;
+    if (L.reach) { l.position.copy(v3(L.x, L.y, L.z)); l.intensity = day ? 0 : L.k * fb.lux; l.color.set(L.col); return; }
+    const drop = L.drop != null && !(typeof finGet === "function" && finGet(L.room, 8)) ? L.drop : typeof finFitDrop === "function" ? finFitDrop(L.room) : 40;   // the kitchen's battens are flush
+    l.position.copy(v3(L.x, L.y - drop, L.z)); l.intensity = (day ? 1.2 : 5.4) * ks * fb.lux * (L.drop != null ? 0.6 : 1);   // two battens share the room's light
+    l.color.set(fb.k ? kelvinHex(+fb.k) : "#ffcf98"); });
   /* V2.39 (REAL_PLAN R1, each window's daylight): the room's two biggest windows light it as the sky does through them, an area light the
      opening's size on the wall's inside face, facing in and a little down; by day the living room window's daylight, by evening its dusk */
   const rid = b && rr && VIEW_ROOM[S.view], op = it => it.op && it.op.axis === "x" && it.op, sz = it => (it.op.b - it.op.a) * (it.op.y1 - it.op.y0);

@@ -74,7 +74,7 @@ The tools are there already: GTAO (ambient occlusion) in `01_renderer.js`, HD sh
 
 | # | Phase | Status | Left |
 |---|---|---|---|
-| R1 | Light each room as it's lit | **In part** (V2.17, V2.21, V2.39) | Lamps where the client has them (N8) |
+| R1 | Light each room as it's lit | **Done** (V2.17, V2.21, V2.39, V2.48: the lamps, the kitchen's battens) | More lamps as the client shares them |
 | R2 | Things sit on the floor | **In part** (V2.23) | Shade beside and under pieces (N8) |
 | R3 | Surfaces | **In part** (V2.37, V2.40) | Gloss paint, uPVC, brushed metal, the dormer's boards (N8) |
 | R4 | Real shapes | **In part** (V2.17–V2.22, V2.24, V2.44) | Second pass: wardrobes, clothes, appliances, Kallax, chair-bed (N6) |
@@ -103,7 +103,7 @@ cache's fix. Every PR: rebase on `main` just before merging, take the next free 
 | N5 | Look in every room (R7): the living room on the house's rows (pixel for pixel), then each room's rug, curtains or blinds, bedding, a picture, a plant from a short tray; saved in schemes, sent with Send | Look | `23_finish.js`, `room3d_page.py` (Look) | Not started |
 | N6 | Shapes, second pass (R4): the wardrobes' frames and doors, the hanging clothes as garments (they read as flat slabs), the kitchen's fridge-freezer and microwave fronts and handles, the Kallax's boxes, the chair-bed | Shapes | `house/model.py`, `survey_data.py` | Not started |
 | N7 | Furniture, the rest (R6): swap a piece for another of its kind; add one from the catalogue, in any room | Edit | `13_edit_room.js`, `house_edits` | Not started |
-| N8 | Light and surfaces (R1–R3): lamps, shade beside and under pieces, gloss paint, uPVC, brushed metal, the dormer's boards | Light | `01_renderer.js`, `11_lights.js`, `house/textures/` | Not started |
+| N8 | Light and surfaces (R1–R3): lamps, shade beside and under pieces, gloss paint, uPVC, brushed metal, the dormer's boards | Light | `01_renderer.js`, `11_lights.js`, `house/textures/` | **In part** (V2.48: the lamps) |
 | N9 | Buttons and flow: a floor's room pills on a computer in one row; the house and its floors framed clear of the buttons (a phone: the roof sat under the floors row; a computer: labels under the rows); room labels squeezed to fit, not cut. Left: dark panels when the device is dark (ask the client first: the cream is the old design) | UI | `page.css`, `room3d_page.py`, `09_house_views.js` | **In part** (V2.46) |
 | N10 | From the client: `?perf` on the iPhone 15 Pro and the 5070 PC (decides KTX2); photos or names for N6; what to try in each room for N5 | Client | none | Needs the client |
 
