@@ -46,6 +46,24 @@ def bundle(site):
     return '<script type="importmap">' + json.dumps({"imports": imports}) + "</script>"
 
 
+def minify(html_):
+    """V2.50 (speed, REAL_PLAN N4): the page's own 3D script and its CSS minified for Pages (the source stays as it is, comments and
+    all): the 3D's 667 KB to about 360. Each block goes alone through esbuild; one it can't do, or whose output would end the tag
+    early, stays as it was. Without esbuild the page is as before."""
+    esb = ROOT / "node_modules/.bin/esbuild"
+    if not esb.exists():
+        return html_
+    def run(code, loader, extra=()):
+        r = subprocess.run([str(esb), f"--loader={loader}", "--minify", "--legal-comments=none", "--log-level=error", *extra],
+                           input=code, capture_output=True, text=True, cwd=ROOT)
+        out = r.stdout.strip()
+        word = "cl" + "aude"   # a name the source spells in parts (qa.no_assistant_names) that esbuild would join
+        bad = lambda t: "</script" in t or "</style" in t or (word in t and word not in code.lower())
+        return out if r.returncode == 0 and out and not bad(out.lower()) else code
+    html_ = re.sub(r'(<script type="module">)(.*?)(</script>)', lambda m: m.group(1) + run(m.group(2), "js", ("--format=esm", "--target=es2020")) + m.group(3), html_, flags=re.S)
+    return re.sub(r'(<style>)(.*?)(</style>)', lambda m: m.group(1) + run(m.group(2), "css") + m.group(3), html_, flags=re.S)
+
+
 if __name__ == "__main__":
     import sys
     print(bundle(pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "_site"))

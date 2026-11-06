@@ -410,6 +410,39 @@ function houseShade(H3, m3) {
   band(pos, uv, [482, fr], [-28, fr], [0, 1], dr, 70, true); band(pos, uv, [-28, bk], [482, bk], [0, -1], lw, 90, true);
   mesh(pos, uv, mk(), houseG);
 }
+/* V2.52 (REAL_PLAN R2, N8): the shade round each standing piece's foot (a band out from each open side, mitred at its corners) and up
+   the wall beside a piece that stands against one (a wardrobe's sides, a fridge's), from the house file's outlines (model.piece_shade),
+   so phones without ambient occlusion have it too; built with its floor, so it follows a piece the client moves. One mesh a floor, the
+   shade's own material (houseShade's kind: no new shaders) */
+function pieceShadeMat() {   // houseShade's kind of material (the same shader), its shade eased out to nothing: no edge to see
+  const tex = canvasTex(4, 64, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h);
+    for (const [t, a] of [[0, 0.24], [0.15, 0.15], [0.35, 0.07], [0.6, 0.025], [1, 0]]) gr.addColorStop(t, `rgba(0,0,0,${a})`);
+    g.clearRect(0, 0, w, h); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, false);
+  tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+  const m = reg(new THREE.MeshBasicMaterial({ color: "#000000", map: tex, transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 0, polygonOffsetUnits: -10 }));
+  m.clippingPlanes = []; return m;
+}
+function pieceShade(F, mat) {
+  const rooms = Object.values(R.HOUSE3.rooms || {}), pos = [], uv = [], U = [[0, 0], [1, 0], [1, 1], [0, 1]];   // v 0 (the canvas's dark top, as CanvasTexture turns it) at the piece
+  const quad = P => { for (const i of [0, 1, 2, 0, 2, 3]) { const q = v3(...P[i]); pos.push(q.x, q.y, q.z); uv.push(U[i][0], U[i][1]); } };
+  for (const [, x0, z0, x1, z1, y0, h] of F.shade || []) {
+    const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, g = Math.max(5, Math.min(11, Math.min(x1 - x0, z1 - z0) * 0.22)), y = y0 + 0.35, hb = Math.min(h, 210);
+    const rm = rooms.filter(r => r[4] === y0 && cx >= r[0] && cx <= r[1] && cz >= r[2] && cz <= r[3]).sort((a, b) => (a[1] - a[0]) * (a[3] - a[2]) - (b[1] - b[0]) * (b[3] - b[2]))[0];
+    const at = { x0: !!rm && x0 - rm[0] < 5, x1: !!rm && rm[1] - x1 < 5, z0: !!rm && z0 - rm[2] < 5, z1: !!rm && rm[3] - z1 < 5 };
+    // [from, to, outward, this side, the side at its start, at its end]
+    for (const [ax, az, bx, bz, nx, nz, k, ka, kb] of [[x0, z0, x1, z0, 0, -1, "z0", "x0", "x1"], [x1, z1, x0, z1, 0, 1, "z1", "x1", "x0"], [x0, z1, x0, z0, -1, 0, "x0", "z1", "z0"], [x1, z0, x1, z1, 1, 0, "x1", "z0", "z1"]]) {
+      const tx = Math.sign(bx - ax), tz = Math.sign(bz - az), ea = at[ka] ? 0 : g, eb = at[kb] ? 0 : g;
+      if (!at[k]) { quad([[ax, y, az], [bx, y, bz], [bx + nx * g + tx * eb, y, bz + nz * g + tz * eb], [ax + nx * g - tx * ea, y, az + nz * g - tz * ea]]); continue; }
+      const wx = nx ? (nx < 0 ? rm[0] + 0.3 : rm[1] - 0.3) : 0, wz = nz ? (nz < 0 ? rm[2] + 0.3 : rm[3] - 0.3) : 0, W = (u, yy) => nx ? [wx, yy, u] : [u, yy, wz];
+      const ua = nx ? az : ax, ub = nx ? bz : bx, d = Math.sign(ub - ua);   // up the wall beside each end that's open, narrowing to its top
+      if (!at[ka]) quad([W(ua, y0), W(ua, y0 + hb), W(ua - d * g * 0.35, y0 + hb), W(ua - d * g, y0)]);
+      if (!at[kb]) quad([W(ub, y0), W(ub, y0 + hb), W(ub + d * g * 0.35, y0 + hb), W(ub + d * g, y0)]);
+    }
+  }
+  if (!pos.length) return null;
+  const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); geo.computeVertexNormals();
+  const me = new THREE.Mesh(geo, mat); me.raycast = () => {}; me.renderOrder = 1; me.name = "pieceShade"; return me;
+}
 function buildHouse() {
   const HS = R.HOUSE; if (!HS) return;
   houseG = new THREE.Group(); houseG.visible = false; scene.add(houseG);
@@ -459,7 +492,7 @@ function buildHouse() {
       const rk = (H3.depth_rank || {})[k] ?? 3;   // V1.31 (U6): where faces lie in one plane the higher rank is drawn (house/model.py depth_rank); constant, so nothing shows through at a slant
       if (rk) { m.polygonOffset = true; m.polygonOffsetFactor = 0; m.polygonOffsetUnits = -2 * rk; }
       m.clippingPlanes = []; m.userData.hk = k; return finPatch(m, k); })());
-    if (S.fin === undefined && R.HOUSE3.client_finishes && Object.keys(R.HOUSE3.client_finishes).length) S.fin = finClean(R.HOUSE3.client_finishes);   // V2.11: the scheme kept in the repo, until this device picks its own
+    if (S.fin === undefined && R.HOUSE3.client_finishes && Object.keys(R.HOUSE3.client_finishes).length) finRestore(R.HOUSE3.client_finishes);   // V2.11: the scheme kept in the repo, until this device picks its own
     HMATS = m3; FIN.mat3 = mat3; blindsApply(); hceilApply(); finApplyAll();
     if (window.__finPending) { const p = window.__finPending; window.__finPending = null; finImport(p); }   // V2.11: from a Send link opened before the 3D was ready   // V2.7: (mat3 for a floor laid by the tray)   // V2.6: the colours kept for the house's rooms
     const put = (g, geos, m) => { if (!geos.length) return; const me = new THREE.Mesh(worldUV(mergeGeometries(geos), m.userData.hk), m); me.receiveShadow = true;   // V2.8: the stair wall takes shadows as the living room's stair wall below it does (V2.2 took them off: two shades along the flight)
@@ -575,6 +608,7 @@ function buildHouse() {
         const into = r ? (lL[r] = lL[r] || {}) : byL; (into[L.m] = into[L.m] || []).push(g); }
       for (const [mk, geos] of Object.entries(byL)) put(cur, geos, mat3(mk));
       for (const [r, by] of Object.entries(lL)) for (const [mk, geos] of Object.entries(by)) put(lgOf(r), geos, mat3(mk));
+      { const ps = pieceShade(F, m3.shade_piece || (m3.shade_piece = pieceShadeMat())); if (ps) cur.add(ps); }   // V2.52 (R2)
       if (fresh) for (const L of F.labels || []) { label([L.name, [L.use, `about ${L.w.toFixed(1)} × ${L.d.toFixed(1)} m`].filter(Boolean).join(" · ")], L.x, L.y, L.z, 190);
         cur.children[cur.children.length - 1].userData.area = L.w * L.d; }   // V1.35: the bigger room's name wins where two overlap
       const partG = (P, into, at) => {                 // a part's group on its pivot, its own parts inside it (V1.26b: a bifold's second panel)
@@ -733,7 +767,7 @@ function start() {
       if (addp && CATALOGUE[addp.type]) { const a = { id: "a" + Date.now().toString(36), type: addp.type, x: addp.x, z: addp.z }; pushUndo(); addThing(a); if (addp.rot) setLayout(a.id, { rot: addp.rot }); placeAll(); store.set(KEY, S); dirty(); }
       if (showat != null) { showOpen(); if (SH) { SH.own = true; SH.paused = true; SH.t = showat; showPose(SH.t); showCard(); qs("#r3d-show").hidden = true; } }
       if (o.view) setView(o.view, true); if (aim) flyTo(aim.eye, aim.at, aim.fov || 55, !!aim.above, true); },   // v58: "above" lets a look stand off (the house)
-    still, finish, finishes: () => JSON.parse(JSON.stringify(S.fin || {})), setFinishes: o => finImport(o), ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { get flying() { return !!tween; }, get H3() { return R.HOUSE3; }, get RMODE() { return RMODE; }, spotAt, goStandAt: goStand, HPARTS, PICK, HEDITS, get actId() { return actId; }, swingDoor, WALK, walkMove, collide, bodyBlocked, floorAtCm, HSOLID, livSolids, livFloors,  swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, collide, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG },
+    still, finish, finishes: () => JSON.parse(JSON.stringify(finAll(false))), setFinishes: o => finImport(o), ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { get flying() { return !!tween; }, openAct, finAll, get H3() { return R.HOUSE3; }, get RMODE() { return RMODE; }, spotAt, goStandAt: goStand, HPARTS, PICK, HEDITS, get actId() { return actId; }, swingDoor, WALK, walkMove, collide, bodyBlocked, floorAtCm, HSOLID, livSolids, livFloors,  swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, collide, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG },
     errors: () => store.get("r3d-errors", []),                                       // v35: what the trap kept
     timing: () => Object.assign({ page: Math.round(performance.now()) }, START_MS),     // V1.31: the start's steps (ms from start()), and the page's age
     perf: perfInfo,                                                                   // v35: the counts to watch each round

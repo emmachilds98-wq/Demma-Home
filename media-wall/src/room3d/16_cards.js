@@ -20,6 +20,9 @@ function pickItem(e) {
   if (houseG && houseG.visible && DS() && under(o, houseG)) { const k = housePiece([hit], q => cutAway(q)); if (k && HIT(k)) return "hitem:" + k; }   // V1.50: a piece: its size
   if (houseG && houseG.visible && under(o, houseG)) { const fa = finAt(hit); if (fa) return "fin:" + fa.room + ":" + fa.slot; }   // V2.6 (FINISHES F3): a wall or a ceiling: its colour
   if (HPARTS["door.living_door"] && under(o, livLeaf)) return "hdoor:door.living_door";   // V1.38: the living room's side of its door
+  { const ud = (o.material && !Array.isArray(o.material) && o.material.userData) || {};   // N5 (REAL_PLAN R7): the living room's walls, ceiling and skirting: the house's colours card
+    if (ud.hk === "stairpaint" || (ud.ratio !== undefined && (under(o, shell) || under(o, fixtures)))) { const ch = ud.hk ? "w:stairs" : ud.ch;
+      return "fin:living:" + (ch === "ceil" ? 4 : ch === "trim" ? 17 : ch.startsWith("w:") ? 11 + Math.max(0, LIV_W.indexOf(ch.slice(2))) : 0); } }
   if (S.site === "C" && (under(o, cab) || under(o, optC))) return "cab";
   if (under(o, lamp)) return "lamp";
   if (under(o, bar1)) return "bar1";

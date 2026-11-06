@@ -210,7 +210,7 @@ ITEMS = {}   # V1 (Phase 1): every named piece: {id: {name, room, kind, src, dat
 class Out:
     def __init__(self, floor=None):
         self.boxes, self.prisms, self.labels, self.parts, self.lathes = {}, [], [], {}, []
-        self.floor, self.tag, self.tags, self.bt = floor, None, [], {}   # V1: the item each box belongs to (bt: per material, an index into tags)
+        self.floor, self.tag, self.tags, self.bt, self.shade = floor, None, [], {}, []   # V1: the item each box belongs to (bt: per material, an index into tags)
 
     def item(self, iid, name, room, kind="furniture", src="E", data=None, axis=None, measure=None):
         """V1 (Phase 1): every box drawn from here on (until the next item, or end()) belongs to this piece, so the app can tap it, name it,
@@ -253,7 +253,7 @@ class Out:
         self.parts[name] = dict(pivot=[round(v, 1) for v in pivot], axis=axis, angle=round(angle, 1), t0=t0, label=label, out=p); return p
 
     def json(self):
-        return dict(boxes=self.boxes, prisms=self.prisms, labels=self.labels, lathes=self.lathes, tags=self.tags, bt=self.bt, parts=self._parts())
+        return dict(boxes=self.boxes, prisms=self.prisms, labels=self.labels, lathes=self.lathes, tags=self.tags, bt=self.bt, parts=self._parts(), shade=self.shade)
 
     def _parts(self):   # V1.26b: a part can carry its own parts (a bifold's second panel), turning with it as it goes
         return {k: dict(pivot=v["pivot"], axis=v["axis"], angle=v["angle"], t0=v["t0"], label=v["label"], boxes=v["out"].boxes,
@@ -1962,6 +1962,50 @@ def contacts(o, floor):
         o.box("contact", x0 - g, y, z0 - g, x1 + g, y + 0.3, z1 + g)
 
 
+SHADE_KINDS = {"furniture", "appliance"}
+
+
+def piece_shade(o, floor):
+    """V2.52 (REAL_PLAN R2, N8): where each standing piece meets the floor: its outline (each cluster of an item's shapes that touch, so
+    two chairs are two) for the viewer's soft shade round its foot and up the wall beside it (20_go.js pieceShade), worked out once here
+    so phones pay nothing. [tag, x0, z0, x1, z1, y0, h]: the tag so it moves with the piece when the client moves it."""
+    fy, rects = FLOOR_Y[floor], {}
+    def add(t, x0, y0, z0, x1, y1, z1):
+        if t >= 0 and ITEMS.get(o.tags[t], {}).get("kind") in SHADE_KINDS:
+            rects.setdefault(t, []).append([x0, y0, z0, x1, y1, z1])
+    for m, boxes in o.boxes.items():
+        if m != "contact" and m not in STRUCTURE:                    # not the secret room's earth or its pier
+            for b, t in zip(boxes, o.bt.get(m, [])):
+                add(t, *b)
+    for L in o.lathes:
+        (cx, y0, cz), r, h = L["c"], max(q[0] for q in L["p"]), max(q[1] for q in L["p"])
+        add(L["t"], cx - r * L["s"][0], y0, cz - r * L["s"][1], cx + r * L["s"][0], y0 + h, cz + r * L["s"][1])
+    for P in o.prisms:
+        us, vs = [q[0] for q in P["pts"]], [q[1] for q in P["pts"]]
+        if P["axis"] == "y":
+            add(P["t"], min(us), P["a"], min(vs), max(us), P["b"], max(vs))
+        elif P["axis"] == "x":
+            add(P["t"], P["a"], min(vs), min(us), P["b"], max(vs), max(us))
+        else:
+            add(P["t"], min(us), min(vs), P["a"], max(us), max(vs), P["b"])
+    for part in o.parts.values():
+        for m, boxes in part["out"].boxes.items():
+            for b, t in zip(boxes, part["out"].bt.get(m, [])):
+                add(t, *b)
+    out = []
+    for t, rs in rects.items():
+        groups = []                                                  # the shapes that touch (2 cm) are one piece
+        for r in rs:
+            hit = [g for g in groups if r[0] <= g[3] + 2 and g[0] <= r[3] + 2 and r[2] <= g[5] + 2 and g[2] <= r[5] + 2]
+            for g in hit:
+                groups.remove(g); r = [min(r[0], g[0]), min(r[1], g[1]), min(r[2], g[2]), max(r[3], g[3]), max(r[4], g[4]), max(r[5], g[5])]
+            groups.append(r)
+        for x0, y0, z0, x1, y1, z1 in groups:                        # on the floor, as tall as a stool, not a sliver
+            if y0 - fy < 8 and y1 - y0 >= 25 and min(x1 - x0, z1 - z0) >= 10:
+                out.append([t, round(x0, 1), round(z0, 1), round(x1, 1), round(z1, 1), round(fy, 1), round(y1 - y0, 1)])
+    o.shade = out
+
+
 def radiator(o, axis, wall, out, a0, a1, y0, y1):
     """v69 (B5): a white steel panel radiator as the photos: a double panel with its fins on top, on two brackets, a valve each end.
     axis: the wall runs along x (a front or back wall at z=wall) or z (a side wall at x=wall); out: +1/-1, the room's side."""
@@ -2307,6 +2351,7 @@ def build():
             steps.append(lambda: porch(o))
         for step in steps:                                   # V1: no piece's tag runs on into the next builder
             o.end(); step(); o.end()
+        piece_shade(o, floor)
         sizes = room_sizes()
         for rid, r in sizes.items():
             if r["floor"] == floor and r["name"] and (r["x1"] - r["x0"]) * (r["z1"] - r["z0"]) >= 5000:   # say less: no labels on the tiny stores
