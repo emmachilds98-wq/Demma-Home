@@ -46,7 +46,7 @@ FIN3 = """async () => { const sl = ms => new Promise(r => setTimeout(r, ms)), cv
   const card = () => { const a = document.querySelector('#r3d-act'); return a && !a.hidden ? a.querySelector('#r3d-act-h').textContent : null; };
   for (const [view, name] of [['bed2', 'Bedroom 2'], ['master', 'Master bedroom'], ['kitchen', 'Kitchen']]) {
     R3D.set({ view }); await settle(); let got = null;
-    for (const fy of [0.3, 0.2, 0.4, 0.15]) { for (const fx of [0.15, 0.85, 0.3, 0.7, 0.5]) { tap(cv.clientWidth * fx, cv.clientHeight * fy); await sl(350);
+    for (const fy of [0.3, 0.2, 0.4, 0.15]) { for (const fx of [0.15, 0.85, 0.3, 0.7, 0.5]) { tap(cv.clientWidth * fx, cv.clientHeight * fy); await sl(700);   // V2.42: a mouse click's card waits out a double-click (380 ms)
       const h = card(); if (h && h.startsWith(name + ': the')) { got = h; break; } const c = document.querySelector('#r3d-act button'); if (h && c) c.click(); await sl(150); } if (got) break; }
     if (got) { const sw = document.querySelector('[data-finc="#899081"]'); if (sw) sw.click(); await sl(300);
       const kept = JSON.stringify((R3D._dbg.S.fin || {})); out[view] = [got, kept.includes('#899081')];

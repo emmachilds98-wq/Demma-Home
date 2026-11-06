@@ -8,7 +8,7 @@ const LIV_RMODE = { in: "window", stand: "livstand", above: "room", alone: "liva
 /* V1.6, the client: "give every room a wide angle within the room as if you're there viewing option": Be there, in every room (the living
    room too): from its door at standing eye height, a wide lens, level; dragging looks round from where you stand (View's "Look round from
    here"), put back as it was on the way out */
-const STAND_FOV = 80, STAND_EYE = 160;
+const STAND_FOV = 80, STAND_EYE = 160, GO_MS = 550;   // V2.42: a double-click's glide there (0.9 s before)
 let standCam = null, standSpot = null;   // V1.53: standSpot, where a double-click or the figure puts you down ([x, z, dx, dz], room cm)
 function standLook(on) {
   if (on) { if (standCam === null) standCam = S.cam; S.cam = "look"; }
@@ -18,11 +18,11 @@ function standLook(on) {
 function standIn() {
   const v = VIEWS[S.view], rr = ((R.HOUSE3 && R.HOUSE3.rooms) || {})[VIEW_ROOM[S.view]], fy = rr ? rr[4] : 0;
   standLook(true);
-  if (standSpot) { const [x, z, dx, dz] = standSpot; standSpot = null;
-    flyTo([x, fy + STAND_EYE, z], [x + dx * 100, fy + STAND_EYE - 10, z + dz * 100], STAND_FOV, false, false, 900); return; }
+  if (standSpot) { const [x, z, dx, dz, ms] = standSpot; standSpot = null;   // V2.42: as quick as asked (it was always 0.9 s: the client, "no slow change of view")
+    flyTo([x, fy + STAND_EYE, z], [x + dx * 100, fy + STAND_EYE - 10, z + dz * 100], STAND_FOV, false, false, ms || GO_MS); return; }
   const [x, z] = R.HOUSE3 ? freeSpot(v.eye[0], fy, v.eye[2]) : [v.eye[0], v.eye[2]];   // V1.59: not inside a worktop or a desk
   hereRoom = ((R.HOUSE3 && standRoomAt(x, fy + 1, z)) || [VIEW_ROOM[S.view]])[0]; brandPlace();
-  flyTo([x, fy + STAND_EYE, z], [v.at[0] + x - v.eye[0], fy + STAND_EYE - 10, v.at[2] + z - v.eye[2]], STAND_FOV, false);
+  flyTo([x, fy + STAND_EYE, z], [v.at[0] + x - v.eye[0], fy + STAND_EYE - 10, v.at[2] + z - v.eye[2]], STAND_FOV, false, false, 600);
 }
 const LIVV = () => !HOUSEV(S.view) && !!VIEWS[S.view];
 function syncRmode() {
@@ -186,7 +186,7 @@ function brandPlace() {
     t = HERE_NAME[hereRoom] || roomName(hereRoom) || t;   // V1.60: standing, the room you're in (the lower landing has the kitchen's view)
   else if (ROOMV()) { const id = VIEW_ROOM[S.view], L = id && id !== "living" && Object.values(R.HOUSE3.floors).flatMap(F => F.labels || []).find(l => l.id === id); t = (L && L.name) || (VIEWS[S.view] || {}).label || t; }
   el.textContent = t;
-  canvas.setAttribute("aria-label", `${t} in 3D: drag to look round, scroll or pinch to zoom; standing (Be there), W A S D or the arrow keys walk, Q and E turn`);   // V1.43: says where you are (it always said the living room)
+  canvas.setAttribute("aria-label", `${t} in 3D: drag to look round; in a room, scroll or W and S walk, the left and right arrows or Q and E turn, A and D step aside, Ctrl + scroll the lens`);   // V1.43: says where you are (it always said the living room)
 }
 /* v64, client: "by floor individually where you can choose to pick a room to focus on": on a floor, its rooms as buttons; a room with
    its own view goes into it, the others are looked at from above */
