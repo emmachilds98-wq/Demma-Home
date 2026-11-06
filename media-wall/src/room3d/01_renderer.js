@@ -118,6 +118,7 @@ function aoComposer(w, h, pr) {
     const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: SMALL ? (GOOD_PHONE ? 4 : 0) : 4 });   // anti-aliased, as on screen
     AO.c = new EffectComposer(gl, rt); AO.c.addPass(new RenderPass(scene, camera));
     AO.g = new GTAOPass(scene, camera, w, h); AO.g.blendIntensity = 0.9;
+    { const gs = AO.g.setSize.bind(AO.g); AO.g.setSize = (w_, h_) => LIVE ? gs(Math.ceil(w_ / 2), Math.ceil(h_ / 2)) : gs(w_, h_); }   // V2.30: the soft shade at half size while you look round (a quarter of its cost); the saved pictures at full
     AO.g.updateGtaoMaterial({ radius: 0.3, distanceExponent: 1.4, thickness: 1.2, scale: 1.1, samples: SMALL && !GOOD_PHONE ? 8 : 16, distanceFallOff: 1 });
     AO.g.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: SMALL && !GOOD_PHONE ? 8 : 16 });
     clipMat(AO.g.normalMaterial);                                    // the cutaway cuts the depth it shades from, too

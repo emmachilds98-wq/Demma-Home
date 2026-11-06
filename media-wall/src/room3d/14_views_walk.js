@@ -249,6 +249,21 @@ function enterRoom(name) {
   applyFloors(); placeRoomLights(); syncRmode(); store.set(KEY, S); updateCaption(); brandPlace(); outdoor(); reshadow();
   qsa("[data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === name)));
 }
+/* V2.30, the client: "i want fluid motion and no slow change of view when moving around the house ... almost like im in a first person
+   pov in a game": walking between the house and the living room swaps the lights in play, so every shader in sight was built at the
+   doorway (about 30: a freeze mid-step), and each room's own (its cutaway, its lights) at its door. Standing still while walking, each
+   room is visited once off screen (there and back in one go, nothing culled, a room a pause), so its shaders are ready before you get
+   there; then the view's own shadows are drawn again, so none of it lands on your next step */
+const WARMED = new Set();
+function warmSwitch() {
+  if (!houseG || !R.HOUSE3 || !(RMODE === "stand" || S.view === "livstand")) return false;
+  if (LOWD) return false;
+  const v = S.view, to = ["livstand", ...Object.keys(VIEWS).filter(k => VIEWS[k].box)].find(k => k !== v && !WARMED.has(k + S.quality));
+  if (!to) return false; WARMED.add(to + S.quality);
+  const culled = [], rm = RMODE; scene.traverse(o => { if (o.isMesh && o.frustumCulled) { o.frustumCulled = false; culled.push(o); } });
+  try { enterRoom(to); draw(); } finally { enterRoom(v); RMODE = rm; syncRmode(); culled.forEach(o => { o.frustumCulled = true; }); }
+  draw(); return true;
+}
 function walkDoors(x, feet, z) {            // a shut door opens as you come up to it
   const now = performance.now(); if (now - WALK.doorT < 200) return; WALK.doorT = now;
   const w = new THREE.Vector3();
@@ -263,7 +278,7 @@ function walkTick(dt) {
   if (!houseG && R.HOUSE && (WALK.keys.size || WALK.stick[0] || WALK.stick[1])) { buildHouse(); reshadow(); applyFloors(); }   // V1.38: the living room opened on its own: the house to walk out into
   const k = WALK.keys, f = (k.has("f") ? 1 : 0) - (k.has("b") ? 1 : 0) + WALK.stick[1], sd = (k.has("r") ? 1 : 0) - (k.has("l") ? 1 : 0) + WALK.stick[0];
   const want = new THREE.Vector2(sd, f); if (want.lengthSq() > 1) want.normalize();
-  WALK.v.lerp(want, Math.min(1, dt * 8));   // eases in and out
+  WALK.v.lerp(want, Math.min(1, dt * 12));   // eases in and out (V2.30: snappier, as a game's walk: was 8)
   const turn = (k.has("tr") ? 1 : 0) - (k.has("tl") ? 1 : 0);
   if (WALK.v.lengthSq() < 1e-5 && !turn) { if (WALK.feet === null) WALK.feet = camera.position.y / M - STAND_EYE; return false; }
   return walkMove(WALK.v.x, WALK.v.y, turn, dt);
