@@ -118,22 +118,24 @@ function applyHEdits(map) {
 }
 const HIT = id => (((R.HOUSE3 || {}).items) || {})[id];
 const DS = () => window.DemmaStore || null;
-const FIELDS = [["w", "Width"], ["h", "Height"], ["up", "Up from the floor"], ["along", "Along the wall"]];
+/* V2.32 (REAL_PLAN R6, the client: "keep working on the full upgrade"): a piece moves out from its wall too ("out": across the other way
+   on the floor), not only along it; doors and windows stay in their walls */
+const FIELDS = [["w", "Width"], ["h", "Height"], ["up", "Up from the floor"], ["along", "Along the wall"], ["out", "Out from the wall"]];
 function pieceNow(id) {
   const it = HIT(id), e = {}, ds = DS();
   if (ds) for (const v of Object.values(ds.rows("edits") || {})) if (v && v.item === id && typeof v.value === "number") e[v.field] = v.value;
-  return { w: e.w ?? it.s[0], h: e.h ?? it.s[1], up: e.up ?? it.s[2], along: e.along ?? it.al };
+  return { w: e.w ?? it.s[0], h: e.h ?? it.s[1], up: e.up ?? it.s[2], along: e.along ?? it.al, out: it.op ? 0 : e.out ?? 0 };
 }
-function pieceDelta(id) { const it = HIT(id), c = pieceNow(id); return [c.along - it.al, c.w - it.s[0], c.h - it.s[1], c.up - it.s[2]]; }
+function pieceDelta(id) { const it = HIT(id), c = pieceNow(id); return [c.along - it.al, c.w - it.s[0], c.h - it.s[1], c.up - it.s[2], c.out]; }
 function pieceBox(id) {
-  const it = HIT(id), [dA, dW, dH, dU] = pieceDelta(id), k = it.ax === "z" ? 2 : 0, b = it.b.slice();
-  b[k] += dA; b[k + 3] += dA + dW; b[1] += dU; b[4] += dU + dH; return b;
+  const it = HIT(id), [dA, dW, dH, dU, dO] = pieceDelta(id), k = it.ax === "z" ? 2 : 0, o = 2 - k, b = it.b.slice();
+  b[k] += dA; b[k + 3] += dA + dW; b[1] += dU; b[4] += dU + dH; b[o] += dO; b[o + 3] += dO; return b;
 }
 function storeEdits() {   // Measure's rows, as the engine's edits (HEDITS)
   if (!DS() || !R.HOUSE3) return;
   const out = {};
   for (const [id, it] of Object.entries(R.HOUSE3.items || {})) {
-    const [dA, dW, dH, dU] = pieceDelta(id); if (!dA && !dW && !dH && !dU) continue;
+    if (!pieceDelta(id).some(Boolean)) continue; const [dA, dW, dH, dU] = pieceDelta(id);
     const E = { from: it.b, to: pieceBox(id) }, o = it.op;
     if (o) E.op = { axis: o.axis, line: o.line, a: o.a, b: o.b, y0: o.y0, y1: o.y1, a2: o.a + dA, b2: o.b + dA + dW, y02: o.y0 + dU, y12: o.y1 + dU + dH };
     out[id] = E;
@@ -145,8 +147,8 @@ function paintEdits() {   // V1.51: Measure's list of the sizes changed in the 3
   const box = document.getElementById("ms-elist"), grp = document.getElementById("ms-edits"); if (!box || !grp || !DS()) return;
   const ids = [...new Set(Object.values(DS().rows("edits") || {}).map(v => v && v.item))].filter(id => HIT(id) && pieceDelta(id).some(Boolean));
   grp.hidden = !ids.length;
-  const W = { w: "wide", h: "high", up: "up", along: "along" };
-  box.innerHTML = ids.map(id => { const it = HIT(id), c = pieceNow(id), was = { w: it.s[0], h: it.s[1], up: it.s[2], along: it.al };
+  const W = { w: "wide", h: "high", up: "up", along: "along", out: "out" };
+  box.innerHTML = ids.map(id => { const it = HIT(id), c = pieceNow(id), was = { w: it.s[0], h: it.s[1], up: it.s[2], along: it.al, out: 0 };
     const ch = Object.keys(W).filter(k => Math.abs(c[k] - was[k]) > 0.05).map(k => `${cmR(c[k])} ${W[k]}, was ${cmR(was[k])}`).join(" · ");
     return `<div class="ms-row ms-erow"><button type="button" class="t ms-ego" data-epiece="${id}">${it.n}<small>${ch}</small></button><button type="button" class="btn" data-ereset="${id}">As planned</button></div>`; }).join("");
 }
@@ -161,14 +163,14 @@ document.addEventListener("click", e => {
 window.addEventListener("demma-rows", e => { if (e.detail !== "edits") return; storeEdits(); paintEdits();
   if (actId && /^hsize:|^hitem:/.test(actId)) { const id = actId.split(":")[1]; selOf(id); const st = qs("#r3d-act-st"); if (st) st.textContent = actItems(actId)[1]; } });
 const cmR = v => Math.round(v * 10) / 10;
-const clampF = (f, v) => Math.max(f === "along" || f === "up" ? -500 : 1, Math.min(1000, v));
+const clampF = (f, v) => Math.max(f === "along" || f === "up" || f === "out" ? -500 : 1, Math.min(1000, v));
 function selOf(id) { const it = HIT(id); if (!it) { clearSel(); return; } const c = pieceNow(id); selPiece({ box: pieceBox(id), label: `${Math.round(c.w)} × ${Math.round(c.h)}` }); }
 const pieceLine = id => { const it = HIT(id), c = pieceNow(id), ed = pieceDelta(id).some(Boolean);
   return `${cmR(c.w)} wide, ${cmR(c.h)} high, ${cmR(c.up)} up` + (ed ? " · changed by you" : it.g ? " · a guess: measure it" : ""); };
 let sizeT = 0;
 async function setPiece(id, field, v) {
   const it = HIT(id), ds = DS(); if (!it || !ds) return;
-  const base = field === "along" ? it.al : it.s[["w", "h", "up"].indexOf(field)], rid = `${id}~${field}`;
+  const base = field === "along" ? it.al : field === "out" ? 0 : it.s[["w", "h", "up"].indexOf(field)], rid = `${id}~${field}`;
   try { if (v == null || Math.abs(v - base) < 0.05) { if (ds.rows("edits")[rid]) await ds.del("edits", rid); }
         else await ds.put("edits", rid, { item: id, field, value: v }); }
   catch (e) { toast("That didn't save: try again"); }
