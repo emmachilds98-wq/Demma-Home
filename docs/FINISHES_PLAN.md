@@ -161,7 +161,7 @@ code.
 | F9 | Wallpaper and patterns | Not started | Wallpapers and patterns in the tray (This wall), at their real repeat; What it takes counts rolls |
 | F10 | Furniture in every room | Not started (now `docs/REAL_PLAN.md` R6) | Edit room's move, turn, swap and add in any room; a tapped piece becomes its own part; the walk and the checks follow it; rows sent and folded in |
 | F11 | Colours that go with it | **In part** (V2.35) | The makers' own suggested colours per paint (with sources), a lighter and darker for any colour; a short row under the picked paint. V2.35: under a picked colour, Lighter and darker: two each way (`finShades`, its lightness in sRGB), a tap each. Left: the makers' own pairings (they need sources) |
-| F12 | The outside | Not started | The front door's outside, the window frames, our fences, lawn, paths and plants; ours only |
+| F12 | The outside | **In part** (V2.38) | The front door's outside, the window frames, our fences, lawn, paths and plants; ours only. V2.38: Colour outside on a window's card (and the back and garage doors'): our frames' outside face (`model.window`'s `frame_out`, white inside) in the usual RAL frame colours, a paint or any; the front door's card for its porch face (`door_out`); kept as `S.fin.outside` and sent. Left: our fences, the lawn, paths and plants |
 
 **Needs the client:** the paints, carpets and fittings they'd like in the catalogue to start (names or photos), and which room first; for
 F9, any wallpapers they like (name or photo); for F12, a photo of the front door from outside if they'd like it matched first.

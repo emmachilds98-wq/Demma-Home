@@ -329,7 +329,7 @@ let lastTap = null;
 function floorHop(e) {
   if (R.HOUSE3) { const sp = spotAt(e); return !!sp && goStand(sp.x, sp.fy, sp.z); }   // V1.53: from any view, stand where you double-click
   ray.setFromCamera(ndc(e), camera);
-  const hit = ray.intersectObjects(scene.children, true).find(h => h.object.isMesh && shown(h.object) && !clippedAt(h.point));
+  const hit = ray.intersectObjects(scene.children, true).find(h => h.object.isMesh && shown(h.object) && !clippedAt(h));
   const KB = ROOMV();
   if (KB) {   // V1.28: in the house's rooms too (it used the living room's floor, at 0: only the ground floor answered)
     if (!hit || !hit.face || RMODE === "above" || RMODE === "alone") return false;
@@ -370,7 +370,7 @@ function spotAt(e) {                        // where a double-click or the figur
   ray.setFromCamera(ndc(e), camera);
   const cut = q => RPLANES.some(pl => pl.distanceToPoint(q) < 0);
   const h = ray.intersectObjects(scene.children, true).find(q => q.object.isMesh && shown(q.object) && q.object.material && q.object.material.visible !== false
-    && !["glass", "contact"].includes(q.object.material.userData && q.object.material.userData.hk) && !cut(q.point) && (under(q.object, houseG) || !clippedAt(q.point)));
+    && !["glass", "contact"].includes(q.object.material.userData && q.object.material.userData.hk) && !cut(q.point) && !clippedAt(q));
   if (h && h.distance < 60) {
     const p = h.point.clone().addScaledVector(ray.ray.direction, -0.05);   // 5 cm back toward the eye: this side of a wall
     const r = standRoomAt(-p.x / M, p.y / M - 1, p.z / M);

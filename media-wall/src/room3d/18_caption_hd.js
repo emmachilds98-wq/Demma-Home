@@ -69,7 +69,7 @@ function startMeasure() { if (window.DemmaTools) window.DemmaTools.close(); MEAS
 const measMat = new THREE.MeshBasicMaterial({ color: "#ffcc33", depthTest: false, toneMapped: false });
 function measureTap(e) {
   ray.setFromCamera(ndc(e), camera);
-  const hit = ray.intersectObjects(scene.children, true).find(h => h.object.isMesh && shown(h.object) && !clippedAt(h.point) && h.object.material !== measMat);
+  const hit = ray.intersectObjects(scene.children, true).find(h => h.object.isMesh && shown(h.object) && !clippedAt(h) && h.object.material !== measMat);
   if (!hit) return;
   if (!MEAS.g || MEAS.d) { clearMeasure(); MEAS.g = new THREE.Group(); MEAS.g.renderOrder = 999; scene.add(MEAS.g); }
   const dot = new THREE.Mesh(new THREE.SphereGeometry(0.012, 12, 8), measMat); dot.position.copy(hit.point); dot.renderOrder = 999; MEAS.g.add(dot);
