@@ -232,6 +232,8 @@ newest: the laminate floor and the breakfast bar). And `photo_kitchen_cubby_door
 - **Under the window:** the sink (a spring tap) over the black washing machine, a drawer unit; the worktop runs to the corner.
 - **East wall:** the white slimline dishwasher, a unit, the black freestanding electric cooker, two units.
 - **Wall units** over both runs; **black bevelled metro tiles** between (light grout), to the ceiling behind the cooker.
+- **On the side (the photo of 30 Oct; V2.41):** a white dome kettle on the side run by the corner, a black basket air fryer round the
+  corner by the kitchen roll (bottles, a cereal box and a colander there too: not drawn).
 - **Worktop:** black speckled laminate. **Floor:** grey wood-effect laminate (it was cream vinyl tiles). **Ceiling:** textured white,
   LED battens. **Breakfast bar:** black top on chrome legs by the door, two black chairs.
 - **v73, the client:** "the kitchen bar on the left as you come in is in line across the wall. then the boiler is in the corner next to
