@@ -189,18 +189,18 @@ def rough():
 # V2.37 (REAL_PLAN R3): the client's tiles drawn at their real sizes (house/HOUSE.md): the bathroom's black marble-effect 60 × 60 floor and
 # grey stone-effect 60 × 30 walls, the kitchen's black bevelled metro 20 × 10 in light grout (the photos); each with its relief (the grout
 # sunk, the metro's bevel) and its shine (glazed faces, matt grout). key: (texture's size m, px, tile w × h cm, face, grout, grout mm,
-# bevel mm, the face's look, face and grout roughness)
-TILED = {"marble": (1.2, 1024, (60, 60), "#141416", "#38383c", 2, 1, "veins", (0.1, 0.8)),
-         "stone": (1.2, 1024, (60, 30), "#cbc6bd", "#9d978c", 2.5, 1, "stone", (0.4, 0.85)),
-         "metro": (0.4, 512, (20, 10), "#131416", "#c9c5bd", 2, 5, "", (0.06, 0.85))}
+# bevel mm, the face's look, face and grout roughness, every other row along by (V2.40: the bathroom's photo: its wall tiles stacked)
+TILED = {"marble": (1.2, 1024, (60, 60), "#141416", "#38383c", 2, 1, "veins", (0.1, 0.8), 0),
+         "stone": (1.2, 1024, (60, 30), "#cbc6bd", "#9d978c", 2.5, 1, "stone", (0.4, 0.85), 0),
+         "metro": (0.4, 512, (20, 10), "#131416", "#c9c5bd", 2, 5, "", (0.06, 0.85), 0.5)}
 
 
-def fbm(px, seed, base=4, octaves=5):
-    """soft noise 0..1 that wraps (each octave's grid tiled 3 × 3, smoothed, the middle kept)"""
+def fbm(px, seed, base=4, octaves=5, stretch=1):
+    """soft noise 0..1 that wraps (each octave's grid tiled 3 × 3, smoothed, the middle kept); stretch: finer down than across (streaks)"""
     import numpy as np
     rng, out, amp = np.random.default_rng(seed), np.zeros((px, px), np.float32), 1.0
     for o in range(octaves):
-        g = np.tile(rng.random((base << o,) * 2).astype(np.float32), (3, 3))
+        g = np.tile(rng.random(((base << o) * stretch, base << o)).astype(np.float32), (3, 3))
         out += amp * np.asarray(Image.fromarray(g).resize((px * 3,) * 2, Image.BICUBIC))[px:2 * px, px:2 * px]; amp *= 0.5
     return (out - out.min()) / (np.ptp(out) or 1)
 
@@ -209,11 +209,10 @@ def tiles():
     """python3 house/textures/build_textures.py --tiles   writes <key>_map, _nor and _rough.jpg for TILED (no download: ours)"""
     import numpy as np
     meta = json.loads((HERE / "textures.json").read_text())
-    for key, (size, px, (tw, th), face, grout, gmm, bmm, look, (rf, rg)) in TILED.items():
+    for key, (size, px, (tw, th), face, grout, gmm, bmm, look, (rf, rg), bond) in TILED.items():
         cm = size * 100 / px                                                   # cm a pixel
         y, x = np.mgrid[0:px, 0:px].astype(np.float32) * cm
-        row = np.floor(y / th); off = (row % 2) * tw / 2                       # every other course half a tile along (not the 60 × 60s)
-        if tw == th: off = 0 * off
+        row = np.floor(y / th); off = (row % 2) * tw * bond                    # every other course along (the metro's half a tile)
         col = np.floor((x - off) / tw) % round(size * 100 / tw)
         lx, ly = (x - off) % tw, y % th
         d = np.minimum(np.minimum(lx, tw - lx), np.minimum(ly, th - ly))       # to the tile's nearest edge
@@ -228,9 +227,11 @@ def tiles():
             v2 = 1 - np.abs(np.sin((x * 0.9 - y * 0.45) / 5 + n2 * 4 + ph * 2))
             vein = v1 ** 16 * (0.45 + 0.55 * mk) + v2 ** 40 * 0.55 * np.clip(mk * 2 - 0.7, 0, 1) + v1 ** 3 * 0.08
             col_ = c0[None, None] * (0.92 + n2[..., None] * 0.25) + np.clip(vein, 0, 1)[..., None] * (np.array([228, 228, 232]) - c0)
-        elif look == "stone":                                                  # soft mottle and faint beds, a shade apart tile to tile
-            m = fbm(px, 21, 6, 5); s = fbm(px, 22, 2, 3)
-            k = 1 + (m - 0.5) * 0.16 + (s - 0.5) * 0.05 + ((ti % 5) - 2) * 0.012
+        elif look == "stone":                                                  # V2.40 (the photo): a travertine look: bands of thin grey
+            yi, xi = np.mgrid[0:px, 0:px]; sh = lambda f: f[(yi + (ti * 97).astype(int)) % px, xi]   # each tile its own run of the stone
+            m, st = fbm(px, 21, 6, 5), sh(fbm(px, 22, 3, 6, 24))               # fine streaks along the tile, a shade apart tile to tile
+            ln = (1 - np.abs(st * 2 - 1)) ** 12 * np.clip((sh(fbm(px, 23, 3, 4, 8)) - 0.35) * 2.5, 0, 1)   # and thin darker veins in them
+            k = 1 + (st - 0.5) * 0.15 + (m - 0.5) * 0.05 + ((ti % 5) - 2) * 0.015 - ln * 0.14
             col_ = c0[None, None] * k[..., None]; h = h + np.where(inG, 0, (m - 0.5) * 0.02)
         else:
             col_ = c0[None, None] * (0.97 + 0.06 * fbm(px, 31, 4, 3))[..., None]

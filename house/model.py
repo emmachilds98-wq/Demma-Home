@@ -275,7 +275,7 @@ def wall(o, m, axis, line0, line1, a0, a1, y0, y1, holes=()):
                 put(a, b, ya, yb)
 
 
-def window(o, side, x0, x1, y0, y1, design, face, ours=False):
+def window(o, side, x0, x1, y0, y1, design, face, ours=False, glass="glass"):
     """A white uPVC window or door in an outside wall: frame, glass, glazing bars; set 4 in from the outside face `face` (z). ours: our
     own house's, the frame's outer centimetre its own (frame_out: V2.38, FINISHES F12, their colour outside; white inside as foiled frames)."""
     if design == "porch":                    # v65: the open porch: no frame in the outside wall
@@ -294,7 +294,7 @@ def window(o, side, x0, x1, y0, y1, design, face, ours=False):
     zg = (zo + zi) / 2
     if design == "garage":
         return
-    o.box("glass", x0 + fr, y0 + fr, zg - 0.5, x1 - fr, y1 - fr, zg + 0.5)
+    o.box(glass, x0 + fr, y0 + fr, zg - 0.5, x1 - fr, y1 - fr, zg + 0.5)   # V2.40: the bathroom's and the WC's frosted (glass_frost)
     w, h = x1 - x0, y1 - y0
     if design == "casement":                 # two or three sections, a transom with top lights (the photos)
         n = 3 if w > 140 else 2
@@ -534,7 +534,7 @@ def outer_walls(o, floor):
                 face = line + out * t_out
                 yb = FLOOR_Y[floor] + op["sill"]; yt = FLOOR_Y[floor] + op["head"]
                 o.item(op["id"], *WINDOW_NAMES.get(op["id"], (op["id"], "")), kind="window" if op["kind"] == "window" else "door", src=op["src"], data=("OPENINGS", op["id"]), axis="x")
-                window(o, side, op["x"][0], op["x"][1], yb, yt, op["design"], face, True)
+                window(o, side, op["x"][0], op["x"][1], yb, yt, op["design"], face, True, "glass_frost" if op.get("frosted") else "glass")
                 if op["design"] not in ("porch", "garage"):   # v66: the reveal plastered inside (it showed brick), a window board
                     zfr = face - out * 11                                # the frame's inner plane
                     za_, zb_ = sorted((line, zfr))
@@ -749,7 +749,7 @@ def roof(o):
     o.box("paint", x0, yf - SLAB, BACK, x1, base + 2, zi)            # v62: under the dormer's face, down to the floor (no gap to the roof)
     for op in ops:
         o.item(op["id"], *WINDOW_NAMES.get(op["id"], (op["id"], "")), kind="window", src=op["src"], data=("OPENINGS", op["id"]), axis="x")
-        window(o, "n", op["x"][0], op["x"][1], yf + op["sill"], yf + op["head"], op["design"], zo, True)
+        window(o, "n", op["x"][0], op["x"][1], yf + op["sill"], yf + op["head"], op["design"], zo, True, "glass_frost" if op.get("frosted") else "glass")
         o.box("frame_out", op["x"][0] - 3, yf + op["sill"] - 4, zo - 5, op["x"][1] + 3, yf + op["sill"] + 0.6, zo + 4)
     o.end()
     for xa, xb in ((x0, x0 + DM["t"]), (x1 - DM["t"], x1)):
@@ -1539,6 +1539,18 @@ def bathroom(o):
     o.box("gloss", xw - sl["d"], y + 0.3, s0, xw, y + sl["h"], s1)
     for yy in (22, 44, 66):
         o.box("gap", xw - sl["d"] - 0.3, y + yy - 4, (s0 + s1) / 2 - 4, xw - sl["d"], y + yy + 4, (s0 + s1) / 2 + 4)
+    # V2.40 (REAL_PLAN R5, the photo of 25 Oct): on the slim cabinet the grey toothbrush cup and the white hand wash; the black mat by the bath
+    o.item("bath.things", "Toothbrush cup and hand wash", "bathroom", kind="decor", src="client's photo (25 Oct) + E (a 7.5 cm tumbler, a 30 cl pump bottle)", measure=False)
+    yt0, cz = y + sl["h"], (s0 + s1) / 2
+    o.lathe("steel_dark", xw - 10, yt0, cz - 4.5, [(0, 0), (3.5, 0), (3.9, 10.5), (3.6, 10.5), (3.3, 1), (0, 1)])   # the cup, open
+    for dx, dz, k in ((-1.2, -0.8, "pink"), (1.0, 0.9, "fitting")):                                                  # two brushes in it
+        o.box(k, xw - 10 + dx - 0.6, yt0 + 1, cz - 4.5 + dz - 0.6, xw - 10 + dx + 0.6, yt0 + 19, cz - 4.5 + dz + 0.6)
+    o.lathe("fitting", xw - 21, yt0, cz + 4, [(0, 0), (3.2, 0), (3.3, 0.5), (3.3, 13), (2.4, 15), (1.2, 15.5), (1.2, 17.5), (0, 17.5)])
+    o.box("black", xw - 21 - 0.8, yt0 + 17.5, cz + 4 - 0.8, xw - 21 + 0.8, yt0 + 20, cz + 4 + 0.8)                # its pump
+    o.box("black", xw - 21 - 4.5, yt0 + 19, cz + 4 - 0.7, xw - 21 + 0.8, yt0 + 20.5, cz + 4 + 0.7)                # and spout
+    o.item("bath.mat", "The bath mat", "bathroom", kind="decor", src="client's photo (25 Oct) + E (50 × 80)", measure=False)
+    bm = B["bath"]["x"][1] + 4
+    o.box("bathmat", bm, y + 0.1, -212.0, bm + 50, y + 1.3, -132.0)                                                 # by the bath, in front of the toilet
     o.item("bath.toilet", "The toilet", "bathroom", src="client's photo + E", data=("BATH", "toilet"), axis="x")
     t = B["toilet"]; tx0, tx1 = t["x"]                              # the close-coupled toilet under the window
     o.box("fitting", tx0, y + 40, zi + 0.5, tx1, y + t["cistern_h"], zi + 18)
@@ -2047,6 +2059,17 @@ def wc(o):
     o.item("wc.pipes", "The pipes", "wc", kind="fitting", src="client's photo", measure=False)
     o.prism("upvc", "x", 374.6 + 1, WIDTH - 1, [(zb + 1.5 + 1.6 * math.cos(i * math.pi / 6), y + 61.5 + 1.6 * math.sin(i * math.pi / 6)) for i in range(12)])   # the white pipes (V2.22: round)
     o.lathe("upvc", WIDTH - 3.5, y + 60, zb + 1.5, [(0, 0), (1.6, 0), (1.6, 140), (0, 140)])
+    # V2.40 (REAL_PLAN R5, the photo of 30 Oct): the black pedal bin and the toilet brush in the corner by the basin's wall, a black mat round the pan
+    o.item("wc.bin", "The pedal bin and brush", "wc", kind="decor", src="client's photo (30 Oct) + E (a 3 L pedal bin)", measure=False)
+    bx_, bz_ = xe + 14, zb + 14
+    o.lathe("bin", bx_, y, bz_, [(0, 0), (8, 0), (8.5, 24), (8.5, 25.5), (0, 26)])
+    o.box("black", bx_ - 2, y + 0.5, bz_ + 8.5, bx_ + 2, y + 2, bz_ + 11.5)                     # its pedal
+    o.lathe("black", bx_ + 4, y, bz_ + 23, [(0, 0), (4.5, 0), (4.5, 12), (4.0, 12.5), (0, 12.5)])   # the brush's holder
+    o.lathe("black", bx_ + 4, y + 12.5, bz_ + 23, [(0, 0), (0.7, 0), (0.7, 26), (0, 26)])          # and its handle
+    o.item("wc.mat", "The pedestal mat", "wc", kind="decor", src="client's photo (30 Oct) + E (50 × 50, cut round the pan)", measure=False)
+    o.box("bathmat", tx - 25, y + 0.1, zb + 50, tx + 25, y + 1.3, zb + 70)                        # in front of the pan
+    for xa_, xb_ in ((tx - 25, tx - 10), (tx + 10, tx + 25)):                                     # and its arms either side of it
+        o.box("bathmat", xa_, y + 0.1, zb + 20, xb_, y + 1.3, zb + 50)
 
 
 def stair_wall(o):
@@ -2210,7 +2233,7 @@ def build():
 
 MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textures)
     "brick": ("#9a4b36", 0.92), "party": ("#9a4b36", 0.92), "soldier": ("#83402e", 0.9), "paint": ("#f1ede5", 0.85), "stairpaint": ("#2d5a46", 0.92),
-    "upvc": ("#f5f5f2", 0.35), "frame_out": ("#f5f5f2", 0.35), "door_out": ("#f5f5f2", 0.35), "glass": ("#dfe9ee", 0.03), "artex": ("#f3f2ee", 0.97), "door_cream": ("#e8ddc2", 0.4), "mirror": ("#eef2f3", 0.12), "brass": ("#c9b58a", 0.3), "rib": ("#e2e2de", 0.5),
+    "upvc": ("#f5f5f2", 0.35), "frame_out": ("#f5f5f2", 0.35), "door_out": ("#f5f5f2", 0.35), "glass": ("#dfe9ee", 0.03), "glass_frost": ("#e8edef", 0.5), "artex": ("#f3f2ee", 0.97), "door_cream": ("#e8ddc2", 0.4), "mirror": ("#eef2f3", 0.12), "brass": ("#c9b58a", 0.3), "rib": ("#e2e2de", 0.5),
     "tile": ("#7b5a4b", 0.85), "ridge": ("#6d4c3f", 0.85), "hung": ("#6f4636", 0.85), "felt": ("#3d3b3a", 0.9),
     "slab": ("#cfc8bb", 0.95), "carpet": ("#cdbfa6", 1.0), "tile_f": ("#d9d4cb", 0.6), "vinyl": ("#cdd8da", 0.6), "concrete": ("#a8a49c", 0.95),
     "earth": ("#8a8173", 1.0), "brick_buff": ("#d6c7a3", 0.92), "chipboard": ("#c8ad80", 0.85), "porch_in": ("#a7a49c", 0.9), "bin": ("#2f3236", 0.6), "recycle": ("#2b5d9a", 0.6), "quarry": ("#b25a43", 0.7), "board": ("#c4b79f", 0.9), "fitting": ("#f6f6f3", 0.3),
@@ -2222,7 +2245,7 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "laminate": ("#a9a39a", 0.7), "oak": ("#b8844f", 0.55), "screen": ("#0d0f12", 0.15), "pc_white": ("#eeeeec", 0.3), "pc_glow": ("#dfe6ff", 0.2),
     "pegboard": ("#f4f4f2", 0.6), "ivy": ("#2f5a2b", 0.8), "blind": ("#4a4d52", 0.9), "blind_cloth": ("#4a4d52", 0.9), "books": ("#8a3b2e", 0.8), "jar": ("#d9a441", 0.4), "pot": ("#e8e3d8", 0.5),
     "carpet_grey": ("#6f6f73", 1.0), "red_gloss": ("#c8201e", 0.15), "red_back": ("#9d1714", 0.4), "cat": ("#bdbcb8", 1.0), "sisal": ("#cdb88f", 0.9),
-    "pink": ("#e8607a", 0.8), "pine": ("#c99a55", 0.55), "pine_dark": ("#7a5a30", 0.6), "knob": ("#7a5a30", 0.45), "shoe_black": ("#1b1b1d", 0.45), "shoe_white": ("#ecebe6", 0.5), "shoe_tan": ("#8a5a34", 0.55), "shoe_grey": ("#6b6e73", 0.75), "newel": ("#f4f3ef", 0.35), "rail_white": ("#f4f3ef", 0.35), "handle_black": ("#151517", 0.4), "bin_white": ("#f1f1ef", 0.3), "paper": ("#f7f6f2", 0.9), "monitor_back": ("#202124", 0.45), "mouse": ("#1a1a1c", 0.35), "key_dark": ("#2b2c30", 0.55), "key_pink": ("#f6cddb", 0.5),
+    "pink": ("#e8607a", 0.8), "bathmat": ("#1c1c1e", 0.97), "pine": ("#c99a55", 0.55), "pine_dark": ("#7a5a30", 0.6), "knob": ("#7a5a30", 0.45), "shoe_black": ("#1b1b1d", 0.45), "shoe_white": ("#ecebe6", 0.5), "shoe_tan": ("#8a5a34", 0.55), "shoe_grey": ("#6b6e73", 0.75), "newel": ("#f4f3ef", 0.35), "rail_white": ("#f4f3ef", 0.35), "handle_black": ("#151517", 0.4), "bin_white": ("#f1f1ef", 0.3), "paper": ("#f7f6f2", 0.9), "monitor_back": ("#202124", 0.45), "mouse": ("#1a1a1c", 0.35), "key_dark": ("#2b2c30", 0.55), "key_pink": ("#f6cddb", 0.5),
     "book0": ("#7a2f2f", 0.8), "book1": ("#2f4a6b", 0.8), "book2": ("#d9cfb8", 0.85), "book3": ("#3c5a3a", 0.8), "book4": ("#1f1f22", 0.7), "book5": ("#b8873d", 0.8), "wardrobe": ("#f2f1ec", 0.35), "duvet": ("#e9e6df", 0.95), "leather": ("#1f1d1d", 0.45), "check": ("#7d7e86", 0.95),
     "lawn": ("#5f7043", 1.0), "paving": ("#bdb8ae", 0.95), "road": ("#59595c", 0.95), "fence": ("#6b5644", 0.9),
 }
