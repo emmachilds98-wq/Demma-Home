@@ -79,7 +79,7 @@ The tools are there already: GTAO (ambient occlusion) in `01_renderer.js`, HD sh
 | R3 | Surfaces | **In part** (V2.37, V2.40) | Gloss paint, uPVC, brushed metal, the dormer's boards (N8) |
 | R4 | Real shapes | **In part** (V2.17–V2.22, V2.24, V2.44) | Second pass: wardrobes, clothes, appliances, Kallax, chair-bed (N6) |
 | R5 | The things in a room | **In part** (V2.18, V2.19, V2.40, V2.41) | More from the client's photos as they come |
-| R6 | Change the furniture in any room | **Done** (V2.32–V2.36, V2.54: move, resize, turn, take out, swap, add) | Swap or add in the living room's project (its own Edit room) |
+| R6 | Change the furniture in any room | **Done** (V2.32–V2.36, V2.55: move, resize, turn, take out, swap, add) | Swap or add in the living room's project (its own Edit room) |
 | R7 | One Look for every room | **In part** (V2.51: the living room joined) | Each room's rug, curtains or blinds, bedding, a picture, a plant (N5) |
 | R8 | Quick everywhere: fluid as a game | **In part** (V2.30, V2.31, V2.42, V2.43) | Load and phone speed (N2–N4); KTX2 once the devices' numbers are in (N10) |
 
@@ -102,7 +102,7 @@ cache's fix. Every PR: rebase on `main` just before merging, take the next free 
 | N4 | The page's own script minified at build (the source as it is); the living room's suggestions and ideas loaded on first use | Speed | `room3d_src.py`, `build_viewer.py`, `07_suggestions_ideas.js` | **In part** (V2.50: the script minified at build; the suggestions and ideas still load at start) |
 | N5 | Look in every room (R7): the living room on the house's rows (pixel for pixel), then each room's rug, curtains or blinds, bedding, a picture, a plant from a short tray; saved in schemes, sent with Send. One PR each: N5a the living room joined; N5b rugs; N5c curtains and blinds; N5d bedding and cushions; N5e a picture and a plant | Look | `23_finish.js`, `room3d_page.py` (Look) | **In part** (V2.51: N5a) |
 | N6 | Shapes, second pass (R4): the wardrobes' frames and doors, the hanging clothes as garments (they read as flat slabs), the kitchen's fridge-freezer and microwave fronts and handles, the Kallax's boxes, the chair-bed | Shapes | `house/model.py`, `survey_data.py` | **Done** (V2.53; no microwave in the photos) |
-| N7 | Furniture, the rest (R6): swap a piece for another of its kind; add one from the catalogue, in any room | Edit | `08_house_catalogue.js`, `house_edits`, `16_cards.js` | **Done** (V2.54) |
+| N7 | Furniture, the rest (R6): swap a piece for another of its kind; add one from the catalogue, in any room | Edit | `08_house_catalogue.js`, `house_edits`, `16_cards.js` | **Done** (V2.55) |
 | N8 | Light and surfaces (R1–R3): lamps, shade beside and under pieces, gloss paint, uPVC, brushed metal, the dormer's boards | Light | `01_renderer.js`, `11_lights.js`, `house/textures/` | **In part** (V2.48: the lamps; V2.52: shade by pieces) |
 | N9 | Buttons and flow: a floor's room pills on a computer in one row; the house and its floors framed clear of the buttons (a phone: the roof sat under the floors row; a computer: labels under the rows); room labels squeezed to fit, not cut. Left: dark panels when the device is dark (ask the client first: the cream is the old design) | UI | `page.css`, `room3d_page.py`, `09_house_views.js` | **In part** (V2.46) |
 | N10 | From the client: `?perf` on the iPhone 15 Pro and the 5070 PC (decides KTX2); photos or names for N6; what to try in each room for N5 | Client | none | Needs the client |
