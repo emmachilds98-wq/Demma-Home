@@ -107,6 +107,7 @@ cache's fix. Every PR: rebase on `main` just before merging, take the next free 
 | N9 | Buttons and flow: a floor's room pills on a computer in one row; the house and its floors framed clear of the buttons (a phone: the roof sat under the floors row; a computer: labels under the rows); room labels squeezed to fit, not cut. Left: dark panels when the device is dark (ask the client first: the cream is the old design) | UI | `page.css`, `room3d_page.py`, `09_house_views.js` | **In part** (V2.46) |
 | N10 | From the client: `?perf` on the iPhone 15 Pro and the 5070 PC (decides KTX2); photos or names for N6; what to try in each room for N5 | Client | none | Needs the client |
 | N11 | Moving smoothly (the client: "make it fluid and smooth"): the glide the same at any frame rate, a held walk picks up pace; then the frame's cost from `?perf` on the PC | Speed | `17_render_loop.js`, `14_views_walk.js` | **In part** (V2.60: the glide and the walk) |
+| N12 | The iPhone (the client: "freezing on load after first move and is quite laggy"): no burst of photo uploads or shader builds after the first picture; no shaders built on the first tap on a floor; then the rooms' warm-up while standing | Speed | `01_renderer.js`, `02_textures.js`, `09_house_views.js`, `17_render_loop.js` | **In part** (V2.62: the photos a few at a time, the shaders kept, 2×, six planes) |
 
 **Not doing from the review:** removing the page's 3D stills: all but four are on the page or in the plan, and those four are in the
 deck's list.

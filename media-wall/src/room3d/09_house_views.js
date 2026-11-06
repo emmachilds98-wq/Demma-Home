@@ -118,8 +118,8 @@ function applyFloors() {
     if (roofWalls && m.visible) { m.visible = false; m.userData.offForFloor = true; } else if (!roofWalls && m.userData.offForFloor) { m.visible = true; m.userData.offForFloor = false; } }
   if (HMATS && !livClipOn) {   // and cut at its ceiling's height (the party wall's plaster runs on up the gable to the ridge)
     if (!FLCLIP) FLCLIP = [new THREE.Plane(new THREE.Vector3(0, -1, 0), ((R.HOUSE3 && R.HOUSE3.rooms.landing) ? R.HOUSE3.rooms.landing[4] + (R.HOUSE3.ceil || 235) + 3 : 498) * M)];
-    for (const m of Object.values(HMATS)) { const want = roofWalls ? FLCLIP : (m.clippingPlanes === FLCLIP ? RPLANES : m.clippingPlanes);
-      if (want !== m.clippingPlanes) { m.clippingPlanes = want; m.clipIntersection = false; m.clipShadows = want.length > 0; m.needsUpdate = true; } } }
+    for (const m of Object.values(HMATS)) { const was = CLIPSRC.get(m) || [], want = roofWalls ? FLCLIP : (was === FLCLIP ? RPLANES : was);
+      if (want !== was) houseClip(m, want, false); } }
   if (HFLOOR.first) { HFLOOR.first.position.y = ex * M; HFLOOR.first.visible = sel === "all" || sel === "first"; }
   if (HFLOOR.lower) HFLOOR.lower.position.y = -ex * M;
   if (HFLOOR.ground) HFLOOR.ground.visible = sel !== "lower";
@@ -178,11 +178,24 @@ function applyFloors() {
   dirty();
 }
 let LIVCLIP = null, livClipOn = false, FLCLIP = null;   // V2.0: in the living room's own view the house only above the landing's floor over the room
+/* V2.62, the client's iPhone froze on the first tap on a floor: three builds a shader for each number of cutting planes, so the first
+   floor's cut (1 plane), Above (1) and On its own (6) each built the house's 44 shaders again on the frame you tapped (seconds on a
+   phone). The house's materials now always carry 6 planes, the unused ones far off cutting nothing, so a cut changes numbers, not
+   shaders; the living room's own view (2 planes that cut only where both do) is its own set, built by the rooms' warm-up. CLIPSRC: the
+   planes as asked for (the code compares them) */
+const CLIPSRC = new WeakMap(), NOCUT = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e4), PADDED = new WeakMap();
+function houseClip(m, P, inter) {
+  CLIPSRC.set(m, P);
+  let use = P; if (!inter) { use = PADDED.get(P); if (!use) PADDED.set(P, use = [...P, ...Array(Math.max(0, 6 - P.length)).fill(NOCUT)]); }
+  const n = use.length, k = !!inter;
+  m.clippingPlanes = use; m.clipShadows = true;
+  if (m.userData.clipN !== n || m.clipIntersection !== k) { m.clipIntersection = k; m.userData.clipN = n; m.needsUpdate = true; }
+}
 function livClip(on) {
   if (!HMATS || (!on && !livClipOn)) return; livClipOn = on;   // (setRmode may have put its own planes back meanwhile)
   if (on && !LIVCLIP) LIVCLIP = [new THREE.Plane(new THREE.Vector3(0, 1, 0), -R.HOUSE3.rooms.landing[4] * M + 0.01), new THREE.Plane(new THREE.Vector3(0, 0, 1), -(R.RECESS_Z + 2) * M)];
   for (const m of Object.values(HMATS)) { const P = on && m.userData.hk !== "stairpaint" ? LIVCLIP : RPLANES;   // the stair wall goes down to the room's ceiling (not over it)
-    if (m.clippingPlanes !== P || m.clipIntersection !== (P === LIVCLIP)) { m.clippingPlanes = P; m.clipIntersection = P === LIVCLIP; m.clipShadows = P.length > 0; m.needsUpdate = true; } }
+    if (CLIPSRC.get(m) !== P || m.clipIntersection !== (P === LIVCLIP)) houseClip(m, P, P === LIVCLIP); }
 }
 /* V1.30 (U3): a row with more to slide to fades at its right edge */
 function fadeRows() { qsa(".r3d-floors:not(.r3d-rmode)").forEach(el => el.classList.toggle("more", el.scrollWidth - el.clientWidth - el.scrollLeft > 4)); }
