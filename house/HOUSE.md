@@ -257,6 +257,7 @@ another setup will stay. As well as the overhead shelf." Photos: `media-wall/inp
 - **Now:** an L desk (dark top) under the window and along the side wall (the party wall), two setups; the window with a dark roller
   blind and a radiator under it; a long black floating shelf high on the side wall with ivy along the top of the walls; a white
   pegboard; stacked monitors; grey carpet; purple lamp light.
+- **Its lamp (V2.48):** the small purple lamp stays, at the desk's window end; by evening it washes the corner purple (the 3D).
 - **The plan (modelled, v61; v66):** a straight oak desk along the side wall, wall to wall (195), under the shelf and pegboard, **two
   setups side by side** (the client, 25 Oct: "remember its two setups in the bedroom 3 also side by side"): the stacked pair with the
   pink keyboard and its white PC under the desk at the back, the side-by-side pair with the black keyboard, the mic on its boom arm and
