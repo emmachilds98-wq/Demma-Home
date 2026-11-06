@@ -134,7 +134,7 @@ function finAt(hit) {   // a tap on a wall or a ceiling of the house: its room a
 function finClean(o) {
   const out = {}, floors = new Set(FIN_FLOORS.map(([k]) => k)), bulbs = new Set(FIN_BULBS.map(([v]) => v)), lux = new Set(FIN_LUX.map(([v]) => v));
   for (const [room, sl] of Object.entries(o && typeof o === "object" ? o : {})) { if (!/^[a-z0-9_]{1,30}$/.test(room) || !sl || typeof sl !== "object") continue;
-    for (const [s, v] of Object.entries(sl)) { const k = +s, ok = k <= 4 || k === 9 || k === 10 || (room === LIVR && k >= 11 && k <= 17) ? /^#[0-9a-f]{6}$/i.test(v) : k === 5 ? floors.has(v) : k === 6 ? bulbs.has(v) : k === 7 ? lux.has(v) : k === 8 ? FIN_FITS.some(([f]) => f === v) : false;
+    for (const [s, v] of Object.entries(sl)) { const k = +s, ok = k <= 4 || k === 9 || k === 10 || (room === LIVR && k >= 11 && k <= 17) ? /^#[0-9a-f]{6}$/i.test(v) : k === 5 ? floors.has(v) : k === 6 ? bulbs.has(v) : k === 7 ? lux.has(v) : k === 8 ? FIN_FITS.some(([f]) => f === v) : k === 23 ? !!HCAT[v] && HCAT[v].k === "plant" : false;
       if (ok) (out[room] = out[room] || {})[k] = v; } }
   return out;
 }
@@ -205,7 +205,7 @@ function finGet(room, slot) { return ((room === LIVR ? livRow() : (S.fin || {})[
 function finApplyAll() {   // what's kept, into the palette (on start, after Undo)
   if (!finSetup()) return; finish(null, "walls", null); finish(null, "ceiling", null);
   for (const [room, sl] of Object.entries(S.fin || {})) for (const [s, hex] of Object.entries(sl)) if (+s < 5 && FIN.rooms.includes(room)) finish(room, FIN_NAMES[+s], hex);
-  finFloorApply(); finOut(); if (typeof placeRoomLights === "function") { roomKey = ""; placeRoomLights(); } finTakes(); finSchDraw();
+  finFloorApply(); finOut(); storeEdits(); if (typeof placeRoomLights === "function") { roomKey = ""; placeRoomLights(); } finTakes(); finSchDraw();
 }
 /* V2.38 (FINISHES_PLAN F12, the outside): our window frames' outside face (model.window's frame_out: white inside, as foiled frames) and
    the front door's (door_out), from the frames' usual colours (RAL) and the paints; kept as S.fin.outside[9] and [10] */
@@ -303,7 +303,7 @@ if (act) {
     if (b.dataset.finsc) finScope = b.dataset.finsc;
     else if (b.dataset.fincopy) { FIN_COPY = { room, sl: Object.assign({}, finAll()[room]) }; toast(`Copied ${roomName(room)}: tap another room, then Paste`); }
     else if (b.dataset.finpaste && FIN_COPY) { finPush(); S.fin = S.fin || {};   // N5: the living room's own six walls and skirting stay its own
-      if (room === LIVR) livSet(FIN_COPY.sl); else S.fin[room] = Object.fromEntries(Object.entries(FIN_COPY.sl).filter(([k]) => +k <= 10));
+      if (room === LIVR) livSet(FIN_COPY.sl); else S.fin[room] = Object.fromEntries(Object.entries(FIN_COPY.sl).filter(([k]) => +k <= 10 || +k === 23));
       finApplyAll(); store.set(KEY, S); toast(`${roomName(room)}: ${roomName(FIN_COPY.room)}'s look`); }
     else if (b.dataset.finundo) { const prev = FIN_UNDO.pop(); if (prev != null) { finRestore(JSON.parse(prev)); finApplyAll(); store.set(KEY, S); toast("Undone"); } }
     else if ("finf" in b.dataset) finSet(room, 5, b.dataset.finf || null);
