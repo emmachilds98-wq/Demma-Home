@@ -33,7 +33,7 @@ function syncRmode() {
 }
 const HFLOOR = {};     // v55: its floors (lower, ground, first) and the outside (gardens, the alley), for the floor picker
 let hfloor = "all", hidReal = [], hidLay = [], hfview = "angle";   // v74: a floor seen from an angle or from straight above
-const ROOMLIGHTS = [];   // v69 (B3): two warm ceiling lights that go to the room you're in (a fixed set: no shader rebuilds)
+const ROOMLIGHTS = [], WINLIGHTS = [];   // v69 (B3): two warm ceiling lights that go to the room you're in (a fixed set: no shader rebuilds); V2.39: and two windows'
 let roomKey = "";
 /* v69, the client: "increasing the render quality to be more realistic like our living room version": in a room of the house, its
    ceiling lights on (the nearest two to the view), and the sun's shadow box moved over that room (it covered the living room only) */
@@ -51,6 +51,14 @@ function placeRoomLights() {
   const was = ROOMLIGHTS[0] ? ROOMLIGHTS[0].position.clone() : null;
   ROOMLIGHTS.forEach((l, k) => { const L = list[k]; l.visible = !!L; if (L) { l.position.copy(v3(L.x, L.y - (typeof finFitDrop === "function" ? finFitDrop(L.room) : 40), L.z)); l.intensity = (day ? 1.2 : 5.4) * ks * fb.lux;
     l.color.set(fb.k ? kelvinHex(+fb.k) : "#ffcf98"); } });
+  /* V2.39 (REAL_PLAN R1, each window's daylight): the room's two biggest windows light it as the sky does through them, an area light the
+     opening's size on the wall's inside face, facing in and a little down; by day the living room window's daylight, by evening its dusk */
+  const rid = b && rr && VIEW_ROOM[S.view], op = it => it.op && it.op.axis === "x" && it.op, sz = it => (it.op.b - it.op.a) * (it.op.y1 - it.op.y0);
+  const ws = rid ? Object.values(R.HOUSE3.items || {}).filter(it => it.k === "window" && it.r === rid && op(it)).sort((p, q) => sz(q) - sz(p)) : [];
+  WINLIGHTS.forEach((l, k) => { const o = ws[k] && ws[k].op; l.visible = !!o; if (!o) return;
+    const cx = (o.a + o.b) / 2, cy = (o.y0 + o.y1) / 2, d = Math.sign((rr[2] + rr[3]) / 2 - o.line) || 1;
+    l.width = (o.b - o.a) * M; l.height = (o.y1 - o.y0) * M; l.position.copy(v3(cx, cy, o.line + d * 3)); l.lookAt(v3(cx, cy - 40, o.line + d * 100));
+    l.intensity = day ? 10 : 3; l.color.set(day ? "#eef0f2" : "#7d89b8"); });
   if (was && ROOMLIGHTS[0].position.distanceToSquared(was) > 1e-6) reshadow();   // V2.17: its shadows follow it (a fitting's height, the next room)
   const key = b ? b.join() : "";
   if (key === roomKey) return; roomKey = key;

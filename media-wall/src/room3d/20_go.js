@@ -664,6 +664,7 @@ function buildSun() {
   const c = sun.shadow.camera; c.left = -5.5; c.right = 5.5; c.top = 5.5; c.bottom = -5.5; c.near = 0.5; c.far = 16; c.updateProjectionMatrix();   // the whole room: outside it the sun shone through walls
   scene.add(sun, sun.target);
   if (R.HOUSE3) for (let k = 0; k < 2; k++) { const l = new THREE.PointLight("#ffcf98", 0, 7, 2); l.visible = false; l.userData.houseLight = true; scene.add(l); ROOMLIGHTS.push(l);   // v69 (B3): at the start, so the set never changes
+    const w = new THREE.RectAreaLight("#eef0f2", 0, 1, 1); w.visible = false; w.userData.houseLight = w.userData.win = true; scene.add(w); WINLIGHTS.push(w);   // V2.39: a window's daylight
     /* V2.17 (REAL_PLAN R1, the client: "rendering items in hd"): the room's own light casts its shadows in HD (the bed under its
        light, the walls keeping it in its room); drawn only when the room changes (autoUpdate off), from the start (no shader rebuilds) */
     if (k === 0) { l.castShadow = true; const ms = BIG_GPU ? 1024 : 512; l.shadow.mapSize.set(ms, ms); l.shadow.bias = -0.002; l.shadow.normalBias = 0.03; l.shadow.radius = 4;
