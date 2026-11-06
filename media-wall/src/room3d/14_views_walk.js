@@ -280,7 +280,7 @@ function walkTick(dt) {
   const k = WALK.keys, f = (k.has("f") ? 1 : 0) - (k.has("b") ? 1 : 0) + WALK.stick[1], sd = (k.has("r") ? 1 : 0) - (k.has("l") ? 1 : 0) + WALK.stick[0];
   const want = new THREE.Vector2(sd, f); if (want.lengthSq() > 1) want.normalize();
   WALK.v.lerp(want, Math.min(1, dt * 12));   // eases in and out (V2.30: snappier, as a game's walk: was 8)
-  /* V2.56, the client: "still a bit slow moving in the house": a short press is still a careful step; held over half a second, the walk
+  /* V2.59, the client: "still a bit slow moving in the house": a short press is still a careful step; held over half a second, the walk
      eases up to half as quick again (a stroll to a brisk walk, 1.4 to 2.1 m/s) over the next second, as a game's does */
   WALK.held = want.lengthSq() > 0.25 ? WALK.held + dt : 0;
   { const u = Math.min(1, Math.max(0, WALK.held - 0.5)); WALK.pace = 1 + 0.5 * u * u * (3 - 2 * u); }

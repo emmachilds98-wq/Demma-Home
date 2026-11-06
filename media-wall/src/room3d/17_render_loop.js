@@ -87,7 +87,7 @@ function frame(now) {
     need = 2;
   }
   const dt = Math.min(0.1, (now - (frame.last || now)) / 1000); frame.last = now;
-  /* V2.56, the client: "make it fluid and smooth": the glide after a drag eased a fifth of the way each frame, so it ran out twice as fast
+  /* V2.59, the client: "make it fluid and smooth": the glide after a drag eased a fifth of the way each frame, so it ran out twice as fast
      on a 120 Hz screen as on a 60 Hz one and jumped when a frame ran long; now the same fifth each 60th of a second, at any frame rate */
   controls.dampingFactor = 1 - Math.pow(1 - DAMP, Math.max(dt, 1 / 240) * 60);
   const changed = controls.update();

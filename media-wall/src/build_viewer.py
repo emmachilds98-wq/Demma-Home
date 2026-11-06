@@ -1355,7 +1355,8 @@ def split_photos(html_):
     """V1.9 (Phase 4): on Pages the 3D's photos aren't in the page. V2.45 (speed): each picture is a file of its own, named by its
     contents (_site/tex/<key>_<map|nor|rough>.<hash>.jpg), not one 13 MB file of base64 (a third bigger): fetched in parallel after the
     first picture, each kept by the service worker until it changes. The page keeps only their names (a few KB)."""
-    import base64, hashlib, re
+    import base64, hashlib, io, re
+    from PIL import Image
     m = re.search(r'<script type="application/json" id="photo-data">(.*?)</script>', html_, re.S)
     if not m or len(m.group(1)) < 3:
         return html_
@@ -1368,6 +1369,11 @@ def split_photos(html_):
                 data = base64.b64decode(v.split(",", 1)[1])
                 name = f"{k}_{f}.{hashlib.sha256(data).hexdigest()[:10]}.jpg"
                 (out / name).write_bytes(data); made.add(name); t[f] = "tex/" + name
+                im = Image.open(io.BytesIO(data))   # V2.55 (REAL_PLAN N3): a half-size copy for a phone without a strong chip (LOWD)
+                if im.width > 512:
+                    b = io.BytesIO(); im.resize((im.width // 2, im.height // 2), Image.Resampling.LANCZOS).save(b, "JPEG", quality=88, optimize=True)
+                    small = f"{k}_{f}_half.{hashlib.sha256(b.getvalue()).hexdigest()[:10]}.jpg"
+                    (out / small).write_bytes(b.getvalue()); made.add(small); t.setdefault("half", {})[f] = "tex/" + small
     for old in list(out.glob("*.jpg")) + list(SITE.glob("photos.*.json")):
         if old.name not in made: old.unlink()
     return html_[:m.start()] + '<script type="application/json" id="photo-data">' + json.dumps(P, separators=(",", ":")) + "</script>" + html_[m.end():]

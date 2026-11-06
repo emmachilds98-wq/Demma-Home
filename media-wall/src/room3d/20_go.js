@@ -13,6 +13,10 @@ const SUNCFG = { lux: 80, out: 0.5 };   // tuned on stills: the bars' shadows re
    world so a brick is a brick on every wall: stretcher-bond brick in the photos' reds, concrete roof tiles in rows, the dormer's hung
    tiles, lawn, concrete, paving, road, carpet, the kitchen's floor tiles, boards. Each: the canvas and the metres it covers */
 const HTEX = {}, HI_T = new Set(["tile_w", "tile_f", "door_wood", "chalk"]);
+/* V2.56 (REAL_PLAN R3): the finishes without a photo take one of ours (build_textures.finishes): uPVC's peel, gloss paint's strokes, brushed
+   metal; these keep their own colour over a white detail map (TINT) */
+const HTEX_AS = { frame_out: "upvc", door_out: "upvc", gutter: "upvc", sill_board: "upvc", skirting: "gloss", door_white: "gloss", door_cream: "gloss", newel: "gloss", rail_white: "gloss", steel: "brushed", steel_dark: "brushed" };
+const HTEX_TINT = new Set(["upvc", "gloss", "brushed"]);
 /* V2.2, the client: "make sure ceilings are all white with ability to customise other than our living room picks so far": the house's
    ceilings (flat and artex) white, or the colour picked in View (the living room's ceiling keeps Look's) */
 function hceilApply() {
@@ -89,24 +93,18 @@ function houseTex(k) {
   if (k === "paint") return (HTEX[k] = null);   // V2.2, the client: "ensure walls are all smooth": flat emulsion, no plaster relief
   /* v70 (BUILD_SPEC phase 3): CC0 photo-textures (Poly Haven, house/SOURCES.md) and our own (build_textures.py) where we have them; the drawn
      ones below for the rest (V2.37: the ones a photo replaced gone) */
-  const pkey = { party: "brick", soldier: "brick", pillow: "duvet", mattress: "duvet", ceiling: "artex", knob: "pine_dark" }[k] || k, pm = PMETA[pkey];   // V1.21: the bedding's one cotton
+  const pkey = { party: "brick", soldier: "brick", pillow: "duvet", mattress: "duvet", ceiling: "artex", knob: "pine_dark", ...HTEX_AS }[k] || k, pm = PMETA[pkey];   // V1.21: the bedding's one cotton
+  if (pkey !== k && pm && pm.map) return (HTEX[k] = houseTex(pkey));   // V2.56: one texture per finish, shared
   if (pm && pm.map) {   // V1.9: its mean colour and a flat relief until the photos land (loadPhotos), then the photo in the same texture
     const img = (f, srgb, fill) => { const t = canvasTex(4, 4, g => { g.fillStyle = fill; g.fillRect(0, 0, 4, 4); }, srgb);   // V1.11: as sharp at a slant as the card allows (was 4)
       whenPhoto(pkey, f, src => { decodeImg(src).then(im => { texSet(t, im); reshadow(); dirty(); }); }, t); return t; };
     const rg = pm.rough ? Math.round(pm.rough * 255) : 0, grey = `rgb(${rg},${rg},${rg})`;   // V1.30 (U5): its roughness map, if it has one
     return (HTEX[k] = { map: img("map", true, pm.avg || "#888888"), normal: pm.nor ? img("nor", false, "#8080ff") : null, size: [pm.size, pm.size], bump: 0,
-      rough: pm.rough && !LOWD ? img("rough", false, grey) : null, roughMean: pm.rough || 0 });
+      rough: pm.rough && !LOWD ? img("rough", false, grey) : null, roughMean: pm.rough || 0, tint: HTEX_TINT.has(k) });
   }
   let s = 7 + k.length * 101; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
   const noise = (g, w, h, n, a, cols) => { for (let i = 0; i < n; i++) { g.fillStyle = cols[i % cols.length]; g.globalAlpha = a * rnd(); g.fillRect(rnd() * w, rnd() * h, 1 + rnd() * 2, 1 + rnd() * 2); } g.globalAlpha = 1; };
   const T = {
-    hung: [0.90, 0.60, (g, w, h) => {                  // V1.47, the client: "a cladding type material maybe wood on the sides of that part of the roof"
-      const n = 4, bh = h / n, b = ["#5b3b29", "#523422", "#634230", "#57392a"];   // (the back photo): dark-stained timber weatherboards, 15 high, lapped
-      for (let r = 0; r < n; r++) { const y = r * bh; g.fillStyle = b[r % b.length]; g.fillRect(0, y, w, bh);
-        for (let i = 0; i < 60; i++) { g.fillStyle = rnd() < 0.5 ? "rgba(0,0,0,0.10)" : "rgba(255,220,190,0.06)"; g.fillRect(rnd() * w, y + rnd() * bh, 40 + rnd() * 160, 1 + rnd() * 1.5); }   // the grain, along the board
-        const gr = g.createLinearGradient(0, y + bh - 10, 0, y + bh); gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,0.45)"); g.fillStyle = gr; g.fillRect(0, y + bh - 10, w, 10);   // the shadow under the lap
-        g.fillStyle = "rgba(255,230,200,0.10)"; g.fillRect(0, y, w, 2); }
-      noise(g, w, h, 2500, 0.2, ["#000", "#8a6a50"]); }],
     tile_f: [0.6, 0.6, (g, w, h) => { g.fillStyle = "#dcd7ce"; g.fillRect(0, 0, w, h); noise(g, w, h, 5000, 0.2, ["#b8b2a6", "#fff"]);
       g.fillStyle = "#a9a296"; for (let i = 0; i < 2; i++) { g.fillRect(i * w / 2, 0, 3, h); g.fillRect(0, i * h / 2, w, 3); } }],
     board: [1.2, 0.6, (g, w, h) => { const pl = ["#c4b296", "#bba98b", "#cbb99c", "#b6a283"];
@@ -149,7 +147,7 @@ function houseTex(k) {
       g.fillStyle = "rgba(255,255,255,0.35)"; g.fillRect(c * w / 2 + 3, r * h / 2 + 3, w / 2 - 6, 6); } }];
   if (!T[k]) return (HTEX[k] = null);
   const [sw, sh, draw] = T[k], px = !SMALL && HI_T.has(k) ? 1024 : 512, tex = canvasTex(px, px, (g, w, h) => { g.scale(w / 512, h / 512); draw(g, 512, 512); });   // v72 (B3): the surfaces seen close drawn at 1k on a computer (the same drawing, crisper), 512 on a phone
-  const BUMP = { door_wood: 0.4, rug: 1.5, storebox: 1.0, tapestry: 0.9, tile_w: 0.8, hung: 0.6 };   // v69
+  const BUMP = { door_wood: 0.4, rug: 1.5, storebox: 1.0, tapestry: 0.9, tile_w: 0.8 };   // v69
   return (HTEX[k] = { map: tex, size: [sw, sh], bump: BUMP[k] || 0 });
 }
 /* world-sized UVs (metres over the texture's size), by the face's direction: floors and roofs from above, walls from the side; roof
@@ -448,7 +446,7 @@ function buildHouse() {
   houseG = new THREE.Group(); houseG.visible = false; scene.add(houseG);
   let cur = houseG;                                                               // v55: each floor its own group (the floor picker)
   const TK = R.HOUSE3 ? { "#5d6a44": "lawn", "#b4afa5": "concrete", "#c9c5bd": "paving", "#5b5b5e": "road", "#a7a299": "paving", "#9a5a43": "brick", "#6b5644": "fence" } : {};   // v59; V1.3 the fences' boards
-  const mats = {}, mat = c => mats[c] || (mats[c] = (() => { const T = TK[c] && houseTex(TK[c]); const m = reg(new THREE.MeshStandardMaterial({ color: T ? "#ffffff" : c, map: T ? T.map : null, normalMap: T && T.normal || null, roughness: 0.9 })); m.clippingPlanes = []; return m; })());   // v70: and the photo-textures' normals
+  const mats = {}, mat = c => mats[c] || (mats[c] = (() => { const T = TK[c] && houseTex(TK[c]); const m = reg(new THREE.MeshStandardMaterial({ color: T && !T.tint ? "#ffffff" : c, map: T ? T.map : null, normalMap: T && T.normal || null, roughness: 0.9 })); m.clippingPlanes = []; return m; })());   // v70: and the photo-textures' normals
   const box = (xa, xb, ya, yb, za, zb, c) => { const p = v3((xa + xb) / 2, (ya + yb) / 2, (za + zb) / 2), g = new THREE.BoxGeometry(Math.max(1, Math.abs(xb - xa)) * M, Math.max(1, Math.abs(yb - ya)) * M, Math.max(1, Math.abs(zb - za)) * M);
     if (TK[c]) worldUV(g, TK[c], p);
     const b = new THREE.Mesh(g, mat(c)); b.position.copy(p); b.receiveShadow = true; cur.add(b); return b; };
@@ -482,7 +480,7 @@ function buildHouse() {
       const rk = (H3.depth_rank || {}).stairpaint ?? 2; m.polygonOffset = true; m.polygonOffsetFactor = 0; m.polygonOffsetUnits = -2 * rk;
       m.clippingPlanes = []; m.userData.hk = "stairpaint"; return m; };   // V2.8, the client: "first floor landing west wall should match the living room west wall and act as one wall": never the landing's palette
     const m3 = {}, mat3 = k => m3[k] || (m3[k] = k === "contact" ? contactMat() : k === "stairpaint" ? stairMat() : (() => { const [c, r] = H3.mats[k] || ["#cccccc", 0.9], gl3 = k === "glass" || k === "glass_frost", T = houseTex(k);
-      const m = reg(new THREE.MeshStandardMaterial({ color: T ? "#ffffff" : c, map: T ? T.map : null, bumpMap: T && T.bump ? T.map : null, bumpScale: T ? T.bump : 1, normalMap: T && T.normal || null, roughness: T && T.rough ? Math.min(1, r / T.roughMean) : r, roughnessMap: T && T.rough || null, metalness: k === "brass" || k === "chrome" || k === "steel" ? 0.8 : k === "mirror" ? 0.25 : 0, transparent: gl3, opacity: gl3 ? (k === "glass" ? 0.14 : 0.86) : 1,   /* V1.13: clear (0.3 tinted the outside blue-green); V2.40: frosted, the light through */ depthWrite: !gl3, side: HOUSE_SIDE,
+      const m = reg(new THREE.MeshStandardMaterial({ color: T && !T.tint ? "#ffffff" : c, map: T ? T.map : null, bumpMap: T && T.bump ? T.map : null, bumpScale: T ? T.bump : 1, normalMap: T && T.normal || null, roughness: T && T.rough ? Math.min(1, r / T.roughMean) : r, roughnessMap: T && T.rough || null, metalness: k === "brass" || k === "chrome" || k === "steel" ? 0.8 : k === "mirror" ? 0.25 : 0, transparent: gl3, opacity: gl3 ? (k === "glass" ? 0.14 : 0.86) : 1,   /* V1.13: clear (0.3 tinted the outside blue-green); V2.40: frosted, the light through */ depthWrite: !gl3, side: HOUSE_SIDE,
         emissive: { led: "#ffffff", pc_glow: "#cfe0ff", screen: "#1b2433", lamp_purple: "#8a45ff" }[k] || "#000000", emissiveIntensity: { led: 1.5, pc_glow: 0.9, screen: 0.6, lamp_purple: 2.2 }[k] || 0 }));   // V2.48: the office's purple lamp   // v60: the kitchen's LED battens glow; v61: the PC's glass, the screens
       m.envMapIntensity = 0.15;   // v60: the reflections are the living room's (its LEDs tinted the kitchen's white walls pink)
       const NS = { paint: 0.3, ceiling: 0.3, brick: 0.7, party: 0.7, soldier: 0.7 }[k];   // V1.47, the client: "walls ... have a rugged non flat effect ... should be smooth or have less of that look": the relief turned down
