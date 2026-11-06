@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.48 (6 Nov 2026)
+**Version:** V2.49 (6 Nov 2026)
 
 **Work from:** `docs/REAL_PLAN.md` section 6, the next round's tasks (N1–N10) in workstreams that run side by side (Speed, Look, Shapes,
 Edit, Light, UI), one task a PR. Its section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards (one line a row).
@@ -60,12 +60,13 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Measure** (dock): the sizes still guessed, by room; the colours' m² and litres; Send makes a link of every change
   (`pull_edits.py --link`).
 - **Quality:** a real graphics card opens in HD and never steps down (V2.25); iPhones start in HD and step down only if slow; View →
-  More has HD or Fast. In HD each room is lit by its ceiling light and its windows' daylight, with soft shadows and ambient occlusion.
+  More has HD or Fast. In HD each room is lit by its ceiling light and its windows' daylight, with soft shadows and ambient occlusion; by evening the
+  lamps the client has light theirs too (the office's purple lamp, the bathroom mirror's bar; V2.48), the kitchen from its two LED battens.
 - **Outside:** by day under a real sky, the lawn's photo to a hazy horizon, the gardens, next door, the valley and the hill.
 - **Offline:** `sw.js` keeps the page's last copy and every picture; a file named by its contents (the photos, `three.<hash>.js`)
   stays in `demma-keep` across versions, so a new round doesn't fetch it again (V2.47).
   The photos are a file each (`_site/tex/<key>_<map|nor|rough>.<hash>.jpg`, `build_viewer.split_photos`; the page keeps their names):
-  what's on screen is fetched first, the rest a moment later; a photo two textures share is fetched once (`decodeImg`) (V2.48).
+  what's on screen is fetched first, the rest a moment later; a photo two textures share is fetched once (`decodeImg`) (V2.49).
 - **Checks:** `tools/check_site.py` walks every door, taps pieces and surfaces, tries phones by touch (iPhone 15 Pro, SE, Pixel 7,
   Galaxy S24, iPad Mini) and the computers' widths.
 
@@ -91,7 +92,7 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 
 ## Numbers (5 Nov, V2.25; software graphics in a test browser: relative, not a real card's)
 
-- `sizes`: page 2.3 MB, photos 9.7 MB in 58 files (V2.48; WebP tried: bigger at the same quality), three.js 0.86 MB own file, 24 sizes to measure.
+- `sizes`: page 2.3 MB, photos 9.7 MB in 58 files (V2.49; WebP tried: bigger at the same quality), three.js 0.86 MB own file, 24 sizes to measure.
 - Draws in HD: the house 350 (187k triangles), the living room 447 (18 lights lit, 120 shaders), the landing 409, the hall 312, bedroom 2 173,
   the kitchen 188. Still: 0–1 frames a second (drawn only on change; spare moments build the hidden pieces' shaders ahead).
 - The repo: 351 files, 59 MB tracked (32 MB the client's photos), history 83 MB; `checks.py`'s repo check fails on a tracked build output
