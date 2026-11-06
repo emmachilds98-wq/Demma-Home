@@ -1354,6 +1354,9 @@ SOURCES["pubeam"] = ("Woodmosaic: PU faux wood ceiling beam, 12 × 12 cm, length
 SOURCES["orac"] = ("Mr Resistor: Orac C357 uplighting coving profile for LED tape, 2000 mm, £89.60 (mr-resistor.co.uk/product/28207); "
                    "fitted LED coving in a typical UK room £350–£700 (coving.online, LED coving cost, 2026)")
 ORDER.extend(["skimartex", "artextest", "pubeam", "orac"])
+SOURCES["rugsizes"] = ("Argos: rug buying guide (Aug 2026): the usual UK rug sizes 60×100, 80×150, 120×170, 160×230 and 200×290 cm, the bigger ones "
+                       "for bigger rooms (argos.co.uk/features/rug-buying-guide); N5b's rugs in the house's rooms are options, to look at")
+ORDER.append("rugsizes")
 
 
 # ---------------------------------------------------------------- v39: the plan's fit proof is the firm plan's (options: one line each, section 12)
