@@ -261,9 +261,16 @@ function warmSwitch() {
   if (LOWD) return false;
   const v = S.view, to = ["livstand", ...Object.keys(VIEWS).filter(k => VIEWS[k].box)].find(k => k !== v && !WARMED.has(k + S.quality));
   if (!to) return false; WARMED.add(to + S.quality);
-  const culled = [], rm = RMODE; scene.traverse(o => { if (o.isMesh && o.frustumCulled) { o.frustumCulled = false; culled.push(o); } });
-  try { enterRoom(to, true); draw(); } finally { enterRoom(v, true); RMODE = rm; culled.forEach(o => { o.frustumCulled = true; }); }
-  draw(); return true;
+  /* V2.64, the client's iPhone: the visit drew the whole room at once, every new shader built one after another before the frame
+     ended (a room's 20 to 30: seconds standing still, and a tap then waited for them). Now the room's shaders are only asked for
+     (compileClipped, in its lights; one drawn per set of cutting planes) and build in parallel where the browser can, the page still
+     answering; into the same kind of target as the frame's, so they match */
+  const rm = RMODE, was = gl.getRenderTarget();
+  if (!PRE.rt) { PRE.rt = new THREE.WebGLRenderTarget(1, 1); PRE.rt.isXRRenderTarget = true; PRE.rt.texture.colorSpace = gl.outputColorSpace; }
+  if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
+  try { enterRoom(to, true); gl.setRenderTarget(postLive() ? PRE.rtAO : PRE.rt); compileClipped(camera, true); }
+  finally { gl.setRenderTarget(was); enterRoom(v, true); RMODE = rm; }
+  dirty(); return true;
 }
 function walkDoors(x, feet, z) {            // a shut door opens as you come up to it
   const now = performance.now(); if (now - WALK.doorT < 200) return; WALK.doorT = now;

@@ -200,7 +200,9 @@ TEX_CLONES.set(OAK_TEX, [OAK_TEX_V]);   // V1.12: the doors' upright oak, cloned
 /* V1.12: dispose first: WebGL2 keeps a texture at the size it was first sent (immutable storage), so a 1024 photo sent into its 4 × 4
    stand-in never showed (V1.9 to V1.11: the house's photos stayed their mean colour); disposed, it's made again at the photo's size */
 function texPut(tex, img) { const bmp = typeof ImageBitmap !== "undefined" && img instanceof ImageBitmap;   // V1.30: a bitmap comes flipped already
-  for (const t of [tex, ...(TEX_CLONES.get(tex) || [])]) { t.dispose(); t.image = img; t.flipY = !bmp; t.needsUpdate = true; gl.initTexture(t); } }
+  const all = [tex, ...(TEX_CLONES.get(tex) || [])];
+  all.forEach(t => t.dispose());   // every one first: a clone with the same settings shares the stand-in's storage until it's let go too
+  for (const t of all) { t.image = img; t.flipY = !bmp; t.needsUpdate = true; gl.initTexture(t); } }
 /* V2.64, the client: "freezing on load after first move": the photos landed together (about 60 in the second batch) and three sent each
    to the graphics chip on the first frame that drew it, so the first move after opening sent 30 to 50 in one frame (and redrew the
    shadows for each). Now a photo waits its turn: as many as fit in 6 ms of a still frame, one every 120 ms while you move, each sent

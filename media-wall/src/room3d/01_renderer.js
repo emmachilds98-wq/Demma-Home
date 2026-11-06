@@ -108,10 +108,10 @@ function precompileStep() {           // from the frame loop, when nothing's mov
    last, so the house's 6 planes and the living room's 2 never matched and were built again, one at a time, on the frame that first
    showed them (34 to 44: seconds on a phone). Now the scene is compiled in groups with the same planes, each after one of its pieces is
    drawn alone off screen (which sets three's planes to its, as precompileStep does) */
-function compileClipped(cam) {
+function compileClipped(cam, shownOnly) {   // shownOnly: what's shown now (the rooms' warm-up), not every hidden part too
   const key = m => gl.localClippingEnabled && m.clippingPlanes && m.clippingPlanes.length ? m.clippingPlanes.length + (m.clipIntersection ? "i" : "u") : "0";
   const G = new Map();
-  scene.traverse(o => { const m = [].concat(o.material || [])[0]; if (!m || !(o.isMesh || o.isLine || o.isPoints || o.isSprite)) return; const k = key(m); if (!G.has(k)) G.set(k, []); G.get(k).push(o); });
+  scene[shownOnly ? "traverseVisible" : "traverse"](o => { const m = [].concat(o.material || [])[0]; if (!m || !(o.isMesh || o.isLine || o.isPoints || o.isSprite)) return; const k = key(m); if (!G.has(k)) G.set(k, []); G.get(k).push(o); });
   scene.traverse(c => { if (c.isLight) c.layers.enable(31); });
   const jobs = [];
   for (const objs of G.values()) {
