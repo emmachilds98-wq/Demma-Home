@@ -2,7 +2,16 @@ let garden3d = null;   // v53: the back garden as ground, in the views from abov
 let HBUILD = null;     // V1: builds (or rebuilds, with edits) one floor of the house
 const HEDITS = {};     // V1 (Phase 3): the client's edits, {item id: {from: box, to: box, op?: the opening's old and new edges}}
 const mapAx = (v, f0, f1, t0, t1) => (f1 - f0 < 0.01 ? v + (t0 - f0) : t0 + (v - f0) * (t1 - t0) / (f1 - f0));
-function editXf(E) {   // one edited piece's boxes: a door or window keeps its frames' widths (piecewise along its wall), the rest scale
+/* V2.33 (REAL_PLAN R6): a piece turned a quarter (E.turn, 1-3) about the centre of its new box, after its size and place: a box's x and z
+   swap round that centre, a turned shape's centre goes round with it, a profile's extrusion changes axis (turnPrism) */
+const turnBox = (b, cx, cz) => [cx - (b[5] - cz), b[1], cz + (b[0] - cx), cx - (b[2] - cz), b[4], cz + (b[3] - cx)].map(v => Math.round(v * 10) / 10);
+function editXf(E) {
+  const f = editScale(E), q = (E.turn || 0) % 4; if (!q || E.removed) return f;
+  const cx = (E.to[0] + E.to[3]) / 2, cz = (E.to[2] + E.to[5]) / 2;
+  const g = b => { let o = f(b); for (let i = 0; i < q; i++) o = turnBox(o, cx, cz); return o; };
+  return Object.assign(g, { scale: f, turn: q, cx, cz });
+}
+function editScale(E) {   // one edited piece's boxes: a door or window keeps its frames' widths (piecewise along its wall), the rest scale
   const op = E.op;
   if (E.removed) return () => null;                                         // taken out (Remove): its boxes aren't drawn
   return b => {
@@ -47,7 +56,8 @@ function editedFloor(fk, F) {
   for (const [m, list] of Object.entries(F.boxes)) [boxes[m], bt[m]] = mapList(list, (F.bt || {})[m]);
   const lathes = (F.lathes || []).filter(L => !(xf[L.t] && HEDITS[tags[L.t]].removed)).map(L => { const f = xf[L.t]; if (!f) return L; const E = HEDITS[tags[L.t]];
     const sx = (E.to[3] - E.to[0]) / Math.max(0.1, E.from[3] - E.from[0]), sz = (E.to[5] - E.to[2]) / Math.max(0.1, E.from[5] - E.from[2]);
-    const c = f([L.c[0], L.c[1], L.c[2], L.c[0], L.c[1], L.c[2]]); return Object.assign({}, L, { c: [c[0], c[1], c[2]], s: [L.s[0] * sx, L.s[1] * sz] }); });
+    const c = f([L.c[0], L.c[1], L.c[2], L.c[0], L.c[1], L.c[2]]), s = [L.s[0] * sx, L.s[1] * sz];
+    return Object.assign({}, L, { c: [c[0], c[1], c[2]], s: f.turn % 2 ? [s[1], s[0]] : s }); });
   const prisms = (F.prisms || []).filter(P => !(xf[P.t] && HEDITS[tags[P.t]].removed)).map(P => mapPrism(P, xf[P.t]));
   const parts = {}; for (const [k, P] of Object.entries(F.parts || {})) { const pb = {}, pt = {}; for (const [m, list] of Object.entries(P.boxes)) [pb[m], pt[m]] = mapList(list, (P.bt || {})[m]);
     const t = Object.values(P.bt || {}).flat().find(q => xf[q]), f = t != null ? xf[t] : null;   // V1.50: a resized door swings from its hinge, its handle with it
@@ -55,8 +65,16 @@ function editedFloor(fk, F) {
     parts[k] = Object.assign({}, P, { boxes: pb, bt: pt }, f ? { pivot: pv.slice(0, 3), prisms: (P.prisms || []).map(Q => mapPrism(Q, f)) } : {}); }
   return Object.assign({}, F, { boxes, bt, lathes, prisms, parts });
 }
+function turnPrism(P, cx, cz) {   // V2.33: a profile turned a quarter about (cx, cz)
+  const rx = (x, z) => [cx - (z - cz), cz + (x - cx)];
+  if (P.axis === "y") return Object.assign({}, P, { pts: P.pts.map(([u, w]) => rx(u, w)) });
+  if (P.axis === "x") { const [za, zb] = [cz + (P.a - cx), cz + (P.b - cx)]; return Object.assign({}, P, { axis: "z", a: Math.min(za, zb), b: Math.max(za, zb), pts: P.pts.map(([u, w]) => [cx - (u - cz), w]) }); }
+  const [xa, xb] = [cx - (P.a - cz), cx - (P.b - cz)];
+  return Object.assign({}, P, { axis: "x", a: Math.min(xa, xb), b: Math.max(xa, xb), pts: P.pts.map(([u, w]) => [cz + (u - cx), w]) });
+}
 function mapPrism(P, f) {
   if (!f) return P;
+  if (f.turn) { let Q = mapPrism(P, f.scale); for (let i = 0; i < f.turn; i++) Q = turnPrism(Q, f.cx, f.cz); return Q; }
   if (P.axis === "y") { const pts = P.pts.map(([u, w]) => { const q = f([u, 0, w, u, 0, w]); return [q[0], q[2]]; }), ab = f([0, P.a, 0, 0, P.b, 0]);   // V1.14
       return Object.assign({}, P, { pts, a: ab[1], b: ab[4] }); }
     const pts = P.pts.map(([u, w]) => { const q = P.axis === "x" ? f([0, w, u, 0, w, u]) : f([u, w, 0, u, w, 0]); return P.axis === "x" ? [q[2], q[1]] : [q[0], q[1]]; });
@@ -65,7 +83,7 @@ function mapPrism(P, f) {
 /* V1.50 (V1_PLAN phase 3, the old app's Edit in the old design): tap a piece in the house and change its size. Each piece's boxes, by its
    tag, find what a tap is on; the changes are Measure's "edits" rows ({item, field, value}: measure.js's store, so Send shares them),
    with the same arithmetic as tools/pull_edits.py, which folds them into house/survey_data.py. */
-const PICK = {};
+const PICK = {}, PARTED = new Set();   // V2.33: pieces with a part that swings or lifts (they don't turn)
 const wbox = b => new THREE.Box3(new THREE.Vector3(-b[3] * M, b[1] * M, b[2] * M), new THREE.Vector3(-b[0] * M, b[4] * M, b[5] * M));
 function pickable(fk, F) {
   const tags = F.tags || [], list = [];
@@ -74,7 +92,7 @@ function pickable(fk, F) {
   for (const L of F.lathes || []) if (L.t >= 0) { const r = Math.max(...L.p.map(q => q[0])), h = Math.max(...L.p.map(q => q[1]));
     list.push({ id: tags[L.t], b: wbox([L.c[0] - r * L.s[0], L.c[1], L.c[2] - r * L.s[1], L.c[0] + r * L.s[0], L.c[1] + h, L.c[2] + r * L.s[1]]) }); }
   for (const P of Object.values(F.parts || {})) for (const [m, boxes] of Object.entries(P.boxes)) { const bt = (P.bt || {})[m] || [];
-    boxes.forEach((b, i) => { if (bt[i] >= 0) list.push({ id: tags[bt[i]], b: wbox(b) }); }); }
+    boxes.forEach((b, i) => { if (bt[i] >= 0) { list.push({ id: tags[bt[i]], b: wbox(b) }); PARTED.add(tags[bt[i]]); } }); }
   PICK[fk] = list;
 }
 function housePiece(hits, cut) {   // the piece whose box the ray meets first, at or just behind the first surface it hits
@@ -124,19 +142,21 @@ const FIELDS = [["w", "Width"], ["h", "Height"], ["up", "Up from the floor"], ["
 function pieceNow(id) {
   const it = HIT(id), e = {}, ds = DS();
   if (ds) for (const v of Object.values(ds.rows("edits") || {})) if (v && v.item === id && typeof v.value === "number") e[v.field] = v.value;
-  return { w: e.w ?? it.s[0], h: e.h ?? it.s[1], up: e.up ?? it.s[2], along: e.along ?? it.al, out: it.op ? 0 : e.out ?? 0 };
+  return { w: e.w ?? it.s[0], h: e.h ?? it.s[1], up: e.up ?? it.s[2], along: e.along ?? it.al, out: it.op ? 0 : e.out ?? 0, turn: canTurn(id) ? (e.turn ?? 0) % 4 : 0 };
 }
-function pieceDelta(id) { const it = HIT(id), c = pieceNow(id); return [c.along - it.al, c.w - it.s[0], c.h - it.s[1], c.up - it.s[2], c.out]; }
+const canTurn = id => { const it = HIT(id); return !!it && !it.op && !PARTED.has(id); };
+function pieceDelta(id) { const it = HIT(id), c = pieceNow(id); return [c.along - it.al, c.w - it.s[0], c.h - it.s[1], c.up - it.s[2], c.out, c.turn]; }
 function pieceBox(id) {
   const it = HIT(id), [dA, dW, dH, dU, dO] = pieceDelta(id), k = it.ax === "z" ? 2 : 0, o = 2 - k, b = it.b.slice();
-  b[k] += dA; b[k + 3] += dA + dW; b[1] += dU; b[4] += dU + dH; b[o] += dO; b[o + 3] += dO; return b;
+  b[k] += dA; b[k + 3] += dA + dW; b[1] += dU; b[4] += dU + dH; b[o] += dO; b[o + 3] += dO;
+  const q = pieceNow(id).turn; return q % 2 ? turnBox(b, (b[0] + b[3]) / 2, (b[2] + b[5]) / 2) : b;   // V2.33: its outline turned too
 }
 function storeEdits() {   // Measure's rows, as the engine's edits (HEDITS)
   if (!DS() || !R.HOUSE3) return;
   const out = {};
   for (const [id, it] of Object.entries(R.HOUSE3.items || {})) {
     if (!pieceDelta(id).some(Boolean)) continue; const [dA, dW, dH, dU] = pieceDelta(id);
-    const E = { from: it.b, to: pieceBox(id) }, o = it.op;
+    const q = pieceNow(id).turn, to = pieceBox(id), E = { from: it.b, to: q % 2 ? turnBox(to, (to[0] + to[3]) / 2, (to[2] + to[5]) / 2) : to, turn: q }, o = it.op;   // to: before the turn (editXf turns it)
     if (o) E.op = { axis: o.axis, line: o.line, a: o.a, b: o.b, y0: o.y0, y1: o.y1, a2: o.a + dA, b2: o.b + dA + dW, y02: o.y0 + dU, y12: o.y1 + dU + dH };
     out[id] = E;
   }
@@ -147,8 +167,8 @@ function paintEdits() {   // V1.51: Measure's list of the sizes changed in the 3
   const box = document.getElementById("ms-elist"), grp = document.getElementById("ms-edits"); if (!box || !grp || !DS()) return;
   const ids = [...new Set(Object.values(DS().rows("edits") || {}).map(v => v && v.item))].filter(id => HIT(id) && pieceDelta(id).some(Boolean));
   grp.hidden = !ids.length;
-  const W = { w: "wide", h: "high", up: "up", along: "along", out: "out" };
-  box.innerHTML = ids.map(id => { const it = HIT(id), c = pieceNow(id), was = { w: it.s[0], h: it.s[1], up: it.s[2], along: it.al, out: 0 };
+  const W = { w: "wide", h: "high", up: "up", along: "along", out: "out", turn: "quarter turns" };
+  box.innerHTML = ids.map(id => { const it = HIT(id), c = pieceNow(id), was = { w: it.s[0], h: it.s[1], up: it.s[2], along: it.al, out: 0, turn: 0 };
     const ch = Object.keys(W).filter(k => Math.abs(c[k] - was[k]) > 0.05).map(k => `${cmR(c[k])} ${W[k]}, was ${cmR(was[k])}`).join(" · ");
     return `<div class="ms-row ms-erow"><button type="button" class="t ms-ego" data-epiece="${id}">${it.n}<small>${ch}</small></button><button type="button" class="btn" data-ereset="${id}">As planned</button></div>`; }).join("");
 }
@@ -170,7 +190,7 @@ const pieceLine = id => { const it = HIT(id), c = pieceNow(id), ed = pieceDelta(
 let sizeT = 0;
 async function setPiece(id, field, v) {
   const it = HIT(id), ds = DS(); if (!it || !ds) return;
-  const base = field === "along" ? it.al : field === "out" ? 0 : it.s[["w", "h", "up"].indexOf(field)], rid = `${id}~${field}`;
+  const base = field === "along" ? it.al : field === "out" || field === "turn" ? 0 : it.s[["w", "h", "up"].indexOf(field)], rid = `${id}~${field}`;
   try { if (v == null || Math.abs(v - base) < 0.05) { if (ds.rows("edits")[rid]) await ds.del("edits", rid); }
         else await ds.put("edits", rid, { item: id, field, value: v }); }
   catch (e) { toast("That didn't save: try again"); }

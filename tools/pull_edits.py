@@ -61,7 +61,7 @@ def plan(raw, when):
     items = {i["id"]: i for i in XH.house()["items"]}
     by = {}
     for r in rows_of(raw, "edits").values():
-        if r.get("item") in items and r.get("field") in ("w", "h", "up", "along", "out", "removed"):
+        if r.get("item") in items and r.get("field") in ("w", "h", "up", "along", "out", "turn", "removed"):
             by.setdefault(r["item"], {})[r["field"]] = r.get("value")
     for iid, f in by.items():
         it = items[iid]; s = it["size"]
@@ -75,6 +75,9 @@ def plan(raw, when):
         val = lambda key, base: num(f[key]) if key in f and num(f[key]) is not None else base
         dA, dW, dH, dU = val("along", along0) - along0, val("w", s["w"]) - s["w"], val("h", s["h"]) - s["h"], val("up", s["up"]) - s["up"]
         dO = 0 if it.get("opening") else val("out", 0)   # V2.32: moved out from its wall (across the other way on the floor)
+        turned = int(num(f.get("turn")) or 0) % 4 if "turn" in f else 0   # V2.33: turned in the app, a quarter each press
+        if turned:
+            questions.append(f"{it['name']} ({it['room']}): turned {turned * 90}° in the app: fold it in by hand (which way it faces is the model's)")
         if not any((dA, dW, dH, dU, dO)):
             continue
         data = it.get("data") or []
