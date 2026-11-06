@@ -199,8 +199,23 @@ const texClone = t => { const c = t.clone(); TEX_CLONES.has(t) ? TEX_CLONES.get(
 TEX_CLONES.set(OAK_TEX, [OAK_TEX_V]);   // V1.12: the doors' upright oak, cloned before this list (it kept the drawn oak's texture: the site check's WebGL error)
 /* V1.12: dispose first: WebGL2 keeps a texture at the size it was first sent (immutable storage), so a 1024 photo sent into its 4 × 4
    stand-in never showed (V1.9 to V1.11: the house's photos stayed their mean colour); disposed, it's made again at the photo's size */
-function texSet(tex, img) { const bmp = typeof ImageBitmap !== "undefined" && img instanceof ImageBitmap;   // V1.30: a bitmap comes flipped already
-  for (const t of [tex, ...(TEX_CLONES.get(tex) || [])]) { t.dispose(); t.image = img; t.flipY = !bmp; t.needsUpdate = true; } }
+function texPut(tex, img) { const bmp = typeof ImageBitmap !== "undefined" && img instanceof ImageBitmap;   // V1.30: a bitmap comes flipped already
+  const all = [tex, ...(TEX_CLONES.get(tex) || [])];
+  all.forEach(t => t.dispose());   // every one first: a clone with the same settings shares the stand-in's storage until it's let go too
+  for (const t of all) { t.image = img; t.flipY = !bmp; t.needsUpdate = true; gl.initTexture(t); } }
+/* V2.64, the client: "freezing on load after first move": the photos landed together (about 60 in the second batch) and three sent each
+   to the graphics chip on the first frame that drew it, so the first move after opening sent 30 to 50 in one frame (and redrew the
+   shadows for each). Now a photo waits its turn: as many as fit in 6 ms of a still frame, one every 120 ms while you move, each sent
+   ahead of the frame that shows it (initTexture); a colour match (prep) is done then too; the shadows are redrawn once, at the end */
+const UPQ = []; let upShade = false, upT = 0;
+function texSet(tex, img, shade, prep) { UPQ.push({ tex, img, shade, prep }); }
+function upStep(now, busy) {   // from the frame loop, every frame
+  if (!UPQ.length) { if (upShade) { upShade = false; reshadow(); dirty(); } return; }
+  if (busy && now - upT < 120) return;
+  const t0 = performance.now();
+  do { const j = UPQ.shift(); texPut(j.tex, j.prep ? j.prep(j.img) : j.img); if (j.shade) upShade = true; } while (UPQ.length && !busy && performance.now() - t0 < 6);
+  upT = now; dirty();
+}
 /* V1.30 (U5): a photo decoded off the page's thread (createImageBitmap; it was decoded as it was first drawn, a stall each), flipped for
    WebGL as three expects; an <img> where that isn't there */
 const DECODED = new Map();   // V2.47: a photo two textures share (the brick's, the pine's) is fetched and decoded once
@@ -213,19 +228,17 @@ function decodeOnce(src, flip) {
 function photoInto(tex, k, f, match = true) {
   if (!PHOTOS) return;
   whenPhoto(k, f, src => {
-    decodeImg(src, !(match && tex.image && tex.image.getContext)).then(im => {
-      let out = im;
-      if (match && tex.image && tex.image.getContext) {
-        const avg = d => { const t = [0, 0, 0]; for (let i = 0; i < d.length; i += 4) { t[0] += d[i]; t[1] += d[i + 1]; t[2] += d[i + 2]; } return t.map(v => v / (d.length / 4) || 1); };
-        const was = tex.image, want = avg(was.getContext("2d").getImageData(0, 0, was.width, was.height).data);
-        out = document.createElement("canvas"); out.width = im.naturalWidth || im.width; out.height = im.naturalHeight || im.height;
-        const g = out.getContext("2d"); g.drawImage(im, 0, 0);
-        const px = g.getImageData(0, 0, out.width, out.height), d = px.data, k = avg(d).map((v, i) => want[i] / v);
-        for (let i = 0; i < d.length; i += 4) { d[i] *= k[0]; d[i + 1] *= k[1]; d[i + 2] *= k[2]; }   // clamped at 255 by the array
-        g.putImageData(px, 0, 0);
-      }
-      texSet(tex, out); dirty();
-    });
+    const tint = match && tex.image && tex.image.getContext;
+    decodeImg(src, !tint).then(im => texSet(tex, im, false, tint ? im => {
+      /* scaled to the drawn texture's average (V2.64: the averages from a 128 × 128 copy, not every pixel of both) */
+      const avg = c => { const s_ = document.createElement("canvas"); s_.width = s_.height = 128; const g_ = s_.getContext("2d"); g_.imageSmoothingQuality = "high"; g_.drawImage(c, 0, 0, 128, 128);
+        const d = g_.getImageData(0, 0, 128, 128).data, t = [0, 0, 0]; for (let i = 0; i < d.length; i += 4) { t[0] += d[i]; t[1] += d[i + 1]; t[2] += d[i + 2]; } return t.map(v => v / 16384 || 1); };
+      const want = avg(tex.image), out = document.createElement("canvas"); out.width = im.naturalWidth || im.width; out.height = im.naturalHeight || im.height;
+      const g = out.getContext("2d"); g.drawImage(im, 0, 0);
+      const px = g.getImageData(0, 0, out.width, out.height), d = px.data, k = avg(im).map((v, i) => want[i] / v);
+      for (let i = 0; i < d.length; i += 4) { d[i] *= k[0]; d[i + 1] *= k[1]; d[i + 2] *= k[2]; }   // clamped at 255 by the array
+      g.putImageData(px, 0, 0); return out;
+    } : null));
   }, tex);
 }
 const flatNormal = () => canvasTex(4, 4, (g, w, h) => { g.fillStyle = "#8080ff"; g.fillRect(0, 0, w, h); }, false);

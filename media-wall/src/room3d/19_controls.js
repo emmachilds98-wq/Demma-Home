@@ -167,7 +167,7 @@ function setRmode(m, quiet) {
     planes.push(P(0, -1, 0, top));                                                    // the ceiling and everything over it off
     if (RMODE === "alone") planes.push(P(1, 0, 0, x1 + g), P(-1, 0, 0, -(x0 - g)), P(0, 1, 0, -(fy - 30)), P(0, 0, 1, -(z0 - g)), P(0, 0, -1, z1 + g)); }
   RPLANES = planes;
-  for (const m_ of Object.values(HMATS || {})) { m_.clippingPlanes = planes; m_.clipIntersection = false; m_.clipShadows = planes.length > 0; m_.needsUpdate = true; }   // union: outside any plane goes
+  for (const m_ of Object.values(HMATS || {})) houseClip(m_, planes, false);   // union: outside any plane goes (V2.64: padded to 6, the same shaders)
   for (const k of ["tile", "ceiling", "shade_ceil"]) if (HMATS && HMATS[k]) HMATS[k].visible = !rr;   // V1.33: and the ceilings' shade   // v81: the roof's tiles off too (its low eaves lay over the bathroom's corner from above); v82 the ceilings and slopes below the cut (the bathroom's dormer ceiling)
   hidMode.forEach(o => o.visible = true); hidMode = []; applyFloors();
   if (rr && (RMODE === "alone" || rr[4] < 0)) scene.children.forEach(o => { if (o !== houseG && o !== lightRig && !o.isLight && o !== (sun && sun.target) && o.visible) { o.visible = false; hidMode.push(o); } });

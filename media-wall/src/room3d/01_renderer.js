@@ -95,13 +95,33 @@ function precompileStep() {           // from the frame loop, when nothing's mov
   scene.traverse(c => { if (c.isLight) c.layers.enable(31); });
   o.traverse(c => { if (!c.isLight) { if (c.visible === false) { shown.push(c); c.visible = true; } if (!c.layers.isEnabled(31)) { tagged.push(c); c.layers.enable(31); } } });
   const mask = camera.layers.mask, was = gl.getRenderTarget();
-  camera.layers.set(31); gl.setRenderTarget(aoLive() ? PRE.rtAO : PRE.rt);
+  camera.layers.set(31); gl.setRenderTarget(postLive() ? PRE.rtAO : PRE.rt);
   try { gl.render(scene, camera); } finally {
     gl.setRenderTarget(was); camera.layers.mask = mask;
     shown.forEach(c => { c.visible = false; }); tagged.forEach(c => c.layers.disable(31));
   }
   PRE.done++;
   return true;
+}
+/* V2.64, the client's iPhone froze on the first tap on a floor: three's compileAsync (the start's shaders, built in parallel where the
+   browser can: Safari and Chrome have KHR_parallel_shader_compile) builds every shader for the cutting planes of whatever was drawn
+   last, so the house's 6 planes and the living room's 2 never matched and were built again, one at a time, on the frame that first
+   showed them (34 to 44: seconds on a phone). Now the scene is compiled in groups with the same planes, each after one of its pieces is
+   drawn alone off screen (which sets three's planes to its, as precompileStep does) */
+function compileClipped(cam, shownOnly) {   // shownOnly: what's shown now (the rooms' warm-up), not every hidden part too
+  const key = m => gl.localClippingEnabled && m.clippingPlanes && m.clippingPlanes.length ? m.clippingPlanes.length + (m.clipIntersection ? "i" : "u") : "0";
+  const G = new Map();
+  scene[shownOnly ? "traverseVisible" : "traverse"](o => { const m = [].concat(o.material || [])[0]; if (!m || !(o.isMesh || o.isLine || o.isPoints || o.isSprite)) return; const k = key(m); if (!G.has(k)) G.set(k, []); G.get(k).push(o); });
+  scene.traverse(c => { if (c.isLight) c.layers.enable(31); });
+  const jobs = [];
+  for (const objs of G.values()) {
+    const o = objs.find(x => x.isMesh && shownChain(x)) || objs[0], shown = [], cull = o.frustumCulled, l31 = o.layers.isEnabled(31), mask = cam.layers.mask, su = gl.shadowMap.needsUpdate;
+    for (let p = o; p; p = p.parent) if (p.visible === false) { shown.push(p); p.visible = true; }
+    o.frustumCulled = false; o.layers.enable(31); cam.layers.set(31); gl.shadowMap.needsUpdate = false;
+    try { gl.render(scene, cam); } finally { cam.layers.mask = mask; if (!l31) o.layers.disable(31); o.frustumCulled = cull; shown.forEach(x => { x.visible = false; }); gl.shadowMap.needsUpdate = su; }
+    jobs.push(gl.compileAsync({ traverse: f => objs.forEach(f), traverseVisible() {} }, cam, scene));
+  }
+  return Promise.all(jobs);
 }
 /* v40, client: "better rendering and graphics": ambient occlusion (three's GTAO), the soft shade where things meet. Always in the HD
    pictures; live in HD on a real graphics card (aoLive). With it the room draws into the composer's target (linear, tone-mapped at the
@@ -112,8 +132,15 @@ const AO = { c: null, g: null };
 let houseLite = /[?&]houselite\b/.test(location.search);
 /* V1.1, the client's iPhones (15 Pro, 16): a capable phone in HD whose frames are quick (under 14 ms) gets the PCs' shade and glow too
    (phoneAO, from autoQuality), lighter (8 samples, 2× anti-aliasing); off again for the visit if its frames then pass 30 ms */
-let phoneAO = GOOD_PHONE, phoneAOoff = false, phoneCap = 3;   // V1.11: on from the start; phoneCap: the phone's sharpness, 3× until slow
-const aoLive = () => S.quality === "hd" && (BIG_GPU || phoneAO || /[?&]ao\b/.test(location.search)) && !/[?&]noao\b/.test(location.search) && !(houseLite && R.HOUSE3 && HOUSEV(S.view));   // ?ao tries it anywhere
+let phoneAO = GOOD_PHONE, phoneAOoff = false, phoneCap = 2;   // V1.11: on from the start; phoneCap: the phone's sharpness
+/* V2.64, the client: "the phone version on my iPhone is freezing on load after first move and is quite laggy": the iPhone drew at its
+   screen's 3× (2.25 times 2×'s pixels, every frame through the shade and the glow) and the speed check then stepped it to 2× in its
+   first seconds, a new set of buffers each step; it starts at 2× now (with 4× anti-aliasing, as sharp to the eye at a phone's size).
+   And a phone in HD always draws through the composer, the shade on or off: the shaders for a target and for the screen differ, so
+   the shade going off after the speed check built every shader in sight again (15 to 30 programs: seconds on a phone) */
+const PHONE_HD = GOOD_PHONE && !BIG_GPU, dragLite = () => PHONE_HD && postLive();
+const postLive = () => S.quality === "hd" && (BIG_GPU || GOOD_PHONE || /[?&]ao\b/.test(location.search)) && !/[?&]noao\b/.test(location.search);   // V2.64: drawn through the composer
+const aoLive = () => postLive() && (BIG_GPU || phoneAO || /[?&]ao\b/.test(location.search)) && !(houseLite && R.HOUSE3 && HOUSEV(S.view)) && !(dragLite() && lowRes);   // ?ao tries it anywhere; V2.64: a slow phone leaves the shade out while you drag, not the sharpness (no new buffers)
 function aoComposer(w, h, pr) {
   if (!AO.c) {
     const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: SMALL ? (GOOD_PHONE ? 4 : 0) : 4 });   // anti-aliased, as on screen
@@ -133,8 +160,8 @@ function aoComposer(w, h, pr) {
   return AO.c;
 }
 function draw() {                     // a frame: through the composer with AO, or straight to the screen
-  if (aoLive()) { const sz = gl.getSize(new THREE.Vector2()); if (!AO.c || AO.w !== sz.x || AO.h !== sz.y || AO.pr !== gl.getPixelRatio()) { aoComposer(sz.x, sz.y, gl.getPixelRatio()); AO.w = sz.x; AO.h = sz.y; AO.pr = gl.getPixelRatio(); }
-    gl.info.autoReset = false; gl.info.reset(); AO.c.render(); gl.info.autoReset = true; }   // the count covers every pass
+  if (postLive()) { const sz = gl.getSize(new THREE.Vector2()); if (!AO.c || AO.w !== sz.x || AO.h !== sz.y || AO.pr !== gl.getPixelRatio()) { aoComposer(sz.x, sz.y, gl.getPixelRatio()); AO.w = sz.x; AO.h = sz.y; AO.pr = gl.getPixelRatio(); }
+    AO.g.enabled = aoLive(); gl.info.autoReset = false; gl.info.reset(); AO.c.render(); gl.info.autoReset = true; }   // the count covers every pass
   else gl.render(scene, camera);
 }
 function syncRig() {                  // each frame: a rigged light follows its owner, and leaves with it (a rebuilt cabinet)

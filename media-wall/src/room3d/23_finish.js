@@ -105,7 +105,7 @@ function finFloorApply() {   // every room with a floor chosen: a thin floor on 
 const FIN_CURT = [["linen", "Linen", "#e6e0d2"], ["sage", "Sage", "#8b9878"], ["blue", "Deep blue", "#34507f"], ["rust", "Rust", "#a65a38"], ["charcoal", "Charcoal", "#4a4d52"]];
 const LIV_CURT = [["hessian", "Your hessian"], ["linen", "Linen"], ["sage", "Sage"], ["blue", "Deep blue"], ["rust", "Rust"]];
 let CURT_LAID = []; const CURT_MATS = {};
-function houseMat(key, m) { const P = HMATS.paint || {}; m.clippingPlanes = P.clippingPlanes || []; m.clipIntersection = !!P.clipIntersection; HMATS[key] = m; return m; }   // with the house's, so a floor's cut takes it too
+function houseMat(key, m) { const P = HMATS.paint; houseClip(m, P && CLIPSRC.get(P) || [], !!(P && P.clipIntersection)); HMATS[key] = m; return m; }   // with the house's, so a floor's cut takes it too
 const curtMat = k => CURT_MATS[k] || (CURT_MATS[k] = houseMat(`curt_${k}`, new THREE.MeshStandardMaterial({ color: (FIN_CURT.find(([q]) => q === k) || [])[2] || CURTAIN_COLS[k] || "#e6e0d2", roughness: 0.95, side: THREE.DoubleSide })));
 function finWindows(room) {   // a room's windows: the piece of floor furthest out at the window's middle is the room it's in
   const out = [];

@@ -99,7 +99,7 @@ function houseTex(k) {
   if (pkey !== k && pm && pm.map) return (HTEX[k] = houseTex(pkey));   // V2.56: one texture per finish, shared
   if (pm && pm.map) {   // V1.9: its mean colour and a flat relief until the photos land (loadPhotos), then the photo in the same texture
     const img = (f, srgb, fill) => { const t = canvasTex(4, 4, g => { g.fillStyle = fill; g.fillRect(0, 0, 4, 4); }, srgb);   // V1.11: as sharp at a slant as the card allows (was 4)
-      whenPhoto(pkey, f, src => { decodeImg(src).then(im => { texSet(t, im); reshadow(); dirty(); }); }, t); return t; };
+      whenPhoto(pkey, f, src => { decodeImg(src).then(im => texSet(t, im, true)); }, t); return t; };   // V2.64: queued (upStep)
     const rg = pm.rough ? Math.round(pm.rough * 255) : 0, grey = `rgb(${rg},${rg},${rg})`;   // V1.30 (U5): its roughness map, if it has one
     return (HTEX[k] = { map: img("map", true, pm.avg || "#888888"), normal: pm.nor ? img("nor", false, "#8080ff") : null, size: [pm.size, pm.size], bump: 0,
       rough: pm.rough && !LOWD ? img("rough", false, grey) : null, roughMean: pm.rough || 0, tint: HTEX_TINT.has(k) });
@@ -491,7 +491,7 @@ function buildHouse() {
       if (k === "mirror") { m.color.set("#ffffff"); m.map = MIRROR_SHEEN; }   // V1.17: the hall's and the bathroom's mirrors as the living room's (grey before; as metal, black)
       const rk = (H3.depth_rank || {})[k] ?? 3;   // V1.31 (U6): where faces lie in one plane the higher rank is drawn (house/model.py depth_rank); constant, so nothing shows through at a slant
       if (rk) { m.polygonOffset = true; m.polygonOffsetFactor = 0; m.polygonOffsetUnits = -2 * rk; }
-      m.clippingPlanes = []; m.userData.hk = k; return finPatch(m, k); })());
+      houseClip(m, [], false); m.userData.hk = k; return finPatch(m, k); })());   // V2.64: 6 planes from the start (09_house_views)
     if (S.fin === undefined && R.HOUSE3.client_finishes && Object.keys(R.HOUSE3.client_finishes).length) finRestore(R.HOUSE3.client_finishes);   // V2.11: the scheme kept in the repo, until this device picks its own
     HMATS = m3; FIN.mat3 = mat3; blindsApply(); hceilApply(); finApplyAll();
     if (window.__finPending) { const p = window.__finPending; window.__finPending = null; finImport(p); }   // V2.11: from a Send link opened before the 3D was ready   // V2.7: (mat3 for a floor laid by the tray)   // V2.6: the colours kept for the house's rooms
@@ -750,8 +750,8 @@ function start() {
     msg.textContent = "Building the house…"; msg.hidden = false;
     const was = gl.getRenderTarget();
     try {
-      if (aoLive()) { if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }); gl.setRenderTarget(PRE.rtAO); }
-      Promise.race([gl.compileAsync(scene, camera), new Promise(r => setTimeout(r, 8000))]).then(first, first);
+      if (postLive()) { if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }); gl.setRenderTarget(PRE.rtAO); }
+      Promise.race([compileClipped(camera), new Promise(r => setTimeout(r, 8000))]).then(first, first);   // V2.64: by cutting planes (01_renderer)
     } catch (e) { first(); } finally { gl.setRenderTarget(was); }
   } else first();
   precompile();                                                                         // v35: hidden parts' shaders, while the room's idle
@@ -767,7 +767,7 @@ function start() {
       if (addp && CATALOGUE[addp.type]) { const a = { id: "a" + Date.now().toString(36), type: addp.type, x: addp.x, z: addp.z }; pushUndo(); addThing(a); if (addp.rot) setLayout(a.id, { rot: addp.rot }); placeAll(); store.set(KEY, S); dirty(); }
       if (showat != null) { showOpen(); if (SH) { SH.own = true; SH.paused = true; SH.t = showat; showPose(SH.t); showCard(); qs("#r3d-show").hidden = true; } }
       if (o.view) setView(o.view, true); if (aim) flyTo(aim.eye, aim.at, aim.fov || 55, !!aim.above, true); },   // v58: "above" lets a look stand off (the house)
-    still, finish, finishes: () => JSON.parse(JSON.stringify(finAll(false))), setFinishes: o => finImport(o), ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { get flying() { return !!tween; }, openAct, finAll, get H3() { return R.HOUSE3; }, get RMODE() { return RMODE; }, spotAt, goStandAt: goStand, HPARTS, PICK, HEDITS, get actId() { return actId; }, swingDoor, WALK, walkMove, collide, bodyBlocked, floorAtCm, HSOLID, livSolids, livFloors,  swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, collide, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG },
+    still, finish, finishes: () => JSON.parse(JSON.stringify(finAll(false))), setFinishes: o => finImport(o), ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { get flying() { return !!tween; }, openAct, finAll, get H3() { return R.HOUSE3; }, get RMODE() { return RMODE; }, spotAt, goStandAt: goStand, HPARTS, PICK, HEDITS, get actId() { return actId; }, swingDoor, WALK, walkMove, collide, bodyBlocked, floorAtCm, HSOLID, livSolids, livFloors,  swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, collide, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG, warmSwitch, WARMED },
     errors: () => store.get("r3d-errors", []),                                       // v35: what the trap kept
     timing: () => Object.assign({ page: Math.round(performance.now()) }, START_MS),     // V1.31: the start's steps (ms from start()), and the page's age
     perf: perfInfo,                                                                   // v35: the counts to watch each round

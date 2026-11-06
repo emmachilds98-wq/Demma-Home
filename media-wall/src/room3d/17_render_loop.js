@@ -12,7 +12,7 @@ function sizeRenderer() {
   if (!w || !h) return;
   if (!started) { start(); return; }
   // v14.1: while you drag, the picture renders at a lower resolution; it sharpens again as soon as you stop
-  gl.setPixelRatio(lowRes ? Math.max(0.5, fullRatio() * 0.5) : fullRatio());
+  gl.setPixelRatio(lowRes && !dragLite() ? Math.max(0.5, fullRatio() * 0.5) : fullRatio());   // V2.64: a phone in HD keeps its sharpness (aoLive)
   gl.setSize(w, h, false);
   camera.aspect = w / h; if (!tween) camera.fov = fitFov(baseFov); applyShift(); dirty();
 }
@@ -104,9 +104,10 @@ function frame(now) {
   mvLast = active ? now : 0;
   // v35: the lower resolution only while you hold and drag the room on a slow device, and only once the drag has lasted a moment:
   // each switch resizes the canvas (a new drawing buffer), which cost more than it saved after a tap, a fly-to or a Look change
-  if (moving && slowDev) { if (!dragT) dragT = now; still_t = now; if (!lowRes && now - dragT > 150) { lowRes = true; sizeRenderer(); } }
-  else { dragT = 0; if (active) still_t = now; else if (lowRes && now - still_t > 250) { lowRes = false; sizeRenderer(); } }
+  if (moving && slowDev) { if (!dragT) dragT = now; still_t = now; if (!lowRes && now - dragT > 150) { lowRes = true; dragLite() ? dirty() : sizeRenderer(); } }
+  else { dragT = 0; if (active) still_t = now; else if (lowRes && now - still_t > 250) { lowRes = false; dragLite() ? dirty() : sizeRenderer(); } }
   if (updateCut()) need = 2;
+  upStep(now, active || walking());                                // V2.64: the photos onto the graphics chip a few at a time
   if (probe > 0 && !lowRes) need = Math.max(need, 1);                 // v35: the speed check's three frames come first, at the start
   if (need === 0 && !active && !SH && probe === 0 && now - preT > 120 && now - PRE.idleT > 400) {   // v35: hidden parts' shaders, off screen
     const t0 = performance.now(); while (precompileStep() && performance.now() - t0 < 10) {} if (!PRE.queue.length && now - PRE.idleT > 1500) warmSwitch(); preT = now; }   // V2.42: a room's visit only after a real pause   // v39: as many as fit in 10 ms, sooner
