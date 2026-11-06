@@ -2,7 +2,34 @@
    ceiling in any of the house's rooms; its card has the colours as a tray (tap one: the room changes at once), where it goes (this wall,
    this room, the whole house), Undo, and As it is (hold it: the house as drawn; let go: your colours). Kept on this device (S.fin: room ->
    slot -> colour), drawn through F2's palette (20_go.js finish). The living room keeps its own Look. */
-let finScope = "room", finHeld = null;
+let finScope = "room", finHeld = null, livHeld = null;
+/* N5 (REAL_PLAN R7, the finishes plan's F8): the living room on the house's rows. Its colours stay where its own Look keeps them (S.paint,
+   S.walls, S.ceil, S.skirt: drawn pixel for pixel as before); as a row it reads 0-3 its walls, 4 its ceiling, 11-16 its six walls by name
+   (media, breast, door, stairs, window, PC), 17 the skirting, the door and its frame. So a tap on its wall opens the house's card, and the
+   schemes, Undo, Copy and Paste and Send carry it with the rest of the house */
+const LIVR = "living", LIV_W = WALLS.map(([k]) => k), LIV_HEX = /^#[0-9a-f]{6}$/i;
+const livChanged = () => S.paint !== DEF.paint || Object.keys(S.walls).length > 0 || S.ceil !== "match" || S.skirt !== "match";
+function livRow() {
+  const o = {}, h = paintHex(); [0, 1, 2, 3].forEach(s => o[s] = h); if (LIV_HEX.test(S.ceil)) o[4] = S.ceil; if (LIV_HEX.test(S.skirt)) o[17] = S.skirt;
+  LIV_W.forEach((k, i) => { if (LIV_HEX.test(S.walls[k] || "")) o[11 + i] = S.walls[k]; }); return o;
+}
+function livBase(hex) {   // the walls' paint: one of the paints by its key, else your own colour; none: the plan's (pale mint)
+  const k = hex && Object.keys(R.PAINTS).find(q => R.PAINTS[q].hex.toLowerCase() === hex.toLowerCase());
+  if (!hex) S.paint = DEF.paint; else if (k) S.paint = k; else { S.paint = "custom"; S.custom = hex; }
+}
+function livSet(o) {   // a row back into the living room's own Look (none: it stays as it is)
+  if (!o) return; livBase([0, 1, 2, 3].map(s => o[s]).find(Boolean)); S.ceil = o[4] || "match"; S.skirt = o[17] || "match"; S.walls = {};
+  LIV_W.forEach((k, i) => { if (o[11 + i]) setWall(k, o[11 + i]); }); repaint(); syncButtons(); updateCaption();
+}
+function livFin(slot, hex, one) {   // one surface of the living room to a colour (null: as the plan has it)
+  if (slot === 4) S.ceil = hex || "match"; else if (slot === 17) S.skirt = hex || "match";
+  else if (one && slot >= 11) setWall(LIV_W[slot - 11], hex || "match"); else { livBase(hex); S.walls = {}; }
+  repaint(); syncButtons(); updateCaption();
+}
+const finAll = (all = true) => Object.assign({}, S.fin || {}, all || livChanged() ? { [LIVR]: livRow() } : {});   // every room's row, the living room's too
+function finRestore(o) { const c = finClean(o), L = c[LIVR]; delete c[LIVR]; S.fin = c; livSet(L); }
+const finPush = () => { FIN_UNDO.push(JSON.stringify(finAll())); if (FIN_UNDO.length > 20) FIN_UNDO.shift(); };
+const finSlotName = (room, slot) => room === LIVR && slot >= 11 && slot <= 16 ? WALLS[slot - 11][1].toLowerCase() : room === LIVR && slot === 17 ? "skirting and door" : `${FIN_NAMES[slot]} wall`;
 const FIN_UNDO = [];
 const FIN_NAMES = ["back", "front", "east", "west", "ceiling", "floor"];
 /* V2.7 (F4): the floors in the tray: the house's own floor materials (their photos, house/textures), laid as a room's new floor; the mean
@@ -107,11 +134,11 @@ function finAt(hit) {   // a tap on a wall or a ceiling of the house: its room a
 function finClean(o) {
   const out = {}, floors = new Set(FIN_FLOORS.map(([k]) => k)), bulbs = new Set(FIN_BULBS.map(([v]) => v)), lux = new Set(FIN_LUX.map(([v]) => v));
   for (const [room, sl] of Object.entries(o && typeof o === "object" ? o : {})) { if (!/^[a-z0-9_]{1,30}$/.test(room) || !sl || typeof sl !== "object") continue;
-    for (const [s, v] of Object.entries(sl)) { const k = +s, ok = k <= 4 || k === 9 || k === 10 ? /^#[0-9a-f]{6}$/i.test(v) : k === 5 ? floors.has(v) : k === 6 ? bulbs.has(v) : k === 7 ? lux.has(v) : k === 8 ? FIN_FITS.some(([f]) => f === v) : false;
+    for (const [s, v] of Object.entries(sl)) { const k = +s, ok = k <= 4 || k === 9 || k === 10 || (room === LIVR && k >= 11 && k <= 17) ? /^#[0-9a-f]{6}$/i.test(v) : k === 5 ? floors.has(v) : k === 6 ? bulbs.has(v) : k === 7 ? lux.has(v) : k === 8 ? FIN_FITS.some(([f]) => f === v) : false;
       if (ok) (out[room] = out[room] || {})[k] = v; } }
   return out;
 }
-function finImport(o) { const c = finClean(o); if (!Object.keys(c).length) return false; FIN_UNDO.push(JSON.stringify(S.fin || {})); S.fin = c; store.set(KEY, S); finApplyAll(); toast("Their colours, floors and bulbs"); return true; }
+function finImport(o) { const c = finClean(o); if (!Object.keys(c).length) return false; finPush(); finRestore(c); store.set(KEY, S); finApplyAll(); toast("Their colours, floors and bulbs"); return true; }
 /* V2.12 (F7): what the choices take, from each room's surfaces' areas (house/surfaces.py via R.HOUSE3.finish_areas): the walls by colour
    (two coats at about 12 m² a litre, in 2.5 L tins), the ceiling the same, the floor's m² with 10% for cutting; in Measure */
 function finTakes() {
@@ -123,6 +150,10 @@ function finTakes() {
     for (const [hex, m2] of Object.entries(by)) { const l = lit(m2); rows.push(`<div class="ms-erow"><b>${roomName(room)}</b> walls, ${paint(hex)}: ${m2.toFixed(1)} m², about ${l} L (${tins(l)} × 2.5 L)</div>`); }
     if (sl[4] && a.ceiling) { const l = lit(a.ceiling); rows.push(`<div class="ms-erow"><b>${roomName(room)}</b> ceiling, ${paint(sl[4])}: ${a.ceiling.toFixed(1)} m², about ${l} L (${tins(l)} × 2.5 L)</div>`); }
     if (sl[5] && a.floor) { const f = FIN_FLOORS.find(([k]) => k === sl[5]); rows.push(`<div class="ms-erow"><b>${roomName(room)}</b> floor, ${f ? f[1] : sl[5]}: ${a.floor.toFixed(1)} m², ${(a.floor * 1.1).toFixed(1)} m² to buy</div>`); } }
+  const la = A[LIVR]; if (la && livChanged()) { const by = {};   // N5: the living room's, by its six walls
+    for (const k of LIV_W) { const w = la.walls[k], hex = S.walls[k] || paintHex(); if (w) by[hex] = (by[hex] || 0) + w[0]; }
+    for (const [hex, m2] of Object.entries(by)) { const l = lit(m2); rows.push(`<div class="ms-erow"><b>${roomName(LIVR)}</b> walls, ${paint(hex)}: ${m2.toFixed(1)} m², about ${l} L (${tins(l)} × 2.5 L)</div>`); }
+    if (la.ceiling) { const hex = chHex("ceil"), l = lit(la.ceiling); rows.push(`<div class="ms-erow"><b>${roomName(LIVR)}</b> ceiling, ${paint(hex)}: ${la.ceiling.toFixed(1)} m², about ${l} L (${tins(l)} × 2.5 L)</div>`); } }
   list.innerHTML = rows.join(""); box.hidden = !rows.length;
 }
 /* V2.13 (F6): a room's look copied to another (Copy this room on its card; Paste on any other room's), and the whole house's colours, floors
@@ -131,23 +162,23 @@ let FIN_COPY = null;
 const FSK = "dh-fin-schemes";
 function finSchemes() { try { const L = JSON.parse(localStorage.getItem(FSK) || "[]"); return Array.isArray(L) ? L : []; } catch (e) { return []; } }
 function finSchDraw() {
-  const box = qs("#r3d-finschl"); if (!box) return; const L = finSchemes(), now = JSON.stringify(finClean(S.fin || {})), esc = t => String(t).replace(/[<&"]/g, "");
-  box.innerHTML = L.length ? L.map((x, i) => `<span class="r3d-mysc"><button type="button" data-finsch="${i}" aria-pressed="${JSON.stringify(finClean(x.fin)) === now}">${esc(x.name)}</button><button type="button" class="r3d-myx" data-finschdel="${i}" aria-label="Delete ${esc(x.name)}">×</button></span>`).join("")
+  const box = qs("#r3d-finschl"); if (!box) return; const L = finSchemes(), now = x => JSON.stringify(finClean(finAll(!!(x.fin || {})[LIVR]))), esc = t => String(t).replace(/[<&"]/g, "");
+  box.innerHTML = L.length ? L.map((x, i) => `<span class="r3d-mysc"><button type="button" data-finsch="${i}" aria-pressed="${JSON.stringify(finClean(x.fin)) === now(x)}">${esc(x.name)}</button><button type="button" class="r3d-myx" data-finschdel="${i}" aria-label="Delete ${esc(x.name)}">×</button></span>`).join("")
     : '<span class="caption">None yet: tap a wall, a ceiling or a floor in any room, then name it here.</span>';
 }
 function finSchSave() {
   const inp = qs("#r3d-finschname"), name = ((inp && inp.value.trim()) || `Scheme ${finSchemes().length + 1}`).slice(0, 24);
-  const L = finSchemes().filter(x => x.name !== name); L.push({ name, fin: finClean(S.fin || {}) });
+  const L = finSchemes().filter(x => x.name !== name); L.push({ name, fin: finClean(finAll()) });
   try { localStorage.setItem(FSK, JSON.stringify(L.slice(-12))); } catch (e) {} if (inp) inp.value = ""; finSchDraw(); toast(`Saved: ${name}`);
 }
 function finSchUse(i) {
-  const x = finSchemes()[i]; if (!x) return; FIN_UNDO.push(JSON.stringify(S.fin || {}));
-  S.fin = finClean(x.fin); store.set(KEY, S); finApplyAll(); toast(x.name);
+  const x = finSchemes()[i]; if (!x) return; finPush();
+  finRestore(x.fin); store.set(KEY, S); finApplyAll(); toast(x.name);
 }
 function finCopyBtns(room) {   // on a room's card: Copy this room (when it has a look of its own), Paste another's
   const L = [];
   if (FIN_COPY && FIN_COPY.room !== room) L.push(btn(`Paste ${roomName(FIN_COPY.room)}'s look`, { finpaste: "1" }));
-  if (Object.keys((S.fin || {})[room] || {}).length) L.push(btn("Copy this room", { fincopy: "1" }));
+  if (room === LIVR || Object.keys((S.fin || {})[room] || {}).length) L.push(btn("Copy this room", { fincopy: "1" }));
   return L;
 }
 /* V2.13 (F6): a colour from a photo: choose one (it stays on this device, drawn small), tap a spot in it, and that's the colour (a 7 px
@@ -170,7 +201,7 @@ function finPicAt(el, e) {   // the colour under a tap on the photo
   for (let i = 0; i < d.length; i += 4) { t[0] += d[i]; t[1] += d[i + 1]; t[2] += d[i + 2]; }
   const n = d.length / 4; return "#" + t.map(v => Math.round(v / n).toString(16).padStart(2, "0")).join("");
 }
-function finGet(room, slot) { return ((S.fin || {})[room] || {})[slot] || null; }
+function finGet(room, slot) { return ((room === LIVR ? livRow() : (S.fin || {})[room]) || {})[slot] || null; }
 function finApplyAll() {   // what's kept, into the palette (on start, after Undo)
   if (!finSetup()) return; finish(null, "walls", null); finish(null, "ceiling", null);
   for (const [room, sl] of Object.entries(S.fin || {})) for (const [s, hex] of Object.entries(sl)) if (+s < 5 && FIN.rooms.includes(room)) finish(room, FIN_NAMES[+s], hex);
@@ -183,8 +214,12 @@ const finOut = () => { for (const [s, k] of [[9, "frame_out"], [10, "door_out"]]
 const finName = hex => ([...FIN_OUT, ...finSwatches()].find(([h]) => h.toLowerCase() === String(hex).toLowerCase()) || [0, hex])[1];
 const finSw = (L, now) => L.map(([h, t]) => `<button type="button" class="sw" data-finc="${h}" style="--c:${h}" aria-pressed="${!!now && now.toLowerCase() === h.toLowerCase()}" title="${t}" aria-label="${t}"><i></i><span>${finShort(t)}</span></button>`).join("");
 function finSet(room, slot, hex) {   // by the scope: this wall, this room's walls (or ceiling), the whole house's
-  FIN_UNDO.push(JSON.stringify(S.fin || {})); if (FIN_UNDO.length > 20) FIN_UNDO.shift();
-  S.fin = S.fin || {};
+  finPush(); S.fin = S.fin || {};
+  if (room === LIVR || (finScope === "house" && slot <= 4)) {   // N5: the living room's own Look; Whole house takes it in too
+    const one = room === LIVR && finScope === "wall" && slot >= 11; livFin(slot, hex, one);
+    if (room === LIVR && finScope !== "house") { store.set(KEY, S); finTakes(); finSchDraw();
+      toast(`${roomName(room)}: ${slot === 4 ? "ceiling" : slot === 17 ? "skirting and door" : one ? `the ${finSlotName(room, slot)}` : "walls"} ${hex ? finName(hex) : "as drawn"}`); return; }
+    if (slot >= 11) slot = 0; }
   if (room === "outside") { const o = S.fin.outside = S.fin.outside || {}; if (hex) o[slot] = hex; else delete o[slot]; if (!Object.keys(o).length) delete S.fin.outside;
     finOut(); store.set(KEY, S); toast(`Outside: ${slot === 9 ? "the window frames" : "the front door"} ${hex ? finName(hex) : "white, as drawn"}`); return; }
   const ceil = slot === 4, flr = slot === 5, slots = flr ? [5] : ceil ? [4] : finScope === "wall" ? [slot] : [0, 1, 2, 3];
@@ -193,7 +228,7 @@ function finSet(room, slot, hex) {   // by the scope: this wall, this room's wal
   finApplyAll(); store.set(KEY, S);
   if (flr) { const nm = (FIN_FLOORS.find(([k]) => k === hex) || [0, "as drawn"])[1]; toast(`${finScope === "floor" ? "Whole floor" : roomName(room)}: floor ${hex ? nm : "as drawn"}`); return; }
   const nm = finName(hex);
-  toast(`${finScope === "house" ? "Whole house" : roomName(room)}: ${ceil ? "ceiling" : finScope === "wall" ? `the ${FIN_NAMES[slot]} wall` : "walls"} ${hex ? nm : "as drawn"}`);
+  toast(`${finScope === "house" ? "Whole house" : roomName(room)}: ${ceil ? "ceiling" : finScope === "wall" ? `the ${finSlotName(room, slot)}` : "walls"} ${hex ? nm : "as drawn"}`);
 }
 function finStorey(room) {   // the rooms on the same floor as this one
   const P = R.HOUSE3.finish_pieces || {};
@@ -213,24 +248,27 @@ function finCard(id) {   // [title, now, buttons, -, the tray]
   if (room === "outside") return [`Outside: ${slot === 9 ? "the window frames" : "the front door"}`, now ? finName(now) : "White, as drawn",
     [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(now ? [btn("As drawn", { finc: "" })] : [])], null,
     `<div class="r3d-fin"><div class="r3d-fintray" role="group" aria-label="Colours">${finSw([...FIN_OUT, ...finSwatches().slice(1)], now)}<label class="sw any" title="Any colour"><input type="color" data-finany="1" value="${now || "#f5f5f2"}" aria-label="Any colour"><span>Any</span></label></div></div>`];
-  if (finScope === "floor") finScope = "room";
-  if (ceil && finScope === "wall") finScope = "room";
-  const nm = now ? finName(now) : "As drawn";
-  const scopes = ceil ? [["room", "This room"], ["house", "Whole house"]] : [["wall", "This wall"], ["room", "This room"], ["house", "Whole house"]];
+  const liv = room === LIVR, named = liv && slot >= 11 && slot <= 16, drawn = liv ? (slot === 0 ? S.paint === DEF.paint && !Object.keys(S.walls).length : named ? !S.walls[LIV_W[slot - 11]] : !now) : !now;
+  if (finScope === "floor" || (liv && slot === 17)) finScope = "room";
+  if ((ceil || (liv && !named)) && finScope === "wall") finScope = "room";
+  const nm = drawn ? "As drawn" : finName(now);
+  const scopes = liv && slot === 17 ? [] : ceil || (liv && !named) ? [["room", "This room"], ["house", "Whole house"]] : [["wall", "This wall"], ["room", "This room"], ["house", "Whole house"]];
   const tray = `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Where it goes">${scopes.map(([k, t]) => `<button type="button" data-finsc="${k}" aria-pressed="${finScope === k}">${t}</button>`).join("")}</div>`
     + `<div class="r3d-fintray" role="group" aria-label="Colours">${finSw(finSwatches(), now)}`
     + `<label class="sw any" title="Any colour"><input type="color" data-finany="1" value="${now || "#f4f3ef"}" aria-label="Any colour"><span>Any</span></label>`
     + `<label class="sw pic" title="A colour from a photo"><i><span class="ms" aria-hidden="true">photo_camera</span></i><input type="file" accept="image/*" data-finpic="1" aria-label="A colour from a photo"><span>Photo</span></label></div>`
     + (now ? `<span class="r3d-finlab">Lighter and darker</span><div class="r3d-fintray" role="group" aria-label="Lighter and darker">${finShades(now).map(([h, t]) => `<button type="button" class="sw" data-finc="${h}" style="--c:${h}" aria-pressed="false" title="${t}, ${h}" aria-label="${t}, ${h}"><i></i><span>${t}</span></button>`).join("")}</div>` : "")
     + (FIN_PIC ? `<div class="r3d-finpic"><img src="${FIN_PIC.url}" data-finpicimg="1" alt="Your photo: tap a colour in it"><span class="r3d-finlab">Tap a colour in your photo</span></div>` : "")
-    + (ceil ? `<span class="r3d-finlab">The bulbs</span>${finBulbTray(room)}${finFitTray(room)}` : "") + `</div>`;
-  return [`${roomName(room)}: ${ceil ? "the ceiling" : finScope === "wall" ? `the ${FIN_NAMES[slot]} wall` : "the walls"}`, nm,
-    [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), btn("As it is (hold)", { finhold: "1" }), ...(now ? [btn("As drawn", { finc: "" })] : []), ...finCopyBtns(room)], null, tray];
+    + (ceil && !liv ? `<span class="r3d-finlab">The bulbs</span>${finBulbTray(room)}${finFitTray(room)}` : "") + `</div>`;
+  return [`${roomName(room)}: ${ceil ? "the ceiling" : liv && slot === 17 ? "skirting and door" : finScope === "wall" ? `the ${finSlotName(room, slot)}` : "the walls"}`, nm,
+    [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), btn("As it is (hold)", { finhold: "1" }), ...(!drawn ? [btn("As drawn", { finc: "" })] : []), ...finCopyBtns(room)], null, tray];
 }
 function finHold(on) {   // As it is: while held, the palette empty (the house as drawn); let go, your colours back
   if (!FIN.pal) return;
-  if (on && !finHeld) { finHeld = FIN.pal.image.data.slice(); for (let i = 3; i < finHeld.length; i += 4) FIN.pal.image.data[i] = 0; FIN_LAID.forEach(m => m.visible = false); FIT_LAID.forEach(m => m.visible = false); Object.values(FIN_PEND).forEach(g => g.visible = true); }
-  else if (!on && finHeld) { FIN.pal.image.data.set(finHeld); finHeld = null; FIN_LAID.forEach(m => m.visible = true); FIT_LAID.forEach(m => m.visible = true); for (const [r, g] of Object.entries(FIN_PEND)) g.visible = !finGet(r, 8); }
+  if (on && !finHeld) { livHeld = JSON.stringify([S.paint, S.custom, S.walls, S.ceil, S.skirt]); livSet({});   // N5: the living room as the plan has it too
+    finHeld = FIN.pal.image.data.slice(); for (let i = 3; i < finHeld.length; i += 4) FIN.pal.image.data[i] = 0; FIN_LAID.forEach(m => m.visible = false); FIT_LAID.forEach(m => m.visible = false); Object.values(FIN_PEND).forEach(g => g.visible = true); }
+  else if (!on && finHeld) { [S.paint, S.custom, S.walls, S.ceil, S.skirt] = JSON.parse(livHeld); livHeld = null; repaint(); syncButtons(); updateCaption();
+    FIN.pal.image.data.set(finHeld); finHeld = null; FIN_LAID.forEach(m => m.visible = true); FIT_LAID.forEach(m => m.visible = true); for (const [r, g] of Object.entries(FIN_PEND)) g.visible = !finGet(r, 8); }
   FIN.pal.needsUpdate = true; finOut();
 }
 qs("#r3d-finschsave")?.addEventListener("click", finSchSave);
@@ -244,14 +282,14 @@ if (act) {
     const ff = e.target.closest("[data-finfit]");
     if (ff && actId && (actId.startsWith("fin:") || actId.startsWith("hitem:"))) { e.stopPropagation();
       const room = actId.startsWith("fin:") ? actId.split(":")[1] : (HIT(actId.slice(6)) || {}).r; if (!room) return;
-      FIN_UNDO.push(JSON.stringify(S.fin || {})); S.fin = S.fin || {}; const o = S.fin[room] = S.fin[room] || {};
+      finPush(); S.fin = S.fin || {}; const o = S.fin[room] = S.fin[room] || {};
       if (ff.dataset.finfit) o[8] = ff.dataset.finfit; else delete o[8]; if (!Object.keys(o).length) delete S.fin[room];
       store.set(KEY, S); finFitApply(); roomKey = ""; placeRoomLights();
       toast(`${roomName(room)}: ${ff.dataset.finfit ? (FIN_FITS.find(([v]) => v === ff.dataset.finfit) || [0, ""])[1].toLowerCase() : "the light as it is"}`); renderAct(); return; }
     const bb = e.target.closest("[data-finbulb],[data-finlux]");
     if (bb && actId && (actId.startsWith("fin:") || actId.startsWith("hitem:"))) { e.stopPropagation();
       const room = actId.startsWith("fin:") ? actId.split(":")[1] : (HIT(actId.slice(6)) || {}).r; if (!room) return;
-      FIN_UNDO.push(JSON.stringify(S.fin || {})); S.fin = S.fin || {}; const o = S.fin[room] = S.fin[room] || {};
+      finPush(); S.fin = S.fin || {}; const o = S.fin[room] = S.fin[room] || {};
       if (bb.dataset.finbulb) { if (bb.dataset.finbulb === "2700") delete o[6]; else o[6] = bb.dataset.finbulb; }
       else { if (bb.dataset.finlux === "1") delete o[7]; else o[7] = bb.dataset.finlux; }
       if (!Object.keys(o).length) delete S.fin[room];
@@ -263,10 +301,11 @@ if (act) {
     const b = e.target.closest("[data-finc],[data-finf],[data-finsc],[data-finundo],[data-fincopy],[data-finpaste]"); if (!b || !actId || !actId.startsWith("fin:")) return;
     e.stopPropagation(); const [, room, s] = actId.split(":");
     if (b.dataset.finsc) finScope = b.dataset.finsc;
-    else if (b.dataset.fincopy) { FIN_COPY = { room, sl: Object.assign({}, (S.fin || {})[room]) }; toast(`Copied ${roomName(room)}: tap another room, then Paste`); }
-    else if (b.dataset.finpaste && FIN_COPY) { FIN_UNDO.push(JSON.stringify(S.fin || {})); S.fin = S.fin || {}; S.fin[room] = Object.assign({}, FIN_COPY.sl);
+    else if (b.dataset.fincopy) { FIN_COPY = { room, sl: Object.assign({}, finAll()[room]) }; toast(`Copied ${roomName(room)}: tap another room, then Paste`); }
+    else if (b.dataset.finpaste && FIN_COPY) { finPush(); S.fin = S.fin || {};   // N5: the living room's own six walls and skirting stay its own
+      if (room === LIVR) livSet(FIN_COPY.sl); else S.fin[room] = Object.fromEntries(Object.entries(FIN_COPY.sl).filter(([k]) => +k <= 10));
       finApplyAll(); store.set(KEY, S); toast(`${roomName(room)}: ${roomName(FIN_COPY.room)}'s look`); }
-    else if (b.dataset.finundo) { const prev = FIN_UNDO.pop(); if (prev != null) { S.fin = JSON.parse(prev); finApplyAll(); store.set(KEY, S); toast("Undone"); } }
+    else if (b.dataset.finundo) { const prev = FIN_UNDO.pop(); if (prev != null) { finRestore(JSON.parse(prev)); finApplyAll(); store.set(KEY, S); toast("Undone"); } }
     else if ("finf" in b.dataset) finSet(room, 5, b.dataset.finf || null);
     else finSet(room, +s, b.dataset.finc || null);
     renderAct();

@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.51 (6 Nov 2026)
+**Version:** V2.53 (6 Nov 2026)
 
 **Work from:** `docs/REAL_PLAN.md` section 6, the next round's tasks (N1–N10) in workstreams that run side by side (Speed, Look, Shapes,
 Edit, Light, UI), one task a PR. Its section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards (one line a row).
@@ -56,12 +56,15 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **The living room** is the media wall project: stickers, Plan · Build · Buy and their sheets, Room, Look, Edit, the item cards.
 - **Change the house:** tap a wall, ceiling or floor for its colours card (`23_finish.js`: paints, floors, bulbs and fittings, lighter
   and darker, a colour from a photo, This wall · This room · Whole floor); a window's or door's card colours its outside. Look saves
-  and switches named schemes. Tap a piece: its size, Move or resize, Turn, Take it out (any room, R6).
+  and switches named schemes. The living room is on the same rows (V2.51, N5a): its walls, ceiling and skirting open the same card;
+  its colours stay in its own Look (`S.paint`, `S.walls`, `S.ceil`, `S.skirt`) and read as the row `living` (0–3 walls, 4 ceiling,
+  11–16 its six walls by name, 17 skirting and door), so schemes, Undo, Copy, Paste, Send and the litres carry it. Tap a piece: its size, Move or resize, Turn, Take it out (any room, R6).
 - **Measure** (dock): the sizes still guessed, by room; the colours' m² and litres; Send makes a link of every change
   (`pull_edits.py --link`).
 - **Quality:** a real graphics card opens in HD and never steps down (V2.25); iPhones start in HD and step down only if slow; View →
   More has HD or Fast. In HD each room is lit by its ceiling light and its windows' daylight, with soft shadows and ambient occlusion; by evening the
-  lamps the client has light theirs too (the office's purple lamp, the bathroom mirror's bar; V2.48), the kitchen from its two LED battens.
+  lamps the client has light theirs too (the office's purple lamp, the bathroom mirror's bar; V2.48), the kitchen from its two LED battens. Every standing piece
+  has a soft shade round its foot and up the wall beside it, on phones too (V2.52; it moves with the piece).
 - **Outside:** by day under a real sky, the lawn's photo to a hazy horizon, the gardens, next door, the valley and the hill.
 - **Offline:** `sw.js` keeps the page's last copy and every picture; a file named by its contents (the photos, `three.<hash>.js`)
   stays in `demma-keep` across versions, so a new round doesn't fetch it again (V2.47).
@@ -69,6 +72,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   what's on screen is fetched first, the rest a moment later; a photo two textures share is fetched once (`decodeImg`) (V2.49).
 - **Built for Pages:** the page's 3D script and its CSS go through esbuild as the site is built (`vendor.minify`; the source keeps its
   notes): the 3D's code 667 to 359 KB, the page 2.3 to 2.0 MB (V2.50).
+- **Sheets:** a shut Plan, Build, Buy or Ideas sheet is `content-visibility: hidden` (`.sheet.shut`, `page_router.openSheet`): not laid
+  out or painted, its pictures not fetched until it opens (about 450 KB less on opening) (V2.53).
 - **Checks:** `tools/check_site.py` walks every door, taps pieces and surfaces, tries phones by touch (iPhone 15 Pro, SE, Pixel 7,
   Galaxy S24, iPad Mini) and the computers' widths.
 

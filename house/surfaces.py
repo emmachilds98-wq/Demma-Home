@@ -118,16 +118,17 @@ def faces():
 def _living():
     """The living room's own surfaces, from its measured shell."""
     L = M.living_shell()
-    walls = {}
+    walls, named = {}, {}
     for w in L["walls"]:
         u0, u1 = sorted(w["u"]); y0, y1 = w["y"]
         a = (u1 - u0) * (y1 - y0) - sum((h[1] - h[0]) * (h[3] - h[2]) for h in w.get("holes", []))
         n = w["n"]; side = SIDE[(int(n[0]), int(n[2]))]
         walls.setdefault(side, [0.0, 0])
         walls[side][0] += a; walls[side][1] += 1
+        named[w["paint"]] = named.get(w["paint"], 0.0) + a   # N5: by the walls Look names (media, breast, door, stairs, window, pc)
     fx0, fz0, fx1, fz1 = L["floor"]
     ceil = sum((x1 - x0) * (z1 - z0) for x0, x1, z0, z1 in L["ceiling"])   # its pieces are [x0, x1, z0, z1]
-    return walls, ceil, (fx1 - fx0) * (fz1 - fz0)
+    return walls, ceil, (fx1 - fx0) * (fz1 - fz0), named
 
 
 def by_room():
@@ -145,7 +146,7 @@ def by_room():
         else:
             s = R[kind] or dict(area=0.0, faces=0, finish=m)
             s["area"] += a; s["faces"] += 1; R[kind] = s
-    lw, lc, lf = _living()
+    lw, lc, lf, _ = _living()
     res["living"] = {"walls": {s: dict(side=s, area=a, faces=n, finish="living") for s, (a, n) in lw.items()},
                      "ceiling": dict(area=lc, faces=len(M.living_shell()["ceiling"]), finish="living"), "floor": dict(area=lf, faces=1, finish="carpet")}
     out = {}
