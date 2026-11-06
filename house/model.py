@@ -1366,23 +1366,33 @@ def master(o):
         lid.box("pillow", x0 + 9, y + 60, pz, x0 + 45, y + 72, pz + 66)
     for za, zb in M_["bedsides"]:                                  # pine bedside drawers, round knobs
         o.item(f"master.bedside{int(za)}", "A pine bedside", "master", src="E", data=("MASTER", "bedsides"), axis="z")
-        o.box("pine", 0, y + 6, za, 35, y + 60, zb)
+        # V2.44, the client: "blocky ... furniture looks more real": built as a real one is: the carcass, its sides framing the front, a top
+        # over it, three drawer fronts each its own (a gap round each, just proud), not a block with lines on it
+        o.box("pine", 0, y + 6, za, 33.4, y + 57.6, zb)                                   # the carcass
+        o.box("pine", 0, y + 57.6, za - 0.6, 35.6, y + 60, zb + 0.6)                       # the top, over the front and sides
+        for z_a, z_b in ((za, za + 1.6), (zb - 1.6, zb)):                                  # the sides to the front
+            o.box("pine", 33.4, y + 6, z_a, 35, y + 57.6, z_b)
+        o.box("pine", 33.4, y + 6, za + 1.6, 35, y + 7.6, zb - 1.6)                        # the bottom rail
         for k in range(3):
-            yy = y + 8 + k * 17
-            o.box("pine_dark", 35, yy + 15.5, za + 1, 35.3, yy + 16.5, zb - 1)
-            o.box("knob", 35, yy + 7, (za + zb) / 2 - 1.5, 37.8, yy + 10, (za + zb) / 2 + 1.5)    # V2.17: a round wooden knob (the photo)
+            yy = y + 7.6 + k * 16.67
+            o.box("pine", 33.4, yy + 0.25, za + 1.85, 35.3, yy + 16.42, zb - 1.85)        # a drawer's front
+            o.box("knob", 35.3, yy + 6.8, (za + zb) / 2 - 1.5, 38.1, yy + 9.8, (za + zb) / 2 + 1.5)    # V2.17: a round wooden knob (the photo)
         for fx, fz in ((4, za + 4), (31, za + 4), (4, zb - 4), (31, zb - 4)):                 # V2.17: turned bun feet (the photo), not blocks
             o.lathe("pine_dark", fx, y, fz, [(0, 0), (2.2, 0), (3.1, 1.2), (3.3, 2.8), (2.9, 4.6), (2.2, 5.6), (2.4, 6), (0, 6)])
     o.item("master.chest", "The pine chest of drawers", "master", src="E", data=("MASTER", "chest"), axis="x")
     c = M_["chest"]                                                # under the window, its drawers facing the room
-    o.box("pine", c["x"][0], y + 6, c["z"][0], c["x"][1], y + c["h"], c["z"][1])
-    for k in range(1, 4):
-        yy = y + 6 + (c["h"] - 6) * k / 4
-        o.box("pine_dark", c["x"][0] + 1, yy - 0.5, c["z"][0] - 0.3, c["x"][1] - 1, yy + 0.5, c["z"][0])
+    (cx0, cx1), (cz0, cz1), ct = c["x"], c["z"], y + c["h"] - 2.4                       # V2.44: as the bedsides: carcass, sides, top, four fronts
+    o.box("pine", cx0, y + 6, cz0 + 1.6, cx1, ct, cz1)
+    o.box("pine", cx0 - 0.6, ct, cz0 - 0.6, cx1 + 0.6, y + c["h"], cz1)
+    for x_a, x_b in ((cx0, cx0 + 1.6), (cx1 - 1.6, cx1)):
+        o.box("pine", x_a, y + 6, cz0, x_b, ct, cz0 + 1.6)
+    o.box("pine", cx0 + 1.6, y + 6, cz0, cx1 - 1.6, y + 7.6, cz0 + 1.6)
+    hd = (ct - y - 7.6) / 4
     for k in range(4):
-        yy = y + 6 + (c["h"] - 6) * (k + 0.5) / 4
-        for fx in (c["x"][0] + 20, c["x"][1] - 20):
-            o.box("knob", fx - 1.5, yy - 1.5, c["z"][0] - 2.8, fx + 1.5, yy + 1.5, c["z"][0])    # V2.17: round knobs
+        y0_ = y + 7.6 + k * hd
+        o.box("pine", cx0 + 1.85, y0_ + 0.25, cz0 - 0.3, cx1 - 1.85, y0_ + hd - 0.25, cz0 + 1.6)
+        for fx in (cx0 + 20, cx1 - 20):
+            o.box("knob", fx - 1.5, y0_ + hd / 2 - 1.5, cz0 - 3.1, fx + 1.5, y0_ + hd / 2 + 1.5, cz0 - 0.3)    # V2.17: round knobs
     cols = ["#3d4a5c", "#b9b2a6", "#7a2f2f", "#2f3b2f", "#d8d2c4", "#555555", "#9b8b6e"]
     w = M_["wardrobes"]; zb_ = next(r["z0"] for r in rooms("first") if r["id"] == "master") + 0.5   # the alcove's back wall (v69: fitted)
     # v65, the client: "only the frames with no doors right now"; v68 one each, fitted out alike

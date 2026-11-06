@@ -468,9 +468,14 @@ function buildHouse() {
     /* v69 (B4), the client: "more realistic like our living room": furniture, fittings and soft things with rounded edges (cm by
        material: the whites and woods a little, the suite and cushions a lot); walls, floors and frames stay sharp */
     const ROUND = { pine: 0.8, pine_dark: 0.3, knob: 1.4, handle_black: 0.7, newel: 1.2, rail_white: 1.8, monitor_back: 1.5, mouse: 1.5, key_dark: 0.25, key_pink: 0.25, book0: 0.3, book1: 0.3, book2: 0.3, book3: 0.3, book4: 0.3, book5: 0.3, birch: 0.6, oak: 0.6, wardrobe: 0.5, gloss: 0.8, door_white: 0.4, door_wood: 0.4, fitting: 6, porcelain: 1,
-      primrose: 4, duvet: 3, pot: 4, lycksele: 3, storebox: 1.5, leather: 2, check: 1, curtain: 1, mattress: 4, pillow: 6 };
+      primrose: 4, duvet: 3, pot: 4, lycksele: 5, storebox: 1.5, leather: 2, check: 1, curtain: 1, mattress: 4, pillow: 6,
+      /* V2.44, the client: "improve graphics again so current blocky new room furniture looks more real": every piece's edges catch the
+         light (a bevel to its size): the black fittings, chairs and frames, the appliances, steel and chrome, the screens and the PC, the
+         rugs and mats, the bins, the chalkboard; the worktop a little (its joins stay tight) */
+      black: 0.6, black_app: 1.2, worktop: 0.4, steel: 0.5, steel_dark: 0.5, chrome: 0.4, screen: 0.4, glass_dark: 0.3, pc_white: 0.8, panel: 0.5,
+      rug: 0.8, bathmat: 0.8, recycle: 1, bin: 1, bin_white: 1, tapestry: 0.6, tapestry_dark: 0.6, chalk: 0.3, mirror: 0.3, blind_cloth: 0.3 };
     const SOFT = { pillow: 4, mattress: 3, duvet: 3 };
-    const CLOTH = { pillow: 1, mattress: 1, duvet: 1, cloth0: 1, cloth1: 1, cloth2: 1, cloth3: 1, cloth4: 1, cloth5: 1, cloth6: 1 };   // V2.17: drawn as cloth (clothBox)   // V1.20: the soft things' edges round in steps (one step read as a chamfer: slabs)
+    const CLOTH = { lycksele: 1, leather: 1, pillow: 1, mattress: 1, duvet: 1, cloth0: 1, cloth1: 1, cloth2: 1, cloth3: 1, cloth4: 1, cloth5: 1, cloth6: 1 };   // V2.17: drawn as cloth (clothBox)   // V1.20: the soft things' edges round in steps (one step read as a chamfer: slabs)
     /* v78: a face that exactly meets a neighbour's (two pieces of one wall, side by side) is never seen, but drawn it showed edge-on
        as a bright hairline up the wall (the landing's, above each door). The faces two square pieces share, from opposite sides: */
     const fkey = (ax, p, a0, a1, b0, b1) => ax + "|" + p + "|" + a0 + "|" + a1 + "|" + b0 + "|" + b1;
@@ -494,7 +499,7 @@ function buildHouse() {
             b.setIndex(keep); b.clearGroups(); } }
         return b; }
       if (CLOTH[mk] && !LOWD) return clothBox(mk, x0, y0, z0, x1, y1, z1, r);
-      const b = new RoundedBoxGeometry(w * M, h * M, d * M, SOFT[mk] || 1, Math.max(0.0005, Math.min(r, Math.min(w, h, d) / 2 - 0.05)) * M);
+      const b = new RoundedBoxGeometry(w * M, h * M, d * M, SOFT[mk] || (r >= 0.8 ? 2 : 1), Math.max(0.0005, Math.min(r, Math.min(w, h, d) / 2 - 0.05)) * M);
       b.translate(c.x, c.y, c.z); return b; };
     /* V2.17 (docs/REAL_PLAN.md R4, the master bedroom first; the client: "increase quality and functions inc rendering items in hd"): the
        soft things as cloth, not slabs: a finely divided box, its edges rounded, then shaped: a pillow plumped (full in the middle, thin at
@@ -521,6 +526,8 @@ function buildHouse() {
         if (ln > 1e-6) { nx /= ln; ny /= ln; nz /= ln; x = ix + nx * rr; y = iy + ny * rr; z = iz + nz * rr; } else { nx = 0; ny = 1; nz = 0; }
         if (mk === "pillow") { y *= 1 - 0.38 * (Math.pow(Math.abs(sx), 3) + Math.pow(Math.abs(sz), 3)) * 0.5 - 0.12 * Math.abs(sx * sz); }
         else if (mk === "mattress") { if (ny > 0.5) y += 0.9 * (1 - sx * sx) * (1 - sz * sz); }
+        else if (mk === "lycksele" || mk === "leather") { const pf = (1 - sx * sx) * (1 - sy * sy) * (1 - sz * sz);   // V2.44: upholstered: each face puffed in its middle
+          x += nx * 1.8 * pf; y += ny * 2.6 * pf; z += nz * 1.8 * pf; }
         else if (mk === "duvet") { const wx = cx + x, wz = cz + z;
           const f = 1.25 * Math.sin(wx * 0.15 + Math.sin(wz * 0.045) * 1.9) * Math.sin(wz * 0.11 + 0.6) + 0.45 * Math.sin(wx * 0.41 - wz * 0.27) + 0.2 * Math.sin(wz * 0.9 + wx * 0.2);
           x += nx * f * (ny > 0.5 ? 0.6 : 1); y += ny * f; z += nz * f * (ny > 0.5 ? 0.6 : 1); }
