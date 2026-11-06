@@ -55,7 +55,7 @@ function actItems(id) {     // [title, how it is now, buttons]
       btn(up ? "Lower the bed" : "Lift the bed", { hbed: up ? "down" : "up" }), ...(ROOMV() && RMODE !== "above" ? [btn("See it from above", { rmode: "above" })] : [])]]; }
   if (id.startsWith("fin:")) return finCard(id);   // V2.6: a wall's or a ceiling's colours (23_finish.js)
   if (id.startsWith("hitem:")) { const k = id.slice(6), it = HIT(k); if (!it) return null;   // V1.50: a piece in the house, its size
-    return [it.n, pieceLine(k), [btn(it.op ? "Change its size" : "Move or resize", { actopen: "hsize:" + k }), ...(pieceDelta(k).some(Boolean) ? [btn("As planned", { hreset: k })] : [])], null,
+    return [it.n, pieceLine(k), [btn(it.op ? "Change its size" : "Move or resize", { actopen: "hsize:" + k }), ...(pieceDelta(k).some(Boolean) ? [btn("As planned", { hreset: k })] : []), ...(it.op ? [] : [btn("Take it out", { hremove: k })])], null,
       it.k === "light" && it.r ? `<div class="r3d-fin"><span class="r3d-finlab">The bulbs</span>${finBulbTray(it.r)}${finFitTray(it.r)}</div>` : null]; }   // V2.9: a light's bulbs; V2.15: its fitting
   if (id.startsWith("hsize:")) { const k = id.slice(6), it = HIT(k); if (!it) return null; const c = pieceNow(k), door = it.k === "door";
     return [it.n, pieceLine(k), [btn("Done", { actopen: "hitem:" + k }), ...(canTurn(k) ? [btn("Turn", { hturn: k })] : []), btn("As planned", { hreset: k })],
@@ -263,6 +263,7 @@ if (act) {
     if (d.actopen) { actId = d.actopen; renderAct(); if (d.actopen.startsWith("hsize:")) { const f = qs(".r3d-actfields input"); if (f) f.focus({ preventScroll: true }); } return; }
     if (d.hstep && actId) { const k = actId.split(":")[1], f = d.hstep, v = clampF(f, cmR(pieceNow(k)[f] + +d.by)), inp = qs(`.r3d-actfields [data-hfield="${f}"]`);   // V1.50
       if (inp) inp.value = v; setPiece(k, f, v); return; }
+    if (d.hremove) { const k = d.hremove; closeAct(); setPiece(k, "removed", true).then(() => toast(`${HIT(k).n} taken out · Measure, Changed in the 3D, puts it back`)); return; }   // V2.34
     if (d.hturn) { setPiece(d.hturn, "turn", (pieceNow(d.hturn).turn + 1) % 4); return; }   // V2.33: a quarter turn each press
     if (d.hreset) { const k = d.hreset, ds = DS(); if (!ds) return;
       Promise.all(Object.entries(ds.rows("edits")).filter(([, v]) => v && v.item === k).map(([rid]) => ds.del("edits", rid))).then(() => { if (actId) renderAct(); }); return; }
