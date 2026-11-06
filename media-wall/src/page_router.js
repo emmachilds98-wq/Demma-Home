@@ -17,7 +17,9 @@ function showChapter(ch) {
 }
 function openSheet(name, opts) {
   opts = opts || {};
-  SHEETS.forEach(n => { const s = sheetEl(n), on = n === name; s.classList.toggle("open", on); s.inert = !on; s.setAttribute("aria-hidden", String(!on)); });
+  SHEETS.forEach(n => { const s = sheetEl(n), on = n === name, was = s.classList.contains("open"); s.classList.toggle("open", on); s.inert = !on; s.setAttribute("aria-hidden", String(!on));
+    /* V2.51 (speed): a shut sheet isn't laid out or painted, nor its pictures fetched (content-visibility); it shuts once it has slid away */
+    if (on) s.classList.remove("shut"); else if (was) setTimeout(() => { if (!s.classList.contains("open")) s.classList.add("shut"); }, REDUCED ? 0 : 550); });
   document.body.classList.toggle("sheet-open", !!name);
   if (name && window.DemmaTools) DemmaTools.close();
   $$("[data-nav]").forEach(b => b.setAttribute("aria-current", String(b.dataset.nav === (name || "room"))));

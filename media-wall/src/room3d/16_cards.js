@@ -3,7 +3,7 @@
    in Edit room) finds what's under it and opens a card of what it can do. The card's buttons are the room's own controls (data-dining,
    data-chairs, data-drawers, data-tog...), so they work, and stay in step with the Tools panel, exactly as its buttons do. */
 const act = qs("#r3d-act");
-let actId = null, actXY = null, tapDown = null;
+let actId = null, actXY = null, tapDown = null, TAPAT = null;
 const clippedAt = h => [].concat(h.object.material).some(m => m && m.clippingPlanes === CLIP) && CLIP.every(pl => pl.distanceToPoint(h.point) < 0);   // the cutaway hides what's on the far side of both planes (V2.38: only what it cuts: from out front, the front door was let through to the hall behind)
 const under = (o, g) => { if (!g) return false; for (; o; o = o.parent) if (o === g) return true; return false; };
 function pickItem(e) {
@@ -11,7 +11,7 @@ function pickItem(e) {
   const cutAway = q => RPLANES.some(pl => pl.distanceToPoint(q) < 0);             // v71: not what a room's view has cut away
   const hit = ray.intersectObjects(scene.children, true).find(h => h.object.isMesh && shown(h.object) && !clippedAt(h) && !(selBox && h.object === selBox) && !cutAway(h.point));
   if (!hit) return null;
-  const o = hit.object, p = hit.point;
+  const o = hit.object, p = hit.point; TAPAT = [-p.x / M, p.y / M, p.z / M];   // V2.46: where a floor was tapped (Add a piece here)
   const near = (obj, r) => !!obj && obj.getWorldPosition(new THREE.Vector3()).distanceTo(p) < r * M;
   const BL = HPARTS.bed_lift;                                                    // v71: the master's ottoman bed: its card
   if (BL && houseG && houseG.visible) { const bx = new THREE.Box3().setFromObject(BL.g); bx.min.y -= 0.6; bx.expandByScalar(0.03); if (bx.containsPoint(p)) return "hbed"; }
@@ -50,19 +50,38 @@ function pickItem(e) {
   return null;
 }
 const btn = (label, attrs, on, cls, aria) => ({ label, attrs, on, cls, aria });
+/* V2.46 (N7): a swap's card (‹ › through the pieces of its kind, yours first) and an added piece's (‹ › through the catalogue, a row of its
+   kinds to jump to); each press shows it in the room at once */
+const HCAT_ADD = ["plant", "armchair", "sidetable", "floorlamp", "rug", "bookcase", "cubes", "ladder", "chest3", "chest6", "tallboy", "bsdrawer", "bswhite", "bslegs",
+  "desklegs", "deskdrawers", "trestle", "bench", "pouffe", "wardrobe2", "sliding", "openrail", "divan", "oakbed", "metalbed"];
+function hcatCard(id) {
+  const k = id.split(":")[1], it = HIT(k); if (!it) return null;
+  const nav = (L, i, at) => [btn("‹", { [at]: `${k}:${i - 1}` }, false, "q", "The one before"), btn("›", { [at]: `${k}:${i + 1}` }, false, "q", "The next one")];
+  if (id.startsWith("hswap:")) { const kind = swapKind(k); if (!kind) return null;
+    const L = [null, ...hcOf(kind)], i = Math.max(0, L.indexOf(pieceNow(k).swap)), C = HCAT[L[i]];
+    return [C ? C.n : it.n + " (yours)", `${HCAT_KINDS[kind]} · ${i + 1} of ${L.length} · ${C ? C.src : "as planned"}`, [...nav(L, i, "hswapgo"), btn("Keep it", { actopen: "hitem:" + k }, true)]]; }
+  const i = Math.max(0, HCAT_ADD.indexOf(it.add)), C = HCAT[it.add];
+  return [C.n, `${i + 1} of ${HCAT_ADD.length} · ${C.src}`, [...nav(HCAT_ADD, i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Take it out", { hremove: k })], null,
+    `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Kinds">${Object.entries(HCAT_KINDS).map(([q, t]) => `<button type="button" data-hcatk="${k}:${q}" aria-pressed="${C.k === q}">${t}</button>`).join("")}</div></div>`];
+}
 const MAKE_CARD = { recordtable: "mk-recordtable", ctable: "mk-ctable", wallcabs: "mk-wallcabs", alcoveshelves: "mk-alcove", doorshelf: "mk-doorshelf", shelfboxes: "mk-doorshelf" };   // v44
 function actItems(id) {     // [title, how it is now, buttons]
   const folded = S.dining === "folded", lv = k => (S.lv[k] ?? 0) > 0;
   if (id === "hbed") { const P_ = HPARTS.bed_lift, up = !!(P_ && (P_.tw ? P_.tw.to === 1 : P_.t > 0.5));   // v71, the client: the bed as a card, like the living room's
     return ["Your ottoman bed", up ? "Lifted on its struts: four storage boxes inside" : "Pine, the base lifts from the foot", [
       btn(up ? "Lower the bed" : "Lift the bed", { hbed: up ? "down" : "up" }), ...(ROOMV() && RMODE !== "above" ? [btn("See it from above", { rmode: "above" })] : [])]]; }
-  if (id.startsWith("fin:")) return finCard(id);   // V2.6: a wall's or a ceiling's colours (23_finish.js)
+  if (id.startsWith("fin:")) { const c = finCard(id), [, rm, sl] = id.split(":");   // V2.6: a wall's or a ceiling's colours (23_finish.js)
+    if (c && sl === "5" && DS() && TAPAT && R.HOUSE3 && (R.HOUSE3.rooms || {})[rm] && rm !== "living") c[2].unshift(btn("Add a piece here", { hadd: rm }));   // V2.46 (N7): from the catalogue
+    return c; }
+  if (id.startsWith("hswap:") || id.startsWith("hadd:")) return hcatCard(id);   // V2.46 (N7): swap a piece, or which piece you've added
   if (id.startsWith("hitem:")) { const k = id.slice(6), it = HIT(k); if (!it) return null;   // V1.50: a piece in the house, its size
-    return [it.n, pieceLine(k), [btn(it.op ? "Change its size" : "Move or resize", { actopen: "hsize:" + k }), ...(pieceDelta(k).some(Boolean) ? [btn("As planned", { hreset: k })] : []), ...(it.op ? [] : [btn("Take it out", { hremove: k })]),
+    const sw = pieceNow(k).swap;
+    return [sw ? HCAT[sw].n : it.n, pieceLine(k), [btn(it.op ? "Change its size" : "Move or resize", { actopen: "hsize:" + k }), ...(it.add ? [btn("Another piece", { actopen: "hadd:" + k })] : swapKind(k) ? [btn("Swap it", { actopen: "hswap:" + k })] : []),
+      ...(pieceDelta(k).some(Boolean) && !it.add ? [btn("As planned", { hreset: k })] : []), ...(it.op ? [] : [btn("Take it out", { hremove: k })]),
       ...(it.k === "window" || /^(back|garage)_door$/.test(k) ? [btn("Colour outside", { actopen: "fin:outside:9" })] : [])], null,   // V2.38 (F12): its frame's outside
       it.k === "light" && it.r ? `<div class="r3d-fin"><span class="r3d-finlab">The bulbs</span>${finBulbTray(it.r)}${finFitTray(it.r)}</div>` : null]; }   // V2.9: a light's bulbs; V2.15: its fitting
   if (id.startsWith("hsize:")) { const k = id.slice(6), it = HIT(k); if (!it) return null; const c = pieceNow(k), door = it.k === "door";
-    return [it.n, pieceLine(k), [btn("Done", { actopen: "hitem:" + k }), ...(canTurn(k) ? [btn("Turn", { hturn: k })] : []), btn("As planned", { hreset: k })],
+    return [it.n, pieceLine(k), [btn("Done", { actopen: "hitem:" + k }), ...(canTurn(k) ? [btn("Turn", { hturn: k })] : []), ...(it.add ? [] : [btn("As planned", { hreset: k })])],
       FIELDS.filter(([f]) => !(door && (f === "h" || f === "up")) && !(f === "out" && it.op)).map(([f, t]) => [f, t, cmR(c[f])])]; }
   if (id === "hblinds") return ["The blinds", S.blinds ? "Down" : "Rolled up", [btn(S.blinds ? "Roll them up" : "Pull them down", { tog: "blinds" })]];   // V1.47
   if (id.startsWith("hdoor:")) { const k = id.slice(6), P = HPARTS[k]; if (!P) return null; const op = doorOpen(P);   // V1.26: a door's card
@@ -212,7 +231,7 @@ function renderAct() {
       + `<input type="number" inputmode="decimal" step="1" value="${v}" data-hfield="${f}" aria-label="${t} in cm"><button type="button" data-hstep="${f}" data-by="1" aria-label="${t}: 1 cm more">+</button></span></div>`).join("")
       + `<p class="note">${DS() && DS().mode === "shared" ? "Saved for you both as you go" : "Saved on this device · Send in Measure shares it"}</p>`;
     box.before(w); }
-  if (/^(hitem|hsize):/.test(actId)) selOf(actId.split(":")[1]); else clearSel();
+  if (/^(hitem|hsize|hswap|hadd):/.test(actId)) selOf(actId.split(":")[1]); else clearSel();
   // v39 (the approved redesign): a card shows its first three buttons; everything else sits under Details
   let shownN = 0, into = box, more = null;
   for (const b of bs) {
@@ -268,10 +287,19 @@ if (act) {
     if (d.actopen) { actId = d.actopen; renderAct(); if (d.actopen.startsWith("hsize:")) { const f = qs(".r3d-actfields input"); if (f) f.focus({ preventScroll: true }); } return; }
     if (d.hstep && actId) { const k = actId.split(":")[1], f = d.hstep, v = clampF(f, cmR(pieceNow(k)[f] + +d.by)), inp = qs(`.r3d-actfields [data-hfield="${f}"]`);   // V1.50
       if (inp) inp.value = v; setPiece(k, f, v); return; }
+    if (d.hadd && TAPAT) { const r = R.HOUSE3.rooms[d.hadd], id = "add." + Math.random().toString(36).slice(2, 10), ds = DS(); if (!r || !ds) return;   // V2.46 (N7)
+      ds.put("edits", id + "~add", { item: id, field: "add", value: HCAT_ADD[0], room: d.hadd, x: cmR(TAPAT[0]), z: cmR(TAPAT[2]), y: cmR(Math.max(r[4], Math.min(r[4] + 5, TAPAT[1]))) }).catch(() => toast("That didn't save: try again"));
+      actId = "hadd:" + id; renderAct(); return; }
+    if (d.hswapgo || d.haddgo || d.hcatk) { const [k, x] = (d.hswapgo || d.haddgo || d.hcatk).split(":"), it = HIT(k), ds = DS(); if (!it || !ds) return;
+      if (d.hswapgo) { const L = [null, ...hcOf(swapKind(k))], v = L[((+x % L.length) + L.length) % L.length]; setPiece(k, "swap", v).then(() => { if (actId) renderAct(); }); return; }
+      const n = HCAT_ADD.length, v = d.haddgo ? HCAT_ADD[((+x % n) + n) % n] : HCAT_ADD.find(q => HCAT[q].k === x), row = ds.rows("edits")[k + "~add"]; if (!row || !v) return;
+      ds.put("edits", k + "~add", Object.assign({}, row, { value: v })).then(() => { if (actId) renderAct(); }); return; }
+    if (d.hremove && HIT(d.hremove) && HIT(d.hremove).add) { const k = d.hremove, ds = DS(); closeAct();   // an added piece: its rows go
+      Promise.all(Object.entries(ds.rows("edits")).filter(([, v]) => v && v.item === k).map(([rid]) => ds.del("edits", rid))).then(() => toast("Taken out")); return; }
     if (d.hremove) { const k = d.hremove; closeAct(); setPiece(k, "removed", true).then(() => toast(`${HIT(k).n} taken out · Measure, Changed in the 3D, puts it back`)); return; }   // V2.34
     if (d.hturn) { setPiece(d.hturn, "turn", (pieceNow(d.hturn).turn + 1) % 4); return; }   // V2.33: a quarter turn each press
     if (d.hreset) { const k = d.hreset, ds = DS(); if (!ds) return;
-      Promise.all(Object.entries(ds.rows("edits")).filter(([, v]) => v && v.item === k).map(([rid]) => ds.del("edits", rid))).then(() => { if (actId) renderAct(); }); return; }
+      Promise.all(Object.entries(ds.rows("edits")).filter(([, v]) => v && v.item === k && v.field !== "add").map(([rid]) => ds.del("edits", rid))).then(() => { if (actId) renderAct(); }); return; }
     if (d.nowp) { S.nowp = ((S.nowp || 0) + +d.nowp + NOWP.length) % NOWP.length; applyNow(); store.set(KEY, S); renderAct(); return; }
     if (d.nowpic) { pickNowPic(); return; }
     if (d.measure) { if (d.measure === "done") { endMeasure(); closeAct(); } else { clearMeasure(); renderAct(); } return; }
