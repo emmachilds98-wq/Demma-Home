@@ -157,7 +157,7 @@ code.
 | F5 | Lights | **Done** (V2.9 bulbs, V2.15 fittings) | |
 | F6 | Schemes and sending | **Done** (V2.11, V2.13, V2.14) | |
 | F7 | What it takes | **In part** (V2.12: m² and litres) | Rough cost, once the client picks paints and floors |
-| F8 | The living room joined, more slots | Moved to `docs/REAL_PLAN.md` R7 (task N5) | |
+| F8 | The living room joined, more slots | Moved to `docs/REAL_PLAN.md` R7 (task N5); joined V2.48 | |
 | F9 | Wallpaper and patterns | Not started | Wallpapers at their real repeat on This wall; rolls counted |
 | F10 | Furniture in every room | Moved to `docs/REAL_PLAN.md` R6 (task N7) | |
 | F11 | Colours that go with it | **In part** (V2.35: lighter and darker) | The makers' own pairings, with sources |
