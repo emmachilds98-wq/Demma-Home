@@ -178,7 +178,7 @@ function applyFloors() {
   dirty();
 }
 let LIVCLIP = null, livClipOn = false, FLCLIP = null;   // V2.0: in the living room's own view the house only above the landing's floor over the room
-/* V2.62, the client's iPhone froze on the first tap on a floor: three builds a shader for each number of cutting planes, so the first
+/* V2.64, the client's iPhone froze on the first tap on a floor: three builds a shader for each number of cutting planes, so the first
    floor's cut (1 plane), Above (1) and On its own (6) each built the house's 44 shaders again on the frame you tapped (seconds on a
    phone). The house's materials now always carry 6 planes, the unused ones far off cutting nothing, so a cut changes numbers, not
    shaders; the living room's own view (2 planes that cut only where both do) is its own set, built by the rooms' warm-up. CLIPSRC: the

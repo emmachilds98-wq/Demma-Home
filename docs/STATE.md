@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.62 (6 Nov 2026)
+**Version:** V2.64 (6 Nov 2026)
 
 **Work from:** `docs/REAL_PLAN.md` section 6, the next round's tasks (N1–N10) in workstreams that run side by side (Speed, Look, Shapes,
 Edit, Light, UI), one task a PR. Its section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards (one line a row).
@@ -66,6 +66,11 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   the living room's is its `S.decor.curtains`).
   A bed's duvet and pillows take The bedding (V2.61, N5d: row [20], palette slot 5; their room found in the house's frame,
   `FIN.inv`, so the master's lifting lid keeps it).
+  A wall's card has A picture (V2.63, N5e: rows [21] the print, [22] the wall, `finPicApply`; a 52 × 72 RIBBA frame, 150 cm up).
+  The floor's card has A plant too (V2.62: row [23], `08_house_catalogue.js` `syncPlants`: one of the catalogue's four, stood in the
+  free corner farthest from the doors, clear of the furniture and the doors' swing; a piece like an added one: tap it to move it,
+  Another plant, Take it out; the living room keeps its own plants). Look's rows: [18] rug, [19] curtains, [20] bedding, [21]–[22] the Look thread's (a picture),
+  [23] plant.
   Tap a floor: Add a piece here (25 pieces in 8 kinds, `08_house_catalogue.js`, built from the house's own boxes so the walk and taps
   follow; a card warns when it's in the way of another). Swaps and adds are Measure's edits rows: Send carries them, `pull_edits.py` asks.
 - **Measure** (dock): the sizes still guessed, by room; the colours' m² and litres; Send makes a link of every change
@@ -73,7 +78,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Shapes (V2.53, N6):** the master's wardrobes are PAX frames (plinth set back, an oval rail) with garments on hangers, the
   fridge-freezer has its two doors, grip strip and dispenser (the photos), the Kallax its thin shelves, DRÖNA boxes and records, the
   chair-bed its tube frame and leaning back. Cloth profiles get soft edges (`20_go.js` `PSOFT`); no microwave is in the photos.
-- **Quality:** a real graphics card opens in HD and never steps down (V2.25); iPhones start in HD at 2× and step down only if slow, always through the composer (the shade off never rebuilds a shader; a slow one leaves it out while you drag; the house's materials always carry 6 cutting planes, `houseClip`, so a floor's or a room's cut builds no shaders, V2.62); View →
+- **Quality:** a real graphics card opens in HD and never steps down (V2.25); iPhones start in HD at 2× and step down only if slow, always through the composer (the shade off never rebuilds a shader; a slow one leaves it out while you drag; the house's materials always carry 6 cutting planes, `houseClip`, so a floor's or a room's cut builds no shaders, V2.64); View →
   More has HD or Fast. In HD each room is lit by its ceiling light and its windows' daylight, with soft shadows and ambient occlusion; by evening the
   lamps the client has light theirs too (the office's purple lamp, the bathroom mirror's bar; V2.48), the kitchen from its two LED battens. Every standing piece
   has a soft shade round its foot and up the wall beside it, on phones too (V2.52; it moves with the piece).
@@ -83,7 +88,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Offline:** `sw.js` keeps the page's last copy and every picture; a file named by its contents (the photos, `three.<hash>.js`)
   stays in `demma-keep` across versions, so a new round doesn't fetch it again (V2.47).
   The photos are a file each (`_site/tex/<key>_<map|nor|rough>.<hash>.jpg`, `build_viewer.split_photos`; the page keeps their names):
-  what's on screen is fetched first, the rest a moment later; a photo two textures share is fetched once (`decodeImg`) (V2.49); each goes onto the graphics chip in turn, `upStep`: 6 ms of a still frame, one per 120 ms while you move, the shadows once at the end (V2.62).
+  what's on screen is fetched first, the rest a moment later; a photo two textures share is fetched once (`decodeImg`) (V2.49); each goes onto the graphics chip in turn, `upStep`: 6 ms of a still frame, one per 120 ms while you move, the shadows once at the end (V2.64).
 - **Built for Pages:** the page's 3D script and its CSS go through esbuild as the site is built (`vendor.minify`; the source keeps its
   notes): the 3D's code 667 to 359 KB, the page 2.3 to 2.0 MB (V2.50).
 - **Sheets:** a shut Plan, Build, Buy or Ideas sheet is `content-visibility: hidden` (`.sheet.shut`, `page_router.openSheet`): not laid
@@ -106,7 +111,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 | Who | Device | How the 3D draws there |
 |---|---|---|
-| Emma | iPhone 15 Pro | Apple graphics: a capable phone. V2.62: starts in HD at 2× (was 3×) with the shade, the glow, soft 2048 shadows, 4× anti-aliasing and the 1024–2048 photos; if its frames pass 30 ms it gives way a step at a time (the shade, then Fast past 45 ms). Add to Home Screen gives it its own icon, full screen |
+| Emma | iPhone 15 Pro | Apple graphics: a capable phone. V2.64: starts in HD at 2× (was 3×) with the shade, the glow, soft 2048 shadows, 4× anti-aliasing and the 1024–2048 photos; if its frames pass 30 ms it gives way a step at a time (the shade, then Fast past 45 ms). Add to Home Screen gives it its own icon, full screen |
 | Dave | iPhone 16 | The same as the iPhone 15 Pro |
 | Emma | PC, NVIDIA RTX 5070, 32 GB (the main way in) | A real graphics card: HD on every visit, never stepped down (V2.25) (soft shadows at 2048, the sun's at 4096, ambient occlusion, glow), drawn at 1.5–2×, the whole house too (V1.11) |
 | Dave | PC, NVIDIA RTX 3060, 32 GB | The same as the RTX 5070 |

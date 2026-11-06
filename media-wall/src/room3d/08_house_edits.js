@@ -181,12 +181,12 @@ function storeEdits() {   // Measure's rows, as the engine's edits (HEDITS)
 }
 function paintEdits() {   // V1.51: Measure's list of the sizes changed in the 3D: a piece's name flies to it, As planned puts it back
   const box = document.getElementById("ms-elist"), grp = document.getElementById("ms-edits"); if (!box || !grp || !DS()) return;
-  const ids = [...new Set(Object.values(DS().rows("edits") || {}).map(v => v && v.item))].filter(id => HIT(id) && (HIT(id).add || pieceDelta(id).some(Boolean)));
+  const ids = [...new Set(Object.values(DS().rows("edits") || {}).map(v => v && v.item))].filter(id => HIT(id) && ((HIT(id).add && !HIT(id).look) || pieceDelta(id).some(Boolean)));
   grp.hidden = !ids.length;
   const W = { w: "wide", h: "high", up: "up", along: "along", out: "out", turn: "quarter turns" };
   box.innerHTML = ids.map(id => { const it = HIT(id), c = pieceNow(id), was = { w: it.s[0], h: it.s[1], up: it.s[2], along: it.al, out: 0, turn: 0 };
-    const ch = c.removed ? "taken out" : [it.add ? "added" : "", c.swap ? "now " + HCAT[c.swap].n : ""].concat(Object.keys(W).filter(k => Math.abs(c[k] - was[k]) > 0.05).map(k => `${cmR(c[k])} ${W[k]}, was ${cmR(was[k])}`)).filter(Boolean).join(" · ");
-    return `<div class="ms-row ms-erow"><button type="button" class="t ms-ego" data-epiece="${id}">${it.n}<small>${ch}</small></button><button type="button" class="btn" data-ereset="${id}">${it.add ? "Take it out" : "As planned"}</button></div>`; }).join("");
+    const ch = c.removed ? "taken out" : [it.add && !it.look ? "added" : "", c.swap ? "now " + HCAT[c.swap].n : ""].concat(Object.keys(W).filter(k => Math.abs(c[k] - was[k]) > 0.05).map(k => `${cmR(c[k])} ${W[k]}, was ${cmR(was[k])}`)).filter(Boolean).join(" · ");
+    return `<div class="ms-row ms-erow"><button type="button" class="t ms-ego" data-epiece="${id}">${it.n}<small>${ch}</small></button><button type="button" class="btn" data-ereset="${id}">${it.add && !it.look ? "Take it out" : "As planned"}</button></div>`; }).join("");
 }
 document.addEventListener("click", e => {
   const g = e.target.closest("[data-epiece]"), x = e.target.closest("[data-ereset]"); if (!g && !x) return;
@@ -203,7 +203,7 @@ const clampF = (f, v) => Math.max(f === "along" || f === "up" || f === "out" ? -
 function selOf(id) { const it = HIT(id); if (!it) { clearSel(); return; } const c = pieceNow(id); selPiece({ box: pieceBox(id), label: `${Math.round(c.w)} × ${Math.round(c.h)}` }); }
 const pieceLine = id => { const it = HIT(id), c = pieceNow(id), ed = pieceDelta(id).some(Boolean);
   const cl = clashes(id);   // V2.46: the fit check, on the card
-  return `${cmR(c.w)} wide, ${cmR(c.h)} high, ${cmR(c.up)} up` + (cl.length ? ` · in the way of ${cl.slice(0, 2).join(" and ").replace(/^The /, "the ").replace(/ and The /, " and the ")}` : it.add ? " · added by you" : ed ? " · changed by you" : it.g ? " · a guess: measure it" : ""); };
+  return `${cmR(c.w)} wide, ${cmR(c.h)} high` + (it.look && !c.up ? "" : `, ${cmR(c.up)} up`) + (cl.length ? ` · in the way of ${cl.slice(0, 2).join(" and ").replace(/^The /, "the ").replace(/ and The /, " and the ")}` : it.look ? ` · ${roomName(it.look)}'s plant` : it.add ? " · added by you" : ed ? " · changed by you" : it.g ? " · a guess: measure it" : ""); };
 let sizeT = 0;
 async function setPiece(id, field, v) {
   const it = HIT(id), ds = DS(); if (!it || !ds) return;

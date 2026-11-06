@@ -4,7 +4,7 @@
      {item, field: "swap", value: <a key below>}                      a piece swapped (As planned puts it back)
      {item: "add.<n>", field: "add", value: <key>, room, x, z, y}     a piece added where the floor was tapped (Take it out removes it)
    A piece is built in its own frame: u along its wall (0 to W), v up (0 to H), t out from its back (0 at the wall, D at its front). */
-const HCAT_KINDS = { bed: "Beds", wardrobe: "Wardrobes", chest: "Chests", bedside: "Bedsides", desk: "Desks", shelves: "Shelves", seat: "Seats", more: "More" };
+const HCAT_KINDS = { bed: "Beds", wardrobe: "Wardrobes", chest: "Chests", bedside: "Bedsides", desk: "Desks", shelves: "Shelves", seat: "Seats", plant: "Plants", more: "More" };
 function hcChest(mat, cols, rows, knob = "knob") {   // drawers: a carcass, its fronts with a shadow gap, a knob each
   return (W, H, D, B) => {
     B(mat, 0, 0, 0, W, H, D - 2); B("gap", 1, 6, D - 2.1, W - 1, H - 2, D - 2); B(mat, 1, 0, D - 6, W - 1, 6, D - 5);   // the plinth, set back
@@ -105,10 +105,21 @@ const HCAT = {
     b: (W, H, D, B) => { B("oak", 0, H - 4, 0, W, H, D); for (const u of [5, W - 9]) B("oak", u, 0, 2, u + 4, H - 4, D - 2); B("oak", 9, 12, D / 2 - 2, W - 9, 16, D / 2 + 2); } },
   pouffe: { n: "Round pouffe, rust", k: "seat", w: 50, d: 50, h: 40, src: "E (a pouffe, 50 across, 40 high)",
     b: (W, H, D, B, L) => { L("cloth2", W / 2, D / 2, 0, [[0, 0], [W / 2 - 1, 0], [W / 2, 3], [W / 2, H - 4], [W / 2 - 2, H - 0.5], [0, H]]); } },
-  plant: { n: "Tall floor plant in a pot", k: "more", w: 45, d: 45, h: 140, src: "E (a fiddle-leaf fig, 140 tall, in a 30 pot)",
+  plant: { n: "Fiddle-leaf fig, white pot", k: "plant", w: 45, d: 45, h: 140, src: "E (a fiddle-leaf fig, 140 tall, in a 30 pot)",
     b: (W, H, D, B, L) => { L("pot", W / 2, D / 2, 0, [[0, 0], [11, 0], [15, 30], [15.5, 32], [0, 32]]);
       L("timber", W / 2, D / 2, 30, [[0, 0], [1.5, 0], [1.5, H * 0.45], [0, H * 0.45]]);
       L("ivy", W / 2, D / 2, H * 0.32, [[0, 0], [W * 0.32, H * 0.12], [W / 2, H * 0.36], [W * 0.38, H * 0.56], [W * 0.16, H * 0.66], [0, H * 0.68]]); } },
+  snake: { n: "Snake plant, white pot", k: "plant", w: 35, d: 35, h: 90, src: "E (a snake plant, 90 tall, in a 27 pot)",
+    b: (W, H, D, B, L) => { L("pot", W / 2, D / 2, 0, [[0, 0], [10, 0], [13, 24], [13.5, 26], [0, 26]]);
+      for (let i = 0; i < 9; i++) { const a = i * 2.4, r = 3 + (i % 3) * 2.5, u = W / 2 + Math.cos(a) * r, t = D / 2 + Math.sin(a) * r;
+        B("ivy", u - 1.6, 22, t - 0.6, u + 1.6, 26 + (H - 26) * (0.55 + (i * 37 % 9) / 20), t + 0.6); } } },
+  monstera: { n: "Monstera, seagrass basket", k: "plant", w: 70, d: 70, h: 100, src: "E (a monstera, 100 tall, 70 across, in a 38 basket)",
+    b: (W, H, D, B, L) => { L("sisal", W / 2, D / 2, 0, [[0, 0], [16, 0], [19, 32], [0, 32]]);
+      L("ivy", W / 2, D / 2, 30, [[0, 0], [W * 0.3, 8], [W / 2, (H - 30) * 0.45], [W * 0.44, (H - 30) * 0.7], [W * 0.22, H - 32], [0, H - 30]]); } },
+  olive: { n: "Olive tree, grey planter", k: "plant", w: 55, d: 55, h: 150, src: "E (an olive tree, 150 tall, in a 40 planter)",
+    b: (W, H, D, B, L) => { L("concrete", W / 2, D / 2, 0, [[0, 0], [16, 0], [19, 40], [19.5, 42], [0, 42]]);
+      L("timber", W / 2, D / 2, 40, [[0, 0], [2.5, 0], [2, H * 0.4], [0, H * 0.4]]);
+      L("ivy", W / 2, D / 2, H * 0.5, [[0, 0], [W * 0.3, H * 0.06], [W / 2, H * 0.22], [W * 0.4, H * 0.38], [W * 0.12, H * 0.49], [0, H * 0.5]]); } },
   rug: { n: "Rug", k: "more", w: 160, d: 230, h: 1, src: "E (a 160 × 230 rug)",
     b: (W, H, D, B) => { B("rug", 0, 0, 0, W, Math.max(0.6, H), D); B("sisal", 4, Math.max(0.6, H), 4, W - 4, Math.max(0.6, H) + 0.2, 8); B("sisal", 4, Math.max(0.6, H), D - 8, W - 4, Math.max(0.6, H) + 0.2, D - 4); } },
   floorlamp: { n: "Floor lamp, linen shade", k: "more", w: 40, d: 40, h: 160, src: "E (a floor lamp, 160 tall, 40 shade)",
@@ -167,6 +178,7 @@ function withCatalogue(fk, F) {
 const ADDED = {}, ADDFK = {};   // ADDFK: each added piece's floor, kept once it's gone (its floor is drawn again)
 function syncAdds() {
   const ds = DS(), H3 = R.HOUSE3; if (!ds || !H3) return;
+  syncPlants();
   const rows = {}; for (const v of Object.values(ds.rows("edits") || {})) if (v && v.field === "add" && /^add\.[a-z0-9]{1,12}$/.test(v.item || "") && HCAT[v.value] && (H3.rooms || {})[v.room]) rows[v.item] = v;
   for (const id of Object.keys(ADDED)) if (!rows[id]) { delete H3.items[id]; delete ADDED[id]; }
   for (const [id, v] of Object.entries(rows)) { if (ADDED[id] && ADDED[id].k === v.value) continue;
@@ -189,3 +201,49 @@ function clashes(id) {
   return Object.keys(R.HOUSE3.items).filter(k => { const o = HIT(k); return k !== id && o.r === it.r && !HCSKIP.has(o.k) && !hcSoft(k) && !pieceNow(k).removed
     && !(!it.add && !o.add && over(it.b, o.b)) && over(b, pieceBox(k)); }).map(k => { const c = pieceNow(k).swap; return c ? HCAT[c].n : HIT(k).n; });
 }
+/* N5 (REAL_PLAN R7): a plant in any room, from Look's floor card: kept as the room's row [23] (schemes, Undo, Copy and Send carry it), it
+   stands in the room's free corner farthest from its doors (else along a wall, else wherever it fits), clear of the furniture, the
+   slopes and the doors' swing; a piece of the house like any other (tap it to move it, turn it, change it) */
+const PLANTED = {}, PLANTAT = {};
+const plantKeys = () => hcOf("plant");
+function plantSpot(room, C) {
+  const H3 = R.HOUSE3, r = H3.rooms[room], fk = HCFK[String(r[4])], F = fk && H3.floors[fk]; if (!F) return null;
+  const R0 = Math.max(C.w, C.d) / 2, near = b => b[3] > r[0] - 5 && b[0] < r[1] + 5 && b[5] > r[2] - 5 && b[2] < r[3] + 5;
+  let y0 = r[4], big = 0; ((H3.finish_pieces || {})[fk] || []).forEach(([ri, x0, x1, z0, z1], i) => {   // its floor's top (the biggest piece of it: a floor is level)
+    if ((H3.finish_rooms || [])[ri] === room && (x1 - x0) * (z1 - z0) > big) { big = (x1 - x0) * (z1 - z0); y0 = ((H3.finish_floor_y || {})[fk] || [])[i] ?? r[4]; } });
+  const solid = [];
+  for (const [m, L] of Object.entries(F.boxes)) if (m !== "contact") for (const b of L) if (near(b) && b[4] > y0 + 2 && b[1] < y0 + C.h) solid.push(b);
+  for (const [k, it] of Object.entries(H3.items)) if (k !== "plant." + room && it.r === room && !it.op && !pieceNow(k).removed && (it.add || pieceDelta(k).some(Boolean))) solid.push(pieceBox(k));   // moved or added: where it is now
+  const prisms = Object.values(H3.floors).flatMap(G => G.prisms || []), doors = Object.values(H3.items).filter(it => it.op && it.k === "door");
+  const hit = (x, y, z) => prisms.some(P => { const [a, u, w] = P.axis === "x" ? [x, z, y] : P.axis === "z" ? [z, x, y] : [y, x, z]; return a > P.a && a < P.b && polyNear(P.pts, u, w, 0.5); });
+  const swing = (x, z) => doors.some(it => { const o = it.op, [al, ac] = o.axis === "x" ? [x, z] : [z, x]; return Math.abs(ac - o.line) < R0 + 90 && al > o.a - R0 - 10 && al < o.b + R0 + 10; });
+  const HS = Array.from({ length: Math.ceil(C.h / 12) }, (_, i) => Math.min(C.h - 2, 4 + i * 12));   // every 12 cm up: a worktop or a shelf over the floor
+  const free = (x, z) => !swing(x, z) && !solid.some(b => Math.hypot(Math.max(b[0] - x, 0, x - b[3]), Math.max(b[2] - z, 0, z - b[5])) < R0) && [0, 1, 2, 3, 4, 5, 6, 7, 8].every(i => { const a = i * Math.PI / 4, q = i === 8 ? 0 : R0;
+    return HS.every(h => !hit(x + Math.cos(a) * q, y0 + h, z + Math.sin(a) * q)); });
+  const m = R0 + 6, xs = [r[0] + m, r[1] - m], zs = [r[2] + m, r[3] - m], dd = (x, z) => Math.min(1e4, ...doors.map(it => { const o = it.op, c = (o.a + o.b) / 2;
+    return o.axis === "x" ? Math.hypot(x - c, z - o.line) : Math.hypot(x - o.line, z - c); }));
+  const corners = xs.flatMap(x => zs.map(z => [x, z])).sort((p, q) => dd(...q) - dd(...p)), walls = [], inside = [];
+  for (let t = 0.2; t < 0.85; t += 0.15) { const x = r[0] + (r[1] - r[0]) * t, z = r[2] + (r[3] - r[2]) * t; walls.push([x, zs[0]], [x, zs[1]], [xs[0], z], [xs[1], z]);
+    for (let q = 0.2; q < 0.85; q += 0.15) inside.push([x, r[2] + (r[3] - r[2]) * q]); }
+  const at = [...corners, ...walls, ...inside].find(([x, z]) => free(x, z));
+  return at ? [Math.round(at[0] * 10) / 10, y0, Math.round(at[1] * 10) / 10] : null;
+}
+function syncPlants() {
+  const H3 = R.HOUSE3, want = {};
+  for (const [room, sl] of Object.entries(S.fin || {})) if (sl && HCAT[sl[23]] && HCAT[sl[23]].k === "plant" && (H3.rooms || {})[room] && room !== "living") want["plant." + room] = [room, sl[23]];
+  for (const id of Object.keys(PLANTED)) if (!want[id]) { delete H3.items[id]; delete PLANTED[id]; }
+  for (const [id, [room, key]] of Object.entries(want)) { if (PLANTED[id] === key) continue;
+    const C = HCAT[key], r = H3.rooms[room], p = PLANTAT[room + key] || (PLANTAT[room + key] = plantSpot(room, C)); if (!p) continue;
+    const b = [p[0] - C.w / 2, p[1], p[2] - C.d / 2, p[0] + C.w / 2, p[1] + C.h, p[2] + C.d / 2].map(q => Math.round(q * 10) / 10);
+    PLANTED[id] = key; ADDFK[id] = HCFK[String(r[4])];
+    H3.items[id] = { n: C.n, k: "furniture", r: room, ax: "x", b, s: [C.w, C.h, 0], g: false, al: Math.round((b[0] - r[0]) * 10) / 10, op: null, add: key, look: room, fk: ADDFK[id] };
+  }
+}
+function plantSet(room, key) {   // Look's floor card (or a plant's own card): this room's plant, none for none
+  finPush(); S.fin = S.fin || {}; const o = S.fin[room] = S.fin[room] || {};
+  if (key) o[23] = key; else delete o[23]; if (!Object.keys(o).length) delete S.fin[room];
+  store.set(KEY, S); storeEdits(); finSchDraw(); toast(`${roomName(room)}: ${!key ? "no plant" : R.HOUSE3.items["plant." + room] ? HCAT[key].n.split(",")[0].toLowerCase() : "no free floor for it"}`);
+}
+const plantTray = room => { const now = finGet(room, 23) || "";
+  return `<span class="r3d-finlab">A plant</span><div class="r3d-finsc" role="group" aria-label="A plant">`
+    + [["", "None"], ...plantKeys().map(k => [k, HCAT[k].n.split(",")[0]])].map(([v, t]) => `<button type="button" data-finplant="${v}" aria-pressed="${now === v}">${t}</button>`).join("") + `</div>`; };
