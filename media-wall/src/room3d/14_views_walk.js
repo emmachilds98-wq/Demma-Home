@@ -590,7 +590,8 @@ function setView(name, instant, dur) {
   if (RMODE !== "in") setRmode("in", true);                               // v71: a new view starts in the room
   standLook(!!v.stand);                                                     // V1.6: the living room's Be there looks round from where you stand
   let p = (S.site === "C" && S.cab === "sliding" && v.Cs) || v[S.site] || v;   // v30: "Cs", the sliding cabinet's own eye
-  if (name === "house" && camera.aspect < 1.2) { const f = Math.min(0.95, 0.42 / camera.aspect);   // v54: a phone stands further back to take in every floor (V1.30: less far: the buttons take less room)
+  if (name === "house" && camera.aspect < 1.2) { const f = Math.min(0.95, 0.42 / camera.aspect) * 0.8 / freeFrame()[0];   // V2.46: and back by the share the buttons leave free (the roof was under the floors row)
+      // v54: a phone stands further back to take in every floor (V1.30: less far: the buttons take less room)
     p = { eye: p.at.map((a, i) => a + (p.eye[i] - a) * f), at: p.at }; }
   flyTo(p.eye, p.at, R.HOUSE3 && v.box ? Math.max(v.fov, 82) : v.fov, !!v.above, instant, dur);   // v71: the house's rooms wide
   if (!houseG && R.HOUSE && HOUSEV(name)) { buildHouse(); reshadow(); }   // v69 (B6): built the first time (the living room starts without it)

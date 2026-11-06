@@ -422,10 +422,10 @@ function buildHouse() {
   const label = (lines, x, y, z, wcm) => {
     const cv = document.createElement("canvas"), g = cv.getContext("2d"); cv.width = 512; cv.height = 160;
     g.fillStyle = "rgba(255,252,245,0.92)"; g.beginPath(); g.roundRect ? g.roundRect(4, 4, 504, 152, 40) : g.rect(4, 4, 504, 152); g.fill();
-    g.fillStyle = "#1d2a22"; g.textAlign = "center"; g.font = "600 52px Figtree, system-ui, sans-serif"; g.fillText(lines[0], 256, lines[1] ? 70 : 96);
-    if (lines[1]) { g.font = "400 36px Figtree, system-ui, sans-serif"; g.fillStyle = "#4b5650"; g.fillText(lines[1], 256, 122); }
+    g.fillStyle = "#1d2a22"; g.textAlign = "center"; g.font = "600 52px Figtree, system-ui, sans-serif"; g.fillText(lines[0], 256, lines[1] ? 70 : 96, 470);
+    if (lines[1]) { g.font = "400 36px Figtree, system-ui, sans-serif"; g.fillStyle = "#4b5650"; g.fillText(lines[1], 256, 122, 470); }   // V2.46: squeezed to fit, not cut ("under the garage")
     if (SMALL) { cv.height = 112; g.clearRect(0, 0, 512, 160); g.fillStyle = "rgba(255,252,245,0.94)"; g.beginPath(); g.roundRect ? g.roundRect(4, 4, 504, 104, 52) : g.rect(4, 4, 504, 104); g.fill();
-      g.fillStyle = "#1d2a22"; g.textAlign = "center"; g.font = "600 60px Figtree, system-ui, sans-serif"; g.fillText(lines[0], 256, 78); }   // V1.30: a phone shows the name only, larger
+      g.fillStyle = "#1d2a22"; g.textAlign = "center"; g.font = "600 60px Figtree, system-ui, sans-serif"; g.fillText(lines[0], 256, 78, 470); }   // V1.30: a phone shows the name only, larger
     const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
     /* V1.30 (U3): the same size on screen however far off (they were a few pixels tall on a phone, from a floor's view) */
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, toneMapped: false, sizeAttenuation: false })); sp.renderOrder = 999;

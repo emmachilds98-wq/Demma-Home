@@ -36,6 +36,9 @@ function measureShift(open) {
     let top = 0; for (const el of document.querySelectorAll(".r3d-mini > :not([hidden]), .brand")) { const r = el.getBoundingClientRect(); if (r.height) top = Math.max(top, r.bottom); }
     const dock = document.querySelector(".r3d-dock"), bot = dock ? dock.getBoundingClientRect().top : h;
     if (top > 0 && bot > top) shift.y = -Math.round(((top + bot) / 2 - h / 2));
+  } else if (S.view === "house" && innerWidth >= 900 && w) {   // V2.46: on a computer the house sits left of the floors' and rooms' rows (their labels were under them)
+    let left = w; for (const el of document.querySelectorAll("#r3d-floors:not([hidden]), #r3d-hrooms:not([hidden])")) { const r = el.getBoundingClientRect(); if (r.width) left = Math.min(left, r.left); }
+    shift.x = Math.round(Math.max(0, w - left - 16) / 4);   // a quarter: half the rows' width, so the floor still fits
   }
   applyShift(); dirty();
 }
