@@ -348,6 +348,7 @@ details.r3d-more[open] > summary::before { content: "– "; }
 .r3d-floors .sep { width: 1px; margin: 5px 3px; background: rgba(0,0,0,.15); }
 .r3d-floors .tog[aria-pressed="true"] { background: #3c6e57; color: #fff; }
 .r3d-hrooms { margin-top: 6px; }
+@media (min-width: 900px) { .r3d-hrooms { max-width: min(94vw, 760px); } }   /* V2.46: a floor's rooms on one row on a computer (one wrapped alone over the 3D) */
 /* V1.19, the client: "I need to be able to take more buttons off easily and make it clear how to do this": Hide buttons, in every view,
    its words showing on a phone too, takes every button and panel off; only Show buttons stays, where Hide buttons was (v74 folded the
    floors and rooms only, on the whole house only) */
