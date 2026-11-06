@@ -52,7 +52,7 @@ function pickItem(e) {
 const btn = (label, attrs, on, cls, aria) => ({ label, attrs, on, cls, aria });
 /* V2.46 (N7): a swap's card (‹ › through the pieces of its kind, yours first) and an added piece's (‹ › through the catalogue, a row of its
    kinds to jump to); each press shows it in the room at once */
-const HCAT_ADD = ["plant", "armchair", "sidetable", "floorlamp", "rug", "bookcase", "cubes", "ladder", "chest3", "chest6", "tallboy", "bsdrawer", "bswhite", "bslegs",
+const HCAT_ADD = ["plant", "snake", "monstera", "olive", "armchair", "sidetable", "floorlamp", "rug", "bookcase", "cubes", "ladder", "chest3", "chest6", "tallboy", "bsdrawer", "bswhite", "bslegs",
   "desklegs", "deskdrawers", "trestle", "bench", "pouffe", "wardrobe2", "sliding", "openrail", "divan", "oakbed", "metalbed"];
 function hcatCard(id) {
   const k = id.split(":")[1], it = HIT(k); if (!it) return null;
@@ -60,6 +60,8 @@ function hcatCard(id) {
   if (id.startsWith("hswap:")) { const kind = swapKind(k); if (!kind) return null;
     const L = [null, ...hcOf(kind)], i = Math.max(0, L.indexOf(pieceNow(k).swap)), C = HCAT[L[i]];
     return [C ? C.n : it.n + " (yours)", `${HCAT_KINDS[kind]} · ${i + 1} of ${L.length} · ${C ? C.src : "as planned"}`, [...nav(L, i, "hswapgo"), btn("Keep it", { actopen: "hitem:" + k }, true)]]; }
+  if (it.look) { const L = plantKeys(), i = Math.max(0, L.indexOf(it.add)), C = HCAT[it.add];   // N5: a room's plant, from Look
+    return [C.n, `${roomName(it.look)}'s plant · ${i + 1} of ${L.length} · ${C.src}`, [...nav(L, i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Take it out", { hremove: k })]]; }
   const i = Math.max(0, HCAT_ADD.indexOf(it.add)), C = HCAT[it.add];
   return [C.n, `${i + 1} of ${HCAT_ADD.length} · ${C.src}`, [...nav(HCAT_ADD, i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Take it out", { hremove: k })], null,
     `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Kinds">${Object.entries(HCAT_KINDS).map(([q, t]) => `<button type="button" data-hcatk="${k}:${q}" aria-pressed="${C.k === q}">${t}</button>`).join("")}</div></div>`];
@@ -76,7 +78,7 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id.startsWith("hswap:") || id.startsWith("hadd:")) return hcatCard(id);   // V2.46 (N7): swap a piece, or which piece you've added
   if (id.startsWith("hitem:")) { const k = id.slice(6), it = HIT(k); if (!it) return null;   // V1.50: a piece in the house, its size
     const sw = pieceNow(k).swap;
-    return [sw ? HCAT[sw].n : it.n, pieceLine(k), [btn(it.op ? "Change its size" : "Move or resize", { actopen: "hsize:" + k }), ...(it.add ? [btn("Another piece", { actopen: "hadd:" + k })] : swapKind(k) ? [btn("Swap it", { actopen: "hswap:" + k })] : []),
+    return [sw ? HCAT[sw].n : it.n, pieceLine(k), [btn(it.op ? "Change its size" : "Move or resize", { actopen: "hsize:" + k }), ...(it.add ? [btn(it.look ? "Another plant" : "Another piece", { actopen: "hadd:" + k })] : swapKind(k) ? [btn("Swap it", { actopen: "hswap:" + k })] : []),
       ...(pieceDelta(k).some(Boolean) && !it.add ? [btn("As planned", { hreset: k })] : []), ...(it.op ? [] : [btn("Take it out", { hremove: k })]),
       ...(it.k === "window" || /^(back|garage)_door$/.test(k) ? [btn("Colour outside", { actopen: "fin:outside:9" })] : [])], null,   // V2.38 (F12): its frame's outside
       it.k === "light" && it.r ? `<div class="r3d-fin"><span class="r3d-finlab">The bulbs</span>${finBulbTray(it.r)}${finFitTray(it.r)}</div>` : /\.bed$/.test(k) && it.r ? finBedTray(it.r) : null]; }   // N5d: a bed's bedding   // V2.9: a light's bulbs; V2.15: its fitting
@@ -292,8 +294,11 @@ if (act) {
       actId = "hadd:" + id; renderAct(); return; }
     if (d.hswapgo || d.haddgo || d.hcatk) { const [k, x] = (d.hswapgo || d.haddgo || d.hcatk).split(":"), it = HIT(k), ds = DS(); if (!it || !ds) return;
       if (d.hswapgo) { const L = [null, ...hcOf(swapKind(k))], v = L[((+x % L.length) + L.length) % L.length]; setPiece(k, "swap", v).then(() => { if (actId) renderAct(); }); return; }
+      if (it.look) { const L = plantKeys(); plantSet(it.look, L[((+x % L.length) + L.length) % L.length]); renderAct(); return; }
       const n = HCAT_ADD.length, v = d.haddgo ? HCAT_ADD[((+x % n) + n) % n] : HCAT_ADD.find(q => HCAT[q].k === x), row = ds.rows("edits")[k + "~add"]; if (!row || !v) return;
       ds.put("edits", k + "~add", Object.assign({}, row, { value: v })).then(() => { if (actId) renderAct(); }); return; }
+    if (d.finplant != null && actId && actId.startsWith("fin:")) { plantSet(actId.split(":")[1], d.finplant || null); renderAct(); return; }   // N5
+    if (d.hremove && HIT(d.hremove) && HIT(d.hremove).look) { const r = HIT(d.hremove).look; closeAct(); plantSet(r, null); return; }
     if (d.hremove && HIT(d.hremove) && HIT(d.hremove).add) { const k = d.hremove, ds = DS(); closeAct();   // an added piece: its rows go
       Promise.all(Object.entries(ds.rows("edits")).filter(([, v]) => v && v.item === k).map(([rid]) => ds.del("edits", rid))).then(() => toast("Taken out")); return; }
     if (d.hremove) { const k = d.hremove; closeAct(); setPiece(k, "removed", true).then(() => toast(`${HIT(k).n} taken out · Measure, Changed in the 3D, puts it back`)); return; }   // V2.34

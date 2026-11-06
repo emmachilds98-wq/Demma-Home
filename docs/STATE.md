@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.62 (6 Nov 2026)
+**Version:** V2.63 (6 Nov 2026)
 
 **Work from:** `docs/REAL_PLAN.md` section 6, the next round's tasks (N1–N10) in workstreams that run side by side (Speed, Look, Shapes,
 Edit, Light, UI), one task a PR. Its section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards (one line a row).
@@ -66,7 +66,11 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   the living room's is its `S.decor.curtains`).
   A bed's duvet and pillows take The bedding (V2.61, N5d: row [20], palette slot 5; their room found in the house's frame,
   `FIN.inv`, so the master's lifting lid keeps it).
-  A wall's card has A picture (V2.62, N5e: rows [21] the print, [22] the wall, `finPicApply`; a 52 × 72 RIBBA frame, 150 cm up).
+  A wall's card has A picture (V2.63, N5e: rows [21] the print, [22] the wall, `finPicApply`; a 52 × 72 RIBBA frame, 150 cm up).
+  The floor's card has A plant too (V2.62: row [23], `08_house_catalogue.js` `syncPlants`: one of the catalogue's four, stood in the
+  free corner farthest from the doors, clear of the furniture and the doors' swing; a piece like an added one: tap it to move it,
+  Another plant, Take it out; the living room keeps its own plants). Look's rows: [18] rug, [19] curtains, [20] bedding, [21]–[22] the Look thread's (a picture),
+  [23] plant.
   Tap a floor: Add a piece here (25 pieces in 8 kinds, `08_house_catalogue.js`, built from the house's own boxes so the walk and taps
   follow; a card warns when it's in the way of another). Swaps and adds are Measure's edits rows: Send carries them, `pull_edits.py` asks.
 - **Measure** (dock): the sizes still guessed, by room; the colours' m² and litres; Send makes a link of every change
