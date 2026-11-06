@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.55 (6 Nov 2026)
+**Version:** V2.56 (6 Nov 2026)
 
 **Work from:** `docs/REAL_PLAN.md` section 6, the next round's tasks (N1–N10) in workstreams that run side by side (Speed, Look, Shapes,
 Edit, Light, UI), one task a PR. Its section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards (one line a row).
@@ -70,6 +70,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   More has HD or Fast. In HD each room is lit by its ceiling light and its windows' daylight, with soft shadows and ambient occlusion; by evening the
   lamps the client has light theirs too (the office's purple lamp, the bathroom mirror's bar; V2.48), the kitchen from its two LED battens. Every standing piece
   has a soft shade round its foot and up the wall beside it, on phones too (V2.52; it moves with the piece).
+  The window frames, outside doors, gutters and sills have uPVC's faint peel; the skirting, inside doors, newel and rail gloss paint's
+  brush strokes; the steel a brushed grain, each in its own colour; the dormer's cheeks lapped dark timber boards (V2.56).
 - **Outside:** by day under a real sky, the lawn's photo to a hazy horizon, the gardens, next door, the valley and the hill.
 - **Offline:** `sw.js` keeps the page's last copy and every picture; a file named by its contents (the photos, `three.<hash>.js`)
   stays in `demma-keep` across versions, so a new round doesn't fetch it again (V2.47).
