@@ -103,6 +103,26 @@ function precompileStep() {           // from the frame loop, when nothing's mov
   PRE.done++;
   return true;
 }
+/* V2.64, the client's iPhone froze on the first tap on a floor: three's compileAsync (the start's shaders, built in parallel where the
+   browser can: Safari and Chrome have KHR_parallel_shader_compile) builds every shader for the cutting planes of whatever was drawn
+   last, so the house's 6 planes and the living room's 2 never matched and were built again, one at a time, on the frame that first
+   showed them (34 to 44: seconds on a phone). Now the scene is compiled in groups with the same planes, each after one of its pieces is
+   drawn alone off screen (which sets three's planes to its, as precompileStep does) */
+function compileClipped(cam) {
+  const key = m => gl.localClippingEnabled && m.clippingPlanes && m.clippingPlanes.length ? m.clippingPlanes.length + (m.clipIntersection ? "i" : "u") : "0";
+  const G = new Map();
+  scene.traverse(o => { const m = [].concat(o.material || [])[0]; if (!m || !(o.isMesh || o.isLine || o.isPoints || o.isSprite)) return; const k = key(m); if (!G.has(k)) G.set(k, []); G.get(k).push(o); });
+  scene.traverse(c => { if (c.isLight) c.layers.enable(31); });
+  const jobs = [];
+  for (const objs of G.values()) {
+    const o = objs.find(x => x.isMesh && shownChain(x)) || objs[0], shown = [], cull = o.frustumCulled, l31 = o.layers.isEnabled(31), mask = cam.layers.mask, su = gl.shadowMap.needsUpdate;
+    for (let p = o; p; p = p.parent) if (p.visible === false) { shown.push(p); p.visible = true; }
+    o.frustumCulled = false; o.layers.enable(31); cam.layers.set(31); gl.shadowMap.needsUpdate = false;
+    try { gl.render(scene, cam); } finally { cam.layers.mask = mask; if (!l31) o.layers.disable(31); o.frustumCulled = cull; shown.forEach(x => { x.visible = false; }); gl.shadowMap.needsUpdate = su; }
+    jobs.push(gl.compileAsync({ traverse: f => objs.forEach(f), traverseVisible() {} }, cam, scene));
+  }
+  return Promise.all(jobs);
+}
 /* v40, client: "better rendering and graphics": ambient occlusion (three's GTAO), the soft shade where things meet. Always in the HD
    pictures; live in HD on a real graphics card (aoLive). With it the room draws into the composer's target (linear, tone-mapped at the
    end), so the warm-up draws into a target of the same kind and the shaders match. */
