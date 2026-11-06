@@ -149,7 +149,17 @@ function pieceDelta(id) { const it = HIT(id), c = pieceNow(id); return [c.along 
 function pieceBox(id) {
   const it = HIT(id), [dA, dW, dH, dU, dO] = pieceDelta(id), k = it.ax === "z" ? 2 : 0, o = 2 - k, b = it.b.slice();
   b[k] += dA; b[k + 3] += dA + dW; b[1] += dU; b[4] += dU + dH; b[o] += dO; b[o + 3] += dO;
-  const q = pieceNow(id).turn; return q % 2 ? turnBox(b, (b[0] + b[3]) / 2, (b[2] + b[5]) / 2) : b;   // V2.33: its outline turned too
+  const q = pieceNow(id).turn; if (!(q % 2)) return b;
+  const t = turnBox(b, (b[0] + b[3]) / 2, (b[2] + b[5]) / 2), [sx, sz] = turnFit(id, b, t);   // V2.33: its outline turned too
+  t[0] += sx; t[3] += sx; t[2] += sz; t[5] += sz; return t;
+}
+/* V2.36: a piece turns about its centre, so one against a wall went into it: if it stood inside its room, it slides back in, by as
+   little as it takes (a wardrobe turned against a wall stays against it) */
+function turnFit(id, b, t) {
+  const r = HIT(id) && R.HOUSE3 && (R.HOUSE3.rooms || {})[HIT(id).r]; if (!r) return [0, 0];
+  const inside = b[0] >= r[0] - 1 && b[3] <= r[1] + 1 && b[2] >= r[2] - 1 && b[5] <= r[3] + 1; if (!inside) return [0, 0];
+  const sh = (a0, a1, r0, r1) => a1 - a0 > r1 - r0 ? 0 : a0 < r0 ? r0 - a0 : a1 > r1 ? r1 - a1 : 0;
+  return [sh(t[0], t[3], r[0], r[1]), sh(t[2], t[5], r[2], r[3])];
 }
 function storeEdits() {   // Measure's rows, as the engine's edits (HEDITS)
   if (!DS() || !R.HOUSE3) return;
