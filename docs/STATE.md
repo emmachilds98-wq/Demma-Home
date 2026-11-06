@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.58 (6 Nov 2026)
+**Version:** V2.59 (6 Nov 2026)
 
 **Work from:** `docs/REAL_PLAN.md` section 6, the next round's tasks (N1–N10) in workstreams that run side by side (Speed, Look, Shapes,
 Edit, Light, UI), one task a PR. Its section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards (one line a row).
@@ -60,6 +60,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   its colours stay in its own Look (`S.paint`, `S.walls`, `S.ceil`, `S.skirt`) and read as the row `living` (0–3 walls, 4 ceiling,
   11–16 its six walls by name, 17 skirting and door), so schemes, Undo, Copy, Paste, Send and the litres carry it. Tap a piece: its size, Move or resize, Turn, Swap it (‹ › through its kind), Take it out (any room, R6).
   A room's floor card has The rug (V2.57, N5b: row [18], laid by `finRugApply` at a standard size; the living room's is its `S.decor.rug`).
+  A wall's card has The curtains (V2.59, N5c: row [19], `finCurtApply` at the room's windows from `R.HOUSE3.windows_in`;
+  the living room's is its `S.decor.curtains`).
   Tap a floor: Add a piece here (25 pieces in 8 kinds, `08_house_catalogue.js`, built from the house's own boxes so the walk and taps
   follow; a card warns when it's in the way of another). Swaps and adds are Measure's edits rows: Send carries them, `pull_edits.py` asks.
 - **Measure** (dock): the sizes still guessed, by room; the colours' m² and litres; Send makes a link of every change
