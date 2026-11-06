@@ -160,7 +160,7 @@ code.
 | F8 | The living room joined, more slots | Not started (now `docs/REAL_PLAN.md` R7) | The living room's Look on the same rows (pixel for pixel as before); then handles, blinds, radiators, worktops, tiles |
 | F9 | Wallpaper and patterns | Not started | Wallpapers and patterns in the tray (This wall), at their real repeat; What it takes counts rolls |
 | F10 | Furniture in every room | Not started (now `docs/REAL_PLAN.md` R6) | Edit room's move, turn, swap and add in any room; a tapped piece becomes its own part; the walk and the checks follow it; rows sent and folded in |
-| F11 | Colours that go with it | Not started | The makers' own suggested colours per paint (with sources), a lighter and darker for any colour; a short row under the picked paint |
+| F11 | Colours that go with it | **In part** (V2.35) | The makers' own suggested colours per paint (with sources), a lighter and darker for any colour; a short row under the picked paint. V2.35: under a picked colour, Lighter and darker: two each way (`finShades`, its lightness in sRGB), a tap each. Left: the makers' own pairings (they need sources) |
 | F12 | The outside | Not started | The front door's outside, the window frames, our fences, lawn, paths and plants; ours only |
 
 **Needs the client:** the paints, carpets and fittings they'd like in the catalogue to start (names or photos), and which room first; for
