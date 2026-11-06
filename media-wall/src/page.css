@@ -52,6 +52,7 @@ a { color: var(--oak); }
 /* sheets: they slide up over the room */
 .sheet { position: fixed; z-index: 40; top: 16px; bottom: 16px; left: 112px; right: 16px; border-radius: 32px; background: var(--page); box-shadow: var(--shadow);
   transform: translateY(calc(100% + 40px)); visibility: hidden; transition: transform .5s var(--sheet), visibility 0s .5s; display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
+.sheet.shut { content-visibility: hidden; }   /* V2.51 (speed): a shut sheet costs no layout, its pictures wait */
 .sheet.open { transform: none; visibility: visible; transition: transform .5s var(--sheet), visibility 0s; }
 .shd { display: flex; align-items: center; gap: 12px; padding: 18px 22px 10px clamp(18px, 3vw, 34px); position: relative; }
 .shd h2 { margin: 0; font-size: clamp(24px, 3vw, 32px); flex: 1; display: flex; align-items: center; gap: 12px; }

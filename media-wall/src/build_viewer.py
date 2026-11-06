@@ -1003,7 +1003,7 @@ def _page(site=False):
     bbar = (f'<nav class="bbar" aria-label="Sections"><button type="button" data-nav="room" aria-current="true" style="--h:25"><i class="ms" aria-hidden="true">view_in_ar</i>Room</button>'
             + "".join(f'<button type="button" data-nav="{k}" aria-current="false" style="--h:{h}"><i class="ms" aria-hidden="true">{ic}</i>{n}</button>' for k, n, ic, h in nav) + '</nav>')
     def sheet(k, title, ic, h, body):
-        return (f'<div class="sheet" id="sh-{k}" role="dialog" aria-modal="true" aria-labelledby="sh-{k}-h" aria-hidden="true" style="--h:{h}">'
+        return (f'<div class="sheet shut" id="sh-{k}" role="dialog" aria-modal="true" aria-labelledby="sh-{k}-h" aria-hidden="true" style="--h:{h}">'
                 f'<div class="shd"><span class="grab" aria-hidden="true"></span><h2 id="sh-{k}-h" class="sr-only">{title}</h2>'
                 + ('<nav class="shnav" aria-label="The plan">' + "".join(f'<button type="button" data-nav="{n}" aria-current="{str(n == k).lower()}">{t}</button>' for n, t in (("plan", "Plan"), ("build", "Build"), ("buy", "Buy"))) + '</nav>'
                    if k in ("plan", "build", "buy") else f'<h2 aria-hidden="true"><i class="ms">{ic}</i><span>{title}</span></h2>')
@@ -1040,7 +1040,7 @@ def _page(site=False):
         chapter("paint", f'<div class="panel" id="paint">{preset_cards()}' + more(f'<div class="doc">{sec["8"]}</div>') + '</div>'),
         chapter("network", more(f'<div class="panel" id="network"><nav class="toc" aria-label="In this chapter"></nav><div class="doc">{sec["9"]}</div></div>')),
         chapter("views", f"""<div class="panel" id="views"><div class="viewer">
-    <div class="frame shotwrap"><img id="shot" alt="Render of the media wall" width="3300" height="2100"><img id="dims" class="dims" alt="" width="3300" height="2100" hidden></div>
+    <div class="frame shotwrap"><img id="shot" alt="Render of the media wall" width="3300" height="2100" loading="lazy"><img id="dims" class="dims" alt="" width="3300" height="2100" loading="lazy" hidden></div>
     <div class="controls">
       <div class="group"><span class="label" id="l-style">View</span>
         <div class="seg" role="group" aria-labelledby="l-style">

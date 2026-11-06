@@ -77,6 +77,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   what's on screen is fetched first, the rest a moment later; a photo two textures share is fetched once (`decodeImg`) (V2.49).
 - **Built for Pages:** the page's 3D script and its CSS go through esbuild as the site is built (`vendor.minify`; the source keeps its
   notes): the 3D's code 667 to 359 KB, the page 2.3 to 2.0 MB (V2.50).
+- **Sheets:** a shut Plan, Build, Buy or Ideas sheet is `content-visibility: hidden` (`.sheet.shut`, `page_router.openSheet`): not laid
+  out or painted, its pictures not fetched until it opens (about 450 KB less on opening) (V2.54).
 - **Checks:** `tools/check_site.py` walks every door, taps pieces and surfaces, tries phones by touch (iPhone 15 Pro, SE, Pixel 7,
   Galaxy S24, iPad Mini) and the computers' widths.
 
