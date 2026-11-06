@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.50 (6 Nov 2026)
+**Version:** V2.51 (6 Nov 2026)
 
 **Work from:** `docs/REAL_PLAN.md` section 6, the next round's tasks (N1–N10) in workstreams that run side by side (Speed, Look, Shapes,
 Edit, Light, UI), one task a PR. Its section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards (one line a row).
@@ -56,7 +56,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **The living room** is the media wall project: stickers, Plan · Build · Buy and their sheets, Room, Look, Edit, the item cards.
 - **Change the house:** tap a wall, ceiling or floor for its colours card (`23_finish.js`: paints, floors, bulbs and fittings, lighter
   and darker, a colour from a photo, This wall · This room · Whole floor); a window's or door's card colours its outside. Look saves
-  and switches named schemes. The living room is on the same rows (V2.50, N5a): its walls, ceiling and skirting open the same card;
+  and switches named schemes. The living room is on the same rows (V2.51, N5a): its walls, ceiling and skirting open the same card;
   its colours stay in its own Look (`S.paint`, `S.walls`, `S.ceil`, `S.skirt`) and read as the row `living` (0–3 walls, 4 ceiling,
   11–16 its six walls by name, 17 skirting and door), so schemes, Undo, Copy, Paste, Send and the litres carry it. Tap a piece: its size, Move or resize, Turn, Take it out (any room, R6).
 - **Measure** (dock): the sizes still guessed, by room; the colours' m² and litres; Send makes a link of every change
@@ -69,6 +69,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   stays in `demma-keep` across versions, so a new round doesn't fetch it again (V2.47).
   The photos are a file each (`_site/tex/<key>_<map|nor|rough>.<hash>.jpg`, `build_viewer.split_photos`; the page keeps their names):
   what's on screen is fetched first, the rest a moment later; a photo two textures share is fetched once (`decodeImg`) (V2.49).
+- **Built for Pages:** the page's 3D script and its CSS go through esbuild as the site is built (`vendor.minify`; the source keeps its
+  notes): the 3D's code 667 to 359 KB, the page 2.3 to 2.0 MB (V2.50).
 - **Checks:** `tools/check_site.py` walks every door, taps pieces and surfaces, tries phones by touch (iPhone 15 Pro, SE, Pixel 7,
   Galaxy S24, iPad Mini) and the computers' widths.
 
@@ -94,7 +96,7 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 
 ## Numbers (5 Nov, V2.25; software graphics in a test browser: relative, not a real card's)
 
-- `sizes`: page 2.3 MB, photos 9.7 MB in 58 files (V2.49; WebP tried: bigger at the same quality), three.js 0.86 MB own file, 24 sizes to measure.
+- `sizes`: page 2.0 MB (V2.50), photos 9.7 MB in 58 files (V2.49; WebP tried: bigger at the same quality), three.js 0.86 MB own file, 24 sizes to measure.
 - Draws in HD: the house 350 (187k triangles), the living room 447 (18 lights lit, 120 shaders), the landing 409, the hall 312, bedroom 2 173,
   the kitchen 188. Still: 0–1 frames a second (drawn only on change; spare moments build the hidden pieces' shaders ahead).
 - The repo: 351 files, 59 MB tracked (32 MB the client's photos), history 83 MB; `checks.py`'s repo check fails on a tracked build output

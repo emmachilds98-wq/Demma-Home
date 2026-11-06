@@ -80,7 +80,7 @@ The tools are there already: GTAO (ambient occlusion) in `01_renderer.js`, HD sh
 | R4 | Real shapes | **In part** (V2.17–V2.22, V2.24, V2.44) | Second pass: wardrobes, clothes, appliances, Kallax, chair-bed (N6) |
 | R5 | The things in a room | **In part** (V2.18, V2.19, V2.40, V2.41) | More from the client's photos as they come |
 | R6 | Change the furniture in any room | **In part** (V2.32–V2.36: move, resize, turn, take out) | Swap a piece, add from the catalogue (N7) |
-| R7 | One Look for every room | **In part** (V2.50: the living room joined) | Each room's rug, curtains or blinds, bedding, a picture, a plant (N5) |
+| R7 | One Look for every room | **In part** (V2.51: the living room joined) | Each room's rug, curtains or blinds, bedding, a picture, a plant (N5) |
 | R8 | Quick everywhere: fluid as a game | **In part** (V2.30, V2.31, V2.42, V2.43) | Load and phone speed (N2–N4); KTX2 once the devices' numbers are in (N10) |
 
 ## 6. The next round (6 Nov 2026 review, V2.44): tasks
@@ -99,8 +99,8 @@ cache's fix. Every PR: rebase on `main` just before merging, take the next free 
 | N1 | This board; `STATE.md` short and under 150 lines; the plans' boards one line a row; a duplicate photo gone | Plan | `docs/`, `media-wall/inputs/` | **Done** (V2.45) |
 | N2 | Textures as their own files (not one 13 MB base64 JSON), the room you're in first, the rest when idle, kept offline; the 3 duplicate normal maps share one file | Speed | `export3d.py`, `build_viewer.py`, `02_textures.js` | **Done** (V2.47 kept offline, V2.49 a file each, what's on screen first; the 3 duplicate normal maps already shared) |
 | N3 | A 512 px texture set for phones without a strong chip, after N2 | Speed | `build_textures.py`, `02_textures.js` | Not started |
-| N4 | The page's own script minified at build (the source as it is); the living room's suggestions and ideas loaded on first use | Speed | `room3d_src.py`, `build_viewer.py`, `07_suggestions_ideas.js` | Not started |
-| N5 | Look in every room (R7): the living room on the house's rows (pixel for pixel), then each room's rug, curtains or blinds, bedding, a picture, a plant from a short tray; saved in schemes, sent with Send. One PR each: N5a the living room joined; N5b rugs; N5c curtains and blinds; N5d bedding and cushions; N5e a picture and a plant | Look | `23_finish.js`, `room3d_page.py` (Look) | **In part** (V2.50: N5a) |
+| N4 | The page's own script minified at build (the source as it is); the living room's suggestions and ideas loaded on first use | Speed | `room3d_src.py`, `build_viewer.py`, `07_suggestions_ideas.js` | **In part** (V2.50: the script minified at build; the suggestions and ideas still load at start) |
+| N5 | Look in every room (R7): the living room on the house's rows (pixel for pixel), then each room's rug, curtains or blinds, bedding, a picture, a plant from a short tray; saved in schemes, sent with Send. One PR each: N5a the living room joined; N5b rugs; N5c curtains and blinds; N5d bedding and cushions; N5e a picture and a plant | Look | `23_finish.js`, `room3d_page.py` (Look) | **In part** (V2.51: N5a) |
 | N6 | Shapes, second pass (R4): the wardrobes' frames and doors, the hanging clothes as garments (they read as flat slabs), the kitchen's fridge-freezer and microwave fronts and handles, the Kallax's boxes, the chair-bed | Shapes | `house/model.py`, `survey_data.py` | Not started |
 | N7 | Furniture, the rest (R6): swap a piece for another of its kind; add one from the catalogue, in any room | Edit | `13_edit_room.js`, `house_edits` | Not started |
 | N8 | Light and surfaces (R1–R3): lamps, shade beside and under pieces, gloss paint, uPVC, brushed metal, the dormer's boards | Light | `01_renderer.js`, `11_lights.js`, `house/textures/` | **In part** (V2.48: the lamps) |
