@@ -1431,6 +1431,7 @@ if __name__ == "__main__":
     for name in ("index.html", "plan.html"):                                  # V1.2: the site's front door again (plan.html for old links)
         html_ = split_photos(site())
         if vmap: html_ = html_.replace(room3d_page.IMPORTMAP, vmap, 1)
+        html_ = vendor.minify(html_)                                          # V2.50 (speed): the 3D's script and the CSS minified
         (SITE / name).write_text(html_)
     pwa_files()
     (HERE / "publish_files.json").write_text(json.dumps(publish_files(), indent=1))
