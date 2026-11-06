@@ -1120,6 +1120,23 @@ def kitchen(o):
     o.item("kitchen.roll", "The kitchen roll", "kitchen", kind="decor", src="client's photo (25 Oct) + E", measure=False)
     o.lathe("chrome", 118, Y(TOP), 21, [(0, 0), (7, 0), (7, 1), (0.6, 1.2), (0.6, 30), (1.2, 30.5), (0, 31)])     # on the worktop by the corner
     o.lathe("paper", 118, Y(TOP + 1.5), 21, [(2, 0), (5.8, 0), (6, 0.4), (6, 23.6), (5.8, 24), (2, 24)])
+    # V2.41 (REAL_PLAN R5, the photo of 30 Oct): the white kettle on the side run by the corner, the black air fryer round the corner
+    o.item("kitchen.kettle", "The kettle", "kitchen", kind="decor", src="client's photo (30 Oct) + E (a 1.7 L dome kettle, 23 tall)", measure=False)
+    kx, kz = 28.0, -62.0
+    o.lathe("black", kx, Y(TOP), kz, [(0, 0), (9.6, 0), (9.6, 1.6), (0, 1.6)])                                    # its base
+    o.lathe("bin_white", kx, Y(TOP + 1.6), kz, [(0, 0), (9.2, 0), (9.6, 2), (9.4, 13), (7.6, 18.5), (4.2, 21), (0, 21.4)])   # the jug
+    o.lathe("chrome", kx, Y(TOP + 22.6), kz, [(0, 0), (1.6, 0), (1.6, 0.9), (0, 1.4)])                             # the lid's knob
+    o.box("bin_white", kx - 1.4, Y(TOP + 6), kz + 11.5, kx + 1.4, Y(TOP + 19.5), kz + 13.5)                       # the handle, a loop
+    o.box("bin_white", kx - 1.4, Y(TOP + 17), kz + 7.5, kx + 1.4, Y(TOP + 19.5), kz + 11.5)
+    o.box("bin_white", kx - 1.4, Y(TOP + 6), kz + 8.8, kx + 1.4, Y(TOP + 8), kz + 11.5)
+    o.prism("bin_white", "x", kx - 1.8, kx + 1.8, [(kz - 8.6, TOP + y0 + 9), (kz - 13.5, TOP + y0 + 17.5), (kz - 12, TOP + y0 + 18), (kz - 7.5, TOP + y0 + 14)])   # the spout
+    o.item("kitchen.airfryer", "The air fryer", "kitchen", kind="decor", src="client's photo (30 Oct) + E (a 4 L basket air fryer, 28 × 33 × 31)", measure=False)
+    fx0, fz1 = 70.0, 33.0                                                                                          # against the tiles, its basket to the room
+    o.box("black", fx0, Y(TOP + 1), fz1 - 33, fx0 + 28, Y(TOP + 31), fz1)
+    o.box("glass_dark", fx0 + 3, Y(TOP + 23), fz1 - 33.2, fx0 + 25, Y(TOP + 29), fz1 - 32.9)                     # the control panel
+    o.box("handle_black", fx0 + 9, Y(TOP + 9), fz1 - 37, fx0 + 19, Y(TOP + 13), fz1 - 33)                         # the basket's handle
+    for xf in (fx0 + 3, fx0 + 25):                                                                                 # its feet
+        o.box("black", xf - 1.5, Y(TOP), fz1 - 30, xf + 1.5, Y(TOP + 1), fz1 - 3)
     o.item("kitchen.boiler", "The boiler", "kitchen", kind="fitting", src="client v73 + E (combi)", data=("KITCHEN", "boiler"), axis="z")
     bo = K["boiler"]; xw = B["x"][1]                                                    # v73: the boiler over the bar, by the door
     o.box("fitting", xw - bo["d"], Y(bo["y"][0]), bo["z"][0], xw, Y(bo["y"][1]), bo["z"][1])
