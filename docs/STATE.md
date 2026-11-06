@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.59 (6 Nov 2026)
+**Version:** V2.60 (6 Nov 2026)
 
 **Work from:** `docs/REAL_PLAN.md` section 6, the next round's tasks (N1–N10) in workstreams that run side by side (Speed, Look, Shapes,
 Edit, Light, UI), one task a PR. Its section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards (one line a row).
@@ -53,6 +53,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Rooms:** picking one stands you in it (`goRoom`); its views Be there · In it · Above · On its own. Walk: W A S D, arrows turn,
   the wheel walks (Ctrl + wheel the lens), a double-click or double-tap walks you to a spot, Mouse look (M) on a computer. The eye is
   solid to walls and furniture; doors open with a tap and stay as left (this device). `?room` opens the living room.
+- **Moving:** the glide after a drag eases the same each 60th of a second at any frame rate (`DAMP`, V2.60); a walk key held over
+  half a second eases up to half as quick again (1.4 to 2.1 m/s, `WALK.pace`); Shift still hurries.
 - **The living room** is the media wall project: stickers, Plan · Build · Buy and their sheets, Room, Look, Edit, the item cards.
 - **Change the house:** tap a wall, ceiling or floor for its colours card (`23_finish.js`: paints, floors, bulbs and fittings, lighter
   and darker, a colour from a photo, This wall · This room · Whole floor); a window's or door's card colours its outside. Look saves
