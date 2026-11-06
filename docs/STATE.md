@@ -1,12 +1,13 @@
 # State: what's true now
 
-Rewritten (not appended) at the end of every PR. Under 150 lines. The plan and its status board: `docs/V1_PLAN.md`. The rules: `CLAUDE.md`.
+Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
+`CLAUDE.md`.
 
-**Version:** V2.45 (6 Nov 2026)
+**Version:** V2.46 (6 Nov 2026)
 
-**The quality plan** (the client: "the best possible quality 3D model"): `docs/QUALITY_PLAN.md`, its phases and their status. **The finishes plan** (the client said go 5 Nov: tap a wall, floor or light in any room to change it): `docs/FINISHES_PLAN.md`, F1–F4 done (V2.4–V2.7), F5 done (V2.9 bulbs, V2.15 fittings), F6 done (V2.11 sending, V2.13 schemes and copying a room, V2.14 a colour from a photo), F7 m² and litres (V2.12); prices next (they need the client's paints and floors). **The real rooms plan** (the client, 5 Nov: render quality, items as real as the living room's, the house's decor theirs to edit): `docs/REAL_PLAN.md`, R1–R8; the rooms in the client's order (the master bedroom, the office, the kitchen, the bathrooms, the hallways); V2.17 the master bedroom's shapes and the HD room shadows, V2.18 the office's, V2.19 the kitchen's, V2.20 the bathroom's and the landing's; V2.21 the rooms' evening light (`houseEnvK`); V2.22 the hall's shoes and the WC's roll and pipes; V2.23 the shade where walls and ceilings meet (`finPatch` `finAt`). V2.24 the client's measured stairwell (85 wide, square flat-topped posts 93 from the party wall: `FIT` first_stairs x 382, `LANDING.rail_x`), bedroom 2's chair-bed, amp, guitars and socket back on its real wall (z 79.5), and a check that no socket floats; Hide buttons in the cream of its row (dark only as Show buttons), on one row with the view buttons on a phone. V2.25 the PCs at their best: a real graphics card (`BIG_GPU`, any window width) opens in HD every visit and never steps itself down (`houseLite`, `autoQuality`'s Fast, `slowDev`, a lost context no longer saves Fast), the house as sharp as a room (1.5–2×); 390 lines nothing used gone (16 functions, 28 constants, `questions.py`, unused imports, 76 CSS rules that matched nothing), the build's outputs the same. V2.26: the old app's `?embed` mode out (`21_embed.js`, its hooks, `room3d_page.embed`, its CSS: 139 lines; the 3D in 22 parts again). V2.27: what V2.25's removals left unused (three dining diagrams, the old steps and slide pages: 323 lines) and the CSS rules spread over lines or in `@media` that matched nothing (the old phone bar), outputs and page the same. V2.28: the ground round the house the lawn's photo and relief (`11_lights.js`, `worldUV`), not 3 km of one flat colour (on a PC's HD it read as khaki). V2.29: no repeat in it to the horizon (the photo mixed with itself turned and scaled, a slow lighter-darker over metres: the ground's own shader, `grass`). V2.30 (REAL_PLAN R8, fluid as a game): each walkable room's shaders built while you stand still (`warmSwitch`), so no doorway freezes; a real card draws at the screen's sharpness (4× anti-aliasing) with the soft shade at half size live; the walk keeps its speed through a slow frame. V2.31: Mouse look (the pill beside the view buttons while walking on a computer, or M): the pointer held, the mouse turns you, a click opens what's under the dot (`aimed`), Esc stops it. V2.32 (R6): any piece in any room moves out from its wall too (the card's Move or resize: `out`; `pull_edits.py` folds it). V2.33: and turns a quarter each press (Turn; `turnBox`, `turnPrism`; not a piece with a moving part). V2.34: and comes out (Take it out; Measure's As planned puts it back). V2.35 (FINISHES F11): a picked wall or ceiling colour shows two lighter and two darker of it on its card (`finShades`). V2.36 (R6): a piece turned against a wall slides back into its room, by as little as it takes (`turnFit`). V2.37 (R3): the client's tiles at their real sizes, with relief and shine (`build_textures.tiles`): the bathroom's black marble-effect 60 × 60 floor (white veins, glazed), its grey stone-effect 60 × 30 walls, the kitchen's black bevelled metro 20 × 10 in light grout; the 20 drawn textures a photo had replaced gone (69 lines). V2.38 (FINISHES F12, the outside): a window's card (and the back and garage doors') has Colour outside: the frames' outside face in the usual frame colours (white, anthracite grey, agate grey, black, cream: RAL) or a paint or any colour, white inside as foiled frames (`frame_out`); the front door's card the same for its porch side (`door_out`); kept with the finishes (`S.fin.outside`), sent with Send. A tap from out front reaches the front door (the living room's cutaway left out of a tap only what it really cuts: `clippedAt`). V2.39 (R1, each window's daylight): in HD a room of the house is lit from its windows by day, as the sky does through them (an area light the opening's size on the wall's inside face, facing in: `WINLIGHTS`, set by `placeRoomLights`), its even fill down a little (0.5 to 0.38), so it's lighter by the window and its sill and reveals bright; a faint dusk there by evening; a fixed set from the start (no shader rebuilds), not in Fast's. V2.40 (R3, R5, the photos): the bathroom's wall tiles stacked with fine grey streaks along them (a travertine look, `build_textures.tiles`), the bathroom's and the WC's windows frosted (`glass_frost`, `OPENINGS` frosted), their small things: the bathroom's toothbrush cup, hand wash and mat, the WC's pedal bin, brush and pedestal mat. V2.41 (R5): the kitchen's white kettle and black air fryer on the side, as the photo of 30 Oct. V2.42 (R8, the client: "movement is difficult again"): a double-click walks you there and opens nothing (a click's card waits out the double-click; its second click had pressed the card's button: the bed's See it from above); standing, the wheel walks (Ctrl + wheel the lens: it went fish-eye), ← → turn in a room (A D step aside); into standing in 0.3 s from W, 0.55 s from a double-click, 0.6 s from Be there (all 0.9 s); the rooms' warm-up only after 1.5 s still, mouse look counting as moving, its visits shutting no card and resizing nothing; the keys on a toast each visit. V2.43 (the client: first person "the main in the room way", "a nice welcome to the house"): a room you pick (its name on the house, or by name) stands you in it at your eyes (`goRoom`; Be there first among the room's pills; the living room's Standing in it), a double-click as before; arriving on the whole house (once a visit) a welcome card over it, the house turning behind on a computer: what it is, Step in, Walk, Look round, Change it (a computer's or a phone's words), Walk in at the front door (standing in the hall) or Look round the house; the name top left brings it back (the two old hint toasts out). R3D.set, the tour and links keep each view as it was; automated browsers skip the welcome. V2.44 (R4, the client: "blocky new room furniture"): every piece's edges catch the light (a bevel to its size on the black fittings and chairs, the appliances, steel, chrome, screens, the PC, rugs, mats, bins, the chalkboard, the worktop; the bigger bevels rounded, not chamfered); the master's bedsides and chest built as real drawer units (carcass, sides, a top over them, each drawer front its own with a gap round it); the chair-bed's cushions upholstered (cloth, puffed). V2.45 (speed, the audit `/mnt/project-files/audits` of 6 Nov: a first visit 16.7 MB, 13 of it the photos): the offline cache (`sw.js`) keeps a file named by its contents (`photos.<hash>.json`, `three.<hash>.js`, a CDN file at its version) across versions in `demma-keep`, its older copy dropped, so a new round no longer fetches the photos again; next, the photos as files of their own loaded room by room, then the 3D's code and CSS minified.
-
-**The upgrade review** (4 Nov 2026: clipping, speed, zoom, moving round, the buttons): `docs/UPGRADE_REVIEW.md`, phases U1–U9 and their board (U1–U3 done in V1.28, U4 in V1.29, U5 in V1.30, U6 in V1.31, U7 in V1.32, U8 in part in V1.33, U9 in part in V1.34, U10 and U11 in V1.35–V1.37, Next 1 in part in V1.38, Next 5 in V1.39, Next 2 in part in V1.40–V1.42; its "Next" list is the work to take on).
+**Work from:** `docs/REAL_PLAN.md` section 6, the next round's tasks (N1–N10) in workstreams that run side by side (Speed, Look, Shapes,
+Edit, Light, UI), one task a PR. Its section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards (one line a row).
+Older boards, all done or carried into those: `docs/V1_PLAN.md` (phases 0–10), `docs/QUALITY_PLAN.md`, `docs/UPGRADE_REVIEW.md`.
 
 ## Where it lives
 
@@ -42,70 +43,28 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 | `docs/` | `V1_PLAN.md` (the plan), this file, `DECISIONS.md`, `HISTORY.md` |
 | `_site/` (built) | `index.html` and `plan.html` (the page), `sw.js`, `manifest.webmanifest`, `three.<hash>.js`, `photos.<hash>.json`, `data/` (house.json, projects), `media-wall/out/` (PDFs), `media-wall/src/art/` (pictures, icons) |
 
-## The site (V1.2: the old design back)
+## The site now
 
-- **V1.55–V1.56:** a walk steps down only on purpose (`walkMove` `badDown`: not sliding along a wall, the living room's flight only facing
-  down it, never off an edge); stopped dead at a door's frame with an opening just to one side, it eases toward it and through.
-  V1.57: in the hall under the living room's stairs no longer the living room (`walkRoom`: your feet at its tread); down the lower stairs, the kitchen's view (`WALK_VIEW`).
-  V1.58 (`check_site.DOORS` walks every door): a foot not a point; chairs, stools, stair drawers not in the way; a step down's head tested below.
-  V1.59: Be there starts clear of furniture (`standIn` uses `freeSpot`); walls above the ceiling or past the living room draw as `above` (no green in the stairwell).
-  V1.60: standing, the brand names the room you're in (`hereRoom`: the lower landing, not the kitchen whose view it shares). V2.0: `flyTo` clears `WALK.feet`.
-  V2.1: the landing's ceiling over the stairwell (`upper_ceilings`: VOID is a floor only); the stair wall in the living room's paint up to the landing (`model.stair_wall`, `stairpaint` = a copy of the room's `w:stairs` paint); the living room's view draws the first floor above the landing's floor (`livClip`).
-  V2.2: walls flat (no plaster relief: `paintMat` relief only for `ceil`; the house's `paint` untextured), every ceiling artex (`ARTEX_NRM`; the house's `ceiling` uses the artex photo), the house's ceilings white or a colour (View → More, `S.hceil`, `hceilApply`); the stairwell 10 wider; the WC's door and pull cord. V2.3: the lower store's back wall in line with the one past the stairs' top step (`STORE_TO_STAIRS`, `footprint`). V2.4: each room's surfaces in `house.json` (`house/surfaces.py`); the ground floor's rooms' own ceilings (`ground_ceilings`). V2.5: the palette, `R3D.finish(room, surface, hex)` (`finPatch`). V2.6: tap a wall or ceiling, its colours card (`23_finish.js`, `S.fin`). V2.7: and a floor (`finFloorApply`, slot 5). V2.8: the stair wall always the living room's stair wall (out of the palette). V2.9: a room's bulbs (`S.fin` slots 6, 7). V2.10: from above and at an angle the first floor keeps its walls in the roof's group (`applyFloors` `roofWalls`, `FLCLIP`; `setRmode`). V2.11: Send carries the finishes; `pull_edits.py` keeps them (`house/client_finishes.json`). V2.12: Measure says what they take (`finTakes`). V2.13: Look (in the house's views too) saves and switches the house's colours as named schemes (`finSchemes`, this device); a card's Copy this room, then Paste on another's (`FIN_COPY`). V2.14: a colour card's Photo: tap a spot in your photo for its colour (`finPicAt`, the photo stays on the device). V2.15: a ceiling's or a light's card: The light (bare bulb, drum, globe, flush dome, four spots: `S.fin` slot 8, `finFitApply`), in place of the room's own (its pieces their own group, `FIN_PEND`). V2.16: the bathroom's step back at the stairwell's edge (`BATH_1` x0 398); the party wall plastered behind the living room's own wall (seen down the stairwell) and its cut top capped (`outer_walls`). V2.17: the soft things drawn as cloth (`20_go.js` `clothBox`, `CLOTH`); `knob` (round, `ROUND`), bun feet (lathes), hangers in the master; the room's first light casts shadows in HD (`ROOMLIGHTS[0]`, redrawn as it moves).
-- **V1.53 (the client: double-click to go there, W A S D to walk, a drop-in figure, better overheads):** a double-click (`dblclick`; a
-  double-tap on a phone) on any floor you see stands you there in Be there (`room3d/14_views_walk.js` `spotAt`, `goStand`, `freeSpot`;
-  through a roof, the first floor down); the figure bottom right (`#r3d-peg`) drags onto the house, a ring and the room's name where it
-  lands. A walk key in a room's In it stands you there and walks (`startWalk`); Shift hurries; over the house or a room from above the keys
-  glide (`glide`). The overheads: `flyTo`'s fourth is `above` (REDUCE there held them to 6 m), long lenses, framed by the real lens (`fitFov`).
-  Walking no longer jumps from the kitchen to the living room over it, nor steps onto a bed's base (step-up 24). `check_site.DROP` tries it.
-  V1.54: the lower floor's views without the earth over the secret room (`HMATS.earth` off there). Phones (the client: "works on iPhones
-  ... mainly the 15 pro"): views from above framed between the buttons (`freeFrame`, `fromAbove`); a card opened by a tap ignores that
-  tap's click (`actAt`), and a double-tap's second tap on it still counts; iOS's own dblclick ignored; no callout on the figure.
-  Tablet's walking tip fixed. Tried by touch as an iPhone 15 Pro, 15 Pro Max, SE, Pixel 7, Galaxy S24, iPad Mini (`window.__r3dDblMs`: rigs only).
-- **V1.52 (V1_PLAN 2.6):** the 3D's one 6,664-line `room3d.js` split into 22 parts (`media-wall/src/room3d/NN_<part>.js`), joined into the same script (the built page byte for byte the same); `checks.py`'s sizes line checks each part parses alone.
-- **V1.50 (V1_PLAN phase 3):** tap a piece in the house: its card says its size; Change its size, a stepper each (a door: width, place),
-  the 3D changes as you go, As planned puts it back. Measure rows in `edits` ({item, field, value}; Send shares them), `pull_edits.py`
-  folds them in. `room3d.js` `PICK`, `housePiece`, `storeEdits`, `selPiece`; the pieces in `R.HOUSE3.items`; `check_site.SIZE` tries it. (V1.49: the walk check waits for flies.)
-  V1.51: Measure lists them under "Changed in the 3D" (`paintEdits`: a name flies there and outlines it, As planned), and Send sends them.
-- **V1.47 (the client's review):** no garden ground in the kitchen; blinds (`blind_cloth`, `hblinds`); front door hinged at b; the dormer
-  clad in timber boards; smoother walls; by evening a dusk veil; a drag in a room turns the view in place (`lookTurn`).
-- **V1.44–V1.48:** the living room's whole fixed shell (`model.living_shell`, house.json's living `shell`, four checks) (walls, floor, ceiling, skirting, door, window opening, stairs, pipe boxing, radiator) drawn from `R.HOUSE3.living` (the same to the pixel). V1_PLAN phase 5 done.
-- **V1.28 (U1–U3):** the eye is solid to the house (walls, furniture, slopes: a 20 cm ball, sliding); double-tap walks on every floor;
-  zoom to the pointer; Be there's lens zooms (wheel, pinch); mode changes fly; on a phone two rows of buttons, labels a steady size,
-  only the tools that work in each room (Room, Look, Edit only in the living room; Plan · Build · Buy not in the house's other rooms).
-
-- **It opens on the whole house** in 3D. Top right: Whole house, Hide labels, Angled · Overhead, and the floors (Outside · First · Ground ·
-  Lower, Gardens, Next door); a floor shows its rooms as pills, tap one to stand in it (Be there · In it · Above · On its own). V2.43: a welcome card over it on arriving (once a visit), the name top left brings it back. On a phone the floors and
-  the rooms are one row each, sliding sideways. The brand's second line says where you are. `?room` opens the living room.
-- **The living room** is the old page as it was: the stickers on its places, Plan · Build · Buy (the media wall's sheets), the dock's View ·
-  Room · Look · Edit, the item cards. The only project for now; each room gets its own in time (`projects/`), with room left for it.
-- **Measure** (the dock, fifth button): the 19 sizes still guessed, by room, a number and a photo each; a room's name flies there. Kept as
-  you type (the shared page's database, or this device and a link from Send), in the V1 app's format, so `pull_edits.py` reads both.
-- **Outside (V1.3, V1.4):** the whole house is always by day, under a real sky with the sun from the south-west (its light and shadows too, so the back is in shade), on ground that runs to a
-  hazy horizon (the street's level in front, the garden's behind, the slope between); the lawn green as the back photo, the fences
-  boarded, the cordyline in our garden by the path (`survey_data.PLANTS`). With Gardens: the far end's trees, the far fences, the low
-  grey-roofed building past them; always: the valley's trees and the hill of houses opposite, in haze (`survey_data.BEYOND`). Inside, the rooms keep the time you set.
-- **Out of the living room's window (V1.5):** by day, from inside, the modelled outside (the garden, the trees, the valley, the hill);
-  by evening the dusk plane as before. Next door's lawns, fences, trampoline and sheds show through it too (V1.6).
-- **Be there (V1.6):** every room, the living room too, has a fourth way to see it beside In it · Above · On its own: from its door at
-  standing eye height (160), a wide lens; dragging looks round from where you stand.
-- **Out of every window (V1.10):** by day, standing in any room (In it, Be there), its windows show the outside: the sky, the
-  ground to the horizon, the hill and the valley's trees, the gardens, next door and the street. Be there draws only what the room sees,
-  as In it does (the kitchen 150 draws, was 358).
-- **True to the photos (V1.13):** artex ceilings in the kitchen and the lower landing (made by `build_textures.stipple`), the kitchen's
-  black speckled worktop (a granite photo), clear window glass; outside, the house reflects its own sky (`OUT.skyEnv`). `tools/gallery.py`:
-  every room by day in HD on one sheet (`_shots/gallery.jpg`).
-- **The front door (V1.16):** as the hall photo: cream to the hall, white to the porch, its two lights through it (seen from both
-  sides), four raised panels, the brass letterbox in the rail between them, a lever each side.
-- **Doors (V1.26):** tap a door to open or shut it (every room door, the front door, the bin cupboards'); its card shuts or opens
-  every door. The bathroom's stops on the bath, 15 off the wall (the bath 184 so it meets it). V1.27: the office's bifold folds too; each
-  door stays as you left it (this device).
-- **The garage and the secret room (V1.26):** the chipboard box in the garage's back corner by the hall; the access cover in the middle
-  of its floor; the secret room square (2.78), solid to the front, bare buff brick, its pier and drain. The bin cupboards' handles at the
-  street end (they open from outside).
-- **Bedroom 2's door (V1.25):** hinged at the boiler cupboard end, drawn open flat against the cupboard's side (the client's arrow);
-  three hinges on every room door; bedroom 2's frame has the moulded cap over its head from the landing photo.
-- **Earlier rounds** (V1.12–V1.24: lights, handles, fabrics, mirrors, the client's photo fixes): `docs/HISTORY.md`. `?embed` (the old app's frame) taken out in V2.26.
+- **The 3D is the site** (the old design, V1.2): the whole house opens first, a welcome card over it once a visit (V2.43; the name top
+  left brings it back; automated browsers skip it). Pills float over it: the brand, Plan · Build · Buy, Whole house, Hide labels,
+  Angled · Overhead, the floors (Outside · First · Ground · Lower, Gardens, Next door), a floor's rooms, Hide buttons; the dock below
+  (View · Look · Measure; in the living room also Room and Edit); the figure bottom right drops you in where you let go.
+- **Rooms:** picking one stands you in it (`goRoom`); its views Be there · In it · Above · On its own. Walk: W A S D, arrows turn,
+  the wheel walks (Ctrl + wheel the lens), a double-click or double-tap walks you to a spot, Mouse look (M) on a computer. The eye is
+  solid to walls and furniture; doors open with a tap and stay as left (this device). `?room` opens the living room.
+- **The living room** is the media wall project: stickers, Plan · Build · Buy and their sheets, Room, Look, Edit, the item cards.
+- **Change the house:** tap a wall, ceiling or floor for its colours card (`23_finish.js`: paints, floors, bulbs and fittings, lighter
+  and darker, a colour from a photo, This wall · This room · Whole floor); a window's or door's card colours its outside. Look saves
+  and switches named schemes. Tap a piece: its size, Move or resize, Turn, Take it out (any room, R6).
+- **Measure** (dock): the sizes still guessed, by room; the colours' m² and litres; Send makes a link of every change
+  (`pull_edits.py --link`).
+- **Quality:** a real graphics card opens in HD and never steps down (V2.25); iPhones start in HD and step down only if slow; View →
+  More has HD or Fast. In HD each room is lit by its ceiling light and its windows' daylight, with soft shadows and ambient occlusion.
+- **Outside:** by day under a real sky, the lawn's photo to a hazy horizon, the gardens, next door, the valley and the hill.
+- **Offline:** `sw.js` keeps the page's last copy and every picture; a file named by its contents (the photos, `three.<hash>.js`)
+  stays in `demma-keep` across versions, so a new round doesn't fetch it again (V2.46).
+- **Checks:** `tools/check_site.py` walks every door, taps pieces and surfaces, tries phones by touch (iPhone 15 Pro, SE, Pixel 7,
+  Galaxy S24, iPad Mini) and the computers' widths.
 
 ## Each round
 
