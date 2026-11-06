@@ -1145,7 +1145,7 @@ def _page(site=False):
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,500,1,0&display=block">
 {STYLE_V25}
 <button type="button" class="skip" data-tools-toggle>Open the room's controls</button>
-<div class="brand"><span class="mark" aria-hidden="true"><i style="background:var(--peach)"></i><i style="background:var(--mint)"></i><i style="background:var(--lilac)"></i><i style="background:var(--butter)"></i></span>
+<div class="brand" role="button" tabindex="0" title="Welcome, and how to get round" aria-controls="r3d-welcome"><span class="mark" aria-hidden="true"><i style="background:var(--peach)"></i><i style="background:var(--mint)"></i><i style="background:var(--lilac)"></i><i style="background:var(--butter)"></i></span>
   <span><b>Demma's Home<span class="ver" title="This page is {LABEL}">{LABEL}</span></b><small id="brand-place" data-ver="{LABEL}" aria-live="polite">The whole house</small></span></div>
 <nav class="hnav" aria-label="The plan">{"".join(f'<button type="button" data-nav="{k}" aria-current="false">{n}</button>' for k, n in (("plan", "Plan"), ("build", "Build"), ("buy", "Buy")))}</nav>
 <main id="room" aria-label="Your room in 3D">{room3d_page.section(gallery3d())}</main>

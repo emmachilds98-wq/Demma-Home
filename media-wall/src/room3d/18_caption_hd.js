@@ -241,7 +241,7 @@ function findGo(q) {
     const room = [R.W / 2, 0, -150], dx = room[0] - at[0], dz = room[2] - at[2], k = 170 / Math.max(1, Math.hypot(dx, dz));
     flyTo([at[0] + dx * k, Math.max(120, at[1] + 70), at[2] + dz * k], at, 50); if (window.DemmaTools) window.DemmaTools.close(); return;
   }
-  if (v) { setView(v[0]); if (window.DemmaTools) window.DemmaTools.close(); return; }
+  if (v) { goRoom(v[0]); if (window.DemmaTools) window.DemmaTools.close(); return; }   // V2.43: standing in it
   toast("Nothing by that name in the room");
 }
 qs("#r3d-find")?.addEventListener("focus", findList);
