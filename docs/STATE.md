@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.47 (6 Nov 2026)
+**Version:** V2.48 (6 Nov 2026)
 
 **Work from:** `docs/REAL_PLAN.md` section 6, the next round's tasks (N1–N10) in workstreams that run side by side (Speed, Look, Shapes,
 Edit, Light, UI), one task a PR. Its section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards (one line a row).
@@ -64,6 +64,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Outside:** by day under a real sky, the lawn's photo to a hazy horizon, the gardens, next door, the valley and the hill.
 - **Offline:** `sw.js` keeps the page's last copy and every picture; a file named by its contents (the photos, `three.<hash>.js`)
   stays in `demma-keep` across versions, so a new round doesn't fetch it again (V2.47).
+  The photos are a file each (`_site/tex/<key>_<map|nor|rough>.<hash>.jpg`, `build_viewer.split_photos`; the page keeps their names):
+  what's on screen is fetched first, the rest a moment later; a photo two textures share is fetched once (`decodeImg`) (V2.48).
 - **Checks:** `tools/check_site.py` walks every door, taps pieces and surfaces, tries phones by touch (iPhone 15 Pro, SE, Pixel 7,
   Galaxy S24, iPad Mini) and the computers' widths.
 
@@ -89,7 +91,7 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 
 ## Numbers (5 Nov, V2.25; software graphics in a test browser: relative, not a real card's)
 
-- `sizes`: page 2.3 MB, photos 12.7 MB (WebP tried: 15% bigger on these textures), three.js 0.86 MB own file, 24 sizes to measure.
+- `sizes`: page 2.3 MB, photos 9.7 MB in 58 files (V2.48; WebP tried: bigger at the same quality), three.js 0.86 MB own file, 24 sizes to measure.
 - Draws in HD: the house 350 (187k triangles), the living room 447 (18 lights lit, 120 shaders), the landing 409, the hall 312, bedroom 2 173,
   the kitchen 188. Still: 0–1 frames a second (drawn only on change; spare moments build the hidden pieces' shaders ahead).
 - The repo: 351 files, 59 MB tracked (32 MB the client's photos), history 83 MB; `checks.py`'s repo check fails on a tracked build output
