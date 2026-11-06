@@ -275,10 +275,10 @@ if (act) {
     clearTimeout(sizeT); sizeT = setTimeout(() => setPiece(k, f, clampF(f, cmR(v))), 450); });
   let lastPtr = "mouse";
   canvas.addEventListener("pointerdown", e => { lastPtr = e.pointerType; }, true);
-  canvas.addEventListener("dblclick", e => { if (S.edit || MEAS.on || lastPtr !== "mouse") return; e.preventDefault(); floorHop(e); });   // V1.53: on a PC, a double-click stands you there (a phone's double-tap is the pointerup's: iOS can send a dblclick too)
-  canvas.addEventListener("pointerdown", e => { tapDown = (S.edit || e.button > 0) ? null : [e.clientX, e.clientY, e.timeStamp]; if (actId) closeAct(); });   // review after v48: the touch's own time, so a slow frame between down and up can't turn a tap into a long press
+  canvas.addEventListener("dblclick", e => { if (S.edit || MEAS.on || lastPtr !== "mouse") return; e.preventDefault(); floorHop(aimed(e)); });   // V1.53: on a PC, a double-click stands you there (a phone's double-tap is the pointerup's: iOS can send a dblclick too)
+  canvas.addEventListener("pointerdown", e => { e = aimed(e); tapDown = (S.edit || e.button > 0) ? null : [e.clientX, e.clientY, e.timeStamp]; if (actId) closeAct(); });   // review after v48: the touch's own time, so a slow frame between down and up can't turn a tap into a long press
   canvas.addEventListener("pointerup", e => {
-    const t = tapDown; tapDown = null;
+    e = aimed(e); const t = tapDown; tapDown = null;
     if (!t || S.edit || Math.hypot(e.clientX - t[0], e.clientY - t[1]) > 6 || e.timeStamp - t[2] > Math.max(600, DBL_MS)) return;
     if (MEAS.on) { measureTap(e); return; }                                   // v39: measure in 3D
     const now = e.timeStamp, dbl = lastTap && now - lastTap.t < DBL_MS && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30;
@@ -286,7 +286,8 @@ if (act) {
     if (dbl && e.pointerType !== "mouse" && floorHop(e)) return;             // v41: a double-tap on the floor flies you there (V1.53: a mouse's double-click: dblclick)
     let id = pickItem(e); if (!id) return;
     const r = stage.getBoundingClientRect();
-    if (id.startsWith("hdoor:")) swingDoor(id.slice(6), !doorOpen(HPARTS[id.slice(6)]));   // V1.26: a tap opens or shuts it, its card says which
+    if (id.startsWith("hdoor:")) { swingDoor(id.slice(6), !doorOpen(HPARTS[id.slice(6)])); if (mlookOn()) return; }   // V1.26: a tap opens or shuts it, its card says which (V2.31: with mouse look, just that)
+    if (mlookOn()) document.exitPointerLock();                                // V2.31: a card needs the pointer
     if (tryOpts) { const pl = placeOf(id); if (pl) id = `opt:${pl}:${placeIx(pl, id)}`; }             // v39: Try options: what else could go here
     openAct(id, [e.clientX - r.left, e.clientY - r.top]); if (e.pointerType === "mouse") actAt = 0;   // V1.54: only a finger's tap sends its click onto the card
   });

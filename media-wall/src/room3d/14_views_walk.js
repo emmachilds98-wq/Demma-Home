@@ -293,8 +293,21 @@ STICK.addEventListener("pointerdown", e => { stickId = e.pointerId; try { STICK.
 STICK.addEventListener("pointermove", e => { if (e.pointerId === stickId) stickMove(e); });
 const stickEnd = e => { if (e.pointerId !== stickId) return; stickId = null; WALK.stick = [0, 0]; STICK.style.setProperty("--x", "0px"); STICK.style.setProperty("--y", "0px"); };
 STICK.addEventListener("pointerup", stickEnd); STICK.addEventListener("pointercancel", stickEnd);
+/* V2.31, the client: "fluid motion ... almost like im in a first person pov in a game": on a computer, while walking, Mouse look (or M)
+   holds the pointer: the mouse turns you with no button held, W A S D walk, a click opens what's under the dot in the middle (a card lets
+   the pointer go), a double-click walks you to the floor there, Esc stops it. Phones keep the stick and the drag */
+const MLOOK = qs("#r3d-mlook"), mlookOn = () => document.pointerLockElement === canvas;
+const mlook = on => { if (on && !COARSE && walking() && canvas.requestPointerLock) { const p = canvas.requestPointerLock(); if (p && p.catch) p.catch(() => {}); } else if (!on && mlookOn()) document.exitPointerLock(); };
+const aimed = e => { if (!mlookOn()) return e; const r = canvas.getBoundingClientRect();   // where the dot is, for a click while the pointer is held
+  return { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, pointerType: "mouse", button: e.button, timeStamp: e.timeStamp, preventDefault: () => e.preventDefault() }; };
+MLOOK?.addEventListener("click", () => mlook(!mlookOn()));
+document.addEventListener("keydown", e => { if ((e.key === "m" || e.key === "M") && !e.ctrlKey && !e.metaKey && !e.altKey && !/input|textarea|select/i.test(e.target.tagName) && walking()) mlook(!mlookOn()); });
+document.addEventListener("pointerlockchange", () => { const on = mlookOn(); root.classList.toggle("mlook", on); MLOOK?.setAttribute("aria-pressed", String(on));
+  if (on) toast("Mouse look: move to look, W A S D to walk, click to open, Esc to stop"); });
+addEventListener("mousemove", e => { if (mlookOn() && (e.movementX || e.movementY)) lookTurn(-e.movementX, -e.movementY); });
 function syncStick() {
   const on = RMODE === "stand" && !!ROOMV() || S.view === "livstand"; STICK.hidden = !(on && COARSE); root.classList.toggle("walking", on && COARSE);
+  if (MLOOK) MLOOK.hidden = COARSE || !on; if (!on && mlookOn()) document.exitPointerLock();
   if (on && !WALK.hinted) { WALK.hinted = true; try { if (!localStorage.getItem("demma-walkhint")) { localStorage.setItem("demma-walkhint", "1");
     setTimeout(() => toast(COARSE ? "Walk with the stick, drag to look" : "Walk with W A S D or the arrows (Shift to hurry), drag to look"), 900); } } catch (e) {} }
 }
