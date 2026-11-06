@@ -47,7 +47,7 @@ def bundle(site):
 
 
 def minify(html_):
-    """V2.48 (speed, REAL_PLAN N4): the page's own 3D script and its CSS minified for Pages (the source stays as it is, comments and
+    """V2.50 (speed, REAL_PLAN N4): the page's own 3D script and its CSS minified for Pages (the source stays as it is, comments and
     all): the 3D's 667 KB to about 360. Each block goes alone through esbuild; one it can't do, or whose output would end the tag
     early, stays as it was. Without esbuild the page is as before."""
     esb = ROOT / "node_modules/.bin/esbuild"
