@@ -85,13 +85,13 @@ ROOF = dict(pitch=35.0, pitch_back=50.0, eaves_front=495.0, eaves_back=270.0, ov
 OPENINGS = [
     dict(id="kitchen_window", floor="lower", side="n", x=(40.0, 220.0), sill=90.0, head=210.0, kind="window", design="bars", src="B (width), client v73 (centred on the sink, the door moved), E (height)"),
     dict(id="back_door", floor="lower", side="n", x=(228.0, 304.0), sill=0.0, head=205.0, kind="door", design="glazed", src="client v73: \"next to where that side board ends\" (the worktop, 225)"),
-    dict(id="wc_window", floor="lower", side="n", x=(410.0, 460.0), sill=120.0, head=205.0, kind="window", design="bars", src="B"),
+    dict(id="wc_window", floor="lower", side="n", x=(410.0, 460.0), sill=120.0, head=205.0, kind="window", design="bars", src="B", frosted=True),   # V2.40: obscure glass (the photo of 30 Oct)
     dict(id="living_window", floor="ground", side="n", x=LIVING["window_x"], sill=LIVING["window_y"][0], head=LIVING["window_y"][1],
          kind="window", design="living", src="M", skip=True),          # the living room draws its own
     dict(id="front_door", floor="ground", side="s", x=(344.0, 426.0), sill=0.0, head=205.0, kind="door", design="porch", src="F + P (the porch's width)"),
     dict(id="garage_door", floor="ground", side="s", x=(44.0, 257.0), sill=-15.0, head=183.0, kind="door", design="garage", src="F"),
     dict(id="bed2_window", floor="first", side="n", x=(112.0, 262.0), sill=90.0, head=210.0, kind="window", design="casement", src="B + P", dormer=True),
-    dict(id="bath_window", floor="first", side="n", x=(294.0, 394.0), sill=90.0, head=210.0, kind="window", design="casement", src="B + P", dormer=True),
+    dict(id="bath_window", floor="first", side="n", x=(294.0, 394.0), sill=90.0, head=210.0, kind="window", design="casement", src="B + P", dormer=True, frosted=True),   # V2.40: frosted (the photos)
     dict(id="master_window", floor="first", side="s", x=(56.0, 239.0), sill=75.0, head=200.0, kind="window", design="casement", src="F"),
     dict(id="bed3_window", floor="first", side="s", x=(317.4, 413.4), sill=75.0, head=200.0, kind="window", design="casement", src="F + P"),
 ]

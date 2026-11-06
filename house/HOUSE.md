@@ -88,6 +88,8 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
   pan; the small wall-hung basin on the right as you go in (the plan's maroon mark) with four white tiles over it, the roll holder; white
   pipes; grey wood-effect laminate; a yellow and white ceiling shade. V1.40 (the photo matched to the 3D, the window as its ruler): the
   cistern's top just under the window's sill, about 28 tall (84–112 up; it was 78–102). The kitchen from its door (photo): as modelled.
+  V2.40 (the photo of 30 Oct): the window's glass obscure (patterned); a small black pedal bin and the toilet brush in the corner by the
+  basin's wall; a black mat round the pan.
 - **First floor:**
   - **Bathroom** 2.04 × 2.38 (agent): the sink on the left, the toilet ahead (the client), the bath along the right; a back window. Solid
     walls (black) in its top-left corner and beside the door (the room has more shape than drawn). **The sink cabinet** is the maroon
@@ -366,7 +368,9 @@ the door. Also room for improvement." The gap: "Left wall behind airing cupboard
   wall under the slope, a slim white cabinet with round vents beyond it; the low corner boxed in and tiled (the plan's black mark), its
   side running up the dormer's cheek; the close-coupled toilet under the frosted window; the bath along the right from the window wall
   to by the door (V1.26: 184 drawn, so the door meets it), a ceiling-hung rail, a white curtain, a black shower head; stone-effect grey wall tiles (60 × 30), black
-  marble-effect floor tiles (60 × 60).
+  marble-effect floor tiles (60 × 60). V2.40 (the photo again): the wall tiles stacked in straight columns, greige with fine grey
+  streaks along them (a travertine look); the window frosted; on the slim cabinet a grey toothbrush cup and a white hand wash; a black
+  mat on the floor by the bath, in front of the toilet.
 - **The door (the client, 31 Oct):** hinged on the bath's side (the photo from the door); it "doesnt open all the way, most of the way but
   hits the bath just before it gets to fully open leaving roughly 15cm gap behind the door".
 
