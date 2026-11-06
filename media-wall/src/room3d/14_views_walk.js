@@ -239,14 +239,15 @@ function walkRoom(x, feet, z) {             // walked into another room with its
     return;
   }
 }
-function enterRoom(name) {
-  if (actId && typeof closeAct === "function") closeAct();
+function enterRoom(name, warm) {   // V2.42: warm, the warm-up's visit there and back: no card shut, nothing resized, saved or shown
+  if (!warm && actId && typeof closeAct === "function") closeAct();
   const was = HOUSEV(S.view); S.view = name;
   if (VIEWS[name] && VIEWS[name].box) RMODE = "stand";   // V1.38: walked out of the living room into the house's rooms: still walking
   if (houseG && was !== HOUSEV(name)) {                   // V1.38: between the living room (drawn on its own) and the house's rooms
     houseG.visible = HOUSEV(name); setAbove(true); if (garden3d) garden3d.visible = HOUSEV(name);
-    if (started) { applyLight(); sizeRenderer(); } }
-  applyFloors(); placeRoomLights(); syncRmode(); store.set(KEY, S); updateCaption(); brandPlace(); outdoor(); reshadow();
+    if (started) { applyLight(); if (!warm) sizeRenderer(); } }
+  applyFloors(); placeRoomLights(); outdoor(); reshadow(); if (warm) return;
+  syncRmode(); store.set(KEY, S); updateCaption(); brandPlace();
   qsa("[data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === name)));
 }
 /* V2.30, the client: "i want fluid motion and no slow change of view when moving around the house ... almost like im in a first person
@@ -261,7 +262,7 @@ function warmSwitch() {
   const v = S.view, to = ["livstand", ...Object.keys(VIEWS).filter(k => VIEWS[k].box)].find(k => k !== v && !WARMED.has(k + S.quality));
   if (!to) return false; WARMED.add(to + S.quality);
   const culled = [], rm = RMODE; scene.traverse(o => { if (o.isMesh && o.frustumCulled) { o.frustumCulled = false; culled.push(o); } });
-  try { enterRoom(to); draw(); } finally { enterRoom(v); RMODE = rm; syncRmode(); culled.forEach(o => { o.frustumCulled = true; }); }
+  try { enterRoom(to, true); draw(); } finally { enterRoom(v, true); RMODE = rm; culled.forEach(o => { o.frustumCulled = true; }); }
   draw(); return true;
 }
 function walkDoors(x, feet, z) {            // a shut door opens as you come up to it
@@ -308,8 +309,8 @@ addEventListener("mousemove", e => { if (mlookOn() && (e.movementX || e.movement
 function syncStick() {
   const on = RMODE === "stand" && !!ROOMV() || S.view === "livstand"; STICK.hidden = !(on && COARSE); root.classList.toggle("walking", on && COARSE);
   if (MLOOK) MLOOK.hidden = COARSE || !on; if (!on && mlookOn()) document.exitPointerLock();
-  if (on && !WALK.hinted) { WALK.hinted = true; try { if (!localStorage.getItem("demma-walkhint")) { localStorage.setItem("demma-walkhint", "1");
-    setTimeout(() => toast(COARSE ? "Walk with the stick, drag to look" : "Walk with W A S D or the arrows (Shift to hurry), drag to look"), 900); } } catch (e) {} }
+  if (on && !WALK.hinted) { WALK.hinted = true;   // V2.42: each visit (it was once ever), the keys as they are
+    setTimeout(() => toast(COARSE ? "Walk with the stick, drag to look" : "W S walk · ← → turn · A D step aside · drag or M to look · double-click a floor to go there"), 700); }
 }
 function collide(p = camera.position) {    // true if it moved the eye
   let moved = false;
@@ -406,14 +407,14 @@ function goStand(x, fy, z, look, dur) {      // Be there at (x, z) on the floor 
   hereRoom = r[0];
   const v = r[0] === "living" ? "livstand" : ROOM_VIEW[r[0]] || WALK_VIEW[r[0]];
   if (v === "livstand") { if (S.view !== v) setView(v); standLook(true);
-    flyTo([x, STAND_EYE, z], [x + dx * 100, STAND_EYE - 10, z + dz * 100], STAND_FOV, false, false, dur || 900); }
-  else { standSpot = [x, z, dx, dz]; if (S.view !== v) setView(v); setRmode("stand"); }
+    flyTo([x, STAND_EYE, z], [x + dx * 100, STAND_EYE - 10, z + dz * 100], STAND_FOV, false, false, dur || GO_MS); }
+  else { standSpot = [x, z, dx, dz, dur]; if (S.view !== v) setView(v); setRmode("stand"); }
   walked = true; dirty(); return true;
 }
 function startWalk() {                      // a walk key in a room's In it: stand where you are, then walk on
   if (!R.HOUSE3 || tween || !((ROOMV() && RMODE === "in") || S.view === "window")) return false;
   const c = camera.position, d = controls.target.clone().sub(c), x = -c.x / M, z = c.z / M, r = standRoomAt(x, c.y / M - 120, z);
-  return !!r && goStand(x, r[1], z, [-d.x, d.z], 450);
+  return !!r && goStand(x, r[1], z, [-d.x, d.z], 300);   // V2.42: down to your eyes in 0.3 s, then on
 }
 /* the figure: drag it over the house, a ring and the room's name show where it would put you down, let go to stand there */
 const PEG = document.createElement("button"); PEG.type = "button"; PEG.className = "r3d-peg"; PEG.id = "r3d-peg";
@@ -542,13 +543,14 @@ function syncEye() {         // the height slider follows the camera
 }
 function applyPad() { const p = qs("#r3d-pad"); if (p) p.hidden = !S.pad; }
 let wheelAcc = 0;            // looking round, the wheel (or a two-finger scroll) walks
-/* V1.29 (U2): in Be there the wheel and a pinch change the lens (25°–100°, like a phone's camera), since you walk there with a double-tap
-   or the keys; looking round elsewhere the wheel walks as far as it turns (it went in 15 cm jumps) */
+/* V1.29 (U2): looking round the wheel walks as far as it turns (it went in 15 cm jumps); a pinch changes the lens (25°–100°). V2.42, the
+   client: "movement is difficult again": standing (Be there) the wheel changed the lens instead, a fish-eye in a turn or two; now it walks
+   there too, and Ctrl + wheel (a trackpad's pinch) is the lens */
 const lens = f => { if (tween) return; camera.fov = Math.max(25, Math.min(100, f)); camera.updateProjectionMatrix(); dirty(); };   // the lens as seen (a phone's portrait widening included)
 canvas.addEventListener("wheel", e => {
   if (S.cam !== "look") return;
   e.preventDefault();
-  if (RMODE === "stand" || S.view === "livstand") { lens(camera.fov * Math.exp(e.deltaY * 0.0012)); return; }
+  if (e.ctrlKey && (RMODE === "stand" || S.view === "livstand")) { lens(camera.fov * Math.exp(e.deltaY * 0.0012)); return; }
   const k = Math.min(1.5, Math.abs(e.deltaY) / 100); if (k > 0.02) walk(e.deltaY < 0 ? "f" : "b", k);
 }, { passive: false });
 const PINCH = new Map(); let pinch0 = null;
@@ -556,7 +558,7 @@ canvas.addEventListener("pointerdown", e => { if (e.pointerType === "touch") PIN
 canvas.addEventListener("pointermove", e => { if (!PINCH.has(e.pointerId)) return; PINCH.set(e.pointerId, [e.clientX, e.clientY]);
   if (pinch0 && PINCH.size === 2 && S.cam === "look" && (RMODE === "stand" || S.view === "livstand")) { const [a, b] = [...PINCH.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (d > 10) lens(pinch0[1] * pinch0[0] / d); } });
 ["pointerup", "pointercancel", "pointerleave"].forEach(t => canvas.addEventListener(t, e => { PINCH.delete(e.pointerId); if (PINCH.size < 2) pinch0 = null; }));
-["pointerdown", "pointermove", "keydown", "wheel"].forEach(t => root.addEventListener(t, e => { if (t !== "pointermove" || e.buttons) PRE.idleT = performance.now(); }, { passive: true, capture: true }));   // v39: a mouse just moving over the room doesn't hold up the warm-up   // v35: the shader warm-up waits while you use the room
+["pointerdown", "pointermove", "keydown", "wheel"].forEach(t => root.addEventListener(t, e => { if (t !== "pointermove" || e.buttons || mlookOn()) PRE.idleT = performance.now(); }, { passive: true, capture: true }));   // V2.42: mouse look is moving too   // v39: a mouse just moving over the room doesn't hold up the warm-up   // v35: the shader warm-up waits while you use the room
 let padT = null;             // a move button held down keeps moving, in smaller steps
 const padStop = () => { if (padT) { clearTimeout(padT.t); clearInterval(padT.i); padT = null; } };
 root.addEventListener("pointerdown", e => {
@@ -570,13 +572,14 @@ document.addEventListener("keydown", e => {   // V1.53: the page's too (not only
   if (!(e.target === document.body || root.contains(e.target))) return;
   if (e.altKey || e.ctrlKey || e.metaKey || /^(input|select|textarea)$/i.test(e.target.tagName)) return;
   if (e.target.tagName === "BUTTON" && !e.target.dataset.walk && e.key.startsWith("Arrow")) return;   // arrows still move between buttons
-  const k = WALK_KEYS[e.key.toLowerCase()]; if (!k) return;
+  let k = WALK_KEYS[e.key.toLowerCase()]; if (!k) return;
   e.preventDefault();
+  if ((k === "l" || k === "r") && e.key.startsWith("Arrow") && (walking() || (ROOMV() && RMODE === "in"))) k = k === "l" ? "tl" : "tr";   // V2.42: in a room ← → turn, as a game's (A and D step aside)
   if (walking()) { if (k !== "u" && k !== "dn") WALK.keys.add(k); dirty(); return; }   // V1.32: held, not a step a press
   if ("fblr".includes(k) && startWalk()) { WALK.keys.add(k); return; }               // V1.53: in a room, a walk key stands you there and walks on
   walk(k);
 });
-document.addEventListener("keyup", e => { WALK.fast = e.shiftKey; const k = WALK_KEYS[e.key.toLowerCase()]; if (k) WALK.keys.delete(k); });
+document.addEventListener("keyup", e => { WALK.fast = e.shiftKey; const k = WALK_KEYS[e.key.toLowerCase()]; if (k) { WALK.keys.delete(k); if (k === "l" || k === "r") WALK.keys.delete("t" + k); } });
 window.addEventListener("blur", () => { WALK.keys.clear(); WALK.stick = [0, 0]; });
 canvas.addEventListener("pointerdown", () => { canvas.focus({ preventScroll: true }); if (tourSt) tourEnd(); if (SH) SH.own = true; });   // v28: touching the room ends the tour; v32: "Watch it open" carries on, the camera yours
 function setView(name, instant, dur) {
