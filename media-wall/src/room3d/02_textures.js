@@ -182,7 +182,8 @@ function loadPhotos() {
   const el = document.getElementById("photo-data"), src = el && el.dataset.src, txt = el && el.textContent.trim();
   return (photosIn = (txt ? Promise.resolve(txt) : src ? fetch(src).then(r => r.ok ? r.text() : "{}") : Promise.resolve("{}"))
     .then(t => JSON.parse(t)).catch(() => ({})).then(P => {
-      for (const t of Object.values(P)) for (const f of ["map", "nor", "rough"]) if (typeof t[f] === "string" && t[f][0] === "@") { const [k, g] = t[f].slice(1).split("."); t[f] = P[k][g]; }   // a shared picture, sent once
+      for (const t of Object.values(P)) for (const f of ["map", "nor", "rough"]) if (typeof t[f] === "string" && t[f][0] === "@") { const [k, g] = t[f].slice(1).split("."); t[f] = P[k][g]; if (P[k].half && P[k].half[g]) (t.half = t.half || {})[f] = P[k].half[g]; }   // a shared picture, sent once
+      if (LOWD) for (const t of Object.values(P)) for (const f in t.half || {}) t[f] = t.half[f];   // V2.55 (N3): a phone without a strong chip takes the half-size set
       Object.assign(PHOTO, P); photosDone = true;
       /* V2.47 (speed, REAL_PLAN N2): each photo is a file of its own; the ones on what you can see now are fetched first, the rest
          a moment later, so the view you're on looks finished sooner on a phone's connection */
