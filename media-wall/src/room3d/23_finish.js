@@ -129,6 +129,13 @@ function finCurtApply() {
       for (const me of [cloth, new THREE.Mesh(rod, pole)]) { me.receiveShadow = true; me.castShadow = true; me.userData.finRoom = room; g.add(me); CURT_LAID.push(me); } } }
   dirty();
 }
+/* N5d (REAL_PLAN R7): the bedding's colour, a room's row [20], through the palette (20_go.js: the duvet and pillows, slot 5); on the bed's card */
+const FIN_BED = [["#f4f1eb", "White"], ["#a3a29e", "Grey"], ["#8b9878", "Sage"], ["#34507f", "Deep blue"], ["#a65a38", "Rust"], ["#c9a03f", "Mustard"], ["#d9a9a0", "Blush"]];
+function finBedTray(room) {
+  const now = finGet(room, 20) || "";
+  return `<div class="r3d-fin"><span class="r3d-finlab">The bedding</span><div class="r3d-fintray" role="group" aria-label="The bedding">`
+    + [["", "As it is"], ...FIN_BED].map(([h, t]) => `<button type="button" class="sw" data-finbed="${h}" style="--c:${h || "#e9e5dc"}" aria-pressed="${now === h}" title="${t}" aria-label="${t}"><i></i><span>${t}</span></button>`).join("") + `</div></div>`;
+}
 function finCurtTray(room) {
   const liv = room === LIVR, now = liv ? S.decor.curtains : finGet(room, 19) || "";
   if (!liv && !finWindows(room).length) return "";
@@ -185,6 +192,9 @@ function finAt(hit) {   // a tap on a wall or a ceiling of the house: its room a
     const p = hit.point, xc = -p.x / M, zc = p.z / M, yc = p.y / M + 20, fl = yc < 0 ? 0 : yc < 260 ? 1 : 2;
     const ri = FIN.map.image.data[(fl * FIN.H + Math.max(0, Math.min(FIN.H - 1, Math.floor((zc + 309) / 2)))) * FIN.W + Math.max(0, Math.min(FIN.W - 1, Math.floor(xc / 2)))];
     return ri ? { room: FIN.rooms[ri - 1], slot: 5 } : null; }
+  if (FIN.kind[hk] === 2 && finSetup()) {   // N5d: a bed's duvet or pillows: the room's bedding
+    const p = hit.point, fl = p.y / M < 0 ? 0 : p.y / M < 260 ? 1 : 2, ri = FIN.map.image.data[(fl * FIN.H + Math.max(0, Math.min(FIN.H - 1, Math.floor((p.z / M + 309) / 2)))) * FIN.W + Math.max(0, Math.min(FIN.W - 1, Math.floor(-p.x / M / 2)))];
+    return ri ? { room: FIN.rooms[ri - 1], slot: 20 } : null; }
   if (!(hk in FIN.kind) || !finSetup() || !hit.face) return null;
   const p = hit.point, n = hit.face.normal, xc = -p.x / M, zc = p.z / M, yc = p.y / M, ceil = FIN.kind[hk] === 1;
   let ri;
@@ -200,7 +210,7 @@ function finAt(hit) {   // a tap on a wall or a ceiling of the house: its room a
 function finClean(o) {
   const out = {}, floors = new Set(FIN_FLOORS.map(([k]) => k)), bulbs = new Set(FIN_BULBS.map(([v]) => v)), lux = new Set(FIN_LUX.map(([v]) => v));
   for (const [room, sl] of Object.entries(o && typeof o === "object" ? o : {})) { if (!/^[a-z0-9_]{1,30}$/.test(room) || !sl || typeof sl !== "object") continue;
-    for (const [s, v] of Object.entries(sl)) { const k = +s, ok = k <= 4 || k === 9 || k === 10 || (room === LIVR && k >= 11 && k <= 17) ? /^#[0-9a-f]{6}$/i.test(v) : k === 5 ? floors.has(v) : k === 6 ? bulbs.has(v) : k === 7 ? lux.has(v) : k === 8 ? FIN_FITS.some(([f]) => f === v) : k === 18 ? v === "none" || FIN_RUGS.some(([f]) => f === v) : k === 19 ? [...FIN_CURT, ...LIV_CURT].some(([f]) => f === v) : false;
+    for (const [s, v] of Object.entries(sl)) { const k = +s, ok = k <= 4 || k === 9 || k === 10 || k === 20 || (room === LIVR && k >= 11 && k <= 17) ? /^#[0-9a-f]{6}$/i.test(v) : k === 5 ? floors.has(v) : k === 6 ? bulbs.has(v) : k === 7 ? lux.has(v) : k === 8 ? FIN_FITS.some(([f]) => f === v) : k === 18 ? v === "none" || FIN_RUGS.some(([f]) => f === v) : k === 19 ? [...FIN_CURT, ...LIV_CURT].some(([f]) => f === v) : false;
       if (ok) (out[room] = out[room] || {})[k] = v; } }
   return out;
 }
@@ -269,8 +279,9 @@ function finPicAt(el, e) {   // the colour under a tap on the photo
 }
 function finGet(room, slot) { return ((room === LIVR ? livRow() : (S.fin || {})[room]) || {})[slot] || null; }
 function finApplyAll() {   // what's kept, into the palette (on start, after Undo)
-  if (!finSetup()) return; finish(null, "walls", null); finish(null, "ceiling", null);
-  for (const [room, sl] of Object.entries(S.fin || {})) for (const [s, hex] of Object.entries(sl)) if (+s < 5 && FIN.rooms.includes(room)) finish(room, FIN_NAMES[+s], hex);
+  if (!finSetup()) return; finish(null, "walls", null); finish(null, "ceiling", null); finish(null, "bedding", null);
+  if (houseG) { houseG.updateMatrixWorld(true); FIN.inv.copy(houseG.matrixWorld).invert(); }   // N5d: the bedding finds its room in the house's own frame
+  for (const [room, sl] of Object.entries(S.fin || {})) for (const [s, hex] of Object.entries(sl)) if ((+s < 5 || +s === 20) && FIN.rooms.includes(room)) finish(room, +s === 20 ? "bedding" : FIN_NAMES[+s], hex);
   finFloorApply(); finOut(); if (typeof placeRoomLights === "function") { roomKey = ""; placeRoomLights(); } finTakes(); finSchDraw();
 }
 /* V2.38 (FINISHES_PLAN F12, the outside): our window frames' outside face (model.window's frame_out: white inside, as foiled frames) and
@@ -311,6 +322,7 @@ function finFloorCard(room) {   // V2.7 (F4): a room's floor: the carpets, lamin
 function finCard(id) {   // [title, now, buttons, -, the tray]
   const [, room, s] = id.split(":"), slot = +s, ceil = slot === 4, now = finGet(room, slot);
   if (slot === 5) return finFloorCard(room);
+  if (slot === 20) return [`${roomName(room)}: the bedding`, now ? (FIN_BED.find(([h]) => h === now) || [0, now])[1] : "As it is", FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : [], null, finBedTray(room)];
   if (room === "outside") return [`Outside: ${slot === 9 ? "the window frames" : "the front door"}`, now ? finName(now) : "White, as drawn",
     [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(now ? [btn("As drawn", { finc: "" })] : [])], null,
     `<div class="r3d-fin"><div class="r3d-fintray" role="group" aria-label="Colours">${finSw([...FIN_OUT, ...finSwatches().slice(1)], now)}<label class="sw any" title="Any colour"><input type="color" data-finany="1" value="${now || "#f5f5f2"}" aria-label="Any colour"><span>Any</span></label></div></div>`];
@@ -352,6 +364,10 @@ if (act) {
       if (ff.dataset.finfit) o[8] = ff.dataset.finfit; else delete o[8]; if (!Object.keys(o).length) delete S.fin[room];
       store.set(KEY, S); finFitApply(); roomKey = ""; placeRoomLights();
       toast(`${roomName(room)}: ${ff.dataset.finfit ? (FIN_FITS.find(([v]) => v === ff.dataset.finfit) || [0, ""])[1].toLowerCase() : "the light as it is"}`); renderAct(); return; }
+    const db = e.target.closest("[data-finbed]");
+    if (db && actId && (actId === "hbed" || actId.startsWith("hitem:") || actId.startsWith("fin:"))) { e.stopPropagation(); const room = actId === "hbed" ? "master" : actId.startsWith("fin:") ? actId.split(":")[1] : (HIT(actId.slice(6)) || {}).r; if (!room) return;
+      const v = db.dataset.finbed; finPush(); S.fin = S.fin || {}; const o = S.fin[room] = S.fin[room] || {}; if (v) o[20] = v; else delete o[20]; if (!Object.keys(o).length) delete S.fin[room];
+      finApplyAll(); store.set(KEY, S); toast(`${roomName(room)}: ${v ? (FIN_BED.find(([h]) => h === v) || [0, v])[1].toLowerCase() + " bedding" : "the bedding as it is"}`); renderAct(); return; }
     const cb = e.target.closest("[data-fincurt]");
     if (cb && actId && actId.startsWith("fin:")) { e.stopPropagation(); const room = actId.split(":")[1], v = cb.dataset.fincurt; finPush(); S.fin = S.fin || {};
       if (room === LIVR) { S.decor.curtains = v || DEF.decor.curtains; applyDecor(); syncButtons(); }
@@ -378,7 +394,7 @@ if (act) {
     if (b.dataset.finsc) finScope = b.dataset.finsc;
     else if (b.dataset.fincopy) { FIN_COPY = { room, sl: Object.assign({}, finAll()[room]) }; toast(`Copied ${roomName(room)}: tap another room, then Paste`); }
     else if (b.dataset.finpaste && FIN_COPY) { finPush(); S.fin = S.fin || {};   // N5: the living room's own six walls and skirting stay its own
-      if (room === LIVR) livSet(FIN_COPY.sl); else S.fin[room] = Object.fromEntries(Object.entries(FIN_COPY.sl).filter(([k]) => +k <= 10 || +k === 18 || +k === 19));
+      if (room === LIVR) livSet(FIN_COPY.sl); else S.fin[room] = Object.fromEntries(Object.entries(FIN_COPY.sl).filter(([k]) => +k <= 10 || (+k >= 18 && +k <= 20)));
       finApplyAll(); store.set(KEY, S); toast(`${roomName(room)}: ${roomName(FIN_COPY.room)}'s look`); }
     else if (b.dataset.finundo) { const prev = FIN_UNDO.pop(); if (prev != null) { finRestore(JSON.parse(prev)); finApplyAll(); store.set(KEY, S); toast("Undone"); } }
     else if ("finf" in b.dataset) finSet(room, 5, b.dataset.finf || null);
