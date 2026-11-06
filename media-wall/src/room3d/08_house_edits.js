@@ -64,7 +64,9 @@ function editedFloor(fk, F) {
     const t = Object.values(P.bt || {}).flat().find(q => xf[q]), f = t != null ? xf[t] : null;   // V1.50: a resized door swings from its hinge, its handle with it
     const pv = f ? f([P.pivot[0], P.pivot[1], P.pivot[2], P.pivot[0], P.pivot[1], P.pivot[2]]) : null;
     parts[k] = Object.assign({}, P, { boxes: pb, bt: pt }, f ? { pivot: pv.slice(0, 3), prisms: (P.prisms || []).map(Q => mapPrism(Q, f)) } : {}); }
-  return Object.assign({}, F, { boxes, bt, lathes, prisms, parts });
+  const shade = (F.shade || []).map(q => { const f = xf[q[0]]; if (!f) return q; const b = f([q[1], q[5], q[2], q[3], q[5] + q[6], q[4]]);   // V2.52: a piece's shade goes with it
+    return b && [q[0], b[0], b[2], b[3], b[5], q[5], b[4] - b[1]]; }).filter(Boolean);
+  return Object.assign({}, F, { boxes, bt, lathes, prisms, parts, shade });
 }
 function turnPrism(P, cx, cz) {   // V2.33: a profile turned a quarter about (cx, cz)
   const rx = (x, z) => [cx - (z - cz), cz + (x - cx)];

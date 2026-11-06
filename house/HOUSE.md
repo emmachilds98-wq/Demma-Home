@@ -228,7 +228,8 @@ you walk in the kitchen. We've done this chalkboard style with the top floor boi
 newest: the laminate floor and the breakfast bar). And `photo_kitchen_cubby_doors_25oct.jpg`: the store's door and the cupboard's door at right angles, the cupboard's with two vents.
 
 - **Units:** white gloss doors and drawers, black T-handles, on black legs (no plinth); an L along the east wall and round the front
-  corner, ending with the white fridge-freezer (water dispenser) against the boxed-in cupboard's white side.
+  corner, ending with the white fridge-freezer (water dispenser) against the boxed-in cupboard's white side. The photos of 30 Oct:
+  the freezer door below (to about 80), a cream grip strip between the doors (no handles), the cream dispenser left of the fridge door's middle.
 - **Under the window:** the sink (a spring tap) over the black washing machine, a drawer unit; the worktop runs to the corner.
 - **East wall:** the white slimline dishwasher, a unit, the black freestanding electric cooker, two units.
 - **Wall units** over both runs; **black bevelled metro tiles** between (light grout), to the ceiling behind the cooker.
