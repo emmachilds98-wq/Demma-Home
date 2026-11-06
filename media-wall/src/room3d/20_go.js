@@ -29,7 +29,7 @@ function hceilApply() {
    of the rooms (a picture, 2 cm a pixel, one band per floor: which room each spot is) and a palette (a picture, a row per room: back, front,
    east, west, ceiling). The walls' and ceilings' shader looks up the room 3 cm in front of each face and its side from the face's normal; a
    palette pixel with no colour leaves the face as drawn. R3D.finish(room, "walls" | side | "ceiling", "#hex" | null) writes one pixel. */
-const FIN = { W: 234, H: 404, map: null, pal: null, rooms: [], kind: { paint: 0, ceiling: 1, artex: 1 } };   // V2.8: not the stair wall: it's the living room's (Look)
+const FIN = { W: 234, H: 404, map: null, pal: null, rooms: [], kind: { paint: 0, ceiling: 1, artex: 1, duvet: 2, pillow: 2 }, inv: new THREE.Matrix4() };   // N5d: the bedding (palette slot 5; its room from where it is in the house, as a bed's lid moves)   // V2.8: not the stair wall: it's the living room's (Look)
 function finSetup() {
   if (FIN.map || !R.HOUSE3 || !R.HOUSE3.finish_pieces) return FIN.map;
   FIN.rooms = R.HOUSE3.finish_rooms;
@@ -47,8 +47,8 @@ function finPatch(m, k) {   // the walls' and ceilings' materials read the palet
   const room = -1, scale = m.map ? 1 / 0.95 : 1;
   m.customProgramCacheKey = () => "finish" + FIN.kind[k] + (room > 0 ? "r" : "");
   m.onBeforeCompile = sh => {
-    Object.assign(sh.uniforms, { finMap: { value: FIN.map }, finPal: { value: FIN.pal }, finKind: { value: FIN.kind[k] }, finRoom: { value: room }, finScale: { value: scale } });
-    sh.vertexShader = "varying vec3 vFinP;\nvarying vec3 vFinN;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n vFinP = transformed; vFinN = objectNormal;");
+    Object.assign(sh.uniforms, { finMap: { value: FIN.map }, finPal: { value: FIN.pal }, finKind: { value: FIN.kind[k] }, finRoom: { value: room }, finScale: { value: scale }, finInv: { value: FIN.inv } });
+    sh.vertexShader = "uniform mat4 finInv;\nvarying vec3 vFinP;\nvarying vec3 vFinN;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n vFinP = " + (FIN.kind[k] === 2 ? "(finInv * modelMatrix * vec4(transformed, 1.0)).xyz" : "transformed") + "; vFinN = objectNormal;");
     sh.fragmentShader = "uniform sampler2D finMap;\nuniform sampler2D finPal;\nuniform float finKind;\nuniform float finRoom;\nuniform float finScale;\nvarying vec3 vFinP;\nvarying vec3 vFinN;\n" +
       `int finAt(vec2 c, int fl) { ivec2 t = ivec2(int(clamp(floor(c.x / 2.0), 0.0, ${FIN.W - 1}.0)), int(clamp(floor((c.y + 309.0) / 2.0), 0.0, ${FIN.H - 1}.0)) + fl * ${FIN.H}); return int(texelFetch(finMap, t, 0).r * 255.0 + 0.5); }\n` +
       sh.fragmentShader.replace("vec4 diffuseColor = vec4( diffuse, opacity );", `vec3 finD = diffuse;
@@ -57,8 +57,10 @@ function finPatch(m, k) {   // the walls' and ceilings' materials read the palet
     if (rm < 0) { float o = finKind < 0.5 ? 3.0 : 0.0;
       ivec2 t = ivec2(int(clamp(floor((xc - fn.x * o) / 2.0), 0.0, ${FIN.W - 1}.0)), int(clamp(floor((zc + fn.z * o + 309.0) / 2.0), 0.0, ${FIN.H - 1}.0)) + fl * ${FIN.H});
       rm = int(texelFetch(finMap, t, 0).r * 255.0 + 0.5); }
-    if (rm > 0) { float nx = -fn.x, nz = fn.z; int sl = finKind > 0.5 ? 4 : (abs(nx) > abs(nz) ? (nx > 0.0 ? 2 : 3) : (nz > 0.0 ? 0 : 1));
+    if (rm > 0) { float nx = -fn.x, nz = fn.z; int sl = finKind > 1.5 ? 5 : finKind > 0.5 ? 4 : (abs(nx) > abs(nz) ? (nx > 0.0 ? 2 : 3) : (nz > 0.0 ? 0 : 1));
       vec4 fc = texelFetch(finPal, ivec2(sl, rm), 0); if (fc.a > 0.5) finD = fc.rgb * finScale;
+      if (finKind > 1.5) rm = 0; }
+    if (rm > 0) {
       /* V2.23 (REAL_PLAN R2): the shade a real room has where its surfaces meet: a wall darker at its foot, a little at its top and into
          a corner; a ceiling a little at its edges (where the room ends in the plan the palette reads); worked out here, nothing baked */
       float hh = yc - (fl == 0 ? -260.0 : (fl == 1 ? 0.0 : 260.0)), shd = 1.0, cn = 0.0;
@@ -78,7 +80,7 @@ function finPatch(m, k) {   // the walls' and ceilings' materials read the palet
   };
   return m;
 }
-const FIN_SLOT = { back: [0], front: [1], east: [2], west: [3], walls: [0, 1, 2, 3], ceiling: [4] };
+const FIN_SLOT = { back: [0], front: [1], east: [2], west: [3], walls: [0, 1, 2, 3], ceiling: [4], bedding: [5] };
 function finish(room, surface, hex) {   // R3D.finish: a room's walls (or one side) or its ceiling to a colour; null puts it back as drawn; no room: every one
   if (!finSetup()) return false;
   const rows = room == null ? FIN.rooms.map((_, i) => i + 1) : [FIN.rooms.indexOf(room) + 1], slots = FIN_SLOT[surface || "walls"];
