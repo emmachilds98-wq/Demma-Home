@@ -86,12 +86,16 @@ function frame(now) {
     if (k >= 1) { tween = null; if (S.cam === "look") seatLook(); syncEye(); }   // v31: looking round, the turning point comes back in front of you
     need = 2;
   }
+  const dt = Math.min(0.1, (now - (frame.last || now)) / 1000); frame.last = now;
+  /* V2.56, the client: "make it fluid and smooth": the glide after a drag eased a fifth of the way each frame, so it ran out twice as fast
+     on a 120 Hz screen as on a 60 Hz one and jumped when a frame ran long; now the same fifth each 60th of a second, at any frame rate */
+  controls.dampingFactor = 1 - Math.pow(1 - DAMP, Math.max(dt, 1 / 240) * 60);
   const changed = controls.update();
   if (changed) { need = 2; lostCheck(); }
   if (cabTween(now)) need = 2;                                    // v30: the cabinet's doors swinging or sliding
   if (liftTick(now)) need = 2;                                    // v68: Lift the bed
   if (showTick(now)) need = 2;                                    // v32: "Watch it open"
-  { const dt = Math.min(0.1, (now - (frame.last || now)) / 1000); frame.last = now; if (walkTick(dt)) { need = 2; syncEye(); } }   // V1.32 (U7)   // V2.30: dt to 100 ms (it held each step to 50: a slow frame slowed the walk)
+  if (walkTick(dt)) { need = 2; syncEye(); }   // V1.32 (U7)   // V2.30: dt to 100 ms (it held each step to 50: a slow frame slowed the walk)
   if (!tween && !freeAbove() && !walking() && (clampRoom(camera.position) | clampRoom(controls.target, true) | collide())) need = 2;   // v17: never outside the room; v41: nor in the furniture
   const active = moving || changed || !!tween;
   if (active && mvLast && now - mvLast < 250) { MV.push(now - mvLast); if (MV.length >= 24) { const m = MV.sort((a, b) => a - b)[12]; MV.length = 0;

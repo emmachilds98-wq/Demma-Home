@@ -159,7 +159,7 @@ controls.minDistance = 0.3;
 controls.screenSpacePanning = false;   // v17: a right-drag slides along the floor
 // v31, client: "make camera movement easier ... sometimes the movement is quite uncontrollable": it stops soon after you let go,
 // and a drag, a pinch or a scroll moves it about half as far
-controls.dampingFactor = 0.2;
+const DAMP = 0.2; controls.dampingFactor = DAMP;   // V2.56: per 60th of a second (17_render_loop scales it to the frame)
 controls.rotateSpeed = 0.55; controls.zoomSpeed = 0.6; controls.panSpeed = 0.6;
 controls.zoomToCursor = true;   // V1.29 (U2), the client: "how quick the render can ... zoom": a scroll or a pinch goes towards what you point at, not the middle
 controls.addEventListener("change", () => { dirty(); if (typeof syncEye === "function") syncEye(); });

@@ -131,7 +131,7 @@ function houseCollide() {                   // true if it moved the eye
    knee, the hip and the eye (so not over a bed or through a wardrobe), steps up a stair (a rise up to 35) and follows the floor down;
    it slides along what it meets. Walk into the next room and its name, its lights and what's drawn follow you (the eye stays where it
    is); a door opens as you reach it. V1.38: the living room too (below) */
-const WALK = { keys: new Set(), stick: [0, 0], v: new THREE.Vector2(), feet: null, doorT: 0, hinted: false };
+const WALK = { keys: new Set(), stick: [0, 0], v: new THREE.Vector2(), feet: null, doorT: 0, hinted: false, held: 0, pace: 1 };
 const walking = () => (RMODE === "stand" && !!ROOMV() || S.view === "livstand") && !tween;   // V1.38: and the living room's Be there
 /* V1.38 (UPGRADE_REVIEW Next 1), the client: "review how to make the movement within the house better": the living room is drawn on its
    own (geometry.py's measured room, not the house file), so a walk takes its walls, its furniture and its flight from that: in through
@@ -174,7 +174,7 @@ function walkMove(side, fwd, turn, dt) {    // -1..1 each; true if the eye moved
   if (WALK.feet === null) WALK.feet = cam.y / M - STAND_EYE;
   const d = controls.target.clone().sub(cam); d.y = 0; if (d.lengthSq() < 1e-8) d.set(0, 0, 1); d.normalize();
   if (turn) { const a = -turn * 1.8 * dt; d.applyAxisAngle(new THREE.Vector3(0, 1, 0), a); const t = controls.target.clone().sub(cam).applyAxisAngle(new THREE.Vector3(0, 1, 0), a); controls.target.copy(cam).add(t); }
-  const sp = 140 * dt * (WALK.fast ? 2.2 : 1), sd = new THREE.Vector3(-d.z, 0, d.x);   // V1.53: Shift hurries
+  const sp = 140 * dt * (WALK.fast ? 2.2 : WALK.pace), sd = new THREE.Vector3(-d.z, 0, d.x);   // V1.53: Shift hurries
   const mv = d.clone().multiplyScalar(fwd * sp).add(sd.multiplyScalar(side * sp));    // cm in three's axes
   let x = x0 - mv.x, z = z0 + mv.z;                                                    // room cm (x flipped)
   const blk = (x_, z_) => { const f_ = floorAtCm(x_, z_, WALK.feet);   // V1.38: tested where it will stand, a step up taken
@@ -280,6 +280,10 @@ function walkTick(dt) {
   const k = WALK.keys, f = (k.has("f") ? 1 : 0) - (k.has("b") ? 1 : 0) + WALK.stick[1], sd = (k.has("r") ? 1 : 0) - (k.has("l") ? 1 : 0) + WALK.stick[0];
   const want = new THREE.Vector2(sd, f); if (want.lengthSq() > 1) want.normalize();
   WALK.v.lerp(want, Math.min(1, dt * 12));   // eases in and out (V2.30: snappier, as a game's walk: was 8)
+  /* V2.56, the client: "still a bit slow moving in the house": a short press is still a careful step; held over half a second, the walk
+     eases up to half as quick again (a stroll to a brisk walk, 1.4 to 2.1 m/s) over the next second, as a game's does */
+  WALK.held = want.lengthSq() > 0.25 ? WALK.held + dt : 0;
+  { const u = Math.min(1, Math.max(0, WALK.held - 0.5)); WALK.pace = 1 + 0.5 * u * u * (3 - 2 * u); }
   const turn = (k.has("tr") ? 1 : 0) - (k.has("tl") ? 1 : 0);
   if (WALK.v.lengthSq() < 1e-5 && !turn) { if (WALK.feet === null) WALK.feet = camera.position.y / M - STAND_EYE; return false; }
   return walkMove(WALK.v.x, WALK.v.y, turn, dt);
