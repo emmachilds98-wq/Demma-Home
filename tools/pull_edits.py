@@ -61,7 +61,7 @@ def plan(raw, when):
     items = {i["id"]: i for i in XH.house()["items"]}
     by = {}
     for r in rows_of(raw, "edits").values():
-        if r.get("item") in items and r.get("field") in ("w", "h", "up", "along", "removed"):
+        if r.get("item") in items and r.get("field") in ("w", "h", "up", "along", "out", "removed"):
             by.setdefault(r["item"], {})[r["field"]] = r.get("value")
     for iid, f in by.items():
         it = items[iid]; s = it["size"]
@@ -74,10 +74,11 @@ def plan(raw, when):
         along0 = round(a0 - room["box"][k], 1) if room else a0
         val = lambda key, base: num(f[key]) if key in f and num(f[key]) is not None else base
         dA, dW, dH, dU = val("along", along0) - along0, val("w", s["w"]) - s["w"], val("h", s["h"]) - s["h"], val("up", s["up"]) - s["up"]
-        if not any((dA, dW, dH, dU)):
+        dO = 0 if it.get("opening") else val("out", 0)   # V2.32: moved out from its wall (across the other way on the floor)
+        if not any((dA, dW, dH, dU, dO)):
             continue
         data = it.get("data") or []
-        say = f"{it['name']} ({it['room']}): " + ", ".join(f"{n} {'+' if d > 0 else ''}{round(d, 1)}" for n, d in (("along", dA), ("width", dW), ("height", dH), ("up", dU)) if d)
+        say = f"{it['name']} ({it['room']}): " + ", ".join(f"{n} {'+' if d > 0 else ''}{round(d, 1)}" for n, d in (("along", dA), ("width", dW), ("height", dH), ("up", dU), ("out", dO)) if d)
         if data[:1] in (["FIT_DOORS"], ["DOORS_PX"]):
             a, b = it["opening"]["a"], it["opening"]["b"]
             changes.append(dict(path=["FIT_DOORS", iid], value=[round(a + dA, 1), round(b + dA + dW, 1)], src=src, what=say, new=data[0] == "DOORS_PX"))
@@ -107,6 +108,12 @@ def plan(raw, when):
                 changes.append(dict(path=data + ["l"], value=round(d["l"] + dW, 1), src=src, what=say))
             else:
                 left.append("its place or width along the wall")
+        if dO:
+            ox = "x" if ax == "z" else "z"
+            if isinstance(d.get(ox), (tuple, list)):
+                v0, v1 = d[ox]; changes.append(dict(path=data + [ox], value=[round(v0 + dO, 1), round(v1 + dO, 1)], src=src, what=say))
+            else:
+                left.append("its place out from the wall")
         if dU or dH:
             if isinstance(d.get("y"), (tuple, list)):
                 y0, y1 = d["y"]; changes.append(dict(path=data + ["y"], value=[round(y0 + dU, 1), round(y1 + dU + dH, 1)], src=src, what=say))
