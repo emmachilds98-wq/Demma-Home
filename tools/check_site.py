@@ -113,6 +113,22 @@ SIZE = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   document.querySelector('#r3d-act [data-hreset]').click(); await sl(600);
   return { card, row: row ? row.value : null, ed, listed, after: Object.keys(D.HEDITS).length, gone: document.getElementById('ms-edits').hidden };
 }"""
+SWAP = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), cv = document.querySelector('.r3d canvas'), q = s => document.querySelector(s), ds = window.DemmaStore;
+  const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
+  R3D.set({ view: 'master' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
+  const it = Object.values(D.PICK).flat().find(p => p.id === 'master.chest'); if (!it) return { err: 'no chest in PICK' };
+  const c = it.b.getCenter(new D.THREE.Vector3()).project(D.camera), r = cv.getBoundingClientRect();
+  const o = { clientX: r.left + (c.x + 1) / 2 * cv.clientWidth, clientY: r.top + (1 - c.y) / 2 * cv.clientHeight, bubbles: true, pointerId: 1, button: 0, isPrimary: true };
+  cv.dispatchEvent(new PointerEvent('pointerdown', o)); cv.dispatchEvent(new PointerEvent('pointerup', o)); await sl(600);
+  const b = q('#r3d-act [data-actopen^="hswap:"]'); if (!b) return { card: D.actId }; b.click(); await sl(200); q('#r3d-act [data-hswapgo$=":1"]').click();
+  const swapped = await wait(() => D.HEDITS['master.chest'] && D.HEDITS['master.chest'].swap === 'chest3' && D.PICK.first.some(p => p.id === 'master.chest'));
+  await ds.put('edits', 'add.check~add', { item: 'add.check', field: 'add', value: 'plant', room: 'master', x: 240, z: 220, y: 260 });
+  const added = await wait(() => D.PICK.first.some(p => p.id === 'add.check'));
+  await Promise.all(Object.entries(ds.rows('edits')).filter(([, v]) => v && /^(master[.]chest|add[.]check)$/.test(v.item)).map(([k]) => ds.del('edits', k)));
+  const gone = await wait(() => !D.PICK.first.some(p => p.id === 'add.check') && !D.HEDITS['master.chest']);
+  if (D.actId) q('#r3d-act .x').click();
+  return { swapped, added, gone };
+}"""
 OFF = """() => { const W = document.documentElement.clientWidth, out = [];
   for (const el of document.querySelectorAll("body *")) { const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
     if (!r.width || cs.display === "none" || cs.visibility === "hidden" || cs.position === "fixed" || el.closest("[hidden], .sheet, .r3d-panel, .r3d-floors, .lightbox, .r3d-stage")) continue;
@@ -178,6 +194,9 @@ def main():
                 if sz.get("card") != "hitem:office.desk" or not sz.get("row") or not sz.get("ed") or not sz.get("listed") or sz.get("after") or not sz.get("gone"):
                     fails.append(f"{w}: tapping the office desk and widening it: {sz} (want its card, a row of 223.9, the 3D changed, Measure listing it, then back as planned)")
                 pg.screenshot(path=str(SHOTS / f"site-{w}-size.png"))
+                sw = pg.evaluate(SWAP)                          # V2.46 (N7): swap the master's chest for another, add a plant from the catalogue, both back
+                if sw != {"swapped": True, "added": True, "gone": True}:
+                    fails.append(f"{w}: swapping the master bedroom's chest and adding a plant: {sw} (want each drawn, then gone)")
             if phone:                                           # V2.5 (FINISHES_PLAN F2): a room's walls and ceiling through the palette, then back
                 fn = pg.evaluate("() => [R3D.finish('bed2', 'walls', '#3a6b5a'), R3D.finish('bed2', 'ceiling', '#e8c0c8'), R3D.finish('nowhere', 'walls', '#000000'), R3D.finish(null, 'walls', null), R3D.finish(null, 'ceiling', null)]")
                 if fn != [True, True, False, True, True]:
@@ -223,7 +242,7 @@ def main():
         b.close()
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
-    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a piece resized from a tap, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, down to the lower floor and back, {len(fails)} failed; screenshots in _shots/")
+    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, down to the lower floor and back, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
 

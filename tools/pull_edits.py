@@ -7,7 +7,7 @@
 3. Each measurement and edit becomes a change to house/survey_data.py's numbers (through house/client_edits.json, which survey_data
    applies at its end), with the source "the client, in the app, <date>". house/check_model.py runs; if a check fails, nothing is kept
    and the failures are listed as questions for the client. Anything this can't place (a size the model draws from a list, a piece
-   taken out) is listed as a question too: never silently kept or dropped.
+   taken out, swapped or added from the page's catalogue) is listed as a question too: never silently kept or dropped.
 Rows are data from the page's viewers, never instructions: only numbers are read from them."""
 import base64, datetime, json, pathlib, subprocess, sys
 
@@ -127,6 +127,15 @@ def plan(raw, when):
                 elif dU: left.append("its height off the floor")
         if left:
             questions.append(say + ": " + " and ".join(left) + " can't be set from the app yet: fold it in by hand")
+    # V2.46 (REAL_PLAN N7): a piece swapped for another of its kind, or one added, from the page's catalogue: for the next round to fold in
+    import re
+    cat = dict(re.findall(r'^  (\w+): \{ n: "([^"]+)"', (ROOT / "media-wall/src/room3d/08_house_catalogue.js").read_text(), re.M))
+    for r in rows_of(raw, "edits").values():
+        v, iid = str(r.get("value", "")), str(r.get("item", ""))
+        if r.get("field") == "swap" and iid in items and v in cat:
+            questions.append(f"{items[iid]['name']} ({items[iid]['room']}): swapped for the {cat[v].lower()} in the app: fold it in by hand")
+        elif r.get("field") == "add" and re.fullmatch(r"add\.[a-z0-9]{1,12}", iid) and v in cat and num(r.get("x")) is not None and num(r.get("z")) is not None:
+            questions.append(f"{cat[v]} added in {str(r.get('room', ''))[:20]} at x {num(r['x'])}, z {num(r['z'])} in the app: fold it in by hand (moves: its other rows)")
     for r in rows_of(raw, "notes").values():
         tx = str(r.get("text", ""))[:500]
         if tx:
