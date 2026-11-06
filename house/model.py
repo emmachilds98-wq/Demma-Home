@@ -275,26 +275,32 @@ def wall(o, m, axis, line0, line1, a0, a1, y0, y1, holes=()):
                 put(a, b, ya, yb)
 
 
-def window(o, side, x0, x1, y0, y1, design, face):
-    """A white uPVC window or door in an outside wall: frame, glass, glazing bars; set 4 in from the outside face `face` (z)."""
+def window(o, side, x0, x1, y0, y1, design, face, ours=False):
+    """A white uPVC window or door in an outside wall: frame, glass, glazing bars; set 4 in from the outside face `face` (z). ours: our
+    own house's, the frame's outer centimetre its own (frame_out: V2.38, FINISHES F12, their colour outside; white inside as foiled frames)."""
     if design == "porch":                    # v65: the open porch: no frame in the outside wall
         return
     s = 1 if side == "s" else -1
     zo = face - s * 4                        # the frame's outer plane
     zi = zo - s * 7
     W, fr = "upvc", 6.0
-    o.box(W, x0, y0, zo, x0 + fr, y1, zi); o.box(W, x1 - fr, y0, zo, x1, y1, zi)
-    o.box(W, x0, y1 - fr, zo, x1, y1, zi); o.box(W, x0, y0, zo, x1, y0 + fr, zi)
+
+    def fb(xa, ya, xb, yb):                  # a piece of the frame, through its depth
+        a = zo
+        if ours:
+            o.box("frame_out", xa, ya, a, xb, yb, a - s); a -= s
+        o.box(W, xa, ya, a, xb, yb, zi)
+    fb(x0, y0, x0 + fr, y1); fb(x1 - fr, y0, x1, y1); fb(x0, y1 - fr, x1, y1); fb(x0, y0, x1, y0 + fr)
     zg = (zo + zi) / 2
-    if design in ("front", "garage"):
+    if design == "garage":
         return
     o.box("glass", x0 + fr, y0 + fr, zg - 0.5, x1 - fr, y1 - fr, zg + 0.5)
     w, h = x1 - x0, y1 - y0
     if design == "casement":                 # two or three sections, a transom with top lights (the photos)
         n = 3 if w > 140 else 2
         for i in range(1, n):
-            xm = x0 + w * i / n; o.box(W, xm - 3, y0, zo, xm + 3, y1, zi)
-        yt = y0 + h * 0.78; o.box(W, x0, yt - 2.5, zo, x1, yt + 2.5, zi)
+            xm = x0 + w * i / n; fb(xm - 3, y0, xm + 3, y1)
+        yt = y0 + h * 0.78; fb(x0, yt - 2.5, x1, yt + 2.5)
         # V1.23 (Q6): a handle on each opening sash, inside, at its latch edge by the mullion, pointing down (shut): the side sashes open,
         # the middle of three is fixed (the photos' windows; E: a standard uPVC espagnolette handle, 3 × 12 plate, 11 lever)
         hy_ = (y0 + fr + yt - 2.5) / 2; zf = zi; out = -s
@@ -307,7 +313,7 @@ def window(o, side, x0, x1, y0, y1, design, face):
     elif design in ("bars", "glazed", "living"):   # Georgian bars
         cols = max(2, round(w / 30)); rows = max(2, round(h / 32))
         if design == "glazed":
-            o.box(W, x0, y0 + 95, zo, x1, y0 + 104, zi); o.box(W, x0 + fr, y0 + fr, zo, x1 - fr, y0 + 40, zi)   # the mid rail, a kick panel
+            fb(x0, y0 + 95, x1, y0 + 104); fb(x0 + fr, y0 + fr, x1 - fr, y0 + 40)   # the mid rail, a kick panel
         for i in range(1, cols):
             xm = x0 + w * i / cols; o.box(W, xm - 0.8, y0, zg - 1.4, xm + 0.8, y1, zg + 1.4)
         for j in range(1, rows):
@@ -528,8 +534,8 @@ def outer_walls(o, floor):
                 face = line + out * t_out
                 yb = FLOOR_Y[floor] + op["sill"]; yt = FLOOR_Y[floor] + op["head"]
                 o.item(op["id"], *WINDOW_NAMES.get(op["id"], (op["id"], "")), kind="window" if op["kind"] == "window" else "door", src=op["src"], data=("OPENINGS", op["id"]), axis="x")
-                window(o, side, op["x"][0], op["x"][1], yb, yt, op["design"], face)
-                if op["design"] not in ("porch", "garage", "front"):   # v66: the reveal plastered inside (it showed brick), a window board
+                window(o, side, op["x"][0], op["x"][1], yb, yt, op["design"], face, True)
+                if op["design"] not in ("porch", "garage"):   # v66: the reveal plastered inside (it showed brick), a window board
                     zfr = face - out * 11                                # the frame's inner plane
                     za_, zb_ = sorted((line, zfr))
                     x0_, x1_ = op["x"]
@@ -539,7 +545,7 @@ def outer_walls(o, floor):
                         zb0, zb1 = sorted((line - out * 3, zfr))
                         o.box("sill_board", x0_ - 3, yb, zb0, x1_ + 3, yb + 2, zb1)
                 if op["kind"] == "window":                       # the sill, proud of the wall
-                    o.box("upvc", op["x"][0] - 4, yb - 4, face - out * 6, op["x"][1] + 4, yb + 0.6, face + out * 4)
+                    o.box("frame_out", op["x"][0] - 4, yb - 4, face - out * 6, op["x"][1] + 4, yb + 0.6, face + out * 4)
                 _door_leaf(o, op, side, face, yb, yt)
 
 
@@ -553,7 +559,7 @@ def living_window(o, op, face, y):
     WD = G.WINDOW_DESIGN
     x0, x1 = op["x"]; y0, y1 = y + op["sill"], y + op["head"]
     za, zb = face + 0.5, face + 2.0
-    W = "upvc"; fr = WD["frame"]; ww, wh = x1 - x0, y1 - y0; ty = y0 + WD["top"] * wh
+    W = "frame_out"; fr = WD["frame"]; ww, wh = x1 - x0, y1 - y0; ty = y0 + WD["top"] * wh   # V2.38: all outside
     o.box("glass", x0, y0, za + 0.6, x1, y1, za + 0.9)
     for xa, ya, xb, yb in ((x0, y0, x0 + fr, y1), (x1 - fr, y0, x1, y1), (x0, y0, x1, y0 + fr), (x0, y1 - fr, x1, y1), (x0, ty - WD["transom"] / 2, x1, ty + WD["transom"] / 2)):
         o.box(W, xa, ya, za, xb, yb, zb)
@@ -583,12 +589,7 @@ def _door_leaf(o, op, side, face, yb, yt):
     s = 1 if side == "s" else -1
     z = face - s * 9
     x0, x1 = op["x"]
-    if op["design"] == "front":                                       # white, two small panes high up
-        o.box("upvc", x0 + 6, yb, z, x1 - 6, yt - 6, z - s * 5)
-        for xa in (x0 + 18, (x0 + x1) / 2 + 4):
-            o.box("glass", xa, yt - 50, z + s * 0.5, xa + (x1 - x0) / 2 - 22, yt - 22, z + s * 1.5)
-        o.box("brass", x1 - 18, yb + 98, z + s * 1, x1 - 14, yb + 112, z + s * 3)
-    elif op["design"] == "garage":                                    # the up-and-over door, its ribs
+    if op["design"] == "garage":                                    # the up-and-over door, its ribs
         o.box("upvc", x0 + 4, yb, z, x1 - 4, yt - 4, z - s * 3)
         for k in range(1, 8):
             yy = yb + (yt - yb) * k / 8; o.box("rib", x0 + 4, yy - 0.6, z + s * 0.5, x1 - 4, yy + 0.6, z + s * 1.2)
@@ -748,8 +749,8 @@ def roof(o):
     o.box("paint", x0, yf - SLAB, BACK, x1, base + 2, zi)            # v62: under the dormer's face, down to the floor (no gap to the roof)
     for op in ops:
         o.item(op["id"], *WINDOW_NAMES.get(op["id"], (op["id"], "")), kind="window", src=op["src"], data=("OPENINGS", op["id"]), axis="x")
-        window(o, "n", op["x"][0], op["x"][1], yf + op["sill"], yf + op["head"], op["design"], zo)
-        o.box("upvc", op["x"][0] - 3, yf + op["sill"] - 4, zo - 5, op["x"][1] + 3, yf + op["sill"] + 0.6, zo + 4)
+        window(o, "n", op["x"][0], op["x"][1], yf + op["sill"], yf + op["head"], op["design"], zo, True)
+        o.box("frame_out", op["x"][0] - 3, yf + op["sill"] - 4, zo - 5, op["x"][1] + 3, yf + op["sill"] + 0.6, zo + 4)
     o.end()
     for xa, xb in ((x0, x0 + DM["t"]), (x1 - DM["t"], x1)):
         o.prism("hung", "x", xa, xb, [(zo, base), (zo, DM["top"]), (DORMER_BACK, DM["top"])])
@@ -811,10 +812,10 @@ def porch(o):
     # lever handle each side
     a0, a1, H_, w = d["a"] + 1, d["b"] - 1, D.DOOR_H - 1, d["b"] - d["a"]
     gl = [(d["a"] + 12, d["a"] + w / 2 - 4), (d["a"] + w / 2 + 4, d["b"] - 12)]; g0, g1 = D.DOOR_H - 50, D.DOOR_H - 22
-    o.box("upvc", a0, 0.5, z - 2.0, a1, g0, z + 2.2)                                      # the leaf round its two lights
-    o.box("upvc", a0, g1, z - 2.0, a1, H_, z + 2.2)
+    o.box("door_out", a0, 0.5, z - 2.0, a1, g0, z + 2.2)                                  # the leaf round its two lights (V2.38: its
+    o.box("door_out", a0, g1, z - 2.0, a1, H_, z + 2.2)                                   # colour the porch side's, F12)
     for xa, xb in ((a0, gl[0][0]), (gl[0][1], gl[1][0]), (gl[1][1], a1)):
-        o.box("upvc", xa, g0, z - 2.0, xb, g1, z + 2.2)
+        o.box("door_out", xa, g0, z - 2.0, xb, g1, z + 2.2)
     for xa, xb in gl:
         o.box("glass", xa, g0, z - 0.3, xb, g1, z + 0.3)
     o.box("door_cream", a0, 0.5, z - 2.2, a1, g0, z - 2.0)                                # its hall face, cream
@@ -880,7 +881,7 @@ def _house_shell(o, span, gcol):
             o.box(gcol, xa, ya, pz, xb, yb, pz + s * 2)
             for k_ in range(1, 8):
                 yy = ya + (yb - ya) * k_ / 8; o.box("rib", xa, yy - 0.6, pz + s * 2, xb, yy + 0.6, pz + s * 2.6)
-        elif op["design"] in ("front", "porch"):                     # v65: the open porch as ours: dark inside, the door set back, a step
+        elif op["design"] == "porch":                     # v65: the open porch as ours: dark inside, the door set back, a step
             dr = D.LEVELS["drive"]
             o.box("porch_in", xa, ya, pz, xb, yb, pz + s * 0.6)
             o.box("upvc", xa + 14, ya, pz + s * 0.6, xb - 14, yb - 8, pz + s * 1.2)
@@ -2209,7 +2210,7 @@ def build():
 
 MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textures)
     "brick": ("#9a4b36", 0.92), "party": ("#9a4b36", 0.92), "soldier": ("#83402e", 0.9), "paint": ("#f1ede5", 0.85), "stairpaint": ("#2d5a46", 0.92),
-    "upvc": ("#f5f5f2", 0.35), "glass": ("#dfe9ee", 0.03), "artex": ("#f3f2ee", 0.97), "door_cream": ("#e8ddc2", 0.4), "mirror": ("#eef2f3", 0.12), "brass": ("#c9b58a", 0.3), "rib": ("#e2e2de", 0.5),
+    "upvc": ("#f5f5f2", 0.35), "frame_out": ("#f5f5f2", 0.35), "door_out": ("#f5f5f2", 0.35), "glass": ("#dfe9ee", 0.03), "artex": ("#f3f2ee", 0.97), "door_cream": ("#e8ddc2", 0.4), "mirror": ("#eef2f3", 0.12), "brass": ("#c9b58a", 0.3), "rib": ("#e2e2de", 0.5),
     "tile": ("#7b5a4b", 0.85), "ridge": ("#6d4c3f", 0.85), "hung": ("#6f4636", 0.85), "felt": ("#3d3b3a", 0.9),
     "slab": ("#cfc8bb", 0.95), "carpet": ("#cdbfa6", 1.0), "tile_f": ("#d9d4cb", 0.6), "vinyl": ("#cdd8da", 0.6), "concrete": ("#a8a49c", 0.95),
     "earth": ("#8a8173", 1.0), "brick_buff": ("#d6c7a3", 0.92), "chipboard": ("#c8ad80", 0.85), "porch_in": ("#a7a49c", 0.9), "bin": ("#2f3236", 0.6), "recycle": ("#2b5d9a", 0.6), "quarry": ("#b25a43", 0.7), "board": ("#c4b79f", 0.9), "fitting": ("#f6f6f3", 0.3),

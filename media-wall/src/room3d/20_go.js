@@ -12,7 +12,7 @@ const SUNCFG = { lux: 80, out: 0.5 };   // tuned on stills: the bars' shadows re
 /* v59: real surfaces for the built house, drawn in the page (the shared page can't load picture files into the 3D room), sized to the
    world so a brick is a brick on every wall: stretcher-bond brick in the photos' reds, concrete roof tiles in rows, the dormer's hung
    tiles, lawn, concrete, paving, road, carpet, the kitchen's floor tiles, boards. Each: the canvas and the metres it covers */
-const HTEX = {}, HI_T = new Set(["paint", "ceiling", "stone", "marble", "metro", "tile_w", "tile_f", "pine", "oak", "birch", "door_wood", "chalk"]);
+const HTEX = {}, HI_T = new Set(["tile_w", "tile_f", "door_wood", "chalk"]);
 /* V2.2, the client: "make sure ceilings are all white with ability to customise other than our living room picks so far": the house's
    ceilings (flat and artex) white, or the colour picked in View (the living room's ceiling keeps Look's) */
 function hceilApply() {
@@ -87,8 +87,8 @@ function finish(room, surface, hex) {   // R3D.finish: a room's walls (or one si
 function houseTex(k) {
   if (k in HTEX) return HTEX[k];
   if (k === "paint") return (HTEX[k] = null);   // V2.2, the client: "ensure walls are all smooth": flat emulsion, no plaster relief
-  /* v70 (BUILD_SPEC phase 3): CC0 photo-textures (Poly Haven, house/SOURCES.md) where we have them, inline so the shared page shows them
-     too (loading from elsewhere failed there in v50); the drawn ones below stay for everything else and as the fallback */
+  /* v70 (BUILD_SPEC phase 3): CC0 photo-textures (Poly Haven, house/SOURCES.md) and our own (build_textures.py) where we have them; the drawn
+     ones below for the rest (V2.37: the ones a photo replaced gone) */
   const pkey = { party: "brick", soldier: "brick", pillow: "duvet", mattress: "duvet", ceiling: "artex", knob: "pine_dark" }[k] || k, pm = PMETA[pkey];   // V1.21: the bedding's one cotton
   if (pm && pm.map) {   // V1.9: its mean colour and a flat relief until the photos land (loadPhotos), then the photo in the same texture
     const img = (f, srgb, fill) => { const t = canvasTex(4, 4, g => { g.fillStyle = fill; g.fillRect(0, 0, 4, 4); }, srgb);   // V1.11: as sharp at a slant as the card allows (was 4)
@@ -100,25 +100,6 @@ function houseTex(k) {
   let s = 7 + k.length * 101; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
   const noise = (g, w, h, n, a, cols) => { for (let i = 0; i < n; i++) { g.fillStyle = cols[i % cols.length]; g.globalAlpha = a * rnd(); g.fillRect(rnd() * w, rnd() * h, 1 + rnd() * 2, 1 + rnd() * 2); } g.globalAlpha = 1; };
   const T = {
-    brick: [0.90, 0.60, (g, w, h) => {                 // 4 bricks × 8 courses (21.5 × 6.5 + 1 cm joints)
-      g.fillStyle = "#c2b6a6"; g.fillRect(0, 0, w, h);
-      const cw = w / 4, ch = h / 8, jx = cw * 1 / 22.5, jy = ch * 1 / 7.5, reds = ["#b4583d", "#a94f37", "#bb6244", "#9e4a34", "#c06a4b", "#a65a3f", "#b0533a"];
-      for (let r = 0; r < 8; r++) for (let c = -1; c < 5; c++) {
-        const x = c * cw + (r % 2 ? cw / 2 : 0); g.fillStyle = reds[Math.floor(rnd() * reds.length)];
-        g.fillRect(x + jx / 2, r * ch + jy / 2, cw - jx, ch - jy);
-        g.fillStyle = "rgba(0,0,0,0.10)"; g.fillRect(x + jx / 2, r * ch + ch - jy * 1.5, cw - jx, jy);
-      }
-      noise(g, w, h, 9000, 0.25, ["#000", "#fff", "#5a2a1c"]); }],
-    tile: [1.20, 0.68, (g, w, h) => {                  // interlocking concrete tiles: 4 across, 2 rows of 34 gauge
-      const tw = w / 4, th = h / 2, b = ["#7c5e4f", "#755748", "#836453", "#6f5345"];
-      for (let r = 0; r < 2; r++) for (let c = -1; c < 5; c++) {
-        const x = c * tw + (r % 2 ? tw / 2 : 0), y = r * th, col = b[Math.floor(rnd() * b.length)];
-        const gr = g.createLinearGradient(0, y, 0, y + th); gr.addColorStop(0, col); gr.addColorStop(0.85, col); gr.addColorStop(1, "#3e2e26");
-        g.fillStyle = gr; g.fillRect(x, y, tw, th);
-        g.fillStyle = "rgba(255,240,225,0.10)"; g.fillRect(x + tw * 0.62, y, tw * 0.12, th * 0.9);
-        g.fillStyle = "rgba(0,0,0,0.25)"; g.fillRect(x, y, 2, th);
-      }
-      noise(g, w, h, 7000, 0.3, ["#000", "#d8c8b8", "#4b5a3a"]); }],
     hung: [0.90, 0.60, (g, w, h) => {                  // V1.47, the client: "a cladding type material maybe wood on the sides of that part of the roof"
       const n = 4, bh = h / n, b = ["#5b3b29", "#523422", "#634230", "#57392a"];   // (the back photo): dark-stained timber weatherboards, 15 high, lapped
       for (let r = 0; r < n; r++) { const y = r * bh; g.fillStyle = b[r % b.length]; g.fillRect(0, y, w, bh);
@@ -126,12 +107,6 @@ function houseTex(k) {
         const gr = g.createLinearGradient(0, y + bh - 10, 0, y + bh); gr.addColorStop(0, "rgba(0,0,0,0)"); gr.addColorStop(1, "rgba(0,0,0,0.45)"); g.fillStyle = gr; g.fillRect(0, y + bh - 10, w, 10);   // the shadow under the lap
         g.fillStyle = "rgba(255,230,200,0.10)"; g.fillRect(0, y, w, 2); }
       noise(g, w, h, 2500, 0.2, ["#000", "#8a6a50"]); }],
-    lawn: [1.0, 1.0, (g, w, h) => { g.fillStyle = "#5c6d40"; g.fillRect(0, 0, w, h); noise(g, w, h, 26000, 0.55, ["#46582f", "#6f8350", "#7d8f55", "#3c4a28"]); }],
-    concrete: [1.2, 1.2, (g, w, h) => { g.fillStyle = "#aaa59c"; g.fillRect(0, 0, w, h); noise(g, w, h, 20000, 0.35, ["#7d7a73", "#c8c4bb", "#918d85"]); }],
-    paving: [1.2, 1.2, (g, w, h) => { g.fillStyle = "#c3beb4"; g.fillRect(0, 0, w, h); noise(g, w, h, 12000, 0.3, ["#8f8b84", "#dad6cd"]);
-      g.fillStyle = "#8d887f"; for (let i = 0; i < 2; i++) { g.fillRect(i * w / 2, 0, 3, h); g.fillRect(0, i * h / 2, w, 3); } }],
-    road: [1.5, 1.5, (g, w, h) => { g.fillStyle = "#58585b"; g.fillRect(0, 0, w, h); noise(g, w, h, 30000, 0.45, ["#2f2f31", "#7c7c80", "#46464a"]); }],
-    carpet: [0.5, 0.5, (g, w, h) => { g.fillStyle = "#cbbda4"; g.fillRect(0, 0, w, h); noise(g, w, h, 20000, 0.25, ["#a99a80", "#e0d3bb"]); }],
     tile_f: [0.6, 0.6, (g, w, h) => { g.fillStyle = "#dcd7ce"; g.fillRect(0, 0, w, h); noise(g, w, h, 5000, 0.2, ["#b8b2a6", "#fff"]);
       g.fillStyle = "#a9a296"; for (let i = 0; i < 2; i++) { g.fillRect(i * w / 2, 0, 3, h); g.fillRect(0, i * h / 2, w, 3); } }],
     board: [1.2, 0.6, (g, w, h) => { const pl = ["#c4b296", "#bba98b", "#cbb99c", "#b6a283"];
@@ -140,22 +115,6 @@ function houseTex(k) {
     chipboard: [0.6, 0.6, (g, w, h) => { g.fillStyle = "#c8ad80"; g.fillRect(0, 0, w, h);   // V1.26: the garage's chipboard box: pressed flakes
       noise(g, w, h, 9000, 0.55, ["#a88a5a", "#ddc596", "#8d7046", "#e8d4ab", "#b49461"]); }],
   };
-  // v60: the kitchen (the client's photos): black bevelled metro tiles, the black speckled worktop, the grey wood-effect floor, chalkboard
-  T.metro = [0.40, 0.40, (g, w, h) => {              // 20 × 10 tiles, 2 across × 4 down, light grout
-    g.fillStyle = "#77797b"; g.fillRect(0, 0, w, h);
-    const tw = w / 2, th = h / 4;
-    for (let r = 0; r < 4; r++) for (let c = -1; c < 3; c++) {
-      const x = c * tw + (r % 2 ? tw / 2 : 0), y = r * th;
-      g.fillStyle = "#131416"; g.fillRect(x + 3, y + 3, tw - 6, th - 6);
-      g.fillStyle = "rgba(255,255,255,0.10)"; g.fillRect(x + 3, y + 3, tw - 6, 7); g.fillRect(x + 3, y + 3, 7, th - 6);
-      g.fillStyle = "rgba(0,0,0,0.5)"; g.fillRect(x + 3, y + th - 10, tw - 6, 7);
-    } }];
-  T.worktop = [0.6, 0.6, (g, w, h) => { g.fillStyle = "#24262a"; g.fillRect(0, 0, w, h); noise(g, w, h, 16000, 0.6, ["#4a4d52", "#6c7076", "#111", "#8a8d92"]); }];
-  T.laminate = [1.2, 0.8, (g, w, h) => {             // grey oak planks 120 × 20
-    const pl = ["#aaa49b", "#9f998f", "#b3ada4", "#a49d93"];
-    for (let i = 0; i < 4; i++) { g.fillStyle = pl[i]; g.fillRect(0, i * h / 4, w, h / 4);
-      for (let k = 0; k < 40; k++) { g.strokeStyle = "rgba(90,82,72," + (0.08 + rnd() * 0.12) + ")"; g.lineWidth = 1 + rnd() * 2; const yy = i * h / 4 + rnd() * h / 4; g.beginPath(); g.moveTo(0, yy); g.bezierCurveTo(w * 0.3, yy + rnd() * 8 - 4, w * 0.6, yy + rnd() * 8 - 4, w, yy + rnd() * 6 - 3); g.stroke(); }
-      g.fillStyle = "rgba(0,0,0,0.3)"; g.fillRect(0, i * h / 4, w, 2); g.fillRect((i % 2 ? 0.5 : 0.1) * w, i * h / 4, 2, h / 4); } }];
   T.chalk = [0.8, 1.0, (g, w, h) => {                // chalkboard paint, chalk doodles (no words)
     g.fillStyle = "#1f2120"; g.fillRect(0, 0, w, h); noise(g, w, h, 8000, 0.15, ["#fff", "#000"]);
     const cs = ["#ff6fb5", "#7fc8ff", "#ffa04d", "#f4f4f4", "#c58bff", "#ff5a5a"];
@@ -164,28 +123,6 @@ function houseTex(k) {
       if (i % 3 === 0) g.arc(x, y, s / 2, 0, Math.PI * 2); else { g.moveTo(x, y); g.bezierCurveTo(x + s, y - s * rnd(), x - s * rnd(), y + s, x + s * rnd(), y + s * 1.2); }
       g.stroke(); }
     g.globalAlpha = 1; }];
-  T.oak = [1.2, 0.7, (g, w, h) => {                  // v61: the office's oak desk, grain along its length
-    g.fillStyle = "#b9864f"; g.fillRect(0, 0, w, h);
-    for (let k = 0; k < 90; k++) { g.strokeStyle = "rgba(110,70,35," + (0.08 + rnd() * 0.18) + ")"; g.lineWidth = 1 + rnd() * 2.5; const yy = rnd() * h; g.beginPath(); g.moveTo(0, yy);
-      g.bezierCurveTo(w * 0.33, yy + rnd() * 14 - 7, w * 0.66, yy + rnd() * 14 - 7, w, yy + rnd() * 10 - 5); g.stroke(); }
-    noise(g, w, h, 5000, 0.15, ["#7a5230", "#e0b07a"]); }];
-  T.carpet_grey = [0.5, 0.5, (g, w, h) => { g.fillStyle = "#6e6e72"; g.fillRect(0, 0, w, h); noise(g, w, h, 22000, 0.3, ["#4f4f53", "#8c8c90"]); }];
-  T.check = [0.6, 0.6, (g, w, h) => {                // v62: bedroom 2's grey check duvet
-    g.fillStyle = "#8a8b92"; g.fillRect(0, 0, w, h);
-    for (const [c, a, s, o] of [["#4d4e55", 0.55, 64, 0], ["#e9e7e1", 0.5, 64, 22], ["#5f6068", 0.35, 128, 40]])
-      for (let k = o; k < w; k += s) { g.globalAlpha = a; g.fillStyle = c; g.fillRect(k, 0, s / 6, h); g.fillRect(0, k, w, s / 6); }
-    g.globalAlpha = 1; }];
-  T.marble = [1.2, 1.2, (g, w, h) => {              // v65: the bathroom's floor, black marble-effect 60 × 60, white veins
-    g.fillStyle = "#121214"; g.fillRect(0, 0, w, h); noise(g, w, h, 9000, 0.25, ["#2a2a2e", "#000"]);
-    for (let i = 0; i < 9; i++) { g.strokeStyle = "rgba(235,235,240," + (0.25 + rnd() * 0.45) + ")"; g.lineWidth = 0.8 + rnd() * 1.8; g.beginPath();
-      let x = rnd() * w, y = rnd() * h; g.moveTo(x, y);
-      for (let s = 0; s < 6; s++) { x += (rnd() - 0.3) * 70; y += (rnd() - 0.5) * 70; g.lineTo(x, y); } g.stroke(); }
-    g.fillStyle = "#4a4a4f"; for (let i = 0; i < 2; i++) { g.fillRect(i * w / 2, 0, 2, h); g.fillRect(0, i * h / 2, w, 2); } }];
-  T.stone = [0.6, 0.6, (g, w, h) => {               // v65: the bathroom's walls, stone-effect grey 60 × 30, laid in courses
-    g.fillStyle = "#cbc6bd"; g.fillRect(0, 0, w, h);
-    for (let k = 0; k < 70; k++) { g.strokeStyle = "rgba(150,142,130," + (0.12 + rnd() * 0.25) + ")"; g.lineWidth = 1 + rnd() * 2; const yy = rnd() * h; g.beginPath(); g.moveTo(0, yy);
-      g.bezierCurveTo(w * 0.33, yy + rnd() * 6 - 3, w * 0.66, yy + rnd() * 6 - 3, w, yy + rnd() * 4 - 2); g.stroke(); }
-    g.fillStyle = "#8f8a82"; g.fillRect(0, 0, w, 3); g.fillRect(0, h / 2, w, 3); g.fillRect(0, 0, 3, h / 2); g.fillRect(w / 2, h / 2, 3, h / 2); }];
   /* v69 (B2), the client: "more realistic like our living room": the surfaces still flat, drawn the same way (no downloads, so the
      shared page shows them too), with a fine bump where the real thing has texture */
   const grain = (g, w, h, base, line, n, wave) => { g.fillStyle = base; g.fillRect(0, 0, w, h);
@@ -201,26 +138,18 @@ function houseTex(k) {
       g.fillStyle = gr; g.fillRect(k * bw, 0, bw, h); }
     for (let k = 0; k < 160; k++) { g.fillStyle = `rgba(${rnd() < 0.5 ? "70,55,40" : "200,180,150"},${0.06 + rnd() * 0.1})`; g.fillRect(rnd() * w, rnd() * h, 1 + rnd() * 1.5, 30 + rnd() * 140); }
     for (const yy of [0.12, 0.88]) { g.fillStyle = "rgba(0,0,0,0.12)"; g.fillRect(0, h * yy, w, 6); } }];
-  T.ceiling = [0.6, 0.6, (g, w, h) => { g.fillStyle = "#f3f2ee"; g.fillRect(0, 0, w, h); noise(g, w, h, 26000, 0.14, ["#d6d3cb", "#ffffff", "#e6e3dc"]); }];   // textured (the photos' artex)
-  T.pine = [0.9, 0.5, (g, w, h) => { grain(g, w, h, "#c99a55", "rgba(140,90,40,", 80, 18);
-    for (let i = 0; i < 3; i++) { const x = rnd() * w, y = rnd() * h; const r = g.createRadialGradient(x, y, 1, x, y, 10 + rnd() * 8); r.addColorStop(0, "rgba(90,55,25,0.8)"); r.addColorStop(1, "rgba(90,55,25,0)"); g.fillStyle = r; g.fillRect(x - 20, y - 20, 40, 40); } }];
-  T.birch = [1.0, 0.6, (g, w, h) => grain(g, w, h, "#dcc8a2", "rgba(160,130,90,", 60, 10)];
   T.door_wood = [0.8, 1.0, (g, w, h) => grain(g, w, h, "#b0713f", "rgba(110,60,25,", 70, 12)];
   T.door_white = [0.8, 0.8, (g, w, h) => { g.fillStyle = "#efece5"; g.fillRect(0, 0, w, h); noise(g, w, h, 6000, 0.05, ["#d8d4cb"]); }];
   T.wardrobe = [0.8, 0.8, (g, w, h) => { g.fillStyle = "#f2f1ec"; g.fillRect(0, 0, w, h); noise(g, w, h, 5000, 0.04, ["#dcdad3"]); }];
   T.rug = [0.25, 0.25, (g, w, h) => weave(g, w, h, "#5b5e66", ["#4b4e56", "#6a6d75", "#545760"], 8, 0.5)];
-  T.duvet = [0.3, 0.3, (g, w, h) => weave(g, w, h, "#e9e6df", ["#dcd8cf", "#f3f1ec"], 6, 0.35)];
-  T.lycksele = [0.3, 0.3, (g, w, h) => weave(g, w, h, "#5b6b78", ["#4e5d69", "#687886"], 6, 0.45)];
   T.storebox = [0.3, 0.3, (g, w, h) => weave(g, w, h, "#c9c1b2", ["#b9b1a2", "#d6cfc1"], 8, 0.4)];
   T.tapestry = [0.4, 0.4, (g, w, h) => weave(g, w, h, "#d9892a", ["#c97a20", "#e39a3c", "#d08327"], 6, 0.35)];
   T.tile_w = [0.3, 0.3, (g, w, h) => { g.fillStyle = "#c9c7c0"; g.fillRect(0, 0, w, h);   // the WC's 15 × 15 white tiles, grey grout
     for (let r = 0; r < 2; r++) for (let c = 0; c < 2; c++) { g.fillStyle = "#f2f2ef"; g.fillRect(c * w / 2 + 3, r * h / 2 + 3, w / 2 - 6, h / 2 - 6);
       g.fillStyle = "rgba(255,255,255,0.35)"; g.fillRect(c * w / 2 + 3, r * h / 2 + 3, w / 2 - 6, 6); } }];
-  T.party = T.brick; T.soldier = T.brick;
   if (!T[k]) return (HTEX[k] = null);
   const [sw, sh, draw] = T[k], px = !SMALL && HI_T.has(k) ? 1024 : 512, tex = canvasTex(px, px, (g, w, h) => { g.scale(w / 512, h / 512); draw(g, 512, 512); });   // v72 (B3): the surfaces seen close drawn at 1k on a computer (the same drawing, crisper), 512 on a phone
-  const BUMP = { paint: 0.4, ceiling: 1.2, pine: 0.4, birch: 0.3, door_wood: 0.4, rug: 1.5, duvet: 0.8, lycksele: 1.0, storebox: 1.0, tapestry: 0.9,
-    tile_w: 0.8, carpet: 1.4, carpet_grey: 1.4, brick: 1.2, hung: 0.6, tile: 1.0, stone: 0.5, metro: 0.6, laminate: 0.4, oak: 0.4, marble: 0.3 };   // v69
+  const BUMP = { door_wood: 0.4, rug: 1.5, storebox: 1.0, tapestry: 0.9, tile_w: 0.8, hung: 0.6 };   // v69
   return (HTEX[k] = { map: tex, size: [sw, sh], bump: BUMP[k] || 0 });
 }
 /* world-sized UVs (metres over the texture's size), by the face's direction: floors and roofs from above, walls from the side; roof
@@ -735,6 +664,7 @@ function buildSun() {
   const c = sun.shadow.camera; c.left = -5.5; c.right = 5.5; c.top = 5.5; c.bottom = -5.5; c.near = 0.5; c.far = 16; c.updateProjectionMatrix();   // the whole room: outside it the sun shone through walls
   scene.add(sun, sun.target);
   if (R.HOUSE3) for (let k = 0; k < 2; k++) { const l = new THREE.PointLight("#ffcf98", 0, 7, 2); l.visible = false; l.userData.houseLight = true; scene.add(l); ROOMLIGHTS.push(l);   // v69 (B3): at the start, so the set never changes
+    const w = new THREE.RectAreaLight("#eef0f2", 0, 1, 1); w.visible = false; w.userData.houseLight = w.userData.win = true; scene.add(w); WINLIGHTS.push(w);   // V2.39: a window's daylight
     /* V2.17 (REAL_PLAN R1, the client: "rendering items in hd"): the room's own light casts its shadows in HD (the bed under its
        light, the walls keeping it in its room); drawn only when the room changes (autoUpdate off), from the start (no shader rebuilds) */
     if (k === 0) { l.castShadow = true; const ms = BIG_GPU ? 1024 : 512; l.shadow.mapSize.set(ms, ms); l.shadow.bias = -0.002; l.shadow.normalBias = 0.03; l.shadow.radius = 4;

@@ -150,7 +150,7 @@ function applyLight() {
   skyFill.intensity = outside ? (day ? 2.6 : 0.5) : 0;
   const inK = !!ROOMV();                                                                // v60: in a room of the house, light off its pale floor and walls,
   skyFill.groundColor.set(inK ? "#d9d3c9" : "#5d5446");                                 // and the living room's own lights stay upstairs
-  if (inK) { scene.traverse(l => { if (l.isLight && l !== skyFill) l.intensity = 0; }); hemi.intensity = day ? 0.5 : 0.2; }   // every light of the living room's, the spots too
+  if (inK) { scene.traverse(l => { if (l.isLight && l !== skyFill) l.intensity = 0; }); hemi.intensity = day ? (hd && WINLIGHTS.length ? 0.38 : 0.5) : 0.2; }   // V2.39: by day in HD the window lights (less even fill)   // every light of the living room's, the spots too
   /* V2.21 (REAL_PLAN R1): by evening in a room of the house its own ceiling light lights it: the even fill and the studio's reflections
      down (they lit every corner alike), the light up (09_house_views.js placeRoomLights): a warm pool, the corners falling off */
   if (typeof houseEnvK === "function") houseEnvK(inK && !day ? 0.35 : 1);

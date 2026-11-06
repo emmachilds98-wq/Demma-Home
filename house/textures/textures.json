@@ -142,5 +142,23 @@
   "size": 1.0,
   "url": "https://polyhaven.com/a/red_brick_03",
   "licence": "CC0"
+ },
+ "marble": {
+  "asset": "made by build_textures.tiles",
+  "size": 1.2,
+  "url": "",
+  "licence": "ours"
+ },
+ "stone": {
+  "asset": "made by build_textures.tiles",
+  "size": 1.2,
+  "url": "",
+  "licence": "ours"
+ },
+ "metro": {
+  "asset": "made by build_textures.tiles",
+  "size": 0.4,
+  "url": "",
+  "licence": "ours"
  }
 }

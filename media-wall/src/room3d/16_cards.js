@@ -4,12 +4,12 @@
    data-chairs, data-drawers, data-tog...), so they work, and stay in step with the Tools panel, exactly as its buttons do. */
 const act = qs("#r3d-act");
 let actId = null, actXY = null, tapDown = null;
-const clippedAt = p => CLIP.every(pl => pl.distanceToPoint(p) < 0);           // the cutaway hides what's on the far side of both planes
+const clippedAt = h => [].concat(h.object.material).some(m => m && m.clippingPlanes === CLIP) && CLIP.every(pl => pl.distanceToPoint(h.point) < 0);   // the cutaway hides what's on the far side of both planes (V2.38: only what it cuts: from out front, the front door was let through to the hall behind)
 const under = (o, g) => { if (!g) return false; for (; o; o = o.parent) if (o === g) return true; return false; };
 function pickItem(e) {
   ray.setFromCamera(ndc(e), camera);
   const cutAway = q => RPLANES.some(pl => pl.distanceToPoint(q) < 0);             // v71: not what a room's view has cut away
-  const hit = ray.intersectObjects(scene.children, true).find(h => h.object.isMesh && shown(h.object) && !clippedAt(h.point) && !(selBox && h.object === selBox) && !cutAway(h.point));
+  const hit = ray.intersectObjects(scene.children, true).find(h => h.object.isMesh && shown(h.object) && !clippedAt(h) && !(selBox && h.object === selBox) && !cutAway(h.point));
   if (!hit) return null;
   const o = hit.object, p = hit.point;
   const near = (obj, r) => !!obj && obj.getWorldPosition(new THREE.Vector3()).distanceTo(p) < r * M;
@@ -55,7 +55,8 @@ function actItems(id) {     // [title, how it is now, buttons]
       btn(up ? "Lower the bed" : "Lift the bed", { hbed: up ? "down" : "up" }), ...(ROOMV() && RMODE !== "above" ? [btn("See it from above", { rmode: "above" })] : [])]]; }
   if (id.startsWith("fin:")) return finCard(id);   // V2.6: a wall's or a ceiling's colours (23_finish.js)
   if (id.startsWith("hitem:")) { const k = id.slice(6), it = HIT(k); if (!it) return null;   // V1.50: a piece in the house, its size
-    return [it.n, pieceLine(k), [btn(it.op ? "Change its size" : "Move or resize", { actopen: "hsize:" + k }), ...(pieceDelta(k).some(Boolean) ? [btn("As planned", { hreset: k })] : []), ...(it.op ? [] : [btn("Take it out", { hremove: k })])], null,
+    return [it.n, pieceLine(k), [btn(it.op ? "Change its size" : "Move or resize", { actopen: "hsize:" + k }), ...(pieceDelta(k).some(Boolean) ? [btn("As planned", { hreset: k })] : []), ...(it.op ? [] : [btn("Take it out", { hremove: k })]),
+      ...(it.k === "window" || /^(back|garage)_door$/.test(k) ? [btn("Colour outside", { actopen: "fin:outside:9" })] : [])], null,   // V2.38 (F12): its frame's outside
       it.k === "light" && it.r ? `<div class="r3d-fin"><span class="r3d-finlab">The bulbs</span>${finBulbTray(it.r)}${finFitTray(it.r)}</div>` : null]; }   // V2.9: a light's bulbs; V2.15: its fitting
   if (id.startsWith("hsize:")) { const k = id.slice(6), it = HIT(k); if (!it) return null; const c = pieceNow(k), door = it.k === "door";
     return [it.n, pieceLine(k), [btn("Done", { actopen: "hitem:" + k }), ...(canTurn(k) ? [btn("Turn", { hturn: k })] : []), btn("As planned", { hreset: k })],
@@ -64,8 +65,8 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id.startsWith("hdoor:")) { const k = id.slice(6), P = HPARTS[k]; if (!P) return null; const op = doorOpen(P);   // V1.26: a door's card
     const any = Object.entries(HPARTS).some(([q, Q]) => q.startsWith("door.") && doorOpen(Q));
     return [P.label || "The door", op ? (Math.abs(P.angle) < 89 ? "Open as far as it goes" : "Open") : "Shut", [
-      btn(op ? "Shut it" : "Open it", { hdoor: k }), btn(any ? "Shut every door" : "Open every door", { hdoors: any ? "shut" : "open" }),
-      ...(DS() && HIT(k.slice(5)) ? [btn("Change its size", { actopen: "hsize:" + k.slice(5) })] : [])]]; }
+      btn(op ? "Shut it" : "Open it", { hdoor: k }), ...(k === "door.hall_porch" ? [btn("Colour outside", { actopen: "fin:outside:10" })] : []),   // V2.38 (F12)
+      btn(any ? "Shut every door" : "Open every door", { hdoors: any ? "shut" : "open" }), ...(DS() && HIT(k.slice(5)) ? [btn("Change its size", { actopen: "hsize:" + k.slice(5) })] : [])]]; }
   if (id === "nowplay") return ["Now playing, on the ledge", `${NOWP[S.nowp % NOWP.length].name}`, [   // v39: which LP faces out
       btn("‹", { nowp: "-1" }, false, "q", "The one before"), btn("›", { nowp: "1" }, false, "q", "The next one"),
       btn("A photo of yours", { nowpic: "1" }), btn("Look at it", { view: "breast" })]];
@@ -152,7 +153,7 @@ function showAim(k) {
   clearAim(); const id = k.split(":")[0], l = (lights[id] || []).find(x => x.userData.hk === k); if (!l || !l.isSpotLight) return;
   scene.updateMatrixWorld(); const p = l.getWorldPosition(new THREE.Vector3()), dir = l.target.getWorldPosition(new THREE.Vector3()).sub(p).normalize();
   const near0 = ray.near; ray.set(p, dir); ray.near = 0.2;
-  const hit = ray.intersectObjects(scene.children, true).find(h => h.object.isMesh && shown(h.object) && h.object.material !== measMat && !clippedAt(h.point)); ray.near = near0;
+  const hit = ray.intersectObjects(scene.children, true).find(h => h.object.isMesh && shown(h.object) && h.object.material !== measMat && !clippedAt(h)); ray.near = near0;
   const end = hit ? hit.point : p.clone().addScaledVector(dir, p.y / Math.max(0.05, -dir.y)), len = end.distanceTo(p);
   const g = AIMG.g = new THREE.Group(); g.renderOrder = 998;
   const line = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, len, 6), measMat); line.position.copy(p).add(end).multiplyScalar(0.5);

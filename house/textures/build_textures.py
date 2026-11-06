@@ -186,5 +186,65 @@ def rough():
         print("rough", key, aid)
 
 
+# V2.37 (REAL_PLAN R3): the client's tiles drawn at their real sizes (house/HOUSE.md): the bathroom's black marble-effect 60 × 60 floor and
+# grey stone-effect 60 × 30 walls, the kitchen's black bevelled metro 20 × 10 in light grout (the photos); each with its relief (the grout
+# sunk, the metro's bevel) and its shine (glazed faces, matt grout). key: (texture's size m, px, tile w × h cm, face, grout, grout mm,
+# bevel mm, the face's look, face and grout roughness)
+TILED = {"marble": (1.2, 1024, (60, 60), "#141416", "#38383c", 2, 1, "veins", (0.1, 0.8)),
+         "stone": (1.2, 1024, (60, 30), "#cbc6bd", "#9d978c", 2.5, 1, "stone", (0.4, 0.85)),
+         "metro": (0.4, 512, (20, 10), "#131416", "#c9c5bd", 2, 5, "", (0.06, 0.85))}
+
+
+def fbm(px, seed, base=4, octaves=5):
+    """soft noise 0..1 that wraps (each octave's grid tiled 3 × 3, smoothed, the middle kept)"""
+    import numpy as np
+    rng, out, amp = np.random.default_rng(seed), np.zeros((px, px), np.float32), 1.0
+    for o in range(octaves):
+        g = np.tile(rng.random((base << o,) * 2).astype(np.float32), (3, 3))
+        out += amp * np.asarray(Image.fromarray(g).resize((px * 3,) * 2, Image.BICUBIC))[px:2 * px, px:2 * px]; amp *= 0.5
+    return (out - out.min()) / (np.ptp(out) or 1)
+
+
+def tiles():
+    """python3 house/textures/build_textures.py --tiles   writes <key>_map, _nor and _rough.jpg for TILED (no download: ours)"""
+    import numpy as np
+    meta = json.loads((HERE / "textures.json").read_text())
+    for key, (size, px, (tw, th), face, grout, gmm, bmm, look, (rf, rg)) in TILED.items():
+        cm = size * 100 / px                                                   # cm a pixel
+        y, x = np.mgrid[0:px, 0:px].astype(np.float32) * cm
+        row = np.floor(y / th); off = (row % 2) * tw / 2                       # every other course half a tile along (not the 60 × 60s)
+        if tw == th: off = 0 * off
+        col = np.floor((x - off) / tw) % round(size * 100 / tw)
+        lx, ly = (x - off) % tw, y % th
+        d = np.minimum(np.minimum(lx, tw - lx), np.minimum(ly, th - ly))       # to the tile's nearest edge
+        g = gmm / 20; inG = d < g
+        h = np.where(inG, 0.0, np.clip((d - g) / max(bmm / 10, cm), 0, 1))
+        h = np.where(inG, 0, 1 - (1 - h) ** 2) * (0.15 + bmm / 10 * 0.4)      # cm: the grout 1.5 mm down, the bevel's rise
+        ti = (row * 7 + col * 3) % 11                                          # each tile its own
+        c0 = np.array([int(face[i:i + 2], 16) for i in (1, 3, 5)], np.float32)
+        if look == "veins":                                                    # white veins across black on the slant, hairlines off them
+            n, n2, mk = fbm(px, 11, 3, 5), fbm(px, 12, 5, 5), fbm(px, 13, 4, 4); ph = ti * 1.7
+            v1 = 1 - np.abs(np.sin((x * 0.6 + y * 0.8) / 11 + n * 3.2 + ph))
+            v2 = 1 - np.abs(np.sin((x * 0.9 - y * 0.45) / 5 + n2 * 4 + ph * 2))
+            vein = v1 ** 16 * (0.45 + 0.55 * mk) + v2 ** 40 * 0.55 * np.clip(mk * 2 - 0.7, 0, 1) + v1 ** 3 * 0.08
+            col_ = c0[None, None] * (0.92 + n2[..., None] * 0.25) + np.clip(vein, 0, 1)[..., None] * (np.array([228, 228, 232]) - c0)
+        elif look == "stone":                                                  # soft mottle and faint beds, a shade apart tile to tile
+            m = fbm(px, 21, 6, 5); s = fbm(px, 22, 2, 3)
+            k = 1 + (m - 0.5) * 0.16 + (s - 0.5) * 0.05 + ((ti % 5) - 2) * 0.012
+            col_ = c0[None, None] * k[..., None]; h = h + np.where(inG, 0, (m - 0.5) * 0.02)
+        else:
+            col_ = c0[None, None] * (0.97 + 0.06 * fbm(px, 31, 4, 3))[..., None]
+        gc = np.array([int(grout[i:i + 2], 16) for i in (1, 3, 5)], np.float32)
+        col_ = np.where(inG[..., None], gc * (0.94 + 0.08 * fbm(px, 41, 16, 3))[..., None], col_)
+        gy, gx = np.gradient(h, cm)                                            # cm per cm, rows down the picture
+        nrm = np.dstack([-gx, gy, np.ones_like(h)]); nrm /= np.linalg.norm(nrm, axis=-1, keepdims=True)
+        Image.fromarray(np.clip(col_, 0, 255).astype("uint8")).save(HERE / f"{key}_map.jpg", quality=84, optimize=True)
+        Image.fromarray(((nrm + 1) * 127.5).clip(0, 255).astype("uint8")).save(HERE / f"{key}_nor.jpg", quality=88, optimize=True)
+        Image.fromarray((np.where(inG, rg, rf) * 255).astype("uint8")).resize((px // 2,) * 2, Image.BOX).save(HERE / f"{key}_rough.jpg", quality=88)
+        meta[key] = dict(asset="made by build_textures.tiles", size=size, url="", licence="ours")
+        print("tiles", key)
+    (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
+
+
 if __name__ == "__main__":
-    buff() if sys.argv[1:] == ["--buff"] else rough() if sys.argv[1:] == ["--rough"] else main(sys.argv[1])
+    {"--buff": buff, "--rough": rough, "--tiles": tiles}.get((sys.argv[1:] or [""])[0], lambda: main(sys.argv[1]))()
