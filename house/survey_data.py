@@ -248,6 +248,13 @@ HALL = dict(door=(410.0, 465.0), door_leaf=False, mirror=dict(z=(354.4, 390.4), 
 LANDING = dict(rail_x=(376.0, 381.0), rail_h=92.0, hatch=dict(x=(300.0, 355.0), z=(115.0, 185.0)), fanlight=(205.0, 228.0),   # v73: the hatch overhead near the office end (both landing photos)
                src="client's photos + standard sizes (E: balustrade 900 high, Approved Document K)")
 PENDANTS = {"hall": (345.0, 355.0), "landing": (345.0, 120.0), "bed3": (375.0, 372.0), "wc": (420.0, -215.0)}
+# V2.48 (REAL_PLAN R1, N8): each room lit by the lights it has. The kitchen's are its two LED battens on the ceiling (the photo; it has no
+# pendant), x along the window run, z each batten's middle. The lamps the client has, on by evening: the office's purple lamp at the desk's
+# window end (the photos of 25 Oct: its glow left of the screens; E: a 12 cm globe on a 9 cm foot) and the bathroom's light bar over the
+# mirror (27 Oct). x, z where it sits, y its light's height up from the floor, col its colour, k how bright, reach (cm) how far it lights.
+BATTENS = dict(x=(100.0, 250.0), z=(-200.0, -90.0))
+LAMPS = {"bed3": dict(name="The purple lamp", x=430.0, z=487.0, y=82.0, col="#9a5cff", k=4.0, reach=280.0, src="client's photo (25 Oct) + E"),
+         "bathroom": dict(name="The mirror's light bar", x=458.0, z=-128.5, y=162.0, col="#f3f5ff", k=1.6, reach=300.0, src="client's photo (27 Oct)")}
 
 # v64, the client: "Take out everything in bedroom 2 other than the drawers, desk and bed, plus red shelving. Black drawers go along the
 # wall sticking out and drawers pull towards the bed": BED2_KEEP; the chest's side on the side wall, standing out into the room against

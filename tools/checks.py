@@ -69,9 +69,9 @@ def sizes():
     if not (SITE / "index.html").exists():
         return True, "no site built"
     mb = lambda f: f.stat().st_size / 1e6
-    ph = next(SITE.glob("photos.*.json"), None); tj = next(SITE.glob("three.*.js"), None)
+    tex = list(SITE.glob("tex/*.jpg")); tj = next(SITE.glob("three.*.js"), None)   # V2.45: the photos, a file each
     hj = json.loads((SITE / "data/house.json").read_text()) if (SITE / "data/house.json").exists() else {}
-    msg = (f"page {mb(SITE / 'index.html'):.1f} MB, photos {mb(ph) if ph else 0:.1f} MB, three.js " + (f"{mb(tj):.2f} MB own file" if tj else "from the CDN")
+    msg = (f"page {mb(SITE / 'index.html'):.1f} MB, photos {sum(map(mb, tex)):.1f} MB in {len(tex)} files, three.js " + (f"{mb(tj):.2f} MB own file" if tj else "from the CDN")
            + f", {len(hj.get('measure', []))} sizes to measure")
     bad = parts_parse()
     return not bad, msg + f", the 3D's {len(list((SRC / 'room3d').glob('*.js')))} parts" + (f": these don't parse alone: {bad}" if bad else " each parse alone")

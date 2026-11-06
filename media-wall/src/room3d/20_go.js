@@ -92,7 +92,7 @@ function houseTex(k) {
   const pkey = { party: "brick", soldier: "brick", pillow: "duvet", mattress: "duvet", ceiling: "artex", knob: "pine_dark" }[k] || k, pm = PMETA[pkey];   // V1.21: the bedding's one cotton
   if (pm && pm.map) {   // V1.9: its mean colour and a flat relief until the photos land (loadPhotos), then the photo in the same texture
     const img = (f, srgb, fill) => { const t = canvasTex(4, 4, g => { g.fillStyle = fill; g.fillRect(0, 0, 4, 4); }, srgb);   // V1.11: as sharp at a slant as the card allows (was 4)
-      whenPhoto(pkey, f, src => { decodeImg(src).then(im => { texSet(t, im); reshadow(); dirty(); }); }); return t; };
+      whenPhoto(pkey, f, src => { decodeImg(src).then(im => { texSet(t, im); reshadow(); dirty(); }); }, t); return t; };
     const rg = pm.rough ? Math.round(pm.rough * 255) : 0, grey = `rgb(${rg},${rg},${rg})`;   // V1.30 (U5): its roughness map, if it has one
     return (HTEX[k] = { map: img("map", true, pm.avg || "#888888"), normal: pm.nor ? img("nor", false, "#8080ff") : null, size: [pm.size, pm.size], bump: 0,
       rough: pm.rough && !LOWD ? img("rough", false, grey) : null, roughMean: pm.rough || 0 });
@@ -450,7 +450,7 @@ function buildHouse() {
       m.clippingPlanes = []; m.userData.hk = "stairpaint"; return m; };   // V2.8, the client: "first floor landing west wall should match the living room west wall and act as one wall": never the landing's palette
     const m3 = {}, mat3 = k => m3[k] || (m3[k] = k === "contact" ? contactMat() : k === "stairpaint" ? stairMat() : (() => { const [c, r] = H3.mats[k] || ["#cccccc", 0.9], gl3 = k === "glass" || k === "glass_frost", T = houseTex(k);
       const m = reg(new THREE.MeshStandardMaterial({ color: T ? "#ffffff" : c, map: T ? T.map : null, bumpMap: T && T.bump ? T.map : null, bumpScale: T ? T.bump : 1, normalMap: T && T.normal || null, roughness: T && T.rough ? Math.min(1, r / T.roughMean) : r, roughnessMap: T && T.rough || null, metalness: k === "brass" || k === "chrome" || k === "steel" ? 0.8 : k === "mirror" ? 0.25 : 0, transparent: gl3, opacity: gl3 ? (k === "glass" ? 0.14 : 0.86) : 1,   /* V1.13: clear (0.3 tinted the outside blue-green); V2.40: frosted, the light through */ depthWrite: !gl3, side: HOUSE_SIDE,
-        emissive: { led: "#ffffff", pc_glow: "#cfe0ff", screen: "#1b2433" }[k] || "#000000", emissiveIntensity: { led: 1.5, pc_glow: 0.9, screen: 0.6 }[k] || 0 }));   // v60: the kitchen's LED battens glow; v61: the PC's glass, the screens
+        emissive: { led: "#ffffff", pc_glow: "#cfe0ff", screen: "#1b2433", lamp_purple: "#8a45ff" }[k] || "#000000", emissiveIntensity: { led: 1.5, pc_glow: 0.9, screen: 0.6, lamp_purple: 2.2 }[k] || 0 }));   // V2.48: the office's purple lamp   // v60: the kitchen's LED battens glow; v61: the PC's glass, the screens
       m.envMapIntensity = 0.15;   // v60: the reflections are the living room's (its LEDs tinted the kitchen's white walls pink)
       const NS = { paint: 0.3, ceiling: 0.3, brick: 0.7, party: 0.7, soldier: 0.7 }[k];   // V1.47, the client: "walls ... have a rugged non flat effect ... should be smooth or have less of that look": the relief turned down
       if (m.normalMap && NS) m.normalScale.set(NS, NS);

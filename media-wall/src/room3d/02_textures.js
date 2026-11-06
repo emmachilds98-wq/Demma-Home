@@ -183,10 +183,16 @@ function loadPhotos() {
   return (photosIn = (txt ? Promise.resolve(txt) : src ? fetch(src).then(r => r.ok ? r.text() : "{}") : Promise.resolve("{}"))
     .then(t => JSON.parse(t)).catch(() => ({})).then(P => {
       for (const t of Object.values(P)) for (const f of ["map", "nor", "rough"]) if (typeof t[f] === "string" && t[f][0] === "@") { const [k, g] = t[f].slice(1).split("."); t[f] = P[k][g]; }   // a shared picture, sent once
-      Object.assign(PHOTO, P); photosDone = true; PWAIT.splice(0).forEach(w => w());
+      Object.assign(PHOTO, P); photosDone = true;
+      /* V2.47 (speed, REAL_PLAN N2): each photo is a file of its own; the ones on what you can see now are fetched first, the rest
+         a moment later, so the view you're on looks finished sooner on a phone's connection */
+      const seen = new Set(); scene.traverseVisible(o => { for (const m of [].concat(o.material || [])) for (const t of [m.map, m.normalMap, m.roughnessMap]) if (t) seen.add(t); });
+      const now = w => !w.tex || [w.tex, ...(TEX_CLONES.get(w.tex) || [])].some(t => seen.has(t)), all = PWAIT.splice(0), later = all.filter(w => !now(w));
+      all.filter(now).forEach(w => w.go());
+      setTimeout(() => (window.requestIdleCallback || (f => f()))(() => later.forEach(w => w.go()), { timeout: 2000 }), 1200);
     }));
 }
-const whenPhoto = (k, f, fn) => { if (!(PMETA[k] && PMETA[k][f])) return false; const go = () => PHOTO[k] && PHOTO[k][f] && fn(PHOTO[k][f]); photosDone ? go() : PWAIT.push(go); return true; };
+const whenPhoto = (k, f, fn, tex) => { if (!(PMETA[k] && PMETA[k][f])) return false; const go = () => PHOTO[k] && PHOTO[k][f] && fn(PHOTO[k][f]); photosDone ? go() : PWAIT.push({ go, tex }); return true; };
 const TEX_CLONES = new WeakMap();   // a clone shares the picture but needs telling it changed (not in userData: three copies that as JSON)
 const texClone = t => { const c = t.clone(); TEX_CLONES.has(t) ? TEX_CLONES.get(t).push(c) : TEX_CLONES.set(t, [c]); return c; };
 TEX_CLONES.set(OAK_TEX, [OAK_TEX_V]);   // V1.12: the doors' upright oak, cloned before this list (it kept the drawn oak's texture: the site check's WebGL error)
@@ -196,7 +202,9 @@ function texSet(tex, img) { const bmp = typeof ImageBitmap !== "undefined" && im
   for (const t of [tex, ...(TEX_CLONES.get(tex) || [])]) { t.dispose(); t.image = img; t.flipY = !bmp; t.needsUpdate = true; } }
 /* V1.30 (U5): a photo decoded off the page's thread (createImageBitmap; it was decoded as it was first drawn, a stall each), flipped for
    WebGL as three expects; an <img> where that isn't there */
-function decodeImg(src, flip = true) {
+const DECODED = new Map();   // V2.47: a photo two textures share (the brick's, the pine's) is fetched and decoded once
+function decodeImg(src, flip = true) { const id = flip + src; if (!DECODED.has(id)) DECODED.set(id, decodeOnce(src, flip)); return DECODED.get(id); }
+function decodeOnce(src, flip) {
   const tag = () => new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = src; });
   if (!window.createImageBitmap) return tag();
   return fetch(src).then(r => r.blob()).then(b => createImageBitmap(b, { imageOrientation: flip ? "flipY" : "none" })).catch(tag);
@@ -217,7 +225,7 @@ function photoInto(tex, k, f, match = true) {
       }
       texSet(tex, out); dirty();
     });
-  });
+  }, tex);
 }
 const flatNormal = () => canvasTex(4, 4, (g, w, h) => { g.fillStyle = "#8080ff"; g.fillRect(0, 0, w, h); }, false);
 const OAK_NRM = flatNormal(), CORD_NRM = flatNormal(), ARTEX_NRM = flatNormal();
