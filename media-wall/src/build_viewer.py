@@ -1333,8 +1333,8 @@ def pwa_files():
         "background_color": "#151a16", "theme_color": "#2f4a3c",
         "icons": [{"src": f"media-wall/src/art/icon-{n}.png", "sizes": f"{n}x{n}", "type": "image/png", "purpose": "any maskable"} for n in (192, 512)]}, indent=1))
     (root / "sw.js").write_text(f"""// v39: the page opens from the device after the first visit (network first for the page, so a new round shows; cache first for the
-// rest: three.js from its CDN, the fonts and the pictures). V2.45: a file named by its contents (photos.<hash>.json, three.<hash>.js, a
-// CDN file at its version) is kept across versions (K), so a new round doesn't fetch the 13 MB of photos again; its older copy goes. {LABEL}.
+// rest: three.js from its CDN, the fonts and the pictures). V2.46: a file named by its contents (tex/<photo>.<hash>.jpg, three.<hash>.js, a
+// CDN file at its version) is kept across versions (K), so a new round doesn't fetch the photos again; its older copy goes. {LABEL}.
 const C = "demma-{LABEL}", K = "demma-keep", HASHED = /\\.[0-9a-f]{{10}}\\.[a-z]+$|@\\d+\\.\\d+\\.\\d+\\//;
 const stem = u => new URL(u).pathname.replace(/\\.[0-9a-f]{{10}}\\.[a-z]+$/, "");
 self.addEventListener("install", e => {{ self.skipWaiting(); e.waitUntil(caches.open(C).then(c => c.addAll(["./", "manifest.webmanifest"]).catch(() => {{}}))); }});
@@ -1352,17 +1352,25 @@ self.addEventListener("fetch", e => {{
 
 
 def split_photos(html_):
-    """V1.9 (Phase 4): on Pages the 3D's photos (1.6 MB) are a file of their own, named by its contents, fetched after the first picture
-    and kept by the service worker; the page carries the rest. tools/build.py puts them back inline for the shared page."""
-    import hashlib, re
+    """V1.9 (Phase 4): on Pages the 3D's photos aren't in the page. V2.45 (speed): each picture is a file of its own, named by its
+    contents (_site/tex/<key>_<map|nor|rough>.<hash>.jpg), not one 13 MB file of base64 (a third bigger): fetched in parallel after the
+    first picture, each kept by the service worker until it changes. The page keeps only their names (a few KB)."""
+    import base64, hashlib, re
     m = re.search(r'<script type="application/json" id="photo-data">(.*?)</script>', html_, re.S)
     if not m or len(m.group(1)) < 3:
         return html_
-    name = f"photos.{hashlib.sha256(m.group(1).encode()).hexdigest()[:10]}.json"
-    for old in SITE.glob("photos.*.json"):
-        if old.name != name: old.unlink()
-    (SITE / name).write_text(m.group(1))
-    return html_[:m.start()] + f'<script type="application/json" id="photo-data" data-src="{name}"></script>' + html_[m.end():]
+    P, out, made = json.loads(m.group(1)), SITE / "tex", set()
+    out.mkdir(exist_ok=True)
+    for k, t in P.items():
+        for f in ("map", "nor", "rough"):
+            v = t.get(f)
+            if isinstance(v, str) and v.startswith("data:"):
+                data = base64.b64decode(v.split(",", 1)[1])
+                name = f"{k}_{f}.{hashlib.sha256(data).hexdigest()[:10]}.jpg"
+                (out / name).write_bytes(data); made.add(name); t[f] = "tex/" + name
+    for old in list(out.glob("*.jpg")) + list(SITE.glob("photos.*.json")):
+        if old.name not in made: old.unlink()
+    return html_[:m.start()] + '<script type="application/json" id="photo-data">' + json.dumps(P, separators=(",", ":")) + "</script>" + html_[m.end():]
 
 
 def publish_files():
