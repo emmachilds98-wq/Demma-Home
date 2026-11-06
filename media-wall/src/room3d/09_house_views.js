@@ -25,6 +25,15 @@ function standIn() {
   flyTo([x, fy + STAND_EYE, z], [v.at[0] + x - v.eye[0], fy + STAND_EYE - 10, v.at[2] + z - v.eye[2]], STAND_FOV, false, false, 600);
 }
 const LIVV = () => !HOUSEV(S.view) && !!VIEWS[S.view];
+/* V2.43, the client: "i want the first person pov like a game to be the main in the room way to look at the room": a room you pick (its
+   name on the house, or by name) stands you in it at your eyes, to walk and look round (Be there; the living room's Standing in it); In
+   it, Above and On its own stay a tap away. R3D.set, the tour and links keep each view as it is */
+function goRoom(v) {
+  if (v === "room") v = "livstand";
+  const far = S.view === "house" || !HOUSEV(S.view) !== !HOUSEV(v);
+  setView(v); if (VIEWS[v] && VIEWS[v].box) setRmode("stand");
+  if (tween && far) tween.dur = Math.max(tween.dur, 1100);   // from the whole house, a glide in, not a dive
+}
 function syncRmode() {
   if (typeof syncStick === "function") try { syncStick(); } catch (e) {}   // V1.32: the walk's stick
   const rm = qs("#r3d-rmode"); if (!rm) return;
@@ -246,7 +255,7 @@ document.addEventListener("click", e => {
   const tg = e.target.closest("[data-htog]"); if (tg) { S[tg.dataset.htog] = !S[tg.dataset.htog]; store.set(KEY, S); applyFloors(); return; }
   const r = e.target.closest("[data-hroom]"); if (!r || !R.HOUSE3) return;
   const id = r.dataset.hroom, v = ROOM_VIEW[id];
-  if (v) { setView(v); return; }
+  if (v) { goRoom(v); return; }
   const L = ((R.HOUSE3.floors[hfloor] || {}).labels || []).find(l => l.id === id); if (!L) return;
   flyTo([L.x + 30, L.y + 520, L.z + 280], [L.x, L.y - 150, L.z], 50, true);
 });
