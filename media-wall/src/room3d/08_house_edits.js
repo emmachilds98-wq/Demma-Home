@@ -141,11 +141,11 @@ const DS = () => window.DemmaStore || null;
 const FIELDS = [["w", "Width"], ["h", "Height"], ["up", "Up from the floor"], ["along", "Along the wall"], ["out", "Out from the wall"]];
 function pieceNow(id) {
   const it = HIT(id), e = {}, ds = DS();
-  if (ds) for (const v of Object.values(ds.rows("edits") || {})) if (v && v.item === id && typeof v.value === "number") e[v.field] = v.value;
-  return { w: e.w ?? it.s[0], h: e.h ?? it.s[1], up: e.up ?? it.s[2], along: e.along ?? it.al, out: it.op ? 0 : e.out ?? 0, turn: canTurn(id) ? (e.turn ?? 0) % 4 : 0 };
+  if (ds) for (const v of Object.values(ds.rows("edits") || {})) if (v && v.item === id && (typeof v.value === "number" || v.field === "removed")) e[v.field] = v.value;
+  return { w: e.w ?? it.s[0], h: e.h ?? it.s[1], up: e.up ?? it.s[2], along: e.along ?? it.al, out: it.op ? 0 : e.out ?? 0, turn: canTurn(id) ? (e.turn ?? 0) % 4 : 0, removed: e.removed === true };
 }
 const canTurn = id => { const it = HIT(id); return !!it && !it.op && !PARTED.has(id); };
-function pieceDelta(id) { const it = HIT(id), c = pieceNow(id); return [c.along - it.al, c.w - it.s[0], c.h - it.s[1], c.up - it.s[2], c.out, c.turn]; }
+function pieceDelta(id) { const it = HIT(id), c = pieceNow(id); return [c.along - it.al, c.w - it.s[0], c.h - it.s[1], c.up - it.s[2], c.out, c.turn, c.removed]; }
 function pieceBox(id) {
   const it = HIT(id), [dA, dW, dH, dU, dO] = pieceDelta(id), k = it.ax === "z" ? 2 : 0, o = 2 - k, b = it.b.slice();
   b[k] += dA; b[k + 3] += dA + dW; b[1] += dU; b[4] += dU + dH; b[o] += dO; b[o + 3] += dO;
@@ -156,6 +156,7 @@ function storeEdits() {   // Measure's rows, as the engine's edits (HEDITS)
   const out = {};
   for (const [id, it] of Object.entries(R.HOUSE3.items || {})) {
     if (!pieceDelta(id).some(Boolean)) continue; const [dA, dW, dH, dU] = pieceDelta(id);
+    if (pieceNow(id).removed) { out[id] = { from: it.b, to: it.b, removed: true }; continue; }   // V2.34: taken out (Measure's As planned puts it back)
     const q = pieceNow(id).turn, to = pieceBox(id), E = { from: it.b, to: q % 2 ? turnBox(to, (to[0] + to[3]) / 2, (to[2] + to[5]) / 2) : to, turn: q }, o = it.op;   // to: before the turn (editXf turns it)
     if (o) E.op = { axis: o.axis, line: o.line, a: o.a, b: o.b, y0: o.y0, y1: o.y1, a2: o.a + dA, b2: o.b + dA + dW, y02: o.y0 + dU, y12: o.y1 + dU + dH };
     out[id] = E;
@@ -169,7 +170,7 @@ function paintEdits() {   // V1.51: Measure's list of the sizes changed in the 3
   grp.hidden = !ids.length;
   const W = { w: "wide", h: "high", up: "up", along: "along", out: "out", turn: "quarter turns" };
   box.innerHTML = ids.map(id => { const it = HIT(id), c = pieceNow(id), was = { w: it.s[0], h: it.s[1], up: it.s[2], along: it.al, out: 0, turn: 0 };
-    const ch = Object.keys(W).filter(k => Math.abs(c[k] - was[k]) > 0.05).map(k => `${cmR(c[k])} ${W[k]}, was ${cmR(was[k])}`).join(" · ");
+    const ch = c.removed ? "taken out" : Object.keys(W).filter(k => Math.abs(c[k] - was[k]) > 0.05).map(k => `${cmR(c[k])} ${W[k]}, was ${cmR(was[k])}`).join(" · ");
     return `<div class="ms-row ms-erow"><button type="button" class="t ms-ego" data-epiece="${id}">${it.n}<small>${ch}</small></button><button type="button" class="btn" data-ereset="${id}">As planned</button></div>`; }).join("");
 }
 document.addEventListener("click", e => {
@@ -190,7 +191,7 @@ const pieceLine = id => { const it = HIT(id), c = pieceNow(id), ed = pieceDelta(
 let sizeT = 0;
 async function setPiece(id, field, v) {
   const it = HIT(id), ds = DS(); if (!it || !ds) return;
-  const base = field === "along" ? it.al : field === "out" || field === "turn" ? 0 : it.s[["w", "h", "up"].indexOf(field)], rid = `${id}~${field}`;
+  const base = field === "along" ? it.al : field === "out" || field === "turn" ? 0 : field === "removed" ? false : it.s[["w", "h", "up"].indexOf(field)], rid = `${id}~${field}`;
   try { if (v == null || Math.abs(v - base) < 0.05) { if (ds.rows("edits")[rid]) await ds.del("edits", rid); }
         else await ds.put("edits", rid, { item: id, field, value: v }); }
   catch (e) { toast("That didn't save: try again"); }
