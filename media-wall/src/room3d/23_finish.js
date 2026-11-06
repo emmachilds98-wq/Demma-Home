@@ -8,10 +8,10 @@ let finScope = "room", finHeld = null, livHeld = null;
    (media, breast, door, stairs, window, PC), 17 the skirting, the door and its frame. So a tap on its wall opens the house's card, and the
    schemes, Undo, Copy and Paste and Send carry it with the rest of the house */
 const LIVR = "living", LIV_W = WALLS.map(([k]) => k), LIV_HEX = /^#[0-9a-f]{6}$/i;
-const livChanged = () => S.paint !== DEF.paint || Object.keys(S.walls).length > 0 || S.ceil !== "match" || S.skirt !== "match" || S.decor.rug !== DEF.decor.rug;
+const livChanged = () => S.paint !== DEF.paint || Object.keys(S.walls).length > 0 || S.ceil !== "match" || S.skirt !== "match" || S.decor.rug !== DEF.decor.rug || S.decor.curtains !== DEF.decor.curtains;
 function livRow() {
   const o = {}, h = paintHex(); [0, 1, 2, 3].forEach(s => o[s] = h); if (LIV_HEX.test(S.ceil)) o[4] = S.ceil; if (LIV_HEX.test(S.skirt)) o[17] = S.skirt;
-  LIV_W.forEach((k, i) => { if (LIV_HEX.test(S.walls[k] || "")) o[11 + i] = S.walls[k]; }); if (S.decor.rug !== DEF.decor.rug) o[18] = S.decor.rug; return o;
+  LIV_W.forEach((k, i) => { if (LIV_HEX.test(S.walls[k] || "")) o[11 + i] = S.walls[k]; }); if (S.decor.rug !== DEF.decor.rug) o[18] = S.decor.rug; if (S.decor.curtains !== DEF.decor.curtains) o[19] = S.decor.curtains; return o;
 }
 function livBase(hex) {   // the walls' paint: one of the paints by its key, else your own colour; none: the plan's (pale mint)
   const k = hex && Object.keys(R.PAINTS).find(q => R.PAINTS[q].hex.toLowerCase() === hex.toLowerCase());
@@ -19,7 +19,7 @@ function livBase(hex) {   // the walls' paint: one of the paints by its key, els
 }
 function livSet(o) {   // a row back into the living room's own Look (none: it stays as it is)
   if (!o) return; livBase([0, 1, 2, 3].map(s => o[s]).find(Boolean)); S.ceil = o[4] || "match"; S.skirt = o[17] || "match"; S.walls = {};
-  LIV_W.forEach((k, i) => { if (o[11 + i]) setWall(k, o[11 + i]); }); S.decor.rug = o[18] || DEF.decor.rug; applyDecor(); repaint(); syncButtons(); updateCaption();
+  LIV_W.forEach((k, i) => { if (o[11 + i]) setWall(k, o[11 + i]); }); S.decor.rug = o[18] || DEF.decor.rug; S.decor.curtains = o[19] || DEF.decor.curtains; applyDecor(); repaint(); syncButtons(); updateCaption();
 }
 function livFin(slot, hex, one) {   // one surface of the living room to a colour (null: as the plan has it)
   if (slot === 4) S.ceil = hex || "match"; else if (slot === 17) S.skirt = hex || "match";
@@ -97,7 +97,43 @@ function finFloorApply() {   // every room with a floor chosen: a thin floor on 
       ((by[room + "|" + k] = by[room + "|" + k] || { room, k, geos: [] }).geos).push(geo); });
     for (const { room, k, geos } of Object.values(by)) { const mat = FIN.mat3(k), me = new THREE.Mesh(worldUV(mergeGeometries(geos), k), mat);
       me.receiveShadow = true; me.userData.finRoom = room; me.userData.finFloor = f; geos.forEach(q => q.dispose()); g.add(me); FIN_LAID.push(me); } });
-  finFitApply(); finRugApply(); dirty();
+  finFitApply(); finRugApply(); finCurtApply(); dirty();
+}
+/* N5c (REAL_PLAN R7): curtains at a room's windows (house/survey_data OPENINGS, R.HOUSE3.windows_in), kept as its row [19]: a pole a
+   little wider than the window, two panels drawn back in folds, from just over the head to the sill (sill length: clear of a worktop under it), 14 cm into the room (clear
+   of a radiator). The living room's own are its Look's (S.decor.curtains) */
+const FIN_CURT = [["linen", "Linen", "#e6e0d2"], ["sage", "Sage", "#8b9878"], ["blue", "Deep blue", "#34507f"], ["rust", "Rust", "#a65a38"], ["charcoal", "Charcoal", "#4a4d52"]];
+const LIV_CURT = [["hessian", "Your hessian"], ["linen", "Linen"], ["sage", "Sage"], ["blue", "Deep blue"], ["rust", "Rust"]];
+let CURT_LAID = []; const CURT_MATS = {};
+function houseMat(key, m) { const P = HMATS.paint || {}; m.clippingPlanes = P.clippingPlanes || []; m.clipIntersection = !!P.clipIntersection; HMATS[key] = m; return m; }   // with the house's, so a floor's cut takes it too
+const curtMat = k => CURT_MATS[k] || (CURT_MATS[k] = houseMat(`curt_${k}`, new THREE.MeshStandardMaterial({ color: (FIN_CURT.find(([q]) => q === k) || [])[2] || CURTAIN_COLS[k] || "#e6e0d2", roughness: 0.95, side: THREE.DoubleSide })));
+function finWindows(room) {   // a room's windows: the piece of floor furthest out at the window's middle is the room it's in
+  const out = [];
+  for (const [f, side, x0, x1, sill, head] of R.HOUSE3.windows_in || []) { const xm = (x0 + x1) / 2, Y = (R.HOUSE3.finish_floor_y || {})[f] || []; let best = null;
+    (R.HOUSE3.finish_pieces[f] || []).forEach(([ri, a, b, z0, z1], i) => { const z = side === "n" ? z0 : z1; if (a <= xm && b >= xm && (!best || (side === "n" ? z < best.z : z > best.z))) best = { ri, z, y: Y[i] || 0 }; });
+    if (best && FIN.rooms[best.ri] === room) out.push({ f, s: side === "n" ? 1 : -1, x0, x1, sill, head, yf: best.y, z: best.z }); }
+  return out;
+}
+function finCurtApply() {
+  if (!finSetup() || !houseG) return;
+  for (const m of CURT_LAID) { m.parent && m.parent.remove(m); m.geometry.dispose(); } CURT_LAID = [];
+  const pole = CURT_MATS.pole || (CURT_MATS.pole = houseMat("curt_pole", new THREE.MeshStandardMaterial({ color: "#3b3a38", roughness: 0.4, metalness: 0.6 })));
+  for (const [room, sl] of Object.entries(S.fin || {})) { const k = sl[19]; if (!k || !FIN.rooms.includes(room)) continue;
+    for (const w of finWindows(room)) { const g = HFLOOR[w.f]; if (!g) continue;
+      const top = w.yf + Math.min(w.head + 12, (R.HOUSE3.ceil || 235) - 5), bot = w.yf + w.sill + 1, h = top - bot, pw = (w.x1 - w.x0) * 0.3 + 15, zc = w.z + w.s * 14, geos = [];
+      for (const xa of [w.x0 - 15, w.x1 + 15 - pw]) { const q = new THREE.PlaneGeometry(pw * M, h * M, 12, 1), P = q.attributes.position;
+        for (let i = 0; i < P.count; i++) P.setZ(i, Math.sin((P.getX(i) / (pw * M) + 0.5) * Math.PI * 6) * 0.025);
+        if (w.s < 0) q.rotateY(Math.PI); const c = v3(xa + pw / 2, bot + h / 2, zc); q.translate(c.x, c.y, c.z); q.computeVertexNormals(); geos.push(q); }
+      const cloth = new THREE.Mesh(mergeGeometries(geos), curtMat(k)); geos.forEach(q => q.dispose());
+      const rod = new THREE.CylinderGeometry(0.012, 0.012, (w.x1 - w.x0 + 40) * M, 10); rod.rotateZ(Math.PI / 2); const c = v3((w.x0 + w.x1) / 2, top + 3, zc); rod.translate(c.x, c.y, c.z);
+      for (const me of [cloth, new THREE.Mesh(rod, pole)]) { me.receiveShadow = true; me.castShadow = true; me.userData.finRoom = room; g.add(me); CURT_LAID.push(me); } } }
+  dirty();
+}
+function finCurtTray(room) {
+  const liv = room === LIVR, now = liv ? S.decor.curtains : finGet(room, 19) || "";
+  if (!liv && !finWindows(room).length) return "";
+  return `<span class="r3d-finlab">The curtains</span><div class="r3d-finsc" role="group" aria-label="The curtains">`
+    + (liv ? LIV_CURT : [["", "None"], ...FIN_CURT]).map(([v, t]) => `<button type="button" data-fincurt="${v}" aria-pressed="${now === v}">${t}</button>`).join("") + `</div>`;
 }
 /* N5b (REAL_PLAN R7): a rug in any room, from the living room's four (its Arches, jute, deep blue, sage stripes): kept as the room's row
    [18]; laid in the middle of the room's biggest piece of floor, the biggest standard UK size that leaves 35 cm round it (Argos: 60×100,
@@ -107,7 +143,7 @@ let RUG_LAID = []; const RUG_MATS = {};
 function rugMats(k) {
   if (RUG_MATS[k]) return RUG_MATS[k];
   const edge = new THREE.MeshStandardMaterial({ color: (RUG_LOOKS[k] || {}).edge || R.RUG.cols[3], roughness: 1 }), top = new THREE.MeshStandardMaterial({ map: rugTex(k), roughness: 1 });
-  for (const [n, m] of [["edge", edge], ["top", top]]) { const P = HMATS.paint || {}; m.clippingPlanes = P.clippingPlanes || []; m.clipIntersection = !!P.clipIntersection; HMATS[`rug_${n}_${k}`] = m; }   // with the house's, so a floor's cut takes it too
+  houseMat(`rug_edge_${k}`, edge); houseMat(`rug_top_${k}`, top);
   return (RUG_MATS[k] = [edge, edge, top, edge, edge, edge]);
 }
 function finRugApply() {
@@ -164,7 +200,7 @@ function finAt(hit) {   // a tap on a wall or a ceiling of the house: its room a
 function finClean(o) {
   const out = {}, floors = new Set(FIN_FLOORS.map(([k]) => k)), bulbs = new Set(FIN_BULBS.map(([v]) => v)), lux = new Set(FIN_LUX.map(([v]) => v));
   for (const [room, sl] of Object.entries(o && typeof o === "object" ? o : {})) { if (!/^[a-z0-9_]{1,30}$/.test(room) || !sl || typeof sl !== "object") continue;
-    for (const [s, v] of Object.entries(sl)) { const k = +s, ok = k <= 4 || k === 9 || k === 10 || (room === LIVR && k >= 11 && k <= 17) ? /^#[0-9a-f]{6}$/i.test(v) : k === 5 ? floors.has(v) : k === 6 ? bulbs.has(v) : k === 7 ? lux.has(v) : k === 8 ? FIN_FITS.some(([f]) => f === v) : k === 18 ? v === "none" || FIN_RUGS.some(([f]) => f === v) : false;
+    for (const [s, v] of Object.entries(sl)) { const k = +s, ok = k <= 4 || k === 9 || k === 10 || (room === LIVR && k >= 11 && k <= 17) ? /^#[0-9a-f]{6}$/i.test(v) : k === 5 ? floors.has(v) : k === 6 ? bulbs.has(v) : k === 7 ? lux.has(v) : k === 8 ? FIN_FITS.some(([f]) => f === v) : k === 18 ? v === "none" || FIN_RUGS.some(([f]) => f === v) : k === 19 ? [...FIN_CURT, ...LIV_CURT].some(([f]) => f === v) : false;
       if (ok) (out[room] = out[room] || {})[k] = v; } }
   return out;
 }
@@ -289,16 +325,16 @@ function finCard(id) {   // [title, now, buttons, -, the tray]
     + `<label class="sw pic" title="A colour from a photo"><i><span class="ms" aria-hidden="true">photo_camera</span></i><input type="file" accept="image/*" data-finpic="1" aria-label="A colour from a photo"><span>Photo</span></label></div>`
     + (now ? `<span class="r3d-finlab">Lighter and darker</span><div class="r3d-fintray" role="group" aria-label="Lighter and darker">${finShades(now).map(([h, t]) => `<button type="button" class="sw" data-finc="${h}" style="--c:${h}" aria-pressed="false" title="${t}, ${h}" aria-label="${t}, ${h}"><i></i><span>${t}</span></button>`).join("")}</div>` : "")
     + (FIN_PIC ? `<div class="r3d-finpic"><img src="${FIN_PIC.url}" data-finpicimg="1" alt="Your photo: tap a colour in it"><span class="r3d-finlab">Tap a colour in your photo</span></div>` : "")
-    + (ceil && !liv ? `<span class="r3d-finlab">The bulbs</span>${finBulbTray(room)}${finFitTray(room)}` : "") + `</div>`;
+    + (ceil && !liv ? `<span class="r3d-finlab">The bulbs</span>${finBulbTray(room)}${finFitTray(room)}` : "") + (ceil || (liv && slot === 17) ? "" : finCurtTray(room)) + `</div>`;
   return [`${roomName(room)}: ${ceil ? "the ceiling" : liv && slot === 17 ? "skirting and door" : finScope === "wall" ? `the ${finSlotName(room, slot)}` : "the walls"}`, nm,
     [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), btn("As it is (hold)", { finhold: "1" }), ...(!drawn ? [btn("As drawn", { finc: "" })] : []), ...finCopyBtns(room)], null, tray];
 }
 function finHold(on) {   // As it is: while held, the palette empty (the house as drawn); let go, your colours back
   if (!FIN.pal) return;
   if (on && !finHeld) { livHeld = JSON.stringify([S.paint, S.custom, S.walls, S.ceil, S.skirt]); livSet({});   // N5: the living room as the plan has it too
-    finHeld = FIN.pal.image.data.slice(); for (let i = 3; i < finHeld.length; i += 4) FIN.pal.image.data[i] = 0; FIN_LAID.forEach(m => m.visible = false); RUG_LAID.forEach(m => m.visible = false); FIT_LAID.forEach(m => m.visible = false); Object.values(FIN_PEND).forEach(g => g.visible = true); }
+    finHeld = FIN.pal.image.data.slice(); for (let i = 3; i < finHeld.length; i += 4) FIN.pal.image.data[i] = 0; FIN_LAID.forEach(m => m.visible = false); RUG_LAID.forEach(m => m.visible = false); CURT_LAID.forEach(m => m.visible = false); FIT_LAID.forEach(m => m.visible = false); Object.values(FIN_PEND).forEach(g => g.visible = true); }
   else if (!on && finHeld) { [S.paint, S.custom, S.walls, S.ceil, S.skirt] = JSON.parse(livHeld); livHeld = null; repaint(); syncButtons(); updateCaption();
-    FIN.pal.image.data.set(finHeld); finHeld = null; FIN_LAID.forEach(m => m.visible = true); RUG_LAID.forEach(m => m.visible = true); FIT_LAID.forEach(m => m.visible = true); for (const [r, g] of Object.entries(FIN_PEND)) g.visible = !finGet(r, 8); }
+    FIN.pal.image.data.set(finHeld); finHeld = null; FIN_LAID.forEach(m => m.visible = true); RUG_LAID.forEach(m => m.visible = true); CURT_LAID.forEach(m => m.visible = true); FIT_LAID.forEach(m => m.visible = true); for (const [r, g] of Object.entries(FIN_PEND)) g.visible = !finGet(r, 8); }
   FIN.pal.needsUpdate = true; finOut();
 }
 qs("#r3d-finschsave")?.addEventListener("click", finSchSave);
@@ -316,6 +352,11 @@ if (act) {
       if (ff.dataset.finfit) o[8] = ff.dataset.finfit; else delete o[8]; if (!Object.keys(o).length) delete S.fin[room];
       store.set(KEY, S); finFitApply(); roomKey = ""; placeRoomLights();
       toast(`${roomName(room)}: ${ff.dataset.finfit ? (FIN_FITS.find(([v]) => v === ff.dataset.finfit) || [0, ""])[1].toLowerCase() : "the light as it is"}`); renderAct(); return; }
+    const cb = e.target.closest("[data-fincurt]");
+    if (cb && actId && actId.startsWith("fin:")) { e.stopPropagation(); const room = actId.split(":")[1], v = cb.dataset.fincurt; finPush(); S.fin = S.fin || {};
+      if (room === LIVR) { S.decor.curtains = v || DEF.decor.curtains; applyDecor(); syncButtons(); }
+      else { const o = S.fin[room] = S.fin[room] || {}; if (v) o[19] = v; else delete o[19]; if (!Object.keys(o).length) delete S.fin[room]; finCurtApply(); }
+      store.set(KEY, S); finSchDraw(); toast(`${roomName(room)}: ${v ? ([...FIN_CURT, ...LIV_CURT].find(([k]) => k === v) || [0, v])[1].toLowerCase() + " curtains" : "no curtains"}`); renderAct(); return; }
     const rb = e.target.closest("[data-finrug]");
     if (rb && actId && actId.startsWith("fin:")) { e.stopPropagation(); const room = actId.split(":")[1], v = rb.dataset.finrug; finPush(); S.fin = S.fin || {};
       const o = S.fin[room] = S.fin[room] || {}; if (v) o[18] = v; else delete o[18]; if (!Object.keys(o).length) delete S.fin[room];
@@ -337,7 +378,7 @@ if (act) {
     if (b.dataset.finsc) finScope = b.dataset.finsc;
     else if (b.dataset.fincopy) { FIN_COPY = { room, sl: Object.assign({}, finAll()[room]) }; toast(`Copied ${roomName(room)}: tap another room, then Paste`); }
     else if (b.dataset.finpaste && FIN_COPY) { finPush(); S.fin = S.fin || {};   // N5: the living room's own six walls and skirting stay its own
-      if (room === LIVR) livSet(FIN_COPY.sl); else S.fin[room] = Object.fromEntries(Object.entries(FIN_COPY.sl).filter(([k]) => +k <= 10 || +k === 18));
+      if (room === LIVR) livSet(FIN_COPY.sl); else S.fin[room] = Object.fromEntries(Object.entries(FIN_COPY.sl).filter(([k]) => +k <= 10 || +k === 18 || +k === 19));
       finApplyAll(); store.set(KEY, S); toast(`${roomName(room)}: ${roomName(FIN_COPY.room)}'s look`); }
     else if (b.dataset.finundo) { const prev = FIN_UNDO.pop(); if (prev != null) { finRestore(JSON.parse(prev)); finApplyAll(); store.set(KEY, S); toast("Undone"); } }
     else if ("finf" in b.dataset) finSet(room, 5, b.dataset.finf || null);
