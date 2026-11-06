@@ -247,5 +247,48 @@ def tiles():
     (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
 
 
+# V2.56 (REAL_PLAN R3, N8): the finishes no photo covers, made here (no download): key: (texture's size m, px, kind). uPVC's faint
+# orange peel; gloss paint's (the skirting, the doors, the newel and rail) orange peel with the brush's strokes along it; brushed metal's
+# grain (the steel); these three are white detail maps (the viewer keeps each material's own colour over them, 20_go.js TINT). The
+# dormer's cheeks, as the back photo: dark-stained timber weatherboards 15 high, each lapped over the one below, the grain along them.
+MADE = {"upvc": (0.5, 512, "peel"), "gloss": (0.5, 512, "paint"), "brushed": (0.3, 512, "brushed"), "hung": (0.6, 1024, "boards")}
+
+
+def finishes():
+    """python3 house/textures/build_textures.py --finishes   writes <key>_map, _nor and _rough.jpg for MADE (ours)"""
+    import numpy as np
+    meta = json.loads((HERE / "textures.json").read_text())
+    for key, (size, px, kind) in MADE.items():
+        cm = size * 100 / px
+        peel = fbm(px, 51, 24, 3)                                             # a few mm across: the skin a spray or a mould leaves
+        if kind == "peel":
+            h = peel * 0.015; tone = 1 - 0.012 * fbm(px, 52, 4, 3); r = 0.85 + (peel - 0.5) * 0.06
+        elif kind == "paint":
+            st = fbm(px, 53, 2, 6, 40)                                         # the brush's strokes, long along the board
+            h = peel * 0.01 + st * 0.02; tone = 1 - 0.015 * st; r = 0.85 + (st - 0.5) * 0.1
+        elif kind == "brushed":
+            st = fbm(px, 54, 1, 7, 160)                                        # fine grain one way, a hair deep
+            h = st * 0.006; tone = 0.97 + 0.05 * st; r = 0.85 + (st - 0.5) * 0.25
+        else:                                                                  # weatherboards: rows down the picture, 4 boards
+            y = np.mgrid[0:px, 0:px][0].astype(np.float32) * cm; bh = 15.0
+            f = (y % bh) / bh                                                  # 0 at a board's top, 1 at its lapped foot
+            row = np.floor(y / bh).astype(int)
+            gr = fbm(px, 55, 1, 7, 60)                                         # the grain along the board (across the picture)
+            h = 1.2 * f + 0.05 * gr                                            # each board thicker to its foot, then a step to the next
+            c0 = np.array([94, 61, 44], np.float32)
+            k = 0.86 + 0.18 * gr + 0.06 * ((row * 5) % 3 - 1) - 0.5 * np.clip(1 - f / 0.16, 0, 1) ** 1.5 + 0.1 * np.clip((f - 0.94) / 0.06, 0, 1)   # each board its own; the shadow under the lap
+            col_ = c0[None, None] * k[..., None]; r = 0.85 + (gr - 0.5) * 0.1
+        if kind != "boards":
+            col_ = np.repeat((250 * tone)[..., None], 3, -1)
+        gy, gx = np.gradient(h, cm)
+        nrm = np.dstack([-gx, gy, np.ones_like(h)]); nrm /= np.linalg.norm(nrm, axis=-1, keepdims=True)
+        Image.fromarray(np.clip(col_, 0, 255).astype("uint8")).save(HERE / f"{key}_map.jpg", quality=86, optimize=True)
+        Image.fromarray(((nrm + 1) * 127.5).clip(0, 255).astype("uint8")).save(HERE / f"{key}_nor.jpg", quality=88, optimize=True)
+        Image.fromarray((np.clip(r, 0, 1) * 255).astype("uint8")).resize((px // 2,) * 2, Image.BOX).save(HERE / f"{key}_rough.jpg", quality=88)
+        meta[key] = dict(asset="made by build_textures.finishes", size=size, url="", licence="ours")
+        print("finishes", key)
+    (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
+
+
 if __name__ == "__main__":
-    {"--buff": buff, "--rough": rough, "--tiles": tiles}.get((sys.argv[1:] or [""])[0], lambda: main(sys.argv[1]))()
+    {"--buff": buff, "--rough": rough, "--tiles": tiles, "--finishes": finishes}.get((sys.argv[1:] or [""])[0], lambda: main(sys.argv[1]))()

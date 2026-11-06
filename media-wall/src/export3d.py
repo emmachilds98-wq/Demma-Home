@@ -73,6 +73,8 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
     _cf = pathlib.Path(model.__file__).resolve().parent / "client_finishes.json"   # V2.11 (F6): the client's scheme, kept by pull_edits.py
     e["client_finishes"] = _j.loads(_cf.read_text()).get("rooms", {}) if _cf.exists() else {}
     e["finish_floor_y"] = {f: [_floor_top(f, x0, x1, z0, z1) for rid, x0, x1, z0, z1 in _surf.PIECES[f]] for f in model.FLOOR_Y}
+    # N5c (REAL_PLAN R7): the house's windows from inside, for curtains a room can try: [floor, side, x0, x1, sill, head] (cm, the floor's own)
+    e["windows_in"] = [[op["floor"], op["side"], *op["x"], op["sill"], op["head"]] for op in model.D.OPENINGS if op["kind"] == "window" and not op.get("skip")]
     e["plants"] = getattr(model.D, "PLANTS", [])                # V1.3: the gardens' plants (survey_data.PLANTS: where, how big, the source)
     e["beyond"] = getattr(model.D, "BEYOND", None)               # V1.4: past the far fence (survey_data.BEYOND): the low building, the hill
     e["things"] = getattr(model.D, "GARDEN_THINGS", [])          # V1.6: the table and chairs, next door's trampoline and sheds
