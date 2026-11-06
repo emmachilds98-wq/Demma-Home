@@ -3,7 +3,7 @@ let need = 2, moving = false, still_t = 0, lowRes = false, dragT = 0, slowDev = 
 const MV = []; let mvLast = 0;   // v39: the gaps between frames while the room moves: slow ones turn on the lower resolution while you drag
 function dirty() { need = Math.max(need, 2); }
 function fullRatio() { const d = window.devicePixelRatio || 1; if (SMALL && !BIG_GPU) return Math.min(d, GOOD_PHONE ? phoneCap : 1.5); if (S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view) && !BIG_GPU) return houseLite ? 1 : Math.min(d, 1.5);   // V2.25: a real card draws the house as sharp as a room   // V1.11: a real graphics card draws the house at 2× too   // v73: the house at the screen's own sharpness (no supersampling: it's many times the living room's drawing)
-  return S.quality === "hd" ? (BIG_GPU ? Math.min(Math.max(d, 1.5), 2) : Math.min(d, 1.5)) : Math.min(d, 1); }   // v39: phones at their own sharpness; v44: a real graphics card draws HD at 1.5–2×; v50: Fast on a PC at full size (was 0.85×)
+  return S.quality === "hd" ? (BIG_GPU ? Math.min(d, 2) : Math.min(d, 1.5)) : Math.min(d, 1); }   // V2.30: a real card at the screen's own sharpness, as a game (4× anti-aliasing smooths the edges; it drew 1.5× on top: 2.25 times the pixels)   // v39: phones at their own sharpness; v44: a real graphics card draws HD at 1.5–2×; v50: Fast on a PC at full size (was 0.85×)
 /* v21: narrower screens (phones show the room at 4:3) widen the field of view so every view takes in as much of the room across as at 16:9 */
 let baseFov = 50;
 const fitFov = (fov, asp = camera.aspect) => asp >= 16 / 9 ? fov : Math.min(95, 2 * Math.atan(Math.tan(fov * Math.PI / 360) * (asp < 0.8 ? 1.45 : 16 / 9) / asp) * 180 / Math.PI);   // v33: portrait, tighter
@@ -88,7 +88,7 @@ function frame(now) {
   if (cabTween(now)) need = 2;                                    // v30: the cabinet's doors swinging or sliding
   if (liftTick(now)) need = 2;                                    // v68: Lift the bed
   if (showTick(now)) need = 2;                                    // v32: "Watch it open"
-  { const dt = Math.min(0.05, (now - (frame.last || now)) / 1000); frame.last = now; if (walkTick(dt)) { need = 2; syncEye(); } }   // V1.32 (U7)
+  { const dt = Math.min(0.1, (now - (frame.last || now)) / 1000); frame.last = now; if (walkTick(dt)) { need = 2; syncEye(); } }   // V1.32 (U7)   // V2.30: dt to 100 ms (it held each step to 50: a slow frame slowed the walk)
   if (!tween && !freeAbove() && !walking() && (clampRoom(camera.position) | clampRoom(controls.target, true) | collide())) need = 2;   // v17: never outside the room; v41: nor in the furniture
   const active = moving || changed || !!tween;
   if (active && mvLast && now - mvLast < 250) { MV.push(now - mvLast); if (MV.length >= 24) { const m = MV.sort((a, b) => a - b)[12]; MV.length = 0;
@@ -102,7 +102,7 @@ function frame(now) {
   if (updateCut()) need = 2;
   if (probe > 0 && !lowRes) need = Math.max(need, 1);                 // v35: the speed check's three frames come first, at the start
   if (need === 0 && !active && !SH && probe === 0 && now - preT > 120 && now - PRE.idleT > 400) {   // v35: hidden parts' shaders, off screen
-    const t0 = performance.now(); while (precompileStep() && performance.now() - t0 < 10) {} preT = now; }   // v39: as many as fit in 10 ms, sooner
+    const t0 = performance.now(); while (precompileStep() && performance.now() - t0 < 10) {} if (!PRE.queue.length) warmSwitch(); preT = now; }   // v39: as many as fit in 10 ms, sooner
   if (glLost || (document.body.classList.contains("sheet-open") && !SH && !tween)) return;   // v35: nothing drawn behind the Plan's sheets (the last picture stays)
   if (need > 0) {
     const t = probe > 0 && !lowRes ? performance.now() : 0;
