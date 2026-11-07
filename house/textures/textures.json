@@ -1,7 +1,7 @@
 {
  "brick": {
   "asset": "red_brick_03",
-  "size": 1.0,
+  "size": 1.05,
   "url": "https://polyhaven.com/a/red_brick_03",
   "licence": "CC0"
  },
@@ -139,7 +139,7 @@
  },
  "brick_buff": {
   "asset": "red_brick_03 (toned buff)",
-  "size": 1.0,
+  "size": 1.05,
   "url": "https://polyhaven.com/a/red_brick_03",
   "licence": "CC0"
  },
