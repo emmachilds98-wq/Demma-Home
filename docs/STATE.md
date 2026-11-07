@@ -3,10 +3,11 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.64 (6 Nov 2026)
+**Version:** V2.65 (7 Nov 2026)
 
-**Work from:** `docs/REAL_PLAN.md` section 6, the next round's tasks (N1–N10) in workstreams that run side by side (Speed, Look, Shapes,
-Edit, Light, UI), one task a PR. Its section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards (one line a row).
+**Work from:** `docs/REAL_PLAN.md` section 7, the round after (N13–N23: the first picture, moving, the views' controls, landing,
+the outside, tracking upgrades) in workstreams that run side by side, one task a PR; section 6 (N1–N12) is done but N4's and N9's
+rests and the client's `?perf` (N10). Its section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards (one line a row).
 Older boards, all done or carried into those: `docs/V1_PLAN.md` (phases 0–10), `docs/QUALITY_PLAN.md`, `docs/UPGRADE_REVIEW.md`.
 
 ## Where it lives

@@ -81,7 +81,7 @@ The tools are there already: GTAO (ambient occlusion) in `01_renderer.js`, HD sh
 | R5 | The things in a room | **In part** (V2.18, V2.19, V2.40, V2.41) | More from the client's photos as they come |
 | R6 | Change the furniture in any room | **Done** (V2.32–V2.36, V2.55: move, resize, turn, take out, swap, add) | Swap or add in the living room's project (its own Edit room) |
 | R7 | One Look for every room | **Done** (V2.51: the living room joined; V2.57: rugs; V2.59: curtains; V2.61: bedding; V2.62: a plant; V2.63: a picture) | More prints, blinds or plants if the client asks |
-| R8 | Quick everywhere: fluid as a game | **In part** (V2.30, V2.31, V2.42, V2.43) | Load and phone speed (N2–N4); KTX2 once the devices' numbers are in (N10) |
+| R8 | Quick everywhere: fluid as a game | **In part** (V2.30, V2.31, V2.42, V2.43) | The first picture, moving and KTX2 (section 7: N13–N17, N22) |
 
 ## 6. The next round (6 Nov 2026 review, V2.44): tasks
 
@@ -111,3 +111,47 @@ cache's fix. Every PR: rebase on `main` just before merging, take the next free 
 
 **Not doing from the review:** removing the page's 3D stills: all but four are on the page or in the plan, and those four are in the
 deck's list.
+
+## 7. The round after (7 Nov 2026 review, V2.64): tasks
+
+The client, 7 Nov 2026: "iPhone is running better but there's still some initial freezing ... minimise movement and view lag when moving
+in first person and allow better controls in overhead and angled views ... improve the way you land into the site ... minimise words
+... improve detail, quality and performance of the model as well as overall design of the app". From an iPhone 15 Pro emulated headless
+(the shaders, photo uploads and draws counted each frame; timings relative), the code, and the site on a phone and a computer.
+
+**What the review found**
+- **The freeze on opening is the first picture.** After the parallel warm-up, the first frame still builds 16 shaders one after
+  another (the shade, the glow, their output, the shadows' depth), draws every shadow, and sends about 220 textures to the chip, all
+  in one frame (its own 9 s here against a still frame's 0.2 s). Before that, `start()` holds the page for the living room's build,
+  though the house opens outside, where the living room is hidden.
+- **The lag while moving:** a photo still goes onto the chip every 120 ms while you move, each with its colour match done pixel by
+  pixel on the page's thread first (a 1024 photo: a million pixels in the frame). The hidden parts' warm-up draws each part (a shader
+  built in that frame) a moment after you stop. Standing in a room, the whole house is drawn (300 draws), not the room and what's seen
+  from it.
+- **Overhead and Angled** are one orbit: a drag in Overhead tilts it out of overhead, nothing stops the view going under the ground or
+  the house sliding off the screen, and a computer has no keys for them.
+- **Landing:** a black screen and words ("Building the house…") until the first picture; the welcome every visit (it's per tab), in
+  60 words; the version in the brand; on a phone four rows of buttons at the top over a floor.
+- **The model:** the rooms had their shapes pass (N6); the outside hasn't been set beside the client's outside photos since. The
+  lawn's photo repeats in a visible grid. Photos as JPEG cost the iPhone memory and an upload stall each (KTX2 would send them squeezed).
+
+**How to run it:** as section 6. Each workstream is a thread, one task a PR, the files in "Owns" its own (a function named: only that
+function); where one task needs another's, the order is given. Every PR: rebase or merge `main` just before merging, the next free
+version then, `docs/STATE.md` rewritten over main's, a line in `docs/HISTORY.md`, its row ticked here. Say less on screen.
+
+| # | Task | Workstream | Owns | After | Status |
+|---|---|---|---|---|---|
+| N13 | The first picture with no freeze: the shade's, the glow's and the shadows' shaders built in the warm-up; every texture sent in slices while it waits; the shadows on the second frame; the hidden parts' warm-up by `compileAsync`, not drawn; fires `r3d-first` on the first picture | Speed | `01_renderer.js` (not the controls' lines), `20_go.js` `start()`, `17_render_loop.js` (the warm-up's call) | | Open |
+| N14 | Land light: on the whole house the living room (and its suggestions and ideas, N4's rest) is built after the first picture, while idle, not before it | Speed | `20_go.js` `start()`, `07_suggestions_ideas.js` | N13 | Open |
+| N15 | No photo on a moving frame: sent only while still (a missing one on screen may go); the colour match done once at build or off the page's thread | Photos | `02_textures.js`, `export3d.py`, `build_viewer.split_photos` | | Open |
+| N16 | Draw what you can see: standing in a room, only it, the rooms through its open doors and the outside through its windows; a room's walls, floor and ceiling merged per material | Rooms | `09_house_views.js` `applyFloors()`, `20_go.js` `buildHouse()` | | Open |
+| N17 | A steady frame on the iPhone while walking: sharpness by frame time (1.5–2×, no new buffers), the glow off while moving on a phone; then its `?perf` | Speed | `17_render_loop.js`, `01_renderer.js` `draw()` | N14 | Open |
+| N18 | Overhead as a map, Angled held up: Overhead one finger or a left-drag pans, two fingers pinch and turn, a right-drag turns; Angled orbits 10°–85° above the ground; the view held round the house; a computer's arrows or W A S D pan, Q E turn, + − zoom; a double-tap on the ground centres there | Controls | new `room3d/19_view_controls.js`, `09_house_views.js` `floorCam()`, `14_views_walk.js` `flyTo()` | | Open |
+| N19 | Landing: a cream first screen with the house's outline and a thin progress line (no black, no words) until `r3d-first`; the welcome once per device, a title, two buttons and three icons of two words; the version off the brand (into Plan); the house framed a little closer | Landing | `build_viewer.py` (brand, first screen), `page.css`, `room3d_page.py` (welcome), `19_controls.js` `welcome()` | | Open |
+| N20 | Fewer buttons on top: a phone's top in two rows at most (the view's Angled · Overhead in the floors' row; Hide labels and Hide buttons one button); the floors' and rooms' rows scroll sideways, not wrap | Landing | `room3d_page.py` (`.r3d-mini`), `15_tour_link_stickers.js` `setBare()`, `09_house_views.js` `drawRooms()` | N19 | Open |
+| N21 | The outside close up: the 3D beside the client's outside photos (`tools/compare.py`), each difference fixed (the openings' depth, the brick's scale, the porch, the roof's edge), sizes cited | Outside | `house/model.py`, `house/survey_data.py`, `house/EVIDENCE.md` | | Open |
+| N22 | Photos squeezed for the chip (KTX2, ASTC on the iPhone): less memory, no upload stall, a sharper photo for the same; the lawn without its repeat (a second, larger variation) | Photos | `02_textures.js`, `export3d.py`, `vendor.py`, `03_materials.js` (the lawn's) | N15 | Open |
+| N23 | Track the upgrades: a room's card lists its changes (Look, Edit) with a done tick and a rough cost; Plan has the house's total | Track | `16_cards.js`, `plan_ui.py` | | Open |
+
+**Order:** N13, N15, N16, N18, N19, N21, N23 start together; then N14, N20, N22; N17 last (with the iPhone's `?perf`).
+**Needs the client:** `?perf` from the iPhone after N13 (N10); more outside photos if N21 finds a side not shown.
