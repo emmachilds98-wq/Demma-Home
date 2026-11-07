@@ -1206,7 +1206,7 @@ def _page(site=False):
     <div class="block"><h2 class="ptitle">Suggestions in the room</h2><p class="caption">Each one switches the room too: close this to see them.</p>{sugg_chips}</div>
     {ideas_panel()}
   </section>"""
-    # V2.83: the fonts' stylesheets don't hold up the first screen: media="print" until they land (a script after a pending stylesheet
+    # V2.85: the fonts' stylesheets don't hold up the first screen: media="print" until they land (a script after a pending stylesheet
     # waits for it: the landing's and the rest's start about 0.26 s later here); the landing covers the page meanwhile
     page = f"""<title>Demma's Home</title>
 {room3d_page.IMPORTMAP}
