@@ -11,7 +11,7 @@ const clipMat = m => { m.clippingPlanes = CLIP; m.clipIntersection = true; m.cli
    live room glass is plain see-through; still() puts the transmission back for the saved pictures. */
 const glassLive = m => { if (m.transmission > 0) { m.userData.trans = m.transmission; m.transmission = 0; } return m; };
 const reg = m => (MATS.push(clipMat(glassLive(grassy(m)))), m);
-/* V2.29: the ground's lawn without its repeat; V2.67 (N22): every lawn (the gardens', next door's, the ground's), and the two copies no
+/* V2.29: the ground's lawn without its repeat; V2.68 (N22): every lawn (the gardens', next door's, the ground's), and the two copies no
    longer mixed half and half (it greyed the grass): a slow patchwork over metres picks the photo or its larger, turned copy, and a
    slower one lightens and darkens it. One program for them all ("grass"); the lawn's photo is marked in houseTex */
 function grassy(m) {

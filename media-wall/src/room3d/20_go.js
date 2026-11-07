@@ -101,7 +101,7 @@ function houseTex(k) {
     const img = (f, srgb, fill) => { const t = canvasTex(4, 4, g => { g.fillStyle = fill; g.fillRect(0, 0, 4, 4); }, srgb);   // V1.11: as sharp at a slant as the card allows (was 4)
       whenPhoto(pkey, f, src => { decodeImg(src).then(im => texSet(t, im, true)); }, t); return t; };   // V2.64: queued (upStep)
     const rg = pm.rough ? Math.round(pm.rough * 255) : 0, grey = `rgb(${rg},${rg},${rg})`;   // V1.30 (U5): its roughness map, if it has one
-    const map = img("map", true, pm.avg || "#888888"); map.userData.grass = pkey === "lawn";   // V2.67 (N22): its materials take the lawn's patchwork (03_materials grassy)
+    const map = img("map", true, pm.avg || "#888888"); map.userData.grass = pkey === "lawn";   // V2.68 (N22): its materials take the lawn's patchwork (03_materials grassy)
     return (HTEX[k] = { map, normal: pm.nor ? img("nor", false, "#8080ff") : null, size: [pm.size, pm.size], bump: 0,
       rough: pm.rough && !LOWD ? img("rough", false, grey) : null, roughMean: pm.rough || 0, tint: HTEX_TINT.has(k) });
   }

@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.67 (7 Nov 2026)
+**Version:** V2.68 (7 Nov 2026)
 
 **Work from:** `docs/REAL_PLAN.md` section 7, the round after (N13–N23: the first picture, moving, the views' controls, landing,
 the outside, tracking upgrades) in workstreams that run side by side, one task a PR; section 6 (N1–N12) is done but N4's and N9's
@@ -89,7 +89,9 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   has a soft shade round its foot and up the wall beside it, on phones too (V2.52; it moves with the piece).
   The window frames, outside doors, gutters and sills have uPVC's faint peel; the skirting, inside doors, newel and rail gloss paint's
   brush strokes; the steel a brushed grain, each in its own colour; the dormer's cheeks lapped dark timber boards (V2.56).
-- **Outside:** by day under a real sky, the lawn's photo to a hazy horizon, the gardens, next door, the valley and the hill.
+- **Outside:** by day under a real sky, the lawn's photo to a hazy horizon, the gardens, next door, the valley and the hill. Every
+  lawn (the gardens', next door's, the ground's) is one patchwork shader, `03_materials` `grassy`: the photo or its larger turned copy
+  over metres, lighter and darker slower still, so no grid shows (V2.68).
 - **Offline:** `sw.js` keeps the page's last copy and every picture; a file named by its contents (the photos, `three.<hash>.js`)
   stays in `demma-keep` across versions, so a new round doesn't fetch it again (V2.47).
   The photos are a file each (`_site/tex/<key>_<map|nor|rough>.<hash>.jpg`, `build_viewer.split_photos`; the page keeps their names):
