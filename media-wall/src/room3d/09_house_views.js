@@ -127,6 +127,7 @@ function applyFloors() {
   for (const k of ["lower", "ground", "first", "out"]) if (HFLOOR[k]) HFLOOR[k].traverse(o => { if (o.userData.hlabel) o.visible = labelsOn && (k === "out" ? on : (top ? top === k : !R.HOUSE3)); });   // v57: Hide labels hides these too
   if (rmodeG) rmodeG.traverse(o => { if (o.userData.rlabel) o.visible = labelsOn; });   // v72 (B5): the room's name in Above
   hidReal.forEach(o => o.visible = true); hidReal = []; hidLay.forEach(o => o.layers.enable(0)); hidLay = [];
+  roomUncull();   // V2.66 (N16)
   if (HMATS && HMATS.earth) HMATS.earth.visible = !(on && sel === "lower");   // V1.53: the earth over the secret room (under the garage) off, so the lower floor shows
   if (on && sel === "lower") scene.children.forEach(o => { if (o !== houseG && o !== garden3d && o !== lightRig && !o.isLight && o !== (sun && sun.target) && o.visible) { o.visible = false; hidReal.push(o); } });
   qsa("[data-hfloor]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.hfloor === hfloor)));
@@ -173,9 +174,75 @@ function applyFloors() {
     for (const [k, g] of Object.entries(HFLOOR)) if (!(k === "first" || k === "roof" || (open && k === "ground")) && g.visible) { g.visible = false; hidReal.push(g); }
   }
   livClip(!!(houseG && houseG.visible && R.HOUSE3 && S.view === "livstand"));
+  roomCull(false);
   drawRooms(); brandPlace(); outdoor();
   requestAnimationFrame(() => { measureShift(!!(window.DemmaTools && window.DemmaTools.isOpen())); fadeRows(); });   // V1.30: the rows above may have changed
   dirty();
+}
+/* V2.66 (REAL_PLAN N16), the client: "minimise movement and view lag when moving in first person": standing in a room, of the floors
+   still shown only that room is drawn, the rooms seen from it (through an open or glazed door and the next, at a flight's top or foot) and the walls, floors' slabs, stairs and roof (each floor's mesh of a material keeps a room's pieces together: 20_go.js put);
+   the outside only where one of those rooms has a window or a door out. A room left out is cut from its meshes by their draw range
+   (a span past a big gap drawn by a twin sharing its buffers, at most three); a door that swings asks again (19_controls swingDoor) */
+const RLINK = [["lower_landing", "lower_stairs", 0], ["lower_stairs", "hall", 1], ["hall", "landing", 2]];   // open to each other, and what it costs: one space (the lower flight), the short flight down, the long flight up
+let RDOORS = null, CULLM = [], CULLG = [], cullKey = "";
+function roomDoors() {   // each door's part and the rooms either side ("out": outside); and which rooms see out (a window, a door out, the porch's front door)
+  if (RDOORS) return RDOORS;
+  const rooms = R.HOUSE3.rooms, out = new Set(["porch"]), list = [], glazed = {};
+  for (const F of Object.values(R.HOUSE3.floors)) for (const [pk, P] of Object.entries(F.parts || {})) if ((P.boxes || {}).glass) glazed[pk] = true;
+  const at = (x, y, z) => { let best = null, ba = Infinity;
+    for (const [id, r] of Object.entries(rooms)) if (x >= r[0] && x <= r[1] && z >= r[2] && z <= r[3] && y >= r[4] - 5 && y <= r[4] + 230) { const a = (r[1] - r[0]) * (r[3] - r[2]); if (a < ba) { ba = a; best = id; } }
+    return best; };
+  for (const [id, it] of Object.entries(R.HOUSE3.items || {})) { const o = it.op; if (!o) continue;
+    if (it.k === "window") { out.add(it.r); continue; }
+    if (it.k !== "door" || id === "living_door") continue;   // the living room's: its own rule (applyFloors)
+    const m = (o.a + o.b) / 2, y = o.y0 + 20, side = d => o.axis === "x" ? at(m, y, o.line + d) : at(o.line + d, y, m);
+    const a = side(-15), b = side(15), pk = "door." + id;
+    if (!a && !b) { out.add(it.r); continue; }
+    if (!a || !b) out.add(a || b);
+    list.push([pk, a || "out", b || "out", !!glazed[pk]]); }
+  return (RDOORS = { list, out });
+}
+function roomSees(seeds) {   // the rooms seen from these: through two open (or glazed) doors at most, or a flight's top or foot
+  const { list } = roomDoors(), cost = new Map(seeds.filter(Boolean).map(r => [r, 0])), todo = [...cost.keys()];
+  const open = (pk, gz) => gz || !HPARTS[pk] || doorOpen(HPARTS[pk]);   // a door with no leaf of its own (the cupboards', the back door): as open
+  while (todo.length) { const r = todo.shift(), c = cost.get(r), add = (q, k) => { if (q && c + k <= 2 && !(cost.get(q) <= c + k)) { cost.set(q, c + k); if (q !== "out") todo.push(q); } };
+    for (const [a, b, k] of RLINK) if (a === r) add(b, k); else if (b === r) add(a, k);
+    for (const [pk, a, b, gz] of list) if ((a === r || b === r) && open(pk, gz)) add(a === r ? b : a, 1); }
+  return new Set(cost.keys());
+}
+function roomUncull() {
+  for (const me of CULLM) { me.geometry.setDrawRange(0, Infinity); me.layers.enable(0); for (const t of me.userData.twins || []) t.visible = false; }
+  CULLG.forEach(g => g.visible = true); CULLM = []; CULLG = [];
+}
+function roomCull(again) {   // again: a door swung (only this part of applyFloors)
+  if (again) { if (!houseG) return; roomUncull(); }
+  const liv = S.view === "livstand" && houseG && houseG.visible && R.HOUSE3 && R.HOUSE3.rooms;
+  if (!liv && !(INSIDE() && houseG && R.HOUSE3 && R.HOUSE3.rooms)) { if (again) dirty(); if (cullKey) { cullKey = ""; reshadow(); } return; }
+  const seeds = liv ? ["landing", doorOpen(HPARTS["door.living_door"]) && "hall"]   // from the living room: up its stairs, and the hall through its door
+    : [VIEW_ROOM[S.view], hereRoom, ...Object.keys(WALK_VIEW).filter(k => WALK_VIEW[k] === S.view)];
+  const see = roomSees(seeds), { out } = roomDoors();
+  if (![...see].some(r => r === "out" || out.has(r))) for (const k of ["out", "street", "nextThings"]) { const g = HFLOOR[k]; if (g && g.visible) { g.visible = false; CULLG.push(g); } }
+  const twin = me => { const g = new THREE.BufferGeometry(), src = me.geometry;
+    if (!src.boundingSphere) src.computeBoundingSphere();
+    if (src.index) g.setIndex(src.index); for (const [k, a] of Object.entries(src.attributes)) g.setAttribute(k, a); g.boundingSphere = src.boundingSphere;
+    const t = new THREE.Mesh(g, me.material); t.castShadow = me.castShadow; t.receiveShadow = me.receiveShadow; t.renderOrder = me.renderOrder; t.visible = false;
+    me.parent.add(t); return t; };
+  houseG.traverse(me => {
+    const rr = me.userData.rooms; if (!rr || !me.visible) return;
+    const runs = [];
+    for (const [id, a, n] of rr) if (!id || see.has(id)) { const L = runs[runs.length - 1]; if (L && L[1] === a) L[1] = a + n; else runs.push([a, a + n]); }
+    if (runs.length === 1 && runs[0][0] === 0 && runs[0][1] === rr[rr.length - 1][1] + rr[rr.length - 1][2]) return;   // all of it
+    CULLM.push(me);
+    if (!runs.length) { me.layers.disable(0); return; }
+    for (let i = runs.length - 2; i >= 0; i--) if (runs[i + 1][0] - runs[i][1] < 30000) runs.splice(i, 2, [runs[i][0], runs[i + 1][1]]);   // a small gap drawn through (a draw costs more than 10,000 triangles)
+    while (runs.length > 3) { let k = 0; for (let i = 1; i < runs.length - 1; i++) if (runs[i + 1][0] - runs[i][1] < runs[k + 1][0] - runs[k][1]) k = i;   // the closest two as one
+      runs.splice(k, 2, [runs[k][0], runs[k + 1][1]]); }
+    me.geometry.setDrawRange(runs[0][0], runs[0][1] - runs[0][0]);
+    const tw = me.userData.twins || (me.userData.twins = []);
+    for (let i = 1; i < runs.length; i++) { const t = tw[i - 1] || (tw[i - 1] = twin(me)); t.geometry.setDrawRange(runs[i][0], runs[i][1] - runs[i][0]); t.visible = true; } });
+  const key = [...see].sort().join() + CULLG.length;
+  if (again) dirty();
+  if (key !== cullKey) { cullKey = key; reshadow(); }
 }
 let LIVCLIP = null, livClipOn = false, FLCLIP = null;   // V2.0: in the living room's own view the house only above the landing's floor over the room
 /* V2.64, the client's iPhone froze on the first tap on a floor: three builds a shader for each number of cutting planes, so the first
