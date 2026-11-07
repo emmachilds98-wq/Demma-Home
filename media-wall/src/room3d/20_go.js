@@ -496,7 +496,7 @@ function buildHouse() {
     if (S.fin === undefined && R.HOUSE3.client_finishes && Object.keys(R.HOUSE3.client_finishes).length) finRestore(R.HOUSE3.client_finishes);   // V2.11: the scheme kept in the repo, until this device picks its own
     HMATS = m3; FIN.mat3 = mat3; blindsApply(); hceilApply(); finApplyAll();
     if (window.__finPending) { const p = window.__finPending; window.__finPending = null; finImport(p); }   // V2.11: from a Send link opened before the 3D was ready   // V2.7: (mat3 for a floor laid by the tray)   // V2.6: the colours kept for the house's rooms
-    /* V2.70 (N16): each piece's room: the one room whose space holds it whole (walls, slabs, the stairs, the roof and what two rooms'
+    /* V2.71 (N16): each piece's room: the one room whose space holds it whole (walls, slabs, the stairs, the roof and what two rooms'
        outlines share: none, always drawn). A floor's mesh of a material keeps each room's pieces together, in the rooms' order, each
        room's span noted (userData.rooms: [room, first, count]), so standing in a room the rest can be left out (09 roomCull) */
     const RVOL = Object.entries(H3.rooms || {}).map(([id, r], i) => [id, r[0] - 1, r[1] + 1, r[4] - 2, r[4] + (r[4] >= 260 ? 420 : (H3.ceil || 235) + 2), r[2] - 1, r[3] + 1, i + 1]);
@@ -760,13 +760,13 @@ function start() {
      frame. For the right ones: after the cutaway's clipping is set (v81's lesson), and into a target like the shade's composer when it's
      on (its shaders differ from the screen's). Never more than 8 s' wait */
   const first = () => { if (first.done) return; first.done = true; START_MS.compiled = Math.round(performance.now() - t0); msg.hidden = true;
-    requestAnimationFrame(frame); requestAnimationFrame(() => setTimeout(loadPhotos, 30)); };   // V1.9: the photos once the first picture is up
+    requestAnimationFrame(() => { preDraw(); requestAnimationFrame(frame); requestAnimationFrame(() => setTimeout(loadPhotos, 30)); }); };   // V2.66 (N13): the shadows a frame ahead   // V1.9: the photos once the first picture is up
   if (gl.compileAsync && !/[?&]nocompile\b/.test(location.search)) {
     msg.textContent = "Building the house…"; msg.hidden = false;
     const was = gl.getRenderTarget();
     try {
       if (postLive()) { if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }); gl.setRenderTarget(PRE.rtAO); }
-      Promise.race([compileClipped(camera), new Promise(r => setTimeout(r, 8000))]).then(first, first);   // V2.64: by cutting planes (01_renderer)
+      texWarm(); Promise.race([Promise.all([compileClipped(camera), postWarm()]), new Promise(r => setTimeout(r, 8000))]).then(first, first);   // V2.66 (N13): the shade's and glow's too; the textures meanwhile   // V2.64: by cutting planes (01_renderer)
     } catch (e) { first(); } finally { gl.setRenderTarget(was); }
   } else first();
   precompile();                                                                         // v35: hidden parts' shaders, while the room's idle

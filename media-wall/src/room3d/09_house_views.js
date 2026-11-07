@@ -127,7 +127,7 @@ function applyFloors() {
   for (const k of ["lower", "ground", "first", "out"]) if (HFLOOR[k]) HFLOOR[k].traverse(o => { if (o.userData.hlabel) o.visible = labelsOn && (k === "out" ? on : (top ? top === k : !R.HOUSE3)); });   // v57: Hide labels hides these too
   if (rmodeG) rmodeG.traverse(o => { if (o.userData.rlabel) o.visible = labelsOn; });   // v72 (B5): the room's name in Above
   hidReal.forEach(o => o.visible = true); hidReal = []; hidLay.forEach(o => o.layers.enable(0)); hidLay = [];
-  roomUncull();   // V2.70 (N16)
+  roomUncull();   // V2.71 (N16)
   if (HMATS && HMATS.earth) HMATS.earth.visible = !(on && sel === "lower");   // V1.53: the earth over the secret room (under the garage) off, so the lower floor shows
   if (on && sel === "lower") scene.children.forEach(o => { if (o !== houseG && o !== garden3d && o !== lightRig && !o.isLight && o !== (sun && sun.target) && o.visible) { o.visible = false; hidReal.push(o); } });
   qsa("[data-hfloor]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.hfloor === hfloor)));
@@ -179,7 +179,7 @@ function applyFloors() {
   requestAnimationFrame(() => { measureShift(!!(window.DemmaTools && window.DemmaTools.isOpen())); fadeRows(); });   // V1.30: the rows above may have changed
   dirty();
 }
-/* V2.70 (REAL_PLAN N16), the client: "minimise movement and view lag when moving in first person": standing in a room, of the floors
+/* V2.71 (REAL_PLAN N16), the client: "minimise movement and view lag when moving in first person": standing in a room, of the floors
    still shown only that room is drawn, the rooms seen from it (through an open or glazed door and the next, at a flight's top or foot) and the walls, floors' slabs, stairs and roof (each floor's mesh of a material keeps a room's pieces together: 20_go.js put);
    the outside only where one of those rooms has a window or a door out. A room left out is cut from its meshes by their draw range
    (a span past a big gap drawn by a twin sharing its buffers, at most three); a door that swings asks again (19_controls swingDoor) */
