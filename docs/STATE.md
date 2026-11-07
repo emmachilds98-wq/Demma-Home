@@ -4,6 +4,7 @@ Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; w
 `CLAUDE.md`.
 
 **Version:** V2.86 (7 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
+The version in Plan is a refresh button ("V2.86 ↻"): on the home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 10 (the rest in parallel chunks A–E, one thread each), section 9 (every task's state).
 Open PRs: #133 (KTX2, WIP). The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
@@ -34,7 +35,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 | `projects/` | How a project is shaped (`project.schema.json`); a room's own project goes in `projects/<id>/project.json` |
 | `tools/` | `build.py`, `checks.py`, `check_site.py`, `pull_edits.py`, `round.py`, `compare.py` and `camfit.py` (the photos beside the 3D) |
 | `docs/` | `HANDOVER.md` (start here), `REAL_PLAN.md` (the plan), this file, `DECISIONS.md`, `HISTORY.md` |
-| `_site/` (built) | `index.html` (the page), `sheets.<hash>.json` (its sheets), `plan.html` (a step to it), `sw.js`, `manifest.webmanifest`, `three.<hash>.js`, `photos.<hash>.json`, `data/` (house.json, projects), `media-wall/out/` (PDFs), `media-wall/src/art/` (pictures, icons) |
+| `_site/` (built) | `index.html` (the page), `sheets.<hash>.json` (its sheets), `plan.html` (a step to it), `sw.js`, `version.txt`, `manifest.webmanifest`, `three.<hash>.js`, `photos.<hash>.json`, `data/` (house.json, projects), `media-wall/out/` (PDFs), `media-wall/src/art/` (pictures, icons) |
 
 ## The site now
 - **Landing (V2.69, N19):** a cream first screen (the house's outline, a thin line filling; no words, no black) until the first
@@ -106,6 +107,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   over metres, lighter and darker slower still, so no grid shows (V2.68).
 - **Offline:** `sw.js` keeps the page's last copy and every picture; a file named by its contents (the photos, `three.<hash>.js`)
   stays in `demma-keep` across versions, so a new round doesn't fetch it again (V2.47).
+  **Get the latest:** the version in Plan (`.hello .ver`, "V2.83 ↻") is a button, for the home-screen app that has no reload: it reads
+  `version.txt` past every cache; same version, a toast says so; newer, it updates `sw.js`, clears every cache but `demma-keep`, reloads (V2.83).
   The photos are a file each (`_site/tex/<key>_<map|nor|rough>.<hash>.jpg`, `build_viewer.split_photos`; the page keeps their names):
   what's on screen is fetched first, the rest a moment later; a photo two textures share is fetched once (`decodeImg`) (V2.49); each goes onto the graphics chip in turn, `upStep`: 6 ms of a still frame once you've been still 0.2 s, none while you move (on a walk over 3 s, one a second if it's on screen), the shadows once at the end (V2.64, V2.67).
   The living room's oak, hessian and two carpets are colour-matched at build (`export3d.TINT`; the carpets as `tmap`, beside the house's own `map`), not on the page (V2.67).
