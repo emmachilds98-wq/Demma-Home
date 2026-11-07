@@ -3,8 +3,8 @@
  "files": {
   "page_mb": 2.25,
   "three_mb": 0.95,
-  "photos_mb": 12.5,
-  "half_mb": 3.7
+  "photos_mb": 9.5,
+  "half_mb": 2.6
  },
  "paths": {
   "_": "first_visit_mb: what a first visit fetches from the site (the icon font and the like from elsewhere aside); shaders_first: shader programs built by the first picture; draws_house, draws_living: a frame's draws while moving, the whole house as it opens and standing in the living room (R3D.perf().calls, the shadows' redraw left out). phone: a phone without a strong chip (Fast, half-size photos); computer: no graphics card, 1920 wide (Fast); iphone: Apple graphics (HD); rtx: an NVIDIA RTX (HD, 1280 wide).",
