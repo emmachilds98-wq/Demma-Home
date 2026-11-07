@@ -169,7 +169,7 @@ const HESSIAN = canvasTex(256, 256, (g, w, h) => {   // v15: hessian's coarse, o
 HESSIAN.repeat.set(3, 9);
 /* V1.1, the client: "i want better realism, quality and speed": CC0 photos (house/textures, house/SOURCES.md; inline in the data, as the
    house's) take over the drawn textures above as they arrive. The same texture objects, so no material changes and no new shaders. A
-   colour photo is scaled to its drawn texture's average first, so every part keeps its colour (yours, the plan's) and only the grain, the
+   colour photo is scaled to its drawn texture's average (at build, export3d.TINT), so every part keeps its colour (yours, the plan's) and only the grain, the
    weave and the pile are real. A phone without a capable chip keeps the drawn ones */
 /* V1.9 (Phase 4): the photos come after the first picture (their own file on Pages, the page's last script on the shared page): until
    then each photo's texture is its mean colour (house/textures, photo_meta) and a flat relief, the same texture objects, so nothing
@@ -182,17 +182,18 @@ function loadPhotos() {
   const el = document.getElementById("photo-data"), src = el && el.dataset.src, txt = el && el.textContent.trim();
   return (photosIn = (txt ? Promise.resolve(txt) : src ? fetch(src).then(r => r.ok ? r.text() : "{}") : Promise.resolve("{}"))
     .then(t => JSON.parse(t)).catch(() => ({})).then(P => {
-      for (const t of Object.values(P)) for (const f of ["map", "nor", "rough"]) if (typeof t[f] === "string" && t[f][0] === "@") { const [k, g] = t[f].slice(1).split("."); t[f] = P[k][g]; if (P[k].half && P[k].half[g]) (t.half = t.half || {})[f] = P[k].half[g]; }   // a shared picture, sent once
+      for (const t of Object.values(P)) for (const f of ["map", "tmap", "nor", "rough"]) if (typeof t[f] === "string" && t[f][0] === "@") { const [k, g] = t[f].slice(1).split("."); t[f] = P[k][g]; if (P[k].half && P[k].half[g]) (t.half = t.half || {})[f] = P[k].half[g]; }   // a shared picture, sent once
       if (LOWD) for (const t of Object.values(P)) for (const f in t.half || {}) t[f] = t.half[f];   // V2.55 (N3): a phone without a strong chip takes the half-size set
       Object.assign(PHOTO, P); photosDone = true;
       /* V2.47 (speed, REAL_PLAN N2): each photo is a file of its own; the ones on what you can see now are fetched first, the rest
          a moment later, so the view you're on looks finished sooner on a phone's connection */
-      const seen = new Set(); scene.traverseVisible(o => { for (const m of [].concat(o.material || [])) for (const t of [m.map, m.normalMap, m.roughnessMap]) if (t) seen.add(t); });
-      const now = w => !w.tex || [w.tex, ...(TEX_CLONES.get(w.tex) || [])].some(t => seen.has(t)), all = PWAIT.splice(0), later = all.filter(w => !now(w));
+      const seen = onScreen(), now = w => texSeen(w.tex, seen), all = PWAIT.splice(0), later = all.filter(w => !now(w));
       all.filter(now).forEach(w => w.go());
       setTimeout(() => (window.requestIdleCallback || (f => f()))(() => later.forEach(w => w.go()), { timeout: 2000 }), 1200);
     }));
 }
+function onScreen() { const seen = new Set(); scene.traverseVisible(o => { for (const m of [].concat(o.material || [])) for (const t of [m.map, m.normalMap, m.roughnessMap]) if (t) seen.add(t); }); return seen; }
+const texSeen = (tex, seen) => !tex || [tex, ...(TEX_CLONES.get(tex) || [])].some(t => seen.has(t));
 const whenPhoto = (k, f, fn, tex) => { if (!(PMETA[k] && PMETA[k][f])) return false; const go = () => PHOTO[k] && PHOTO[k][f] && fn(PHOTO[k][f]); photosDone ? go() : PWAIT.push({ go, tex }); return true; };
 const TEX_CLONES = new WeakMap();   // a clone shares the picture but needs telling it changed (not in userData: three copies that as JSON)
 const texClone = t => { const c = t.clone(); TEX_CLONES.has(t) ? TEX_CLONES.get(t).push(c) : TEX_CLONES.set(t, [c]); return c; };
@@ -203,51 +204,41 @@ function texPut(tex, img) { const bmp = typeof ImageBitmap !== "undefined" && im
   const all = [tex, ...(TEX_CLONES.get(tex) || [])];
   all.forEach(t => t.dispose());   // every one first: a clone with the same settings shares the stand-in's storage until it's let go too
   for (const t of all) { t.image = img; t.flipY = !bmp; t.needsUpdate = true; gl.initTexture(t); } }
-/* V2.64, the client: "freezing on load after first move": the photos landed together (about 60 in the second batch) and three sent each
-   to the graphics chip on the first frame that drew it, so the first move after opening sent 30 to 50 in one frame (and redrew the
-   shadows for each). Now a photo waits its turn: as many as fit in 6 ms of a still frame, one every 120 ms while you move, each sent
-   ahead of the frame that shows it (initTexture); a colour match (prep) is done then too; the shadows are redrawn once, at the end */
-const UPQ = []; let upShade = false, upT = 0;
-function texSet(tex, img, shade, prep) { UPQ.push({ tex, img, shade, prep }); }
+/* V2.64, the client: "freezing on load after first move": the photos landed together and three sent each to the graphics chip on the
+   first frame that drew it. Now a photo waits its turn, each sent ahead of the frame that shows it (initTexture), the shadows redrawn
+   once at the end. V2.66 (N15): "lag when moving": none while you move (it was one every 120 ms), as many as fit in 6 ms once you've
+   been still 0.2 s; on a walk over 3 s, one a second, and only one on screen */
+const UPQ = []; let upShade = false, upT = 0, upMv = 0, upGo = 0;
+function texSet(tex, img, shade) { UPQ.push({ tex, img, shade }); }
 function upStep(now, busy) {   // from the frame loop, every frame
-  if (!UPQ.length) { if (upShade) { upShade = false; reshadow(); dirty(); } return; }
-  if (busy && now - upT < 120) return;
+  if (busy) { upGo = upGo || now; upMv = now; } else upGo = 0;
+  if (!UPQ.length) { if (upShade && !busy) { upShade = false; reshadow(); dirty(); } return; }
+  if (busy ? now - upGo < 3000 || now - upT < 1000 : now - upMv < 200) return;
+  let i = 0;
+  if (busy) { const seen = onScreen(); i = UPQ.findIndex(j => texSeen(j.tex, seen)); if (i < 0) { upT = now; return; } }
   const t0 = performance.now();
-  do { const j = UPQ.shift(); texPut(j.tex, j.prep ? j.prep(j.img) : j.img); if (j.shade) upShade = true; } while (UPQ.length && !busy && performance.now() - t0 < 6);
+  do { const j = UPQ.splice(i, 1)[0]; i = 0; texPut(j.tex, j.img); if (j.shade) upShade = true; } while (UPQ.length && !busy && performance.now() - t0 < 6);
   upT = now; dirty();
 }
 /* V1.30 (U5): a photo decoded off the page's thread (createImageBitmap; it was decoded as it was first drawn, a stall each), flipped for
    WebGL as three expects; an <img> where that isn't there */
 const DECODED = new Map();   // V2.47: a photo two textures share (the brick's, the pine's) is fetched and decoded once
-function decodeImg(src, flip = true) { const id = flip + src; if (!DECODED.has(id)) DECODED.set(id, decodeOnce(src, flip)); return DECODED.get(id); }
-function decodeOnce(src, flip) {
+function decodeImg(src) { if (!DECODED.has(src)) DECODED.set(src, decodeOnce(src)); return DECODED.get(src); }
+function decodeOnce(src) {
   const tag = () => new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = src; });
   if (!window.createImageBitmap) return tag();
-  return fetch(src).then(r => r.blob()).then(b => createImageBitmap(b, { imageOrientation: flip ? "flipY" : "none" })).catch(tag);
+  return fetch(src).then(r => r.blob()).then(b => createImageBitmap(b, { imageOrientation: "flipY" })).catch(tag);
 }
-function photoInto(tex, k, f, match = true) {
-  if (!PHOTOS) return;
-  whenPhoto(k, f, src => {
-    const tint = match && tex.image && tex.image.getContext;
-    decodeImg(src, !tint).then(im => texSet(tex, im, false, tint ? im => {
-      /* scaled to the drawn texture's average (V2.64: the averages from a 128 × 128 copy, not every pixel of both) */
-      const avg = c => { const s_ = document.createElement("canvas"); s_.width = s_.height = 128; const g_ = s_.getContext("2d"); g_.imageSmoothingQuality = "high"; g_.drawImage(c, 0, 0, 128, 128);
-        const d = g_.getImageData(0, 0, 128, 128).data, t = [0, 0, 0]; for (let i = 0; i < d.length; i += 4) { t[0] += d[i]; t[1] += d[i + 1]; t[2] += d[i + 2]; } return t.map(v => v / 16384 || 1); };
-      const want = avg(tex.image), out = document.createElement("canvas"); out.width = im.naturalWidth || im.width; out.height = im.naturalHeight || im.height;
-      const g = out.getContext("2d"); g.drawImage(im, 0, 0);
-      const px = g.getImageData(0, 0, out.width, out.height), d = px.data, k = avg(im).map((v, i) => want[i] / v);
-      for (let i = 0; i < d.length; i += 4) { d[i] *= k[0]; d[i + 1] *= k[1]; d[i + 2] *= k[2]; }   // clamped at 255 by the array
-      g.putImageData(px, 0, 0); return out;
-    } : null));
-  }, tex);
+function photoInto(tex, k, f) {   // V2.66 (N15): the living room's colour match is in the photo (export3d.TINT), not done here
+  if (PHOTOS) whenPhoto(k, f, src => decodeImg(src).then(im => texSet(tex, im)), tex);
 }
 const flatNormal = () => canvasTex(4, 4, (g, w, h) => { g.fillStyle = "#8080ff"; g.fillRect(0, 0, w, h); }, false);
 const OAK_NRM = flatNormal(), CORD_NRM = flatNormal(), ARTEX_NRM = flatNormal();
 CORD_NRM.repeat.set(1.44, 0.6);          // the photo's 100 ribs a copy: 144 across a cushion, as the drawn cord's
 ARTEX_NRM.repeat.set(8, 8);              // V2.2: the living room's ceiling in artex (the house's stipple, 0.5 m a copy on a ~4 m piece)
-photoInto(OAK_TEX, "lr_oak", "map"); photoInto(OAK_NRM, "lr_oak", "nor", false);
-photoInto(HESSIAN, "lr_hessian", "map"); photoInto(CORD_NRM, "lr_cord", "nor", false); photoInto(ARTEX_NRM, "artex", "nor", false);
-photoInto(CARPET, "carpet_grey", "map"); photoInto(OATMEAL, "carpet", "map");   // the house's Carpet012, in your grey and the oatmeal
+photoInto(OAK_TEX, "lr_oak", "map"); photoInto(OAK_NRM, "lr_oak", "nor");
+photoInto(HESSIAN, "lr_hessian", "map"); photoInto(CORD_NRM, "lr_cord", "nor"); photoInto(ARTEX_NRM, "artex", "nor");
+photoInto(CARPET, "carpet_grey", "tmap"); photoInto(OATMEAL, "carpet", "tmap");   // the house's Carpet012, in your grey and the oatmeal
 // v16: the client's light box is an IKEA OBEGRÄNSAD: a black panel with a 16 x 16 grid of white LEDs that shows blocky black-and-white
 // pictures, "like pharmacy LED ads". Drawn showing a pixel music note; the unlit LEDs are dark grey dots on the black face.
 // v16: the cap's embroidery. v37: drawn as rows of gold stitching in the shape of the client's cap (four lines on the crown, fourteen
