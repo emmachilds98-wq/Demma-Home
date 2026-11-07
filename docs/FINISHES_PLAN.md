@@ -158,9 +158,9 @@ code.
 | F6 | Schemes and sending | **Done** (V2.11, V2.13, V2.14) | |
 | F7 | What it takes | **In part** (V2.12: m² and litres) | Rough cost, once the client picks paints and floors |
 | F8 | The living room joined, more slots | Moved to `docs/REAL_PLAN.md` R7 (task N5); joined V2.51 | |
-| F9 | Wallpaper and patterns | Not started | Wallpapers at their real repeat on This wall; rolls counted |
+| F9 | Wallpaper and patterns | **Done** (V2.75, N29: three drawn to real rolls) | A wallpaper the client names, from its photo |
 | F10 | Furniture in every room | Moved to `docs/REAL_PLAN.md` R6 (task N7) | |
-| F11 | Colours that go with it | **In part** (V2.35: lighter and darker) | The makers' own pairings, with sources |
+| F11 | Colours that go with it | **Done** (V2.35 lighter and darker; V2.75 the makers' pairings) | |
 | F12 | The outside | **In part** (V2.38: frames, the front door's outside) | Fences, lawn, paths, plants |
 
 **Needs the client:** the paints, carpets and fittings they'd like in the catalogue to start (names or photos), and which room first; for

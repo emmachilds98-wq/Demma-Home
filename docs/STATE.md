@@ -3,10 +3,10 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.74 (7 Nov 2026)
+**Version:** V2.75 (7 Nov 2026)
 
-**Work from:** `docs/REAL_PLAN.md` section 8, the next round (N24–N31: land the waiting PRs, a lighter start, guard the gains,
-fewer shaders, lean code, wallpaper, the gardens, KTX2) in workstreams that run side by side, one task a PR; section 7 is done but
+**Work from:** `docs/REAL_PLAN.md` section 8, the next round (N24–N34: land the waiting PRs, a lighter start, guard the gains,
+fewer shaders, lean code, the gardens, KTX2, lighter photos, two rooms to their photos; N29 wallpaper done) in workstreams that run side by side, one task a PR; section 7 is done but
 N20 and N21 (their PRs, N24) and N22's KTX2 (N31). Its section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 Older boards, all done or carried into those: `docs/V1_PLAN.md` (phases 0–10), `docs/QUALITY_PLAN.md`, `docs/UPGRADE_REVIEW.md`.
 
@@ -75,7 +75,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   The floor's card has A plant too (V2.62: row [23], `08_house_catalogue.js` `syncPlants`: one of the catalogue's four, stood in the
   free corner farthest from the doors, clear of the furniture and the doors' swing; a piece like an added one: tap it to move it,
   Another plant, Take it out; the living room keeps its own plants). Look's rows: [18] rug, [19] curtains, [20] bedding, [21]–[22] the Look thread's (a picture),
-  [23] plant.
+  [23] plant, [24]–[25] wallpaper.
+  Wallpaper (V2.75, N29, `finPaperApply`): three drawn to real rolls (`fit.SOURCES wallpaper`) on the wall's own face, round its doors
+  and windows, up to its ceiling or slope; rolls and cost on the card and in Measure. A maker's paint shows Its maker pairs it with
+  (`FIN_PAIRS`, `fit.SOURCES pairings`). Not in the Changes card's costs yet.
   Tap a floor: Add a piece here (25 pieces in 8 kinds, `08_house_catalogue.js`, built from the house's own boxes so the walk and taps
   follow; a card warns when it's in the way of another). Swaps and adds are Measure's edits rows: Send carries them, `pull_edits.py` asks.
 - **Track the upgrades (V2.66, N23):** a room's colours, floor or piece card has Changes (n): the room's card of what's changed
@@ -142,7 +145,6 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
   or any other file over 1.5 MB.
 
 ## Open with the client
-1. When happy, archive `DIY` (Settings → Archive).
 1. Measure (V2.24): is the living room's flight itself 85 wide like the stairwell over it (drawn 59, which leaves the living room's door its 83)? And the bathroom door's width: the short wall beside it is 18 now (the banister's end post takes 8).
 2. From each iPhone and PC, the site with `?perf` added, after opening the house once: a screenshot of the corner box (Phase 4's real numbers).
 3. Still to measure (all in Measure): how far the boiler cupboard sticks into bedroom 2; the bathroom's ceiling over the toilet and the slope's start, the vanity's width, the bath's length (184 drawn, from the door);

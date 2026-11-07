@@ -1360,6 +1360,12 @@ ORDER.append("rugsizes")
 SOURCES["ribba"] = ("IKEA UK: RIBBA frame 50 × 70 cm (002.688.76): frame 52 × 72 cm, a 50 × 70 print without the mount "
                     "(ikea.com/gb/en/products/decoration/frames-pictures/ribba-frame-white-art-00268876); N5e's pictures are options, to look at")
 ORDER.append("ribba")
+SOURCES["wallpaper"] = ("Wallpaper Direct, Graham & Brown (Nov 2026): Figaro and Wildflower Stripe, rolls 0.52 × 10 m, a 53 cm repeat, free match, £60; "
+                        "Lagom Stripe, 0.52 × 10 m, a 64 cm repeat, free match, £70 (wallpaperdirect.com/products/graham-brown/figaro/160287, "
+                        "/wildflower-stripe/161090, /lagom-stripe/167794); N29's wallpapers are drawn to these sizes, options to look at")
+SOURCES["pairings"] = ("The makers' own pairings (Nov 2026): Farrow & Ball's Colour Schemes for Card Room Green No. 79 and Treron No. 292 "
+                       "(farrow-ball.com/paint/card-room-green, /paint/treron); Little Greene's for Sage Green 80 (littlegreene.com/sage-green)")
+ORDER.extend(["wallpaper", "pairings"])
 
 
 # ---------------------------------------------------------------- v39: the plan's fit proof is the firm plan's (options: one line each, section 12)
