@@ -20,7 +20,7 @@ def run(w, h):
         pg = b.new_page(viewport={"width": w, "height": h}); pg.set_default_timeout(120000)   # V1: a CI screenshot can pass 30 s in software graphics
         localcdn.route(pg)                                   # v34: three.js from THREE_LOCAL, if set
         pg.on("pageerror", lambda e: errs.append(str(e)[:200])); pg.on("console", lambda m: errs.append(m.text[:200]) if m.type == "error" else None)
-        pg.goto(BASE + "plan.html"); pg.wait_for_function("window.R3D && window.R3D.ready", timeout=180000)
+        pg.goto(BASE + "index.html"); pg.wait_for_function("window.R3D && window.R3D.ready", timeout=180000)   # N25: plan.html only points here
         pg.evaluate("() => document.querySelectorAll('.stk').forEach(s => s.style.pointerEvents = 'none')")   # the stickers sit over things
         def settle():   # v48: wait for the camera to stop flying (the garden made the fly slower headless; a tap mid-flight missed)
             pg.wait_for_function("""() => { const c = R3D._dbg.camera.position, k = c.x.toFixed(4) + c.y.toFixed(4) + c.z.toFixed(4);
