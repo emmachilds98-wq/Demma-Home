@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.70 (7 Nov 2026)
+**Version:** V2.71 (7 Nov 2026)
 
 **Work from:** `docs/REAL_PLAN.md` section 7, the round after (N13–N23: the first picture, moving, the views' controls, landing,
 the outside, tracking upgrades) in workstreams that run side by side, one task a PR; section 6 (N1–N12) is done but N4's and N9's
@@ -89,6 +89,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   chair-bed its tube frame and leaning back. Cloth profiles get soft edges (`20_go.js` `PSOFT`); no microwave is in the photos.
 - **Opening (V2.70, N13):** the shade's and glow's shaders built in the warm-up (`postWarm`), textures sent while it waits (`texWarm`), shadows
   a frame ahead (`preDraw`): the first picture builds 2 shaders (was 16), sends ~20 textures (was 220); then `r3d-first` fires.
+- **Drawn inside (V2.71, N16):** the room you stand in, the rooms seen from it, the shell; the outside if one has a window (`roomCull`).
 - **Quality:** a real graphics card opens in HD and never steps down (V2.25); iPhones start in HD at 2× and step down only if slow, always through the composer (the shade off never rebuilds a shader; a slow one leaves it out while you drag; the house's materials always carry 6 cutting planes, `houseClip`, so a floor's or a room's cut builds no shaders; the start and the rooms' warm-up (`warmSwitch`) compile by cutting planes, in parallel, `compileClipped`, V2.64); View →
   More has HD or Fast. In HD each room is lit by its ceiling light and its windows' daylight, with soft shadows and ambient occlusion; by evening the
   lamps the client has light theirs too (the office's purple lamp, the bathroom mirror's bar; V2.48), the kitchen from its two LED battens. Every standing piece
