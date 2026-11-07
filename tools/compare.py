@@ -22,7 +22,7 @@ PAIRS = [("kitchen", "photo_kitchen_wide_30oct.jpg"), ("bath", "photo_bathroom_f
 W = 720
 # V1.40 (Next 2): where each photo was taken, found by tools/camfit.py (the 3D's edges fitted to the photo's): {view: {eye, at, fov}}
 CAMS = {"office": {"eye": [263.0, 432.5, 282], "at": [369.3, 390.5, 446.1], "fov": 75.0}, "landing": {"eye": [330, 443.8, 220.0], "at": [330.9, 380.2, 30.4], "fov": 70}, "wc": {"eye": [415.0, -96.9, -132.0], "at": [423.6, -140.0, -327.1], "fov": 70}, "kitchen": {"eye": [182.0, -105.0, -300], "at": [30.9, -138.0, -426.8], "fov": 78.0}, "hall": {"eye": [415.0, 153.8, 405.0], "at": [416.1, 101.4, 212.0], "fov": 75}}   # the fits that read true (the hall's in part); the bathroom and the master: not yet (UPGRADE_REVIEW)
-# V2.71 (N21): the outside, the whole house with the street and the gardens on, seen from where the agent's photos were taken (by eye)
+# V2.75 (N21): the outside, the whole house with the street and the gardens on, seen from where the agent's photos were taken (by eye)
 OUTSIDE = {"front": {"eye": [-20, 190, 1150], "at": [300, 300, 450], "fov": 72}, "rear": {"eye": [180, -110, -1537], "at": [180, -60, -337], "fov": 61}}
 
 

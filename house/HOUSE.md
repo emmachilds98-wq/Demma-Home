@@ -191,7 +191,7 @@ the door to the hall at the west. In mm (the sketch isn't to scale: trust the nu
   the drive, in front of the porch, with a low red-brick wall along its left side (the neighbour's paved front) and plants along the
   pavement edge; on the right of the drive a strip of lawn by the neighbour's fence with a young tree (rose or fruit), bulbs and a short
   timber post at the drive's corner. The pavement and the road in front.
-- The garage door a 7' × 6' up-and-over (213 × 183, V2.71 off the photo); the porch's pilasters 26 wide, its pediment to 2.74 m.
+- The garage door a 7' × 6' up-and-over (213 × 183, V2.75 off the photo); the porch's pilasters 26 wide, its pediment to 2.74 m.
 - Sizes to come: the drive's length, the lawn's width and depth.
 
 ## The garden (left and right as seen from the house)
@@ -267,7 +267,7 @@ another setup will stay. As well as the overhead shelf." Photos: `media-wall/inp
 
 - **v68, the client:** "the office / bedroom 3 is 2.25m wide on the desk side ... make the window centre to the room": the landing can't
   give way (its photo), so the front wall is 28.4 further out than the plans read (the room 225, the master bedroom 450); the window
-  in the middle (x 327–423), the oak desk wall to wall, the tall cupboard beside the window. The porch's cupboards keep the plans' depth.
+  over the porch's middle (x 337–433, the client 7 Nov: "centered like the photo"), the oak desk wall to wall, the tall cupboard beside the window. The porch's cupboards keep the plans' depth.
 
 - **v69, the client:** the tall cupboard goes ("we will not be keeping it": out of the model); the office's door is a white bifold.
 

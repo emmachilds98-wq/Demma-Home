@@ -89,11 +89,11 @@ OPENINGS = [
     dict(id="living_window", floor="ground", side="n", x=LIVING["window_x"], sill=LIVING["window_y"][0], head=LIVING["window_y"][1],
          kind="window", design="living", src="M", skip=True),          # the living room draws its own
     dict(id="front_door", floor="ground", side="s", x=(344.0, 426.0), sill=0.0, head=205.0, kind="door", design="porch", src="F + P (the porch's width)"),
-    dict(id="garage_door", floor="ground", side="s", x=(44.0, 257.0), sill=-15.0, head=168.0, kind="door", design="garage", src="F: V2.71, a 7' × 6' up-and-over (2134 × 1829): the front photo's door against its window rows"),
+    dict(id="garage_door", floor="ground", side="s", x=(44.0, 257.0), sill=-15.0, head=168.0, kind="door", design="garage", src="F: V2.75, a 7' × 6' up-and-over (2134 × 1829): the front photo's door against its window rows"),
     dict(id="bed2_window", floor="first", side="n", x=(112.0, 262.0), sill=90.0, head=210.0, kind="window", design="casement", src="B + P", dormer=True),
     dict(id="bath_window", floor="first", side="n", x=(294.0, 394.0), sill=90.0, head=210.0, kind="window", design="casement", src="B + P", dormer=True, frosted=True),   # V2.40: frosted (the photos)
     dict(id="master_window", floor="first", side="s", x=(56.0, 239.0), sill=75.0, head=200.0, kind="window", design="casement", src="F"),
-    dict(id="bed3_window", floor="first", side="s", x=(317.4, 413.4), sill=75.0, head=200.0, kind="window", design="casement", src="F + P"),
+    dict(id="bed3_window", floor="first", side="s", x=(337.0, 433.0), sill=75.0, head=200.0, kind="window", design="casement", src="F + P; V2.75, the client: \"centered like the photo\": over the porch's middle"),
 ]
 
 # Doors between rooms, read off the plans (P, pixels on that floor's plan): "h" a wall running east-west at plan y, "v" one running
@@ -146,9 +146,9 @@ CHALK_DOORS = ["store_door", "cupboard_door", "airing_door"]
 # back); the stores either side are the bin cupboards (white doors into the porch). Bins (E): a 240 L wheelie bin 58 × 74 × 107 (EN 840),
 # kerbside recycling boxes 60 × 40 × 35. Left and right as you face the house: left the west cupboard, right the east.
 PORCH = dict(bin_240=dict(w=58.0, d=74.0, h=107.0), box=dict(w=60.0, d=40.0, h=35.0), src="client (layout) + EN 840 / standard boxes (E)")     # the client: chalkboard doors, the two in the cubby and upstairs
-# V2.71 (N21): its surround off the front photo, scaled by the windows and the garage door: pilasters 26 wide (outer 138), the frieze
+# V2.75 (N21): its surround off the front photo, scaled by the windows and the garage door: pilasters 26 wide (outer 138), the frieze
 # from the door's height to 222 (the opening's head at the door's top), the pediment to 274 (F, E ±10)
-PORCH["surround"] = dict(pil=26.0, head=DOOR_H, top=222.0, apex=274.0, src="F: the front photo (V2.71), E ±10")
+PORCH["surround"] = dict(pil=26.0, head=DOOR_H, top=222.0, apex=274.0, src="F: the front photo (V2.75), E ±10")
 
 # v61: bedroom 3, the office, as the client plans it (inputs/photo_office_*_25oct.jpg: "the desk will be replaced with a straight oak
 # desk. One of the PCs will go to the living room but the one next to another setup will stay. As well as the overhead shelf"). The
@@ -163,7 +163,7 @@ OFFICE = dict(desk=dict(x=(397.0, 467.0), z=(275.5, 498.4), h=74.0, t=3.0),
               dual=dict(z=(388.0, 496.0), y0=96.0, h=33.0), pc2=dict(x=(414.0, 460.0), z=(446.0, 492.0), h=45.0), chair2=(370.0, 443.0),
               shelf=dict(z=(300.0, 488.0), d=25.0, y=205.0, t=4.0), pegboard=dict(z=(406.0, 482.0), y=(118.0, 174.0)),
               monitors=dict(z=(290.0, 352.0), y0=96.0, h=37.0, gap=3.0), pc=dict(x=(414.0, 460.0), z=(288.0, 311.0), h=45.0),
-              chair=(370.0, 321.0), radiator=dict(x=(332.4, 417.4), y=(15.0, 65.0)),   # v69: the tall cupboard out (the client: "we will not be keeping it")
+              chair=(370.0, 321.0), radiator=dict(x=(352.0, 437.0), y=(15.0, 65.0)),   # v69: the tall cupboard out (the client: "we will not be keeping it")
               src="client's photos (what goes where) + standard sizes (E)")
 
 # v62: bedroom 2 as it is (inputs/photo_bedroom2_25oct.jpg, from its door looking towards the alley side): the block (the closed-off

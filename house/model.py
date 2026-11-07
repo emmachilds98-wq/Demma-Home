@@ -783,7 +783,7 @@ def roof(o):
 
 def surround(o, x0, x1, zf, s, foot):
     """The porch's white surround on the front face zf (s: its outward way): two pilasters, the frieze over the opening and the
-    pediment (V2.71, N21: the front photo's proportions, survey_data.PORCH["surround"])."""
+    pediment (V2.75, N21: the front photo's proportions, survey_data.PORCH["surround"])."""
     P = D.PORCH["surround"]; w, hd, tp, ap = P["pil"], P["head"], P["top"], P["apex"]
     za, zb = sorted((zf, zf + s * 16)); zc, zd = sorted((zf, zf + s * 22))
     for xa in (x0 - 2 - w, x1 + 2):
@@ -891,7 +891,7 @@ def _house_shell(o, span, gcol):
                 yy = ya + (yb - ya) * k_ / 8; o.box("rib", xa, yy - 0.6, pz + s * 2, xb, yy + 0.6, pz + s * 2.6)
         elif op["design"] == "porch":                     # v65: the open porch as ours: dark inside, the door set back, a step
             dr = D.LEVELS["drive"]
-            o.box("porch_in", xa, ya, pz, xb, min(yb, D.PORCH["surround"]["head"]), pz + s * 0.6)   # V2.71: to the frieze
+            o.box("porch_in", xa, ya, pz, xb, min(yb, D.PORCH["surround"]["head"]), pz + s * 0.6)   # V2.75: to the frieze
             o.box("upvc", xa + 14, ya, pz + s * 0.6, xb - 14, yb - 8, pz + s * 1.2)
             surround(o, xa, xb, pz, s, dr)
             o.box("quarry", xa - 22, dr - 5.5, pz + s * 0.3, xb + 22, ya, pz + s * 34)
