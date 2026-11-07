@@ -85,7 +85,7 @@ function kindMat(kind) {
     led: () => new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: false }),
     glass: () => new THREE.MeshPhysicalMaterial({ color: "#ffffff", roughness: 0.04, transmission: 0, transparent: true, opacity: 0.16, depthWrite: false }),
     art: () => new THREE.MeshStandardMaterial({ map: ART_TEX, roughness: 0.5 }),
-    brick: () => new THREE.MeshStandardMaterial({ map: BRICK_TEX, bumpMap: BRICK_TEX, bumpScale: 0.6, roughness: 0.92 }),   // V2.75: both faces in its shape (twoFaced)
+    brick: () => new THREE.MeshStandardMaterial({ map: BRICK_TEX, bumpMap: BRICK_TEX, bumpScale: 0.6, roughness: 0.92 }),   // V2.79: both faces in its shape (twoFaced)
     trans: () => new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.7, transparent: true, opacity: 0.85 }),
   }[kind]();
   return KIND[kind] = reg(m);
@@ -236,13 +236,13 @@ function buildGroup(items, name) {
   }
   for (const b of Object.values(buckets)) {
     let geo = mergeGeometries(b.geos.map(g => g.index ? g.toNonIndexed() : g));
-    if (b.poly || b.kind === "brick") geo = twoFaced(geo);   // V2.75 (N27): both faces in the shape, the kind's own one-sided material
+    if (b.poly || b.kind === "brick") geo = twoFaced(geo);   // V2.79 (N27): both faces in the shape, the kind's own one-sided material
     const m = new THREE.Mesh(geo, kindMat(b.kind)); shadow(m, b.kind !== "glass" && b.kind !== "led");
     (b.high ? above : grp).add(m);
   }
   return grp;
 }
-/* V2.75 (N27): a panel seen from both sides drawn one-sided, its other face a copy wound the other way with its normals turned. A
+/* V2.79 (N27): a panel seen from both sides drawn one-sided, its other face a copy wound the other way with its normals turned. A
    two-sided material is a shader of its own (three in all with the house's lights) and, see-through, two draws; this way the panels use
    the boxes' shaders, in one draw. The turned copies go first, so a see-through panel's far faces still draw before its near ones, in
    the order three's two passes drew them; the shadows take both faces, as before */

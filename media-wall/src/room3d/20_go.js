@@ -547,7 +547,7 @@ function buildHouse() {
             b.setIndex(keep); b.clearGroups(); } }
         return b; }
       if (CLOTH[mk] && !LOWD) return clothBox(mk, x0, y0, z0, x1, y1, z1, r);
-      /* V2.75 (N27): the rounding as fine as it shows: under 0.8 cm (the keys, books, handles, doors' arrises) one bevel an edge as the
+      /* V2.79 (N27): the rounding as fine as it shows: under 0.8 cm (the keys, books, handles, doors' arrises) one bevel an edge as the
          living room's boxes have (bevelBox, 44 triangles, not 108; like RoundedBoxGeometry, not indexed), under 2 cm (the knobs, the mouse, the rails) two steps, not four
          (108, not 300); the big curves (the fittings, the pots) as they were. The light rolls round each edge the same */
       const re = Math.max(0.0005, Math.min(r, Math.min(w, h, d) / 2 - 0.05));
@@ -614,7 +614,7 @@ function buildHouse() {
       const prismGeo = P => {                         // a profile extruded: along x the profile is (z, y), along z it is (x, y)
         const r = SMALL && !GOOD_PHONE ? 0 : Math.min(PSOFT[P.m] ?? (P.m.startsWith("cloth") ? PSOFT.cloth : 0), (P.b - P.a) / 2 - 0.1);
         const g = new THREE.ExtrudeGeometry(new THREE.Shape(P.pts.map(([u, w]) => new THREE.Vector2(u * M, w * M))), r > 0
-          ? { depth: (P.b - P.a - 2 * r) * M, bevelEnabled: true, bevelThickness: r * M, bevelSize: r * M, bevelOffset: -r * M, bevelSegments: r < 0.8 ? 1 : 2 }   // V2.75 (N27): the garments' 0.7 cm, one step (as houseBox)
+          ? { depth: (P.b - P.a - 2 * r) * M, bevelEnabled: true, bevelThickness: r * M, bevelSize: r * M, bevelOffset: -r * M, bevelSegments: r < 0.8 ? 1 : 2 }   // V2.79 (N27): the garments' 0.7 cm, one step (as houseBox)
           : { depth: (P.b - P.a) * M, bevelEnabled: false });
         if (r > 0) g.translate(0, 0, r * M);
         if (P.axis === "x") mx.set(0, 0, -1, -P.a * M, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1);
