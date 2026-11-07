@@ -18,8 +18,15 @@ function lazyVis(o, build, merge = false) {
   let v = false, made = false;
   Object.defineProperty(o, "visible", { configurable: true, enumerable: true, get: () => v, set(x) {
     v = !!x; if (!v || made) return; made = true; build(); if (merge) mergeStatic(o); clipGroup(o);
-    if (!lazyQ) { lazyQ = true; queueMicrotask(() => { lazyQ = false; const was = cabSnap; cabSnap = true; try { applyState(); } finally { cabSnap = was; } }); } } });
+    if (!lazyQ) { lazyQ = true; queueMicrotask(lazyApply); } } });
   return o;
+}
+/* applyState shows the living room's parts again; from outside they're put away (livingFromOutside), so put them back the same way
+   (a piece built at the start would otherwise bring the living room into the house's first picture: 8 more shaders, ~90 more draws) */
+function lazyApply() {
+  lazyQ = false; const was = cabSnap, out = livOut; cabSnap = true;
+  if (out) { livOut = false; for (const o of LIVING) if (o.userData.livWas !== undefined) { o.visible = o.userData.livWas; delete o.userData.livWas; } }
+  try { applyState(); } finally { cabSnap = was; if (out) livingFromOutside(); }
 }
 /* a mirror's glass: no live reflection (it would draw the room twice); a soft daylight sheen with two diagonal highlights reads as one */
 const MIRROR_SHEEN = canvasTex(128, 512, (c, w, h) => {
