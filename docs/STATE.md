@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.66 (7 Nov 2026)
+**Version:** V2.67 (7 Nov 2026)
 
 **Work from:** `docs/REAL_PLAN.md` section 7, the round after (N13–N23: the first picture, moving, the views' controls, landing,
 the outside, tracking upgrades) in workstreams that run side by side, one task a PR; section 6 (N1–N12) is done but N4's and N9's
@@ -46,10 +46,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 ## The site now
 
-- **Landing (V2.66, N19):** a cream first screen (the house's outline, a thin line filling; no words, no black) until the first
+- **Landing (V2.67, N19):** a cream first screen (the house's outline, a thin line filling; no words, no black) until the first
   picture (`r3d-first`; till every start fires it, the start's words put away), then `demma-landed`; `build_viewer.LANDING_JS`.
   The version is in Plan, beside the hello (`.hello .ver`), not the brand.
-- **The 3D is the site** (the old design, V1.2): the whole house opens first, a welcome card over it once on a device (V2.66: "Welcome
+- **The 3D is the site** (the old design, V1.2): the whole house opens first, a welcome card over it once on a device (V2.67: "Welcome
   home", three icons of two words, Walk in · Look round; the name top left brings it back; automated browsers skip it and the first
   screen, unless `?welcome` / `?landing`). Pills float over it: the brand, Plan · Build · Buy, Whole house, Hide labels,
   Angled · Overhead, the floors (Outside · First · Ground · Lower, Gardens, Next door), a floor's rooms (one row on a computer), Hide
@@ -78,6 +78,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   [23] plant.
   Tap a floor: Add a piece here (25 pieces in 8 kinds, `08_house_catalogue.js`, built from the house's own boxes so the walk and taps
   follow; a card warns when it's in the way of another). Swaps and adds are Measure's edits rows: Send carries them, `pull_edits.py` asks.
+- **Track the upgrades (V2.66, N23):** a room's colours, floor or piece card has Changes (n): the room's card of what's changed
+  (Look's rows and Edit's pieces), each a tap to tick done (this device, `dh-done`; a new choice starts unticked), a rough cost each
+  (`16_cards.js` `UPC`, E: UK prices, Nov 2026; a floor by the room's m²; moves and take-outs £0). Plan's home has The house's changes:
+  the total, how many done, a row a room (tap: stand in it, its card open).
 - **Measure** (dock): the sizes still guessed, by room; the colours' m² and litres; Send makes a link of every change
   (`pull_edits.py --link`).
 - **Shapes (V2.53, N6):** the master's wardrobes are PAX frames (plinth set back, an oval rail) with garments on hangers, the
