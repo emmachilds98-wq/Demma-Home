@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.69 (7 Nov 2026)
+**Version:** V2.70 (7 Nov 2026)
 
 **Work from:** `docs/REAL_PLAN.md` section 7, the round after (N13–N23: the first picture, moving, the views' controls, landing,
 the outside, tracking upgrades) in workstreams that run side by side, one task a PR; section 6 (N1–N12) is done but N4's and N9's
@@ -51,9 +51,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   The version is in Plan, beside the hello (`.hello .ver`), not the brand.
 - **The 3D is the site** (the old design, V1.2): the whole house opens first, a welcome card over it once on a device (V2.69: "Welcome
   home", three icons of two words, Walk in · Look round; the name top left brings it back; automated browsers skip it and the first
-  screen, unless `?welcome` / `?landing`). Pills float over it: the brand, Plan · Build · Buy, Whole house, Hide labels,
-  Angled · Overhead, the floors (Outside · First · Ground · Lower, Gardens, Next door), a floor's rooms (one row on a computer), Hide
-  buttons; the house framed clear of them (`measureShift`; a phone stands back by the free share, `freeFrame`); the dock below
+  screen, unless `?welcome` / `?landing`). Pills float over it: the brand, Plan · Build · Buy; under them two rows at most
+  (V2.70, N20, `.r3d-mini` by `order`): Angled · Overhead (or a room's four ways), the floors (Outside · First · Ground · Lower,
+  Gardens, Next door) sliding sideways, Whole house, one Hide button (`setBare`: labels, then buttons; Show brings both back); then a
+  floor's rooms, sliding too; the house framed clear of them (`measureShift`; a phone stands back by the free share, `freeFrame`); the dock below
   (View · Look · Measure; in the living room also Room and Edit); the figure bottom right drops you in where you let go.
 - **Rooms:** picking one stands you in it (`goRoom`); its views Be there · In it · Above · On its own. Walk: W A S D, arrows turn,
   the wheel walks (Ctrl + wheel the lens), a double-click or double-tap walks you to a spot, Mouse look (M) on a computer. The eye is
