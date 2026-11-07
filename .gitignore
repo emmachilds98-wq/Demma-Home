@@ -29,3 +29,4 @@ media-wall/src/art/icon-*.png
 _share/
 node_modules/
 .claude/worktrees/
+/.ktx2cache/

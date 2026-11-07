@@ -1376,10 +1376,11 @@ def split_photos(html_):
     first picture, each kept by the service worker until it changes. The page keeps only their names (a few KB)."""
     import base64, hashlib, io, re
     from PIL import Image
+    import vendor
     m = re.search(r'<script type="application/json" id="photo-data">(.*?)</script>', html_, re.S)
     if not m or len(m.group(1)) < 3:
         return html_
-    P, out, made = json.loads(m.group(1)), SITE / "tex", set()
+    P, out, made, used = json.loads(m.group(1)), SITE / "tex", set(), set()
     out.mkdir(exist_ok=True)
     for k, t in P.items():
         for f in ("map", "tmap", "nor", "rough"):
@@ -1388,13 +1389,17 @@ def split_photos(html_):
                 data = base64.b64decode(v.split(",", 1)[1])
                 name = f"{k}_{f}.{hashlib.sha256(data).hexdigest()[:10]}.jpg"
                 (out / name).write_bytes(data); made.add(name); t[f] = "tex/" + name
+                k2 = vendor.ktx2(data, f in ("map", "tmap"), used)   # V2.75 (N22): its KTX2 too, when the encoder is here (the JPEG stays, the fallback)
+                if k2:
+                    k2n = name[:-4] + ".ktx2"; (out / k2n).write_bytes(k2); made.add(k2n); t.setdefault("k2", {})[f] = "tex/" + k2n
                 im = Image.open(io.BytesIO(data))   # V2.55 (REAL_PLAN N3): a half-size copy for a phone without a strong chip (LOWD)
                 if im.width > 512:
                     b = io.BytesIO(); im.resize((im.width // 2, im.height // 2), Image.Resampling.LANCZOS).save(b, "JPEG", quality=88, optimize=True)
                     small = f"{k}_{f}_half.{hashlib.sha256(b.getvalue()).hexdigest()[:10]}.jpg"
                     (out / small).write_bytes(b.getvalue()); made.add(small); t.setdefault("half", {})[f] = "tex/" + small
-    for old in list(out.glob("*.jpg")) + list(SITE.glob("photos.*.json")):
+    for old in list(out.glob("*.jpg")) + list(out.glob("*.ktx2")) + list(SITE.glob("photos.*.json")):
         if old.name not in made: old.unlink()
+    if used: vendor.ktx2_prune(used)
     return html_[:m.start()] + '<script type="application/json" id="photo-data">' + json.dumps(P, separators=(",", ":")) + "</script>" + html_[m.end():]
 
 
@@ -1453,6 +1458,7 @@ if __name__ == "__main__":
     SITE.mkdir(parents=True, exist_ok=True)
     import vendor
     vmap = vendor.bundle(SITE)                                               # V1.31 (U4): three.js in one file of its own, if Node is here
+    vendor.transcoder(SITE)                                                  # V2.75 (N22): three's Basis transcoder, for the KTX2 photos
     for name in ("index.html", "plan.html"):                                  # V1.2: the site's front door again (plan.html for old links)
         html_ = split_photos(site())
         if vmap: html_ = html_.replace(room3d_page.IMPORTMAP, vmap, 1)
