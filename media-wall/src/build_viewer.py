@@ -861,9 +861,60 @@ LANDING_JS = r"""(() => { const L = document.getElementById("landing"); let done
 
 
 def page(site=False):
-    """v24: the page without round markers in its text (tidy.strip_versions) and with long captions folded (tidy.shorten_captions)."""
+    """v24: the page without round markers in its text (tidy.strip_versions) and with long captions folded (tidy.shorten_captions).
+    N25: the icon font only the symbols used; the sheets' markup and scripts packed out of the first parse (pack_sheets)."""
     import tidy
-    return tidy.shorten_captions(tidy.strip_versions(_page(site)))
+    html_ = tidy.shorten_captions(tidy.strip_versions(_page(site)))
+    return pack_sheets(html_.replace(ICON_CSS + "&display", ICON_CSS + "&icon_names=" + icon_names(html_) + "&display", 1))
+
+
+# N25 (a lighter start): the icon font carries only the symbols the page draws (1.29 MB to about 25 KB): every class="ms" element's
+# name in the page, its markup and its scripts alike, and the ones a script swaps in by name (ICONS_SET)
+ICON_CSS = "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,500,1,0"
+ICONS_SET = ("add", "check", "close", "construction", "how_to_vote", "label", "label_off", "menu", "pause", "play_arrow", "shopping_bag",
+             "tune", "visibility", "visibility_off")
+
+
+def icon_names(html_):
+    """The names, sorted (Google Fonts wants them in order)."""
+    return ",".join(sorted(set(re.findall(r'class="(?:[^"]* )?ms(?: [^"]*)?"[^>]*>\s*([a-z0-9_]+)\s*<', html_)) | set(ICONS_SET)))
+
+
+def pack_sheets(html_):
+    """N25: Plan, Build, Buy and Ideas (a megabyte, 14,000 elements) aren't in the first parse. Their markup and the scripts that work
+    them go into one JSON block (on Pages a file of its own, split_sheets), fetched while the page is idle after the first picture and
+    built the first time something needs it (SHEETS_JS): a sheet opened, a link into one, a sticker's pieces, a hash at the start."""
+    bodies = {}
+    def take(m):
+        bodies[m.group(1)] = m.group(2); return ""
+    html_ = re.sub(r"<!--sheet:(\w+)-->(.*?)<!--/sheet:\1-->", take, html_, flags=re.S)
+    m = re.search(r"<!--sheetjs-->(.*?)<!--/sheetjs-->", html_, re.S)
+    js = re.findall(r"<script>(.*?)</script>", m.group(1), re.S)
+    data = json.dumps({"html": bodies, "js": js}, separators=(",", ":")).replace("</", "<\\/").replace("<!--", "<\\u0021--")
+    return (html_[:m.start()] + f'<script type="application/json" id="sheets-data">{data}</script>\n<script>{SHEETS_JS}</script>'
+            + html_[m.end():])
+
+
+SHEETS_JS = r"""(() => { const D = document.getElementById("sheets-data"); let text = null, want = null, built = false;
+  const W = window.DemmaSheets = { done: false };
+  const fetchIt = () => want || (want = (D.dataset.src ? fetch(D.dataset.src).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+    : Promise.resolve(D.textContent)).then(t => { text = t; return t; }, e => { want = null; throw e; }));
+  const build = () => { if (built) return true; if (text == null) return false; built = true;
+    const S = JSON.parse(text); text = null;
+    for (const [k, h] of Object.entries(S.html)) { const b = document.querySelector("#sh-" + k + " .sbd"); if (b) b.innerHTML = h; }
+    for (const js of S.js) { const s = document.createElement("script"); s.textContent = js; document.body.appendChild(s); }   // in order, as before
+    W.done = true; dispatchEvent(new Event("demma-sheets")); return true; };
+  W.load = () => built ? Promise.resolve() : fetchIt().then(build);
+  /* a tap that needs the sheets: built there and then if fetched (the tap goes on to their own handlers), else after the fetch, tapped again */
+  const NEED = "[data-go], [data-nav], [data-mk], [data-step], [data-close], .g3d, .stk, #rail-tog, #r3d-menub";
+  addEventListener("click", e => { if (built) return; const a = e.target.closest && e.target.closest(NEED); if (!a || build()) return;
+    e.preventDefault(); e.stopImmediatePropagation(); W.load().then(() => a.click(), () => {}); }, true);
+  addEventListener("demma-open", e => { if (built) return; e.stopImmediatePropagation();   /* the 3D asks for a sheet: built, then asked again */
+    const again = () => dispatchEvent(new CustomEvent("demma-open", { detail: e.detail })); if (build()) again(); else W.load().then(again, () => {}); }, true);
+  const routed = () => { const h = location.hash; if (!built && h && h !== "#" && h !== "#room") W.load().catch(() => {}); };   // the router reads the hash once built
+  addEventListener("popstate", routed); addEventListener("hashchange", routed); routed();
+  addEventListener("r3d-first", () => { const idle = window.requestIdleCallback || (f => setTimeout(f, 1500)); idle(() => fetchIt().catch(() => {}), { timeout: 5000 }); }, { once: true });
+})();"""
 
 
 def _ph(rows, *names):
@@ -1019,13 +1070,13 @@ def _page(site=False):
             + "".join(f'<button type="button" id="tb-{"overview" if k == "plan" else k}" data-nav="{k}" aria-current="false" style="--h:{h}"><i class="ms" aria-hidden="true">{ic}</i>{n}</button>' for k, n, ic, h in nav) + '</div></nav>')
     bbar = (f'<nav class="bbar" aria-label="Sections"><button type="button" data-nav="room" aria-current="true" style="--h:25"><i class="ms" aria-hidden="true">view_in_ar</i>Room</button>'
             + "".join(f'<button type="button" data-nav="{k}" aria-current="false" style="--h:{h}"><i class="ms" aria-hidden="true">{ic}</i>{n}</button>' for k, n, ic, h in nav) + '</nav>')
-    def sheet(k, title, ic, h, body):
-        return (f'<div class="sheet shut" id="sh-{k}" role="dialog" aria-modal="true" aria-labelledby="sh-{k}-h" aria-hidden="true" style="--h:{h}">'
+    def sheet(k, title, ic, h, body):   # N25: the body is packed out of the page (pack_sheets) and built the first time it's needed
+        return (f'<div class="sheet shut" id="sh-{k}" role="dialog" aria-modal="true" aria-labelledby="sh-{k}-h" aria-hidden="true" inert style="--h:{h}">'
                 f'<div class="shd"><span class="grab" aria-hidden="true"></span><h2 id="sh-{k}-h" class="sr-only">{title}</h2>'
                 + ('<nav class="shnav" aria-label="The plan">' + "".join(f'<button type="button" data-nav="{n}" aria-current="{str(n == k).lower()}">{t}</button>' for n, t in (("plan", "Plan"), ("build", "Build"), ("buy", "Buy"))) + '</nav>'
                    if k in ("plan", "build", "buy") else f'<h2 aria-hidden="true"><i class="ms">{ic}</i><span>{title}</span></h2>')
                 + f'<button type="button" class="close" data-close aria-label="Close {title}"><span class="ms" aria-hidden="true">close</span></button></div>'
-                f'<div class="sbd">{body}</div></div>')
+                f'<div class="sbd"><!--sheet:{k}-->{body}<!--/sheet:{k}--></div></div>')
     sugg_chips = ('<div class="seg" role="group" aria-label="Suggestions in the room">'
                   + "".join(f'<button type="button" data-sproxy="{k}" aria-pressed="false">{html.escape(room3d_page.SUGG_SHORT[k])}</button>' for k, *_ in __import__("ideas").SUGGEST)
                   + '<button type="button" class="chip" data-sproxyall="on">All on</button><button type="button" class="chip" data-sproxyall="off">All off</button></div>')
@@ -1033,7 +1084,7 @@ def _page(site=False):
               else f'<p class="caption">Also on <a href="{PAGES}" target="_blank" rel="noopener">GitHub Pages</a>.</p>')
 
     plan_home = f"""<div class="plan-home" id="plan-home"><div class="panel" id="overview">
-      <div><p class="hello"><span id="hello">Evening, Emma &amp; Dave</span><span class="ver" title="This page is {LABEL}">{LABEL}</span></p><p>The artisan oak media wall in your pale mint, the compact dining cabinet, the network and power: about <b id="d-total">£{money(lo_tot, hi_tot)}</b> in all.</p>
+      <div><p class="hello"><span id="hello">Evening, Emma &amp; Dave</span><button class="ver" type="button" title="Get the latest version">{LABEL}</button></p><p>The artisan oak media wall in your pale mint, the compact dining cabinet, the network and power: about <b id="d-total">£{money(lo_tot, hi_tot)}</b> in all.</p>
         <p class="row"><a class="btn" href="{base}Demmas_Home_{LABEL}_Plan.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">download</span> The plan (PDF)</a><a class="btn" href="{base}Demmas_Home_{LABEL}_Plan_phone.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">smartphone</span> Phone edition</a></p></div>
       {PU.plan_home(ring, sum(1 for r in rows if r["kind"] == "buy"), len(steps())).replace("{MONEY}", PU.money_html(TRACK))}
       <div class="upnext" hidden><span class="n" id="d-nextn">1</span><div><span class="label">Up next</span><h3 id="d-next">Measure and count</h3></div>
@@ -1158,8 +1209,9 @@ def _page(site=False):
     page = f"""<title>Demma's Home</title>
 {room3d_page.IMPORTMAP}
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Fredoka:wght@500;600&display=swap">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,500,1,0&display=block">
+<link rel="stylesheet" href="{ICON_CSS}&display=block">
 {STYLE_V25}
 <button type="button" class="skip" data-tools-toggle>Open the room's controls</button>
 <div class="landing" id="landing" aria-hidden="true">{LANDING_SVG}<i><b></b></i></div>
@@ -1178,7 +1230,7 @@ def _page(site=False):
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 {PU.overlays()}
-<script>
+<!--sheetjs--><script>
 const DATA = {json.dumps(data)};
 const SITE = {json.dumps(site)};
 """ + (HERE / "page.js").read_text() + """
@@ -1186,7 +1238,7 @@ const SITE = {json.dumps(site)};
 <script>""" + STEP_JS + """</script>
 <script>""" + FIT_JS + """</script>
 <script>""" + __import__("tidy").MORE_JS + """</script>
-<script>""" + (HERE / "page_router.js").read_text() + """</script>
+<script>""" + (HERE / "page_router.js").read_text() + """</script><!--/sheetjs-->
 """
     # the build parts in the page's pastels (the PDF keeps its own colours)
     for name, hue in PAGE_PART.items():
@@ -1351,6 +1403,7 @@ def pwa_files():
         "name": "Demma's Home", "short_name": "Demma", "start_url": "./", "scope": "./", "display": "standalone",
         "background_color": "#fbf6ec", "theme_color": "#2f4a3c",
         "icons": [{"src": f"media-wall/src/art/icon-{n}.png", "sizes": f"{n}x{n}", "type": "image/png", "purpose": "any maskable"} for n in (192, 512)]}, indent=1))
+    (root / "version.txt").write_text(LABEL)   # V2.83: the version button compares the page with this
     (root / "sw.js").write_text(f"""// v39: the page opens from the device after the first visit (network first for the page, so a new round shows; cache first for the
 // rest: three.js from its CDN, the fonts and the pictures). V2.46: a file named by its contents (tex/<photo>.<hash>.jpg, three.<hash>.js, a
 // CDN file at its version) is kept across versions (K), so a new round doesn't fetch the photos again; its older copy goes. {LABEL}.
@@ -1362,7 +1415,7 @@ self.addEventListener("fetch", e => {{
   const r = e.request; if (r.method !== "GET") return;
   const u = new URL(r.url), page = r.mode === "navigate" || (u.origin === location.origin && (u.pathname.endsWith("/") || u.pathname.endsWith("index.html")));
   if (page) {{ e.respondWith(fetch(r).then(res => {{ const cp = res.clone(); caches.open(C).then(c => c.put(r, cp)); return res; }}).catch(() => caches.match(r).then(m => m || caches.match("./")))); return; }}
-  if (/\\.pdf$/.test(u.pathname)) return;                                   // the PDFs come from the network
+  if (/\\.(pdf|txt)$/.test(u.pathname)) return;                             // the PDFs and version.txt come from the network
   const keep = HASHED.test(u.pathname), into = keep ? K : C;
   e.respondWith(caches.match(r).then(m => m || fetch(r).then(res => {{ if (res.ok || res.type === "opaque") {{ const cp = res.clone();
     caches.open(into).then(async c => {{ if (keep) for (const k of await c.keys()) if (k.url !== r.url && stem(k.url) === stem(r.url)) await c.delete(k); return c.put(r, cp); }}); }} return res; }})));
@@ -1396,6 +1449,30 @@ def split_photos(html_):
     for old in list(out.glob("*.jpg")) + list(SITE.glob("photos.*.json")):
         if old.name not in made: old.unlink()
     return html_[:m.start()] + '<script type="application/json" id="photo-data">' + json.dumps(P, separators=(",", ":")) + "</script>" + html_[m.end():]
+
+
+def split_sheets(html_):
+    """N25: on Pages the sheets' JSON (pack_sheets) is a file of its own, named by its contents (the service worker keeps it till it
+    changes); the page keeps only its name."""
+    import hashlib
+    m = re.search(r'<script type="application/json" id="sheets-data">(.*?)</script>', html_, re.S)
+    if not m:
+        return html_
+    data = m.group(1).encode()
+    name = f"sheets.{hashlib.sha256(data).hexdigest()[:10]}.json"
+    for old in SITE.glob("sheets.*.json"):
+        if old.name != name: old.unlink()
+    (SITE / name).write_bytes(data)
+    return html_[:m.start()] + f'<script type="application/json" id="sheets-data" data-src="{name}"></script>' + html_[m.end():]
+
+
+# N25: plan.html was a second 2 MB copy of the page; now a step to it, the link's view (its query and hash) kept
+PLAN_REDIRECT = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Demma's Home</title><meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="./"><script>location.replace("./" + location.search + location.hash);</script>
+<noscript><meta http-equiv="refresh" content="0; url=./"></noscript></head>
+<body><p><a href="./">Demma's Home</a></p></body></html>
+"""
 
 
 def publish_files():
@@ -1453,11 +1530,11 @@ if __name__ == "__main__":
     SITE.mkdir(parents=True, exist_ok=True)
     import vendor
     vmap = vendor.bundle(SITE)                                               # V1.31 (U4): three.js in one file of its own, if Node is here
-    for name in ("index.html", "plan.html"):                                  # V1.2: the site's front door again (plan.html for old links)
-        html_ = split_photos(site())
-        if vmap: html_ = html_.replace(room3d_page.IMPORTMAP, vmap, 1)
-        html_ = vendor.minify(html_)                                          # V2.50 (speed): the 3D's script and the CSS minified
-        (SITE / name).write_text(html_)
+    html_ = split_sheets(split_photos(site()))                               # V1.2: the site's front door
+    if vmap: html_ = html_.replace(room3d_page.IMPORTMAP, vmap, 1)
+    html_ = vendor.minify(html_)                                              # V2.50 (speed): the 3D's script and the CSS minified
+    (SITE / "index.html").write_text(html_)
+    (SITE / "plan.html").write_text(PLAN_REDIRECT)                            # N25: old links, the view's query and hash kept
     pwa_files()
     (HERE / "publish_files.json").write_text(json.dumps(publish_files(), indent=1))
     todo = deck_assets_todo()

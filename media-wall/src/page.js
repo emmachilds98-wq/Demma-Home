@@ -280,9 +280,9 @@ paintSteps();
 /* ---------- v25: the celebration: a dark pill toast, and an 18-dot confetti burst (no burst, and no springs, with reduced motion) */
 const toastEl = document.getElementById("toast"), DOTS = [50, 165, 300, 95, 235, 345, 25, 70, 125];
 let toastT = 0;
+const tell = msg => { toastEl.textContent = msg; toastEl.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove("on"), 2200); };
 function cheer(msg, from) {
-  toastEl.textContent = msg; toastEl.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove("on"), 2200);
-  if (REDUCED) return;
+  tell(msg); if (REDUCED) return;
   const r = from && from.getBoundingClientRect ? from.getBoundingClientRect() : { left: innerWidth / 2, top: innerHeight - 140, width: 0, height: 0 };
   const box = document.createElement("div"); box.className = "confetti"; box.setAttribute("aria-hidden", "true");
   box.style.left = (r.left + r.width / 2) + "px"; box.style.top = (r.top + r.height / 2) + "px";
@@ -449,3 +449,16 @@ window.PICKS = (() => {
   return { paint, openDecide, openDay };
 })();
 PICKS.paint();
+
+/* ---------- V2.83: the version in Plan is a button: the home-screen app has no reload, so this fetches the newest page past every cache */
+document.querySelector(".hello .ver")?.addEventListener("click", async e => {
+  const have = e.currentTarget.textContent;
+  let now = ""; try { now = (await (await fetch("version.txt?t=" + Date.now(), { cache: "no-store" })).text()).trim(); } catch (_) {}
+  if (!now && location.protocol !== "file:") return tell(`Offline: this is ${have}`);
+  if (now === have) return tell(`Up to date: ${have}`);
+  tell(now ? `Getting ${now}…` : "Reloading…");
+  try { await (await navigator.serviceWorker?.getRegistration())?.update(); } catch (_) {}
+  try { for (const k of await caches.keys()) if (k !== "demma-keep") await caches.delete(k); } catch (_) {}   // the photos (named by contents) stay
+  try { await fetch(location.href.split("#")[0], { cache: "reload" }); } catch (_) {}
+  location.reload();
+});
