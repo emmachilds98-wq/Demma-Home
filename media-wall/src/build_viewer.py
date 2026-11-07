@@ -1206,12 +1206,14 @@ def _page(site=False):
     <div class="block"><h2 class="ptitle">Suggestions in the room</h2><p class="caption">Each one switches the room too: close this to see them.</p>{sugg_chips}</div>
     {ideas_panel()}
   </section>"""
+    # V2.83: the fonts' stylesheets don't hold up the first screen: media="print" until they land (a script after a pending stylesheet
+    # waits for it: the landing's and the rest's start about 0.26 s later here); the landing covers the page meanwhile
     page = f"""<title>Demma's Home</title>
 {room3d_page.IMPORTMAP}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Fredoka:wght@500;600&display=swap">
-<link rel="stylesheet" href="{ICON_CSS}&display=block">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Fredoka:wght@500;600&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="{ICON_CSS}&display=block" media="print" onload="this.media='all'">
 {STYLE_V25}
 <button type="button" class="skip" data-tools-toggle>Open the room's controls</button>
 <div class="landing" id="landing" aria-hidden="true">{LANDING_SVG}<i><b></b></i></div>

@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.80 (7 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
+**Version:** V2.83 (7 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
 
 **Work from:** `docs/REAL_PLAN.md` section 10 (the rest in parallel chunks A–E, one thread each), section 9 (every task's state).
 Open PRs: #133 (KTX2, WIP). The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
@@ -114,6 +114,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **A light start (V2.80, N25):** the icon font only the symbols drawn (`icon_names`, a name a script swaps in goes in `ICONS_SET`;
   1.29 MB to 25 KB); the sheets' markup and scripts in `sheets.<hash>.json` (`pack_sheets`), fetched when idle, built on first need
   (`SHEETS_JS`; `DemmaSheets.load()` for the checks): 1,565 elements at the start, was 14,695; suggestions and ideas built when first shown (`lazyVis`).
+  The fonts' stylesheets don't hold up the first screen (`media="print"` till they land): the 3D's start about 0.25 s sooner (V2.83).
 - **Sheets:** empty till first needed (V2.80); a shut one is `content-visibility: hidden`, its pictures fetched on opening (V2.54).
 - **Phones without a strong chip** (`LOWD`) take `tex/*_half.<hash>.jpg`, the photos at half size (`split_photos`): 2.3 MB on a first
   visit, not 10.2; the iPhones (Apple GPU) and the PCs keep the full set (V2.58).
