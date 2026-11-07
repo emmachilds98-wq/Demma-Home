@@ -5,7 +5,7 @@
 The page's import map points "three" and every add-on room3d.js imports at the one file, which exports them all by name (one module,
 loaded once). Without Node or the packages (`npm ci`, package.json) the build keeps the CDN's import map, as before; the shared page
 always keeps the CDN's (tools/build.py artifact(): its size limit)."""
-import hashlib, json, pathlib, re, shutil, subprocess, tempfile
+import hashlib, json, os, pathlib, re, shutil, subprocess, tempfile
 import room3d_src
 
 HERE = pathlib.Path(__file__).parent
@@ -67,3 +67,53 @@ def minify(html_):
 if __name__ == "__main__":
     import sys
     print(bundle(pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "_site"))
+
+
+# V2.75 (REAL_PLAN N22): the photos also as KTX2 (Basis Universal UASTC, Zstandard), sent to the graphics chip squeezed (ASTC on an
+# iPhone, BC7 on a PC): about a quarter of the memory of a JPEG's pixels and no decode or upload stall. Only at build: the encoder is
+# `basisu` 1.16.4 (the workflow builds it from its pinned commit; $BASISU); without it the site keeps its JPEGs alone. Stored bottom row
+# first (-y_flip), as three sends the JPEGs; colour in sRGB, normals and roughness linear. Kept in .ktx2cache by the JPEG's contents.
+BASISU_ARGS = ["-ktx2", "-uastc", "-uastc_level", "2", "-uastc_rdo_l", "1.0", "-mipmap", "-y_flip"]
+KTX2_CACHE = ROOT / ".ktx2cache"
+
+
+def basisu():
+    exe = os.environ.get("BASISU") or shutil.which("basisu")
+    return exe if exe and os.access(exe, os.X_OK) else None
+
+
+def ktx2(jpg, colour, used):
+    """the KTX2 of a JPEG's bytes (from the cache or made now), or None without the encoder or if it fails; `used` collects the cache's names"""
+    exe = basisu()
+    if not exe:
+        return None
+    lin = [] if colour else ["-linear"]
+    name = hashlib.sha256(jpg + " ".join(BASISU_ARGS + lin).encode()).hexdigest()[:10] + ".ktx2"
+    hit = KTX2_CACHE / name; used.add(name)
+    if not hit.exists():
+        KTX2_CACHE.mkdir(exist_ok=True)
+        with tempfile.TemporaryDirectory() as d:
+            src, dst = pathlib.Path(d) / "in.jpg", pathlib.Path(d) / "out.ktx2"
+            src.write_bytes(jpg)
+            r = subprocess.run([exe, *BASISU_ARGS, *lin, "-file", str(src), "-output_file", str(dst)], capture_output=True, text=True, cwd=d)
+            if r.returncode != 0 or not dst.exists():
+                print("vendor: basisu failed, the JPEG alone:", (r.stdout + r.stderr)[-300:]); return None
+            shutil.move(str(dst), hit)
+    return hit.read_bytes()
+
+
+def ktx2_prune(used):
+    for f in KTX2_CACHE.glob("*.ktx2") if KTX2_CACHE.exists() else []:
+        if f.name not in used: f.unlink()
+
+
+def transcoder(site):
+    """three's Basis transcoder (the same three 0.160.0) beside the page, for the KTX2 photos: site/basis/ (about 560 KB, fetched only when used)"""
+    src = ROOT / "node_modules/three/examples/jsm/libs/basis"
+    out = site / "basis"
+    if not (src / "basis_transcoder.wasm").exists():
+        return False
+    out.mkdir(exist_ok=True)
+    for n in ("basis_transcoder.js", "basis_transcoder.wasm"):
+        shutil.copyfile(src / n, out / n)
+    return True
