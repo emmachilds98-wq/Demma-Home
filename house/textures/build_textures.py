@@ -6,8 +6,8 @@ from PIL import Image, ImageEnhance
 
 HERE = pathlib.Path(__file__).resolve().parent
 # key in the viewer: (Poly Haven asset, its real size in m, saturation, brightness, warmth)
-SET = {"brick": ("red_brick_03", 1.0, 1.3, 1.22, 1.12),            # the front photo: orange-red stretchers, light mortar
-       "tile": ("roof_09", 2.4, 0.75, 0.58, 1.08),                   # the brown interlocking concrete tiles (V1.47: 2.4, each about 30 across as real ones; 4.0 made them 50)
+SET = {"brick": ("red_brick_03", 1.05, 1.3, 1.22, 1.12),           # the front photo: orange-red stretchers, light mortar (V2.68: 14 courses a tile, 7.5 each as real ones)
+       "tile": ("roof_09", 2.4, 0.75, 0.93, 1.08),                   # the brown interlocking concrete tiles (V1.47: 2.4, each about 30 across as real ones; 4.0 made them 50; V2.68: as light as the photos', was 0.58)
        "concrete": ("brushed_concrete", 2.5, 0.6, 1.25, 1.0),       # the drive
        "road": ("asphalt_02", 3.0, 0.8, 1.0, 1.0),
        "paving": ("rectangular_paving", 2.0, 0.6, 1.15, 1.0),       # the pavement

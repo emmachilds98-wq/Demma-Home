@@ -191,7 +191,8 @@ the door to the hall at the west. In mm (the sketch isn't to scale: trust the nu
   the drive, in front of the porch, with a low red-brick wall along its left side (the neighbour's paved front) and plants along the
   pavement edge; on the right of the drive a strip of lawn by the neighbour's fence with a young tree (rose or fruit), bulbs and a short
   timber post at the drive's corner. The pavement and the road in front.
-- Sizes to come: the drive's length, the lawn's width and depth, the garage door's width.
+- The garage door a 7' × 6' up-and-over (213 × 183, V2.68 off the photo); the porch's pilasters 26 wide, its pediment to 2.74 m.
+- Sizes to come: the drive's length, the lawn's width and depth.
 
 ## The garden (left and right as seen from the house)
 

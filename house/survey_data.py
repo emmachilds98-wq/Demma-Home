@@ -89,7 +89,7 @@ OPENINGS = [
     dict(id="living_window", floor="ground", side="n", x=LIVING["window_x"], sill=LIVING["window_y"][0], head=LIVING["window_y"][1],
          kind="window", design="living", src="M", skip=True),          # the living room draws its own
     dict(id="front_door", floor="ground", side="s", x=(344.0, 426.0), sill=0.0, head=205.0, kind="door", design="porch", src="F + P (the porch's width)"),
-    dict(id="garage_door", floor="ground", side="s", x=(44.0, 257.0), sill=-15.0, head=183.0, kind="door", design="garage", src="F"),
+    dict(id="garage_door", floor="ground", side="s", x=(44.0, 257.0), sill=-15.0, head=168.0, kind="door", design="garage", src="F: V2.68, a 7' × 6' up-and-over (2134 × 1829): the front photo's door against its window rows"),
     dict(id="bed2_window", floor="first", side="n", x=(112.0, 262.0), sill=90.0, head=210.0, kind="window", design="casement", src="B + P", dormer=True),
     dict(id="bath_window", floor="first", side="n", x=(294.0, 394.0), sill=90.0, head=210.0, kind="window", design="casement", src="B + P", dormer=True, frosted=True),   # V2.40: frosted (the photos)
     dict(id="master_window", floor="first", side="s", x=(56.0, 239.0), sill=75.0, head=200.0, kind="window", design="casement", src="F"),
@@ -146,6 +146,9 @@ CHALK_DOORS = ["store_door", "cupboard_door", "airing_door"]
 # back); the stores either side are the bin cupboards (white doors into the porch). Bins (E): a 240 L wheelie bin 58 × 74 × 107 (EN 840),
 # kerbside recycling boxes 60 × 40 × 35. Left and right as you face the house: left the west cupboard, right the east.
 PORCH = dict(bin_240=dict(w=58.0, d=74.0, h=107.0), box=dict(w=60.0, d=40.0, h=35.0), src="client (layout) + EN 840 / standard boxes (E)")     # the client: chalkboard doors, the two in the cubby and upstairs
+# V2.68 (N21): its surround off the front photo, scaled by the windows and the garage door: pilasters 26 wide (outer 138), the frieze
+# from the door's height to 222 (the opening's head at the door's top), the pediment to 274 (F, E ±10)
+PORCH["surround"] = dict(pil=26.0, head=DOOR_H, top=222.0, apex=274.0, src="F: the front photo (V2.68), E ±10")
 
 # v61: bedroom 3, the office, as the client plans it (inputs/photo_office_*_25oct.jpg: "the desk will be replaced with a straight oak
 # desk. One of the PCs will go to the living room but the one next to another setup will stay. As well as the overhead shelf"). The

@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.67 (7 Nov 2026)
+**Version:** V2.68 (7 Nov 2026)
 
 **Work from:** `docs/REAL_PLAN.md` section 7, the round after (N13–N23: the first picture, moving, the views' controls, landing,
 the outside, tracking upgrades) in workstreams that run side by side, one task a PR; section 6 (N1–N12) is done but N4's and N9's
@@ -90,6 +90,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   The window frames, outside doors, gutters and sills have uPVC's faint peel; the skirting, inside doors, newel and rail gloss paint's
   brush strokes; the steel a brushed grain, each in its own colour; the dormer's cheeks lapped dark timber boards (V2.56).
 - **Outside:** by day under a real sky, the lawn's photo to a hazy horizon, the gardens, next door, the valley and the hill.
+  Checked against the agent's front and back photos (V2.68, N21; `tools/compare.py` front, rear): a 7' × 6' garage door, the porch's surround
+  as the photo's, roof tiles as light as the photos', bricks 7.5 a course (`house/EVIDENCE.md` §6).
 - **Offline:** `sw.js` keeps the page's last copy and every picture; a file named by its contents (the photos, `three.<hash>.js`)
   stays in `demma-keep` across versions, so a new round doesn't fetch it again (V2.47).
   The photos are a file each (`_site/tex/<key>_<map|nor|rough>.<hash>.jpg`, `build_viewer.split_photos`; the page keeps their names):
@@ -141,4 +143,5 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
    the landing's door widths and the wall between the bedroom doors' frames; the tapestry's drop; the hall radiator; the master from the
    wardrobes to the front wall; the alcove; bedroom 2's length; a stair tread; the meter and bin cupboards; the living room's side-wall socket; the garage's chipboard box's depth; the secret room's pier.
 4. Confirm: the foot of the lower flight open to the lower landing (V1.32); the bathroom cord's length (Measure). Decide: where the side-wall socket goes; near-photo pictures (minutes each) or not. Try V1.50: tap a piece in a room, Change its size.
+5. The front photo has the office window over the porch's middle (about 20 to the west of the room's middle, where it's drawn): which?
 6. Confirm: the living room door hinged at the chimney breast's end, opening into the living room (as the 3D now opens it).
