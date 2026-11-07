@@ -112,8 +112,9 @@ top = Mo.FLOOR_Y["first"] + MA["wardrobes"]["h"] + MA["wardrobes"]["top_boxes"]
 check("master: the boxes on the wardrobes under the ceiling", top <= Mo.FLOOR_Y["first"] + Mo.CEIL, f"to {top - Mo.FLOOR_Y['first']:.0f} of 235")
 b3 = next(r for r in Mo.rooms("first") if r["id"] == "bed3"); bw = next(p_ for p_ in D.OPENINGS if p_["id"] == "bed3_window")
 check("office: 2.25 m on the desk side (client)", abs(b3["z1"] - b3["z0"] - 225) < 1.5, f"{b3['z1'] - b3['z0']:.1f} (z {b3['z0']:.1f}–{b3['z1']:.1f})")
-check("office: the window in the middle of the front wall (client)", abs((bw["x"][0] + bw["x"][1]) / 2 - (b3["x0"] + b3["x1"]) / 2) < 1,
-      f"the window's middle x {(bw['x'][0] + bw['x'][1]) / 2:.1f}, the room's {(b3['x0'] + b3['x1']) / 2:.1f}")
+fd = next(p_ for p_ in D.OPENINGS if p_["id"] == "front_door")   # V2.75, the client: "centered like the photo"
+check("office: the window over the porch's middle (client, the front photo)", abs((bw["x"][0] + bw["x"][1]) / 2 - (fd["x"][0] + fd["x"][1]) / 2) < 1,
+      f"the window's middle x {(bw['x'][0] + bw['x'][1]) / 2:.1f}, the porch's {(fd['x'][0] + fd['x'][1]) / 2:.1f}")
 check("office: the desk wall to wall", D.OFFICE["desk"]["z"][0] - b3["z0"] < 2 and b3["z1"] - D.OFFICE["desk"]["z"][1] < 2, f"z {D.OFFICE['desk']['z'][0]:.1f}–{D.OFFICE['desk']['z'][1]:.1f}")
 mr = next(r for r in Mo.rooms("first") if r["id"] == "master")
 ma = next(r for r in Mo.rooms("first") if r["id"] == "airing")

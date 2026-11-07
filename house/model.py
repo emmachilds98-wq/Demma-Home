@@ -781,16 +781,24 @@ def roof(o):
     o.box("upvc", WIDTH + 2, D.LEVELS["drive"], RO["s"] + 2, WIDTH + 9, ROOF_E - 6, RO["s"] + 9)
 
 
+def surround(o, x0, x1, zf, s, foot):
+    """The porch's white surround on the front face zf (s: its outward way): two pilasters, the frieze over the opening and the
+    pediment (V2.75, N21: the front photo's proportions, survey_data.PORCH["surround"])."""
+    P = D.PORCH["surround"]; w, hd, tp, ap = P["pil"], P["head"], P["top"], P["apex"]
+    za, zb = sorted((zf, zf + s * 16)); zc, zd = sorted((zf, zf + s * 22))
+    for xa in (x0 - 2 - w, x1 + 2):
+        o.box("upvc", xa, foot, za, xa + w, hd, zb)
+    o.box("upvc", x0 - w - 8, hd, zc, x1 + w + 8, tp, zd)
+    o.prism("upvc", "z", zc, zd, [(x0 - w - 12, tp), (x1 + w + 12, tp), ((x0 + x1) / 2, ap)])
+
+
 def porch(o):
     """The front door's surround (the front photo): two pilasters, a white pediment, the red step. v65, the client: "there's a step
     before the front door and 2 cupboards, one left and right, then front door ahead": the open porch, a bin cupboard each side with a
     white door into the porch, the white front door ahead (two small panes high up, as the photo's), the bins inside."""
     op = next(p for p in D.OPENINGS if p["id"] == "front_door")
     x0, x1 = op["x"]; zf = RO["s"]
-    for xa in (x0 - 20, x1 + 2):
-        o.box("upvc", xa, 0, zf, xa + 18, 222, zf + 16)
-    o.box("upvc", x0 - 26, 222, zf, x1 + 26, 238, zf + 22)
-    o.prism("upvc", "z", zf, zf + 22, [(x0 - 30, 238), (x1 + 30, 238), ((x0 + x1) / 2, 278)])
+    surround(o, x0, x1, zf, 1, 0.0)
     o.box("quarry", x0 - 22, D.LEVELS["drive"] - 1.5, zf, x1 + 22, 0, zf + 34)           # the step (v66: its foot in the lawn, no gap)
     o.box("quarry", x0 + 0.3, -1.5, FRONT - 0.5, x1 - 0.3, 0.4, zf + 0.5)                             # the threshold through the wall
     gar = next(p for p in D.OPENINGS if p["id"] == "garage_door")
@@ -883,12 +891,9 @@ def _house_shell(o, span, gcol):
                 yy = ya + (yb - ya) * k_ / 8; o.box("rib", xa, yy - 0.6, pz + s * 2, xb, yy + 0.6, pz + s * 2.6)
         elif op["design"] == "porch":                     # v65: the open porch as ours: dark inside, the door set back, a step
             dr = D.LEVELS["drive"]
-            o.box("porch_in", xa, ya, pz, xb, yb, pz + s * 0.6)
+            o.box("porch_in", xa, ya, pz, xb, min(yb, D.PORCH["surround"]["head"]), pz + s * 0.6)   # V2.75: to the frieze
             o.box("upvc", xa + 14, ya, pz + s * 0.6, xb - 14, yb - 8, pz + s * 1.2)
-            o.box("upvc", xa - 26, 222, pz, xb + 26, 238, pz + s * 22)
-            o.prism("upvc", "z", pz, pz + 22, [(xa - 30, 238), (xb + 30, 238), ((xa + xb) / 2, 278)])
-            for xx in (xa - 20, xb + 2):
-                o.box("upvc", xx, dr, pz, xx + 18, 222, pz + s * 16)
+            surround(o, xa, xb, pz, s, dr)
             o.box("quarry", xa - 22, dr - 5.5, pz + s * 0.3, xb + 22, ya, pz + s * 34)
         else:
             o.box("pane", xa + 1, ya + 1, pz + s * 0.2, xb - 1, yb - 1, pz + s * 0.6)

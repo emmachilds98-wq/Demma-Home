@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.74 (7 Nov 2026), live. **Work stopped 7 Nov 2026 at the client's request: start with `docs/HANDOVER.md`.**
+**Version:** V2.75 (7 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`); the open PRs land one at a time.
 
 **Work from:** `docs/REAL_PLAN.md` section 9 (every task's state), section 8 (N24–N36, the open round). Eight PRs are open and
 unmerged (#121, #122, #127–#131, #133; `docs/HANDOVER.md` has each one's state); most claim V2.75, so renumber at merge. Section 5
@@ -146,4 +146,4 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
    side-wall socket; the garage's chipboard box; the secret room's pier.
 6. Confirm: the lower flight's foot open to the lower landing (V1.32); the bathroom cord's length; the living room door hinged at the
    chimney breast's end, opening in. Decide: where the side-wall socket goes. When happy, archive `DIY`.
-7. Answered 7 Nov: the office window centred over the porch at its current size (in #121, not merged).
+7. Answered 7 Nov: the office window centred over the porch at its current size (done, V2.75).
