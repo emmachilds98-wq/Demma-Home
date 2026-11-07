@@ -21,7 +21,7 @@ CSS = """
    the room. Tokens come from build_viewer's STYLE (with fallbacks here, for the standalone page the stills use). */
 .r3d { --cream: #fbf6ec; --ink: #2b2638; --mut: #645d73; --soft: #f1ebde; --shade: 0 14px 34px -12px #000a;
   --spring: cubic-bezier(.3,1.6,.5,1); font-family: Figtree, system-ui, sans-serif; }
-.r3d-stage { position: fixed; inset: 0; height: 100vh; height: 100dvh; background: #0c0a10; overflow: hidden; z-index: 0; }
+.r3d-stage { position: fixed; inset: 0; height: 100vh; height: 100dvh; background: var(--page, #fbf6ec); overflow: hidden; z-index: 0; }
 .r3d-stage canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; outline: none; }
 .r3d-stage canvas:active { cursor: grabbing; }
 .r3d-msg { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: #f4efe6; font-size: 15px; text-shadow: 0 1px 4px #000; }
@@ -42,25 +42,21 @@ CSS = """
 .stk.behind { opacity: .35; }
 .stk[hidden] { display: none; }
 .r3d.editing .r3d-stickers, .r3d.nogl .r3d-stickers { display: none; }
-/* V2.43: the welcome, over the whole house on arriving: what it is and how to get round (19_controls.js welcome) */
-.r3d-welcome { position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%); width: min(470px, calc(100% - 32px)); box-sizing: border-box; background: var(--cream); color: var(--ink); border-radius: 28px; padding: 22px 22px 16px; box-shadow: var(--shade); z-index: 8; }
+/* V2.43: the welcome, over the whole house on arriving (19_controls.js welcome); V2.66 (N19): once on a device, a title, three icons of
+   two words, two buttons */
+.r3d-welcome { position: absolute; left: 50%; bottom: 104px; transform: translateX(-50%); width: min(360px, calc(100% - 32px)); box-sizing: border-box; background: var(--cream); color: var(--ink); border-radius: 28px; padding: 20px 20px 18px; box-shadow: var(--shade); z-index: 8; text-align: center; }
 .r3d-welcome[hidden] { display: none; }
-.r3d-welcome h2 { margin: 0 0 4px; font: 600 26px/1.15 Fredoka, system-ui, sans-serif; }
-.r3d-welcome > p { margin: 0 0 16px; color: var(--muted); font-size: 15px; line-height: 1.4; }
-.r3d-welcome ol { list-style: none; margin: 0 0 18px; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
-.r3d-welcome li { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.35; }
-.r3d-welcome li > .ms { flex: none; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-size: 21px; color: var(--ink); }
-.r3d-welcome li:nth-child(1) > .ms { background: var(--peach); } .r3d-welcome li:nth-child(2) > .ms { background: var(--mint); }
-.r3d-welcome li:nth-child(3) > .ms { background: var(--lilac); } .r3d-welcome li:nth-child(4) > .ms { background: var(--butter); }
-.r3d-welcome li b { display: block; font-weight: 600; font-size: 15px; }
-.r3d-welcome li b + span { color: var(--muted); }
-.r3d-wbtns { display: flex; gap: 8px; flex-wrap: wrap; }
-.r3d-wbtns button { font: 600 15px Figtree, system-ui, sans-serif; border: 0; border-radius: 999px; padding: 11px 18px; cursor: pointer; background: var(--chip); color: var(--ink); display: inline-flex; align-items: center; gap: 8px; }
-.r3d-wbtns .primary { background: var(--ink); color: var(--cream); flex: 1 1 auto; justify-content: center; }
+.r3d-welcome h2 { margin: 0 0 14px; font: 600 24px/1.15 Fredoka, system-ui, sans-serif; }
+.r3d-welcome ol { list-style: none; margin: 0 0 18px; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.r3d-welcome li { display: grid; justify-items: center; gap: 6px; font: 600 13.5px/1.2 Figtree, system-ui, sans-serif; }
+.r3d-welcome li > .ms { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-size: 22px; color: var(--ink); }
+.r3d-welcome li:nth-child(1) > .ms { background: var(--peach); } .r3d-welcome li:nth-child(2) > .ms { background: var(--mint); } .r3d-welcome li:nth-child(3) > .ms { background: var(--lilac); }
+.r3d-wbtns { display: flex; gap: 8px; }
+.r3d-wbtns button { flex: 1; justify-content: center; font: 600 15px Figtree, system-ui, sans-serif; border: 0; border-radius: 999px; padding: 11px 14px; cursor: pointer; background: var(--chip); color: var(--ink); display: inline-flex; align-items: center; gap: 8px; }
+.r3d-wbtns .primary { background: var(--ink); color: var(--cream); }
 .r3d-wbtns button:focus-visible { outline: 3px solid var(--oak); outline-offset: 2px; }
-.r3d-welcome small { display: block; margin-top: 10px; color: var(--muted); font-size: 12.5px; }
 .r3d.welcoming .r3d-mini, .r3d.welcoming .r3d-floors { opacity: 0.35; } .r3d.welcoming .r3d-peg { visibility: hidden; }
-@media (max-width: 560px) { .r3d-welcome ol { grid-template-columns: 1fr; gap: 9px; } .r3d-welcome { bottom: 88px; padding: 18px 16px 14px; } .r3d-welcome h2 { font-size: 23px; } }
+@media (max-width: 560px) { .r3d-welcome { bottom: 96px; } }
 .r3d-pop { position: absolute; width: 290px; background: var(--cream); color: var(--ink); border-radius: 24px; padding: 16px 16px 14px; box-shadow: var(--shade); z-index: 6; }
 .r3d-pop[hidden] { display: none; }
 .r3d-pop::before { content: ""; position: absolute; top: -7px; left: var(--ax, 50%); width: 16px; height: 16px; background: var(--cream); transform: translateX(-50%) rotate(45deg); border-radius: 3px; }
@@ -896,7 +892,7 @@ def section(gallery=""):
         <label>Colour <input type="color" id="r3d-selcol" value="#888888"></label><span id="r3d-swatches" hidden></span>
         <button type="button" data-sel="copy" hidden>Copy</button><button type="button" data-sel="remove">Remove</button><button type="button" data-sel="done">Done</button></div></div>
   </div>
-  <div class="r3d-welcome" id="r3d-welcome" role="dialog" aria-labelledby="r3d-wh" hidden><h2 id="r3d-wh">Welcome to Demma's Home</h2><p>The whole house in 3D. Step inside and walk round it, as in a game.</p><ol><li><span class="ms" aria-hidden="true">ads_click</span><span><b>Step in</b><span data-wk="in"></span></span></li><li><span class="ms" aria-hidden="true">directions_walk</span><span><b>Walk</b><span data-wk="walk"></span></span></li><li><span class="ms" aria-hidden="true">360</span><span><b>Look round</b><span data-wk="look"></span></span></li><li><span class="ms" aria-hidden="true">touch_app</span><span><b>Change it</b><span data-wk="change"></span></span></li></ol><div class="r3d-wbtns"><button type="button" class="primary" data-wgo="in"><span class="ms" aria-hidden="true">door_front</span>Walk in at the front door</button><button type="button" data-wgo="look">Look round the house</button></div><small>The name top left brings this back.</small></div>
+  <div class="r3d-welcome" id="r3d-welcome" role="dialog" aria-labelledby="r3d-wh" hidden><h2 id="r3d-wh">Welcome home</h2><ol><li><span class="ms" aria-hidden="true">ads_click</span><span data-wk="in"></span></li><li><span class="ms" aria-hidden="true">360</span><span data-wk="look"></span></li><li><span class="ms" aria-hidden="true">touch_app</span><span data-wk="change"></span></li></ol><div class="r3d-wbtns"><button type="button" class="primary" data-wgo="in"><span class="ms" aria-hidden="true">door_front</span>Walk in</button><button type="button" data-wgo="look">Look round</button></div></div>
   <div class="r3d-dock"><button type="button" class="r3d-toolsbtn" data-tools-toggle aria-expanded="false" aria-controls="r3d-panel"><span class="ms" aria-hidden="true">tune</span>Tools</button>
     <div class="r3d-bubbles" role="tablist" aria-label="3D room controls"><button type="button" class="r3d-bub r3d-menub" id="r3d-menub" aria-expanded="false" aria-controls="rail-list" style="--h:280" hidden><i class="ms" aria-hidden="true">menu</i>Menu</button>{bubbles}
       <button type="button" class="r3d-bub" id="r3d-editbtn" aria-pressed="false" style="--h:25" title="Move, turn, recolour, remove and add things; tap a wall to paint it"><i class="ms" aria-hidden="true">edit</i>Edit</button></div></div>

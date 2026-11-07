@@ -101,7 +101,8 @@ function houseTex(k) {
     const img = (f, srgb, fill) => { const t = canvasTex(4, 4, g => { g.fillStyle = fill; g.fillRect(0, 0, 4, 4); }, srgb);   // V1.11: as sharp at a slant as the card allows (was 4)
       whenPhoto(pkey, f, src => { decodeImg(src).then(im => texSet(t, im, true)); }, t); return t; };   // V2.64: queued (upStep)
     const rg = pm.rough ? Math.round(pm.rough * 255) : 0, grey = `rgb(${rg},${rg},${rg})`;   // V1.30 (U5): its roughness map, if it has one
-    return (HTEX[k] = { map: img("map", true, pm.avg || "#888888"), normal: pm.nor ? img("nor", false, "#8080ff") : null, size: [pm.size, pm.size], bump: 0,
+    const map = img("map", true, pm.avg || "#888888"); map.userData.grass = pkey === "lawn";   // V2.68 (N22): its materials take the lawn's patchwork (03_materials grassy)
+    return (HTEX[k] = { map, normal: pm.nor ? img("nor", false, "#8080ff") : null, size: [pm.size, pm.size], bump: 0,
       rough: pm.rough && !LOWD ? img("rough", false, grey) : null, roughMean: pm.rough || 0, tint: HTEX_TINT.has(k) });
   }
   let s = 7 + k.length * 101; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
@@ -745,13 +746,13 @@ function start() {
      frame. For the right ones: after the cutaway's clipping is set (v81's lesson), and into a target like the shade's composer when it's
      on (its shaders differ from the screen's). Never more than 8 s' wait */
   const first = () => { if (first.done) return; first.done = true; START_MS.compiled = Math.round(performance.now() - t0); msg.hidden = true;
-    requestAnimationFrame(frame); requestAnimationFrame(() => setTimeout(loadPhotos, 30)); };   // V1.9: the photos once the first picture is up
+    requestAnimationFrame(() => { preDraw(); requestAnimationFrame(frame); requestAnimationFrame(() => setTimeout(loadPhotos, 30)); }); };   // V2.66 (N13): the shadows a frame ahead   // V1.9: the photos once the first picture is up
   if (gl.compileAsync && !/[?&]nocompile\b/.test(location.search)) {
     msg.textContent = "Building the house…"; msg.hidden = false;
     const was = gl.getRenderTarget();
     try {
       if (postLive()) { if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }); gl.setRenderTarget(PRE.rtAO); }
-      Promise.race([compileClipped(camera), new Promise(r => setTimeout(r, 8000))]).then(first, first);   // V2.64: by cutting planes (01_renderer)
+      texWarm(); Promise.race([Promise.all([compileClipped(camera), postWarm()]), new Promise(r => setTimeout(r, 8000))]).then(first, first);   // V2.66 (N13): the shade's and glow's too; the textures meanwhile   // V2.64: by cutting planes (01_renderer)
     } catch (e) { first(); } finally { gl.setRenderTarget(was); }
   } else first();
   precompile();                                                                         // v35: hidden parts' shaders, while the room's idle
