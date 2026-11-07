@@ -1382,7 +1382,7 @@ def split_photos(html_):
     P, out, made = json.loads(m.group(1)), SITE / "tex", set()
     out.mkdir(exist_ok=True)
     for k, t in P.items():
-        for f in ("map", "nor", "rough"):
+        for f in ("map", "tmap", "nor", "rough"):
             v = t.get(f)
             if isinstance(v, str) and v.startswith("data:"):
                 data = base64.b64decode(v.split(",", 1)[1])

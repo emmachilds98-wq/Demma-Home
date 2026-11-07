@@ -26,6 +26,21 @@ def _house_draft():   # v54: the whole house, drafted from the client's correcte
     import house
     return house.draft(G.WINDOW_Z)
 
+# V2.67 (N15): a living-room photo scaled to its drawn texture's average (02_textures.js), so each part keeps its colour and only the
+# grain, the weave and the pile are real. The oak's and the hessian's are their drawn textures' averages, measured; the carpets' are their fills
+TINT = {"lr_oak": (213.6, 202.1, 188.5), "lr_hessian": (200.5, 189.1, 166.6), "carpet_grey": G.CARPET_COL, "carpet": "#cdbfa8"}
+
+
+def _tinted(f, want):
+    import base64, io
+    from PIL import Image, ImageColor, ImageStat
+    im = Image.open(f).convert("RGB")
+    want = ImageColor.getrgb(want) if isinstance(want, str) else want
+    out = Image.merge("RGB", [b.point(lambda v, k=w / h: min(255, round(v * k))) for b, w, h in zip(im.split(), want, ImageStat.Stat(im).mean)])
+    buf = io.BytesIO(); out.save(buf, "JPEG", quality=85, optimize=True)   # about its source's (build_textures: 76-86)
+    return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
+
+
 def _house3():   # v58: the whole house built (house/model.py: walls, openings, floors, stairs, the roof), sizes deduced until measured
     import sys, pathlib
     sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "house"))
@@ -38,15 +53,18 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
     e["photo_tex"] = {k: dict(map=b64(td / f"{k}_map.jpg"), nor=b64(td / f"{k}_nor.jpg"), size=m["size"]) for k, m in meta.items()}
     for k, t in e["photo_tex"].items():                     # V1.30 (U5): a roughness map where the shine varies (build_textures.ROUGH)
         if (td / f"{k}_rough.jpg").exists(): t["rough"] = b64(td / f"{k}_rough.jpg")
+    for k, want in TINT.items():                            # V2.67 (N15): the living room's colour match, made here once (it was every pixel on the page's thread)
+        if k in e["photo_tex"] and (td / f"{k}_map.jpg").exists():
+            e["photo_tex"][k]["map" if k.startswith("lr_") else "tmap"] = _tinted(td / f"{k}_map.jpg", want)   # lr_: the living room's own
     seen = {}                                               # V1.1: a picture two keys share (the carpets' pile) goes once; the other says "@key.map"
     for k, t in e["photo_tex"].items():
-        for f in ("map", "nor", "rough"):
+        for f in ("map", "tmap", "nor", "rough"):
             if not t.get(f): continue
             if t[f] in seen: t[f] = "@" + seen[t[f]]
             else: seen[t[f]] = f"{k}.{f}"
     from PIL import Image                                   # V1.9: what the 3D shows until the photos arrive: each one's size and mean colour
     avg = lambda f: "#%02x%02x%02x" % Image.open(f).convert("RGB").resize((1, 1), Image.Resampling.BOX).getpixel((0, 0))
-    e["photo_meta"] = {k: dict(size=m["size"], map=(td / f"{k}_map.jpg").exists(), nor=(td / f"{k}_nor.jpg").exists(),
+    e["photo_meta"] = {k: dict(size=m["size"], map=(td / f"{k}_map.jpg").exists(), nor=(td / f"{k}_nor.jpg").exists(), tmap=bool(e["photo_tex"][k].get("tmap")),
                                avg=avg(td / f"{k}_map.jpg") if (td / f"{k}_map.jpg").exists() else None,
                                rough=round(Image.open(td / f"{k}_rough.jpg").convert("L").resize((1, 1), Image.Resampling.BOX).getpixel((0, 0)) / 255, 3)
                                if (td / f"{k}_rough.jpg").exists() else 0) for k, m in meta.items()}
