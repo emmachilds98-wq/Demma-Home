@@ -151,7 +151,7 @@ function texWarm() {                  // every texture onto the chip in slices o
 }
 function preDraw() {                  // the frame before the first: the shadows (and their depth shaders) drawn off screen, at 1 × 1
   livingFromOutside();               // what the first frame hides first (outside, the living room), so its shadows aren't drawn twice
-  if (!gl.shadowMap.enabled || !gl.shadowMap.needsUpdate) return;
+  if (!gl.shadowMap.enabled) return; reshadow();   // V2.72: always (the start may have drawn them already: their depth shaders weren't built)
   if (!PRE.rt) { PRE.rt = new THREE.WebGLRenderTarget(1, 1); PRE.rt.isXRRenderTarget = true; PRE.rt.texture.colorSpace = gl.outputColorSpace; }
   if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
   const was = gl.getRenderTarget(); gl.setRenderTarget(postLive() ? PRE.rtAO : PRE.rt);
