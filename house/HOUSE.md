@@ -203,7 +203,7 @@ the door to the hall at the west. In mm (the sketch isn't to scale: trust the nu
   table and chairs in the view photos stand by the house on that side (to confirm).
 - Fences: close-board, about 180 high, on the left (looking out), low (about 110) for its first 4.5 m by the house (the view photos); a lower
   slatted fence, about 120, on the right, with a timber gate in it by the house (to the side passage of the end-of-terrace). A rotary dryer on the lawn.
-- Looking out from the left fence (V2.81, the photos): a planted border about 80 wide (the cordyline, a red-tipped shrub, muscari and
+- Looking out from the left fence (V2.84, the photos): a planted border about 80 wide (the cordyline, a red-tipped shrub, muscari and
   primroses), the path about 70, a strip of muscari about 20 along the lawn, then the lawn to the trees; a narrow bed (a red shrub) by the
   right fence; a concrete pad from the back door to the path. Under the trees, leaf litter to the far fence.
 - The left-hand neighbour: a gravel garden with pots and a lawn beyond; a low brown fence between.

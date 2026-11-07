@@ -50,12 +50,13 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
     td = pathlib.Path(model.__file__).resolve().parent / "textures"
     meta = _j.loads((td / "textures.json").read_text()) if (td / "textures.json").exists() else {}
     b64 = lambda f: "data:image/jpeg;base64," + base64.b64encode(f.read_bytes()).decode() if f.exists() else None
-    e["photo_tex"] = {k: dict(map=b64(td / f"{k}_map.jpg"), nor=b64(td / f"{k}_nor.jpg"), size=m["size"]) for k, m in meta.items()}
+    pic = lambda k, f: td / f"{k}_{f}.jpg" if (td / f"{k}_{f}.jpg").exists() or "like" not in meta[k] else td / f"{meta[k]['like']}_{f}.jpg"   # V2.84 (N32): a shared one
+    e["photo_tex"] = {k: dict(map=b64(pic(k, "map")), nor=b64(pic(k, "nor")), size=m["size"]) for k, m in meta.items()}
     for k, t in e["photo_tex"].items():                     # V1.30 (U5): a roughness map where the shine varies (build_textures.ROUGH)
-        if (td / f"{k}_rough.jpg").exists(): t["rough"] = b64(td / f"{k}_rough.jpg")
+        if pic(k, "rough").exists(): t["rough"] = b64(pic(k, "rough"))
     for k, want in TINT.items():                            # V2.67 (N15): the living room's colour match, made here once (it was every pixel on the page's thread)
-        if k in e["photo_tex"] and (td / f"{k}_map.jpg").exists():
-            e["photo_tex"][k]["map" if k.startswith("lr_") else "tmap"] = _tinted(td / f"{k}_map.jpg", want)   # lr_: the living room's own
+        if k in e["photo_tex"] and pic(k, "map").exists():
+            e["photo_tex"][k]["map" if k.startswith("lr_") else "tmap"] = _tinted(pic(k, "map"), want)   # lr_: the living room's own
     seen = {}                                               # V1.1: a picture two keys share (the carpets' pile) goes once; the other says "@key.map"
     for k, t in e["photo_tex"].items():
         for f in ("map", "tmap", "nor", "rough"):
@@ -64,10 +65,10 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
             else: seen[t[f]] = f"{k}.{f}"
     from PIL import Image                                   # V1.9: what the 3D shows until the photos arrive: each one's size and mean colour
     avg = lambda f: "#%02x%02x%02x" % Image.open(f).convert("RGB").resize((1, 1), Image.Resampling.BOX).getpixel((0, 0))
-    e["photo_meta"] = {k: dict(size=m["size"], map=(td / f"{k}_map.jpg").exists(), nor=(td / f"{k}_nor.jpg").exists(), tmap=bool(e["photo_tex"][k].get("tmap")),
-                               avg=avg(td / f"{k}_map.jpg") if (td / f"{k}_map.jpg").exists() else None,
-                               rough=round(Image.open(td / f"{k}_rough.jpg").convert("L").resize((1, 1), Image.Resampling.BOX).getpixel((0, 0)) / 255, 3)
-                               if (td / f"{k}_rough.jpg").exists() else 0) for k, m in meta.items()}
+    e["photo_meta"] = {k: dict(size=m["size"], map=pic(k, "map").exists(), nor=pic(k, "nor").exists(), tmap=bool(e["photo_tex"][k].get("tmap")),
+                               avg=avg(pic(k, "map")) if pic(k, "map").exists() else None,
+                               rough=round(Image.open(pic(k, "rough")).convert("L").resize((1, 1), Image.Resampling.BOX).getpixel((0, 0)) / 255, 3)
+                               if pic(k, "rough").exists() else 0) for k, m in meta.items()}
     # v71: each room's outline and floor level (the viewer's From above and On its own views cut the house to it)
     e["rooms"] = {rid: [r["x0"], r["x1"], r["z0"], r["z1"], model.FLOOR_Y[r["floor"]]] for rid, r in model.room_sizes().items()}
     e["ceil"] = model.CEIL
@@ -95,7 +96,7 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
     e["windows_in"] = [[op["floor"], op["side"], *op["x"], op["sill"], op["head"]] for op in model.D.OPENINGS if op["kind"] == "window" and not op.get("skip")]
     e["plants"] = getattr(model.D, "PLANTS", [])                # V1.3: the gardens' plants (survey_data.PLANTS: where, how big, the source)
     e["beyond"] = getattr(model.D, "BEYOND", None)               # V1.4: past the far fence (survey_data.BEYOND): the low building, the hill
-    e["garden"] = getattr(model.D, "BACK_GARDEN", None)          # V2.81 (N30): the back garden's lawn, path, borders and fences
+    e["garden"] = getattr(model.D, "BACK_GARDEN", None)          # V2.84 (N30): the back garden's lawn, path, borders and fences
     e["things"] = getattr(model.D, "GARDEN_THINGS", [])          # V1.6: the table and chairs, next door's trampoline and sheds
     st = e["floors"].get("street", {}).get("boxes", {})          # V1.6: next door's back lawns and fences, for the living room's window
     lawn = model.D.LEVELS["lawn"]

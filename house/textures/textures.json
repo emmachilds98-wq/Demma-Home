@@ -51,7 +51,8 @@
   "asset": "Carpet012",
   "size": 0.5,
   "url": "https://ambientcg.com/view?id=Carpet012",
-  "licence": "CC0"
+  "licence": "CC0",
+  "like": "carpet_grey"
  },
  "lr_oak": {
   "asset": "oak_veneer_01",
@@ -81,7 +82,8 @@
   "asset": "coated_pine",
   "size": 1.0,
   "url": "https://polyhaven.com/a/coated_pine",
-  "licence": "CC0"
+  "licence": "CC0",
+  "like": "pine"
  },
  "birch": {
   "asset": "white_maple_veneer",
@@ -141,7 +143,8 @@
   "asset": "red_brick_03 (toned buff)",
   "size": 1.05,
   "url": "https://polyhaven.com/a/red_brick_03",
-  "licence": "CC0"
+  "licence": "CC0",
+  "like": "brick"
  },
  "marble": {
   "asset": "made by build_textures.tiles",
