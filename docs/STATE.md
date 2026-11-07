@@ -3,8 +3,8 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.88 (7 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
-The version in Plan is a refresh button ("V2.88 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V2.89 (7 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
+The version in Plan is a refresh button ("V2.89 ↻"): on the home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 10 (the rest in parallel chunks A–E, one thread each), section 9 (every task's state).
 Open PRs: #133 (KTX2, WIP). The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
@@ -107,7 +107,9 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   brush strokes; the steel a brushed grain, each in its own colour; the dormer's cheeks lapped dark timber boards (V2.56).
 - **Outside:** by day under a real sky, the lawn's photo to a hazy horizon, the gardens, next door, the valley and the hill. Every
   lawn (the gardens', next door's, the ground's) is one patchwork shader, `03_materials` `grassy`: the photo or its larger turned copy
-  over metres, lighter and darker slower still, so no grid shows (V2.68).
+  over metres, lighter and darker slower still, so no grid shows (V2.68). The back garden as its photos (V2.89, N30,
+  `survey_data.BACK_GARDEN`, drawn in `04_living_shell.js` `garden3d`): looking out, the west border with the cordyline and a
+  red-tipped shrub, the path from a pad by the back door, a muscari strip, the lawn to the trees at 17 m, leaf litter beyond, the east bed.
 - **Offline:** `sw.js` keeps the page's last copy and every picture; a file named by its contents (the photos, `three.<hash>.js`)
   stays in `demma-keep` across versions, so a new round doesn't fetch it again (V2.47).
   **Get the latest:** the version in Plan (`.hello .ver`, "V2.87 ↻") is a button, for the home-screen app that has no reload: it reads
@@ -158,7 +160,7 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 ## Open with the client
 1. `?perf` from the iPhone 15 Pro and the RTX 5070 PC, after opening the house once: a screenshot of the corner box (N10, N17).
 2. KTX2 (N31): picked "let CI build it" (7 Nov); confirm before the workflow builds the encoder. Dark panels on a dark device, or the cream (N9).
-3. A microwave photo, if there is one (N6); what to have in the gardens (N30); what to try in each room (N5's trays).
+3. A microwave photo, if there is one (N6); what to have in the gardens (N30: asked; the photos' garden is in); what to try in each room (N5's trays).
 4. Measure (V2.24): is the living room's flight 85 wide like the stairwell over it (drawn 59)? The bathroom door's width.
 5. Still to measure (all in Measure): the boiler cupboard into bedroom 2; the bathroom's ceiling over the toilet, the slope's start, the
    vanity, the bath (184 drawn); the landing's doors and the wall between the bedroom doors; the tapestry's drop; the hall radiator; the

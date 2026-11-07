@@ -354,7 +354,7 @@ _dup = len(_h["items"]) - len({i["id"] for i in _h["items"]})
 check("house file: no two pieces share an id", not _dup, f"{_dup} repeated" if _dup else "all different")
 _need = [i["id"] for i in _h["items"] if i["kind"] in ("door", "window", "radiator") and i["room"] != "living" and not i.get("opening") and i["kind"] != "radiator"]
 check("house file: every door and window has its opening", not _need, ", ".join(_need) or "all")
-_mr = [m["id"] for m in _h["measure"] if m["room"] not in _rooms]
+_mr = [m["id"] for m in _h["measure"] if m["room"] not in _rooms | {"garden"}]   # V2.89: the back garden is a place too
 check("house file: every open measurement is in a room", not _mr, ", ".join(_mr) or f"{len(_h['measure'])} rows")
 check("house file: the client's edits all applied", not _h["problems"], "; ".join(_h["problems"]) or "none waiting or all in")
 

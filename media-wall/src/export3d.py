@@ -96,6 +96,7 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
     e["windows_in"] = [[op["floor"], op["side"], *op["x"], op["sill"], op["head"]] for op in model.D.OPENINGS if op["kind"] == "window" and not op.get("skip")]
     e["plants"] = getattr(model.D, "PLANTS", [])                # V1.3: the gardens' plants (survey_data.PLANTS: where, how big, the source)
     e["beyond"] = getattr(model.D, "BEYOND", None)               # V1.4: past the far fence (survey_data.BEYOND): the low building, the hill
+    e["garden"] = getattr(model.D, "BACK_GARDEN", None)          # V2.89 (N30): the back garden's lawn, path, borders and fences
     e["things"] = getattr(model.D, "GARDEN_THINGS", [])          # V1.6: the table and chairs, next door's trampoline and sheds
     st = e["floors"].get("street", {}).get("boxes", {})          # V1.6: next door's back lawns and fences, for the living room's window
     lawn = model.D.LEVELS["lawn"]

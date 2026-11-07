@@ -36,14 +36,28 @@ LEVELS = dict(lower=-260.0, ground=0.0, first=260.0, ceil=235.0, slab=25.0, gara
 # V1.4, the far end (the view photos, on v48's fitted camera (garden_window.py, in git history): the lawn runs to the trees at about 17 m, the far fence at
 # 25): a conifer just right of our garden's middle, about 19 m out, about 11 m tall; behind it to the left a clump of four tall pale
 # stems in leaf by summer (photo_garden_summer_24oct.jpg), about 15 m; next door's (west) dark evergreen at its end, about 7.5 m
-PLANTS = [dict(id="cordyline", kind="cordyline", x=370.0, y=-260.0, z=-787.0, h=560.0, fork=200.0, heads=6, spread=380.0, r=13.0, leaf=110.0,
+PLANTS = [dict(id="cordyline", kind="cordyline", x=435.0, y=-260.0, z=-787.0, h=560.0, fork=200.0, heads=6, spread=380.0, r=13.0, leaf=110.0,
                src="B: the back photo (photo_house_rear_24oct.jpg) sized against the house; in our garden: the client (E)"),
           dict(id="conifer", kind="conifer", x=190.0, y=-260.0, z=-2240.0, h=1100.0, spread=360.0, r=18.0, leaf=55.0,
                src="B: the view photos (photo_view_full_24oct.jpg), on the fitted camera (E)"),
           dict(id="end_trees", kind="broadleaf", x=300.0, y=-260.0, z=-2420.0, h=1500.0, spread=900.0, stems=4, r=14.0, leaf=70.0, cards=1800,
                src="B: the view photos, in leaf as the summer photo (photo_garden_summer_24oct.jpg) (E)"),
+          dict(id="shrub_w", kind="broadleaf", x=445.0, y=-260.0, z=-950.0, h=200.0, spread=120.0, stems=3, r=2.5, leaf=22.0, cards=260, tone="red",
+               src="B: the back photo: a red-tipped shrub in the west border behind the cordyline (E)"),
+          dict(id="shrub_e", kind="broadleaf", x=8.0, y=-260.0, z=-420.0, h=190.0, spread=100.0, stems=3, r=2.5, leaf=22.0, cards=220, tone="red",
+               src="B: the back photo: a red-tipped shrub in the east bed by the house (E)"),
           dict(id="next_evergreen", kind="broadleaf", x=640.0, y=-260.0, z=-2380.0, h=750.0, spread=620.0, stems=2, r=12.0, leaf=60.0, cards=1300, dark=True,
                src="B: the view photo, next door's end (E)")]
+
+# V2.89 (N30): the back garden's ground, from the back photo, the summer photo from the dormer and the view photos (E, sized against the
+# house's openings and the garden's width; x as the house's: the east fence at -12, the west at 479). Looking out, from the west fence:
+# a planted border (the cordyline, two red-tipped shrubs, muscari and primroses), the concrete path from the back door to the trees, a
+# strip of muscari along its lawn side, the lawn to the trees at about 17 m, leaf litter under them to the far fence; a narrow bed along
+# the east fence. A wider concrete pad joins the back door to the path. The west fence is low by the house (the view photos), close-board
+# beyond; the east one lower all along (the client's photos, HOUSE.md)
+BACK_GARDEN = dict(x=(-12.0, 479.0), length=2500.0, lawn_end=1700.0, border=80.0, path=70.0, edge=20.0, border_e=30.0,
+                   pad=dict(x0=218.0, d=90.0), fence_w=dict(low=110.0, low_to=450.0, h=180.0), fence_e=120.0,
+                   src="B: the back photo (photo_house_rear_24oct.jpg), the summer photo and the view photos, sized against the house (E)")
 
 # V1.6: the things in the gardens (the view photos, photo_view_full_24oct.jpg; E): ours, by the house on the path's side, the round black
 # table and three folding chairs (two cream recliners, a navy one); east of our fence, past the alley's house, a 3 m trampoline (green
