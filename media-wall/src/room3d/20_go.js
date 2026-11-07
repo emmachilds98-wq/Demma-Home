@@ -193,7 +193,7 @@ const SPRAY = {};
 function sprayTex(k) {
   if (SPRAY[k]) return SPRAY[k];
   let sd = 77 + k.length; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
-  const cols = { leaf: ["#5d7f35", "#4f7130", "#6b8c3c", "#45652b", "#789a45"], dark: ["#2f4d27", "#3a5a2c", "#28421f", "#456634"], needle: ["#2c4a26", "#36552c", "#22391d", "#3f5f31"] }[k];
+  const cols = { leaf: ["#5d7f35", "#4f7130", "#6b8c3c", "#45652b", "#789a45"], dark: ["#2f4d27", "#3a5a2c", "#28421f", "#456634"], needle: ["#2c4a26", "#36552c", "#22391d", "#3f5f31"], red: ["#8e2a1e", "#a8442a", "#5d6b33", "#4c5a2a", "#b5513a"] }[k];
   return (SPRAY[k] = canvasTex(256, 256, (g, w, h) => {
     if (k === "needle") {                                      // fronds: a stalk with short needles both sides
       for (let i = 0; i < 9; i++) { const a = rnd() * Math.PI * 2, L = w * (0.25 + rnd() * 0.2), x0 = w / 2 + Math.cos(a) * w * 0.06, y0 = h / 2 + Math.sin(a) * h * 0.06;
@@ -211,7 +211,7 @@ function sprayTex(k) {
 function buildTrees(grp, list) {
   if (!list.length) return;
   let sd = 9157; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
-  const Y = new THREE.Vector3(0, 1, 0), stems = { pale: [], dark: [] }, cards = { leaf: [], dark: [], needle: [] };
+  const Y = new THREE.Vector3(0, 1, 0), stems = { pale: [], dark: [] }, cards = { leaf: [], dark: [], needle: [], red: [] };
   const seg = (to, a, b, r0, r1) => { const d = b.clone().sub(a), L = d.length(), g = new THREE.CylinderGeometry(r1, r0, L, 7, 1, true);
     g.translate(0, L / 2, 0); g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(Y, d.normalize())); g.translate(a.x, a.y, a.z); to.push(g.toNonIndexed()); };
   for (const P of list) {
@@ -233,7 +233,7 @@ function buildTrees(grp, list) {
         const b = a + (rnd() - 0.5) * 2.6, L = S * (0.7 - j * 0.06) * (0.7 + rnd() * 0.4), e = s0.clone().add(new THREE.Vector3(Math.cos(b) * L, L * (0.45 + rnd() * 0.5), Math.sin(b) * L));
         seg(stems.pale, s0, e, r * 0.32 * (1 - t * 0.5), r * 0.07); ends.push(e); }
     }
-    const per = Math.round((P.cards || 1400) / ends.length), to = P.dark ? cards.dark : cards.leaf;
+    const per = Math.round((P.cards || 1400) / ends.length), to = cards[P.tone || (P.dark ? "dark" : "leaf")];   // V2.81 (N30): the red-tipped shrubs
     for (const e of ends) for (let i = 0; i < per; i++) { const u = rnd() * 2 - 1, a = rnd() * Math.PI * 2, rr = Math.cbrt(rnd()) * S * 0.4, q = Math.sqrt(1 - u * u);
       to.push([e.x + Math.cos(a) * q * rr, e.y + u * rr * 0.65, e.z + Math.sin(a) * q * rr, card * (0.7 + rnd() * 0.6)]); }
   }

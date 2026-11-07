@@ -474,7 +474,7 @@ def measure_panel():
     rows = h["measure"]
     out = [f'<p class="caption">Each one replaces a size guessed from a photo. <b id="ms-count">0 of {len(rows)} measured</b></p>']
     for room in dict.fromkeys(m["room"] for m in rows):
-        nm = html.escape(names.get(room, room))
+        nm = html.escape(names.get(room, room.capitalize()))
         head = f'<button type="button" class="ms-go" data-hroom="{room}">{nm} <span class="ms" aria-hidden="true">arrow_forward</span></button>' if room in WALK_IN else nm
         out.append(f'<div class="grp"><span class="label">{head}</span>')
         for m in rows:
