@@ -746,13 +746,13 @@ function start() {
      frame. For the right ones: after the cutaway's clipping is set (v81's lesson), and into a target like the shade's composer when it's
      on (its shaders differ from the screen's). Never more than 8 s' wait */
   const first = () => { if (first.done) return; first.done = true; START_MS.compiled = Math.round(performance.now() - t0); msg.hidden = true;
-    requestAnimationFrame(frame); requestAnimationFrame(() => setTimeout(loadPhotos, 30)); };   // V1.9: the photos once the first picture is up
+    requestAnimationFrame(() => { preDraw(); requestAnimationFrame(frame); requestAnimationFrame(() => setTimeout(loadPhotos, 30)); }); };   // V2.66 (N13): the shadows a frame ahead   // V1.9: the photos once the first picture is up
   if (gl.compileAsync && !/[?&]nocompile\b/.test(location.search)) {
     msg.textContent = "Building the house…"; msg.hidden = false;
     const was = gl.getRenderTarget();
     try {
       if (postLive()) { if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }); gl.setRenderTarget(PRE.rtAO); }
-      Promise.race([compileClipped(camera), new Promise(r => setTimeout(r, 8000))]).then(first, first);   // V2.64: by cutting planes (01_renderer)
+      texWarm(); Promise.race([Promise.all([compileClipped(camera), postWarm()]), new Promise(r => setTimeout(r, 8000))]).then(first, first);   // V2.66 (N13): the shade's and glow's too; the textures meanwhile   // V2.64: by cutting planes (01_renderer)
     } catch (e) { first(); } finally { gl.setRenderTarget(was); }
   } else first();
   precompile();                                                                         // v35: hidden parts' shaders, while the room's idle
