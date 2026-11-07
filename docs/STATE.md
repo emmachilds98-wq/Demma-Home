@@ -5,9 +5,9 @@ Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; w
 
 **Version:** V2.74 (7 Nov 2026)
 
-**Work from:** `docs/REAL_PLAN.md` section 7, the round after (N13–N23: the first picture, moving, the views' controls, landing,
-the outside, tracking upgrades) in workstreams that run side by side, one task a PR; section 6 (N1–N12) is done but N4's and N9's
-rests and the client's `?perf` (N10). Its section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards (one line a row).
+**Work from:** `docs/REAL_PLAN.md` section 8, the next round (N24–N31: land the waiting PRs, a lighter start, guard the gains,
+fewer shaders, lean code, wallpaper, the gardens, KTX2) in workstreams that run side by side, one task a PR; section 7 is done but
+N20 and N21 (their PRs, N24) and N22's KTX2 (N31). Its section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 Older boards, all done or carried into those: `docs/V1_PLAN.md` (phases 0–10), `docs/QUALITY_PLAN.md`, `docs/UPGRADE_REVIEW.md`.
 
 ## Where it lives
