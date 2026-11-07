@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.66 (7 Nov 2026)
+**Version:** V2.67 (7 Nov 2026)
 
 **Work from:** `docs/REAL_PLAN.md` section 7, the round after (N13–N23: the first picture, moving, the views' controls, landing,
 the outside, tracking upgrades) in workstreams that run side by side, one task a PR; section 6 (N1–N12) is done but N4's and N9's
@@ -74,12 +74,16 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   [23] plant.
   Tap a floor: Add a piece here (25 pieces in 8 kinds, `08_house_catalogue.js`, built from the house's own boxes so the walk and taps
   follow; a card warns when it's in the way of another). Swaps and adds are Measure's edits rows: Send carries them, `pull_edits.py` asks.
+- **Track the upgrades (V2.66, N23):** a room's colours, floor or piece card has Changes (n): the room's card of what's changed
+  (Look's rows and Edit's pieces), each a tap to tick done (this device, `dh-done`; a new choice starts unticked), a rough cost each
+  (`16_cards.js` `UPC`, E: UK prices, Nov 2026; a floor by the room's m²; moves and take-outs £0). Plan's home has The house's changes:
+  the total, how many done, a row a room (tap: stand in it, its card open).
 - **Measure** (dock): the sizes still guessed, by room; the colours' m² and litres; Send makes a link of every change
   (`pull_edits.py --link`).
 - **Shapes (V2.53, N6):** the master's wardrobes are PAX frames (plinth set back, an oval rail) with garments on hangers, the
   fridge-freezer has its two doors, grip strip and dispenser (the photos), the Kallax its thin shelves, DRÖNA boxes and records, the
   chair-bed its tube frame and leaning back. Cloth profiles get soft edges (`20_go.js` `PSOFT`); no microwave is in the photos.
-- **What's drawn inside (V2.66, N16):** standing in a room, of its floors only that room, the rooms seen from it (an open or glazed
+- **What's drawn inside (V2.67, N16):** standing in a room, of its floors only that room, the rooms seen from it (an open or glazed
   door and the next, a flight's top or foot) and the shell (walls, slabs, stairs, roof); the outside only where one of them has a
   window or a door out. Each floor's mesh of a material keeps a room's pieces together (`20_go.js` `put`, `userData.rooms`); a room
   left out is cut by draw range (`09` `roomCull`); a door's swing asks again. Draws on a phone: hall 297 to 215, garage 236 to 183,

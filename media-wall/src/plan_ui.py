@@ -5,6 +5,7 @@ The plan page's new parts, as data and markup for build_viewer.py; page.js runs 
 - Decide: the open choices, one per screen, with the renders already made, kept for both of you; the buy list follows the pick;
 - the ideas shortlist: "+ Add to plan" on each idea and suggestion, a running +£ and the plan's new total;
 - build day: a step as a phone screen, its room, its tasks to tick, its tools, its parts, Done.
+- N23: the house's changes (each room's Look and Edit), their rough cost and how many are done, a row a room (16_cards.js fills it).
 Every number comes from geometry, fit, ideas, costs or the buy list."""
 import html
 
@@ -90,7 +91,7 @@ def money_html(track):
 
 
 def plan_home(ring, nbuy, nsteps):
-    """The top of the Plan home: three rings (one count) and the three lists beside them."""
+    """The top of the Plan home: three rings (one count), the lists beside them, and the house's changes (N23)."""
     chk, nchk = checks_html()
     return f"""<div class="next3" id="next3" aria-label="Your next three things"></div>
       <div class="rings rings3">{ring("build", 50, "tasks done", "build")}{ring("buy", 165, "things bought", "buy")}{ring("choice", 280, "choices made", "decide")}</div>
@@ -99,6 +100,7 @@ def plan_home(ring, nbuy, nsteps):
         <section class="wait"><div class="sec-h"><h2>Waiting on you</h2><button type="button" class="btn" data-decide-open="0">Decide</button></div><ul class="waitl" id="waitl"></ul></section>
         <details class="fold mon"><summary>Where the money goes, by piece</summary>{{MONEY}}<p><a class="btn" href="#buy" data-go="buy">The buy list</a></p></details>
       </div>
+      <details class="fold" id="ups"><summary>The house's changes: <b id="ups-tot">none yet</b></summary><ul class="money" id="ups-l"></ul></details>
       <details class="fold"><summary>Checks on site ({nchk}): the fit proof's “check” rows</summary>{chk}</details>"""
 
 
