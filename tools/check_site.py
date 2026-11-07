@@ -217,7 +217,9 @@ def main():
             pg.click("#r3d-dt-measure"); pg.wait_for_timeout(800)
             n = pg.evaluate("() => document.querySelectorAll('#r3d-dp-measure [data-measure]').length")
             if n != rows: fails.append(f"{w}: Measure lists {n} sizes, the house file {rows}")
-            pg.fill("#r3d-dp-measure [data-measure]", "123"); pg.wait_for_timeout(1200)
+            pg.fill("#r3d-dp-measure [data-measure]", "123")   # V2.75: wait for the save (a 600 ms debounce behind a frame that takes seconds in CI), not a fixed 1.2 s: it failed main's V2.74 run and four PRs
+            try: pg.wait_for_function("() => { const r = JSON.parse(localStorage.getItem('demma-v1:measurements') || '{}'), f = document.querySelector('#r3d-dp-measure [data-measure]').dataset.measure; return r[f] && r[f].cm === 123; }", timeout=60000)
+            except Exception: pass
             kept = pg.evaluate("() => JSON.parse(localStorage.getItem('demma-v1:measurements') || '{}')")
             first = pg.evaluate("() => document.querySelector('#r3d-dp-measure [data-measure]').dataset.measure")
             if (kept.get(first) or {}).get("cm") != 123: fails.append(f"{w}: Measure didn't keep the number typed ({kept})")

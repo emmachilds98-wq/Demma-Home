@@ -6,7 +6,7 @@ import sys
 import pathlib, re
 from PIL import Image, ImageDraw, ImageFont
 import render as R, shot
-from build_doc import VERSION, LABEL   # v30: the HD renders carry the plan's version (they were typed in by hand)
+from build_doc import LABEL   # v30: the HD renders carry the plan's version (they were typed in by hand)
 try:
     import diagrams as D
 except Exception:      # diagrams mid-edit: renders can still be built with `renders`
