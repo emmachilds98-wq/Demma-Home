@@ -6,7 +6,7 @@ Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; w
 **Version:** V2.79 (7 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
 
 **Work from:** `docs/REAL_PLAN.md` section 10 (the rest in parallel chunks A–E, one thread each), section 9 (every task's state).
-Open PRs: #131 (N26, the speed budget), #133 (KTX2, WIP). Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
+Open PRs: #133 (KTX2, WIP). The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 
 ## Where it lives
 - **The site on GitHub Pages:** https://emmachilds98-wq.github.io/Demma-Home/ (built and published by the workflow on every push to
