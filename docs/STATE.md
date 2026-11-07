@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.67 (7 Nov 2026)
+**Version:** V2.72 (7 Nov 2026)
 
 **Work from:** `docs/REAL_PLAN.md` section 7, the round after (N13–N23: the first picture, moving, the views' controls, landing,
 the outside, tracking upgrades) in workstreams that run side by side, one task a PR; section 6 (N1–N12) is done but N4's and N9's
@@ -46,15 +46,19 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 ## The site now
 
-- **The 3D is the site** (the old design, V1.2): the whole house opens first, a welcome card over it once a visit (V2.43; the name top
-  left brings it back; automated browsers skip it). Pills float over it: the brand, Plan · Build · Buy, Whole house, Hide labels,
+- **Landing (V2.69, N19):** a cream first screen (the house's outline, a thin line filling; no words, no black) until the first
+  picture (`r3d-first`; till every start fires it, the start's words put away), then `demma-landed`; `build_viewer.LANDING_JS`.
+  The version is in Plan, beside the hello (`.hello .ver`), not the brand.
+- **The 3D is the site** (the old design, V1.2): the whole house opens first, a welcome card over it once on a device (V2.69: "Welcome
+  home", three icons of two words, Walk in · Look round; the name top left brings it back; automated browsers skip it and the first
+  screen, unless `?welcome` / `?landing`). Pills float over it: the brand, Plan · Build · Buy, Whole house, Hide labels,
   Angled · Overhead, the floors (Outside · First · Ground · Lower, Gardens, Next door), a floor's rooms (one row on a computer), Hide
   buttons; the house framed clear of them (`measureShift`; a phone stands back by the free share, `freeFrame`); the dock below
   (View · Look · Measure; in the living room also Room and Edit); the figure bottom right drops you in where you let go.
 - **Rooms:** picking one stands you in it (`goRoom`); its views Be there · In it · Above · On its own. Walk: W A S D, arrows turn,
   the wheel walks (Ctrl + wheel the lens), a double-click or double-tap walks you to a spot, Mouse look (M) on a computer. The eye is
   solid to walls and furniture; doors open with a tap and stay as left (this device). `?room` opens the living room.
-- **Over the house (V2.67, N18, `19_view_controls.js`):** Overhead is a map: one finger or a left-drag moves it (the ground stays under
+- **Over the house (V2.72, N18, `19_view_controls.js`):** Overhead is a map: one finger or a left-drag moves it (the ground stays under
   the finger), two fingers pinch and twist, a right-drag turns; Angled orbits 10°–85° above the ground. The point looked at stays
   round the house (wider with Gardens or Next door). Keys, held and smooth: arrows or W A S D move, Q E turn, + − (R F) zoom, Shift
   hurries; a double-tap or double-click on a room stands you in it, on the ground centres there.
@@ -87,17 +91,23 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Shapes (V2.53, N6):** the master's wardrobes are PAX frames (plinth set back, an oval rail) with garments on hangers, the
   fridge-freezer has its two doors, grip strip and dispenser (the photos), the Kallax its thin shelves, DRÖNA boxes and records, the
   chair-bed its tube frame and leaning back. Cloth profiles get soft edges (`20_go.js` `PSOFT`); no microwave is in the photos.
+- **Opening (V2.70, N13):** the shade's and glow's shaders built in the warm-up (`postWarm`), textures sent while it waits (`texWarm`), shadows
+  a frame ahead (`preDraw`): the first picture builds 2 shaders (was 16), sends ~20 textures (was 220); then `r3d-first` fires.
+- **Drawn inside (V2.71, N16):** the room you stand in, the rooms seen from it, the shell; the outside if one has a window (`roomCull`).
 - **Quality:** a real graphics card opens in HD and never steps down (V2.25); iPhones start in HD at 2× and step down only if slow, always through the composer (the shade off never rebuilds a shader; a slow one leaves it out while you drag; the house's materials always carry 6 cutting planes, `houseClip`, so a floor's or a room's cut builds no shaders; the start and the rooms' warm-up (`warmSwitch`) compile by cutting planes, in parallel, `compileClipped`, V2.64); View →
   More has HD or Fast. In HD each room is lit by its ceiling light and its windows' daylight, with soft shadows and ambient occlusion; by evening the
   lamps the client has light theirs too (the office's purple lamp, the bathroom mirror's bar; V2.48), the kitchen from its two LED battens. Every standing piece
   has a soft shade round its foot and up the wall beside it, on phones too (V2.52; it moves with the piece).
   The window frames, outside doors, gutters and sills have uPVC's faint peel; the skirting, inside doors, newel and rail gloss paint's
   brush strokes; the steel a brushed grain, each in its own colour; the dormer's cheeks lapped dark timber boards (V2.56).
-- **Outside:** by day under a real sky, the lawn's photo to a hazy horizon, the gardens, next door, the valley and the hill.
+- **Outside:** by day under a real sky, the lawn's photo to a hazy horizon, the gardens, next door, the valley and the hill. Every
+  lawn (the gardens', next door's, the ground's) is one patchwork shader, `03_materials` `grassy`: the photo or its larger turned copy
+  over metres, lighter and darker slower still, so no grid shows (V2.68).
 - **Offline:** `sw.js` keeps the page's last copy and every picture; a file named by its contents (the photos, `three.<hash>.js`)
   stays in `demma-keep` across versions, so a new round doesn't fetch it again (V2.47).
   The photos are a file each (`_site/tex/<key>_<map|nor|rough>.<hash>.jpg`, `build_viewer.split_photos`; the page keeps their names):
-  what's on screen is fetched first, the rest a moment later; a photo two textures share is fetched once (`decodeImg`) (V2.49); each goes onto the graphics chip in turn, `upStep`: 6 ms of a still frame, one per 120 ms while you move, the shadows once at the end (V2.64).
+  what's on screen is fetched first, the rest a moment later; a photo two textures share is fetched once (`decodeImg`) (V2.49); each goes onto the graphics chip in turn, `upStep`: 6 ms of a still frame once you've been still 0.2 s, none while you move (on a walk over 3 s, one a second if it's on screen), the shadows once at the end (V2.64, V2.67).
+  The living room's oak, hessian and two carpets are colour-matched at build (`export3d.TINT`; the carpets as `tmap`, beside the house's own `map`), not on the page (V2.67).
 - **Built for Pages:** the page's 3D script and its CSS go through esbuild as the site is built (`vendor.minify`; the source keeps its
   notes): the 3D's code 667 to 359 KB, the page 2.3 to 2.0 MB (V2.50).
 - **Sheets:** a shut Plan, Build, Buy or Ideas sheet is `content-visibility: hidden` (`.sheet.shut`, `page_router.openSheet`): not laid

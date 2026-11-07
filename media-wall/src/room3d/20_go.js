@@ -101,7 +101,8 @@ function houseTex(k) {
     const img = (f, srgb, fill) => { const t = canvasTex(4, 4, g => { g.fillStyle = fill; g.fillRect(0, 0, 4, 4); }, srgb);   // V1.11: as sharp at a slant as the card allows (was 4)
       whenPhoto(pkey, f, src => { decodeImg(src).then(im => texSet(t, im, true)); }, t); return t; };   // V2.64: queued (upStep)
     const rg = pm.rough ? Math.round(pm.rough * 255) : 0, grey = `rgb(${rg},${rg},${rg})`;   // V1.30 (U5): its roughness map, if it has one
-    return (HTEX[k] = { map: img("map", true, pm.avg || "#888888"), normal: pm.nor ? img("nor", false, "#8080ff") : null, size: [pm.size, pm.size], bump: 0,
+    const map = img("map", true, pm.avg || "#888888"); map.userData.grass = pkey === "lawn";   // V2.68 (N22): its materials take the lawn's patchwork (03_materials grassy)
+    return (HTEX[k] = { map, normal: pm.nor ? img("nor", false, "#8080ff") : null, size: [pm.size, pm.size], bump: 0,
       rough: pm.rough && !LOWD ? img("rough", false, grey) : null, roughMean: pm.rough || 0, tint: HTEX_TINT.has(k) });
   }
   let s = 7 + k.length * 101; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
@@ -495,7 +496,21 @@ function buildHouse() {
     if (S.fin === undefined && R.HOUSE3.client_finishes && Object.keys(R.HOUSE3.client_finishes).length) finRestore(R.HOUSE3.client_finishes);   // V2.11: the scheme kept in the repo, until this device picks its own
     HMATS = m3; FIN.mat3 = mat3; blindsApply(); hceilApply(); finApplyAll();
     if (window.__finPending) { const p = window.__finPending; window.__finPending = null; finImport(p); }   // V2.11: from a Send link opened before the 3D was ready   // V2.7: (mat3 for a floor laid by the tray)   // V2.6: the colours kept for the house's rooms
-    const put = (g, geos, m) => { if (!geos.length) return; const me = new THREE.Mesh(worldUV(mergeGeometries(geos), m.userData.hk), m); me.receiveShadow = true;   // V2.8: the stair wall takes shadows as the living room's stair wall below it does (V2.2 took them off: two shades along the flight)
+    /* V2.71 (N16): each piece's room: the one room whose space holds it whole (walls, slabs, the stairs, the roof and what two rooms'
+       outlines share: none, always drawn). A floor's mesh of a material keeps each room's pieces together, in the rooms' order, each
+       room's span noted (userData.rooms: [room, first, count]), so standing in a room the rest can be left out (09 roomCull) */
+    const RVOL = Object.entries(H3.rooms || {}).map(([id, r], i) => [id, r[0] - 1, r[1] + 1, r[4] - 2, r[4] + (r[4] >= 260 ? 420 : (H3.ceil || 235) + 2), r[2] - 1, r[3] + 1, i + 1]);
+    const roomOf = q => { if (!q.boundingBox) q.computeBoundingBox(); const b = q.boundingBox, x0 = -b.max.x / M, x1 = -b.min.x / M, y0 = b.min.y / M, y1 = b.max.y / M, z0 = b.min.z / M, z1 = b.max.z / M;
+      let hit = null; for (const V of RVOL) if (x0 >= V[1] && x1 <= V[2] && y0 >= V[3] && y1 <= V[4] && z0 >= V[5] && z1 <= V[6]) { if (hit) return null; hit = V; } return hit; };
+    const put = (g, geos, m, part) => { if (!geos.length) return;
+      let rooms = null;
+      if (!part && RVOL.length) { const V = geos.map(roomOf), ord = geos.map((q, i) => i).sort((a, b) => ((V[a] || [])[7] || 0) - ((V[b] || [])[7] || 0) || a - b);
+        rooms = []; let at = 0;
+        for (const i of ord) { const q = geos[i], n = q.index ? q.index.count : q.attributes.position.count, id = V[i] ? V[i][0] : "", L = rooms[rooms.length - 1];
+          if (L && L[0] === id) L[2] += n; else rooms.push([id, at, n]); at += n; }
+        geos = ord.map(i => geos[i]); if (rooms.length === 1 && !rooms[0][0]) rooms = null; }
+      const me = new THREE.Mesh(worldUV(mergeGeometries(geos), m.userData.hk), m); me.receiveShadow = true;   // V2.8: the stair wall takes shadows as the living room's stair wall below it does (V2.2 took them off: two shades along the flight)
+      if (rooms) me.userData.rooms = rooms;
       me.castShadow = !m.transparent; g.add(me); geos.forEach(q => q.dispose()); };   // v69: the house's walls and pieces cast the sun's shadow (as the living room's)
     const mx = new THREE.Matrix4();
     /* v69 (B4), the client: "more realistic like our living room": furniture, fittings and soft things with rounded edges (cm by
@@ -613,9 +628,9 @@ function buildHouse() {
         cur.children[cur.children.length - 1].userData.area = L.w * L.d; }   // V1.35: the bigger room's name wins where two overlap
       const partG = (P, into, at) => {                 // a part's group on its pivot, its own parts inside it (V1.26b: a bifold's second panel)
         const pv = v3(...P.pivot), g = new THREE.Group(); g.position.copy(pv).sub(at); into.add(g);
-        for (const [mk, list] of Object.entries(P.boxes)) put(g, list.map(([x0, y0, z0, x1, y1, z1]) => houseBox(mk, x0, y0, z0, x1, y1, z1).translate(-pv.x, -pv.y, -pv.z)), mat3(mk));
+        for (const [mk, list] of Object.entries(P.boxes)) put(g, list.map(([x0, y0, z0, x1, y1, z1]) => houseBox(mk, x0, y0, z0, x1, y1, z1).translate(-pv.x, -pv.y, -pv.z)), mat3(mk), true);
         const pm = {}; for (const Q of P.prisms || []) (pm[Q.m] = pm[Q.m] || []).push(prismGeo(Q).translate(-pv.x, -pv.y, -pv.z));
-        for (const [mk, geos] of Object.entries(pm)) put(g, geos, mat3(mk));
+        for (const [mk, geos] of Object.entries(pm)) put(g, geos, mat3(mk), true);
         const kids = Object.values(P.parts || {}).map(Q => Object.assign(partG(Q, g, pv), { angle: Q.angle, axis: Q.axis }));
         return { g, kids };
       };
@@ -745,13 +760,13 @@ function start() {
      frame. For the right ones: after the cutaway's clipping is set (v81's lesson), and into a target like the shade's composer when it's
      on (its shaders differ from the screen's). Never more than 8 s' wait */
   const first = () => { if (first.done) return; first.done = true; START_MS.compiled = Math.round(performance.now() - t0); msg.hidden = true;
-    requestAnimationFrame(frame); requestAnimationFrame(() => setTimeout(loadPhotos, 30)); };   // V1.9: the photos once the first picture is up
+    requestAnimationFrame(() => { preDraw(); requestAnimationFrame(frame); requestAnimationFrame(() => setTimeout(loadPhotos, 30)); }); };   // V2.66 (N13): the shadows a frame ahead   // V1.9: the photos once the first picture is up
   if (gl.compileAsync && !/[?&]nocompile\b/.test(location.search)) {
     msg.textContent = "Building the house…"; msg.hidden = false;
     const was = gl.getRenderTarget();
     try {
       if (postLive()) { if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }); gl.setRenderTarget(PRE.rtAO); }
-      Promise.race([compileClipped(camera), new Promise(r => setTimeout(r, 8000))]).then(first, first);   // V2.64: by cutting planes (01_renderer)
+      texWarm(); Promise.race([Promise.all([compileClipped(camera), postWarm()]), new Promise(r => setTimeout(r, 8000))]).then(first, first);   // V2.66 (N13): the shade's and glow's too; the textures meanwhile   // V2.64: by cutting planes (01_renderer)
     } catch (e) { first(); } finally { gl.setRenderTarget(was); }
   } else first();
   precompile();                                                                         // v35: hidden parts' shaders, while the room's idle
