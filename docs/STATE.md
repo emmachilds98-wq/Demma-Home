@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.74 (7 Nov 2026)
+**Version:** V2.75 (7 Nov 2026)
 
 **Work from:** `docs/REAL_PLAN.md` section 8, the next round (N24–N31: land the waiting PRs, a lighter start, guard the gains,
 fewer shaders, lean code, wallpaper, the gardens, KTX2) in workstreams that run side by side, one task a PR; section 7 is done but
@@ -113,6 +113,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   out or painted, its pictures not fetched until it opens (about 450 KB less on opening) (V2.54).
 - **Phones without a strong chip** (`LOWD`) take `tex/*_half.<hash>.jpg`, the photos at half size (`split_photos`): 2.3 MB on a first
   visit, not 10.2; the iPhones (Apple GPU) and the PCs keep the full set (V2.58).
+- **The plan's code (V2.75, N28):** only what the PDFs and the site draw; the old sides of `geometry.py`'s `TABLE_STYLE`, `SUB_IN_WALL`, `PLAIN` are gone (git).
 - **Checks:** `tools/check_site.py` walks every door, taps pieces and surfaces, tries phones by touch (iPhone 15 Pro, SE, Pixel 7,
   Galaxy S24, iPad Mini) and the computers' widths.
 
