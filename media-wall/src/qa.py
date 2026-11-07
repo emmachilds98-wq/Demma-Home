@@ -37,8 +37,9 @@ def run(p, w, h):
     localcdn.route(pg)                                   # v34: three.js from THREE_LOCAL, if set
     pg.on("pageerror", lambda e: rep["errors"].append("pageerror: " + str(e)[:200]))
     pg.on("console", lambda m: rep["errors"].append("console: " + m.text[:200]) if m.type == "error" else None)
-    pg.goto(BASE + "plan.html")   # V1: the media wall's full page
+    pg.goto(BASE + "index.html")   # V1: the media wall's full page (N25: plan.html only points here)
     pg.wait_for_function("window.R3D && window.R3D.ready", timeout=180000)
+    pg.evaluate("() => window.DemmaSheets && DemmaSheets.load()")   # N25: the sheets are built on first use
     pg.wait_for_timeout(800)
     fail = rep["fails"].append
     ver = pg.eval_on_selector(".ver", "e => e.textContent")
@@ -175,12 +176,12 @@ def no_assistant_names():
     from pypdf import PdfReader
     word = "cl" + "aude"
     hits = []
-    for f in ("plan.html", "index.html", f"media-wall/out/Demmas_Home_{LABEL}_Plan.pdf", f"media-wall/out/Demmas_Home_{LABEL}_Build_Guide.pdf",
+    for f in ("index.html", *(p.name for p in ROOT.glob("sheets.*.json")), f"media-wall/out/Demmas_Home_{LABEL}_Plan.pdf", f"media-wall/out/Demmas_Home_{LABEL}_Build_Guide.pdf",
               f"media-wall/out/Demmas_Home_{LABEL}_Plan_phone.pdf", f"media-wall/out/Demmas_Home_{LABEL}_Build_Guide_phone.pdf"):
         path = ROOT / f
         if not path.exists():
             hits.append(f"{f} missing"); continue
-        text = path.read_text() if f.endswith((".html", ".js")) else " ".join(pg.extract_text() or "" for pg in PdfReader(str(path)).pages)
+        text = path.read_text() if f.endswith((".html", ".js", ".json")) else " ".join(pg.extract_text() or "" for pg in PdfReader(str(path)).pages)
         if word in text.lower():
             hits.append(f)
     return hits
@@ -191,9 +192,14 @@ def no_assistant_names():
 BUDGET = {"caption": 20, "figcaption": 20, "note": 30, "p": 80, "toast": 10}
 
 
+def sheet_markup():
+    """N25: the Plan, Build, Buy and Ideas sheets' markup (packed out of the page, built on first use)."""
+    return [h for p in ROOT.glob("sheets.*.json") for h in json.loads(p.read_text())["html"].values()]
+
+
 def text_budget():
     import html.parser, re
-    page = (ROOT / "plan.html").read_text()
+    page = (ROOT / "index.html").read_text() + "".join(sheet_markup())   # N25: the sheets' markup is in a file of its own
     class P(html.parser.HTMLParser):
         def __init__(self):
             super().__init__(); self.stack = []; self.out = []
