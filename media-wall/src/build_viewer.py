@@ -1351,7 +1351,7 @@ def pwa_files():
         "name": "Demma's Home", "short_name": "Demma", "start_url": "./", "scope": "./", "display": "standalone",
         "background_color": "#fbf6ec", "theme_color": "#2f4a3c",
         "icons": [{"src": f"media-wall/src/art/icon-{n}.png", "sizes": f"{n}x{n}", "type": "image/png", "purpose": "any maskable"} for n in (192, 512)]}, indent=1))
-    (root / "version.txt").write_text(LABEL)   # V2.75: the version button compares the page with this
+    (root / "version.txt").write_text(LABEL)   # V2.80: the version button compares the page with this
     (root / "sw.js").write_text(f"""// v39: the page opens from the device after the first visit (network first for the page, so a new round shows; cache first for the
 // rest: three.js from its CDN, the fonts and the pictures). V2.46: a file named by its contents (tex/<photo>.<hash>.jpg, three.<hash>.js, a
 // CDN file at its version) is kept across versions (K), so a new round doesn't fetch the photos again; its older copy goes. {LABEL}.

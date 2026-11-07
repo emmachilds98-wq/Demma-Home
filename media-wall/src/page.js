@@ -450,7 +450,7 @@ window.PICKS = (() => {
 })();
 PICKS.paint();
 
-/* ---------- V2.75: the version in Plan is a button: the home-screen app has no reload, so this fetches the newest page past every cache */
+/* ---------- V2.80: the version in Plan is a button: the home-screen app has no reload, so this fetches the newest page past every cache */
 document.querySelector(".hello .ver")?.addEventListener("click", async e => {
   const have = e.currentTarget.textContent;
   let now = ""; try { now = (await (await fetch("version.txt?t=" + Date.now(), { cache: "no-store" })).text()).trim(); } catch (_) {}
