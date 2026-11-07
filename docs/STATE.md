@@ -3,8 +3,8 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.84 (7 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
-The version in Plan is a refresh button ("V2.84 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V2.89 (7 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
+The version in Plan is a refresh button ("V2.89 ↻"): on the home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 10 (the rest in parallel chunks A–E, one thread each), section 9 (every task's state).
 Open PRs: #133 (KTX2, WIP). The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
@@ -92,6 +92,9 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   only what the landing shows is built first (45 shaders, not 101; the living room put away first), the rest after the picture (`warmRest`).
 - **Walking on a phone (V2.73, N17):** a slow phone walks as it drags, without the shade and the glow (no new buffers); still past
   24 ms a frame, it draws at 1.5× from the next pause, once a visit.
+- **Room to room (V2.87, N35):** walking, a room 1.5 m or less away has its shaders asked for in parallel (`14_views_walk` `warmNear` →
+  `warmRoom`, the idle `warmSwitch` too), the shadows' with stand-ins (`01_renderer` `depthMat`); a group's planes set by a speck (`prime`).
+  An emulated iPhone's walk (hall, living room, landing, lower floor): 36 shaders built on the frame that drew them, now 1.
 - **Fewer shaders, lighter shapes (V2.79, N27):** the living room's two-sided panels (`buildGroup`'s polys, the brick) are one-sided
   with both faces in the shape (`03_materials` `twoFaced`), so they use the boxes' shaders, one draw each; the house's small roundings
   are one bevel under 0.8 cm (`bevelBox`), two steps under 2 cm (`houseBox`): 123 shaders to 112, the house 246k triangles to 167k.
@@ -104,12 +107,12 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   brush strokes; the steel a brushed grain, each in its own colour; the dormer's cheeks lapped dark timber boards (V2.56).
 - **Outside:** by day under a real sky, the lawn's photo to a hazy horizon, the gardens, next door, the valley and the hill. Every
   lawn (the gardens', next door's, the ground's) is one patchwork shader, `03_materials` `grassy`: the photo or its larger turned copy
-  over metres, lighter and darker slower still, so no grid shows (V2.68). The back garden as its photos (V2.84, N30,
+  over metres, lighter and darker slower still, so no grid shows (V2.68). The back garden as its photos (V2.89, N30,
   `survey_data.BACK_GARDEN`, drawn in `04_living_shell.js` `garden3d`): looking out, the west border with the cordyline and a
   red-tipped shrub, the path from a pad by the back door, a muscari strip, the lawn to the trees at 17 m, leaf litter beyond, the east bed.
 - **Offline:** `sw.js` keeps the page's last copy and every picture; a file named by its contents (the photos, `three.<hash>.js`)
   stays in `demma-keep` across versions, so a new round doesn't fetch it again (V2.47).
-  **Get the latest:** the version in Plan (`.hello .ver`, "V2.83 ↻") is a button, for the home-screen app that has no reload: it reads
+  **Get the latest:** the version in Plan (`.hello .ver`, "V2.87 ↻") is a button, for the home-screen app that has no reload: it reads
   `version.txt` past every cache; same version, a toast says so; newer, it updates `sw.js`, clears every cache but `demma-keep`, reloads (V2.83).
   The photos are a file each (`_site/tex/<key>_<map|nor|rough>.<hash>.jpg`, `build_viewer.split_photos`; the page keeps their names):
   what's on screen is fetched first, the rest a moment later; a photo two textures share is fetched once (`decodeImg`) (V2.49); each goes onto the graphics chip in turn, `upStep`: 6 ms of a still frame once you've been still 0.2 s, none while you move (on a walk over 3 s, one a second if it's on screen), the shadows once at the end (V2.64, V2.67).
@@ -121,6 +124,9 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   (`SHEETS_JS`; `DemmaSheets.load()` for the checks): 1,565 elements at the start, was 14,695; suggestions and ideas built when first shown (`lazyVis`).
 - **Lighter photos (V2.82, N32):** none finer than a 4K screen shows at the nearest a view comes (`build_textures.PX`, `--slim`): the
   carpets, the blanket's, the sofa-bed's and the duvet's weave at 512; a key whose picture another has says `like` (`export3d` `pic`).
+- **Phone and PC look-over (V2.88, N33):** on a touch screen every tap is 44 px (`room3d_page.CSS`, `pointer: coarse`); the small
+  pills keep their look (a clear border round each). A card open on a phone or tablet puts the stick and the figure away. The brand and
+  Plan · Build · Buy are one height. Shorter captions in Measure, View and Room; the paint swatch says Your pale mint.
 - **Sheets:** empty till first needed (V2.80); a shut one is `content-visibility: hidden`, its pictures fetched on opening (V2.54).
 - **Phones without a strong chip** (`LOWD`) take `tex/*_half.<hash>.jpg`, the photos at half size (`split_photos`): 2.3 MB on a first
   visit, not 10.2; the iPhones (Apple GPU) and the PCs keep the full set (V2.58).

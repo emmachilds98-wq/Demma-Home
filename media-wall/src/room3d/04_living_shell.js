@@ -155,7 +155,7 @@ function buildShell() {
     const fence = (h, len = GD.length) => { const T = R.HOUSE3 && houseTex("fence"); if (!T) return mat("#6b5644"); const tx = texClone(T.map); tx.needsUpdate = true;   // V1.3: boarded, each board 10 wide
       tx.repeat.set(len / 100 / T.size[0], h / 100 / T.size[1]); return reg(new THREE.MeshStandardMaterial({ map: tx, roughness: 0.9 })); };
     box(x0 - 4, x1 + 4, y0, y0 + GD.fence, z1, z1 - 4, fence(GD.fence, x1 - x0 + 8));   // V1.4: the far fence, 25 m out (the view photos)
-    if (BG) {   /* V2.84 (N30), as the photos (survey_data.BACK_GARDEN): looking out from the west fence, the border, the path, its muscari
+    if (BG) {   /* V2.89 (N30), as the photos (survey_data.BACK_GARDEN): looking out from the west fence, the border, the path, its muscari
                    strip, the lawn to the trees, leaf litter under them; the east bed; the pad from the back door to the path */
       const xb = x1 - BG.border, xp = xb - BG.path, xe = xp - BG.edge, xl = x0 + BG.border_e, zl = z0 - BG.lawn_end, zd = z0 - BG.pad.d, FW = BG.fence_w;
       const bed = (n, ...cs) => canvasTex(256, 256, (g, w, h) => { const r = rnd(n); g.fillStyle = "#4a3b2c"; g.fillRect(0, 0, w, h);   // a metre of soil, leaves and flowers

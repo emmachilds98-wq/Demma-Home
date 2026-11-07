@@ -47,7 +47,7 @@ ROWS = [
     ("bins", "porch", "The bin cupboard's width", "inside", lambda: 39.0, None),
     ("living_socket", "living", "The side-wall socket, from the corner", "along the wall", lambda: None, None),
     ("garage_box", "garage", "The chipboard box's depth", "out from the back wall", lambda: D.GARAGE_BOX["d"], ("set", ("GARAGE_BOX", "d"))),   # V1.26
-    ("garden_path", "garden", "The path's width", "across the concrete", lambda: D.BACK_GARDEN["path"], ("set", ("BACK_GARDEN", "path"))),   # V2.84 (N30)
+    ("garden_path", "garden", "The path's width", "across the concrete", lambda: D.BACK_GARDEN["path"], ("set", ("BACK_GARDEN", "path"))),   # V2.89 (N30)
     ("garden_border", "garden", "The bed by the path, fence to path", "across the bed", lambda: D.BACK_GARDEN["border"], ("set", ("BACK_GARDEN", "border"))),
     ("garden_lawn", "garden", "The lawn's length to the trees", "from the back wall", lambda: D.BACK_GARDEN["lawn_end"], ("set", ("BACK_GARDEN", "lawn_end"))),
     ("secret_pier", "secret", "The brick pier's length", "out from the back wall", lambda: D.SECRET["pier"]["d"], ("set", ("SECRET", "pier", "d"))),

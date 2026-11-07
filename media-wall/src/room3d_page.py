@@ -439,6 +439,24 @@ body.hv #r3d-dt-room, body.hv #r3d-editbtn, body.hv #r3d-dp-look > :not(h2):not(
 .r3d-find .seg { flex-wrap: nowrap; } .r3d-find input { flex: 1; min-width: 0; min-height: 44px; border: 1.5px solid #e1d6c2; border-radius: 999px; padding: 0 16px; font: 500 15px Figtree, system-ui, sans-serif; background: #fff; color: var(--ink); }
 .r3d-mysc { display: inline-flex; } .r3d-mysc button:first-child { border-radius: 999px 0 0 999px !important; } .r3d-myx { border-radius: 0 999px 999px 0 !important; padding: 0 12px !important; }
 .r3d.measuring canvas { cursor: crosshair; }
+/* V2.88 (N33, the phone and PC look-over): every tap a finger's 44 px on a touch screen; the small pills keep their look (a clear
+   border round each) so the screen gets no busier. A card open on a phone puts the stick and the figure away (they sat over it) */
+@media (pointer: coarse) {
+  .r3d .r3d-mini .r3d-minib { min-height: 44px; min-width: 44px; }
+  .r3d-floors { padding: 0 3px; }
+  .r3d-floors button, .r3d-hrooms button { min-height: 44px; border-top: 6px solid transparent; border-bottom: 6px solid transparent; background-clip: padding-box; }
+  .r3d-rmode button { min-width: 44px; justify-content: center; }
+  .r3d-px, .r3d-pop .x { width: 44px; height: 44px; top: 8px; right: 8px; }
+  .ms-go { min-width: 44px; }
+  .stk, .ms-go, .r3d-wallsel, .r3d-ui .seg button, .r3d-ui .chip, .r3d-ui .btn, .r3d-edit button, .r3d-edit .chip, .r3d-actmore > summary { min-height: 44px; }
+  .r3d-actfields .stp button, .r3d-actfields input { width: 44px; height: 44px; } .r3d-actfields input { width: 68px; }
+}
+@media (pointer: coarse) and (max-width: 899px) {
+  .r3d .r3d-mini .r3d-minib, body:not(.bare) .r3d .r3d-mini .r3d-minib.r3d-bare { width: 44px; height: 44px; }
+  body.hv .r3d-bub { min-width: 64px; }
+  .r3d-mini { gap: 4px; } .r3d-floors:not(.r3d-rmode) button { padding: 0 9px; }
+}
+@media (max-width: 899px) { .r3d:has(.r3d-pop:not([hidden])) :is(.r3d-stick, .r3d-peg) { display: none; } }
 """
 
 
@@ -472,7 +490,7 @@ def measure_panel():
     h = export_house.house()
     names = {r["id"]: ROOM_NAMES.get(r["id"], r["name"]) for r in h["rooms"]}
     rows = h["measure"]
-    out = [f'<p class="caption">Each one replaces a size guessed from a photo. <b id="ms-count">0 of {len(rows)} measured</b></p>']
+    out = [f'<p class="caption"><b id="ms-count">0 of {len(rows)} measured</b></p>']
     for room in dict.fromkeys(m["room"] for m in rows):
         nm = html.escape(names.get(room, room.capitalize()))
         head = f'<button type="button" class="ms-go" data-hroom="{room}">{nm} <span class="ms" aria-hidden="true">arrow_forward</span></button>' if room in WALK_IN else nm
@@ -489,9 +507,9 @@ def measure_panel():
         out.append("</div>")
     out.append('<div class="grp" id="ms-edits" hidden><span class="label">Changed in the 3D</span><div class="ms-elist" id="ms-elist"></div></div>')   # V1.51: room3d.js fills it
     out.append('<div class="grp" id="ms-takes" hidden><span class="label">What your colours and floors take</span><div class="ms-elist" id="ms-tlist"></div>'
-               '<p class="caption">Two coats at about 12 m² a litre (a typical emulsion, E); floors with 10% for cutting. Areas from the plan, so rough until measured.</p></div>')   # V2.12 (F7): 23_finish.js fills it
+               '<p class="caption">Two coats, about 12 m² a litre (E); floors +10% for cuts. Rough until measured.</p></div>')   # V2.12 (F7): 23_finish.js fills it
     out.append('<div class="grp"><div class="seg"><button type="button" class="btn primary" id="ms-send"><span class="ms" aria-hidden="true">send</span> Send to the plan</button></div>'
-               '<span class="caption" id="ms-st" aria-live="polite">Saved on this device as you type.</span></div>')
+               '<span class="caption" id="ms-st" aria-live="polite">Saved as you type.</span></div>')
     return "".join(out)
 # v39 (the redesign the client approved, 23 Oct): four dock buttons, View, Room, Look and Edit. Room holds Layout and Extras, grouped by
 # place; each panel opens on its main choices with everything else under a More fold
@@ -642,25 +660,25 @@ def controls(gallery=""):
               + '</div><div class="seg r3d-allrow"><button type="button" class="chip" data-suggall="on">All on</button><button type="button" class="chip" data-suggall="off">All off</button></div></div>'
               # v28: two or three versions of each, a row for every suggestion that's switched on
               '<div class="grp r3d-svars" id="r3d-svars"><span class="label">Choose a version</span>'
-              '<p class="caption" id="r3d-svnone">Switch a suggestion on and its versions show here.</p>'
+              '<p class="caption" id="r3d-svnone">Switch one on to see its versions.</p>'
               + "".join(f'<div class="r3d-decrow" data-svrow="{k}" hidden><span>{html.escape(SUGG_SHORT[k])}</span><div class="seg r3d-grid r3d-grid-s" role="group" aria-label="{html.escape(SUGG_SHORT[k])}: version">'
                         + "".join(f'<button type="button" data-svar="{k}:{v}" aria-pressed="false">{html.escape(n)}</button>' for v, n, _c in ideas.SUGG_VARS[k]) + '</div></div>'
                         for k, *_ in ideas.SUGGEST)
               + '</div>'
               '<div class="grp"><span class="label">Something of your own</span><div class="seg"><button type="button" class="chip" id="r3d-addfrom">'
               '<span class="ms" aria-hidden="true">add</span> Add a piece of furniture</button></div>'
-              '<span class="caption">Opens Edit room with its list: an armchair, a bookcase, a bench and more. Drag it where you like.</span></div>')
+              '<span class="caption">Then drag it where you like.</span></div>')
     views = "".join(f'<button type="button" class="chip" data-view="{k}" aria-pressed="false">{v}</button>' for k, v in VIEWS)
     # v31, client: "explore what could go next to the dining cabinet in the compact version": the wall between it and the pipe boxing
     BESIDE_SEG = ('<h3 class="r3d-sub">Beside the cabinet</h3>'
                   + seg("beside", [(k, v["name"]) for k, v in G.BESIDE["opts"].items()], f"The {G.BESIDE['len']:.0f} cm of wall by the pipe boxing")
-                  + '<p class="caption">The open table door covers this wall, so keep it slim: '
+                  + '<p class="caption">The table door opens here: '
                   f'{G.BESIDE["depth"]:g} cm deep at most. <button type="button" class="chip" data-view="beside">See it</button></p>')
     picks = ('<div class="grp r3d-picks" id="r3d-picks"><span class="label">Your picks</span>'
              '<p class="r3d-picklist" id="r3d-picklist" aria-live="polite">Nothing switched on yet: turn on an idea, a suggestion or a decor choice and it shows here.</p>'
              '<div class="seg"><button type="button" class="chip" id="r3d-pickcopy">Copy as a note</button>'
              '<button type="button" class="chip" id="r3d-picksave" hidden>Save for the next round</button><span class="r3d-hint2" id="r3d-pickst" aria-live="polite"></span></div></div>')
-    paints = [(k, h, n.split(" No.")[0].replace("Farrow & Ball ", "").replace("Little Greene ", "")) for k, (h, n) in R.PAINTS.items()]
+    paints = [(k, h, n.split(" No.")[0].split(" (")[0].replace("Farrow & Ball ", "").replace("Little Greene ", "")) for k, (h, n) in R.PAINTS.items()]
     walls = [("all", "All walls"), ("media", "Media wall"), ("breast", "Chimney breast"), ("door", "Door wall"), ("stairs", "Stairs wall"), ("window", "Window wall"), ("pc", "PC wall")]   # v38
     swatches = ('<div class="grp"><div class="r3d-painth"><span class="label">Paint</span>'   # v41: the paints first; one wall from the list
                 '<select id="r3d-wallsel" class="r3d-wallsel" aria-label="Which wall">' + "".join(f'<option value="{k}">{n}</option>' for k, n in walls) + '</select>'
@@ -697,11 +715,11 @@ def controls(gallery=""):
                  + seg("pad", [("on", "Show"), ("off", "Hide")], "Move buttons on the room")
                  + seg("labels", [("on", "Show"), ("off", "Hide")], "The numbered labels on the room")
                  + '<div class="grp r3d-sharegrp"><span class="label">Share this view</span><div class="seg"><button type="button" class="chip" id="r3d-link"><span class="ms" aria-hidden="true">link</span> Copy link to this view</button></div>'
-                 '<span class="caption" id="r3d-linkst" aria-live="polite">The link opens the room on this view, with your table, lights, paint, decor and suggestions.</span></div>'
+                 '<span class="caption" id="r3d-linkst" aria-live="polite">Opens this view with your choices.</span></div>'
                  + '<div class="grp r3d-save"><button class="btn primary" type="button" id="r3d-save">Save as HD picture</button>'
                  '<span class="caption" id="r3d-savest" aria-live="polite">3840 × 2160, with shadows</span></div>'
                  + (f'<div class="grp"><span class="label">HD pictures (tap one to see it big)</span>{gallery.replace(chr(34) + "gallery" + chr(34), chr(34) + "gallery r3d-gal" + chr(34), 1)}</div>' if gallery else "")
-                 + '<p class="caption"><b>Tap something in the room to work it:</b> doors open, drawers pull out, lights switch, the blind rolls up.</p>'
+                 + '<p class="caption">Tap a door, drawer, light or blind to work it.</p>'
                  + '<p class="caption">Drag to look round, pinch to zoom. Keys: WASD walk, Q E turn, R F up and down.</p></details>',
         # v31, client: "upgrade the views and layouts area of the site to ensure it reflects our recent upgrades": grouped, the compact cabinet
         # first, with what goes beside it, how it opens, the floor it needs, and ready-made set-ups to try

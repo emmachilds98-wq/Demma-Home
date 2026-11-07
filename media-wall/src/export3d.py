@@ -50,7 +50,7 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
     td = pathlib.Path(model.__file__).resolve().parent / "textures"
     meta = _j.loads((td / "textures.json").read_text()) if (td / "textures.json").exists() else {}
     b64 = lambda f: "data:image/jpeg;base64," + base64.b64encode(f.read_bytes()).decode() if f.exists() else None
-    pic = lambda k, f: td / f"{k}_{f}.jpg" if (td / f"{k}_{f}.jpg").exists() or "like" not in meta[k] else td / f"{meta[k]['like']}_{f}.jpg"   # V2.84 (N32): a shared one
+    pic = lambda k, f: td / f"{k}_{f}.jpg" if (td / f"{k}_{f}.jpg").exists() or "like" not in meta[k] else td / f"{meta[k]['like']}_{f}.jpg"   # V2.81 (N32): a shared one
     e["photo_tex"] = {k: dict(map=b64(pic(k, "map")), nor=b64(pic(k, "nor")), size=m["size"]) for k, m in meta.items()}
     for k, t in e["photo_tex"].items():                     # V1.30 (U5): a roughness map where the shine varies (build_textures.ROUGH)
         if pic(k, "rough").exists(): t["rough"] = b64(pic(k, "rough"))
@@ -96,7 +96,7 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
     e["windows_in"] = [[op["floor"], op["side"], *op["x"], op["sill"], op["head"]] for op in model.D.OPENINGS if op["kind"] == "window" and not op.get("skip")]
     e["plants"] = getattr(model.D, "PLANTS", [])                # V1.3: the gardens' plants (survey_data.PLANTS: where, how big, the source)
     e["beyond"] = getattr(model.D, "BEYOND", None)               # V1.4: past the far fence (survey_data.BEYOND): the low building, the hill
-    e["garden"] = getattr(model.D, "BACK_GARDEN", None)          # V2.84 (N30): the back garden's lawn, path, borders and fences
+    e["garden"] = getattr(model.D, "BACK_GARDEN", None)          # V2.89 (N30): the back garden's lawn, path, borders and fences
     e["things"] = getattr(model.D, "GARDEN_THINGS", [])          # V1.6: the table and chairs, next door's trampoline and sheds
     st = e["floors"].get("street", {}).get("boxes", {})          # V1.6: next door's back lawns and fences, for the living room's window
     lawn = model.D.LEVELS["lawn"]

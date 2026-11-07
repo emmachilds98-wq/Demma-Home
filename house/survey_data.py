@@ -49,7 +49,7 @@ PLANTS = [dict(id="cordyline", kind="cordyline", x=435.0, y=-260.0, z=-787.0, h=
           dict(id="next_evergreen", kind="broadleaf", x=640.0, y=-260.0, z=-2380.0, h=750.0, spread=620.0, stems=2, r=12.0, leaf=60.0, cards=1300, dark=True,
                src="B: the view photo, next door's end (E)")]
 
-# V2.84 (N30): the back garden's ground, from the back photo, the summer photo from the dormer and the view photos (E, sized against the
+# V2.89 (N30): the back garden's ground, from the back photo, the summer photo from the dormer and the view photos (E, sized against the
 # house's openings and the garden's width; x as the house's: the east fence at -12, the west at 479). Looking out, from the west fence:
 # a planted border (the cordyline, two red-tipped shrubs, muscari and primroses), the concrete path from the back door to the trees, a
 # strip of muscari along its lawn side, the lawn to the trees at about 17 m, leaf litter under them to the far fence; a narrow bed along

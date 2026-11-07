@@ -233,7 +233,7 @@ function buildTrees(grp, list) {
         const b = a + (rnd() - 0.5) * 2.6, L = S * (0.7 - j * 0.06) * (0.7 + rnd() * 0.4), e = s0.clone().add(new THREE.Vector3(Math.cos(b) * L, L * (0.45 + rnd() * 0.5), Math.sin(b) * L));
         seg(stems.pale, s0, e, r * 0.32 * (1 - t * 0.5), r * 0.07); ends.push(e); }
     }
-    const per = Math.round((P.cards || 1400) / ends.length), to = cards[P.tone || (P.dark ? "dark" : "leaf")];   // V2.84 (N30): the red-tipped shrubs
+    const per = Math.round((P.cards || 1400) / ends.length), to = cards[P.tone || (P.dark ? "dark" : "leaf")];   // V2.89 (N30): the red-tipped shrubs
     for (const e of ends) for (let i = 0; i < per; i++) { const u = rnd() * 2 - 1, a = rnd() * Math.PI * 2, rr = Math.cbrt(rnd()) * S * 0.4, q = Math.sqrt(1 - u * u);
       to.push([e.x + Math.cos(a) * q * rr, e.y + u * rr * 0.65, e.z + Math.sin(a) * q * rr, card * (0.7 + rnd() * 0.6)]); }
   }

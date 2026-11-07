@@ -81,7 +81,7 @@ The tools are there already: GTAO (ambient occlusion) in `01_renderer.js`, HD sh
 | R5 | The things in a room | **In part** (V2.18, V2.19, V2.40, V2.41) | More from the client's photos as they come |
 | R6 | Change the furniture in any room | **Done** (V2.32–V2.36, V2.55: move, resize, turn, take out, swap, add) | Swap or add in the living room's project (its own Edit room) |
 | R7 | One Look for every room | **Done** (V2.51: the living room joined; V2.57: rugs; V2.59: curtains; V2.61: bedding; V2.62: a plant; V2.63: a picture) | More prints, blinds or plants if the client asks |
-| R8 | Quick everywhere: fluid as a game | **In part** (V2.30, V2.31, V2.42, V2.43) | N13–N17 done (V2.70–V2.73); KTX2 (N31), shaders room to room (N35), the budget (N26) |
+| R8 | Quick everywhere: fluid as a game | **In part** (V2.30, V2.31, V2.42, V2.43) | N13–N17 done (V2.70–V2.73); KTX2 (N31); shaders room to room done (N35, V2.87) |
 
 ## 6. The next round (6 Nov 2026 review, V2.44): tasks
 
@@ -188,12 +188,12 @@ a line in `docs/HISTORY.md`, its row ticked here, `python3 tools/checks.py`'s li
 | N27 | Fewer shaders, a lighter house: materials that differ only in colour or a number share one program; fewer bevel segments on small or far pieces; `R3D.perf()` programs and draws before and after, the look unchanged (`tools/gallery.py`) | GPU | `03_materials.js` (not `grassy`), `20_go.js` `ROUND` and `PSOFT` | Done (V2.79) |
 | N28 | Trim the plan's code: cut functions, drawings and pages the PDFs and the site no longer use; the PDFs' pages and the site's pictures the same before and after; lines before and after in the PR | Lean | `render.py`, `diagrams.py`, `build_doc.py`, `instructions.py`, `chapters.py`, `make_images.py`, `qa.py` | Done (V2.78) |
 | N29 | Wallpaper and colours that go together (F9, F11): a wallpaper on This wall at its real repeat (CC0 patterns or drawn), rolls counted; each paint's maker pairings, sourced | Finishes | `23_finish.js`, `house/surfaces.py` | Done (V2.77) |
-| N30 | The gardens (F12): fences, paths, the lawn's edges and the plants from the client's outside photos, sizes cited; core where the photos show them, ideas as options | Outside | `house/model.py`, `house/survey_data.py`, `house/EVIDENCE.md` | N24 (#121) | Done (V2.84); ideas as options wait on Emma |
+| N30 | The gardens (F12): fences, paths, the lawn's edges and the plants from the client's outside photos, sizes cited; core where the photos show them, ideas as options | Outside | `house/model.py`, `house/survey_data.py`, `house/EVIDENCE.md` | N24 (#121) | Done (V2.89); ideas as options wait on Emma |
 | N31 | Photos squeezed for the chip (KTX2, N22's rest) | Photos | `02_textures.js`, `export3d.py`, `vendor.py`, `house/textures/build_textures.py` | the client's OK | In progress: #133 (build side only, WIP); Emma picked "let CI build it" |
 | N32 | Lighter photo files: the heaviest maps (the audit's `carpet_grey` normal 489 KB, `lawn` 439 KB, `artex` 402 KB) re-encoded or sized to what they show; a duplicate map shares one file; `sizes` before and after, the look unchanged (`tools/gallery.py`) | Photos | `house/textures/*.jpg`, `house/textures/build_textures.py`, `textures.json` | N24 (#121 touches them) | In PR (V2.82): the carpets, the blanket, the sofa-bed's and the duvet's weave at 512 (`build_textures --slim`, `PX`), duplicates shared (`like`); photos 11.4 to 8.6 MB |
-| N33 | Phone and PC look-over (the 6 Nov review's G): screenshots on the iPhone 15 Pro, SE, Pixel 7, iPad Mini and 1280/1920 of the welcome, the house, a room, the cards, Measure and the sheets; fix overlaps, taps under 44 px, cut or crowded text, in fewer words | Look-over | `page.css`, `room3d_page.py` | N24 (#122 touches them) | Open |
+| N33 | Phone and PC look-over (the 6 Nov review's G): screenshots on the iPhone 15 Pro, SE, Pixel 7, iPad Mini and 1280/1920 of the welcome, the house, a room, the cards, Measure and the sheets; fix overlaps, taps under 44 px, cut or crowded text, in fewer words | Look-over | `page.css`, `room3d_page.py` | N24 (#122 touches them) | Done (V2.88) |
 | N34 | The bathroom and the master matched to their photos (UPGRADE_REVIEW Next 2): `camfit.py` from a start near each photo's spot, `compare.CAMS` filled, each difference fixed, sizes cited | Outside | `tools/compare.py`, `tools/camfit.py`, `house/model.py`, `house/survey_data.py`, `house/EVIDENCE.md` | N30 (same thread) | Open |
-| N35 | Room to room with no shader built: walking from the living room into the hall or up the stairs built 5–13 shaders on an emulated iPhone (V2.73, the idle warm-up not yet there); the next rooms' shaders compiled in parallel (`compileClipped`) as you near a door, not drawn one by one when idle; `?perf` programs before and after | Speed | `01_renderer.js` (`precompileStep`, `warmSwitch`), `14_views_walk.js` `enterRoom()` | | Open |
+| N35 | Room to room with no shader built: walking from the living room into the hall or up the stairs built 5–13 shaders on an emulated iPhone (V2.73, the idle warm-up not yet there); the next rooms' shaders compiled in parallel (`compileClipped`) as you near a door, not drawn one by one when idle; `?perf` programs before and after | Speed | `01_renderer.js` (`precompileStep`, `warmSwitch`), `14_views_walk.js` `enterRoom()` | | **Done** (V2.87): the rooms near you warmed as you walk up (`warmNear`), the shadows' shaders too; 36 built mid-walk to 1 |
 | N36 | Soft bedding: the beds' duvets, pillows and throws as soft, rounded shapes (the master's and bedroom 2's read as flat grey slabs), the house catalogue's bed the same; the look checked in `tools/gallery.py` | Shapes | `house/model.py` (`bed2()`, `master()`, the beds only), `08_house_catalogue.js` `hcBed()` | N34 (`model.py`) | Open |
 | N37 | Fewer draws for the house (N27's rest): more of the house's fixed pieces merged per material, keeping each room's span so `roomCull` still leaves rooms out and taps still find their piece; `R3D.perf()` draws for the house and a room before and after, inside `tools/perf_budget.json`, the look unchanged (`tools/gallery.py`). Also (found by N26): changing any setting brings the living room back into the whole-house view from outside (+91 draws); keep it put away | GPU | `20_go.js` `buildHouse()` (not `buildTrees`), `09_house_views.js` `roomCull()`, and the one line that re-shows the living room on a setting change | #138 (it touches `20_go.js`) | Open |
 
@@ -212,11 +212,11 @@ merged to `main` and live; In PR means pushed, not merged; Not started means no 
 
 | State | Tasks |
 |---|---|
-| **Done** (live) | N1, N2, N3, N4, N5, N6, N7, N8, N13, N14, N15, N16, N17, N18, N19, N20, N21, N23, N25, N26, N27, N28, N29, N30 (V2.84), N32 (V2.82) |
+| **Done** (live) | N1, N2, N3, N4, N5, N6, N7, N8, N13, N14, N15, N16, N17, N18, N19, N20, N21, N23, N25, N26, N27, N28, N29, N30 (V2.89), N32 (V2.82), N33 (V2.88), N35 (V2.87) |
 | **Done in part** (what's left is named in its row or folded into a later task) | N9 (dark panels: Emma's call), N11 (the PC's `?perf`), N12 (the iPhone's `?perf`), N22 (KTX2 is N31) |
 | **In PR, not merged** | none |
 | **In progress** | N31 (#133, WIP: build side only) |
-| **Not started** | N33, N34 (after N30), N35, N36 (after N34) |
+| **Not started** | N34 (after N30), N36 (after N34) |
 | **Needs the client** | N10 (`?perf` from the iPhone 15 Pro and the RTX 5070 PC) |
 
 ## 10. Resumed (7 Nov 2026): the rest in parallel chunks
@@ -229,7 +229,7 @@ side by side. One task a PR, next free version at merge (section 9's rules, `doc
 | Chunk | Tasks, in order | Owns | Waits on |
 |---|---|---|---|
 | A Load | N25 a lighter start | `build_viewer.py` head and sheets, `page_router.js`, `07_suggestions_ideas.js`, `room3d_src.py` | the refresh button (#136) landing first (it shares `build_viewer.py`) |
-| B Speed | N35 room to room with no shader built | `01_renderer.js`, `14_views_walk.js` | |
+| B Speed | N35 room to room with no shader built: **done** (V2.87) | `01_renderer.js`, `14_views_walk.js` | |
 | C House | N30 the gardens → N34 bathroom and master to their photos → N36 soft bedding | `house/model.py`, `survey_data.py`, `EVIDENCE.md`, `tools/compare.py`, `camfit.py`, `08_house_catalogue.js` `hcBed()` | Emma for N30's gardens wishes (start from the photos meanwhile) |
 | D Photos | N32 lighter photo files → N31 KTX2 (#133) | `house/textures/`, `02_textures.js`, `export3d.py`, `vendor.py`, the workflow's encoder step | Emma's OK for N31's encoder |
 | E Look-over | N33 phone and PC look-over | `page.css`, `room3d_page.py` | after A's and the refresh button's page changes, or rebase on them |
