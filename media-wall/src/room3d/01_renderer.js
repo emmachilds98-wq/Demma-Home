@@ -195,7 +195,8 @@ function aoComposer(w, h, pr) {
 }
 function draw() {                     // a frame: through the composer with AO, or straight to the screen
   if (postLive()) { const sz = gl.getSize(new THREE.Vector2()); if (!AO.c || AO.w !== sz.x || AO.h !== sz.y || AO.pr !== gl.getPixelRatio()) { aoComposer(sz.x, sz.y, gl.getPixelRatio()); AO.w = sz.x; AO.h = sz.y; AO.pr = gl.getPixelRatio(); }
-    AO.g.enabled = aoLive(); gl.info.autoReset = false; gl.info.reset(); AO.c.render(); gl.info.autoReset = true; }   // the count covers every pass
+    const glow = AO.b.enabled; if (dragLite() && lowRes) AO.b.enabled = false;   // V2.73 (N17): no glow on a phone while it moves (its 10 passes); back as it stops
+    AO.g.enabled = aoLive(); gl.info.autoReset = false; gl.info.reset(); AO.c.render(); gl.info.autoReset = true; AO.b.enabled = glow; }   // the count covers every pass
   else gl.render(scene, camera);
 }
 function syncRig() {                  // each frame: a rigged light follows its owner, and leaves with it (a rebuilt cabinet)

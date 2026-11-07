@@ -1,4 +1,4 @@
-/* V2.73 (REAL_PLAN N18), the client: "allow better controls in overhead and angled views of the house so I can control the screen better
+/* V2.74 (REAL_PLAN N18), the client: "allow better controls in overhead and angled views of the house so I can control the screen better
    on iPhone and pc". Over the house (its floors' Angled and Overhead): Overhead works like a map: one finger or a left-drag moves it, the
    ground under the finger staying under it; two fingers pinch and twist; a right-drag turns. Angled orbits 10°–85° above the ground.
    Either way the point you look at stays round the house; arrows or W A S D move, Q E turn, + − (R F) zoom, held keys smooth; a double-tap
