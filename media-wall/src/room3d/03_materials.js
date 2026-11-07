@@ -47,7 +47,7 @@ function paintMat(ratio, eggshell, both, ch = "wall") {
   // V2.2, the client: "ensure walls are all smooth but ceilings have the popcorn artex type ceiling": the walls flat emulsion, the ceilings artex
   const relief = eggshell || ch !== "ceil" ? {} : PHOTOS ? { normalMap: ARTEX_NRM, normalScale: new THREE.Vector2(0.8, 0.8) } : { bumpMap: WALL_BUMP, bumpScale: 0.6 };
   if (!paintMats.has(k)) paintMats.set(k, reg(new THREE.MeshStandardMaterial({ color: paintColour(ratio, ch), roughness: eggshell ? 0.45 : 0.92,
-    ...relief, side: both ? THREE.DoubleSide : THREE.FrontSide, userData: { ratio, ch } })));
+    ...relief, side: both ? THREE.DoubleSide : THREE.FrontSide, userData: { ratio, ch } })));   // (buildGroup's panels: twoFaced, not both)
   return paintMats.get(k);
 }
 function repaint() { paintMats.forEach(m => m.color.copy(paintColour(m.userData.ratio, m.userData.ch))); reshadow(); }
@@ -85,7 +85,7 @@ function kindMat(kind) {
     led: () => new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: false }),
     glass: () => new THREE.MeshPhysicalMaterial({ color: "#ffffff", roughness: 0.04, transmission: 0, transparent: true, opacity: 0.16, depthWrite: false }),
     art: () => new THREE.MeshStandardMaterial({ map: ART_TEX, roughness: 0.5 }),
-    brick: () => new THREE.MeshStandardMaterial({ map: BRICK_TEX, bumpMap: BRICK_TEX, bumpScale: 0.6, roughness: 0.92, side: THREE.DoubleSide }),
+    brick: () => new THREE.MeshStandardMaterial({ map: BRICK_TEX, bumpMap: BRICK_TEX, bumpScale: 0.6, roughness: 0.92 }),   // V2.75: both faces in its shape (twoFaced)
     trans: () => new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.7, transparent: true, opacity: 0.85 }),
   }[kind]();
   return KIND[kind] = reg(m);
@@ -228,20 +228,32 @@ function buildGroup(items, name) {
     const high = it[0] === "p" && (Math.min(...it[1].filter((_, i) => i % 3 === 1)) >= R.CEIL - 0.5 || Math.min(...it[1].filter((_, i) => i % 3 === 2)) >= R.RECESS_Z + 0.5);
     if (kind === "paint") {
       const st = (flags || "").includes("s");   // V2.0: the stair wall past the room in the room's own stair-wall paint (its 2D shade drew a line part-way up the stairs)
-      const m = new THREE.Mesh(geo, paintMat((st && it[0] === "p" ? lum("#2d5a46") : lum(fill)) / BASE_L, it[0] === "b", it[0] === "p", st ? "w:stairs" : "wall"));
+      const m = new THREE.Mesh(it[0] === "p" ? twoFaced(geo) : geo, paintMat((st && it[0] === "p" ? lum("#2d5a46") : lum(fill)) / BASE_L, it[0] === "b", false, st ? "w:stairs" : "wall"));
       shadow(m); (high ? above : grp).add(m); continue;
     }
     const key = kind + (it[0] === "p" ? "p" : "") + (high ? "h" : "");
     (buckets[key] = buckets[key] || { kind, poly: it[0] === "p", high, geos: [] }).geos.push(geo);
   }
   for (const b of Object.values(buckets)) {
-    const geo = mergeGeometries(b.geos.map(g => g.index ? g.toNonIndexed() : g));
-    let mat = kindMat(b.kind);
-    if (b.poly) { mat = mat.clone(); mat.side = THREE.DoubleSide; reg(mat); }
-    const m = new THREE.Mesh(geo, mat); shadow(m, b.kind !== "glass" && b.kind !== "led");
+    let geo = mergeGeometries(b.geos.map(g => g.index ? g.toNonIndexed() : g));
+    if (b.poly || b.kind === "brick") geo = twoFaced(geo);   // V2.75 (N27): both faces in the shape, the kind's own one-sided material
+    const m = new THREE.Mesh(geo, kindMat(b.kind)); shadow(m, b.kind !== "glass" && b.kind !== "led");
     (b.high ? above : grp).add(m);
   }
   return grp;
+}
+/* V2.75 (N27): a panel seen from both sides drawn one-sided, its other face a copy wound the other way with its normals turned. A
+   two-sided material is a shader of its own (three in all with the house's lights) and, see-through, two draws; this way the panels use
+   the boxes' shaders, in one draw. The turned copies go first, so a see-through panel's far faces still draw before its near ones, in
+   the order three's two passes drew them; the shadows take both faces, as before */
+function twoFaced(g) {
+  const s = g.index ? g.toNonIndexed() : g, n = s.attributes.position.count, out = new THREE.BufferGeometry();
+  for (const [k, a] of Object.entries(s.attributes)) {
+    const w = a.itemSize, src = a.array, dst = new src.constructor(src.length * 2), sg = k === "normal" ? -1 : 1;
+    for (let i = 0; i + 2 < n; i += 3) for (let j = 0; j < 3; j++) { const f = (i + [0, 2, 1][j]) * w, t = (i + j) * w; for (let c = 0; c < w; c++) dst[t + c] = sg * src[f + c]; }
+    dst.set(src, src.length); out.setAttribute(k, new THREE.BufferAttribute(dst, w, a.normalized));
+  }
+  return out;
 }
 function shadow(m, cast = true) { m.castShadow = cast; m.receiveShadow = true; return m; }
 

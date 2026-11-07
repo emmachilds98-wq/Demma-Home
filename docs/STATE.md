@@ -3,10 +3,10 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.74 (7 Nov 2026)
+**Version:** V2.75 (7 Nov 2026)
 
-**Work from:** `docs/REAL_PLAN.md` section 8, the next round (N24–N31: land the waiting PRs, a lighter start, guard the gains,
-fewer shaders, lean code, wallpaper, the gardens, KTX2) in workstreams that run side by side, one task a PR; section 7 is done but
+**Work from:** `docs/REAL_PLAN.md` section 8, the next round (N24–N34: land the waiting PRs, a lighter start, guard the gains,
+fewer shaders (N27, done V2.75), lean code, wallpaper, the gardens, KTX2, lighter photos, the look-over, two rooms to their photos) in workstreams that run side by side, one task a PR; section 7 is done but
 N20 and N21 (their PRs, N24) and N22's KTX2 (N31). Its section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 Older boards, all done or carried into those: `docs/V1_PLAN.md` (phases 0–10), `docs/QUALITY_PLAN.md`, `docs/UPGRADE_REVIEW.md`.
 
@@ -92,6 +92,9 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   only what the landing shows is built first (45 shaders, not 101; the living room put away first), the rest after the picture (`warmRest`).
 - **Walking on a phone (V2.73, N17):** a slow phone walks as it drags, without the shade and the glow (no new buffers); still past
   24 ms a frame, it draws at 1.5× from the next pause, once a visit.
+- **Fewer shaders, lighter shapes (V2.75, N27):** the living room's two-sided panels (`buildGroup`'s polys, the brick) are one-sided
+  with both faces in the shape (`03_materials` `twoFaced`), so they use the boxes' shaders, one draw each; the house's small roundings
+  are one bevel under 0.8 cm (`bevelBox`), two steps under 2 cm (`houseBox`): 123 shaders to 112, the house 246k triangles to 167k.
 - **Drawn inside (V2.71, N16):** the room you stand in, the rooms seen from it, the shell; the outside if one has a window (`roomCull`).
 - **Quality:** a real graphics card opens in HD and never steps down (V2.25); iPhones start in HD at 2× and step down only if slow, always through the composer (the shade off never rebuilds a shader; a slow one leaves it out while you drag; the house's materials always carry 6 cutting planes, `houseClip`, so a floor's or a room's cut builds no shaders; the start and the rooms' warm-up (`warmSwitch`) compile by cutting planes, in parallel, `compileClipped`, V2.64); View →
   More has HD or Fast. In HD each room is lit by its ceiling light and its windows' daylight, with soft shadows and ambient occlusion; by evening the
@@ -136,7 +139,7 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 
 ## Numbers (5 Nov, V2.25; software graphics in a test browser: relative, not a real card's)
 - `sizes`: page 2.0 MB (V2.50), photos 9.7 MB in 58 files, 2.9 MB at half size (V2.49, V2.58; WebP tried: bigger at the same quality), three.js 0.86 MB own file, 24 sizes to measure.
-- Draws in HD: the house 350 (187k triangles), the living room 447 (18 lights lit, 120 shaders), the landing 409, the hall 312, bedroom 2 173,
+- Draws in HD: the house 377 (167k triangles, V2.75), the living room 444 (18 lights lit, 112 shaders after a full visit, V2.75), the landing 409, the hall 312, bedroom 2 173,
   the kitchen 188. Still: 0–1 frames a second (drawn only on change; spare moments build the hidden pieces' shaders ahead).
 - The repo: 351 files, 59 MB tracked (32 MB the client's photos), history 83 MB; `checks.py`'s repo check fails on a tracked build output
   or any other file over 1.5 MB.

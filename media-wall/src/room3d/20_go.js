@@ -547,7 +547,16 @@ function buildHouse() {
             b.setIndex(keep); b.clearGroups(); } }
         return b; }
       if (CLOTH[mk] && !LOWD) return clothBox(mk, x0, y0, z0, x1, y1, z1, r);
-      const b = new RoundedBoxGeometry(w * M, h * M, d * M, SOFT[mk] || (r >= 0.8 ? 2 : 1), Math.max(0.0005, Math.min(r, Math.min(w, h, d) / 2 - 0.05)) * M);
+      /* V2.75 (N27): the rounding as fine as it shows: under 0.8 cm (the keys, books, handles, doors' arrises) one bevel an edge as the
+         living room's boxes have (bevelBox, 44 triangles, not 108; like RoundedBoxGeometry, not indexed), under 2 cm (the knobs, the mouse, the rails) two steps, not four
+         (108, not 300); the big curves (the fittings, the pots) as they were. The light rolls round each edge the same */
+      const re = Math.max(0.0005, Math.min(r, Math.min(w, h, d) / 2 - 0.05));
+      if (!SOFT[mk] && re < 0.8) {
+        const { pos, nrm, face } = bevelBox([w * M / 2, h * M / 2, d * M / 2], re * M), AX = [[2, 1], [2, 1], [0, 2], [0, 2], [0, 1], [0, 1]], H = [w, h, d], uv = [];
+        for (let i = 0; i < face.length; i++) { const [ua, va] = AX[face[i]]; uv.push(pos[3 * i + ua] / (H[ua] * M) + 0.5, pos[3 * i + va] / (H[va] * M) + 0.5); }
+        const b = new THREE.BufferGeometry(); b.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); b.setAttribute("normal", new THREE.Float32BufferAttribute(nrm, 3));
+        b.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); b.translate(c.x, c.y, c.z); return b; }
+      const b = new RoundedBoxGeometry(w * M, h * M, d * M, SOFT[mk] || (re >= 2 ? 2 : 1), re * M);
       b.translate(c.x, c.y, c.z); return b; };
     /* V2.17 (docs/REAL_PLAN.md R4, the master bedroom first; the client: "increase quality and functions inc rendering items in hd"): the
        soft things as cloth, not slabs: a finely divided box, its edges rounded, then shaped: a pillow plumped (full in the middle, thin at
@@ -605,7 +614,7 @@ function buildHouse() {
       const prismGeo = P => {                         // a profile extruded: along x the profile is (z, y), along z it is (x, y)
         const r = SMALL && !GOOD_PHONE ? 0 : Math.min(PSOFT[P.m] ?? (P.m.startsWith("cloth") ? PSOFT.cloth : 0), (P.b - P.a) / 2 - 0.1);
         const g = new THREE.ExtrudeGeometry(new THREE.Shape(P.pts.map(([u, w]) => new THREE.Vector2(u * M, w * M))), r > 0
-          ? { depth: (P.b - P.a - 2 * r) * M, bevelEnabled: true, bevelThickness: r * M, bevelSize: r * M, bevelOffset: -r * M, bevelSegments: 2 }
+          ? { depth: (P.b - P.a - 2 * r) * M, bevelEnabled: true, bevelThickness: r * M, bevelSize: r * M, bevelOffset: -r * M, bevelSegments: r < 0.8 ? 1 : 2 }   // V2.75 (N27): the garments' 0.7 cm, one step (as houseBox)
           : { depth: (P.b - P.a) * M, bevelEnabled: false });
         if (r > 0) g.translate(0, 0, r * M);
         if (P.axis === "x") mx.set(0, 0, -1, -P.a * M, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1);
