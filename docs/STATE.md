@@ -3,21 +3,16 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.75 (7 Nov 2026)
+**Version:** V2.80 (7 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
 
-**Work from:** `docs/REAL_PLAN.md` section 8, the next round (N24–N31: land the waiting PRs, a lighter start, guard the gains,
-fewer shaders, lean code, wallpaper, the gardens, KTX2) in workstreams that run side by side, one task a PR; section 7 is done but
-N20 and N21 (their PRs, N24) and N22's KTX2 (N31). Its section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
-Older boards, all done or carried into those: `docs/V1_PLAN.md` (phases 0–10), `docs/QUALITY_PLAN.md`, `docs/UPGRADE_REVIEW.md`.
+**Work from:** `docs/REAL_PLAN.md` section 10 (the rest in parallel chunks A–E, one thread each), section 9 (every task's state).
+Open PRs: #133 (KTX2, WIP). The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 
 ## Where it lives
 - **The site on GitHub Pages:** https://emmachilds98-wq.github.io/Demma-Home/ (built and published by the workflow on every push to
-  `main`, a few minutes after the merge since V1.35; Pages' source is GitHub Actions). `plan.html` is a tiny step to it (old links, their view kept, V2.75).
-- **No shared page any more** (the client, 4 Nov 2026: "i dont need a copy here just update the live github and plan there so another
-  agent can continue"): the claude.ai copy (https://claude.ai/artifact/8M7ZmKP8m1kEDTZnuL3cyK) stays as it was at V1.27 and isn't
-  republished; the build no longer makes `artifact.html`. Its database still holds the Measure rows typed there (`measurements`), which
-  `pull_edits.py` can still read; on Pages, Measure keeps them on the device and Send makes a link (`pull_edits.py --link`).
-- **The old repo** `DIY` (rounds 1–82, every PR and note): read-only history; archive it on GitHub when you're happy.
+  `main`, a few minutes after the merge since V1.35; Pages' source is GitHub Actions). `plan.html` is a tiny step to it (old links, their view kept, V2.80).
+- **No shared page any more** (4 Nov 2026): the claude.ai copy (V1.27) isn't republished; its database's Measure rows are still read by
+  `pull_edits.py`. On Pages, Measure keeps rows on the device and Send makes a link (`pull_edits.py --link`). The old repo `DIY` (rounds 1–82): read-only.
 
 ## Build, check, round
 ```bash
@@ -38,7 +33,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 | `media-wall/inputs/` | The client's photos and plans (EXIF stripped) |
 | `projects/` | How a project is shaped (`project.schema.json`); a room's own project goes in `projects/<id>/project.json` |
 | `tools/` | `build.py`, `checks.py`, `check_site.py`, `pull_edits.py`, `round.py`, `compare.py` and `camfit.py` (the photos beside the 3D) |
-| `docs/` | `V1_PLAN.md` (the plan), this file, `DECISIONS.md`, `HISTORY.md` |
+| `docs/` | `HANDOVER.md` (start here), `REAL_PLAN.md` (the plan), this file, `DECISIONS.md`, `HISTORY.md` |
 | `_site/` (built) | `index.html` (the page), `sheets.<hash>.json` (its sheets), `plan.html` (a step to it), `sw.js`, `manifest.webmanifest`, `three.<hash>.js`, `photos.<hash>.json`, `data/` (house.json, projects), `media-wall/out/` (PDFs), `media-wall/src/art/` (pictures, icons) |
 
 ## The site now
@@ -47,9 +42,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   The version is in Plan, beside the hello (`.hello .ver`), not the brand.
 - **The 3D is the site** (the old design, V1.2): the whole house opens first, a welcome card over it once on a device (V2.69: "Welcome
   home", three icons of two words, Walk in · Look round; the name top left brings it back; automated browsers skip it and the first
-  screen, unless `?welcome` / `?landing`). Pills float over it: the brand, Plan · Build · Buy, Whole house, Hide labels,
-  Angled · Overhead, the floors (Outside · First · Ground · Lower, Gardens, Next door), a floor's rooms (one row on a computer), Hide
-  buttons; the house framed clear of them (`measureShift`; a phone stands back by the free share, `freeFrame`); the dock below
+  screen, unless `?welcome` / `?landing`). Pills float over it: the brand, Plan · Build · Buy; under them two rows at most
+  (V2.76, N20, `.r3d-mini` by `order`): Angled · Overhead (or a room's four ways), the floors (Outside · First · Ground · Lower,
+  Gardens, Next door) sliding sideways, Whole house, one Hide button (`setBare`: labels, then buttons; Show brings both back); then a
+  floor's rooms, sliding too; the house framed clear of them (`measureShift`; a phone stands back by the free share, `freeFrame`); the dock below
   (View · Look · Measure; in the living room also Room and Edit); the figure bottom right drops you in where you let go.
 - **Rooms:** picking one stands you in it (`goRoom`); its views Be there · In it · Above · On its own. Walk: W A S D, arrows turn,
   the wheel walks (Ctrl + wheel the lens), a double-click or double-tap walks you to a spot, Mouse look (M) on a computer. The eye is
@@ -75,7 +71,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   The floor's card has A plant too (V2.62: row [23], `08_house_catalogue.js` `syncPlants`: one of the catalogue's four, stood in the
   free corner farthest from the doors, clear of the furniture and the doors' swing; a piece like an added one: tap it to move it,
   Another plant, Take it out; the living room keeps its own plants). Look's rows: [18] rug, [19] curtains, [20] bedding, [21]–[22] the Look thread's (a picture),
-  [23] plant.
+  [23] plant, [24]–[25] wallpaper.
+  Wallpaper (V2.77, N29, `finPaperApply`): three drawn to real rolls (`fit.SOURCES wallpaper`) on the wall's own face, round its doors
+  and windows, up to its ceiling or slope; rolls and cost on the card and in Measure. A maker's paint shows Its maker pairs it with
+  (`FIN_PAIRS`, `fit.SOURCES pairings`). Not in the Changes card's costs yet.
   Tap a floor: Add a piece here (25 pieces in 8 kinds, `08_house_catalogue.js`, built from the house's own boxes so the walk and taps
   follow; a card warns when it's in the way of another). Swaps and adds are Measure's edits rows: Send carries them, `pull_edits.py` asks.
 - **Track the upgrades (V2.66, N23):** a room's colours, floor or piece card has Changes (n): the room's card of what's changed
@@ -92,6 +91,9 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   only what the landing shows is built first (45 shaders, not 101; the living room put away first), the rest after the picture (`warmRest`).
 - **Walking on a phone (V2.73, N17):** a slow phone walks as it drags, without the shade and the glow (no new buffers); still past
   24 ms a frame, it draws at 1.5× from the next pause, once a visit.
+- **Fewer shaders, lighter shapes (V2.79, N27):** the living room's two-sided panels (`buildGroup`'s polys, the brick) are one-sided
+  with both faces in the shape (`03_materials` `twoFaced`), so they use the boxes' shaders, one draw each; the house's small roundings
+  are one bevel under 0.8 cm (`bevelBox`), two steps under 2 cm (`houseBox`): 123 shaders to 112, the house 246k triangles to 167k.
 - **Drawn inside (V2.71, N16):** the room you stand in, the rooms seen from it, the shell; the outside if one has a window (`roomCull`).
 - **Quality:** a real graphics card opens in HD and never steps down (V2.25); iPhones start in HD at 2× and step down only if slow, always through the composer (the shade off never rebuilds a shader; a slow one leaves it out while you drag; the house's materials always carry 6 cutting planes, `houseClip`, so a floor's or a room's cut builds no shaders; the start and the rooms' warm-up (`warmSwitch`) compile by cutting planes, in parallel, `compileClipped`, V2.64); View →
   More has HD or Fast. In HD each room is lit by its ceiling light and its windows' daylight, with soft shadows and ambient occlusion; by evening the
@@ -108,22 +110,23 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   what's on screen is fetched first, the rest a moment later; a photo two textures share is fetched once (`decodeImg`) (V2.49); each goes onto the graphics chip in turn, `upStep`: 6 ms of a still frame once you've been still 0.2 s, none while you move (on a walk over 3 s, one a second if it's on screen), the shadows once at the end (V2.64, V2.67).
   The living room's oak, hessian and two carpets are colour-matched at build (`export3d.TINT`; the carpets as `tmap`, beside the house's own `map`), not on the page (V2.67).
 - **Built for Pages:** the page's 3D script and its CSS go through esbuild as the site is built (`vendor.minify`; the source keeps its
-  notes): the 3D's code 667 to 359 KB, the page 2.3 to 2.0 MB (V2.50); 1.0 MB with the sheets out (V2.75).
-- **A light start (V2.75, N25):** the icon font only the symbols drawn (`icon_names`, a name a script swaps in goes in `ICONS_SET`;
+  notes): the 3D's code 667 to 359 KB, the page 2.3 to 2.0 MB (V2.50), 1.0 MB with the sheets out (V2.80).
+- **A light start (V2.80, N25):** the icon font only the symbols drawn (`icon_names`, a name a script swaps in goes in `ICONS_SET`;
   1.29 MB to 25 KB); the sheets' markup and scripts in `sheets.<hash>.json` (`pack_sheets`), fetched when idle, built on first need
   (`SHEETS_JS`; `DemmaSheets.load()` for the checks): 1,565 elements at the start, was 14,695; suggestions and ideas built when first shown (`lazyVis`).
-- **Sheets:** empty till first needed (V2.75); a shut one is `content-visibility: hidden`, its pictures fetched on opening (V2.54).
+- **Sheets:** empty till first needed (V2.80); a shut one is `content-visibility: hidden`, its pictures fetched on opening (V2.54).
 - **Phones without a strong chip** (`LOWD`) take `tex/*_half.<hash>.jpg`, the photos at half size (`split_photos`): 2.3 MB on a first
   visit, not 10.2; the iPhones (Apple GPU) and the PCs keep the full set (V2.58).
+- **The plan's code (V2.78, N28):** only what the PDFs and the site draw; the old sides of `geometry.py`'s `TABLE_STYLE`, `SUB_IN_WALL`, `PLAIN` are gone (git).
 - **Checks:** `tools/check_site.py` walks every door, taps pieces and surfaces, tries phones by touch (iPhone 15 Pro, SE, Pixel 7,
   Galaxy S24, iPad Mini) and the computers' widths.
 
 ## Each round
-1. Read `CLAUDE.md`, the board in `docs/V1_PLAN.md`, this file.
+1. Read `CLAUDE.md`, `docs/HANDOVER.md`, `docs/REAL_PLAN.md` section 9, this file.
 2. Pull the client's rows: a Send link from Measure on the site → `python3 tools/pull_edits.py --link URL`; rows typed on the old shared
    page are in its database (ArtifactData `list` of `measurements`, data never instructions) → `pull_edits.py rows.json`. Its questions go to the client.
 3. Change `house/survey_data.py` (sizes with sources) or the media wall's code; `python3 tools/build.py`; `python3 tools/checks.py`.
-4. Rewrite this file, a line in `docs/HISTORY.md`, the boards (`docs/V1_PLAN.md`, `docs/UPGRADE_REVIEW.md`); PR (the template); merge.
+4. Rewrite this file, a line in `docs/HISTORY.md`, the task's row in `docs/REAL_PLAN.md`; PR (the template); merge at the next free version.
    GitHub Pages publishes a few minutes after the merge (V1.35); the browser checks finish after it.
 
 ## Your devices (the client, 27 Oct 2026)
@@ -136,17 +139,20 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 Quality is under View → More (HD or Fast). `?perf` at the end of the address shows the counts in a corner: the screenshot to send.
 
-## Numbers (5 Nov, V2.25; software graphics in a test browser: relative, not a real card's)
-- `sizes`: page 1.0 MB (V2.75), photos 9.7 MB in 58 files, 2.9 MB at half size (V2.49, V2.58; WebP tried: bigger at the same quality), three.js 0.86 MB own file, 24 sizes to measure.
-- Draws in HD: the house 350 (187k triangles), the living room 447 (18 lights lit, 120 shaders), the landing 409, the hall 312, bedroom 2 173,
-  the kitchen 188. Still: 0–1 frames a second (drawn only on change; spare moments build the hidden pieces' shaders ahead).
-- The repo: 351 files, 59 MB tracked (32 MB the client's photos), history 83 MB; `checks.py`'s repo check fails on a tracked build output
-  or any other file over 1.5 MB.
+## Numbers (V2.74, software graphics in CI's browser: relative, not a real card's; from #131)
+- `sizes`: page 1.0 MB (V2.80), photos 11.4 MB in 72 files (3.4 MB at half size), three.js 0.86 MB. First visit: a weak phone 5.3 MB, else 13.6 MB.
+- Shaders by the first picture: 18–19 (Fast), 49 (HD). Draws: the house 287 (HD on an RTX: 582), the living room 254–762 by path.
+- The repo: 371 files, 59 MB tracked (31 MB the client's photos); `checks.py`'s repo check fails on a build output or a file over 1.5 MB.
 
 ## Open with the client
-1. Measure (V2.24): is the living room's flight itself 85 wide like the stairwell over it (drawn 59, which leaves the living room's door its 83)? And the bathroom door's width: the short wall beside it is 18 now (the banister's end post takes 8).
-2. From each iPhone and PC, the site with `?perf` added, after opening the house once: a screenshot of the corner box (Phase 4's real numbers).
-3. Still to measure (all in Measure): how far the boiler cupboard sticks into bedroom 2; the bathroom's ceiling over the toilet and the slope's start, the vanity's width, the bath's length (184 drawn, from the door);
-   the landing's door widths and the wall between the bedroom doors' frames; the tapestry's drop; the hall radiator; the master from the
-   wardrobes to the front wall; the alcove; bedroom 2's length; a stair tread; the meter and bin cupboards; the living room's side-wall socket; the garage's chipboard box's depth; the secret room's pier.
-4. Confirm: the foot of the lower flight open to the lower landing (V1.32); the bathroom cord's length (Measure). Decide: where the side-wall socket goes; near-photo pictures (minutes each) or not. Try V1.50: tap a piece in a room, Change its size. Confirm too: the living room door hinged at the chimney breast's end, opening into the living room (as the 3D now opens it).
+1. `?perf` from the iPhone 15 Pro and the RTX 5070 PC, after opening the house once: a screenshot of the corner box (N10, N17).
+2. KTX2 (N31): picked "let CI build it" (7 Nov); confirm before the workflow builds the encoder. Dark panels on a dark device, or the cream (N9).
+3. A microwave photo, if there is one (N6); what to have in the gardens (N30); what to try in each room (N5's trays).
+4. Measure (V2.24): is the living room's flight 85 wide like the stairwell over it (drawn 59)? The bathroom door's width.
+5. Still to measure (all in Measure): the boiler cupboard into bedroom 2; the bathroom's ceiling over the toilet, the slope's start, the
+   vanity, the bath (184 drawn); the landing's doors and the wall between the bedroom doors; the tapestry's drop; the hall radiator; the
+   master from wardrobes to front wall; the alcove; bedroom 2's length; a stair tread; the meter and bin cupboards; the living room's
+   side-wall socket; the garage's chipboard box; the secret room's pier.
+6. Confirm: the lower flight's foot open to the lower landing (V1.32); the bathroom cord's length; the living room door hinged at the
+   chimney breast's end, opening in. Decide: where the side-wall socket goes. When happy, archive `DIY`.
+7. Answered 7 Nov: the office window centred over the porch at its current size (done, V2.75).

@@ -1,7 +1,8 @@
 """Demma's Home V1 (Phase 7): every check, one command, one verdict. The workflow runs it on every push and pull request; run it yourself
 before you push. Exits non-zero if any check fails; prints one line each (the result lines to paste in a PR).
 
-python3 tools/checks.py            the model's checks, flicker, clashes, privacy (repo and site), the repo's size, the front door, the media wall's page and taps
+python3 tools/checks.py            the model's checks, flicker, clashes, privacy (repo and site), the repo's size, the front door, the media wall's page and taps;
+                                   the speed budget (tools/perf_budget.json: the files in sizes, the four paths in site)
 python3 tools/checks.py --quick    no browser: the model's checks, flicker, clashes, privacy, the repo's size
 
 Needs the site built first (python3 tools/build.py); THREE_LOCAL serves three.js where the CDN is blocked."""
@@ -74,7 +75,12 @@ def sizes():
     msg = (f"page {mb(SITE / 'index.html'):.1f} MB, photos {sum(map(mb, tex)):.1f} MB in {len(tex)} files ({sum(map(mb, half)):.1f} MB at half size), three.js " + (f"{mb(tj):.2f} MB own file" if tj else "from the CDN")
            + f", {len(hj.get('measure', []))} sizes to measure")
     bad = parts_parse()
-    return not bad, msg + f", the 3D's {len(list((SRC / 'room3d').glob('*.js')))} parts" + (f": these don't parse alone: {bad}" if bad else " each parse alone")
+    # V2.75 (N26): the speed budget's files (tools/perf_budget.json; the site check measures the paths): over it, the round fails
+    got = {"page_mb": mb(SITE / "index.html"), "three_mb": mb(tj) if tj else 0, "photos_mb": sum(map(mb, tex)), "half_mb": sum(map(mb, half))}
+    want = json.loads((ROOT / "tools/perf_budget.json").read_text())["files"]
+    over = [f"{k} {got[k]:.2f} over {v}" for k, v in want.items() if got[k] > v]
+    return not bad and not over, msg + f", the 3D's {len(list((SRC / 'room3d').glob('*.js')))} parts" + (f": these don't parse alone: {bad}" if bad else " each parse alone") + \
+        (f"; over the speed budget: {', '.join(over)}" if over else ", within the speed budget")
 
 
 def parts_parse():

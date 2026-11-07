@@ -87,12 +87,19 @@ function lookUrl() {
   const here = location.href.split("#")[0], local = location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname) || /github\.io$/.test(location.hostname);
   return (local ? here : TOURD.pages) + "#look-" + b64u(JSON.stringify(lookOf()));
 }
-/* V1.19, the client: "take more buttons off easily and make it clear how": Hide buttons takes every button off but Show buttons (Esc too) */
-function setBare(on) {
-  document.body.classList.toggle("bare", on);
+/* V1.19, the client: "take more buttons off easily and make it clear how": Hide buttons takes every button off but Show (Esc too).
+   V2.66 (N20, fewer buttons): Hide labels and Hide buttons are one button: its first tap the labels, its next the buttons; Show
+   brings both back */
+function pickSync() {
   const pk = qs("#r3d-pick"); if (!pk) return;
-  pk.setAttribute("aria-pressed", String(on)); pk.querySelector(".ms").textContent = on ? "visibility" : "visibility_off"; pk.querySelector(".t").textContent = on ? "Show buttons" : "Hide buttons";
-  if (on) toast("Buttons hidden: tap Show buttons, top right, to bring them back");
+  const bare = document.body.classList.contains("bare"), [ic, t] = bare ? ["visibility", "Show"] : labelsOn ? ["label_off", "Hide labels"] : ["visibility_off", "Hide buttons"];
+  pk.setAttribute("aria-pressed", String(bare)); pk.title = t; pk.querySelector(".ms").textContent = ic; pk.querySelector(".t").textContent = t;
+}
+function setBare(on) {
+  if (on && labelsOn) { setLabels(false); return; }
+  document.body.classList.toggle("bare", on);
+  if (on) toast("Tap Show for the buttons"); else if (!labelsOn) { setLabels(true); return; }
+  pickSync();
 }
 document.addEventListener("keydown", e => { if (e.key === "Escape" && document.body.classList.contains("bare")) { e.preventDefault(); setBare(false); } });
 function toast(t) {   // the clock starts once two frames have drawn (applying a look can recompile the room first)
@@ -181,12 +188,9 @@ function setLabels(on) {
   labelsOn = on; try { localStorage.setItem("mw26-labels", on ? "on" : "off"); } catch (e) {}
   if (!on) { closePop(); Object.values(stickEls).forEach(el => { el.hidden = true; }); }
   document.getElementById("r3d")?.classList.toggle("nolabels", !on);
-  qsa("[data-labels]").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.labels === "on") === on)));
   applyFloors();
-  const t = qs("#r3d-lbl"); if (t) { t.setAttribute("aria-pressed", String(on)); t.querySelector(".ms").textContent = on ? "label_off" : "label"; t.querySelector(".t").textContent = on ? "Hide labels" : "Show labels"; }
-  dirty();
+  pickSync(); dirty();   // V2.66: the one Hide button says what its next tap does
 }
-document.addEventListener("click", e => { const b = e.target.closest("#r3d-lbl, [data-labels]"); if (!b) return; setLabels(b.id === "r3d-lbl" ? !labelsOn : b.dataset.labels === "on"); });
 // v35: each label's size is read once (and again after a resize or the fonts arriving), not every frame: reading it straight after
 // moving the labels made the browser lay the page out again for each label, each frame
 const stickSz = el => el._sz || (el.offsetWidth ? (el._sz = [el.offsetWidth, el.offsetHeight]) : [140, 40]);
