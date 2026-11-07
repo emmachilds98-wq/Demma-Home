@@ -190,7 +190,7 @@ a line in `docs/HISTORY.md`, its row ticked here, `python3 tools/checks.py`'s li
 | N29 | Wallpaper and colours that go together (F9, F11): a wallpaper on This wall at its real repeat (CC0 patterns or drawn), rolls counted; each paint's maker pairings, sourced | Finishes | `23_finish.js`, `house/surfaces.py` | Done (V2.77) |
 | N30 | The gardens (F12): fences, paths, the lawn's edges and the plants from the client's outside photos, sizes cited; core where the photos show them, ideas as options | Outside | `house/model.py`, `house/survey_data.py`, `house/EVIDENCE.md` | N24 (#121) | Open |
 | N31 | Photos squeezed for the chip (KTX2, N22's rest) | Photos | `02_textures.js`, `export3d.py`, `vendor.py`, `house/textures/build_textures.py` | the client's OK | In progress: #133 (build side only, WIP); Emma picked "let CI build it" |
-| N32 | Lighter photo files: the heaviest maps (the audit's `carpet_grey` normal 489 KB, `lawn` 439 KB, `artex` 402 KB) re-encoded or sized to what they show; a duplicate map shares one file; `sizes` before and after, the look unchanged (`tools/gallery.py`) | Photos | `house/textures/*.jpg`, `house/textures/build_textures.py`, `textures.json` | N24 (#121 touches them) | Open |
+| N32 | Lighter photo files: the heaviest maps (the audit's `carpet_grey` normal 489 KB, `lawn` 439 KB, `artex` 402 KB) re-encoded or sized to what they show; a duplicate map shares one file; `sizes` before and after, the look unchanged (`tools/gallery.py`) | Photos | `house/textures/*.jpg`, `house/textures/build_textures.py`, `textures.json` | N24 (#121 touches them) | In PR (V2.82): the carpets, the blanket, the sofa-bed's and the duvet's weave at 512 (`build_textures --slim`, `PX`), duplicates shared (`like`); photos 11.4 to 8.6 MB |
 | N33 | Phone and PC look-over (the 6 Nov review's G): screenshots on the iPhone 15 Pro, SE, Pixel 7, iPad Mini and 1280/1920 of the welcome, the house, a room, the cards, Measure and the sheets; fix overlaps, taps under 44 px, cut or crowded text, in fewer words | Look-over | `page.css`, `room3d_page.py` | N24 (#122 touches them) | Open |
 | N34 | The bathroom and the master matched to their photos (UPGRADE_REVIEW Next 2): `camfit.py` from a start near each photo's spot, `compare.CAMS` filled, each difference fixed, sizes cited | Outside | `tools/compare.py`, `tools/camfit.py`, `house/model.py`, `house/survey_data.py`, `house/EVIDENCE.md` | N30 (same thread) | Open |
 | N35 | Room to room with no shader built: walking from the living room into the hall or up the stairs built 5–13 shaders on an emulated iPhone (V2.73, the idle warm-up not yet there); the next rooms' shaders compiled in parallel (`compileClipped`) as you near a door, not drawn one by one when idle; `?perf` programs before and after | Speed | `01_renderer.js` (`precompileStep`, `warmSwitch`), `14_views_walk.js` `enterRoom()` | | Open |
@@ -213,9 +213,9 @@ merged to `main` and live; In PR means pushed, not merged; Not started means no 
 |---|---|
 | **Done** (live) | N1, N2, N3, N5, N6, N7, N8, N13, N14, N15, N16, N17, N18, N19, N20, N21, N23, N27, N28, N29 |
 | **Done in part** (what's left is named in its row or folded into a later task) | N4 (its rest is N25), N9 (dark panels: Emma's call), N11 (the PC's `?perf`), N12 (the iPhone's `?perf`), N22 (KTX2 is N31) |
-| **In PR, not merged** | N26 (#131) |
+| **In PR, not merged** | N26 (#131), N32 (V2.82) |
 | **In progress** | N31 (#133, WIP: build side only) |
-| **Not started** | N25, N30, N32, N33, N34 (after N30), N35, N36 (after N34) |
+| **Not started** | N25, N30, N33, N34 (after N30), N35, N36 (after N34) |
 | **Needs the client** | N10 (`?perf` from the iPhone 15 Pro and the RTX 5070 PC) |
 
 ## 10. Resumed (7 Nov 2026): the rest in parallel chunks

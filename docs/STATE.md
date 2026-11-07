@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.79 (7 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
+**Version:** V2.82 (7 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
 
 **Work from:** `docs/REAL_PLAN.md` section 10 (the rest in parallel chunks A–E, one thread each), section 9 (every task's state).
 Open PRs: #131 (N26, the speed budget), #133 (KTX2, WIP). Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
@@ -113,6 +113,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   notes): the 3D's code 667 to 359 KB, the page 2.3 to 2.0 MB (V2.50).
 - **Sheets:** a shut Plan, Build, Buy or Ideas sheet is `content-visibility: hidden` (`.sheet.shut`, `page_router.openSheet`): not laid
   out or painted, its pictures not fetched until it opens (about 450 KB less on opening) (V2.54).
+- **Lighter photos (V2.82, N32):** none finer than a 4K screen shows at the nearest a view comes (`build_textures.PX`, `--slim`): the
+  carpets, the blanket's, the sofa-bed's and the duvet's weave at 512; a key whose picture another has says `like` (`export3d` `pic`).
 - **Phones without a strong chip** (`LOWD`) take `tex/*_half.<hash>.jpg`, the photos at half size (`split_photos`): 2.3 MB on a first
   visit, not 10.2; the iPhones (Apple GPU) and the PCs keep the full set (V2.58).
 - **The plan's code (V2.78, N28):** only what the PDFs and the site draw; the old sides of `geometry.py`'s `TABLE_STYLE`, `SUB_IN_WALL`, `PLAIN` are gone (git).
@@ -138,7 +140,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 Quality is under View → More (HD or Fast). `?perf` at the end of the address shows the counts in a corner: the screenshot to send.
 
 ## Numbers (V2.74, software graphics in CI's browser: relative, not a real card's; from #131)
-- `sizes`: page 2.0 MB, photos 11.4 MB in 72 files (3.4 MB at half size), three.js 0.86 MB. First visit: a weak phone 5.3 MB, else 13.6 MB.
+- `sizes`: page 2.0 MB, photos 8.6 MB in 72 files (2.3 MB at half size; V2.82, was 11.4 and 3.4), three.js 0.86 MB.
 - Shaders by the first picture: 18–19 (Fast), 49 (HD). Draws: the house 287 (HD on an RTX: 582), the living room 254–762 by path.
 - The repo: 371 files, 59 MB tracked (31 MB the client's photos); `checks.py`'s repo check fails on a build output or a file over 1.5 MB.
 
