@@ -131,7 +131,7 @@ function houseCollide() {                   // true if it moved the eye
    knee, the hip and the eye (so not over a bed or through a wardrobe), steps up a stair (a rise up to 35) and follows the floor down;
    it slides along what it meets. Walk into the next room and its name, its lights and what's drawn follow you (the eye stays where it
    is); a door opens as you reach it. V1.38: the living room too (below) */
-const WALK = { keys: new Set(), stick: [0, 0], v: new THREE.Vector2(), feet: null, doorT: 0, hinted: false, held: 0, pace: 1 };
+const WALK = { keys: new Set(), stick: [0, 0], v: new THREE.Vector2(), feet: null, doorT: 0, warmT: 0, hinted: false, held: 0, pace: 1 };
 const walking = () => (RMODE === "stand" && !!ROOMV() || S.view === "livstand") && !tween;   // V1.38: and the living room's Be there
 /* V1.38 (UPGRADE_REVIEW Next 1), the client: "review how to make the movement within the house better": the living room is drawn on its
    own (geometry.py's measured room, not the house file), so a walk takes its walls, its furniture and its flight from that: in through
@@ -219,7 +219,7 @@ function walkMove(side, fwd, turn, dt) {    // -1..1 each; true if the eye moved
   if (!moved) { walkDoors(x0, WALK.feet, z0); return false; }   // V1.57: a shut door you're stopped against opens too (it opened only once a step had gone)
   const delta = v3(x, 0, z).sub(v3(x0, 0, z0)); delta.y = ny - cam.y;
   cam.add(delta); controls.target.add(delta); hLast = [x, ny / M, z];
-  walkRoom(x, WALK.feet, z); walkDoors(x, WALK.feet, z);
+  walkRoom(x, WALK.feet, z); warmNear(x, WALK.feet, z); walkDoors(x, WALK.feet, z);
   return true;
 }
 const WALK_VIEW = { lower_landing: "kitchen", lower_stairs: "kitchen" };   // V1.57: walked down the lower stairs, the lower floor's view (it stayed the hall's)
@@ -254,23 +254,36 @@ function enterRoom(name, warm) {   // V2.42: warm, the warm-up's visit there and
    pov in a game": walking between the house and the living room swaps the lights in play, so every shader in sight was built at the
    doorway (about 30: a freeze mid-step), and each room's own (its cutaway, its lights) at its door. Standing still while walking, each
    room is visited once off screen (there and back in one go, nothing culled, a room a pause), so its shaders are ready before you get
-   there; then the view's own shadows are drawn again, so none of it lands on your next step */
+   there */
 const WARMED = new Set();
 function warmSwitch() {
-  if (!houseG || !R.HOUSE3 || !(RMODE === "stand" || S.view === "livstand")) return false;
-  if (LOWD) return false;
-  const v = S.view, to = ["livstand", ...Object.keys(VIEWS).filter(k => VIEWS[k].box)].find(k => k !== v && !WARMED.has(k + S.quality));
-  if (!to) return false; WARMED.add(to + S.quality);
+  if (!(RMODE === "stand" || S.view === "livstand")) return false;
+  const to = ["livstand", ...Object.keys(VIEWS).filter(k => VIEWS[k].box)].find(k => k !== S.view && !WARMED.has(k + S.quality));
+  return !!to && warmRoom(to);
+}
+function warmRoom(to) {
+  if (!houseG || !R.HOUSE3 || LOWD || WARMED.has(to + S.quality)) return false; WARMED.add(to + S.quality);
   /* V2.64, the client's iPhone: the visit drew the whole room at once, every new shader built one after another before the frame
      ended (a room's 20 to 30: seconds standing still, and a tap then waited for them). Now the room's shaders are only asked for
      (compileClipped, in its lights; one drawn per set of cutting planes) and build in parallel where the browser can, the page still
-     answering; into the same kind of target as the frame's, so they match */
-  const rm = RMODE, was = gl.getRenderTarget();
+     answering; into the same kind of target as the frame's, so they match. N35: nothing's drawn into the shadows there, so they're
+     kept (they were drawn again after every visit) */
+  const v = S.view, rm = RMODE, was = gl.getRenderTarget(), su = gl.shadowMap.needsUpdate;
   if (!PRE.rt) { PRE.rt = new THREE.WebGLRenderTarget(1, 1); PRE.rt.isXRRenderTarget = true; PRE.rt.texture.colorSpace = gl.outputColorSpace; }
   if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
   try { enterRoom(to, true); gl.setRenderTarget(postLive() ? PRE.rtAO : PRE.rt); compileClipped(camera, true); }
-  finally { gl.setRenderTarget(was); enterRoom(v, true); RMODE = rm; }
+  finally { gl.setRenderTarget(was); enterRoom(v, true); RMODE = rm; gl.shadowMap.needsUpdate = su; }
   dirty(); return true;
+}
+/* N35 (V2.87): walking in from the hall built the living room's 24 shaders (and 4 of its shadows') on the step through its door, the
+   idle visit not yet made. Now a room 1.5 m or less away (through a door, up or down its stairs) is visited as you walk up to it, one a
+   step at most, its shaders building in parallel before you're in */
+function warmNear(x, feet, z) {
+  const now = performance.now(); if (now - WALK.warmT < 250) return; WALK.warmT = now;
+  const N = 150, near = (x0, x1, z0, z1) => x > x0 - N && x < x1 + N && z > z0 - N && z < z1 + N, L = LIV().box, want = [];
+  if (near(L[0], L[1], L[2], L[3]) && feet > -200 && feet < 320) want.push("livstand", "landing");   // and its stairs up to the landing
+  for (const [id, r] of Object.entries(R.HOUSE3.rooms || {})) { const v = ROOM_VIEW[id] || WALK_VIEW[id]; if (v && VIEWS[v] && VIEWS[v].box && near(r[0], r[1], r[2], r[3]) && Math.abs(feet - r[4]) < 230) want.push(v); }
+  want.find(v => v !== S.view && warmRoom(v));
 }
 function walkDoors(x, feet, z) {            // a shut door opens as you come up to it
   const now = performance.now(); if (now - WALK.doorT < 200) return; WALK.doorT = now;

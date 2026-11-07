@@ -439,7 +439,7 @@ body.hv #r3d-dt-room, body.hv #r3d-editbtn, body.hv #r3d-dp-look > :not(h2):not(
 .r3d-find .seg { flex-wrap: nowrap; } .r3d-find input { flex: 1; min-width: 0; min-height: 44px; border: 1.5px solid #e1d6c2; border-radius: 999px; padding: 0 16px; font: 500 15px Figtree, system-ui, sans-serif; background: #fff; color: var(--ink); }
 .r3d-mysc { display: inline-flex; } .r3d-mysc button:first-child { border-radius: 999px 0 0 999px !important; } .r3d-myx { border-radius: 0 999px 999px 0 !important; padding: 0 12px !important; }
 .r3d.measuring canvas { cursor: crosshair; }
-/* V2.86 (N33, the phone and PC look-over): every tap a finger's 44 px on a touch screen; the small pills keep their look (a clear
+/* V2.88 (N33, the phone and PC look-over): every tap a finger's 44 px on a touch screen; the small pills keep their look (a clear
    border round each) so the screen gets no busier. A card open on a phone puts the stick and the figure away (they sat over it) */
 @media (pointer: coarse) {
   .r3d .r3d-mini .r3d-minib { min-height: 44px; min-width: 44px; }

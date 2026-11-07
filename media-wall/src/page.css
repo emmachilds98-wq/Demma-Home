@@ -458,7 +458,7 @@ figure.zoomable::after { content: "⤢"; position: absolute; right: 10px; top: 1
   .ctile small { font-size: 12px; }
   .waitl .wt span { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 }
-/* V2.86 (N33): the brand and Plan · Build · Buy the same height side by side; a finger's 44 px on a touch screen */
+/* V2.88 (N33): the brand and Plan · Build · Buy the same height side by side; a finger's 44 px on a touch screen */
 .brand { box-sizing: border-box; min-height: 52px; } .hnav button { min-width: 44px; }
 @media (min-width: 900px) { .hnav button { min-height: 48px; } }
 @media (pointer: coarse) { .seg button, .btn, .chip, a.btn, .hello .ver { min-height: 44px; } }
