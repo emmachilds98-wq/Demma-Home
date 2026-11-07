@@ -72,7 +72,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   The floor's card has A plant too (V2.62: row [23], `08_house_catalogue.js` `syncPlants`: one of the catalogue's four, stood in the
   free corner farthest from the doors, clear of the furniture and the doors' swing; a piece like an added one: tap it to move it,
   Another plant, Take it out; the living room keeps its own plants). Look's rows: [18] rug, [19] curtains, [20] bedding, [21]–[22] the Look thread's (a picture),
-  [23] plant.
+  [23] plant, [24]–[25] wallpaper.
+  Wallpaper (V2.77, N29, `finPaperApply`): three drawn to real rolls (`fit.SOURCES wallpaper`) on the wall's own face, round its doors
+  and windows, up to its ceiling or slope; rolls and cost on the card and in Measure. A maker's paint shows Its maker pairs it with
+  (`FIN_PAIRS`, `fit.SOURCES pairings`). Not in the Changes card's costs yet.
   Tap a floor: Add a piece here (25 pieces in 8 kinds, `08_house_catalogue.js`, built from the house's own boxes so the walk and taps
   follow; a card warns when it's in the way of another). Swaps and adds are Measure's edits rows: Send carries them, `pull_edits.py` asks.
 - **Track the upgrades (V2.66, N23):** a room's colours, floor or piece card has Changes (n): the room's card of what's changed
@@ -113,6 +116,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   out or painted, its pictures not fetched until it opens (about 450 KB less on opening) (V2.54).
 - **Phones without a strong chip** (`LOWD`) take `tex/*_half.<hash>.jpg`, the photos at half size (`split_photos`): 2.3 MB on a first
   visit, not 10.2; the iPhones (Apple GPU) and the PCs keep the full set (V2.58).
+- **The plan's code (V2.78, N28):** only what the PDFs and the site draw; the old sides of `geometry.py`'s `TABLE_STYLE`, `SUB_IN_WALL`, `PLAIN` are gone (git).
 - **Checks:** `tools/check_site.py` walks every door, taps pieces and surfaces, tries phones by touch (iPhone 15 Pro, SE, Pixel 7,
   Galaxy S24, iPad Mini) and the computers' widths.
 
