@@ -495,7 +495,7 @@ function buildHouse() {
     if (S.fin === undefined && R.HOUSE3.client_finishes && Object.keys(R.HOUSE3.client_finishes).length) finRestore(R.HOUSE3.client_finishes);   // V2.11: the scheme kept in the repo, until this device picks its own
     HMATS = m3; FIN.mat3 = mat3; blindsApply(); hceilApply(); finApplyAll();
     if (window.__finPending) { const p = window.__finPending; window.__finPending = null; finImport(p); }   // V2.11: from a Send link opened before the 3D was ready   // V2.7: (mat3 for a floor laid by the tray)   // V2.6: the colours kept for the house's rooms
-    /* V2.67 (N16): each piece's room: the one room whose space holds it whole (walls, slabs, the stairs, the roof and what two rooms'
+    /* V2.68 (N16): each piece's room: the one room whose space holds it whole (walls, slabs, the stairs, the roof and what two rooms'
        outlines share: none, always drawn). A floor's mesh of a material keeps each room's pieces together, in the rooms' order, each
        room's span noted (userData.rooms: [room, first, count]), so standing in a room the rest can be left out (09 roomCull) */
     const RVOL = Object.entries(H3.rooms || {}).map(([id, r], i) => [id, r[0] - 1, r[1] + 1, r[4] - 2, r[4] + (r[4] >= 260 ? 420 : (H3.ceil || 235) + 2), r[2] - 1, r[3] + 1, i + 1]);
