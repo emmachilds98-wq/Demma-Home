@@ -10,7 +10,20 @@ const clipMat = m => { m.clippingPlanes = CLIP; m.clipIntersection = true; m.cli
    glasses) makes three draw the whole room a second time, every frame, to see through it (984 draw calls instead of about 500). In the
    live room glass is plain see-through; still() puts the transmission back for the saved pictures. */
 const glassLive = m => { if (m.transmission > 0) { m.userData.trans = m.transmission; m.transmission = 0; } return m; };
-const reg = m => (MATS.push(clipMat(glassLive(m))), m);
+const reg = m => (MATS.push(clipMat(glassLive(grassy(m)))), m);
+/* V2.29: the ground's lawn without its repeat; V2.68 (N22): every lawn (the gardens', next door's, the ground's), and the two copies no
+   longer mixed half and half (it greyed the grass): a slow patchwork over metres picks the photo or its larger, turned copy, and a
+   slower one lightens and darkens it. One program for them all ("grass"); the lawn's photo is marked in houseTex */
+function grassy(m) {
+  if (!(m.map && m.map.userData.grass)) return m;
+  m.customProgramCacheKey = () => "grass";
+  m.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace("#include <map_fragment>", `#ifdef USE_MAP
+    float ga = max(dot(textureLod(map, vec2(0.5), 12.0).rgb, vec3(0.333)), 0.01), gp = dot(texture2D(map, vMapUv * 0.061 + 0.23, 5.0).rgb, vec3(0.333)) / ga;
+    vec4 sampledDiffuseColor = mix(texture2D(map, vMapUv), texture2D(map, mat2(0.8, -0.6, 0.6, 0.8) * vMapUv * 0.43 + 0.37), smoothstep(0.9, 1.1, gp));
+    sampledDiffuseColor.rgb *= clamp(dot(texture2D(map, vMapUv * 0.037 + 0.11, 4.0).rgb, vec3(0.333)) / ga, 0.8, 1.2); diffuseColor *= sampledDiffuseColor;
+  #endif`); };
+  return m;
+}
 const OAKS = new Set(["#c48c57", "#d9a46c", "#9c6a3f", "#a87443", "#cfa575", "#ddb78a", "#b08756", "#c79a6b", "#d8ad80", "#a37a50",
   "#b07a46", "#c89060", "#8a5c33", "#c08a52", "#c9a26a", "#c79a63", "#a8834f", "#d8c39f", "#e6d2ae", "#b99e78", "#cdb38a", "#d9c09a"]);
 const PAINT_OLD = new Set(R.PAINT_OLD);

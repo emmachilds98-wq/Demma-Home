@@ -10,7 +10,7 @@
   --pink: oklch(0.92 0.06 345); --coral: oklch(0.92 0.06 25); --apricot: oklch(0.92 0.06 70); --lime: oklch(0.92 0.06 125);
   --shadow: 0 14px 34px -12px #000a; --shadow-s: 0 6px 18px -10px #0006; --spring: cubic-bezier(.3,1.6,.5,1); --sheet: cubic-bezier(.3,1.25,.5,1);
   --tab-on: var(--ink); --tab-on-ink: var(--page); color-scheme: light; }
-html, body { background: #0c0a10; }
+html, body { background: var(--page); }   /* V2.66 (N19): cream from the first paint, never black */
 body { margin: 0; color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.55; overflow: hidden; }
 h1, h2, h3, h4 { font-family: var(--display); font-weight: 600; letter-spacing: 0; }
 a { color: var(--oak); }
@@ -26,8 +26,17 @@ a { color: var(--oak); }
 .brand .mark i { border-radius: 50%; }
 .brand b { display: block; font: 600 18px/1.1 var(--display); }
 .brand small { display: block; font: 600 12px/1.2 var(--body); color: var(--mut2); }
-/* v28, client: "make sure version number is visible somewhere even if its faint so i can tell updates are done when i load" */
-.brand .ver { display: inline; margin-left: 7px; font: 500 12px/1 var(--body); color: var(--mut2); letter-spacing: .02em; vertical-align: 2px; }
+/* v28, client: "make sure version number is visible somewhere even if its faint so i can tell updates are done when i load": V2.66 (N19), in Plan, by the hello */
+.hello .ver { margin-left: 10px; font: 500 13px/1 var(--body); color: var(--mut2); letter-spacing: .02em; vertical-align: middle; }
+/* V2.66 (N19): the first screen, cream, the house's outline and a thin line, until the first picture (build_viewer LANDING_JS) */
+.landing { position: fixed; inset: 0; z-index: 90; display: grid; place-content: center; justify-items: center; gap: 22px; background: var(--page); color: var(--ink); transition: opacity .4s ease; }
+.landing svg { opacity: .78; }
+.landing i { display: block; width: 132px; height: 3px; border-radius: 3px; background: var(--line); overflow: hidden; }
+.landing b { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, oklch(0.78 0.12 50), oklch(0.78 0.12 165), oklch(0.78 0.12 300)); transform-origin: left; transform: scaleX(.04); animation: landgo 14s cubic-bezier(.1, .7, .25, 1) forwards; }
+.landing.done { opacity: 0; pointer-events: none; }
+.landing.done b { animation: none; transform: none; transition: transform .25s; }
+@keyframes landgo { to { transform: scaleX(.92); } }
+@media (prefers-reduced-motion: reduce) { .landing b { animation-duration: 0s; } }
 /* the section rail (laptop) and the bottom bar (phone) */
 .rail { position: fixed; left: 16px; top: 50%; transform: translateY(-50%); z-index: 45; display: grid; gap: 6px; padding: 8px; border-radius: 999px; background: var(--page); box-shadow: var(--shadow); }
 /* v32: the rail folds into its Menu button; open, the five sections show under it */
@@ -45,9 +54,7 @@ a { color: var(--oak); }
   .brand { left: 12px; top: max(12px, env(safe-area-inset-top)); padding: 6px 14px 6px 6px; }
   .brand .mark { width: 34px; height: 34px; padding: 8px; border-radius: 12px; }
   .brand small { display: block; font-size: 11.5px; }   /* V1.2: on a phone the second line says where you are, in place of the version */
-  .brand b { font-size: 16px; } .brand .ver { display: none; }
-  /* V1.19, the client: "The version number doesn't appear on the mobile version": after where you are, on the second line */
-  .brand small::after { content: " · " attr(data-ver); color: var(--mut2); font-weight: 500; }
+  .brand b { font-size: 16px; }
 }
 /* sheets: they slide up over the room */
 .sheet { position: fixed; z-index: 40; top: 16px; bottom: 16px; left: 112px; right: 16px; border-radius: 32px; background: var(--page); box-shadow: var(--shadow);
