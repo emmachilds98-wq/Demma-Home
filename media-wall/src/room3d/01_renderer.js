@@ -106,22 +106,50 @@ function precompileStep() {           // from the frame loop, when nothing's mov
 /* V2.64, the client's iPhone froze on the first tap on a floor: three's compileAsync (the start's shaders, built in parallel where the
    browser can: Safari and Chrome have KHR_parallel_shader_compile) builds every shader for the cutting planes of whatever was drawn
    last, so the house's 6 planes and the living room's 2 never matched and were built again, one at a time, on the frame that first
-   showed them (34 to 44: seconds on a phone). Now the scene is compiled in groups with the same planes, each after one of its pieces is
-   drawn alone off screen (which sets three's planes to its, as precompileStep does) */
+   showed them (34 to 44: seconds on a phone). Now the scene is compiled in groups with the same planes, each after a speck with those
+   planes is drawn off screen (prime: which sets three's planes to its) */
 function compileClipped(cam, shownOnly) {   // shownOnly: what's shown now (the rooms' warm-up), not every hidden part too
   const key = m => gl.localClippingEnabled && m.clippingPlanes && m.clippingPlanes.length ? m.clippingPlanes.length + (m.clipIntersection ? "i" : "u") : "0";
-  const G = new Map();
-  scene[shownOnly ? "traverseVisible" : "traverse"](o => { const m = [].concat(o.material || [])[0]; if (!m || !(o.isMesh || o.isLine || o.isPoints || o.isSprite)) return; const k = key(m); if (!G.has(k)) G.set(k, []); G.get(k).push(o); });
-  scene.traverse(c => { if (c.isLight) c.layers.enable(31); });
-  const jobs = [];
-  for (const objs of G.values()) {
-    const o = objs.find(x => x.isMesh && shownChain(x)) || objs[0], shown = [], cull = o.frustumCulled, l31 = o.layers.isEnabled(31), mask = cam.layers.mask, su = gl.shadowMap.needsUpdate;
-    for (let p = o; p; p = p.parent) if (p.visible === false) { shown.push(p); p.visible = true; }
-    o.frustumCulled = false; o.layers.enable(31); cam.layers.set(31); gl.shadowMap.needsUpdate = false;
-    try { gl.render(scene, cam); } finally { cam.layers.mask = mask; if (!l31) o.layers.disable(31); o.frustumCulled = cull; shown.forEach(x => { x.visible = false; }); gl.shadowMap.needsUpdate = su; }
-    jobs.push(gl.compileAsync({ traverse: f => objs.forEach(f), traverseVisible() {} }, cam, scene));
-  }
+  const G = new Map(), D = new Map(), put = (M, k, o, m) => { if (!M.has(k)) M.set(k, []); M.get(k).push([o, m]); };
+  scene[shownOnly ? "traverseVisible" : "traverse"](o => { const m = [].concat(o.material || [])[0]; if (m && (o.isMesh || o.isLine || o.isPoints || o.isSprite)) put(G, key(m), o, o.material); });
+  /* N35 (V2.81): and the shadows' own: three draws each caster into a shadow with a material of its own (cut, mapped or not) that it
+     can't be asked to build ahead, so a stand-in like it, one of a kind, is put on each caster for the asking (and taken off) */
+  const lit = []; scene.traverseVisible(l => { if (l.isLight) lit.push(l); });
+  if (gl.shadowMap.enabled) { const pts = new Set(lit.filter(l => l.castShadow).map(l => !!l.isPointLight));
+    for (const pt of pts) scene.traverseVisible(o => { if (!o.isMesh || !o.castShadow || !o.material) return; const d = Array.isArray(o.material) ? o.material.map(m => depthMat(m, pt)) : depthMat(o.material, pt), d0 = [].concat(d)[0]; put(D, "s" + (d0.clipShadows ? key(d0) : "0"), o, d); }); }
+  const jobs = [], was = gl.getRenderTarget();
+  if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
+  try {
+    for (const [k, objs] of [...G, ...D]) {   // the shadows' into a plain target, as theirs are
+      if (k[0] === "s") gl.setRenderTarget(PRE.rtAO);
+      prime(k === "s0" ? null : objs[0][1], cam);
+      const was_ = objs.map(([o]) => o.material); objs.forEach(([o, m]) => { o.material = m; });
+      try { jobs.push(k[0] === "s" ? gl.compileAsync({ traverse: f => objs.forEach(([o]) => f(o)), traverseVisible: f => lit.forEach(f) }, cam, PRIMES)   // the shadows': no fog, as three's
+        : gl.compileAsync({ traverse: f => objs.forEach(([o]) => f(o)), traverseVisible() {} }, cam, scene)); }
+      finally { objs.forEach(([o], i) => { o.material = was_[i]; }); }
+    }
+  } finally { gl.setRenderTarget(was); }
   return Promise.all(jobs);
+}
+/* three builds for the cutting planes of whatever it drew last: a speck with the same planes (and no lights: one tiny shader for each
+   set, ever), drawn into the 1 × 1 target. It drew one of the group's own pieces (N35: its shader then built on the spot) */
+const PRIME = new THREE.Mesh(new THREE.PlaneGeometry(1e-4, 1e-4), new THREE.MeshBasicMaterial()), PRIMES = new THREE.Scene().add(PRIME);
+PRIME.frustumCulled = false;
+function prime(mat, cam) {
+  const m = [].concat(mat || {})[0], p = PRIME.material, su = gl.shadowMap.needsUpdate;
+  p.clippingPlanes = m.clippingPlanes && m.clippingPlanes.length ? m.clippingPlanes : null; p.clipIntersection = !!m.clipIntersection;
+  gl.shadowMap.needsUpdate = false;
+  try { gl.render(PRIMES, cam); } finally { gl.shadowMap.needsUpdate = su; }
+}
+const DEPTHS = new Map();   // kept, never disposed: one disposed would take its shader with it
+function depthMat(m, pt) {   // as three's getDepthMaterial makes it (PCF shadows)
+  const side = m.shadowSide != null ? m.shadowSide : [THREE.BackSide, THREE.FrontSide, THREE.DoubleSide][m.side];
+  const clip = m.clipShadows && m.clippingPlanes && m.clippingPlanes.length ? m.clippingPlanes.length + (m.clipIntersection ? "i" : "u") : "";
+  const k = [pt, side, !!m.map, !!m.alphaMap, m.alphaTest > 0, !!(m.displacementMap && m.displacementScale), !!m.wireframe, clip].join();
+  let d = DEPTHS.get(k); if (!d) DEPTHS.set(k, d = pt ? new THREE.MeshDistanceMaterial() : new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking }));
+  Object.assign(d, { side, map: m.map, alphaMap: m.alphaMap, alphaTest: m.alphaTest, wireframe: m.wireframe, clipShadows: m.clipShadows, clippingPlanes: m.clippingPlanes, clipIntersection: m.clipIntersection,
+    displacementMap: m.displacementMap, displacementScale: m.displacementScale, displacementBias: m.displacementBias });
+  return d;
 }
 /* V2.66 (N13), the client 7 Nov 2026: "iPhone is running better but there's still some initial freezing": after the warm-up the first
    picture still built 16 shaders one after another (the shade's, the glow's, their output, the shadows' depth), drew every shadow and
