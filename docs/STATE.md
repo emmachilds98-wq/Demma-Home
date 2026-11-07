@@ -3,12 +3,11 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.80 (7 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`); the open PRs land one at a time.
+**Version:** V2.80 (7 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
 The version in Plan is a refresh button ("V2.80 ↻"): on the home-screen app, tap it to get the newest.
 
-**Work from:** `docs/REAL_PLAN.md` section 9 (every task's state), section 8 (N24–N36, the open round). Still open: #131 (N26, the speed
-budget, next as V2.81) and #133 (KTX2, paused); #121, #122, #128–#130 and #135 (the site check) landed as V2.75–V2.79. Section 5
-and `docs/FINISHES_PLAN.md` section 6 are the phase boards; `docs/V1_PLAN.md`, `QUALITY_PLAN.md`, `UPGRADE_REVIEW.md` are older boards.
+**Work from:** `docs/REAL_PLAN.md` section 10 (the rest in parallel chunks A–E, one thread each), section 9 (every task's state).
+Open PRs: #131 (N26, the speed budget, next as V2.81), #133 (KTX2, WIP). Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 
 ## Where it lives
 - **The site on GitHub Pages:** https://emmachilds98-wq.github.io/Demma-Home/ (built and published by the workflow on every push to
