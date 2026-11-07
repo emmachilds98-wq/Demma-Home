@@ -24,5 +24,5 @@ python3 -m pip install -r media-wall/requirements.txt && python3 -m playwright i
 python3 tools/build.py && python3 tools/checks.py      # then open _site/index.html through a local server
 ```
 
-**Agents:** start with `CLAUDE.md`, then `docs/V1_PLAN.md` (the plan and its status board) and `docs/STATE.md` (what's true now).
+**Agents:** start with `docs/HANDOVER.md` and `CLAUDE.md`, then `docs/REAL_PLAN.md` (the plan; section 9 every task's state) and `docs/STATE.md` (what's true now).
 The history (rounds 1–82) is in `docs/HISTORY.md` and the old `DIY` repository.
