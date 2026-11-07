@@ -351,14 +351,11 @@ root.addEventListener("input", e => {
 });
 
 /* V2.43, the client: "improve the landing page of the site too so that you have a nice welcome to the house and can easily see how to
-   navigate": arriving on the whole house (once a visit), a card over it, the house turning slowly behind: what it is, how to step in and
-   get round (a computer's keys or a phone's touches), Walk in (standing in the hall at the front door) or Look round the house. The name
-   top left brings it back; a touch on the house, Esc or going in puts it away */
+   navigate": a card over the whole house, the house turning slowly behind; Walk in (the hall, at the front door) or Look round. V2.66
+   (N19, "minimise words"): once on a device, after the first picture (the first screen's demma-landed), three icons of two words. The
+   name top left brings it back; a touch on the house, Esc or going in puts it away */
 const WEL = qs("#r3d-welcome"), BRAND = document.querySelector(".brand");
-const WEL_T = { in: ["Double-click any floor, or a room's name", "Double-tap any floor, or a room's name"],
-  walk: ["W S or the wheel · A D step aside · Shift hurries", "The stick, bottom left"],
-  look: ["Drag, or ← → · M for mouse look, as in a game", "Drag · pinch for a wider lens"],
-  change: ["Click a wall, a floor or anything in a room", "Tap a wall, a floor or anything in a room"] };
+const WEL_T = { in: ["Double-click in", "Double-tap in"], look: ["Drag round", "Drag round"], change: ["Click anything", "Tap anything"] };
 function welcome(on) {
   if (!WEL || WEL.hidden === !on) return;
   WEL.hidden = !on; root.classList.toggle("welcoming", on); BRAND?.setAttribute("aria-expanded", String(on));
@@ -370,6 +367,7 @@ BRAND?.addEventListener("click", () => welcome(!!WEL && WEL.hidden));
 BRAND?.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); welcome(!!WEL && WEL.hidden); } });
 canvas.addEventListener("pointerdown", () => welcome(false));
 document.addEventListener("keydown", e => { if (e.key === "Escape") welcome(false); });
-setTimeout(() => { try {   // automated browsers (the checks) go straight to work, unless ?welcome
-  if (S.view !== "house" || (navigator.webdriver && !/[?&]welcome\b/.test(location.search)) || sessionStorage.getItem("demma-welcome")) return;
-  sessionStorage.setItem("demma-welcome", "1"); welcome(true); } catch (e) {} }, 900);
+const welOnce = () => setTimeout(() => { try {   // automated browsers (the checks) go straight to work, unless ?welcome
+  if (S.view !== "house" || (navigator.webdriver && !/[?&]welcome\b/.test(location.search)) || localStorage.getItem("demma-welcome")) return;
+  localStorage.setItem("demma-welcome", "1"); welcome(true); } catch (e) {} }, 300);
+if (document.getElementById("landing")) addEventListener("demma-landed", welOnce, { once: true }); else welOnce();

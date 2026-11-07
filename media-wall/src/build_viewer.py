@@ -843,6 +843,23 @@ def uniq_svgs(html_):
     return re.sub(r"<svg\b.*?</svg>", one, html_, flags=re.S)
 
 
+
+# V2.66 (N19), the client: "Review if any further improvements could be made on the way you land into the site ... minimise words":
+# a cream first screen, the house's outline and a thin line filling, no words, until the first picture (the renderer's r3d-first);
+# then it fades and says demma-landed (the welcome waits for it). Automated browsers (the checks) skip it, unless ?landing
+LANDING_SVG = ('<svg viewBox="0 0 120 100" width="132" height="110" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" '
+               'stroke-linejoin="round"><path d="M8 50 60 12l52 38M20 41v51h80V41"/><path d="M52 92V68h16v24M30 54h14v12H30zM76 54h14v12H76zM80 27V18h9v15"/></svg>')
+LANDING_JS = r"""(() => { const L = document.getElementById("landing"); let done = 0;
+  const go = () => { if (done++) return; L.classList.add("done"); setTimeout(() => { L.remove(); dispatchEvent(new Event("demma-landed")); }, 450); };
+  if (navigator.webdriver && !/[?&]landing\b/.test(location.search)) { L.remove(); setTimeout(() => dispatchEvent(new Event("demma-landed"))); return; }
+  addEventListener("r3d-first", go); setTimeout(go, 25000);
+  addEventListener("DOMContentLoaded", () => { const m = document.getElementById("r3d-msg"), r = document.getElementById("r3d"); if (!m || !r) return go();
+    /* till every start fires r3d-first: the start's words put away, the first picture drawn in that frame's turn (or no 3D here) */
+    const look = () => { if (r.classList.contains("nogl")) go(); else if (m.hidden && r.classList.contains("ready")) requestAnimationFrame(go); };
+    const o = new MutationObserver(look); o.observe(m, { attributes: true }); o.observe(r, { attributes: true }); look(); });
+})();"""
+
+
 def page(site=False):
     """v24: the page without round markers in its text (tidy.strip_versions) and with long captions folded (tidy.shorten_captions)."""
     import tidy
@@ -1016,7 +1033,7 @@ def _page(site=False):
               else f'<p class="caption">Also on <a href="{PAGES}" target="_blank" rel="noopener">GitHub Pages</a>.</p>')
 
     plan_home = f"""<div class="plan-home" id="plan-home"><div class="panel" id="overview">
-      <div><p class="hello" id="hello">Evening, Emma &amp; Dave</p><p>The artisan oak media wall in your pale mint, the compact dining cabinet, the network and power: about <b id="d-total">£{money(lo_tot, hi_tot)}</b> in all.</p>
+      <div><p class="hello"><span id="hello">Evening, Emma &amp; Dave</span><span class="ver" title="This page is {LABEL}">{LABEL}</span></p><p>The artisan oak media wall in your pale mint, the compact dining cabinet, the network and power: about <b id="d-total">£{money(lo_tot, hi_tot)}</b> in all.</p>
         <p class="row"><a class="btn" href="{base}Demmas_Home_{LABEL}_Plan.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">download</span> The plan (PDF)</a><a class="btn" href="{base}Demmas_Home_{LABEL}_Plan_phone.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">smartphone</span> Phone edition</a></p></div>
       {PU.plan_home(ring, sum(1 for r in rows if r["kind"] == "buy"), len(steps())).replace("{MONEY}", PU.money_html(TRACK))}
       <div class="upnext" hidden><span class="n" id="d-nextn">1</span><div><span class="label">Up next</span><h3 id="d-next">Measure and count</h3></div>
@@ -1145,8 +1162,10 @@ def _page(site=False):
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,500,1,0&display=block">
 {STYLE_V25}
 <button type="button" class="skip" data-tools-toggle>Open the room's controls</button>
-<div class="brand" role="button" tabindex="0" title="Welcome, and how to get round" aria-controls="r3d-welcome"><span class="mark" aria-hidden="true"><i style="background:var(--peach)"></i><i style="background:var(--mint)"></i><i style="background:var(--lilac)"></i><i style="background:var(--butter)"></i></span>
-  <span><b>Demma's Home<span class="ver" title="This page is {LABEL}">{LABEL}</span></b><small id="brand-place" data-ver="{LABEL}" aria-live="polite">The whole house</small></span></div>
+<div class="landing" id="landing" aria-hidden="true">{LANDING_SVG}<i><b></b></i></div>
+<script>{LANDING_JS}</script>
+<div class="brand" role="button" tabindex="0" title="Welcome" aria-controls="r3d-welcome"><span class="mark" aria-hidden="true"><i style="background:var(--peach)"></i><i style="background:var(--mint)"></i><i style="background:var(--lilac)"></i><i style="background:var(--butter)"></i></span>
+  <span><b>Demma's Home</b><small id="brand-place" aria-live="polite">The whole house</small></span></div>
 <nav class="hnav" aria-label="The plan">{"".join(f'<button type="button" data-nav="{k}" aria-current="false">{n}</button>' for k, n in (("plan", "Plan"), ("build", "Build"), ("buy", "Buy")))}</nav>
 <main id="room" aria-label="Your room in 3D">{room3d_page.section(gallery3d())}</main>
 {sheet("plan", "Your plan", "map", 300, plan_home + chapters)}
@@ -1330,7 +1349,7 @@ def pwa_files():
         im.save(HERE / "art" / f"icon-{size}.png")
     (root / "manifest.webmanifest").write_text(json.dumps({
         "name": "Demma's Home", "short_name": "Demma", "start_url": "./", "scope": "./", "display": "standalone",
-        "background_color": "#151a16", "theme_color": "#2f4a3c",
+        "background_color": "#fbf6ec", "theme_color": "#2f4a3c",
         "icons": [{"src": f"media-wall/src/art/icon-{n}.png", "sizes": f"{n}x{n}", "type": "image/png", "purpose": "any maskable"} for n in (192, 512)]}, indent=1))
     (root / "sw.js").write_text(f"""// v39: the page opens from the device after the first visit (network first for the page, so a new round shows; cache first for the
 // rest: three.js from its CDN, the fonts and the pictures). V2.46: a file named by its contents (tex/<photo>.<hash>.jpg, three.<hash>.js, a

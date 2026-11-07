@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.65 (7 Nov 2026)
+**Version:** V2.66 (7 Nov 2026)
 
 **Work from:** `docs/REAL_PLAN.md` section 7, the round after (N13–N23: the first picture, moving, the views' controls, landing,
 the outside, tracking upgrades) in workstreams that run side by side, one task a PR; section 6 (N1–N12) is done but N4's and N9's
@@ -46,8 +46,12 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 
 ## The site now
 
-- **The 3D is the site** (the old design, V1.2): the whole house opens first, a welcome card over it once a visit (V2.43; the name top
-  left brings it back; automated browsers skip it). Pills float over it: the brand, Plan · Build · Buy, Whole house, Hide labels,
+- **Landing (V2.66, N19):** a cream first screen (the house's outline, a thin line filling; no words, no black) until the first
+  picture (`r3d-first`; till every start fires it, the start's words put away), then `demma-landed`; `build_viewer.LANDING_JS`.
+  The version is in Plan, beside the hello (`.hello .ver`), not the brand.
+- **The 3D is the site** (the old design, V1.2): the whole house opens first, a welcome card over it once on a device (V2.66: "Welcome
+  home", three icons of two words, Walk in · Look round; the name top left brings it back; automated browsers skip it and the first
+  screen, unless `?welcome` / `?landing`). Pills float over it: the brand, Plan · Build · Buy, Whole house, Hide labels,
   Angled · Overhead, the floors (Outside · First · Ground · Lower, Gardens, Next door), a floor's rooms (one row on a computer), Hide
   buttons; the house framed clear of them (`measureShift`; a phone stands back by the free share, `freeFrame`); the dock below
   (View · Look · Measure; in the living room also Room and Edit); the figure bottom right drops you in where you let go.
