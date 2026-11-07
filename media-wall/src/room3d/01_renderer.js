@@ -112,7 +112,7 @@ function compileClipped(cam, shownOnly) {   // shownOnly: what's shown now (the 
   const key = m => gl.localClippingEnabled && m.clippingPlanes && m.clippingPlanes.length ? m.clippingPlanes.length + (m.clipIntersection ? "i" : "u") : "0";
   const G = new Map(), D = new Map(), put = (M, k, o, m) => { if (!M.has(k)) M.set(k, []); M.get(k).push([o, m]); };
   scene[shownOnly ? "traverseVisible" : "traverse"](o => { const m = [].concat(o.material || [])[0]; if (m && (o.isMesh || o.isLine || o.isPoints || o.isSprite)) put(G, key(m), o, o.material); });
-  /* N35 (V2.84): and the shadows' own: three draws each caster into a shadow with a material of its own (cut, mapped or not) that it
+  /* N35 (V2.87): and the shadows' own: three draws each caster into a shadow with a material of its own (cut, mapped or not) that it
      can't be asked to build ahead, so a stand-in like it, one of a kind, is put on each caster for the asking (and taken off) */
   const lit = []; scene.traverseVisible(l => { if (l.isLight) lit.push(l); });
   if (gl.shadowMap.enabled) { const pts = new Set(lit.filter(l => l.castShadow).map(l => !!l.isPointLight));

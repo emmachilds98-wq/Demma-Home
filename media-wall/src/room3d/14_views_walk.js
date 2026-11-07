@@ -275,7 +275,7 @@ function warmRoom(to) {
   finally { gl.setRenderTarget(was); enterRoom(v, true); RMODE = rm; gl.shadowMap.needsUpdate = su; }
   dirty(); return true;
 }
-/* N35 (V2.84): walking in from the hall built the living room's 24 shaders (and 4 of its shadows') on the step through its door, the
+/* N35 (V2.87): walking in from the hall built the living room's 24 shaders (and 4 of its shadows') on the step through its door, the
    idle visit not yet made. Now a room 1.5 m or less away (through a door, up or down its stairs) is visited as you walk up to it, one a
    step at most, its shaders building in parallel before you're in */
 function warmNear(x, feet, z) {
