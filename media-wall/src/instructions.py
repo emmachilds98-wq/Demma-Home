@@ -22,7 +22,6 @@ def full():
     ap = C["apron"]
     sub_col_w = g.SUB_COL[1] - g.SUB_COL[0]
     ps_w = g.PS_COL[1] - g.PS_COL[0]
-    breast_l = lambda x: n(x - g.BREAST_X[0])               # a position on the breast, from its alcove-side corner
     # v30: the compact cabinet (geometry.CAB): two boxes, hinged doors; the table, its aprons, legs and joint are the sliding one's
     K = g.CAB
     k_back = K["h"] - K["t_top"] - K["plinth"]                          # each back, between its box's floor and top

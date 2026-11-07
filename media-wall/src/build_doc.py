@@ -71,8 +71,6 @@ def thumb(name, alt=""):
     return f'<img src="data:image/jpeg;base64,{base64.b64encode(buf.getvalue()).decode()}" alt="{alt}">'
 
 
-
-
 def n(x):
     return f"{x:.2f}".rstrip("0").rstrip(".")
 
@@ -249,16 +247,6 @@ def paint_table():
             '<p class="caption">Trying a different colour on one wall in the 3D room (Look): that wall needs one 2.5 L tin.</p>')
 
 
-
-
-
-
-
-
-
-
-
-
 def cabinet_rows():
     """The buy list's rows for the dining cabinet: the "6 Dining wall" purchases, less the breast's LP frames and ledge."""
     return [r for r in TRACK if r[2] == "6 Dining wall" and r[4] is not None and not _plain_txt(r[1]).startswith(("Two LP frames", "The “now playing” ledge"))]
@@ -278,7 +266,6 @@ def cab_html():
     rows = cabinet_rows()
     lo, hi = sum(r[4] for r in rows), sum(r[5] for r in rows)
     kg_half = C["top"][0] * C["top"][1] * C["top"][2] * 0.72 / 1000
-    sl_len = G.OPTC["z"][0] - G.OPTC["z"][1]
     sup = lambda *k: "<sup>" + ",".join(str(F.ORDER.index(x) + 1) for x in k) + "</sup>"
     return f"""
 <p><b>The compact dining cabinet is the plan:</b> you asked for "a smaller build on the cabinet", so the same table and the same six chairs now pack into <b>two oak boxes side by side</b>, {n(C['len'])} × {n(C['d'])} × {n(C['h'])}, under your shelf by the stairs, {n(C['d'] - (G.PIPE_BOX['x'][1] - G.PIPE_BOX['x'][0]))} cm proud of the pipe boxing. Shut, it's two plain oak doors. Open, the table is {n(C['len_open'])} × {n(C['top'][0])} and six sit in comfort, three a side, on your grey padded chairs.</p>
@@ -332,12 +319,6 @@ def cab_html():
 """
 
 
-
-
-
-
-
-
 def other_options_html():
     """v39, client (23 Oct): options are only to look at in the 3D room, one line each: what, where, size, rough cost, source."""
     g, sup = G, lambda *k: "<sup>" + ",".join(str(fit.ORDER.index(x) + 1) for x in k) + "</sup>"
@@ -382,8 +363,6 @@ OPT_OWN = {"barcase", "bartrolley", "barside", "cotswoldbasket", "liftcoffee", "
            "growlights", "curtainmotor", "lpledges", "cordlamp", "stairscurtain"}
 
 
-
-
 def cost_pieces_html():
     """v32: the cost overview's subtotals, for the plan on a page."""
     import costs
@@ -421,8 +400,6 @@ def phase_totals():
         rows.append(f"<tr><td>{part_chip(PHASE_PART[ph])} {ph}</td><td class='num'>{money(lo, hi) if hi else '—'}</td><td>{BIGGEST[ph]}</td></tr>")
     rows.append(f"<tr class='total'><td>Total</td><td class='num'>{money(tl, th)}</td><td>no electrician: the electrics are your own job (section 9)</td></tr>")
     return "\n".join(rows), tl, th
-
-
 
 
 def key_table():
@@ -515,7 +492,6 @@ def tools_html():
         out += [f"<tr><td>{a}</td><td>{b}</td><td>{c}</td><td class='num'>{d}</td></tr>" for a, b, c, d in items]
     out.append("</table>")
     return "\n".join(out)
-
 
 
 def steps():
@@ -631,14 +607,9 @@ def steps():
 
 
 DIAGRAMS = {"front": "front", "section": "section", "drawer_layouts": "drawer_layouts", "game_drawer": "game_drawer", "drawer": "drawer",
-            "storage": "storage", "joints": "joints", "pc_shelf": "pc_shelf", "dining_section": "dining_section", "seating": "seating",
-            "av": "av", "power": "power", "network": "network", "routes": "routes", "leaf_case": "leaf_case", "fliptop": "fliptop",
-            "optc_carcass": "option_c_carcass", "optc_halves": "option_c_halves", "optc_section": "option_c_section", "optc_elevation": "option_c_elevation", "optc_plan": "option_c_plan",   # v27
+            "storage": "storage", "joints": "joints", "pc_shelf": "pc_shelf", "seating": "seating",
+            "av": "av", "power": "power", "network": "network", "routes": "routes", "optc_halves": "option_c_halves",   # v27
             "cab_carcass": "cab_carcass", "cab_section": "cab_section", "cab_elevation": "cab_elevation", "cab_plan": "cab_plan"}   # v30: the compact cabinet
-
-
-
-
 
 
 # v17: the build guide PDF stands alone. Each cut-list part belongs to one step (matched on the start of its name),
@@ -651,30 +622,10 @@ CUT_STEP = {"Uprights": 9, "High shelf": 9, "Series X shelf": 9, "Record ledge":
             "Door stops": 11, "Door hinges": 11, "Catches, magnets": 11, "Wall brackets (the cabinet)": 11}   # v27; v30: the compact cabinet's rows
 
 
-
-
-
-
-
-
 def steps_table_html():
     rows = "".join(f"<tr><td>{s['n']}</td><td>{part_chip(s['part'])}<br>{s['title']}</td><td>{' '.join(s['do'])}</td><td>{s['check']}</td><td>{s['time']}</td></tr>" for s in steps())
     return ("<table class=\"tight steps\"><tr><th>#</th><th>Stage</th><th>What to do</th><th>Check before moving on</th><th>Time</th></tr>"
             + rows + "</table>")
-
-
-GUIDE_RULES = """
-<p>For anyone who's hung shelves and built flat-pack but not cut a joint. Each step: what to do, what to check, and how long it takes.
-Steps 3 and 12 are the electrics, with the point to stop and call an electrician. Finished sizes, in cm.</p>
-
-<div class="callout"><b>Before you start: five rules</b><ul>
-<li><b>Check every wall before you drill.</b> Run the cable and pipe detector over the spot, and never drill straight above, below or beside a socket or switch: cables run vertically and horizontally from them.</li>
-<li><b>Measure twice, mark once, cut once.</b> Walls are rarely square: measure the alcove at the floor, 76, 134, 155, 196 and the ceiling, and cut to the smallest.</li>
-<li><b>Two people for anything over 15 kg</b>: the uprights, the worktop, the table top, the TV.</li>
-<li><b>The electrics are yours, within limits.</b> Swapping the socket for a double and the two ceiling fittings are like-for-like jobs, not notifiable under Part P in England, as long as they meet the wiring regulations. Isolate, lock off and prove dead every time. Anything new (a new circuit, the consumer unit, work by a bath or shower) is an electrician's, and so is anything on the stop list in section 9.</li>
-<li><b>Dry-fit everything</b> (assemble without glue or screws) before the final fix.</li>
-</ul></div>
-"""
 
 
 def guide_tools():
@@ -711,7 +662,6 @@ def cuts():
     """Every made part in one cutting list, grouped by what the timber merchant cuts it from (sizes in cm, L × W × T).
     Rows: (part, size, qty, notes, where it goes). Drawn from the cut lists in sections 3, 5 and 7 and v6.1's game drawer."""
     g, K, BB = G, G.CAB, G.BAR_BUILT
-    pc_len = g.PC_SHELF_Z[0] - g.PC_SHELF_Z[1]
     return [
         ("Solid oak, hardwax oil", "Ask for it planed all round; scribe the uprights and worktop on site", [
             ("C-table top", f"{n(CT['top'][0])} × {n(CT['top'][1])} × {n(CT['top'][2])}", "1", "From the Snowdon pack's second board; outer corners rounded", "C-table"),
@@ -902,13 +852,6 @@ def buy_first_html():
     tr = "".join(f"<tr><td>{a}</td><td>{b}</td><td>{c}</td></tr>" for a, b, c in rows)
     return ("<h3>Buy and adapt first</h3><p>For each piece: the cheap thing to buy, and a build only where nothing made fits.</p>"
             f"<table class='tight'><tr><th>Piece</th><th>How</th><th>What</th></tr>{tr}</table>")
-
-
-def guide_html():
-    return (GUIDE_RULES + fit.measure_html() + buy_first_html() + guide_tools() + GUIDE_TECHNIQUES + "<h3>The order of work</h3>" + steps_table_html() + wiring_html()
-            + GUIDE_TIME + GUIDE_PITFALLS + "<h3>The cutting list</h3>" + cuts_html() + nest_html())
-
-
 
 
 CT = ideas.ctable_parts()   # v43: the C-table's parts
@@ -1387,23 +1330,11 @@ def concise(html):
     html = re.sub(r'<div class="why"><b>[^<]*looked over again.*?</ul></div>', "", html, flags=re.S)   # v44: reviews, on the page
     html = re.sub(r'<h2 class="pb">(?!(?:' + "|".join(map(re.escape, PDF_BREAK)) + '))', "<h2>", html)
     html = re.sub(r"<!--fit-->.*?<!--/fit-->", lambda m: fit.summary_html(), html, flags=re.S)
-    html = re.sub(r"(<h2 class=\"pb\">10 · [^<]*</h2>).*?(?=<h2)", lambda m: m.group(1) + "<p>Everything to build is in the <b>Build Guide</b> (its own PDF): "
-                  "each piece of the room by place, with what to check, buy, cut and build; any order.</p>" + build_contents(), html, count=1, flags=re.S)
     import re as _re
     secs = _re.findall(r'<h2[^>]*>(\d+) · ([^<]+)</h2>', html)
     html = _re.sub(r'<h2([^>]*)>(\d+) · ([^<]+)</h2>', lambda m: f'<h2{m.group(1)} id="sec-{m.group(2)}">{m.group(2)} · {m.group(3)}</h2>', html)
     toc = ("<nav class='toc'><b>Contents</b><ol>" + "".join(f"<li><a href='#sec-{n}'>{t}</a></li>" for n, t in secs) + "</ol></nav>")
     return html.replace("<h2", toc + "<h2", 1)
-
-
-def build_contents():
-    import pieces as P
-    rows = []
-    for pid, name, ps in P.by_place():
-        rows.append(f"<tr class='ph'><td colspan='3'>{name}</td></tr>")
-        num = {p["key"]: c for c, p in P.numbered()}
-        rows += [f"<tr><td class='num'>{num[p['key']]}</td><td>{p['title']}</td><td>{p['time']}</td></tr>" for p in ps]
-    return f"<table class='tight'><tr><th class='num'>No.</th><th>In the guide, by place</th><th>Time</th></tr>{''.join(rows)}</table>"
 
 
 def plan_sections():

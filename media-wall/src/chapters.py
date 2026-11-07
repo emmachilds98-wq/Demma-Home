@@ -204,7 +204,6 @@ def _pieces(ps):
     for letter, name, size, qty, grp, _note, draw in ps:
         if not draw:
             continue
-        subs = name.split(" · ")
         for j, (L, W, k) in enumerate(draw):
             lab = letter + (str(j + 1) if len(draw) > 1 else "")
             out += [(lab, L, W, grp)] * k

@@ -3,7 +3,7 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.74 (7 Nov 2026), live. **Work stopped 7 Nov 2026 at the client's request: start with `docs/HANDOVER.md`.**
+**Version:** V2.79 (7 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`); the open PRs land one at a time.
 
 **Work from:** `docs/REAL_PLAN.md` section 9 (every task's state), section 8 (N24–N36, the open round). Eight PRs are open and
 unmerged (#121, #122, #127–#131, #133; `docs/HANDOVER.md` has each one's state); most claim V2.75, so renumber at merge. Section 5
@@ -43,9 +43,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   The version is in Plan, beside the hello (`.hello .ver`), not the brand.
 - **The 3D is the site** (the old design, V1.2): the whole house opens first, a welcome card over it once on a device (V2.69: "Welcome
   home", three icons of two words, Walk in · Look round; the name top left brings it back; automated browsers skip it and the first
-  screen, unless `?welcome` / `?landing`). Pills float over it: the brand, Plan · Build · Buy, Whole house, Hide labels,
-  Angled · Overhead, the floors (Outside · First · Ground · Lower, Gardens, Next door), a floor's rooms (one row on a computer), Hide
-  buttons; the house framed clear of them (`measureShift`; a phone stands back by the free share, `freeFrame`); the dock below
+  screen, unless `?welcome` / `?landing`). Pills float over it: the brand, Plan · Build · Buy; under them two rows at most
+  (V2.76, N20, `.r3d-mini` by `order`): Angled · Overhead (or a room's four ways), the floors (Outside · First · Ground · Lower,
+  Gardens, Next door) sliding sideways, Whole house, one Hide button (`setBare`: labels, then buttons; Show brings both back); then a
+  floor's rooms, sliding too; the house framed clear of them (`measureShift`; a phone stands back by the free share, `freeFrame`); the dock below
   (View · Look · Measure; in the living room also Room and Edit); the figure bottom right drops you in where you let go.
 - **Rooms:** picking one stands you in it (`goRoom`); its views Be there · In it · Above · On its own. Walk: W A S D, arrows turn,
   the wheel walks (Ctrl + wheel the lens), a double-click or double-tap walks you to a spot, Mouse look (M) on a computer. The eye is
@@ -71,7 +72,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   The floor's card has A plant too (V2.62: row [23], `08_house_catalogue.js` `syncPlants`: one of the catalogue's four, stood in the
   free corner farthest from the doors, clear of the furniture and the doors' swing; a piece like an added one: tap it to move it,
   Another plant, Take it out; the living room keeps its own plants). Look's rows: [18] rug, [19] curtains, [20] bedding, [21]–[22] the Look thread's (a picture),
-  [23] plant.
+  [23] plant, [24]–[25] wallpaper.
+  Wallpaper (V2.77, N29, `finPaperApply`): three drawn to real rolls (`fit.SOURCES wallpaper`) on the wall's own face, round its doors
+  and windows, up to its ceiling or slope; rolls and cost on the card and in Measure. A maker's paint shows Its maker pairs it with
+  (`FIN_PAIRS`, `fit.SOURCES pairings`). Not in the Changes card's costs yet.
   Tap a floor: Add a piece here (25 pieces in 8 kinds, `08_house_catalogue.js`, built from the house's own boxes so the walk and taps
   follow; a card warns when it's in the way of another). Swaps and adds are Measure's edits rows: Send carries them, `pull_edits.py` asks.
 - **Track the upgrades (V2.66, N23):** a room's colours, floor or piece card has Changes (n): the room's card of what's changed
@@ -88,6 +92,9 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   only what the landing shows is built first (45 shaders, not 101; the living room put away first), the rest after the picture (`warmRest`).
 - **Walking on a phone (V2.73, N17):** a slow phone walks as it drags, without the shade and the glow (no new buffers); still past
   24 ms a frame, it draws at 1.5× from the next pause, once a visit.
+- **Fewer shaders, lighter shapes (V2.79, N27):** the living room's two-sided panels (`buildGroup`'s polys, the brick) are one-sided
+  with both faces in the shape (`03_materials` `twoFaced`), so they use the boxes' shaders, one draw each; the house's small roundings
+  are one bevel under 0.8 cm (`bevelBox`), two steps under 2 cm (`houseBox`): 123 shaders to 112, the house 246k triangles to 167k.
 - **Drawn inside (V2.71, N16):** the room you stand in, the rooms seen from it, the shell; the outside if one has a window (`roomCull`).
 - **Quality:** a real graphics card opens in HD and never steps down (V2.25); iPhones start in HD at 2× and step down only if slow, always through the composer (the shade off never rebuilds a shader; a slow one leaves it out while you drag; the house's materials always carry 6 cutting planes, `houseClip`, so a floor's or a room's cut builds no shaders; the start and the rooms' warm-up (`warmSwitch`) compile by cutting planes, in parallel, `compileClipped`, V2.64); View →
   More has HD or Fast. In HD each room is lit by its ceiling light and its windows' daylight, with soft shadows and ambient occlusion; by evening the
@@ -111,6 +118,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   out or painted, its pictures not fetched until it opens (about 450 KB less on opening) (V2.54).
 - **Phones without a strong chip** (`LOWD`) take `tex/*_half.<hash>.jpg`, the photos at half size (`split_photos`): 2.3 MB on a first
   visit, not 10.2; the iPhones (Apple GPU) and the PCs keep the full set (V2.58).
+- **The plan's code (V2.78, N28):** only what the PDFs and the site draw; the old sides of `geometry.py`'s `TABLE_STYLE`, `SUB_IN_WALL`, `PLAIN` are gone (git).
 - **Checks:** `tools/check_site.py` walks every door, taps pieces and surfaces, tries phones by touch (iPhone 15 Pro, SE, Pixel 7,
   Galaxy S24, iPad Mini) and the computers' widths.
 
@@ -148,4 +156,4 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
    side-wall socket; the garage's chipboard box; the secret room's pier.
 6. Confirm: the lower flight's foot open to the lower landing (V1.32); the bathroom cord's length; the living room door hinged at the
    chimney breast's end, opening in. Decide: where the side-wall socket goes. When happy, archive `DIY`.
-7. Answered 7 Nov: the office window centred over the porch at its current size (in #121, not merged).
+7. Answered 7 Nov: the office window centred over the porch at its current size (done, V2.75).
