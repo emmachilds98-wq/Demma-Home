@@ -3,8 +3,8 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.83 (7 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
-The version in Plan is a refresh button ("V2.83 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V2.84 (7 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
+The version in Plan is a refresh button ("V2.84 ↻"): on the home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 10 (the rest in parallel chunks A–E, one thread each), section 9 (every task's state).
 Open PRs: #133 (KTX2, WIP). The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
@@ -92,6 +92,9 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   only what the landing shows is built first (45 shaders, not 101; the living room put away first), the rest after the picture (`warmRest`).
 - **Walking on a phone (V2.73, N17):** a slow phone walks as it drags, without the shade and the glow (no new buffers); still past
   24 ms a frame, it draws at 1.5× from the next pause, once a visit.
+- **Room to room (V2.84, N35):** walking, a room 1.5 m or less away has its shaders asked for in parallel (`14_views_walk` `warmNear` →
+  `warmRoom`, the idle `warmSwitch` too), the shadows' with stand-ins (`01_renderer` `depthMat`); a group's planes set by a speck (`prime`).
+  An emulated iPhone's walk (hall, living room, landing, lower floor): 36 shaders built on the frame that drew them, now 1.
 - **Fewer shaders, lighter shapes (V2.79, N27):** the living room's two-sided panels (`buildGroup`'s polys, the brick) are one-sided
   with both faces in the shape (`03_materials` `twoFaced`), so they use the boxes' shaders, one draw each; the house's small roundings
   are one bevel under 0.8 cm (`bevelBox`), two steps under 2 cm (`houseBox`): 123 shaders to 112, the house 246k triangles to 167k.
@@ -107,7 +110,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   over metres, lighter and darker slower still, so no grid shows (V2.68).
 - **Offline:** `sw.js` keeps the page's last copy and every picture; a file named by its contents (the photos, `three.<hash>.js`)
   stays in `demma-keep` across versions, so a new round doesn't fetch it again (V2.47).
-  **Get the latest:** the version in Plan (`.hello .ver`, "V2.83 ↻") is a button, for the home-screen app that has no reload: it reads
+  **Get the latest:** the version in Plan (`.hello .ver`, "V2.84 ↻") is a button, for the home-screen app that has no reload: it reads
   `version.txt` past every cache; same version, a toast says so; newer, it updates `sw.js`, clears every cache but `demma-keep`, reloads (V2.83).
   The photos are a file each (`_site/tex/<key>_<map|nor|rough>.<hash>.jpg`, `build_viewer.split_photos`; the page keeps their names):
   what's on screen is fetched first, the rest a moment later; a photo two textures share is fetched once (`decodeImg`) (V2.49); each goes onto the graphics chip in turn, `upStep`: 6 ms of a still frame once you've been still 0.2 s, none while you move (on a walk over 3 s, one a second if it's on screen), the shadows once at the end (V2.64, V2.67).

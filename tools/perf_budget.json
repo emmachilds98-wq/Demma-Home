@@ -1,5 +1,5 @@
 {
- "_": "V2.75 (N26): the speed budget. tools/checks.py fails a round that goes over: 'site' (tools/check_site.py) measures the paths, 'sizes' the built files. Each number is V2.74's plus about 10%. Lower one when a round wins; raise one only on purpose, saying why in the PR. Measured numbers: _shots/perf.json.",
+ "_": "V2.75 (N26): the speed budget. tools/checks.py fails a round that goes over: 'site' (tools/check_site.py) measures the paths, 'sizes' the built files. Each number is V2.74's plus about 10%. Lower one when a round wins; raise one only on purpose, saying why in the PR. Measured numbers: _shots/perf.json. V2.84 (N35): shaders_first +1 for Fast (phone, computer): the speck that sets a group's cutting planes before its shaders are asked for (one tiny shader, no lights, kept), so none of the group's own is built on the spot.",
  "files": {
   "page_mb": 2.25,
   "three_mb": 0.95,
@@ -10,13 +10,13 @@
   "_": "first_visit_mb: what a first visit fetches from the site (the icon font and the like from elsewhere aside); shaders_first: shader programs built by the first picture; draws_house, draws_living: a frame's draws while moving, the whole house as it opens and standing in the living room (R3D.perf().calls, the shadows' redraw left out). phone: a phone without a strong chip (Fast, half-size photos); computer: no graphics card, 1920 wide (Fast); iphone: Apple graphics (HD); rtx: an NVIDIA RTX (HD, 1280 wide).",
   "phone": {
    "first_visit_mb": 5.8,
-   "shaders_first": 20,
+   "shaders_first": 21,
    "draws_house": 315,
    "draws_living": 280
   },
   "computer": {
    "first_visit_mb": 15.0,
-   "shaders_first": 21,
+   "shaders_first": 22,
    "draws_house": 315,
    "draws_living": 410
   },
