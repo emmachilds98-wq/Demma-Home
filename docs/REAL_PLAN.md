@@ -77,7 +77,7 @@ The tools are there already: GTAO (ambient occlusion) in `01_renderer.js`, HD sh
 | R1 | Light each room as it's lit | **Done** (V2.17, V2.21, V2.39, V2.48: the lamps, the kitchen's battens) | More lamps as the client shares them |
 | R2 | Things sit on the floor | **Done** (V2.23, V2.52: shade round each piece and up the wall beside it) | |
 | R3 | Surfaces | **Done** (V2.37, V2.40, V2.56: gloss paint, uPVC, brushed metal, the dormer's boards) | |
-| R4 | Real shapes | **In part** (V2.17–V2.22, V2.24, V2.44) | N6 done (V2.53); soft bedding is N36 |
+| R4 | Real shapes | **In part** (V2.17–V2.22, V2.24, V2.44) | N6 done (V2.53); soft bedding N36 (V2.91) |
 | R5 | The things in a room | **In part** (V2.18, V2.19, V2.40, V2.41) | More from the client's photos as they come |
 | R6 | Change the furniture in any room | **Done** (V2.32–V2.36, V2.55: move, resize, turn, take out, swap, add) | Swap or add in the living room's project (its own Edit room) |
 | R7 | One Look for every room | **Done** (V2.51: the living room joined; V2.57: rugs; V2.59: curtains; V2.61: bedding; V2.62: a plant; V2.63: a picture) | More prints, blinds or plants if the client asks |
@@ -194,7 +194,7 @@ a line in `docs/HISTORY.md`, its row ticked here, `python3 tools/checks.py`'s li
 | N33 | Phone and PC look-over (the 6 Nov review's G): screenshots on the iPhone 15 Pro, SE, Pixel 7, iPad Mini and 1280/1920 of the welcome, the house, a room, the cards, Measure and the sheets; fix overlaps, taps under 44 px, cut or crowded text, in fewer words | Look-over | `page.css`, `room3d_page.py` | N24 (#122 touches them) | Done (V2.88) |
 | N34 | The bathroom and the master matched to their photos (UPGRADE_REVIEW Next 2): `camfit.py` from a start near each photo's spot, `compare.CAMS` filled, each difference fixed, sizes cited | Outside | `tools/compare.py`, `tools/camfit.py`, `house/model.py`, `house/survey_data.py`, `house/EVIDENCE.md` | N30 (same thread) | Done (V2.90): the mirror 58; the bath door's place to measure |
 | N35 | Room to room with no shader built: walking from the living room into the hall or up the stairs built 5–13 shaders on an emulated iPhone (V2.73, the idle warm-up not yet there); the next rooms' shaders compiled in parallel (`compileClipped`) as you near a door, not drawn one by one when idle; `?perf` programs before and after | Speed | `01_renderer.js` (`precompileStep`, `warmSwitch`), `14_views_walk.js` `enterRoom()` | | **Done** (V2.87): the rooms near you warmed as you walk up (`warmNear`), the shadows' shaders too; 36 built mid-walk to 1 |
-| N36 | Soft bedding: the beds' duvets, pillows and throws as soft, rounded shapes (the master's and bedroom 2's read as flat grey slabs), the house catalogue's bed the same; the look checked in `tools/gallery.py` | Shapes | `house/model.py` (`bed2()`, `master()`, the beds only), `08_house_catalogue.js` `hcBed()` | N34 (`model.py`) | Open |
+| N36 | Soft bedding: the beds' duvets, pillows and throws as soft, rounded shapes (the master's and bedroom 2's read as flat grey slabs), the house catalogue's bed the same; the look checked in `tools/gallery.py` | Shapes | `house/model.py` (`bed2()`, `master()`, the beds only), `08_house_catalogue.js` `hcBed()` | N34 (`model.py`) | Done (V2.91): the master's and the catalogue's; bedroom 2 is the music room (no bed) |
 | N37 | Fewer draws for the house (N27's rest): more of the house's fixed pieces merged per material, keeping each room's span so `roomCull` still leaves rooms out and taps still find their piece; `R3D.perf()` draws for the house and a room before and after, inside `tools/perf_budget.json`, the look unchanged (`tools/gallery.py`). Also (found by N26): changing any setting brings the living room back into the whole-house view from outside (+91 draws); keep it put away | GPU | `20_go.js` `buildHouse()` (not `buildTrees`), `09_house_views.js` `roomCull()`, and the one line that re-shows the living room on a setting change | #138 (it touches `20_go.js`) | Open |
 
 **Order:** N24, N25, N26, N27, N28, N29 start together; when N24 lands, N30 then N34 (one thread), N32 and N33; N35 any time; N36 after N34; N31 on the client's yes.
@@ -212,11 +212,11 @@ merged to `main` and live; In PR means pushed, not merged; Not started means no 
 
 | State | Tasks |
 |---|---|
-| **Done** (live) | N1, N2, N3, N4, N5, N6, N7, N8, N13, N14, N15, N16, N17, N18, N19, N20, N21, N23, N25, N26, N27, N28, N29, N30 (V2.89), N32 (V2.82), N33 (V2.88), N34 (V2.90), N35 (V2.87) |
+| **Done** (live) | N1, N2, N3, N4, N5, N6, N7, N8, N13, N14, N15, N16, N17, N18, N19, N20, N21, N23, N25, N26, N27, N28, N29, N30 (V2.89), N32 (V2.82), N33 (V2.88), N34 (V2.90), N35 (V2.87), N36 (V2.91) |
 | **Done in part** (what's left is named in its row or folded into a later task) | N9 (dark panels: Emma's call), N11 (the PC's `?perf`), N12 (the iPhone's `?perf`), N22 (KTX2 is N31) |
 | **In PR, not merged** | none |
 | **In progress** | N31 (#133, WIP: build side only) |
-| **Not started** | N36 (after N34) |
+| **Not started** | none |
 | **Needs the client** | N10 (`?perf` from the iPhone 15 Pro and the RTX 5070 PC) |
 
 ## 10. Resumed (7 Nov 2026): the rest in parallel chunks
