@@ -66,6 +66,78 @@ function hcatCard(id) {
   return [C.n, `${i + 1} of ${HCAT_ADD.length} · ${C.src}`, [...nav(HCAT_ADD, i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Take it out", { hremove: k })], null,
     `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Kinds">${Object.entries(HCAT_KINDS).map(([q, t]) => `<button type="button" data-hcatk="${k}:${q}" aria-pressed="${C.k === q}">${t}</button>`).join("")}</div></div>`];
 }
+/* N23 (REAL_PLAN section 7), the client: "helps me keep track and plan those upgrades": a room's card of its changes (Look's and Edit's),
+   each a tap to tick done, with a rough cost; Plan has the house's total, room by room. Ticks on this device (dh-done), a tick's key
+   carries the choice, so a new choice starts unticked. Costs E: typical UK retail and trade prices, Nov 2026, a room's floor by its area */
+const UPC = { walls: [40, 80], wall: [15, 35], ceil: [20, 40], skirt: [15, 35], bulbs: [10, 30], rug: [40, 160], curt: [30, 100], bed: [25, 70], pic: [15, 60],
+  frames: [150, 600], door_out: [30, 150], door: [150, 500], window: [400, 1500],
+  floor: { carpet_grey: [20, 45], carpet: [20, 45], laminate: [20, 40], oak: [50, 90], pine: [30, 60], tile_f: [35, 70], marble: [80, 150], quarry: [45, 85] },   // a m², laid
+  fit: { bare: [5, 15], drum: [20, 60], globe: [25, 70], dome: [15, 45], spots: [40, 120] },
+  kind: { bed: [200, 550], wardrobe: [150, 450], chest: [60, 220], bedside: [30, 100], desk: [60, 220], shelves: [40, 160], seat: [100, 350], plant: [10, 45], more: [25, 120] } };
+const UPK = "dh-done";
+const upDone = () => { try { return JSON.parse(localStorage.getItem(UPK) || "{}") || {}; } catch (e) { return {}; } };
+const upNm = (L, k) => (L.find(r => r[0] === k) || [0, k])[1];
+function roomUps(room) {   // [{k, t, lo, hi}]: what's changed in a room
+  const H = R.HOUSE3 || {}, L = [], add = (k, t, c = [0, 0], n = 1) => L.push({ k, t, lo: Math.round(c[0] * n), hi: Math.round(c[1] * n) });
+  if (room === "outside") { const o = (S.fin || {}).outside || {};
+    if (o[9]) add("9=" + o[9], "Window frames: " + finName(o[9]), UPC.frames); if (o[10]) add("10=" + o[10], "Front door: " + finName(o[10]), UPC.door_out); return L; }
+  const liv = room === LIVR, o = liv ? Object.assign({}, (S.fin || {})[LIVR], livRow()) : (S.fin || {})[room] || {}, r = (H.rooms || {})[room], m2 = r ? (r[1] - r[0]) * (r[3] - r[2]) / 1e4 : 12;
+  if (liv) {   // the living room's own Look, and its ideas and suggestions not in the plan
+    const ws = Object.entries(S.walls).filter(([, v]) => LIV_HEX.test(v || ""));
+    if (S.paint !== DEF.paint) add("p=" + paintHex(), "Walls: " + finName(paintHex()), UPC.walls);
+    ws.forEach(([w, v]) => add(`w${w}=${v}`, `${(WALLS.find(q => q[0] === w) || [0, w])[1]}: ${finName(v)}`, UPC.wall));
+    if (o[4]) add("4=" + o[4], "Ceiling: " + finName(o[4]), UPC.ceil); if (o[17]) add("17=" + o[17], "Skirting and door: " + finName(o[17]), UPC.skirt);
+    for (const k of Object.keys(DEF.decor)) if (S.decor[k] !== DEF.decor[k] && PD.decor[k]) { const c = k === "rug" ? UPC.rug : k === "curtains" ? UPC.curt : k === "cushions" && PD.ideas.cushions ? PD.ideas.cushions.slice(1) : [0, 0];
+      add(`d${k}=${S.decor[k]}`, `${PD.decor[k][0]}: ${PD.decor[k][1][S.decor[k]] || S.decor[k]}`, c); }
+    picks().filter(i => !i.plan && i.kind !== "Decor").forEach(i => add("i=" + i.name, i.name, [i.lo, i.hi]));
+  } else {
+    const ws = [0, 1, 2, 3].filter(s => o[s]);
+    if (ws.length) add("w=" + ws.map(s => o[s]).join(), "Walls: " + [...new Set(ws.map(s => finName(o[s])))].join(", "), ws.length > 1 ? UPC.walls : UPC.wall);
+    if (o[4]) add("4=" + o[4], "Ceiling: " + finName(o[4]), UPC.ceil);
+    if (o[5]) add("5=" + o[5], "Floor: " + upNm(FIN_FLOORS, o[5]), UPC.floor[o[5]] || [30, 60], m2);
+    if (o[18]) add("18=" + o[18], o[18] === "none" ? "Rug: none" : "Rug: " + upNm(FIN_RUGS, o[18]), o[18] === "none" ? [0, 0] : UPC.rug);
+    if (o[19]) add("19=" + o[19], "Curtains: " + upNm(FIN_CURT, o[19]), UPC.curt);
+    if (o[20]) add("20=" + o[20], "Bedding: " + upNm(FIN_BED, o[20]), UPC.bed);
+    if (o[21]) add("21=" + o[21], "Picture: " + upNm(FIN_PICS, o[21]), UPC.pic);
+    if (o[23] && HCAT[o[23]]) add("23=" + o[23], "Plant: " + HCAT[o[23]].n, UPC.kind.plant);
+  }
+  if (o[6] || o[7]) add(`6=${o[6]}${o[7]}`, "Bulbs: " + [o[6] && upNm(FIN_BULBS, o[6]), o[7] && upNm(FIN_LUX, o[7])].filter(Boolean).join(", "), UPC.bulbs);
+  if (o[8]) add("8=" + o[8], "Light: " + upNm(FIN_FITS, o[8]), UPC.fit[o[8]]);
+  if (DS()) for (const [id, it] of Object.entries(H.items || {})) {   // Edit: the house's pieces in this room, moved, swapped, added or taken out
+    if (it.r !== room || it.look || !(it.add || pieceDelta(id).some(Boolean))) continue; const c = pieceNow(id), C = HCAT[it.add || c.swap];
+    if (c.removed) add(id + "~x", "Out: " + it.n);
+    else if (it.add && C) add(id + "~a=" + it.add, "Added: " + C.n, UPC.kind[C.k]);
+    else if (c.swap && C) add(id + "~s=" + c.swap, `${it.n}: ${C.n}`, UPC.kind[C.k]);
+    else { const [, dW, dH] = pieceDelta(id), op = it.op && (dW || dH);
+      add(`${id}~m=${[c.w, c.h, c.up, c.along, c.out, c.turn].map(cmR).join()}`, (op ? "Resized: " : "Moved: ") + it.n, op ? UPC[it.k] || UPC.door : [0, 0]); }
+  }
+  const D = upDone(); L.forEach(u => { u.done = !!D[room + "|" + u.k]; }); return L;
+}
+const upRange = (lo, hi) => hi ? `£${lo.toLocaleString("en-GB")}${hi > lo ? "–" + hi.toLocaleString("en-GB") : ""}` : "";
+function upSum(L) { return { n: L.length, d: L.filter(u => u.done).length, lo: L.reduce((a, u) => a + u.lo, 0), hi: L.reduce((a, u) => a + u.hi, 0) }; }
+const upRooms = () => R.HOUSE3 ? [...new Set(["outside", LIVR, ...Object.keys(R.HOUSE3.rooms || {})])].filter(r => r === "outside" || roomName(r)) : [];
+function upsCard(room) {
+  const L = roomUps(room), s = upSum(L);
+  return [`${room === "outside" ? "Outside" : roomName(room)}: changes`, L.length ? `${s.d} of ${s.n} done${s.hi ? " · " + upRange(s.lo, s.hi) : ""}` : "None yet",
+    [btn("All rooms", { upsall: "1" })], null,
+    `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Changes: tap one when it's done">${L.map(u => `<button type="button" data-updone="${encodeURIComponent(u.k)}" aria-pressed="${u.done}">${u.done ? "✓ " : ""}${u.t}${u.hi ? ` · ${upRange(u.lo, u.hi)}` : ""}</button>`).join("")}</div></div>`];
+}
+const upsBtn = room => { const n = room && roomUps(room).length; return n ? [btn(`Changes (${n})`, { actopen: "ups:" + room })] : []; };
+function upsPlan() {   // Plan: the house's total, a row a room (tap: stand in it, its card open)
+  const box = document.getElementById("ups-l"), tot = document.getElementById("ups-tot"); if (!box || !tot || !R.HOUSE3) return;   // the Plan sheet: outside the 3D's root
+  const rows = upRooms().map(r => [r, upSum(roomUps(r))]).filter(([, s]) => s.n), T = rows.reduce((a, [, s]) => ({ n: a.n + s.n, d: a.d + s.d, lo: a.lo + s.lo, hi: a.hi + s.hi }), { n: 0, d: 0, lo: 0, hi: 0 });
+  tot.textContent = T.n ? `${upRange(T.lo, T.hi) || "£0"} · ${T.d} of ${T.n} done` : "none yet";
+  box.innerHTML = rows.length ? rows.map(([r, s]) => `<li data-upsroom="${r}" role="button" tabindex="0"><span class="mn">${r === "outside" ? "Outside" : roomName(r)} · ${s.d}/${s.n}</span><span class="mb"><i style="width:${(s.d / s.n * 100).toFixed(0)}%"></i></span><span class="mv">${upRange(s.lo, s.hi) || "£0"}</span></li>`).join("")
+    : '<li><span class="mn">Tap a wall, a floor or a piece in a room to change it</span></li>';
+}
+{ const sh = document.getElementById("sh-plan"); if (sh) new MutationObserver(() => { if (sh.classList.contains("open")) upsPlan(); }).observe(sh, { attributes: true, attributeFilter: ["class"] }); }
+document.addEventListener("click", e => { const li = e.target.closest("[data-upsroom]"); if (li) upsGo(li.dataset.upsroom); });
+document.addEventListener("keydown", e => { const li = e.key === "Enter" && e.target.closest && e.target.closest("[data-upsroom]"); if (li) upsGo(li.dataset.upsroom); });
+function upsGo(room) {
+  window.dispatchEvent(new CustomEvent("demma-open", { detail: { sheet: "room" } }));
+  if (ROOM_VIEW[room]) goRoom(ROOM_VIEW[room]); else if (room === "outside" && S.view !== "house") setView("house");
+  setTimeout(() => openAct("ups:" + room, [stage.clientWidth / 2, stage.clientHeight * 0.3]), 120);
+}
 const MAKE_CARD = { recordtable: "mk-recordtable", ctable: "mk-ctable", wallcabs: "mk-wallcabs", alcoveshelves: "mk-alcove", doorshelf: "mk-doorshelf", shelfboxes: "mk-doorshelf" };   // v44
 function actItems(id) {     // [title, how it is now, buttons]
   const folded = S.dining === "folded", lv = k => (S.lv[k] ?? 0) > 0;
@@ -74,13 +146,15 @@ function actItems(id) {     // [title, how it is now, buttons]
       btn(up ? "Lower the bed" : "Lift the bed", { hbed: up ? "down" : "up" }), ...(ROOMV() && RMODE !== "above" ? [btn("See it from above", { rmode: "above" })] : [])], null, finBedTray("master")]; }   // N5d: its bedding
   if (id.startsWith("fin:")) { const c = finCard(id), [, rm, sl] = id.split(":");   // V2.6: a wall's or a ceiling's colours (23_finish.js)
     if (c && sl === "5" && DS() && TAPAT && R.HOUSE3 && (R.HOUSE3.rooms || {})[rm] && rm !== "living") c[2].unshift(btn("Add a piece here", { hadd: rm }));   // V2.46 (N7): from the catalogue
+    if (c) c[2].unshift(...upsBtn(rm));   // N23: the room's changes
     return c; }
+  if (id.startsWith("ups:")) return upsCard(id.slice(4));   // N23
   if (id.startsWith("hswap:") || id.startsWith("hadd:")) return hcatCard(id);   // V2.46 (N7): swap a piece, or which piece you've added
   if (id.startsWith("hitem:")) { const k = id.slice(6), it = HIT(k); if (!it) return null;   // V1.50: a piece in the house, its size
     const sw = pieceNow(k).swap;
     return [sw ? HCAT[sw].n : it.n, pieceLine(k), [btn(it.op ? "Change its size" : "Move or resize", { actopen: "hsize:" + k }), ...(it.add ? [btn(it.look ? "Another plant" : "Another piece", { actopen: "hadd:" + k })] : swapKind(k) ? [btn("Swap it", { actopen: "hswap:" + k })] : []),
       ...(pieceDelta(k).some(Boolean) && !it.add ? [btn("As planned", { hreset: k })] : []), ...(it.op ? [] : [btn("Take it out", { hremove: k })]),
-      ...(it.k === "window" || /^(back|garage)_door$/.test(k) ? [btn("Colour outside", { actopen: "fin:outside:9" })] : [])], null,   // V2.38 (F12): its frame's outside
+      ...(it.k === "window" || /^(back|garage)_door$/.test(k) ? [btn("Colour outside", { actopen: "fin:outside:9" })] : []), ...upsBtn(it.r)], null,   // V2.38 (F12): its frame's outside
       it.k === "light" && it.r ? `<div class="r3d-fin"><span class="r3d-finlab">The bulbs</span>${finBulbTray(it.r)}${finFitTray(it.r)}</div>` : /\.bed$/.test(k) && it.r ? finBedTray(it.r) : null]; }   // N5d: a bed's bedding   // V2.9: a light's bulbs; V2.15: its fitting
   if (id.startsWith("hsize:")) { const k = id.slice(6), it = HIT(k); if (!it) return null; const c = pieceNow(k), door = it.k === "door";
     return [it.n, pieceLine(k), [btn("Done", { actopen: "hitem:" + k }), ...(canTurn(k) ? [btn("Turn", { hturn: k })] : []), ...(it.add ? [] : [btn("As planned", { hreset: k })])],
@@ -286,6 +360,9 @@ if (act) {
     if (d.optcyc) { const [pl, ix] = d.optcyc.split(":"), L = placeOpts(pl), i = ((+ix % L.length) + L.length) % L.length, [g, it] = L[i];   // v39
       if (!optOn(it)) optPick(g.k, it.v); actId = `opt:${pl}:${i}`; renderAct(); return; }
     if (d.optkeep) { closeAct(); return; }
+    if (d.updone && actId && actId.startsWith("ups:")) { const D = upDone(), k = actId.slice(4) + "|" + decodeURIComponent(d.updone); if (D[k]) delete D[k]; else D[k] = 1;   // N23: a change done, or not yet
+      try { localStorage.setItem(UPK, JSON.stringify(D)); } catch (er) {} renderAct(); return; }
+    if (d.upsall) { closeAct(); window.dispatchEvent(new CustomEvent("demma-open", { detail: { sheet: "plan" } })); const u = document.getElementById("ups"); if (u) { u.open = true; setTimeout(() => u.scrollIntoView({ block: "start" }), 80); } return; }
     if (d.actopen) { actId = d.actopen; renderAct(); if (d.actopen.startsWith("hsize:")) { const f = qs(".r3d-actfields input"); if (f) f.focus({ preventScroll: true }); } return; }
     if (d.hstep && actId) { const k = actId.split(":")[1], f = d.hstep, v = clampF(f, cmR(pieceNow(k)[f] + +d.by)), inp = qs(`.r3d-actfields [data-hfield="${f}"]`);   // V1.50
       if (inp) inp.value = v; setPiece(k, f, v); return; }

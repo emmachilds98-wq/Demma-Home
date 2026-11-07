@@ -206,7 +206,7 @@ function texPut(tex, img) { const bmp = typeof ImageBitmap !== "undefined" && im
   for (const t of all) { t.image = img; t.flipY = !bmp; t.needsUpdate = true; gl.initTexture(t); } }
 /* V2.64, the client: "freezing on load after first move": the photos landed together and three sent each to the graphics chip on the
    first frame that drew it. Now a photo waits its turn, each sent ahead of the frame that shows it (initTexture), the shadows redrawn
-   once at the end. V2.66 (N15): "lag when moving": none while you move (it was one every 120 ms), as many as fit in 6 ms once you've
+   once at the end. V2.67 (N15): "lag when moving": none while you move (it was one every 120 ms), as many as fit in 6 ms once you've
    been still 0.2 s; on a walk over 3 s, one a second, and only one on screen */
 const UPQ = []; let upShade = false, upT = 0, upMv = 0, upGo = 0;
 function texSet(tex, img, shade) { UPQ.push({ tex, img, shade }); }
@@ -229,7 +229,7 @@ function decodeOnce(src) {
   if (!window.createImageBitmap) return tag();
   return fetch(src).then(r => r.blob()).then(b => createImageBitmap(b, { imageOrientation: "flipY" })).catch(tag);
 }
-function photoInto(tex, k, f) {   // V2.66 (N15): the living room's colour match is in the photo (export3d.TINT), not done here
+function photoInto(tex, k, f) {   // V2.67 (N15): the living room's colour match is in the photo (export3d.TINT), not done here
   if (PHOTOS) whenPhoto(k, f, src => decodeImg(src).then(im => texSet(tex, im)), tex);
 }
 const flatNormal = () => canvasTex(4, 4, (g, w, h) => { g.fillStyle = "#8080ff"; g.fillRect(0, 0, w, h); }, false);
