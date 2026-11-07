@@ -88,7 +88,7 @@ function lookUrl() {
   return (local ? here : TOURD.pages) + "#look-" + b64u(JSON.stringify(lookOf()));
 }
 /* V1.19, the client: "take more buttons off easily and make it clear how": Hide buttons takes every button off but Show (Esc too).
-   V2.66 (N20, fewer buttons): Hide labels and Hide buttons are one button: its first tap the labels, its next the buttons; Show
+   V2.75 (N20, fewer buttons): Hide labels and Hide buttons are one button: its first tap the labels, its next the buttons; Show
    brings both back */
 function pickSync() {
   const pk = qs("#r3d-pick"); if (!pk) return;
@@ -189,7 +189,7 @@ function setLabels(on) {
   if (!on) { closePop(); Object.values(stickEls).forEach(el => { el.hidden = true; }); }
   document.getElementById("r3d")?.classList.toggle("nolabels", !on);
   applyFloors();
-  pickSync(); dirty();   // V2.66: the one Hide button says what its next tap does
+  pickSync(); dirty();   // V2.75: the one Hide button says what its next tap does
 }
 // v35: each label's size is read once (and again after a resize or the fonts arriving), not every frame: reading it straight after
 // moving the labels made the browser lay the page out again for each label, each frame

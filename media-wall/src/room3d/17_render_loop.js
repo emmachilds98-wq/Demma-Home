@@ -1,5 +1,5 @@
 /* ---------------------------------------------------------------- render loop, only when something changed */
-let need = 2, moving = false, still_t = 0, lowRes = false, dragT = 0, slowDev = !HI;   // v35: slowDev until the speed check says otherwise (v39: not on a real graphics card)
+let need = 2, moving = false, still_t = 0, lowRes = false, dragT = 0, slowDev = !HI, capDue = false;   // v35: slowDev until the speed check says otherwise (v39: not on a real graphics card)
 const MV = []; let mvLast = 0;   // v39: the gaps between frames while the room moves: slow ones turn on the lower resolution while you drag
 function dirty() { need = Math.max(need, 2); }
 function fullRatio() { const d = window.devicePixelRatio || 1; if (SMALL && !BIG_GPU) return Math.min(d, GOOD_PHONE ? phoneCap : 1.5); if (S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view) && !BIG_GPU) return houseLite ? 1 : Math.min(d, 1.5);   // V2.25: a real card draws the house as sharp as a room   // V1.11: a real graphics card draws the house at 2× too   // v73: the house at the screen's own sharpness (no supersampling: it's many times the living room's drawing)
@@ -95,17 +95,22 @@ function frame(now) {
   if (cabTween(now)) need = 2;                                    // v30: the cabinet's doors swinging or sliding
   if (liftTick(now)) need = 2;                                    // v68: Lift the bed
   if (showTick(now)) need = 2;                                    // v32: "Watch it open"
-  if (walkTick(dt)) { need = 2; syncEye(); }   // V1.32 (U7)   // V2.30: dt to 100 ms (it held each step to 50: a slow frame slowed the walk)
+  const walked = walkTick(dt); if (walked) { need = 2; syncEye(); }   // V1.32 (U7)   // V2.30: dt to 100 ms (it held each step to 50: a slow frame slowed the walk)
   if (!tween && !freeAbove() && !walking() && (clampRoom(camera.position) | clampRoom(controls.target, true) | collide())) need = 2;   // v17: never outside the room; v41: nor in the furniture
-  const active = moving || changed || !!tween;
+  const active = moving || changed || !!tween || walked;   // V2.73 (N17): a walk too
   if (active && mvLast && now - mvLast < 250) { MV.push(now - mvLast); if (MV.length >= 24) { const m = MV.sort((a, b) => a - b)[12]; MV.length = 0;
     if (m > 28 && !BIG_GPU) slowDev = true; else if (m < 14 && !lowRes && HI) slowDev = false;
+    if (PHONE_HD && lowRes && m > 24 && phoneCap > 1.5) capDue = true;   // V2.73 (N17): still slow with the lighter drawing
     if (m > 40 && !BIG_GPU && !houseLite && S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view)) { houseLite = true; sizeRenderer(); toast("A lighter drawing for the house on this computer"); } } }
   mvLast = active ? now : 0;
   // v35: the lower resolution only while you hold and drag the room on a slow device, and only once the drag has lasted a moment:
   // each switch resizes the canvas (a new drawing buffer), which cost more than it saved after a tap, a fly-to or a Look change
-  if (moving && slowDev) { if (!dragT) dragT = now; still_t = now; if (!lowRes && now - dragT > 150) { lowRes = true; dragLite() ? dirty() : sizeRenderer(); } }
-  else { dragT = 0; if (active) still_t = now; else if (lowRes && now - still_t > 250) { lowRes = false; dragLite() ? dirty() : sizeRenderer(); } }
+  /* V2.73 (N17), the client: "minimise movement and view lag when moving in first person": a walk on the phone (the stick, the keys) is
+     moving too, so it draws without the shade and the glow as a drag does (no new buffers); and if its frames still run past 24 ms, the
+     phone draws at 1.5× from the next pause, once for the visit (the one resize, while still) */
+  const go = moving || (walked && dragLite());
+  if (go && slowDev) { if (!dragT) dragT = now; still_t = now; if (!lowRes && now - dragT > 150) { lowRes = true; dragLite() ? dirty() : sizeRenderer(); } }
+  else { dragT = 0; if (active) still_t = now; else if (lowRes && now - still_t > 250) { lowRes = false; if (capDue) { capDue = false; phoneCap = 1.5; sizeRenderer(); } else dragLite() ? dirty() : sizeRenderer(); } }
   if (updateCut()) need = 2;
   upStep(now, active || walking());                                // V2.64: the photos onto the graphics chip a few at a time
   if (probe > 0 && !lowRes) need = Math.max(need, 1);                 // v35: the speed check's three frames come first, at the start
@@ -114,7 +119,7 @@ function frame(now) {
   if (glLost || (document.body.classList.contains("sheet-open") && !SH && !tween)) return;   // v35: nothing drawn behind the Plan's sheets (the last picture stays)
   if (need > 0) {
     const t = probe > 0 && !lowRes ? performance.now() : 0;
-    const f0 = performance.now(); syncRig(); declutter(); draw(); if (!START_MS.firstAt) { START_MS.firstAt = Math.round(performance.now()); START_MS.firstMs = Math.round(performance.now() - f0); } FT.calls = gl.info.render.calls; FT.tris = gl.info.render.triangles; need--; placeStickers(); FT[FT.n++ % 60] = performance.now() - f0;
+    const f0 = performance.now(); syncRig(); declutter(); draw(); if (!START_MS.firstAt) { START_MS.firstAt = Math.round(performance.now()); START_MS.firstMs = Math.round(performance.now() - f0); dispatchEvent(new Event("r3d-first")); } FT.calls = gl.info.render.calls; FT.tris = gl.info.render.triangles; need--; placeStickers(); FT[FT.n++ % 60] = performance.now() - f0;   // V2.66 (N13): r3d-first, the first picture (the landing's first screen goes)
     if (t) { const c = gl.getContext(); c.readPixels(0, 0, 1, 1, c.RGBA, c.UNSIGNED_BYTE, PX); probeT.push(performance.now() - t); probe--; if (!probe) autoQuality(); }
   }
 }

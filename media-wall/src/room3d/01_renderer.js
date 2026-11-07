@@ -123,6 +123,40 @@ function compileClipped(cam, shownOnly) {   // shownOnly: what's shown now (the 
   }
   return Promise.all(jobs);
 }
+/* V2.66 (N13), the client 7 Nov 2026: "iPhone is running better but there's still some initial freezing": after the warm-up the first
+   picture still built 16 shaders one after another (the shade's, the glow's, their output, the shadows' depth), drew every shadow and
+   sent about 220 textures, all in one frame. Now the shade's and the glow's shaders are asked for in the warm-up with the rest (in
+   parallel where the browser can), every texture is sent in short slices while it waits, and the shadows are drawn a frame before the
+   first picture (off screen), so no one frame does it all */
+function postWarm() {                 // the composer's own shaders, in parallel (01's aoComposer made early)
+  if (!postLive() || !gl.compileAsync) return Promise.resolve();
+  const sz = gl.getSize(new THREE.Vector2()); aoComposer(sz.x, sz.y, gl.getPixelRatio()); AO.w = sz.x; AO.h = sz.y; AO.pr = gl.getPixelRatio();
+  const scr = new THREE.Scene(), tgt = new THREE.Scene(), geo = new THREE.PlaneGeometry(2, 2), cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  const fake = { outputColorSpace: gl.outputColorSpace, toneMapping: gl.toneMapping, setRenderTarget() {}, render() {}, clear() {}, getRenderTarget: () => null };
+  for (const p of AO.c.passes) {
+    if (p instanceof OutputPass) { try { p.render(fake, null, AO.c.readBuffer); } catch (e) {} scr.add(new THREE.Mesh(geo, p.material)); continue; }   // its defines are set as it first draws
+    for (const v of Object.values(p)) for (const m of [].concat(v)) if (m && m.isShaderMaterial) tgt.add(new THREE.Mesh(geo, m));
+  }
+  if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
+  const was = gl.getRenderTarget();
+  try { gl.setRenderTarget(PRE.rtAO); gl.render(new THREE.Mesh(geo, new THREE.MeshBasicMaterial()), cam);   // three builds for the cutting planes last drawn: none here
+    const a = gl.compileAsync(tgt, cam); gl.setRenderTarget(null); return Promise.all([a, gl.compileAsync(scr, cam)]); }
+  catch (e) { return Promise.resolve(); } finally { gl.setRenderTarget(was); }
+}
+function texWarm() {                  // every texture onto the chip in slices of 8 ms while the shaders build (none in the first frame)
+  const T = new Set();
+  scene.traverse(o => { for (const m of [].concat(o.material || [])) for (const k in m) { const t = m[k]; if (t && t.isTexture && !t.isRenderTargetTexture && t.image) T.add(t); } });
+  const L = [...T], step = () => { const t0 = performance.now(); while (L.length && performance.now() - t0 < 8) { try { gl.initTexture(L.pop()); } catch (e) {} } if (L.length) setTimeout(step, 0); };
+  step();
+}
+function preDraw() {                  // the frame before the first: the shadows (and their depth shaders) drawn off screen, at 1 × 1
+  livingFromOutside();               // what the first frame hides first (outside, the living room), so its shadows aren't drawn twice
+  if (!gl.shadowMap.enabled) return; reshadow();   // V2.72: always (the start may have drawn them already: their depth shaders weren't built)
+  if (!PRE.rt) { PRE.rt = new THREE.WebGLRenderTarget(1, 1); PRE.rt.isXRRenderTarget = true; PRE.rt.texture.colorSpace = gl.outputColorSpace; }
+  if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
+  const was = gl.getRenderTarget(); gl.setRenderTarget(postLive() ? PRE.rtAO : PRE.rt);
+  try { gl.render(scene, camera); } finally { gl.setRenderTarget(was); }
+}
 /* v40, client: "better rendering and graphics": ambient occlusion (three's GTAO), the soft shade where things meet. Always in the HD
    pictures; live in HD on a real graphics card (aoLive). With it the room draws into the composer's target (linear, tone-mapped at the
    end), so the warm-up draws into a target of the same kind and the shaders match. */
@@ -161,7 +195,8 @@ function aoComposer(w, h, pr) {
 }
 function draw() {                     // a frame: through the composer with AO, or straight to the screen
   if (postLive()) { const sz = gl.getSize(new THREE.Vector2()); if (!AO.c || AO.w !== sz.x || AO.h !== sz.y || AO.pr !== gl.getPixelRatio()) { aoComposer(sz.x, sz.y, gl.getPixelRatio()); AO.w = sz.x; AO.h = sz.y; AO.pr = gl.getPixelRatio(); }
-    AO.g.enabled = aoLive(); gl.info.autoReset = false; gl.info.reset(); AO.c.render(); gl.info.autoReset = true; }   // the count covers every pass
+    const glow = AO.b.enabled; if (dragLite() && lowRes) AO.b.enabled = false;   // V2.73 (N17): no glow on a phone while it moves (its 10 passes); back as it stops
+    AO.g.enabled = aoLive(); gl.info.autoReset = false; gl.info.reset(); AO.c.render(); gl.info.autoReset = true; AO.b.enabled = glow; }   // the count covers every pass
   else gl.render(scene, camera);
 }
 function syncRig() {                  // each frame: a rigged light follows its owner, and leaves with it (a rebuilt cabinet)

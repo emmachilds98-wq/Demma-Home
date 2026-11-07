@@ -141,17 +141,56 @@ version then, `docs/STATE.md` rewritten over main's, a line in `docs/HISTORY.md`
 
 | # | Task | Workstream | Owns | After | Status |
 |---|---|---|---|---|---|
-| N13 | The first picture with no freeze: the shade's, the glow's and the shadows' shaders built in the warm-up; every texture sent in slices while it waits; the shadows on the second frame; the hidden parts' warm-up by `compileAsync`, not drawn; fires `r3d-first` on the first picture | Speed | `01_renderer.js` (not the controls' lines), `20_go.js` `start()`, `17_render_loop.js` (the warm-up's call) | | Open |
-| N14 | Land light: on the whole house the living room (and its suggestions and ideas, N4's rest) is built after the first picture, while idle, not before it | Speed | `20_go.js` `start()`, `07_suggestions_ideas.js` | N13 | Open |
+| N13 | The first picture with no freeze: the shade's, the glow's and the shadows' shaders built in the warm-up; every texture sent in slices while it waits; the shadows on the second frame; the hidden parts' warm-up by `compileAsync`, not drawn; fires `r3d-first` on the first picture | Speed | `01_renderer.js` (not the controls' lines), `20_go.js` `start()`, `17_render_loop.js` (the warm-up's call) | | **Done** (V2.70: 2 shaders in the first frame, not 16; textures in the wait; shadows a frame ahead. The hidden parts' warm-up kept: compiled at the start already, so its draws build little) |
+| N14 | Land light: on the whole house the living room (and its suggestions and ideas, N4's rest) is built after the first picture, while idle, not before it | Speed | `20_go.js` `start()`, `07_suggestions_ideas.js` | N13 | **Done** (V2.72, another way: the start builds only the shaders the landing shows, 45 not 101, the living room put away first; the rest a moment after the first picture, in parallel. Building the room later: not done, its parts are wired through the start; N4's rest still open) |
 | N15 | No photo on a moving frame: sent only while still (a missing one on screen may go); the colour match done once at build or off the page's thread | Photos | `02_textures.js`, `export3d.py`, `build_viewer.split_photos` | | **Done** (V2.67) |
-| N16 | Draw what you can see: standing in a room, only it, the rooms through its open doors and the outside through its windows; a room's walls, floor and ceiling merged per material | Rooms | `09_house_views.js` `applyFloors()`, `20_go.js` `buildHouse()` | | Open |
-| N17 | A steady frame on the iPhone while walking: sharpness by frame time (1.5–2×, no new buffers), the glow off while moving on a phone; then its `?perf` | Speed | `17_render_loop.js`, `01_renderer.js` `draw()` | N14 | Open |
-| N18 | Overhead as a map, Angled held up: Overhead one finger or a left-drag pans, two fingers pinch and turn, a right-drag turns; Angled orbits 10°–85° above the ground; the view held round the house; a computer's arrows or W A S D pan, Q E turn, + − zoom; a double-tap on the ground centres there | Controls | new `room3d/19_view_controls.js`, `09_house_views.js` `floorCam()`, `14_views_walk.js` `flyTo()` | | Open |
+| N16 | Draw what you can see: standing in a room, only it, the rooms through its open doors and the outside through its windows; a room's walls, floor and ceiling merged per material | Rooms | `09_house_views.js` `applyFloors()`, `20_go.js` `buildHouse()` | | Done (V2.71) |
+| N17 | A steady frame on the iPhone while walking: sharpness by frame time (1.5–2×, no new buffers), the glow off while moving on a phone; then its `?perf` | Speed | `17_render_loop.js`, `01_renderer.js` `draw()` | N14 | **Done** (V2.73: a walk is moving too; the glow and the shade off while a slow phone moves; 1.5× from the next pause if still past 24 ms, once a visit. The iPhone's `?perf` still to come) |
+| N18 | Overhead as a map, Angled held up: Overhead one finger or a left-drag pans, two fingers pinch and turn, a right-drag turns; Angled orbits 10°–85° above the ground; the view held round the house; a computer's arrows or W A S D pan, Q E turn, + − zoom; a double-tap on the ground centres there | Controls | new `room3d/19_view_controls.js`, `09_house_views.js` `floorCam()`, `14_views_walk.js` `flyTo()` | | Done (V2.74) |
 | N19 | Landing: a cream first screen with the house's outline and a thin progress line (no black, no words) until `r3d-first`; the welcome once per device, a title, two buttons and three icons of two words; the version off the brand (into Plan); the house framed a little closer | Landing | `build_viewer.py` (brand, first screen), `page.css`, `room3d_page.py` (welcome), `19_controls.js` `welcome()` | | Done V2.69 (framing left to N18) |
-| N20 | Fewer buttons on top: a phone's top in two rows at most (the view's Angled · Overhead in the floors' row; Hide labels and Hide buttons one button); the floors' and rooms' rows scroll sideways, not wrap | Landing | `room3d_page.py` (`.r3d-mini`), `15_tour_link_stickers.js` `setBare()`, `09_house_views.js` `drawRooms()` | N19 | Done V2.70 |
+| N20 | Fewer buttons on top: a phone's top in two rows at most (the view's Angled · Overhead in the floors' row; Hide labels and Hide buttons one button); the floors' and rooms' rows scroll sideways, not wrap | Landing | `room3d_page.py` (`.r3d-mini`), `15_tour_link_stickers.js` `setBare()`, `09_house_views.js` `drawRooms()` | N19 | Done V2.75 |
 | N21 | The outside close up: the 3D beside the client's outside photos (`tools/compare.py`), each difference fixed (the openings' depth, the brick's scale, the porch, the roof's edge), sizes cited | Outside | `house/model.py`, `house/survey_data.py`, `house/EVIDENCE.md` | | Open |
 | N22 | Photos squeezed for the chip (KTX2, ASTC on the iPhone): less memory, no upload stall, a sharper photo for the same; the lawn without its repeat (a second, larger variation) | Photos | `02_textures.js`, `export3d.py`, `vendor.py`, `03_materials.js` (the lawn's) | N15 | **In part** (V2.68: the lawn; KTX2 waits on the client's OK for its encoder) |
 | N23 | Track the upgrades: a room's card lists its changes (Look, Edit) with a done tick and a rough cost; Plan has the house's total | Track | `16_cards.js`, `plan_ui.py` | | Done (V2.66) |
 
 **Order:** N13, N15, N16, N18, N19, N21, N23 start together; then N14, N20, N22; N17 last (with the iPhone's `?perf`).
 **Needs the client:** `?perf` from the iPhone after N13 (N10); more outside photos if N21 finds a side not shown.
+
+## 8. The next round (7 Nov 2026 review, V2.74): tasks
+
+The client, 7 Nov 2026: "make a plan to continue upgrades on my demma home space, split work up with agents to perform the upgrade
+fast and to optimal quality". From the boards above, the two reviews in the project's files (6 Nov), the two open PRs and the code.
+
+**What the review found**
+- **Two finished PRs are stuck:** N20 (#122, fewer buttons on top) and N21 (#121, the outside beside the photos) passed their checks
+  but conflict with main (both took V2.70/V2.71, since used). Nothing new should touch their files until they land.
+- **The start still carries what it doesn't show:** the whole icon font (every symbol, `display=block`: icons blank till it lands),
+  `plan.html` a second full 2 MB copy of the page, the Plan · Build · Buy sheets' markup (~1 MB, 14,500 elements) parsed before the
+  3D, and the living room's suggestions and ideas (`07_suggestions_ideas.js`, 700 lines) run at start (N4's rest).
+- **The chip's work:** 105–120 shader programs and ~350 draws for the whole house; materials that differ only in a colour or a
+  number still get a shader each, and every small piece has the big pieces' bevels.
+- **Nothing guards the gains:** the checks pass whatever the page weighs or however many shaders it builds, so a round can undo
+  N13–N17 without anyone seeing.
+- **Lean code:** the plan's Python (`render.py`, `diagrams.py`, `build_doc.py`, `instructions.py`: ~7,500 lines) has grown round by
+  round; no one has cut what the PDFs no longer use.
+- **The finishes' open rows:** F9 wallpaper, F11 colours that go together, F12 the gardens (fences, paths, plants); KTX2 (N22's
+  rest) waits on the client.
+
+**How to run it:** as section 7. A workstream is a thread, one task a PR, the files in "Owns" its own; nobody else edits them till
+the row is done. Every PR: merge `main` just before merging, take the next free version then, `docs/STATE.md` rewritten over main's,
+a line in `docs/HISTORY.md`, its row ticked here, `python3 tools/checks.py`'s lines in the PR. Say less on screen.
+
+| # | Task | Workstream | Owns | After | Status |
+|---|---|---|---|---|---|
+| N24 | Land #122 (N20) then #121 (N21): merge main into each, next free versions, re-run every check, fix what main changed, merge | Land | the two PRs' files | | Doing: #122 in (V2.75) |
+| N25 | A lighter start: the icon font only the symbols used (`icon_names=`, not `display=block`); `plan.html` a tiny redirect; the sheets' markup out of the first parse (a `<template>` or built on first open); the suggestions and ideas loaded on first use (N4's rest). Before and after: bytes, elements, time to `r3d-first` | Load | `build_viewer.py` (head, sheets, `plan.html`), `page_router.js`, `07_suggestions_ideas.js`, `room3d_src.py` | | Open |
+| N26 | Guard the gains: a budget in `checks.py` (the page's bytes, the first visit's bytes, shaders at the first picture, draws for the house and the living room, on the phone and the PC paths), failing a round that goes over; numbers in `tools/perf_budget.json` | Guard | `tools/checks.py`, `tools/check_site.py`, new `tools/perf_budget.json` | | Open |
+| N27 | Fewer shaders, a lighter house: materials that differ only in colour or a number share one program; fewer bevel segments on small or far pieces; `R3D.perf()` programs and draws before and after, the look unchanged (`tools/gallery.py`) | GPU | `03_materials.js` (not `grassy`), `20_go.js` `ROUND` and `PSOFT` | | Open |
+| N28 | Trim the plan's code: cut functions, drawings and pages the PDFs and the site no longer use; the PDFs' pages and the site's pictures the same before and after; lines before and after in the PR | Lean | `render.py`, `diagrams.py`, `build_doc.py`, `instructions.py`, `chapters.py`, `make_images.py`, `qa.py` | | Open |
+| N29 | Wallpaper and colours that go together (F9, F11): a wallpaper on This wall at its real repeat (CC0 patterns or drawn), rolls counted; each paint's maker pairings, sourced | Finishes | `23_finish.js`, `house/surfaces.py` | | Open |
+| N30 | The gardens (F12): fences, paths, the lawn's edges and the plants from the client's outside photos, sizes cited; core where the photos show them, ideas as options | Outside | `house/model.py`, `house/survey_data.py`, `house/EVIDENCE.md` | N24 (#121) | Open |
+| N31 | Photos squeezed for the chip (KTX2, N22's rest) | Photos | `02_textures.js`, `export3d.py`, `vendor.py`, `house/textures/build_textures.py` | the client's OK | Needs the client |
+
+**Order:** N24, N25, N26, N27, N28, N29 start together; N30 when #121 is merged; N31 on the client's yes.
+**Needs the client:** a yes or no on KTX2 (N31); `?perf` from the iPhone and the PC (N10, N17); dark panels on a dark device or not
+(N9's rest); for N30, what you'd like in the gardens.

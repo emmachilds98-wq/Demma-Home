@@ -339,7 +339,7 @@ function collide(p = camera.position) {    // true if it moved the eye
    room's middle (or the media wall from the middle itself) */
 let lastTap = null;
 function floorHop(e) {
-  if (R.HOUSE3) { const sp = spotAt(e); return !!sp && goStand(sp.x, sp.fy, sp.z); }   // V1.53: from any view, stand where you double-click
+  if (R.HOUSE3) { const sp = spotAt(e); return sp ? goStand(sp.x, sp.fy, sp.z) : mapCentre(e); }   // V1.53: from any view, stand where you double-click (V2.74: over the house, no room there: centre on it)
   ray.setFromCamera(ndc(e), camera);
   const hit = ray.intersectObjects(scene.children, true).find(h => h.object.isMesh && shown(h.object) && !clippedAt(h));
   const KB = ROOMV();
@@ -601,7 +601,7 @@ function setView(name, instant, dur) {
   if (RMODE !== "in") setRmode("in", true);                               // v71: a new view starts in the room
   standLook(!!v.stand);                                                     // V1.6: the living room's Be there looks round from where you stand
   let p = (S.site === "C" && S.cab === "sliding" && v.Cs) || v[S.site] || v;   // v30: "Cs", the sliding cabinet's own eye
-  if (name === "house" && camera.aspect < 1.2) { const f = Math.min(0.95, 0.42 / camera.aspect) * 0.8 / freeFrame()[0];   // V2.46: and back by the share the buttons leave free (the roof was under the floors row)
+  if (name === "house" && camera.aspect < 1.2) { const f = Math.min(0.95, 0.42 / camera.aspect) * 0.72 / freeFrame()[0];   // V2.74 (N18, left by N19): a tenth closer   // V2.46: and back by the share the buttons leave free (the roof was under the floors row)
       // v54: a phone stands further back to take in every floor (V1.30: less far: the buttons take less room)
     p = { eye: p.at.map((a, i) => a + (p.eye[i] - a) * f), at: p.at }; }
   flyTo(p.eye, p.at, R.HOUSE3 && v.box ? Math.max(v.fov, 82) : v.fov, !!v.above, instant, dur);   // v71: the house's rooms wide

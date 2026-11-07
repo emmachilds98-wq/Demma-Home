@@ -331,7 +331,7 @@ details.r3d-more[open] > summary::before { content: "– "; }
    two small pills under the Plan/Build/Buy bar, icon only on a phone */
 .r3d-floors { display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--surface, #fbf8f1); box-shadow: 0 4px 14px rgba(0,0,0,.18); }
 .r3d-floors[hidden] { display: none; }
-/* v64: the switches (Gardens, Next door) and a floor's rooms; V2.66 (N20): one row each that slides sideways, never wrapped */
+/* v64: the switches (Gardens, Next door) and a floor's rooms; V2.75 (N20): one row each that slides sideways, never wrapped */
 .r3d-floors:not(.r3d-rmode) { flex-wrap: nowrap; overflow-x: auto; max-width: min(94vw, 760px); scrollbar-width: none; }
 .r3d-floors:not(.r3d-rmode)::-webkit-scrollbar { display: none; } .r3d-floors button { flex: none; white-space: nowrap; }
 .r3d-floors .sep { width: 1px; margin: 5px 3px; background: rgba(0,0,0,.15); }
@@ -341,7 +341,7 @@ details.r3d-more[open] > summary::before { content: "– "; }
    floors and rooms only, on the whole house only) */
 /* V2.24: in the cream of the buttons beside it (it was the one dark button, the loudest for the least-used thing); dark only as Show
    buttons, when it's the one button left */
-.r3d .r3d-mini .r3d-minib.r3d-bare { width: auto; padding: 0 13px 0 10px; }   /* V2.66 (N20): Hide labels and Hide buttons one button (setBare); its words only as Show on a phone */
+.r3d .r3d-mini .r3d-minib.r3d-bare { width: auto; padding: 0 13px 0 10px; }   /* V2.75 (N20): Hide labels and Hide buttons one button (setBare); its words only as Show on a phone */
 .r3d .r3d-mini .r3d-minib.r3d-bare .t { position: static; width: auto; height: auto; overflow: visible; clip: auto; font: 600 13px Figtree, system-ui, sans-serif; }
 @media (max-width: 899px) { body:not(.bare) .r3d .r3d-mini .r3d-minib.r3d-bare { width: 40px; padding: 0; }
   body:not(.bare) .r3d .r3d-mini .r3d-minib.r3d-bare .t { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } }
@@ -357,7 +357,7 @@ body.bare .r3d .r3d-mini .r3d-minib.r3d-bare { background: var(--ink, #1d2a22); 
 .r3d-rmode .ms { font-size: 17px; }
 @media (max-width: 640px) { .r3d-rmode .t { display: none; } .r3d-rmode button { padding: 0 7px; } }   /* V2.24: 7 (was 9), so Hide buttons shares their row on a phone */
 .r3d-mini { position: fixed; top: max(72px, calc(env(safe-area-inset-top) + 60px)); right: 16px; z-index: 31; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 6px; max-width: min(980px, calc(100vw - 32px)); transition: right .3s; }
-/* V2.66 (N20): two rows at most under the brand, on a phone and a computer: the view's buttons (Angled · Overhead, or a room's four
+/* V2.75 (N20): two rows at most under the brand, on a phone and a computer: the view's buttons (Angled · Overhead, or a room's four
    ways), the floors (sliding sideways), Whole house, Hide; then a floor's rooms */
 .r3d-mini > #r3d-fview, .r3d-mini > #r3d-rmode { order: 1; } .r3d-mini > #r3d-floors { order: 2; flex: 1 1 0; min-width: 0; max-width: max-content; }
 .r3d-mini > #r3d-mlook { order: 3; } .r3d-mini > #r3d-home { order: 4; } .r3d-mini > #r3d-pick { order: 5; }
