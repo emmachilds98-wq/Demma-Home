@@ -339,7 +339,7 @@ function collide(p = camera.position) {    // true if it moved the eye
    room's middle (or the media wall from the middle itself) */
 let lastTap = null;
 function floorHop(e) {
-  if (R.HOUSE3) { const sp = spotAt(e); return !!sp && goStand(sp.x, sp.fy, sp.z); }   // V1.53: from any view, stand where you double-click
+  if (R.HOUSE3) { const sp = spotAt(e); return sp ? goStand(sp.x, sp.fy, sp.z) : mapCentre(e); }   // V1.53: from any view, stand where you double-click (V2.67: over the house, no room there: centre on it)
   ray.setFromCamera(ndc(e), camera);
   const hit = ray.intersectObjects(scene.children, true).find(h => h.object.isMesh && shown(h.object) && !clippedAt(h));
   const KB = ROOMV();
