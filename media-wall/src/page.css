@@ -27,7 +27,8 @@ a { color: var(--oak); }
 .brand b { display: block; font: 600 18px/1.1 var(--display); }
 .brand small { display: block; font: 600 12px/1.2 var(--body); color: var(--mut2); }
 /* v28, client: "make sure version number is visible somewhere even if its faint so i can tell updates are done when i load": V2.66 (N19), in Plan, by the hello */
-.hello .ver { margin-left: 10px; font: 500 13px/1 var(--body); color: var(--mut2); letter-spacing: .02em; vertical-align: middle; }
+.hello .ver { margin-left: 6px; padding: 8px 6px; border: 0; background: none; cursor: pointer; font: 500 13px/1 var(--body); color: var(--mut2); letter-spacing: .02em; vertical-align: middle; }
+.hello .ver::after { content: " \21bb"; }
 /* V2.66 (N19): the first screen, cream, the house's outline and a thin line, until the first picture (build_viewer LANDING_JS) */
 .landing { position: fixed; inset: 0; z-index: 90; display: grid; place-content: center; justify-items: center; gap: 22px; background: var(--page); color: var(--ink); transition: opacity .4s ease; }
 .landing svg { opacity: .78; }
