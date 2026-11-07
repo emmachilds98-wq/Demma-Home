@@ -760,16 +760,23 @@ function start() {
      frame. For the right ones: after the cutaway's clipping is set (v81's lesson), and into a target like the shade's composer when it's
      on (its shaders differ from the screen's). Never more than 8 s' wait */
   const first = () => { if (first.done) return; first.done = true; START_MS.compiled = Math.round(performance.now() - t0); msg.hidden = true;
-    requestAnimationFrame(() => { preDraw(); requestAnimationFrame(frame); requestAnimationFrame(() => setTimeout(loadPhotos, 30)); }); };   // V2.66 (N13): the shadows a frame ahead   // V1.9: the photos once the first picture is up
+    requestAnimationFrame(() => { preDraw(); requestAnimationFrame(frame); requestAnimationFrame(() => setTimeout(loadPhotos, 30)); });   // V2.66 (N13): the shadows a frame ahead   // V1.9: the photos once the first picture is up
+    if (!/[?&]nocompile\b/.test(location.search)) setTimeout(() => (window.requestIdleCallback || (f => f()))(warmRest, { timeout: 4000 }), 1500); };   // V2.72 (N14): the rest after
+  /* V2.72 (N14), the client 7 Nov 2026: "Review if any further improvements could be made on the way you land into the site": the start
+     built every shader in the scene before the first picture, 108 of them, though the house from outside draws 30 (the living room is
+     hidden from outside, and its hidden parts too). Now it builds what the landing shows (the living room put away first, as the first
+     frame would), and the rest a moment after the first picture, in parallel where the browser can */
+  const warmRest = () => { const was = gl.getRenderTarget(); try { if (postLive() && PRE.rtAO) gl.setRenderTarget(PRE.rtAO); compileClipped(camera); } catch (e) {} finally { gl.setRenderTarget(was); } };
+  precompile();                                                                         // v35: hidden parts' shaders, while the room's idle (listed before the living room is put away)
+  livingFromOutside();                                                                  // V2.72 (N14): what the landing hides, hidden before its shaders are built
   if (gl.compileAsync && !/[?&]nocompile\b/.test(location.search)) {
     msg.textContent = "Building the house…"; msg.hidden = false;
     const was = gl.getRenderTarget();
     try {
       if (postLive()) { if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }); gl.setRenderTarget(PRE.rtAO); }
-      texWarm(); Promise.race([Promise.all([compileClipped(camera), postWarm()]), new Promise(r => setTimeout(r, 8000))]).then(first, first);   // V2.66 (N13): the shade's and glow's too; the textures meanwhile   // V2.64: by cutting planes (01_renderer)
+      texWarm(); Promise.race([Promise.all([compileClipped(camera, true), postWarm()]), new Promise(r => setTimeout(r, 8000))]).then(first, first);   // V2.66 (N13): the shade's and glow's too; the textures meanwhile   // V2.64: by cutting planes (01_renderer)
     } catch (e) { first(); } finally { gl.setRenderTarget(was); }
   } else first();
-  precompile();                                                                         // v35: hidden parts' shaders, while the room's idle
   lookFromHash();                                                                       // v28: a shared #look- link (after the first compile, so its note shows)
   // for the headless stills (shot3d.py): set the options and a view, then take a picture
   window.R3D = {
