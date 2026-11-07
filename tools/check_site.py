@@ -1,7 +1,8 @@
 """Demma's Home V1.2: the front door's check, on the built site (index.html, the old design back). At the iPhone 15 Pro's size (393 × 852,
 touch) and a desktop's (1920 × 1080): no script errors, nothing off the right edge, it opens on the whole house and the brand says so, the
 floors pill is one row on the phone, the photos arrive after the first picture (V1.9), a walk goes from the hall into the living room, up its stairs and back (V1.38), and the dock's Measure lists every open size, keeps a number typed in and counts it. Screenshots go
-to _shots/ (the workflow keeps them with the run).
+to _shots/ (the workflow keeps them with the run). V2.75 (N26): the speed budget (tools/perf_budget.json) on four paths, the bytes of a
+first visit, the shaders built by the first picture and the draws for the house and the living room; the numbers go to _shots/perf.json.
 
 python3 tools/check_site.py [site dir]      exits non-zero on any failure; THREE_LOCAL serves three.js where the CDN is blocked"""
 import http.server, json, pathlib, socketserver, sys, threading, time
@@ -139,6 +140,35 @@ OFF = """() => { const W = document.documentElement.clientWidth, out = [];
   return out.slice(0, 5); }"""
 
 
+# V2.75 (N26), "nothing guards the gains": every resource kept, the first picture's shaders noted, and a graphics chip named (an iPhone's,
+# an RTX's) so software graphics take the client's own devices' paths (HD from the start)
+PERF_INIT = """performance.setResourceTimingBufferSize(4000);
+(() => { const gpu = %s; if (gpu) for (const C of [WebGLRenderingContext, WebGL2RenderingContext]) { const g = C.prototype.getParameter;
+  C.prototype.getParameter = function (p) { return p === 0x9245 || p === 0x9246 ? gpu : g.call(this, p); }; } })();
+if (%s) try { localStorage.setItem("mw18-3d", JSON.stringify({ quality: "hd", picked: true })); } catch (e) {}   // HD held (no step down mid-count)
+addEventListener("r3d-first", () => { window.__first = R3D._dbg.gl.info.programs.length; });"""
+PERF = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms));
+  const settle = async () => { await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(200); await sl(1200); };
+  await R3D.photos(); let n = -1, k = 0;                       // the first visit: until nothing more is fetched for 3 s
+  for (let i = 0; i < 90 && k < 3; i++) { await sl(1000); const m = performance.getEntriesByType("resource").length; k = m === n ? k + 1 : 0; n = m; }
+  const nav = performance.getEntriesByType("navigation")[0]; let bytes = nav ? nav.encodedBodySize : 0;
+  for (const e of performance.getEntriesByType("resource")) if (e.name.startsWith(location.origin)) bytes += e.encodedBodySize;
+  const still = async () => { const g = D.gl.shadowMap; let c = 1e9;   // a frame's draws while you move: the shadows' redraw (a room change) left out
+    for (let i = 0; i < 3; i++) { g.needsUpdate = false; D.controls.dispatchEvent({ type: "change" }); await sl(600); c = Math.min(c, R3D.perf().calls); }
+    g.needsUpdate = true; D.controls.dispatchEvent({ type: "change" }); return c; };
+  const h = await still();                                     // the house as it opens (R3D.set shows the living room from outside: 91 more draws)
+  R3D.set({ view: "livstand" }); await settle(); const l = await still(); R3D.set({ view: "house" }); await settle();
+  return { first_visit_mb: +(bytes / 1e6).toFixed(2), shaders_first: window.__first ?? -1, draws_house: h, draws_living: l, quality: R3D.perf().quality }; }"""
+BUDGET = json.loads((ROOT / "tools/perf_budget.json").read_text())
+# the client's iPhones and PCs (tools/perf_budget.json "paths"): Apple graphics and an RTX start in HD
+HD_PATHS = (("iphone", 393, 852, True, "Apple GPU"), ("rtx", 1280, 800, False, "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0)"))
+
+
+def over_budget(path, got):
+    want = BUDGET["paths"][path]
+    return [f"{path}: {k} {got.get(k)} over {v}" for k, v in want.items() if not k.startswith("_") and not 0 <= (got.get(k) or 0) <= v]
+
+
 class Quiet(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a):
         pass
@@ -152,12 +182,13 @@ def main():
     base = f"http://127.0.0.1:{httpd.server_address[1]}/"
     rows = len(json.loads((SITE / "data/house.json").read_text())["measure"])
     photos = len(json.loads((ROOT / "house/textures/textures.json").read_text()))
-    fails = []
+    fails, perf = [], {}
     with sync_playwright() as p:
         b = pw.launch(p, pw.GL)
         for w, h in ((393, 852), (1920, 1080)):
             phone = w < 600
             ctx = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=phone, has_touch=phone, service_workers="block")
+            ctx.add_init_script(PERF_INIT % ("null", "false"))
             if phone: ctx.add_init_script("window.__r3dDblMs = 20000;")   # V1.54: this rig hands each touch on only after a slow frame (~0.5 s here, seconds on GitHub), so its double-tap and tap allow longer (only two taps are sent)
             pg = ctx.new_page(); pg.set_default_timeout(300000); localcdn.route(pg); errs = []   # V1.5: CI's software graphics draw the whole house at 1920 in ~20 s a frame; a screenshot took over 120 s
             pg.on("pageerror", lambda e: errs.append("pageerror: " + str(e)[:300]))
@@ -168,6 +199,8 @@ def main():
             if place != "The whole house": fails.append(f"{w}: the brand says {place!r}")
             got = pg.evaluate("() => R3D.photos()")   # V1.9: the photos come after the first picture (their own file)
             if got != photos: fails.append(f"{w}: {got} of {photos} photo sets arrived")
+            name = "phone" if phone else "computer"                # V2.75 (N26): the budget, Fast's two paths (no graphics card)
+            perf[name] = pg.evaluate(PERF); fails += over_budget(name, perf[name])
             off = pg.evaluate(OFF)
             if off: fails.append(f"{w}: off the right edge: {off}")
             pg.screenshot(path=str(SHOTS / f"site-{w}-house.png"))
@@ -244,10 +277,21 @@ def main():
                 if dr.get("bad") or dr.get("n", 0) < 10: fails.append(f"{w}: walking through the doors ({dr.get('n')} walks): {dr.get('bad')}")
             if errs: fails.append(f"{w}: errors: {errs[:4]}")
             ctx.close()
+        for name, w, h, phone, gpu in HD_PATHS:                    # V2.75 (N26): the budget on the client's devices' paths, HD from the start
+            ctx = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=phone, has_touch=phone, service_workers="block")
+            ctx.add_init_script(PERF_INIT % (json.dumps(gpu), "true")); pg = ctx.new_page(); pg.set_default_timeout(600000); localcdn.route(pg); errs = []
+            pg.on("pageerror", lambda e: errs.append("pageerror: " + str(e)[:300]))
+            pg.goto(base + "index.html"); pg.wait_for_function("window.R3D && window.R3D.ready && window.__first", timeout=600000)
+            perf[name] = pg.evaluate(PERF); fails += over_budget(name, perf[name])
+            if perf[name]["quality"] != "hd": fails.append(f"{name}: drawn in {perf[name]['quality']}, not HD")
+            if errs: fails.append(f"{name}: errors: {errs[:4]}")
+            ctx.close()
         b.close()
+    (SHOTS / "perf.json").write_text(json.dumps(perf, indent=1))
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
-    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, down to the lower floor and back, {len(fails)} failed; screenshots in _shots/")
+    print("speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room" for k, v in perf.items()))
+    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, down to the lower floor and back, the speed budget on 4 paths, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
 

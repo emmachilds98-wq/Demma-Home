@@ -99,7 +99,7 @@ cache's fix. Every PR: rebase on `main` just before merging, take the next free 
 | N1 | This board; `STATE.md` short and under 150 lines; the plans' boards one line a row; a duplicate photo gone | Plan | `docs/`, `media-wall/inputs/` | **Done** (V2.45) |
 | N2 | Textures as their own files (not one 13 MB base64 JSON), the room you're in first, the rest when idle, kept offline; the 3 duplicate normal maps share one file | Speed | `export3d.py`, `build_viewer.py`, `02_textures.js` | **Done** (V2.47 kept offline, V2.49 a file each, what's on screen first; the 3 duplicate normal maps already shared) |
 | N3 | A 512 px texture set for phones without a strong chip, after N2 | Speed | `build_textures.py`, `02_textures.js` | **Done** (V2.58: half size, 2.3 MB in place of 10.2) |
-| N4 | The page's own script minified at build (the source as it is); the living room's suggestions and ideas loaded on first use | Speed | `room3d_src.py`, `build_viewer.py`, `07_suggestions_ideas.js` | **In part** (V2.50: the script minified at build; the suggestions and ideas still load at start) |
+| N4 | The page's own script minified at build (the source as it is); the living room's suggestions and ideas loaded on first use | Speed | `room3d_src.py`, `build_viewer.py`, `07_suggestions_ideas.js` | **Done** (V2.50: the script minified at build; V2.80, N25: the suggestions and ideas built the first time they're shown) |
 | N5 | Look in every room (R7): the living room on the house's rows (pixel for pixel), then each room's rug, curtains or blinds, bedding, a picture, a plant from a short tray; saved in schemes, sent with Send. One PR each: N5a the living room joined; N5b rugs; N5c curtains and blinds; N5d bedding and cushions; N5e a picture; a plant (the Edit thread's, from N7's catalogue) | Look | `23_finish.js`, `room3d_page.py` (Look) | **Done** (V2.51: N5a; V2.57: N5b; V2.59: N5c; V2.61: N5d; V2.62: the plant; V2.63: N5e, the picture) |
 | N6 | Shapes, second pass (R4): the wardrobes' frames and doors, the hanging clothes as garments (they read as flat slabs), the kitchen's fridge-freezer and microwave fronts and handles, the Kallax's boxes, the chair-bed | Shapes | `house/model.py`, `survey_data.py` | **Done** (V2.53; no microwave in the photos) |
 | N7 | Furniture, the rest (R6): swap a piece for another of its kind; add one from the catalogue, in any room | Edit | `08_house_catalogue.js`, `house_edits`, `16_cards.js` | **Done** (V2.55) |
@@ -183,8 +183,8 @@ a line in `docs/HISTORY.md`, its row ticked here, `python3 tools/checks.py`'s li
 | # | Task | Workstream | Owns | After | Status |
 |---|---|---|---|---|---|
 | N24 | Land #122 (N20) then #121 (N21): merge main into each, next free versions, re-run every check, fix what main changed, merge | Land | the two PRs' files | Done (#121 as V2.75, #122 as V2.76; #127 closed as its duplicate) |
-| N25 | A lighter start: the icon font only the symbols used (`icon_names=`, not `display=block`); `plan.html` a tiny redirect; the sheets' markup out of the first parse (a `<template>` or built on first open); the suggestions and ideas loaded on first use (N4's rest). Before and after: bytes, elements, time to `r3d-first` | Load | `build_viewer.py` (head, sheets, `plan.html`), `page_router.js`, `07_suggestions_ideas.js`, `room3d_src.py` | | Open |
-| N26 | Guard the gains: a budget in `checks.py` (the page's bytes, the first visit's bytes, shaders at the first picture, draws for the house and the living room, on the phone and the PC paths), failing a round that goes over; numbers in `tools/perf_budget.json` | Guard | `tools/checks.py`, `tools/check_site.py`, new `tools/perf_budget.json` | In PR #131 (draft, CI green) |
+| N25 | A lighter start: the icon font only the symbols used (`icon_names=`, not `display=block`); `plan.html` a tiny redirect; the sheets' markup out of the first parse (a `<template>` or built on first open); the suggestions and ideas loaded on first use (N4's rest). Before and after: bytes, elements, time to `r3d-first` | Load | `build_viewer.py` (head, sheets, `plan.html`), `page_router.js`, `07_suggestions_ideas.js`, `room3d_src.py` | | **Done** (V2.80: the icon font 1.29 MB to 25 KB; `plan.html` 2 MB to a 0.4 KB step; the sheets' markup and scripts a file of their own, built on first use: the page 2.0 to 1.0 MB, 14,695 to 1,565 elements at the start; each suggestion and idea built the first time it's shown) |
+| N26 | Guard the gains: a budget in `checks.py` (the page's bytes, the first visit's bytes, shaders at the first picture, draws for the house and the living room, on the phone and the PC paths), failing a round that goes over; numbers in `tools/perf_budget.json` | Guard | `tools/checks.py`, `tools/check_site.py`, new `tools/perf_budget.json` | Done (7 Nov, checks only: `tools/perf_budget.json`; passed on V2.79) |
 | N27 | Fewer shaders, a lighter house: materials that differ only in colour or a number share one program; fewer bevel segments on small or far pieces; `R3D.perf()` programs and draws before and after, the look unchanged (`tools/gallery.py`) | GPU | `03_materials.js` (not `grassy`), `20_go.js` `ROUND` and `PSOFT` | Done (V2.79) |
 | N28 | Trim the plan's code: cut functions, drawings and pages the PDFs and the site no longer use; the PDFs' pages and the site's pictures the same before and after; lines before and after in the PR | Lean | `render.py`, `diagrams.py`, `build_doc.py`, `instructions.py`, `chapters.py`, `make_images.py`, `qa.py` | Done (V2.78) |
 | N29 | Wallpaper and colours that go together (F9, F11): a wallpaper on This wall at its real repeat (CC0 patterns or drawn), rolls counted; each paint's maker pairings, sourced | Finishes | `23_finish.js`, `house/surfaces.py` | Done (V2.77) |
@@ -195,6 +195,7 @@ a line in `docs/HISTORY.md`, its row ticked here, `python3 tools/checks.py`'s li
 | N34 | The bathroom and the master matched to their photos (UPGRADE_REVIEW Next 2): `camfit.py` from a start near each photo's spot, `compare.CAMS` filled, each difference fixed, sizes cited | Outside | `tools/compare.py`, `tools/camfit.py`, `house/model.py`, `house/survey_data.py`, `house/EVIDENCE.md` | N30 (same thread) | Open |
 | N35 | Room to room with no shader built: walking from the living room into the hall or up the stairs built 5–13 shaders on an emulated iPhone (V2.73, the idle warm-up not yet there); the next rooms' shaders compiled in parallel (`compileClipped`) as you near a door, not drawn one by one when idle; `?perf` programs before and after | Speed | `01_renderer.js` (`precompileStep`, `warmSwitch`), `14_views_walk.js` `enterRoom()` | | Open |
 | N36 | Soft bedding: the beds' duvets, pillows and throws as soft, rounded shapes (the master's and bedroom 2's read as flat grey slabs), the house catalogue's bed the same; the look checked in `tools/gallery.py` | Shapes | `house/model.py` (`bed2()`, `master()`, the beds only), `08_house_catalogue.js` `hcBed()` | N34 (`model.py`) | Open |
+| N37 | Fewer draws for the house (N27's rest): more of the house's fixed pieces merged per material, keeping each room's span so `roomCull` still leaves rooms out and taps still find their piece; `R3D.perf()` draws for the house and a room before and after, inside `tools/perf_budget.json`, the look unchanged (`tools/gallery.py`). Also (found by N26): changing any setting brings the living room back into the whole-house view from outside (+91 draws); keep it put away | GPU | `20_go.js` `buildHouse()` (not `buildTrees`), `09_house_views.js` `roomCull()`, and the one line that re-shows the living room on a setting change | #138 (it touches `20_go.js`) | Open |
 
 **Order:** N24, N25, N26, N27, N28, N29 start together; when N24 lands, N30 then N34 (one thread), N32 and N33; N35 any time; N36 after N34; N31 on the client's yes.
 **From the earlier reviews:** the 6 Nov review's A–F and the mobile audit's 1–5 are done (N2–N4, V2.47–V2.58); audit 6 and 9 and N4's rest are in N25;
@@ -211,17 +212,17 @@ merged to `main` and live; In PR means pushed, not merged; Not started means no 
 
 | State | Tasks |
 |---|---|
-| **Done** (live) | N1, N2, N3, N5, N6, N7, N8, N13, N14, N15, N16, N17, N18, N19, N20, N21, N23, N27, N28, N29 |
-| **Done in part** (what's left is named in its row or folded into a later task) | N4 (its rest is N25), N9 (dark panels: Emma's call), N11 (the PC's `?perf`), N12 (the iPhone's `?perf`), N22 (KTX2 is N31) |
-| **In PR, not merged** | N26 (#131), N32 (V2.82) |
+| **Done** (live) | N1, N2, N3, N4, N5, N6, N7, N8, N13, N14, N15, N16, N17, N18, N19, N20, N21, N23, N25, N26, N27, N28, N29 |
+| **Done in part** (what's left is named in its row or folded into a later task) | N9 (dark panels: Emma's call), N11 (the PC's `?perf`), N12 (the iPhone's `?perf`), N22 (KTX2 is N31) |
+| **In PR, not merged** | N32 (V2.82) |
 | **In progress** | N31 (#133, WIP: build side only) |
-| **Not started** | N25, N30, N33, N34 (after N30), N35, N36 (after N34) |
+| **Not started** | N30, N33, N34 (after N30), N35, N36 (after N34) |
 | **Needs the client** | N10 (`?perf` from the iPhone 15 Pro and the RTX 5070 PC) |
 
 ## 10. Resumed (7 Nov 2026): the rest in parallel chunks
 
 Work resumed after the handover. The "new team" was section 8's sessions (#127–#131); all landed or closed: #121 V2.75, #122 V2.76
-(#127 its duplicate, closed), #128 V2.77, #129 V2.78, #130 V2.79; #131 (N26, checks only, no version) and the refresh button (#136, V2.80) after them. The flaky `browser (site)` line (Measure's
+(#127 its duplicate, closed), #128 V2.77, #129 V2.78, #130 V2.79; #131 (N26, checks only, no version, landed) and the refresh button (#136, V2.80) after them. The flaky `browser (site)` line (Measure's
 save looked at after a fixed 1.2 s) waits for the save now (#135). Each chunk below is one thread; chunks share no files, so they run
 side by side. One task a PR, next free version at merge (section 9's rules, `docs/HANDOVER.md`).
 
@@ -232,4 +233,5 @@ side by side. One task a PR, next free version at merge (section 9's rules, `doc
 | C House | N30 the gardens → N34 bathroom and master to their photos → N36 soft bedding | `house/model.py`, `survey_data.py`, `EVIDENCE.md`, `tools/compare.py`, `camfit.py`, `08_house_catalogue.js` `hcBed()` | Emma for N30's gardens wishes (start from the photos meanwhile) |
 | D Photos | N32 lighter photo files → N31 KTX2 (#133) | `house/textures/`, `02_textures.js`, `export3d.py`, `vendor.py`, the workflow's encoder step | Emma's OK for N31's encoder |
 | E Look-over | N33 phone and PC look-over | `page.css`, `room3d_page.py` | after A's and the refresh button's page changes, or rebase on them |
+| F Draws | N37 fewer draws for the house (and the living room kept away after a setting change) | `20_go.js` `buildHouse()`, `09_house_views.js` `roomCull()`, that line | #138 landing (it touches `20_go.js` `buildTrees`) |
 | Emma | N10 `?perf` from the iPhone 15 Pro and the RTX 5070 PC; dark panels (N9); a microwave photo; the gardens (N30) | | |
