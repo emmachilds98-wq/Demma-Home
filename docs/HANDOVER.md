@@ -39,7 +39,7 @@ A `v*` tag puts that version's PDFs on a Release. CI takes about 20 minutes.
   docs-only conflict needs no second full CI wait. Docs-only plan PRs don't take a version (this one doesn't).
 - Draft PRs; the client's words quoted at the top; the PR template's sections (`.github/pull_request_template.md`).
 
-## Open PRs (7 Nov 2026, none merged; all but #133 and #131 say V2.75, so only the first to land keeps it)
+## Open PRs at the handover (all landed 7 Nov as V2.75–V2.79 but #131 and #133; now: `docs/REAL_PLAN.md` section 10)
 | PR | Task | State | To finish |
 |---|---|---|---|
 | #121 | N21 the outside beside the photos, and the office window centred over the porch (Emma's answer) | Pushed as V2.75, 4 behind main; CI running at handover | Merge main, next free version, CI green, merge |

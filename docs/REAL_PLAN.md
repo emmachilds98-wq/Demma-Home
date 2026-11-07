@@ -217,3 +217,19 @@ merged to `main` and live; In PR means pushed, not merged; Not started means no 
 | **In progress** | N31 (#133, WIP: build side only) |
 | **Not started** | N25, N30, N32, N33, N34 (after N30), N35, N36 (after N34) |
 | **Needs the client** | N10 (`?perf` from the iPhone 15 Pro and the RTX 5070 PC) |
+
+## 10. Resumed (7 Nov 2026): the rest in parallel chunks
+
+Work resumed after the handover. The "new team" was section 8's sessions (#127–#131); all landed or closed: #121 V2.75, #122 V2.76
+(#127 its duplicate, closed), #128 V2.77, #129 V2.78, #130 V2.79; #131 (N26, checks only, no version) and the refresh button (#136, V2.80) after them. The flaky `browser (site)` line (Measure's
+save looked at after a fixed 1.2 s) waits for the save now (#135). Each chunk below is one thread; chunks share no files, so they run
+side by side. One task a PR, next free version at merge (section 9's rules, `docs/HANDOVER.md`).
+
+| Chunk | Tasks, in order | Owns | Waits on |
+|---|---|---|---|
+| A Load | N25 a lighter start | `build_viewer.py` head and sheets, `page_router.js`, `07_suggestions_ideas.js`, `room3d_src.py` | the refresh button (#136) landing first (it shares `build_viewer.py`) |
+| B Speed | N35 room to room with no shader built | `01_renderer.js`, `14_views_walk.js` | |
+| C House | N30 the gardens → N34 bathroom and master to their photos → N36 soft bedding | `house/model.py`, `survey_data.py`, `EVIDENCE.md`, `tools/compare.py`, `camfit.py`, `08_house_catalogue.js` `hcBed()` | Emma for N30's gardens wishes (start from the photos meanwhile) |
+| D Photos | N32 lighter photo files → N31 KTX2 (#133) | `house/textures/`, `02_textures.js`, `export3d.py`, `vendor.py`, the workflow's encoder step | Emma's OK for N31's encoder |
+| E Look-over | N33 phone and PC look-over | `page.css`, `room3d_page.py` | after A's and the refresh button's page changes, or rebase on them |
+| Emma | N10 `?perf` from the iPhone 15 Pro and the RTX 5070 PC; dark panels (N9); a microwave photo; the gardens (N30) | | |
