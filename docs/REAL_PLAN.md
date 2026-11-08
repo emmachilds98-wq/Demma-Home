@@ -246,10 +246,21 @@ free version at merge, `docs/STATE.md` rewritten, a line in `docs/HISTORY.md`, t
 
 | # | Task | Aim | Owns | Status |
 |---|---|---|---|---|
-| N39 | Back goes back: standing in a room, a floor's cut or a card open puts a step in the history, so the iPhone's back swipe, Android's Back and the browser's Back return to the house (or shut the card) instead of leaving the site; the home-screen app (no Back) unchanged; a check in `check_site.py` | Phone and PC UX | `page_router.js`, `09_house_views.js` `goRoom()` and the house's return, `15_tour_link_stickers.js` (its `#room` line) | Open |
+| N39 | Back goes back: standing in a room puts a step in the history, so the iPhone's back swipe, Android's Back and the browser's Back return to the house instead of leaving the site; room to room takes that step's place; the home-screen app (no Back) unchanged; a check in `check_site.py` | Phone and PC UX | `09_house_views.js` (`roomHist`, beside `goRoom()`), one line in `14_views_walk.js` `setView()` | **Done** (V2.96; a card's or a floor's own step left out: a sheet already has one) |
 | N37 | Fewer draws for the house (section 8's row, carried on) | Speed | `20_go.js` `buildHouse()`, `09_house_views.js` `roomCull()` | Open |
 | N40 | The changes' costs whole: wallpaper's rolls, the picture, the plant and the bedding in a room's Changes card and Plan's house total, each a rough cost (`UPC`, E: UK prices), the same total in Measure's Send | Quality | `16_cards.js` (`UPC`, the list), `23_finish.js` (only what reads a choice's cost) | Open |
 | N41 | Lean 3D code: cut what nothing calls in the 3D's parts this round leaves alone (`05`, `06`, `07`, `10`, `11`, `12`, `13`, `17`, `18`), found by a scan of names defined but never used and by esbuild's tree-shaking; lines and the 3D's minified KB before and after, the checks and `tools/gallery.py` the same | Lean code | those parts only | Done (V2.95): 3,093 lines to 3,065, 424.4 to 422.9 KB minified |
-| N42 | Keys and names on a PC: every button and pill named for a screen reader (`aria-label` where it's an icon), a clear focus ring, Tab in the order the eye reads, Escape shuts the top card or panel everywhere; a check in `check_site.py` that no button is nameless | PC UX, quality | `room3d_page.py`, `page.css`, `19_controls.js` (keys only) | Done (V2.96): every control named, one ring, Tab top row then the 3D, Esc a layer a press |
+| N42 | Keys and names on a PC: every button and pill named for a screen reader (`aria-label` where it's an icon), a clear focus ring, Tab in the order the eye reads, Escape shuts the top card or panel everywhere; a check in `check_site.py` that no button is nameless | PC UX, quality | `room3d_page.py`, `page.css`, `19_controls.js` (keys only) | Done (V2.97): every control named, one ring, Tab top row then the 3D, Esc a layer a press |
 
 **Order:** all five at once. N39 and N42 both add a check to `check_site.py`: each its own function, merge main before merging.
+
+## 12. The round after (8 Nov 2026, V2.96): three more side by side
+
+The client, 8 Nov 2026: "Add anything needed into the plan with the needed agents and start more threads". Three tasks beside
+section 11's open rows (N37, N40, N42), sharing no file with them, #149 or #133. Section 9's rules.
+
+| # | Task | Aim | Owns | Status |
+|---|---|---|---|---|
+| N43 | Opens fast on a weak signal: `sw.js` asks the network for the page first with no limit, so a poor phone signal holds the start; after about 2 s the kept copy, the network's put by for next time; tried on a slowed network | Speed (phone) | the `sw.js` text in `build_viewer.py` only | Open |
+| N44 | The kitchen and the hall beside their photos (as N34): `tools/compare.py` and `camfit.py` from a start near each photo's spot (`photo_kitchen_*`, `photo_hall_*`), each difference fixed, sizes cited | Quality | `tools/compare.py`, `tools/camfit.py`, `house/model.py`, `house/survey_data.py`, `house/EVIDENCE.md` | Open |
+| N45 | The catalogue's pieces made real: Add a piece's 25 with soft edges and cited sizes like the house's own (`hcBed` done), the look in `tools/gallery.py` | Design | `08_house_catalogue.js` (not `hcBed`), their `fit.SOURCES` rows | Open |

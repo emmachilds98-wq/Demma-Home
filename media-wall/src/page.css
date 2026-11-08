@@ -19,7 +19,7 @@ a { color: var(--oak); }
 .sr-only { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .skip { position: fixed; left: 12px; top: -60px; z-index: 100; background: var(--page); color: var(--ink); padding: 10px 16px; border-radius: 999px; }
 .skip:focus { top: 12px; }
-/* V2.96 (N42): one clear ring on every control: 3 px purple, a cream gap (it shows on the 3D); just inside in a sliding row */
+/* V2.97 (N42): one clear ring on every control: 3 px purple, a cream gap (it shows on the 3D); just inside in a sliding row */
 html body :is(a[href], button, summary, input, select, textarea, [tabindex], [role=button], [role=tab], [role=switch]):focus-visible { outline: 3px solid var(--oak); outline-offset: 2px; box-shadow: 0 0 0 5px var(--page); }
 html body :is(.r3d-floors, .r3d-fintray, .r3d-momrow, .r3d-addlist, .r3d-sel, #part-filter) :is(button, input):focus-visible { outline-offset: -3px; box-shadow: none; }
 :focus-visible { outline: 3px solid var(--oak); outline-offset: 2px; }

@@ -367,7 +367,7 @@ WEL?.addEventListener("click", e => { const b = e.target.closest("[data-wgo]"); 
 BRAND?.addEventListener("click", () => welcome(!!WEL && WEL.hidden));
 BRAND?.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); welcome(!!WEL && WEL.hidden); } });
 canvas.addEventListener("pointerdown", () => welcome(false));
-/* V2.96 (N42): Esc shuts the top card or panel, one a press (it shut them all at once), and the focus goes back to what opened it. The
+/* V2.97 (N42): Esc shuts the top card or panel, one a press (it shut them all at once), and the focus goes back to what opened it. The
    Plan's sheets, a zoomed picture and the lightbox keep their own Esc */
 const escBack = (el, to) => { if (to && (!document.activeElement || document.activeElement === document.body || el?.contains(document.activeElement))) to.focus({ preventScroll: true }); };
 const ESC = [
