@@ -99,6 +99,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Fewer shaders, lighter shapes (V2.79, N27):** the living room's two-sided panels (`buildGroup`'s polys, the brick) are one-sided
   with both faces in the shape (`03_materials` `twoFaced`), so they use the boxes' shaders, one draw each; the house's small roundings
   are one bevel under 0.8 cm (`bevelBox`), two steps under 2 cm (`houseBox`): 123 shaders to 112, the house 246k triangles to 167k.
+- **The stairs (V2.94, the client's screenshots of 8 Nov):** both flights 85 wide (x 382–467), the living room's under the landing's
+  banister with no hole beside it; the living room's door 67 (x 305.5–372.5) between the breast and the stairs' low wall, the hall's
+  stair box and the door down moved with them. Over the lower flight the living room's flight's plastered underside (`model.stair_soffit`):
+  from the hall you see down the stairs, not into the living room's space and its brick; the lower flight runs between walls.
 - **Drawn inside (V2.71, N16):** the room you stand in, the rooms seen from it, the shell; the outside if one has a window (`roomCull`).
 - **Quality:** a real graphics card opens in HD and never steps down (V2.25); iPhones start in HD at 2× and step down only if slow, always through the composer (the shade off never rebuilds a shader; a slow one leaves it out while you drag; the house's materials always carry 6 cutting planes, `houseClip`, so a floor's or a room's cut builds no shaders; the start and the rooms' warm-up (`warmSwitch`) compile by cutting planes, in parallel, `compileClipped`, V2.64); View →
   More has HD or Fast. In HD each room is lit by its ceiling light and its windows' daylight, with soft shadows and ambient occlusion; by evening the
@@ -134,6 +138,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Sheets:** empty till first needed (V2.80); a shut one is `content-visibility: hidden`, its pictures fetched on opening (V2.54).
 - **Phones without a strong chip** (`LOWD`) take `tex/*_half.<hash>.jpg`, the photos at half size (`split_photos`): 2.3 MB on a first
   visit, not 10.2; the iPhones (Apple GPU) and the PCs keep the full set (V2.58).
+- **Lean 3D (V2.95, N41):** what nothing used in parts 05, 06, 07, 10, 12 and 13 is gone (the old beech chairs, the picture lights, the A/B
+  sites, unread values): 3,093 lines to 3,065 in the nine parts, the 3D's code 424.4 to 422.9 KB minified; the gallery the same to the pixel.
 - **The plan's code (V2.78, N28):** only what the PDFs and the site draw; the old sides of `geometry.py`'s `TABLE_STYLE`, `SUB_IN_WALL`, `PLAIN` are gone (git).
 - **Checks:** `tools/check_site.py` walks every door, taps pieces and surfaces, tries phones by touch (iPhone 15 Pro, SE, Pixel 7,
   Galaxy S24, iPad Mini) and the computers' widths.
@@ -165,7 +171,7 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 1. `?perf` from the iPhone 15 Pro and the RTX 5070 PC, after opening the house once: a screenshot of the corner box (N10, N17).
 2. KTX2 (N31): picked "let CI build it" (7 Nov); confirm before the workflow builds the encoder. Dark panels on a dark device, or the cream (N9).
 3. A microwave photo, if there is one (N6); what to try in each room (N5's trays).
-4. Measure (V2.24): is the living room's flight 85 wide like the stairwell over it (drawn 59)? The bathroom door's width.
+4. Measure: the living room door's width (drawn 67 since V2.94, to fit beside the 85 stairs); the bathroom door's width.
 5. Still to measure (all in Measure): the boiler cupboard into bedroom 2; the bathroom's ceiling over the toilet, the slope's start, the
    vanity, the bath (184 drawn); the landing's doors and the wall between the bedroom doors; the tapestry's drop; the hall radiator; the
    master from wardrobes to front wall; the alcove; bedroom 2's length; a stair tread; the meter and bin cupboards; the living room's
