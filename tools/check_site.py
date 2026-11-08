@@ -163,7 +163,16 @@ PERF_INIT = """performance.setResourceTimingBufferSize(4000);
 (() => { const gpu = %s; if (gpu) for (const C of [WebGLRenderingContext, WebGL2RenderingContext]) { const g = C.prototype.getParameter;
   C.prototype.getParameter = function (p) { return p === 0x9245 || p === 0x9246 ? gpu : g.call(this, p); }; } })();
 if (%s) try { localStorage.setItem("mw18-3d", JSON.stringify({ quality: "hd", picked: true })); } catch (e) {}   // HD held (no step down mid-count)
-addEventListener("r3d-first", () => { window.__first = R3D._dbg.gl.info.programs.length; });"""
+addEventListener("r3d-first", () => { window.__first = R3D._dbg.gl.info.programs.length; });
+(() => { let fr = 0; const L = new WeakMap(), raf = requestAnimationFrame, P = WebGL2RenderingContext.prototype, lk = P.linkProgram, up = P.useProgram; window.__spot = 0;
+  window.requestAnimationFrame = cb => raf(t => { fr++; cb(t); });   // N54: a shader built on the frame that first draws with it (a freeze on a real device)
+  P.linkProgram = function (q) { L.set(q, fr); return lk.call(this, q); };
+  P.useProgram = function (q) { if (L.has(q)) { if (L.get(q) === fr) window.__spot++; L.delete(q); } return up.call(this, q); }; })();"""
+# N54: from the whole house into the living room once the house's warm-up has visited it: no shader built on the spot
+SPOT = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms));
+  for (let i = 0; i < 300 && !(D.WARMED.has("livstand" + D.S.quality) && !D.PRE.queue.length); i++) await sl(1000);
+  await sl(2000); const n = window.__spot; R3D.set({ view: "livstand" }); await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(200); await sl(3000);
+  return window.__spot - n; }"""
 PERF = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms));
   const settle = async () => { await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(200); await sl(1200); };
   await R3D.photos(); let n = -1, k = 0;                       // the first visit: until nothing more is fetched for 3 s
@@ -359,7 +368,7 @@ def main():
             ctx.add_init_script(PERF_INIT % (json.dumps(gpu), "true")); pg = ctx.new_page(); pg.set_default_timeout(600000); localcdn.route(pg); errs = []
             pg.on("pageerror", lambda e: errs.append("pageerror: " + str(e)[:300]))
             pg.goto(base + "index.html"); pg.wait_for_function("window.R3D && window.R3D.ready && window.__first", timeout=600000)
-            perf[name] = pg.evaluate(PERF); fails += over_budget(name, perf[name])
+            perf[name] = pg.evaluate(PERF); perf[name]["shaders_spot"] = pg.evaluate(SPOT); fails += over_budget(name, perf[name])
             if perf[name]["quality"] != "hd": fails.append(f"{name}: drawn in {perf[name]['quality']}, not HD")
             if errs: fails.append(f"{name}: errors: {errs[:4]}")
             ctx.close()
@@ -367,7 +376,7 @@ def main():
     (SHOTS / "perf.json").write_text(json.dumps(perf, indent=1))
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
-    print("speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room" for k, v in perf.items()))
+    print("speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room" + (f", {v['shaders_spot']} built on the spot into it" if "shaders_spot" in v else "") for k, v in perf.items()))
     print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named (shut panels, a card, Edit's list too), Esc one layer a press, Tab the top row then the 3D, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, Back from a room to the house, down to the lower floor and back, the speed budget on 4 paths, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 

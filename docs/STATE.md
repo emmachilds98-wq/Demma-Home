@@ -3,10 +3,10 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V3.08 (8 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
-The version in Plan is a refresh button ("V3.08 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V3.09 (8 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
+The version in Plan is a refresh button ("V3.09 ↻"): on the home-screen app, tap it to get the newest.
 
-**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N46 done V3.04, N48 V3.05, N50 V3.06, N52 V3.07; section 13's N53 V3.08; N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
+**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N46 done V3.04, N48 V3.05, N50 V3.06, N52 V3.07; section 13's N53 V3.08, N54 V3.09; N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
 On a weak signal the page opens from the device after 2 s (V3.00, N43, `sw.js`): the new copy is saved for next time, and the version button shows it. The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 
 ## Where it lives
@@ -102,6 +102,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Room to room (V2.87, N35):** walking, a room 1.5 m or less away has its shaders asked for in parallel (`14_views_walk` `warmNear` →
   `warmRoom`, the idle `warmSwitch` too), the shadows' with stand-ins (`01_renderer` `depthMat`); a group's planes set by a speck (`prime`).
   An emulated iPhone's walk (hall, living room, landing, lower floor): 36 shaders built on the frame that drew them, now 1.
+- **From the house in (V3.09, N54):** looking at the whole house, each pause warms the living room and each floor off screen too
+  (`14_views_walk` `warmHouse`, `warmAt`), and the living room's reflections (`12` `roomEnv`) put the cut aside instead of switching
+  cutting off (their own shaders). A PC (RTX path) going house → floors → living room → rooms: 88 shaders built on the spot, now 2;
+  the living room from the house 58 to 0 (on Windows each is a driver compile: seconds). `check_site` counts it on both HD paths (`shaders_spot`).
 - **Fewer shaders, lighter shapes (V2.79, N27):** the living room's two-sided panels (`buildGroup`'s polys, the brick) are one-sided
   with both faces in the shape (`03_materials` `twoFaced`), so they use the boxes' shaders, one draw each; the house's small roundings
   are one bevel under 0.8 cm (`bevelBox`), two steps under 2 cm (`houseBox`): 123 shaders to 112, the house 246k triangles to 167k.

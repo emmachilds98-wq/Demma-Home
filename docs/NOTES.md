@@ -50,6 +50,11 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Room to room (N35):** `14_views_walk` `warmNear` warms a room within 1.5 m (`warmRoom`). three 0.160's shared `_depthMaterial`
   keeps the program of the first object drawn per light state, so stand-in depth materials (`depthMat`) cover every (side, map) mix.
   Walking hall → living room → landing → lower floor built 36 shaders on the frame that drew them; now 1.
+- **From the house (N54):** warmSwitch only ran standing in a room, so picking the living room from the house built its 58 (its
+  36 lights) on the spot; `warmHouse` visits it and each floor (`hfloor`) off screen, `livShow()` first (it's put away from outside).
+  A cube camera's pass with `localClippingEnabled = false` builds a whole set of 0-plane shaders: move the planes aside instead
+  (`roomEnv`). Find such shaders by diffing `gl.info.programs` cacheKeys before/after a step: index 48 + 2 per define is
+  `numClippingPlanes`. `check_site` `SPOT` counts programs first used on the frame they were linked (rAF and WebGL2 wrapped).
 - **Moving (N11, N17):** the page draws only when something changes (`17_render_loop` `need`). Damping is frame-rate free (`DAMP`).
   A slow phone walks without the shade and glow, then draws at 1.5× (`phoneCap`).
 - **Draws (N16, N37):** `20_go.js` `put()` sorts a floor's merged meshes by room (`userData.rooms` spans); `09` `roomCull` cuts rooms by
