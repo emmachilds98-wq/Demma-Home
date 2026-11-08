@@ -75,7 +75,7 @@ const UPC = { walls: [40, 80], wall: [15, 35], ceil: [20, 40], skirt: [15, 35], 
   fit: { bare: [5, 15], drum: [20, 60], globe: [25, 70], dome: [15, 45], spots: [40, 120] },
   kind: { bed: [200, 550], wardrobe: [150, 450], chest: [60, 220], bedside: [30, 100], desk: [60, 220], shelves: [40, 160], seat: [100, 350], plant: [10, 45], more: [25, 120] },
   plant: { plant: [35, 90], snake: [15, 40], monstera: [30, 90], olive: [60, 160] },   // N40: each plant in its pot, as big as the catalogue's
-  paper: [10, 200] };   // N40: on top of the rolls (the tray's count and price): paste and a brush, up to a decorator's day
+  paper: [10, 200], panel: [40, 300] };   // N57: on top of the packs: glue, caulk, paint, up to a carpenter's day   // N40: on top of the rolls (the tray's count and price): paste and a brush, up to a decorator's day
 const UPK = "dh-done";
 const upDone = () => { try { return JSON.parse(localStorage.getItem(UPK) || "{}") || {}; } catch (e) { return {}; } };
 const upNm = (L, k) => (L.find(r => r[0] === k) || [0, k])[1];
@@ -105,6 +105,8 @@ function roomUps(room) {   // [{k, t, lo, hi}]: what's changed in a room
     if (o[23] && HCAT[o[23]]) add("23=" + o[23], "Plant: " + HCAT[o[23]].n, UPC.plant[o[23]] || UPC.kind.plant);
     const P = FIN_PAPERS.find(([q]) => q === o[24]), A = PAPER_AT[room];   // N40: the rolls as the 3D counted them (3 to 6 till it's laid)
     if (P) add(`24=${P[0]}${o[25] || 0}`, `Wallpaper: ${P[1]}${A ? `, ${A.rolls} rolls` : ""}`, A ? [A.cost + UPC.paper[0], A.cost + UPC.paper[1]] : [P[5] * 3, P[5] * 6]);
+    const Q = FIN_PANELS.find(([q]) => q === o[26]), B = PANEL_AT[room];   // N57: the packs as the 3D counted them
+    if (Q) add(`26=${Q[0]}${o[27] || 0}`, `Panelling: ${Q[1]}${B ? `, ${B.packs} ${Q[0] === "slat" ? "panels" : "packs"}` : ""}`, B ? [B.cost + UPC.panel[0], B.cost + UPC.panel[1]] : [Q[2] * 2, Q[2] * 8]);
   }
   if (o[6] || o[7]) add(`6=${o[6]}${o[7]}`, "Bulbs: " + [o[6] && upNm(FIN_BULBS, o[6]), o[7] && upNm(FIN_LUX, o[7])].filter(Boolean).join(", "), UPC.bulbs);
   if (o[8]) add("8=" + o[8], "Light: " + upNm(FIN_FITS, o[8]), UPC.fit[o[8]]);
