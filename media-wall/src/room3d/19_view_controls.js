@@ -6,14 +6,17 @@
    Angled slide up or down together to tilt; the wheel zooms to the pointer; a right-drag (or Shift + drag) turns and tilts round the
    middle. Angled tilts 10°–85° above the ground, Overhead stays flat. Arrows or W A S D move, Q E turn, + − (R F) zoom; a double-tap on
    the ground (no room there) centres it */
-const mapMode = () => S.view === "house" && !walking() ? (hfview === "top" ? "top" : "angle") : null;
+const mapMode = () => walking() ? null : S.view === "house" ? (hfview === "top" ? "top" : "angle")   // V3.09: a room's Above too (the living room's is at an angle)
+  : ROOMV() && RMODE === "above" ? "top" : S.view === "room" ? "angle" : null;
 const MAP_POLAR = { top: [0.003, 0.003], angle: [5 * Math.PI / 180, 80 * Math.PI / 180] };   // from straight up: Angled 85° to 10° above the ground
 function mapConf(m) {   // the orbit's own drags off over the house (ours below), on again in the rooms
   controls.enablePan = !m; controls.enableZoom = !m && S.cam !== "look"; controls.enableRotate = !m && !inPlace();
   controls.minDistance = m ? 2 : 0.3;
 }
 let MAPBOX = null;
-function mapBox() {   // the house's rooms (m, the world's x), and round them the gardens when they show
+function mapBox() {   // the house's rooms (m, the world's x), and round them the gardens when they show; a room's Above: the room and 2 m round it
+  const rr = S.view === "room" ? [0, R.W, R.WINDOW_Z, R.RECESS_Z] : S.view !== "house" && R.HOUSE3 && (R.HOUSE3.rooms || {})[VIEW_ROOM[S.view]];
+  if (rr) return [-(rr[1] + 200) * M, -(rr[0] - 200) * M, (rr[2] - 200) * M, (rr[3] + 200) * M];
   if (!MAPBOX && R.HOUSE3) { const rs = [...Object.values(R.HOUSE3.rooms || {}), [0, R.W, R.WINDOW_Z, R.RECESS_Z]];
     MAPBOX = [Math.min(...rs.map(r => r[0])), Math.max(...rs.map(r => r[1])), Math.min(...rs.map(r => r[2])), Math.max(...rs.map(r => r[3]))]; }
   if (!MAPBOX) return null;
@@ -93,7 +96,10 @@ canvas.addEventListener("pointerdown", e => {   // a piece grabbed in Edit never
   try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
   mapStart(e); moving = true; if (typeof PRE !== "undefined") PRE.idleT = performance.now(); dirty();
 });
-canvas.addEventListener("pointermove", e => {
+root.addEventListener("pointerdown", e => {   // a finger on a sticker still drags and pinches (the living room's are over the middle); a tap still opens it
+  if (e.pointerType === "touch" && MAPPT.size < 2 && e.target.closest(".stk") && mapMode() && !tween) { MAPPT.set(e.pointerId, [e.clientX, e.clientY]); mapStart(e); moving = true; }
+}, true);
+addEventListener("pointermove", e => {
   if (!MAPPT.has(e.pointerId)) return; MAPPT.set(e.pointerId, [e.clientX, e.clientY]);
   if (!MAPD || !mapMode() || tween) return;
   const H = Math.max(1, canvas.clientHeight), k = 3.5 / H;   // a turn: about a third of a circle for the screen's height
@@ -119,7 +125,7 @@ canvas.addEventListener("pointermove", e => {
   } else return;
   if (typeof PRE !== "undefined") PRE.idleT = performance.now(); dirty();
 });
-for (const ev of ["pointerup", "pointercancel"]) canvas.addEventListener(ev, e => {
+for (const ev of ["pointerup", "pointercancel"]) addEventListener(ev, e => {
   if (!MAPPT.delete(e.pointerId)) return;
   if (MAPD && MAPD.k === "pan" && MTRK.length > 1 && e.timeStamp - MTRK[MTRK.length - 1][0] < 60) {   // a flick: the ground glides on
     const dt = Math.max(0.016, (MTRK[MTRK.length - 1][0] - MTRK[0][0]) / 1000); MTRK.slice(1).forEach(q => MVEL.add(q[1])); MVEL.divideScalar(dt);
@@ -151,7 +157,7 @@ function mapCentre(e) {
 { const upd = controls.update;
   controls.update = function (dt) {
     const m = mapMode(); mapConf(m);
-    if (m && !tween && hfview === "top" && camera.position.clone().sub(controls.target).normalize().y < 0.95) {   // the whole house's own view (H, Whole house): Angled again
+    if (m && !tween && S.view === "house" && hfview === "top" && camera.position.clone().sub(controls.target).normalize().y < 0.95) {   // the whole house's own view (H, Whole house): Angled again
       hfview = "angle"; qsa("[data-hfview]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.hfview === "angle"))); return this.update(dt); }
     const keyed = mapKeys(m), glid = m && mapGlide(), [lo, hi] = m && !tween ? MAP_POLAR[m] : [0, Math.PI];
     controls.minPolarAngle = lo; controls.maxPolarAngle = hi;
