@@ -30,8 +30,10 @@ ALC_D = 38.0          # breast projection on the alcove side
 BREAST_W = 117.5
 BREAST_X = (ALC_W, ALC_W + BREAST_W)      # 186 to 303.5
 BREAST_D_WEST = 39.0                      # 390 on its west side
-RECESS_W = 104.5      # breast to the stair box, about (to confirm)
-STAIR_X = (BREAST_X[1] + RECESS_W, ROOM_W)  # 408 .. 467, the stair box in the south-west corner (to confirm)
+RECESS_W = 78.5       # breast to the stair box; V2.93, the client: "adjust the stairwells so the first floor stairs align with the
+# bannister properly rather than leaving a hole then adjust downstairs doorway to the living room": the flight as wide as the stairwell
+# they measured upstairs (85 from the party wall, V2.24), under its banister; it was 59 (104.5 here, about), which left a hole beside it
+STAIR_X = (BREAST_X[1] + RECESS_W, ROOM_W)  # 382 .. 467, the stair box in the south-west corner
 STAIR_STRING = 24.0                          # v23: the closed string's board, along the rake; below it the brick side wall (client)
 STAIR_D = 79.0        # from the alcove's back-wall line into the room (to confirm)
 STAIR_RISE, STAIR_GOING = 19.5, 19.25     # typical UK domestic stair (Approved Document K: rise up to 22, going at least 22); v78b, the
@@ -58,8 +60,9 @@ LANDING_Y = STAIR_N * STAIR_RISE             # 253.5
 LANDING_D = 65.0                             # v67 fitted: the top step's tread on to the first floor's landing (the hall photos put the door
                                              # down to the lower stairs about 1.3 m from the front door, where the plans' landing ends); was 90;
                                              # v78b 65 (was 32: the client, "at least double"), its end where it was
-DOOR_X = (BREAST_X[1] + 12.0, BREAST_X[1] + 95.0)   # 315.5 .. 398.5 in the recess (drawn where the agent's plan shows it)
-DOOR_SWING = 83.0     # if it opens into the room
+DOOR_X = (BREAST_X[1] + 2.0, BREAST_X[1] + 69.0)    # 305.5 .. 372.5: V2.93, the room gives way to the wider flight (it was 315.5 .. 398.5):
+# the door between the breast and the stairs' low wall (the photo from the room: its frame against the low wall), a 2'2" leaf (to measure)
+DOOR_SWING = DOOR_X[1] - DOOR_X[0]     # if it opens into the room
 WINDOW_Z = ALC_D - ROOM_D                 # -309: the window wall in render coordinates
 
 # ---------------------------------------------------------------- the base unit in the alcove

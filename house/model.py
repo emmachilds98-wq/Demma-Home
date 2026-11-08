@@ -636,7 +636,7 @@ def floors_and_fittings(o, floor, rs):
     if floor == "ground":                                              # the hall over the lower flight: a void, a low wall round it
         st = stair()
         # v66: the living room's flight runs on into the hall (its stand-in landing to z 319): boxed in from the hall, full height (the hall
-        # saw its mint side), clear of the living room's door (to x 398.5); v67 (the photos): in the box's end, the door down to the lower
+        # saw its mint side), clear of the living room's door (to x 372.5 since V2.93); v67 (the photos): in the box's end, the door down to the lower
         # stairs, a grille over it
         z0f = Gm.ALC_D - Gm.STAIR_D + 6
         zl1 = z0f + (Gm.STAIR_N - 1) * Gm.STAIR_GOING + Gm.LANDING_D
@@ -650,12 +650,35 @@ def floors_and_fittings(o, floor, rs):
         for xa, xb, ya, yb in ((dx0 - 6, dx0 + 0.8, y, y + D.DOOR_H + 6), (dx1 - 0.8, dx1 + 6, y, y + D.DOOR_H + 6), (dx0 - 6, dx1 + 6, y + D.DOOR_H - 0.8, y + D.DOOR_H + 6)):
             o.box("upvc", xa, ya, zl1 + 1.8, xb, yb, zl1 + 3.0)
         o.box("grille", dx0 + 8, y + D.DOOR_H + 9, zl1 + 1.8, dx1 - 8, y + D.DOOR_H + 27, zl1 + 2.4)
+        stair_soffit(o, st, zl1)
     cx, cz, *_ = cal(floor)
     for fid, (a, b, c, d), h in H.PLANS[floor].get("fixtures", []):
         x0, x1 = sorted((cx(c), cx(a))); z0, z1 = sorted((cz(b), cz(d)))
         o.box("fitting", x0 + 2, y, z0 + 2, x1 - 2, y + h, z1 - 2)
     for s in solids(floor):
         o.box("paint", s["x0"], y, s["z0"], s["x1"], min(y + CEIL, headroom(s["x0"], s["x1"], s["z0"])) if floor == "first" else y + CEIL, s["z1"])
+
+
+def stair_soffit(o, st, zl1):
+    """V2.93, the client: "The stairwells sometimes drop out the painted wall and show bricks, also seem to not mesh properly between
+    floors. There's no view down the ground floor stairs from the entrance either": over the lower flight nothing closed the space up to
+    the living room's flight (the room draws that flight itself and is hidden from the hall), so the hall looked down the stairs into an
+    empty living room and its bare brick, and from below the flight opened up to the hall's ceiling. Now the flight's plastered underside
+    (its waist, 15 under the treads' back corners), from the lower landing's ceiling up to the landing's floor, and the walls each side
+    painted up to it, under the living room where neither room draws them."""
+    y, top = FLOOR_Y["ground"], FLOOR_Y["first"] - SLAB + 1               # the lower landing's ceiling (CEIL over the lower floor) .. the landing's slab
+    lo = FLOOR_Y["lower"] + CEIL
+    zf, R, G = Gm.ALC_D - Gm.STAIR_D, Gm.STAIR_RISE, Gm.STAIR_GOING
+    z_at = lambda yy: zf + (yy + R + 15.0) / R * G                         # where the underside is that high
+    zs, ze = z_at(lo), min(z_at(top), zl1)
+    xa = Gm.STAIR_X[0] - 0.4                                                # the hall's box wall's inside face
+    o.prism("ceiling", "x", xa, WIDTH, [(st["z0"], lo), (zs, lo), (ze, top), (ze, top + 2), (zs, lo + 2), (st["z0"], lo + 2)])
+    lst = next(r for r in rooms("lower") if r["id"] == "lower_stairs")
+    o.box("ceiling", lst["x0"], lo, st["z0"], xa, lo + 2, 38.0)            # beside the flight under the living room's floor
+    zw = 38.0                                                               # the hall's own walls from here on (the living room's to here)
+    side = [(st["z0"], lo - 1), (zw, lo - 1), (zw, lo + (zw - zs) / G * R + 1), (zs, lo + 1)]
+    o.prism("paint", "x", WIDTH - 0.6, WIDTH, side)                          # the party wall's face
+    o.prism("paint", "x", xa, xa + 0.6, side)                                # and the store's side
 
 
 def stair():
@@ -682,8 +705,9 @@ def stairs(o):
     sof = lambda z: yl(z) - rise - 14                                    # the line through the treads' back-bottom corners
     zf = z0 + (rise + 17) / rise * going                                 # where the soffit's underside meets the floor
     o.prism("paint", "x", st["x0"] - 0.5, st["x1"] - 1, [(zf, y0), (z1, sof(z1) - 3), (z1, sof(z1)), (zf - 3 * going / rise, y0)])
-    o.prism("paint", "x", st["x0"] - 2.5, st["x0"] - 0.5, [(z0, y0), (z0, y0 + rise), (z1 - going, y0 + st["n"] * rise), (z1, y0 + st["n"] * rise),
-                                                          (z1, sof(z1) - 3), (zf, y0)])
+    # V2.93: and on up to the floor above (the hall's slab), so the flight runs between walls (its photos): the wider flight left the store
+    # open beside its top steps, dark from the hall
+    o.prism("paint", "x", st["x0"] - 2.5, st["x0"] - 0.5, [(z0, y0), (z0, y0 + CEIL), (z1, y0 + CEIL), (z1, sof(z1) - 3), (zf, y0)])
     o.end()
 
 
@@ -2329,8 +2353,8 @@ def lower_ceilings(o):
     for r in rooms("lower"):
         if r["id"] in ("lower_stairs", "lower_store_2"):   # V1.32: nor under the flight's top steps
             continue
-        # V1.32: the store's ceiling stops at the flight (408, the hall floor's opening), as its wall does (V1.20): it lay across the steps
-        x1 = min(r["x1"], 408.0) if r["room"] == "lower_store" else r["x1"]
+        # V1.32: the store's ceiling stops at the flight (the hall floor's opening), as its wall does (V1.20): it lay across the steps
+        x1 = min(r["x1"], stair()["x0"]) if r["room"] == "lower_store" else r["x1"]
         o.box("artex" if r["id"] in D.ARTEX else "ceiling", r["x0"], y - 2, r["z0"], x1, y, r["z1"])   # V1.13: artex where the photos show it
 
 
