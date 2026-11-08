@@ -73,10 +73,13 @@ const UPC = { walls: [40, 80], wall: [15, 35], ceil: [20, 40], skirt: [15, 35], 
   frames: [150, 600], door_out: [30, 150], door: [150, 500], window: [400, 1500],
   floor: { carpet_grey: [20, 45], carpet: [20, 45], laminate: [20, 40], oak: [50, 90], pine: [30, 60], tile_f: [35, 70], marble: [80, 150], quarry: [45, 85] },   // a m², laid
   fit: { bare: [5, 15], drum: [20, 60], globe: [25, 70], dome: [15, 45], spots: [40, 120] },
-  kind: { bed: [200, 550], wardrobe: [150, 450], chest: [60, 220], bedside: [30, 100], desk: [60, 220], shelves: [40, 160], seat: [100, 350], plant: [10, 45], more: [25, 120] } };
+  kind: { bed: [200, 550], wardrobe: [150, 450], chest: [60, 220], bedside: [30, 100], desk: [60, 220], shelves: [40, 160], seat: [100, 350], plant: [10, 45], more: [25, 120] },
+  plant: { plant: [35, 90], snake: [15, 40], monstera: [30, 90], olive: [60, 160] },   // N40: each plant in its pot, as big as the catalogue's
+  paper: [10, 200] };   // N40: on top of the rolls (the tray's count and price): paste and a brush, up to a decorator's day
 const UPK = "dh-done";
 const upDone = () => { try { return JSON.parse(localStorage.getItem(UPK) || "{}") || {}; } catch (e) { return {}; } };
 const upNm = (L, k) => (L.find(r => r[0] === k) || [0, k])[1];
+const upCat = (key, C) => C.k === "plant" && UPC.plant[key] || UPC.kind[C.k];
 function roomUps(room) {   // [{k, t, lo, hi}]: what's changed in a room
   const H = R.HOUSE3 || {}, L = [], add = (k, t, c = [0, 0], n = 1) => L.push({ k, t, lo: Math.round(c[0] * n), hi: Math.round(c[1] * n) });
   if (room === "outside") { const o = (S.fin || {}).outside || {};
@@ -99,15 +102,17 @@ function roomUps(room) {   // [{k, t, lo, hi}]: what's changed in a room
     if (o[19]) add("19=" + o[19], "Curtains: " + upNm(FIN_CURT, o[19]), UPC.curt);
     if (o[20]) add("20=" + o[20], "Bedding: " + upNm(FIN_BED, o[20]), UPC.bed);
     if (o[21]) add("21=" + o[21], "Picture: " + upNm(FIN_PICS, o[21]), UPC.pic);
-    if (o[23] && HCAT[o[23]]) add("23=" + o[23], "Plant: " + HCAT[o[23]].n, UPC.kind.plant);
+    if (o[23] && HCAT[o[23]]) add("23=" + o[23], "Plant: " + HCAT[o[23]].n, UPC.plant[o[23]] || UPC.kind.plant);
+    const P = FIN_PAPERS.find(([q]) => q === o[24]), A = PAPER_AT[room];   // N40: the rolls as the 3D counted them (3 to 6 till it's laid)
+    if (P) add(`24=${P[0]}${o[25] || 0}`, `Wallpaper: ${P[1]}${A ? `, ${A.rolls} rolls` : ""}`, A ? [A.cost + UPC.paper[0], A.cost + UPC.paper[1]] : [P[5] * 3, P[5] * 6]);
   }
   if (o[6] || o[7]) add(`6=${o[6]}${o[7]}`, "Bulbs: " + [o[6] && upNm(FIN_BULBS, o[6]), o[7] && upNm(FIN_LUX, o[7])].filter(Boolean).join(", "), UPC.bulbs);
   if (o[8]) add("8=" + o[8], "Light: " + upNm(FIN_FITS, o[8]), UPC.fit[o[8]]);
   if (DS()) for (const [id, it] of Object.entries(H.items || {})) {   // Edit: the house's pieces in this room, moved, swapped, added or taken out
     if (it.r !== room || it.look || !(it.add || pieceDelta(id).some(Boolean))) continue; const c = pieceNow(id), C = HCAT[it.add || c.swap];
     if (c.removed) add(id + "~x", "Out: " + it.n);
-    else if (it.add && C) add(id + "~a=" + it.add, "Added: " + C.n, UPC.kind[C.k]);
-    else if (c.swap && C) add(id + "~s=" + c.swap, `${it.n}: ${C.n}`, UPC.kind[C.k]);
+    else if (it.add && C) add(id + "~a=" + it.add, "Added: " + C.n, upCat(it.add, C));
+    else if (c.swap && C) add(id + "~s=" + c.swap, `${it.n}: ${C.n}`, upCat(c.swap, C));
     else { const [, dW, dH] = pieceDelta(id), op = it.op && (dW || dH);
       add(`${id}~m=${[c.w, c.h, c.up, c.along, c.out, c.turn].map(cmR).join()}`, (op ? "Resized: " : "Moved: ") + it.n, op ? UPC[it.k] || UPC.door : [0, 0]); }
   }
@@ -123,14 +128,18 @@ function upsCard(room) {
     `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Changes: tap one when it's done">${L.map(u => `<button type="button" data-updone="${encodeURIComponent(u.k)}" aria-pressed="${u.done}">${u.done ? "✓ " : ""}${u.t}${u.hi ? ` · ${upRange(u.lo, u.hi)}` : ""}</button>`).join("")}</div></div>`];
 }
 const upsBtn = room => { const n = room && roomUps(room).length; return n ? [btn(`Changes (${n})`, { actopen: "ups:" + room })] : []; };
+function upsAll() {   // [rows a room, the house's total]: Plan's and Measure's (N40) the same
+  const rows = upRooms().map(r => [r, upSum(roomUps(r))]).filter(([, s]) => s.n);
+  return [rows, rows.reduce((a, [, s]) => ({ n: a.n + s.n, d: a.d + s.d, lo: a.lo + s.lo, hi: a.hi + s.hi }), { n: 0, d: 0, lo: 0, hi: 0 })]; }
 function upsPlan() {   // Plan: the house's total, a row a room (tap: stand in it, its card open)
   const box = document.getElementById("ups-l"), tot = document.getElementById("ups-tot"); if (!box || !tot || !R.HOUSE3) return;   // the Plan sheet: outside the 3D's root
-  const rows = upRooms().map(r => [r, upSum(roomUps(r))]).filter(([, s]) => s.n), T = rows.reduce((a, [, s]) => ({ n: a.n + s.n, d: a.d + s.d, lo: a.lo + s.lo, hi: a.hi + s.hi }), { n: 0, d: 0, lo: 0, hi: 0 });
+  const [rows, T] = upsAll();
   tot.textContent = T.n ? `${upRange(T.lo, T.hi) || "£0"} · ${T.d} of ${T.n} done` : "none yet";
   box.innerHTML = rows.length ? rows.map(([r, s]) => `<li data-upsroom="${r}" role="button" tabindex="0"><span class="mn">${r === "outside" ? "Outside" : roomName(r)} · ${s.d}/${s.n}</span><span class="mb"><i style="width:${(s.d / s.n * 100).toFixed(0)}%"></i></span><span class="mv">${upRange(s.lo, s.hi) || "£0"}</span></li>`).join("")
     : '<li><span class="mn">Tap a wall, a floor or a piece in a room to change it</span></li>';
 }
 { const sh = document.getElementById("sh-plan"); if (sh) new MutationObserver(() => { if (sh.classList.contains("open")) upsPlan(); }).observe(sh, { attributes: true, attributeFilter: ["class"] }); }
+{ const mp = document.getElementById("r3d-dp-measure"); if (mp) new MutationObserver(() => { if (!mp.hidden) finTakes(); }).observe(mp, { attributes: true, attributeFilter: ["hidden"] }); }   // N40: Measure's total, fresh
 document.addEventListener("click", e => { const li = e.target.closest("[data-upsroom]"); if (li) upsGo(li.dataset.upsroom); });
 document.addEventListener("keydown", e => { const li = e.key === "Enter" && e.target.closest && e.target.closest("[data-upsroom]"); if (li) upsGo(li.dataset.upsroom); });
 function upsGo(room) {
