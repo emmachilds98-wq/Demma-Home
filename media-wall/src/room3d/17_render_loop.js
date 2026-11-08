@@ -60,6 +60,11 @@ function livingFromOutside() {
   if (!want) applyFloors();   // the floor or the room you've gone to hides what it hides (Lower, a room's own view) again
   reshadow(); return true;
 }
+function livShow() {   // V2.98 (N37): what's put away shown again for a moment (applyState sets what shows), then put back by livingFromOutside
+  if (!livOut) return false; livOut = false;
+  for (const o of LIVING) if (o.userData.livWas !== undefined) { o.visible = o.userData.livWas; delete o.userData.livWas; }
+  return true;
+}
 /* V1.35, found in V1.30: on a phone a floor's room names overlapped (the landing's and the boiler cupboard's). Where two would, the
    smaller room's steps aside until there's room again */
 function declutter() {

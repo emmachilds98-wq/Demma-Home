@@ -6,7 +6,7 @@ Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; w
 **Version:** V2.99 (8 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
 The version in Plan is a refresh button ("V2.99 ↻"): on the home-screen app, tap it to get the newest.
 
-**Work from:** `docs/REAL_PLAN.md` sections 11 and 12 (N37, N40, N42–N45 open, a thread each), section 9 (every task's state).
+**Work from:** `docs/REAL_PLAN.md` sections 11 and 12 (N40, N44, N45 open, a thread each), section 9 (every task's state).
 Open PRs: #133 (KTX2, WIP).
 On a weak signal the page opens from the device after 2 s (V2.99, N43, `sw.js`): the new copy is saved for next time, and the version button shows it. The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 
@@ -105,7 +105,12 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   banister with no hole beside it; the living room's door 67 (x 305.5–372.5) between the breast and the stairs' low wall, the hall's
   stair box and the door down moved with them. Over the lower flight the living room's flight's plastered underside (`model.stair_soffit`):
   from the hall you see down the stairs, not into the living room's space and its brick; the lower flight runs between walls.
-- **Drawn inside (V2.71, N16):** the room you stand in, the rooms seen from it, the shell; the outside if one has a window (`roomCull`).
+- **Drawn inside (V2.71, N16):** the room you stand in, the rooms seen from it, the shell; the outside if one has a window (`roomCull`);
+  V2.98 (N37): a room's light, a bed's or a wardrobe's moving part and a door seen from neither side left out with their room.
+- **Fewer draws for the house (V2.98, N37):** a floor's boxes, profiles and turned shapes of one material are one draw (`20_go.js`
+  `HBUILD`'s `acc`); from outside, a material's pieces on every floor shown are one draw (`joinBuild`, switched by `09` `houseJoin`,
+  dropped when a floor is built again); a setting changed from outside keeps the living room put away (`applyState` → `livShow`).
+  The house as it opens: 287 draws to 188 (phone, PC), 288 to 189 (iPhone), 569 to 371 (RTX, HD); after a setting 377 to 188. Same triangles.
 - **Quality:** a real graphics card opens in HD and never steps down (V2.25); iPhones start in HD at 2× and step down only if slow, always through the composer (the shade off never rebuilds a shader; a slow one leaves it out while you drag; the house's materials always carry 6 cutting planes, `houseClip`, so a floor's or a room's cut builds no shaders; the start and the rooms' warm-up (`warmSwitch`) compile by cutting planes, in parallel, `compileClipped`, V2.64); View →
   More has HD or Fast. In HD each room is lit by its ceiling light and its windows' daylight, with soft shadows and ambient occlusion; by evening the
   lamps the client has light theirs too (the office's purple lamp, the bathroom mirror's bar; V2.48), the kitchen from its two LED battens. Every standing piece
@@ -166,7 +171,7 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 
 ## Numbers (V2.74, software graphics in CI's browser: relative, not a real card's; from #131)
 - `sizes`: page 1.0 MB (V2.80), photos 8.6 MB in 72 files (2.3 MB at half size; V2.82, was 11.4 and 3.4), three.js 0.86 MB.
-- Shaders by the first picture: 18–19 (Fast), 49 (HD). Draws: the house 287 (HD on an RTX: 582), the living room 254–762 by path.
+- Shaders by the first picture: 18–19 (Fast), 49 (HD). Draws: the house 188 (HD on an RTX: 371; V2.98), the living room 254–762 by path.
 - The repo: 371 files, 59 MB tracked (31 MB the client's photos); `checks.py`'s repo check fails on a build output or a file over 1.5 MB.
 
 ## Open with the client
