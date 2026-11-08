@@ -1366,6 +1366,12 @@ SOURCES["wallpaper"] = ("Wallpaper Direct, Graham & Brown (Nov 2026): Figaro and
 SOURCES["pairings"] = ("The makers' own pairings (Nov 2026): Farrow & Ball's Colour Schemes for Card Room Green No. 79 and Treron No. 292 "
                        "(farrow-ball.com/paint/card-room-green, /paint/treron); Little Greene's for Sage Green 80 (littlegreene.com/sage-green)")
 ORDER.extend(["wallpaper", "pairings"])
+SOURCES["upfloors"] = ("Upgrade floors (Nov 2026; N56 draws them to these sizes, options to look at): Flooring Surgeons, Riviera Natural Oiled Oak "
+                       "engineered herringbone, 450 × 90 × 14 mm, 3 mm oak top, 4V bevelled, £44.99–59.99 a m² (YHB1402, flooringsurgeons.co.uk); "
+                       "Karndean Van Gogh Cool Grey Oak LVT, 1219 × 178 × 3 mm planks, micro-bevelled, glue down (VGW113T, floorbay.co.uk), "
+                       "Van Gogh about £33 a m²; Concept Tiles, Evolution Stone porcelain 1200 × 600, £60–64 a m² (concepttiles.co.uk). "
+                       "Laid costs add a fitter's (E)")
+ORDER.append("upfloors")
 
 
 # ---------------------------------------------------------------- v39: the plan's fit proof is the firm plan's (options: one line each, section 12)

@@ -35,8 +35,9 @@ const FIN_NAMES = ["back", "front", "east", "west", "ceiling", "floor"];
 /* V2.7 (F4): the floors in the tray: the house's own floor materials (their photos, house/textures), laid as a room's new floor; the mean
    colour of each photo is its swatch */
 const FIN_FLOORS = [["carpet_grey", "Grey carpet"], ["carpet", "Oatmeal carpet"], ["laminate", "Laminate"], ["oak", "Oak boards"], ["pine", "Pine boards"],
-  ["tile_f", "Pale tiles"], ["marble", "Black marble"], ["quarry", "Quarry tiles"]];
-const FIN_FLOOR_KEYS = new Set(["carpet_grey", "carpet", "laminate", "board", "oak", "pine", "tile_f", "marble", "quarry", "concrete", "vinyl", "earth"]);
+  ["tile_f", "Pale tiles"], ["marble", "Black marble"], ["quarry", "Quarry tiles"],
+  ["herring", "Herringbone oak"], ["lvt_grey", "Grey oak LVT"], ["porcelain", "Stone porcelain"]];   // V3.14 (N56): upgrades to try (fit.SOURCES upfloors)
+const FIN_FLOOR_KEYS = new Set([...FIN_FLOORS.map(([k]) => k), "board", "concrete", "vinyl", "earth"]);
 const finFloorCol = k => { const pm = ((R.HOUSE3 || {}).photo_meta || {})[k]; return (pm && pm.avg) || ((((R.HOUSE3 || {}).mats || {})[k]) || ["#999999"])[0]; };
 let FIN_LAID = [];
 /* V2.9 (F5, in part): a room's bulbs: their colour (warm 2700 K to daylight 5000 K) and how bright, on the room's ceiling lights. On the
