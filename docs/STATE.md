@@ -3,10 +3,10 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V3.03 (8 Nov 2026), live. **Work stopped 8 Nov for a new team: start with `docs/HANDOVER.md`** (then `docs/NOTES.md`).
-The version in Plan is a refresh button ("V3.03 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V3.04 (8 Nov 2026), live. **Work stopped 8 Nov for a new team: start with `docs/HANDOVER.md`** (then `docs/NOTES.md`).
+The version in Plan is a refresh button ("V3.04 ↻"): on the home-screen app, tap it to get the newest.
 
-**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side; N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
+**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N47 done; N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
 On a weak signal the page opens from the device after 2 s (V3.00, N43, `sw.js`): the new copy is saved for next time, and the version button shows it. The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 
 ## Where it lives
@@ -115,6 +115,9 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   `HBUILD`'s `acc`); from outside, a material's pieces on every floor shown are one draw (`joinBuild`, switched by `09` `houseJoin`,
   dropped when a floor is built again); a setting changed from outside keeps the living room put away (`applyState` → `livShow`).
   The house as it opens: 287 draws to 188 (phone, PC), 288 to 189 (iPhone), 569 to 371 (RTX, HD); after a setting 377 to 188. Same triangles.
+- **Fewer draws for the living room (V3.04, N47):** its fixed parts one draw a material (`04_living_shell.js` `bucket`: walls, ceiling,
+  pole; the stairs' treads, the door leaf, the curtains, the rug's sides; `05` the cabinet's carcasses, chairs, table halves, buttons).
+  Standing in it 246 to 234 (phone), 260 to 248 (iPhone), 749 to 719 (RTX); from above 444 to 375; at the table for six 275 to 167.
 - **Quality:** a real graphics card opens in HD and never steps down (V2.25); iPhones start in HD at 2× and step down only if slow, always through the composer (the shade off never rebuilds a shader; a slow one leaves it out while you drag; the house's materials always carry 6 cutting planes, `houseClip`, so a floor's or a room's cut builds no shaders; the start and the rooms' warm-up (`warmSwitch`) compile by cutting planes, in parallel, `compileClipped`, V2.64); View →
   More has HD or Fast. In HD each room is lit by its ceiling light and its windows' daylight, with soft shadows and ambient occlusion; by evening the
   lamps the client has light theirs too (the office's purple lamp, the bathroom mirror's bar; V2.48), the kitchen from its two LED battens. Every standing piece
@@ -175,7 +178,7 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 
 ## Numbers (V2.74, software graphics in CI's browser: relative, not a real card's; from #131)
 - `sizes`: page 1.0 MB (V2.80), photos 8.6 MB in 72 files (2.3 MB at half size; V2.82, was 11.4 and 3.4), three.js 0.86 MB.
-- Shaders by the first picture: 18–19 (Fast), 49 (HD). Draws: the house 188 (HD on an RTX: 371; V2.98), the living room 254–762 by path.
+- Shaders by the first picture: 18–19 (Fast), 49 (HD). Draws: the house 188 (HD on an RTX: 371; V2.98), the living room 234–719 by path (V3.04).
 - The repo: 371 files, 59 MB tracked (31 MB the client's photos); `checks.py`'s repo check fails on a build output or a file over 1.5 MB.
 
 ## Open with the client

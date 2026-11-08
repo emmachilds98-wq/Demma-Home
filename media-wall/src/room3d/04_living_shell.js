@@ -203,13 +203,15 @@ function buildShell() {
   // "hessian curtains from dunelm with a wood rail": a coarse natural weave, on a 28 mm wooden pole with rings and ball finials
   const CU = R.CURTAIN, cloth = curtCloth = reg(new THREE.MeshStandardMaterial({ color: CU.col, roughness: 1, side: THREE.DoubleSide, map: HESSIAN, bumpMap: HESSIAN, bumpScale: 0.8 }));
   const wood = reg(new THREE.MeshStandardMaterial({ color: CU.pole_col, map: OAK_TEX, roughness: 0.5 }));  wood.userData.noTint = true;   // v26: yours, not the new oak
-  const poleL = wx1 - wx0 + 2 * CU.ext, pq = v3((wx0 + wx1) / 2, CU.rail_y + CU.pole / 2, CU.z + 1);   // V3.04 (N47): the pole, its finials and rings one draw
+  const poleL = wx1 - wx0 + 2 * CU.ext, pq = v3((wx0 + wx1) / 2, CU.rail_y + CU.pole / 2, CU.z + 1);   // V3.04 (N47): the pole and its finials one draw
   bucket(new THREE.CylinderGeometry(CU.pole / 2 * M, CU.pole / 2 * M, poleL * M, 16).rotateZ(Math.PI / 2).translate(pq.x, pq.y, pq.z), wood);
   for (const xf of [wx0 - CU.ext - CU.finial / 2, wx1 + CU.ext + CU.finial / 2]) {
     const q = v3(xf, CU.rail_y + CU.pole / 2, CU.z + 1); bucket(new THREE.SphereGeometry(CU.finial / 2 * M, 16, 12).translate(q.x, q.y, q.z), wood);
   }
-  for (let x = wx0 - CU.ext + 3; x < wx1 + CU.ext - 2; x += 10) {          // rings, one every 10 cm
-    const g = new THREE.TorusGeometry(0.02, 0.0035, 6, 16); g.rotateY(Math.PI / 2); const q = v3(x, CU.rail_y + CU.pole / 2, CU.z + 1); bucket(g.translate(q.x, q.y, q.z), wood); }
+  { const rings = [];                                                     // rings, one every 10 cm (v22: one mesh; no shadows, so their own)
+    for (let x = wx0 - CU.ext + 3; x < wx1 + CU.ext - 2; x += 10) {
+      const g = new THREE.TorusGeometry(0.02, 0.0035, 6, 16); g.rotateY(Math.PI / 2); const q = v3(x, CU.rail_y + CU.pole / 2, CU.z + 1); g.translate(q.x, q.y, q.z); rings.push(g); }
+    shell.add(new THREE.Mesh(mergeGeometries(rings), wood)); }
   const panel = (x0, w, folds) => {
     const g = new THREE.PlaneGeometry(w * M, (CU.rail_y - CU.drop_to) * M, Math.round(folds * 8), 1), pos = g.attributes.position;
     // v39: folds CU.amp deep (clear of the radiator's face); behind each rear speaker's pole the cloth lies flat at the stand's dent

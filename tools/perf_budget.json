@@ -1,5 +1,5 @@
 {
- "_": "V2.75 (N26): the speed budget. tools/checks.py fails a round that goes over: 'site' (tools/check_site.py) measures the paths, 'sizes' the built files. Each number is V2.74's plus about 10%. Lower one when a round wins; raise one only on purpose, saying why in the PR. Measured numbers: _shots/perf.json. V2.87 (N35): shaders_first +1 for Fast (phone, computer): the speck that sets a group's cutting planes before its shaders are asked for (one tiny shader, no lights, kept), so none of the group's own is built on the spot. V2.98 (N37): draws_house lowered to the new numbers plus about 10% (188 phone and PC, 189 iPhone, 371 RTX).",
+ "_": "V2.75 (N26): the speed budget. tools/checks.py fails a round that goes over: 'site' (tools/check_site.py) measures the paths, 'sizes' the built files. Each number is V2.74's plus about 10%. Lower one when a round wins; raise one only on purpose, saying why in the PR. Measured numbers: _shots/perf.json. V2.87 (N35): shaders_first +1 for Fast (phone, computer): the speck that sets a group's cutting planes before its shaders are asked for (one tiny shader, no lights, kept), so none of the group's own is built on the spot. V2.98 (N37): draws_house lowered to the new numbers plus about 10% (188 phone and PC, 189 iPhone, 371 RTX). V3.04 (N47): draws_living to the new numbers plus about 10% (234 phone, 248 iPhone, 719 RTX; the PC 349 by a frame's own count: its measure reads the house's 185).",
  "files": {
   "page_mb": 2.25,
   "three_mb": 0.95,
@@ -12,25 +12,25 @@
    "first_visit_mb": 5.8,
    "shaders_first": 21,
    "draws_house": 210,
-   "draws_living": 280
+   "draws_living": 258
   },
   "computer": {
    "first_visit_mb": 15.0,
    "shaders_first": 22,
    "draws_house": 210,
-   "draws_living": 410
+   "draws_living": 385
   },
   "iphone": {
    "first_visit_mb": 15.0,
    "shaders_first": 54,
    "draws_house": 210,
-   "draws_living": 295
+   "draws_living": 273
   },
   "rtx": {
    "first_visit_mb": 15.0,
    "shaders_first": 54,
    "draws_house": 410,
-   "draws_living": 840
+   "draws_living": 790
   }
  }
 }
