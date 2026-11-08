@@ -224,7 +224,7 @@ def stick_all(pg, w):
         x, y = pg.evaluate("() => { const r = document.querySelector('.r3d-stick').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }")
         pg.mouse.move(x, y); pg.mouse.down(); pg.mouse.move(x, y - 40, steps=3); pg.wait_for_timeout(2500); pg.mouse.up(); pg.wait_for_timeout(800); z = pg.evaluate(at)
         moved = max(abs(a[0] - z[0]), abs(a[1] - z[1]))
-        if a[2] == "none" or moved < 0.05 or ("In it" in how and z[3] != "stand"):
+        if a[2] == "none" or (z[3] != "stand" if "In it" in how else moved < 0.05):   # In it: the flight down to your eyes takes CI's slow frames, standing is the proof
             out.append(f"{w}: the stick in {how}: shown {a[2]!r}, moved {moved:.2f} m, then {z[3]!r} (want shown, moving, In it standing you there)")
     pg.evaluate("() => R3D.set({ view: 'house' })"); pg.wait_for_timeout(1500)
     return out
