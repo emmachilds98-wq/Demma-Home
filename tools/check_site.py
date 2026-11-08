@@ -186,6 +186,26 @@ def over_budget(path, got):
     return [f"{path}: {k} {got.get(k)} over {v}" for k, v in want.items() if not k.startswith("_") and not 0 <= (got.get(k) or 0) <= v]
 
 
+# V3.07: Edit room on a phone, "Look round from here" on: a finger dragging the ottoman moves it, not the view (it turned the view too)
+EDITPT = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)); if (window.DemmaTools && DemmaTools.isOpen()) DemmaTools.close();
+  R3D.set({ view: 'room' }); await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(200);
+  D.S.edit || document.getElementById('r3d-editbtn').click(); document.querySelector('[data-cam=look]').click(); await sl(500);
+  const b = new D.THREE.Box3().setFromObject(D.MOV.pouf.pivot), v = b.getCenter(new D.THREE.Vector3()).setY(b.max.y * 0.6).project(D.camera), r = document.querySelector('.r3d canvas').getBoundingClientRect();
+  return [r.left + (v.x + 1) / 2 * r.width, r.top + (1 - v.y) / 2 * r.height]; }"""
+EDITAT = "() => { const D = R3D._dbg, c = D.camera.position, t = D.controls.target; return [c.x, c.y, c.z, t.x, t.y, t.z, D.MOV.pouf.pivot.position.x, D.MOV.pouf.pivot.position.z]; }"
+
+
+def edit_drag(pg, w):
+    x, y = pg.evaluate(EDITPT); a = pg.evaluate(EDITAT); cdp = pg.context.new_cdp_session(pg)
+    T = lambda t, X=0, Y=0: cdp.send("Input.dispatchTouchEvent", {"type": t, "touchPoints": [] if t == "touchEnd" else [{"x": X, "y": Y, "id": 1}]})
+    T("touchStart", x, y)
+    for i in range(1, 7): T("touchMove", x + 8 * i, y - 4 * i); pg.wait_for_timeout(100)
+    T("touchEnd"); pg.wait_for_timeout(800); z = pg.evaluate(EDITAT)
+    cam, moved = max(abs(p - q) for p, q in zip(a[:6], z[:6])), max(abs(a[6] - z[6]), abs(a[7] - z[7]))
+    pg.evaluate("() => { document.getElementById('r3d-undo').click(); document.querySelector('[data-cam=orbit]').click(); document.getElementById('r3d-editbtn').click(); R3D.set({ view: 'house' }); }"); pg.wait_for_timeout(1500)
+    return [] if cam < 1e-4 and moved > 0.05 else [f"{w}: dragging the ottoman in Edit (Look round on): the view moved {cam:.3f} m, the ottoman {moved:.3f} m (want the view still, the ottoman moved)"]
+
+
 def names_keys(pg, w):
     """V2.97 (N42): names everywhere (the page as it opens, a door's card in the kitchen, Edit's list), Esc one at a time; on a PC Tab"""
     out, D = [], "R3D._dbg"
@@ -261,6 +281,7 @@ def main():
             if acc["label"]: fails.append(f"{w}: the 3D's label doesn't say where you are: {acc['label']!r}")
             fails += names_keys(pg, w)
             if phone:
+                fails += edit_drag(pg, w)
                 bk = pg.evaluate(BACK)
                 if bk != ["master", "master", "house", True]: fails.append(f"{w}: two rooms, then Back: {bk} (want ['master', 'master', 'house', True]: one step, out to the house)")
             pg.click("[data-hfloor=first]"); pg.wait_for_timeout(2500)

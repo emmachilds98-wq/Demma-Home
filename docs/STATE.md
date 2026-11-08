@@ -3,10 +3,10 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V3.07 (8 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
-The version in Plan is a refresh button ("V3.07 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V3.08 (8 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
+The version in Plan is a refresh button ("V3.08 ↻"): on the home-screen app, tap it to get the newest.
 
-**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N46 done V3.04, N48 V3.05, N50 V3.06; section 14: N52 V3.07; N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
+**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N46 done V3.04, N48 V3.05, N50 V3.06, N52 V3.07; section 13's N53 V3.08; N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
 On a weak signal the page opens from the device after 2 s (V3.00, N43, `sw.js`): the new copy is saved for next time, and the version button shows it. The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 
 ## Where it lives
@@ -52,7 +52,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   the wheel walks (Ctrl + wheel the lens), a double-click or double-tap walks you to a spot, Mouse look (M) on a computer. The eye is
   solid to walls and furniture; doors open with a tap and stay as left (this device). A shut door opens as you walk up to it, but the bin cupboards' (V2.99: they met across the porch as a second front door). `?room` opens the living room.
   Back (the phone's swipe, the browser's) from a room brings you out to the house, one step whatever rooms you went through (V2.96, N39, `roomHist`).
-- **Over the house (V3.07, N52, `19_view_controls.js`):** Outside, Angled and Overhead move as a map, on a phone and a PC alike: one
+- **Over the house (V3.08, N53, `19_view_controls.js`):** Outside, Angled and Overhead move as a map, on a phone and a PC alike: one
   finger or a left-drag moves the ground (the spot touched stays under the finger; a flick glides on); two fingers pinch to zoom and
   twist to turn round the spot between them, and in Angled slide up or down together to tilt; the wheel zooms to the pointer; a
   right-drag (or Shift + drag) turns and tilts round the middle. Angled 10°–85° above the ground; Overhead stays flat. The point looked
@@ -161,6 +161,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Lean 3D (V2.95, N41):** what nothing used in parts 05, 06, 07, 10, 12 and 13 is gone (the old beech chairs, the picture lights, the A/B
   sites, unread values): 3,093 lines to 3,065 in the nine parts, the 3D's code 424.4 to 422.9 KB minified; the gallery the same to the pixel.
 - **The plan's code (V2.78, N28):** only what the PDFs and the site draw; the old sides of `geometry.py`'s `TABLE_STYLE`, `SUB_IN_WALL`, `PLAIN` are gone (git).
+- **Edit room's drag (V3.07, N52):** a press on a piece is the piece's alone (`13_edit_room.js` `grabbed`, caught on the 3D's root
+  before the orbit and Look round's turn); the selected piece is grabbed a finger's width round its outline. A drag off the pieces moves the view.
 - **Checks:** `tools/check_site.py` walks every door, taps pieces and surfaces, tries phones by touch (iPhone 15 Pro, SE, Pixel 7,
   Galaxy S24, iPad Mini) and the computers' widths.
 

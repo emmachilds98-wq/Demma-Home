@@ -1,5 +1,5 @@
 /* V2.74 (REAL_PLAN N18), the client: "allow better controls in overhead and angled views of the house so I can control the screen better
-   on iPhone and pc". V3.07, the client: "When in overhead and angled views it has strange movement too on mobile and pc. Not intuitive":
+   on iPhone and pc". V3.08, the client: "When in overhead and angled views it has strange movement too on mobile and pc. Not intuitive":
    a finger in Angled swung the house round, a drag lagged and slid on, a pinch zoomed off the floor. Now over the house (Outside, a floor's
    Angled and Overhead) the drags are a map's, the same on a phone and a PC: one finger or a left-drag moves the ground with it (the spot
    under the finger stays under it; a flick glides on); two fingers pinch to zoom and twist to turn round the spot between them, and in
@@ -87,15 +87,15 @@ function mapStart(e) {
   MAPD = turn ? { k: "turn", x: e.clientX, y: e.clientY } : g ? { k: "pan", g } : null;
 }
 canvas.addEventListener("pointerdown", () => mapConf(mapMode()), true);   // after the walk's (14), which turns the orbit's drag on
-canvas.addEventListener("pointerdown", e => {   // after Edit's (13): a piece picked up turns the orbit off, and then this leaves it be
-  if (!mapMode() || tween || !controls.enabled) { MAPPT.clear(); MAPD = null; return; }
+canvas.addEventListener("pointerdown", e => {   // a piece grabbed in Edit never gets here (13 stops its press on the root)
+  if (!mapMode() || tween) { MAPPT.clear(); MAPD = null; return; }
   mapConf(mapMode()); MAPPT.set(e.pointerId, [e.clientX, e.clientY]); if (MAPPT.size > 2) return;
   try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
   mapStart(e); moving = true; if (typeof PRE !== "undefined") PRE.idleT = performance.now(); dirty();
 });
 canvas.addEventListener("pointermove", e => {
   if (!MAPPT.has(e.pointerId)) return; MAPPT.set(e.pointerId, [e.clientX, e.clientY]);
-  if (!MAPD || !mapMode() || tween || !controls.enabled) return;
+  if (!MAPD || !mapMode() || tween) return;
   const H = Math.max(1, canvas.clientHeight), k = 3.5 / H;   // a turn: about a third of a circle for the screen's height
   if (MAPD.k === "pan") {
     const g = mapGround(e.clientX, e.clientY); if (!g) return;
