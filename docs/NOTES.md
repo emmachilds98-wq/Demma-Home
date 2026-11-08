@@ -106,6 +106,8 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `model.piece_shade`, moved with edits (`08_house_edits.js editedFloor`).
 - **The refresh button:** `.hello .ver` in Plan; the ↻ is CSS `::after` (`qa.py` reads the text); `version.txt`; handler at the end of
   `page.js`. To see a new round on the phone: open Plan, tap the version.
+  The version also shows faintly in the brand pill (`.brand .bver`, V3.16): the client looks for it on the first screen, not in Plan.
+  On an iPhone SE (375) the brand and Plan · Build · Buy already touch (the nav's 44 px min-widths), so it's hidden at 380 px and under.
 - **Landing and welcome:** `build_viewer.LANDING_JS`, `r3d-first` → `demma-landed`; the welcome once a device (`demma-welcome`);
   automated browsers skip both unless `?landing` / `?welcome`.
 - **Who gets a press first** (N52): OrbitControls listens on the canvas from `01` (first), Look round's turn (`14` `LD_`) in the
