@@ -1406,17 +1406,27 @@ def pwa_files():
         "background_color": "#fbf6ec", "theme_color": "#2f4a3c",
         "icons": [{"src": f"media-wall/src/art/icon-{n}.png", "sizes": f"{n}x{n}", "type": "image/png", "purpose": "any maskable"} for n in (192, 512)]}, indent=1))
     (root / "version.txt").write_text(LABEL)   # V2.83: the version button compares the page with this
-    (root / "sw.js").write_text(f"""// v39: the page opens from the device after the first visit (network first for the page, so a new round shows; cache first for the
-// rest: three.js from its CDN, the fonts and the pictures). V2.46: a file named by its contents (tex/<photo>.<hash>.jpg, three.<hash>.js, a
+    (root / "sw.js").write_text(f"""// v40: the page opens from the device after the first visit (network first for the page, so a new round shows, but N43: no more than
+// WAIT ms on a weak signal, then the kept copy, the new one saved for next time; cache first for the rest: three.js from its CDN, the fonts
+// and the pictures). V2.46: a file named by its contents (tex/<photo>.<hash>.jpg, three.<hash>.js, a
 // CDN file at its version) is kept across versions (K), so a new round doesn't fetch the photos again; its older copy goes. {LABEL}.
 const C = "demma-{LABEL}", K = "demma-keep", HASHED = /\\.[0-9a-f]{{10}}\\.[a-z]+$|@\\d+\\.\\d+\\.\\d+\\//;
 const stem = u => new URL(u).pathname.replace(/\\.[0-9a-f]{{10}}\\.[a-z]+$/, "");
+const WAIT = 2000;
 self.addEventListener("install", e => {{ self.skipWaiting(); e.waitUntil(caches.open(C).then(c => c.addAll(["./", "manifest.webmanifest"]).catch(() => {{}}))); }});
 self.addEventListener("activate", e => {{ e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C && k !== K).map(k => caches.delete(k)))).then(() => self.clients.claim())); }});
 self.addEventListener("fetch", e => {{
   const r = e.request; if (r.method !== "GET") return;
   const u = new URL(r.url), page = r.mode === "navigate" || (u.origin === location.origin && (u.pathname.endsWith("/") || u.pathname.endsWith("index.html")));
-  if (page) {{ e.respondWith(fetch(r).then(res => {{ const cp = res.clone(); caches.open(C).then(c => c.put(r, cp)); return res; }}).catch(() => caches.match(r).then(m => m || caches.match("./")))); return; }}
+  if (page) {{
+    const got = fetch(r), kept = () => caches.match(r).then(m => m || caches.match("./"));
+    e.waitUntil(got.then(res => {{ if (res.ok) {{ const cp = res.clone(); return caches.open(C).then(c => c.put(r, cp)); }} }}).catch(() => {{}}));
+    e.respondWith(new Promise(done => {{
+      const t = setTimeout(() => kept().then(m => m && done(m)), WAIT);   // slow: the kept copy now (no kept copy: keep waiting)
+      got.then(res => {{ clearTimeout(t); done(res); }}, () => {{ clearTimeout(t); kept().then(m => done(m || Response.error())); }});
+    }}));
+    return;
+  }}
   if (/\\.(pdf|txt)$/.test(u.pathname)) return;                             // the PDFs and version.txt come from the network
   const keep = HASHED.test(u.pathname), into = keep ? K : C;
   e.respondWith(caches.match(r).then(m => m || fetch(r).then(res => {{ if (res.ok || res.type === "opaque") {{ const cp = res.clone();
