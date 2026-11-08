@@ -75,12 +75,17 @@ def sizes():
     msg = (f"page {mb(SITE / 'index.html'):.1f} MB, photos {sum(map(mb, tex)):.1f} MB in {len(tex)} files ({sum(map(mb, half)):.1f} MB at half size), three.js " + (f"{mb(tj):.2f} MB own file" if tj else "from the CDN")
            + f", {len(hj.get('measure', []))} sizes to measure")
     bad = parts_parse()
+    # V3.02 (N45): every piece in the "Add a piece" catalogue names the fit.SOURCES row its size comes from
+    sys.path.insert(0, str(SRC)); import fit
+    refs = re.findall(r'^  (\w+): \{ n: "[^"]+".*?ref: "(\w+)"', (SRC / "room3d/08_house_catalogue.js").read_text(), re.M)
+    cite = [f"catalogue {k}: no source {r}" for k, r in refs if r not in fit.SOURCES] + ([] if len(refs) >= 26 else [f"catalogue: {len(refs)} pieces cite a source"])
     # V2.75 (N26): the speed budget's files (tools/perf_budget.json; the site check measures the paths): over it, the round fails
     got = {"page_mb": mb(SITE / "index.html"), "three_mb": mb(tj) if tj else 0, "photos_mb": sum(map(mb, tex)), "half_mb": sum(map(mb, half))}
     want = json.loads((ROOT / "tools/perf_budget.json").read_text())["files"]
     over = [f"{k} {got[k]:.2f} over {v}" for k, v in want.items() if got[k] > v]
-    return not bad and not over, msg + f", the 3D's {len(list((SRC / 'room3d').glob('*.js')))} parts" + (f": these don't parse alone: {bad}" if bad else " each parse alone") + \
-        (f"; over the speed budget: {', '.join(over)}" if over else ", within the speed budget")
+    return not bad and not over and not cite, msg + f", the 3D's {len(list((SRC / 'room3d').glob('*.js')))} parts" + (f": these don't parse alone: {bad}" if bad else " each parse alone") + \
+        (f"; over the speed budget: {', '.join(over)}" if over else ", within the speed budget") + \
+        (f"; {', '.join(cite)}" if cite else f", the {len(refs)} catalogue pieces' sizes cited")
 
 
 def parts_parse():
