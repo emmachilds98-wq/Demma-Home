@@ -323,12 +323,15 @@ function walkTick(dt) {
   if (WALK.v.lengthSq() < 1e-5 && !turn) { if (WALK.feet === null) WALK.feet = camera.position.y / M - STAND_EYE; return false; }
   return walkMove(WALK.v.x, WALK.v.y, turn, dt);
 }
-/* V1.32: the phone's stick (bottom left, while walking): drag it the way to go */
+/* V1.32: the phone's stick (bottom left): drag it the way to go. V3.14, the client: "add the joystick to all views for mobile movement":
+   walking it walks you; over the house, a floor and a room's Above it moves the map (19_view_controls.js mapKeys); in a view from your
+   eyes it stands you there and walks on */
 const COARSE = !!(window.matchMedia && matchMedia("(pointer: coarse)").matches);
 const STICK = document.createElement("div"); STICK.className = "r3d-stick"; STICK.hidden = true; STICK.setAttribute("aria-hidden", "true"); STICK.innerHTML = "<i></i>"; root.append(STICK);
 let stickId = null, stickC = [0, 0];
 function stickMove(e) { let dx = e.clientX - stickC[0], dy = e.clientY - stickC[1]; const RR = 44, l = Math.hypot(dx, dy); if (l > RR) { dx *= RR / l; dy *= RR / l; }
-  STICK.style.setProperty("--x", dx + "px"); STICK.style.setProperty("--y", dy + "px"); WALK.stick = [dx / RR, -dy / RR]; dirty(); }
+  STICK.style.setProperty("--x", dx + "px"); STICK.style.setProperty("--y", dy + "px"); WALK.stick = [dx / RR, -dy / RR];
+  if (!walking() && Math.hypot(dx, dy) > RR * 0.35) startWalk(); dirty(); }
 STICK.addEventListener("pointerdown", e => { stickId = e.pointerId; try { STICK.setPointerCapture(e.pointerId); } catch (err) {} const r = STICK.getBoundingClientRect(); stickC = [r.left + r.width / 2, r.top + r.height / 2]; stickMove(e); e.preventDefault(); });
 STICK.addEventListener("pointermove", e => { if (e.pointerId === stickId) stickMove(e); });
 const stickEnd = e => { if (e.pointerId !== stickId) return; stickId = null; WALK.stick = [0, 0]; STICK.style.setProperty("--x", "0px"); STICK.style.setProperty("--y", "0px"); };
@@ -346,7 +349,7 @@ document.addEventListener("pointerlockchange", () => { const on = mlookOn(); roo
   if (on) toast("Mouse look: move to look, W A S D to walk, click to open, Esc to stop"); });
 addEventListener("mousemove", e => { if (mlookOn() && (e.movementX || e.movementY)) lookTurn(-e.movementX, -e.movementY); });
 function syncStick() {
-  const on = RMODE === "stand" && !!ROOMV() || S.view === "livstand"; STICK.hidden = !(on && COARSE); root.classList.toggle("walking", on && COARSE);
+  const on = RMODE === "stand" && !!ROOMV() || S.view === "livstand"; STICK.hidden = !COARSE; root.classList.toggle("walking", on && COARSE);   // V3.14: the stick in every view
   if (MLOOK) MLOOK.hidden = COARSE || !on; if (!on && mlookOn()) document.exitPointerLock();
   if (on && !WALK.hinted) { WALK.hinted = true;   // V2.42: each visit (it was once ever), the keys as they are
     setTimeout(() => toast(COARSE ? "Walk with the stick, drag to look" : "W S walk · ← → turn · A D step aside · drag or M to look · double-click a floor to go there"), 700); }
@@ -450,8 +453,10 @@ function goStand(x, fy, z, look, dur) {      // Be there at (x, z) on the floor 
   else { standSpot = [x, z, dx, dz, dur]; if (S.view !== v) setView(v); setRmode("stand"); }
   walked = true; dirty(); return true;
 }
+/* V3.14: a view from your own eyes (a room's In it, the living room's From the sofa, the window ...): a walk key or the stick stands you there */
+const eyeView = () => (!!ROOMV() && RMODE === "in") || (!ROOMV() && !!VIEWS[S.view] && !VIEWS[S.view].above && S.view !== "house" && S.view !== "livstand");
 function startWalk() {                      // a walk key in a room's In it: stand where you are, then walk on
-  if (!R.HOUSE3 || tween || !((ROOMV() && RMODE === "in") || S.view === "window")) return false;
+  if (!R.HOUSE3 || tween || !eyeView()) return false;
   const c = camera.position, d = controls.target.clone().sub(c), x = -c.x / M, z = c.z / M, r = standRoomAt(x, c.y / M - 120, z);
   return !!r && goStand(x, r[1], z, [-d.x, d.z], 300);   // V2.42: down to your eyes in 0.3 s, then on
 }

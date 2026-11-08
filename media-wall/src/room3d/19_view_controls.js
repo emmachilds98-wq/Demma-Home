@@ -8,6 +8,9 @@
    the ground (no room there) centres it */
 const mapMode = () => walking() ? null : S.view === "house" ? (hfview === "top" ? "top" : "angle")   // V3.09: a room's Above too (the living room's is at an angle)
   : ROOMV() && RMODE === "above" ? "top" : S.view === "room" ? "angle" : null;
+/* V3.14: the rest of the views from above (a room's On its own, the living room's own, Bird's eye, Dolls' house): the keys and the stick glide
+   there too (they stepped a key's repeat at a time); the orbit keeps its drags */
+const freeMode = () => !walking() && !mapMode() && !eyeView() && !!VIEWS[S.view] ? "free" : null;
 const MAP_POLAR = { top: [0.003, 0.003], angle: [5 * Math.PI / 180, 80 * Math.PI / 180] };   // from straight up: Angled 85° to 10° above the ground
 function mapConf(m) {   // the orbit's own drags off over the house (ours below), on again in the rooms
   controls.enablePan = !m; controls.enableZoom = !m && S.cam !== "look"; controls.enableRotate = !m && !inPlace();
@@ -34,12 +37,13 @@ const MAPK = new Map(), MAPONCE = new Set(), MAP_KEYS = Object.assign({}, WALK_K
 let mapT = 0, mapFast = false;
 function mapKeys(m) {
   const now = performance.now(), dt = Math.min(0.1, (now - (mapT || now)) / 1000); mapT = now;
-  if ((!MAPK.size && !MAPONCE.size) || !m || tween) { MAPONCE.clear(); return false; }
+  const [sx, sy] = WALK.stick, stk = sx * sx + sy * sy > 0.004;   // V3.14: the phone's stick, as far as it's pushed
+  if ((!MAPK.size && !MAPONCE.size && !stk) || !m || tween) { MAPONCE.clear(); return false; }
   if (typeof PRE !== "undefined") PRE.idleT = now;   // the warm-up waits while you move
   const cam = camera.position, t = controls.target, k = Math.max(dt, MAPONCE.size ? 0.08 : 0) * (mapFast ? 2.5 : 1), on = c => MAPK.has(c) || MAPONCE.has(c) ? 1 : 0;
   const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion).setY(0).normalize();
   const fwd = new THREE.Vector3(0, 1, 0).cross(right), dist = cam.distanceTo(t);
-  const mv = right.multiplyScalar(on("r") - on("l")).add(fwd.multiplyScalar(on("f") - on("b"))).multiplyScalar(dist * 0.9 * k);
+  const mv = right.multiplyScalar(on("r") - on("l") + sx).add(fwd.multiplyScalar(on("f") - on("b") + sy)).multiplyScalar(dist * 0.9 * k);
   cam.add(mv); t.add(mv);
   const turn = on("tl") - on("tr"); if (turn) cam.sub(t).applyAxisAngle(new THREE.Vector3(0, 1, 0), turn * 1.4 * k).add(t);
   const z = on("dn") - on("u"); if (z) { const off = cam.clone().sub(t), l = off.length(), n = Math.min(controls.maxDistance, Math.max(controls.minDistance, l * Math.exp(z * 1.3 * k))); cam.copy(t).addScaledVector(off, n / l); }
@@ -48,7 +52,7 @@ function mapKeys(m) {
 }
 document.addEventListener("keydown", e => {   // before the walk's own (14_views_walk.js), which steps over the house a press at a time
   mapFast = e.shiftKey;
-  const m = mapMode(); if (!m || walking()) return;
+  const m = mapMode() || freeMode(); if (!m || walking()) return;
   if (!(e.target === document.body || root.contains(e.target)) || e.altKey || e.ctrlKey || e.metaKey || /^(input|select|textarea)$/i.test(e.target.tagName)) return;
   const key = e.key.toLowerCase(), c = MAP_KEYS[key];
   if (!c || (e.target.tagName === "BUTTON" && key.startsWith("arrow"))) return;   // arrows still move between buttons
@@ -159,7 +163,7 @@ function mapCentre(e) {
     const m = mapMode(); mapConf(m);
     if (m && !tween && S.view === "house" && hfview === "top" && camera.position.clone().sub(controls.target).normalize().y < 0.95) {   // the whole house's own view (H, Whole house): Angled again
       hfview = "angle"; qsa("[data-hfview]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.hfview === "angle"))); return this.update(dt); }
-    const keyed = mapKeys(m), glid = m && mapGlide(), [lo, hi] = m && !tween ? MAP_POLAR[m] : [0, Math.PI];
+    const keyed = mapKeys(m || freeMode()), glid = m && mapGlide(), [lo, hi] = m && !tween ? MAP_POLAR[m] : [0, Math.PI];
     controls.minPolarAngle = lo; controls.maxPolarAngle = hi;
     const ch = upd.call(this, dt);
     return (m && !tween && mapHold()) || ch || keyed || glid;

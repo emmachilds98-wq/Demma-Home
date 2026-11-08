@@ -215,6 +215,21 @@ def edit_drag(pg, w):
     return [] if cam < 1e-4 and moved > 0.05 else [f"{w}: dragging the ottoman in Edit (Look round on): the view moved {cam:.3f} m, the ottoman {moved:.3f} m (want the view still, the ottoman moved)"]
 
 
+def stick_all(pg, w):
+    """V3.14: the phone's stick in every view: over the house it moves the map, in a room's Above too, in its In it it stands you there"""
+    out, at = [], "() => { const t = R3D._dbg.controls.target, s = document.querySelector('.r3d-stick'); return [t.x, t.z, getComputedStyle(s).display, R3D._dbg.RMODE]; }"
+    for how, go in (("the house", "R3D.set({ view: 'house' })"), ("the hall's Above", "R3D.set({ view: 'hall' }); setTimeout(() => document.querySelector('[data-rmode=above]').click(), 1500)"),
+                    ("the hall's In it", "document.querySelector('[data-rmode=in]').click()")):
+        pg.evaluate(f"() => {{ {go}; }}"); pg.wait_for_timeout(4000); a = pg.evaluate(at)
+        x, y = pg.evaluate("() => { const r = document.querySelector('.r3d-stick').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }")
+        pg.mouse.move(x, y); pg.mouse.down(); pg.mouse.move(x, y - 40, steps=3); pg.wait_for_timeout(2500); pg.mouse.up(); pg.wait_for_timeout(800); z = pg.evaluate(at)
+        moved = max(abs(a[0] - z[0]), abs(a[1] - z[1]))
+        if a[2] == "none" or moved < 0.05 or ("In it" in how and z[3] != "stand"):
+            out.append(f"{w}: the stick in {how}: shown {a[2]!r}, moved {moved:.2f} m, then {z[3]!r} (want shown, moving, In it standing you there)")
+    pg.evaluate("() => R3D.set({ view: 'house' })"); pg.wait_for_timeout(1500)
+    return out
+
+
 def names_keys(pg, w):
     """V2.97 (N42): names everywhere (the page as it opens, a door's card in the kitchen, Edit's list), Esc one at a time; on a PC Tab"""
     out, D = [], "R3D._dbg"
@@ -290,7 +305,7 @@ def main():
             if acc["label"]: fails.append(f"{w}: the 3D's label doesn't say where you are: {acc['label']!r}")
             fails += names_keys(pg, w)
             if phone:
-                fails += edit_drag(pg, w)
+                fails += edit_drag(pg, w) + stick_all(pg, w)
                 bk = pg.evaluate(BACK)
                 if bk != ["master", "master", "house", True]: fails.append(f"{w}: two rooms, then Back: {bk} (want ['master', 'master', 'house', True]: one step, out to the house)")
             pg.click("[data-hfloor=first]"); pg.wait_for_timeout(2500)
