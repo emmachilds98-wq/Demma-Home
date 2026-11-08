@@ -92,7 +92,10 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
   pipes; grey wood-effect laminate; a yellow and white ceiling shade. V1.40 (the photo matched to the 3D, the window as its ruler): the
   cistern's top just under the window's sill, about 28 tall (84–112 up; it was 78–102). The kitchen from its door (photo): as modelled.
   V2.40 (the photo of 30 Oct): the window's glass obscure (patterned); a small black pedal bin and the toilet brush in the corner by the
-  basin's wall; a black mat round the pan.
+  basin's wall; a black mat round the pan. V3.04 (N49, the photo on a camera with its own lens): the window 63 wide, close to the
+  party wall; the basin and its four tiles about halfway along the right wall (they were drawn at the door), the basin past the tiles
+  toward the window; the roll holder in the back corner over the pipe; the white riser up the right of the window to the ceiling; the
+  shade a slim yellow drum about 10 across, about halfway in.
 - **First floor:**
   - **Bathroom** 2.04 × 2.38 (agent): the sink on the left, the toilet ahead (the client), the bath along the right; a back window. Solid
     walls (black) in its top-left corner and beside the door (the room has more shape than drawn). **The sink cabinet** is the maroon
@@ -275,6 +278,9 @@ another setup will stay. As well as the overhead shelf." Photos: `media-wall/inp
   give way (its photo), so the front wall is 28.4 further out than the plans read (the room 225, the master bedroom 450); the window
   over the porch's middle (x 337–433, the client 7 Nov: "centered like the photo"), the oak desk wall to wall, the tall cupboard beside the window. The porch's cupboards keep the plans' depth.
 
+- **V3.04 (N49, the wide photo on a camera with its own lens):** the ceiling light hangs toward the window, about 65 from the front
+  wall (it was drawn in the room's middle); the corners, the shelf's height and the window line up (the blind hides its edges).
+
 - **v69, the client:** the tall cupboard goes ("we will not be keeping it": out of the model); the office's door is a white bifold.
 
 ## Bedroom 2 (the client's photo, 25 Oct 2026)
@@ -367,6 +373,8 @@ the door. Also room for improvement." The gap: "Left wall behind airing cupboard
 - Grey carpet; the stairwell along the west side with a white post-and-rail balustrade (two rails under the top rail); the bathroom door
   at the north end (white, a cottage door like the rest: client, 26 Oct; the wood in an old photo) with a glazed fanlight over it; the airing cupboard's chalkboard door and the bedrooms' doors on the east side; the
   loft hatch in the ceiling, a pendant bulb, a smoke alarm; at the top of the stairs a mirrored wardrobe and a black shelf unit.
+  V3.04 (N49, the photo from the office's doorway on a camera with its own lens): the bulb hangs over the banister, level with the
+  hatch's far side; the hatch a little nearer the office. The bathroom door reads about 61 in that photo (drawn 68: in Measure).
 - Bedroom 3 (the wide photo): a tall white cupboard (one door, two panels) in the corner by the window (modelled v67).
 
 - **v69, the client:** "door for the bedroom 2 sits right in the corner next to the bathroom, then imeddiately the boiler cupboard with a

@@ -72,6 +72,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   the photo's corners) and the bathroom door open (`compare.OPEN`).
 - **The lens cap:** the page's `fitFov` caps a tall view at 95° and reads `aim.fov` as a 16:9 lens, so a phone's 0.5× photo (about 108°
   on a tall photo) can't be matched. Put the key in `compare.TRUE_FOV` / `LENS` and start near 108° (portrait) or 90° (landscape).
+- **A hand start (N49):** read a few points whose room cm are sure (a wall's four corners, a ceiling corner, a fanlight, a switch) off the
+  photo on a pixel grid, then solve the eye, turn, tilt and roll at the photo's lens by least squares (scipy, in a scratch folder); a
+  wall seen square on gives its own sizes by its four corners alone (a homography). A wide (landscape) 0.5× photo is about 90° up.
+  Clutter and the client's planned furniture fool `camfit`'s edge score: check the side-by-side by eye.
 - The outside photos are wide-angle and distorted, so fits don't converge: read heights as shares of drive-to-gutter in one column of
   the picture; the first floor's sills and heads (0.71 / 0.96) are the ruler.
 - The kitchen-from-the-landing photo couldn't be fitted and was dropped. Bedroom 2 is the music room: no bed there.

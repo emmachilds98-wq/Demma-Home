@@ -3,8 +3,8 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V3.03 (8 Nov 2026), live. **Work stopped 8 Nov for a new team: start with `docs/HANDOVER.md`** (then `docs/NOTES.md`).
-The version in Plan is a refresh button ("V3.03 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V3.04 (8 Nov 2026), live. A new team works from `docs/HANDOVER.md` (then `docs/NOTES.md`).
+The version in Plan is a refresh button ("V3.04 ↻"): on the home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side; N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
 On a weak signal the page opens from the device after 2 s (V3.00, N43, `sw.js`): the new copy is saved for next time, and the version button shows it. The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
@@ -33,7 +33,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 | `house/` | The house: `survey_data.py` (every size, with its source) → `model.py` (the geometry, every piece tagged with its item) → `export_house.py` (the house file, `house.schema.json`); `measure.py` (what's still a guess: Measure's rows); `client_edits.py`/`.json` (the client's numbers over the guesses); `check_model.py`, `zfight.py`, `privacy_check.py`; `textures/` (the CC0 photos); the facts `HOUSE.md`, `EVIDENCE.md`, `SURVEY.md`, `BUILD_SPEC.md`, `HD_PLAN.md`, `SOURCES.md` |
 | `media-wall/inputs/` | The client's photos and plans (EXIF stripped) |
 | `projects/` | How a project is shaped (`project.schema.json`); a room's own project goes in `projects/<id>/project.json` |
-| `tools/` | `build.py`, `checks.py`, `check_site.py`, `pull_edits.py`, `round.py`, `compare.py` and `camfit.py` (the photos beside the 3D; the bathroom and the master fitted, V2.90; the kitchen and the hall (two of the hall) with the photo's own lens, `TRUE_FOV`, V3.03) |
+| `tools/` | `build.py`, `checks.py`, `check_site.py`, `pull_edits.py`, `round.py`, `compare.py` and `camfit.py` (the photos beside the 3D; the bathroom and the master fitted, V2.90; the kitchen and the hall (two of the hall) with the photo's own lens, `TRUE_FOV`, V3.03; the office, the landing and the WC, V3.04) |
 | `docs/` | `HANDOVER.md` (start here), `NOTES.md` (what the threads learned), `REAL_PLAN.md` (the plan), this file, `DECISIONS.md`, `HISTORY.md`, `reviews/` (the V2.44 review and audit) |
 | `_site/` (built) | `index.html` (the page), `sheets.<hash>.json` (its sheets), `plan.html` (a step to it), `sw.js`, `version.txt`, `manifest.webmanifest`, `three.<hash>.js`, `photos.<hash>.json`, `data/` (house.json, projects), `media-wall/out/` (PDFs), `media-wall/src/art/` (pictures, icons) |
 
@@ -109,6 +109,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **The kitchen and the hall as their photos (V3.03, N44):** the door down 66 inside its frame by the box's corner (was the box's whole end);
   the mirror and the bench along the party wall from near the box to the rack (were by the front door); a radiator under the kitchen's bar,
   the boiler 28 out of the back corner; the kitchen's door frame empty (no leaf in any photo). The door down, the bench and the radiator are in Measure.
+- **The office, the landing and the WC as their photos (V3.04, N49):** each camera solved by hand from the photo's corners with its own lens.
+  The WC window 63 wide (was 50); the WC basin and tiles halfway along the wall (were at the door), the roll holder in the back corner, the
+  riser right of the window, a slimmer shade further in; the landing's light over the banister and its hatch nearer the office; the
+  office's light toward the window. The WC window's width and the basin's place are in Measure.
 - **Drawn inside (V2.71, N16):** the room you stand in, the rooms seen from it, the shell; the outside if one has a window (`roomCull`);
   V2.98 (N37): a room's light, a bed's or a wardrobe's moving part and a door seen from neither side left out with their room.
 - **Fewer draws for the house (V2.98, N37):** a floor's boxes, profiles and turned shapes of one material are one draw (`20_go.js`
@@ -182,9 +186,10 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 1. `?perf` from the iPhone 15 Pro and the RTX 5070 PC, after opening the house once: a screenshot of the corner box (N10, N17).
 2. KTX2 (N31): picked "let CI build it" (7 Nov); confirm before the workflow builds the encoder. Dark panels on a dark device, or the cream (N9).
 3. A microwave photo, if there is one (N6); what to try in each room (N5's trays).
-4. Measure: the living room door's width (drawn 67 since V2.94, to fit beside the 85 stairs); the bathroom door's width.
+4. Measure: the living room door's width (drawn 67 since V2.94, to fit beside the 85 stairs); the bathroom door's width (the landing photo
+   reads about 61, drawn 68: the client's "stops on the bath" ties it to the bath's 184).
 5. Still to measure (all in Measure): the boiler cupboard into bedroom 2; the bathroom's ceiling over the toilet, the slope's start, the
-   vanity, the bath (184 drawn); the hall's door down (66 drawn) and bench, the kitchen's radiator; the landing's doors and the wall between the bedroom doors; the tapestry's drop; the hall radiator; the
+   vanity, the bath (184 drawn); the hall's door down (66 drawn) and bench, the kitchen's radiator; the WC window's width (63) and the basin's place; the landing's doors and the wall between the bedroom doors; the tapestry's drop; the hall radiator; the
    master from wardrobes to front wall; the alcove; bedroom 2's length; a stair tread; the meter and bin cupboards; the living room's
    side-wall socket; the garage's chipboard box; the secret room's pier.
 6. Confirm: the kitchen's door frame has no door (V3.03, from the photos; if it has one, its width and swing); the lower flight's foot open to the lower landing (V1.32); the bathroom cord's length; the living room door hinged at the
