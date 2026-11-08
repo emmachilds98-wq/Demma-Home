@@ -16,8 +16,7 @@ const MOMENTS = {
 };
 function playMoment(k) {
   const m = MOMENTS[k]; if (!m) return;
-  showStop(false); const { sugg, ...set } = m.set; Object.assign(S, set);
-  if (sugg) S.sugg = Object.assign({}, S.sugg, { [sugg.slice(1)]: true });                       // v37: "+key" switches a suggestion on
+  showStop(false); const set = m.set; Object.assign(S, set);
   if (set.beside) extrasRule("beside", set.beside, true);
   if (m.set.scene) { S.lv = Object.assign({}, SCENES[m.set.scene].levels); S.master = 100; }
   applyState(); syncButtons(); if (m.aim) flyTo(m.aim.eye, m.aim.at, m.aim.fov); else setView(m.view); toast(m.say);
@@ -28,8 +27,8 @@ function playMoment(k) {
    doesn't stop it (the camera then stays where you put it); Stop, Esc or any other button does, and leaves the table out for six. */
 let SH = null;
 function showSteps(P) {
-  const C = P.C, st = [], add = (title, text, dur, acts, view) => { if (acts === null) return; st.push({ title, text, dur, acts, view }); };
-  const each = (list, to, gap, ms, from = 0) => list.map((a, i) => [a, to, from + i * gap, ms]);
+  const C = P.C, st = [], add = (title, text, dur, acts, view) => { st.push({ title, text, dur, acts, view }); };
+  const each = (list, to, gap, ms) => list.map((a, i) => [a, to, i * gap, ms]);
   const rig = (a, b, ms) => [[P.rig, RIG[b], 0, ms, true]];
   if (P.sl) {
     add("Packed away", "The table stands folded on its hinge rail behind door A; the six chairs and their pads are behind door B.", 2.6, [], "chairs");

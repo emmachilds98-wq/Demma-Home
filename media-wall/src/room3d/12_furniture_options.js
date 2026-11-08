@@ -28,16 +28,15 @@ function applyState() {
   solidDirty();
   S.site = "C"; S.cab = "compact"; if (S.cabw !== "80") S.cabw = "90";   // v33, client: "the compact cabinet is our only choice for the table now"
   if (cab && cab.userData.w !== cabC().top[0]) rebuildCab();
-  for (const k of Object.keys(G)) if (/^[AB]_/.test(k)) G[k].visible = k === `${S.site}_${S.dining}`;
   G.unit_in.visible = !S.drawers; G.unit_out.visible = S.drawers;
-  const b2 = `${S.site === "C" ? "B" : S.site}_${S.site === "C" ? (S.dining === "folded" ? "folded" : "six") : S.dining}`;   // v26: C lights like B
+  const b2 = `B_${S.dining === "folded" ? "folded" : "six"}`;   // v26: C lights like B
   const b2k = b2 + fixKey("bar2"), b1k = fixKey("bar1");
   if (built.bar2 !== b2k) { if (bar2) drop(bar2, lights.bar2); bar2 = buildBar(R.BAR2[b2], lights.bar2, "bar2"); built.bar2 = b2k; }
   if (bar1 && built.bar1 !== b1k) { drop(bar1, lights.bar1); bar1 = buildBar(R.BAR1, lights.bar1, "bar1"); }   // v38: turned or aimed
   built.bar1 = b1k;
   const lk = S.lamp + JSON.stringify(S.layout.lamp || {}) + fixKey("lamp");
   if (built.lamp !== lk) { buildLamp(); built.lamp = lk; }
-  if (G.now_ledge) G.now_ledge.visible = S.site !== "A" && S.plants !== "breast" && !(S.sugg.barcase && caseOn());   // v18: with the plants on the breast the ledge comes off; v34: the drinks cabinet takes its place
+  if (G.now_ledge) G.now_ledge.visible = S.plants !== "breast" && !(S.sugg.barcase && caseOn());   // v18: with the plants on the breast the ledge comes off; v34: the drinks cabinet takes its place
   placeChairs();                                                                   // v20: the chair cupboard, its doors, the chairs in it
   placeWork();                                                                     // v34: the blind, the records, the trolley
   applyDecor();                                                                    // v20: the rug, cushions, curtains, the case's fill and frame
@@ -68,9 +67,9 @@ function envLevels(day) {
 /* v48 §3: reflections from the room itself, not a stock studio. A cube camera in the middle of the room takes it in six directions once
    the room has changed and settled (1.2 s), in HD on a real graphics card (where the room already draws into a target of the same kind,
    so no new shaders) and in every saved picture; phones and Fast keep the studio. */
-const ENV = { rt: null, cam: null, pm: null, tex: null, studio: null, t: 0, gain: 0.8, use: true };
+const ENV = { rt: null, cam: null, pm: null, tex: null, studio: null, t: 0, gain: 0.8 };
 function roomEnv() {
-  if (!started || !ENV.use) return;
+  if (!started) return;
   if (S.tod === "day") { if (ENV.studio && scene.environment !== ENV.studio) { scene.environment = ENV.studio; envLevels(true); } return; }   // by day the bright garden in the window swamped it: the studio stays
   if (!ENV.rt) { ENV.rt = new THREE.WebGLCubeRenderTarget(256, { type: THREE.HalfFloatType }); ENV.cam = new THREE.CubeCamera(0.05, 40, ENV.rt); ENV.pm = new THREE.PMREMGenerator(gl); }
   ENV.cam.position.copy(v3(R.W / 2, 125, (R.WINDOW_Z + R.RECESS_Z) / 2));
@@ -121,7 +120,7 @@ function applyLight() {
     if (h.col) { l.color.set(h.col); if (g && l.intensity > 0) g.material.color.set(h.col); }
   }
   capShadows(hd ? SHADOW_CAP : 0);                            // v18: never more shadowed spots than the graphics card can take
-  if (growGlow) growGlow.forEach(m => m.visible = !!S.grow);
+  growGlow.forEach(m => m.visible = !!S.grow);
   set(lights.tv, L.bias > 0 && hd ? 100 : 0);
   ledMat.color.set(L.strip > 0 ? "#ffd9a8" : "#5a5248").multiplyScalar(L.strip > 0 ? 0.6 + L.strip / 100 * 1.4 : 1);
   runLed.color.set(L.uprights > 0 ? (S.col.strips || "#ffd9a8") : "#5a5248").multiplyScalar(L.uprights > 0 ? 0.6 + L.uprights / 100 * 1.4 : 1);   // v16: smart colour strips
@@ -153,7 +152,7 @@ function applyLight() {
   if (inK) { scene.traverse(l => { if (l.isLight && l !== skyFill) l.intensity = 0; }); hemi.intensity = day ? (hd && WINLIGHTS.length ? 0.38 : 0.5) : 0.2; }   // V2.39: by day in HD the window lights (less even fill)   // every light of the living room's, the spots too
   /* V2.21 (REAL_PLAN R1): by evening in a room of the house its own ceiling light lights it: the even fill and the studio's reflections
      down (they lit every corner alike), the light up (09_house_views.js placeRoomLights): a warm pool, the corners falling off */
-  if (typeof houseEnvK === "function") houseEnvK(inK && !day ? 0.35 : 1);
+  houseEnvK(inK && !day ? 0.35 : 1);
   scene.background.set(outside && R.HOUSE3 ? (day ? "#c6d6e3" : "#1b2233") : "#0d100e");             // and a sky behind it
   if (gl.shadowMap.enabled !== hd) { gl.shadowMap.enabled = hd; MATS.forEach(m => m.needsUpdate = true); sizeRenderer(); if (LIVE && started) precompile(); }
   if (started) { if (ROOMV() && S.tod !== lastTod) applyFloors(); else outdoor(); lastTod = S.tod; }   // V1.5: day or evening changes the living room's window; V1.15: and a room's (applyFloors ends in outdoor), only when it changes (not each slider move)

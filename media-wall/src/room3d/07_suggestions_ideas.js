@@ -49,7 +49,6 @@ const PRINT_TEX = canvasTex(720, 500, (g, w, h) => {      // a mid-century print
   g.fillStyle = "#2f4a6e"; g.fillRect(0, h - 26, w, 26);
 });
 function buildSuggest() {
-  const oak = reg(new THREE.MeshStandardMaterial({ color: "#c48c57", map: OAK_TEX, roughness: 0.55 }));
   const leaf = reg(new THREE.MeshStandardMaterial({ color: "#3f7a3a", roughness: 0.6, side: THREE.DoubleSide }));   // the vase's grass stems (the plants bring their own leaves)
   const mat = c => reg(new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 }));
   // the floor pieces: movable, shown only while switched on
@@ -146,8 +145,6 @@ function buildSuggest() {
     lb(g, 0, 0, 0, 32, 1, 32, sea);
     const roll = new THREE.Mesh(new THREE.SphereGeometry(0.15, 16, 12), mat("#7a8a6a")); roll.scale.set(1, 0.6, 1); roll.position.y = 0.41; g.add(shadow(roll)); }, SVAR_MATS.basket);
   // v32, client: "add anything else you haven't already suggested": three more
-  // picture lights over the two framed LPs (a 27.9 shade, 12.5 out on its arm from a 10.6 × 7 back plate), each washing its LP
-  // v35: the picture lights went with the two framed LPs (v34): not built
   // a blackout roller blind, face-fixed just above the window and down to the sill's nose, in front of the reveal (its plants stay behind it)
   { const g = SUGG_G.blind = new THREE.Group(); shell.add(g); lazyVis(g, () => { const [wx0, wx1] = R.WINDOW_X, [wy0, wy1] = R.WINDOW_Y, z = R.WINDOW_Z + 3.2, bw = wx1 - wx0 + 4;
     const cloth = reg(new THREE.MeshStandardMaterial({ color: "#cdbf9f", roughness: 0.95, side: THREE.DoubleSide })); SVAR_MATS.blind = [cloth];
@@ -164,13 +161,13 @@ function buildSuggest() {
   if (R.DRINKS) { const g = SUGG_G.barcase = new THREE.Group(); shell.add(g); lazyVis(g, () => g.add(drinksCab(R.DRINKS, R.DRINKS.x[0], R.DRINKS.x[1], "barcase", "barflap", 71))); }
   // v36: C, the same cabinet on the side wall by the sofa's open end: built facing the breast's way, then turned to face the room from x 0
   if (R.BAR_SIDE) { const B = R.BAR_SIDE, pv = SUGG_G.barside = new THREE.Group(); lazyVis(pv, () => pv.add(drinksCab(B, B.z[1], B.z[0], "barside", "barflap2", 73))); pv.rotation.y = Math.PI / 2; shell.add(pv); }
-  buildStorage(oak, mat);
+  buildStorage();
 }
 /* v36, client: "explore any more bar ideas and where we could put it as well as more storage and where we could put it ... a small 10cm
    gap from wall shelf with the hanging plant from the right side wall. add storage solution options for our blankets also, around 5
    blankets": the storage suggestions (the third bar is drinksCab above; the blanket rail is a "beside" option, buildBeside) */
 let coffeePlain = null;
-function buildStorage(oak, mat) {
+function buildStorage() {
   const W = R.W, own = c => reg(new THREE.MeshStandardMaterial({ color: c, roughness: 0.6 })), bamboo = reg(new THREE.MeshStandardMaterial({ color: "#c9a46a", roughness: 0.55 }));
   const kuggis = (g, x0, y, z0, along, deep, h, m, alongZ) => {     // a lidded box: its body, a bamboo lid 1 thick
     if (alongZ) { ibox(g, x0, y, z0, deep, h - 1, along, m); ibox(g, x0 - 0.2, y + h - 1, z0 - 0.2, deep + 0.4, 1, along + 0.4, bamboo); }
@@ -244,8 +241,8 @@ function buildStorage(oak, mat) {
     kuggis(g, mid - K[0] - 3, D.top, zf - K[1] - 0.5, K[0], K[1], K[2], box, false); kuggis(g, mid + 3, D.top, zf - K[1] - 0.5, K[0], K[1], K[2], box, false); }, true); }
   // two of the same boxes on your black shelf, either side of the laser, 1 over its front
   if (R.SHELF_BOXES) { const g = SUGG_G.shelfboxes = new THREE.Group(); shell.add(g); lazyVis(g, () => { const K = R.KUGGIS, sb = R.SHELF_B, box = own("#ece8e0"); SVAR_MATS.shelfboxes = [box];
-    for (const [za, zb] of R.SHELF_BOXES) kuggis(g, W - K[1] - 0.5, sb.top, zb, K[0], K[1], K[2], box, true); }, true); }
-  buildStorage37(own, mat);                                                                         // v37
+    for (const [, zb] of R.SHELF_BOXES) kuggis(g, W - K[1] - 0.5, sb.top, zb, K[0], K[1], K[2], box, true); }, true); }
+  buildStorage37(own);                                                                              // v37
   // v39: fewer draws: doorshelf, shelfboxes, alcoveshelves, wallcabs, wardrobe, overdoor, windowseat and stairdrawers merged as each is built
   // (lazyVis; the step drawers' moving boxes are nested, so they stay)
 }
@@ -257,11 +254,11 @@ function cornerHides(id) {             // your plant stand or your vinyl stand, 
   const inCorner = id === "plants" ? S.plants === "corner" : S.plants === "breast", L = S.layout[id] || {};
   return inCorner && cornerTaken() && L.x === undefined;
 }
-function buildStorage37(own, mat) {
-  const W = R.W, WZ = R.WINDOW_Z, oakOf = c => reg(new THREE.MeshStandardMaterial({ color: c, map: OAK_TEX, roughness: 0.55 }));
+function buildStorage37(own) {
+  const WZ = R.WINDOW_Z, oakOf = c => reg(new THREE.MeshStandardMaterial({ color: c, map: OAK_TEX, roughness: 0.55 }));
   const cloth = c => reg(new THREE.MeshStandardMaterial({ color: c, roughness: 0.95, bumpMap: HESSIAN, bumpScale: 0.8 }));
   // drawers in the bottom three risers: the first riser 6 behind the stair's front edge, a tread 2.2 thick over each
-  if (R.STAIR_DRAWERS) { const g = SUGG_G.stairdrawers = new THREE.Group(); shell.add(g); lazyVis(g, () => { const D = R.STAIR_DRAWERS, [sx0, sx1] = R.STAIR_X, front = oakOf("#c48c57"), box = oakOf("#d8b48a");
+  if (R.STAIR_DRAWERS) { const g = SUGG_G.stairdrawers = new THREE.Group(); shell.add(g); lazyVis(g, () => { const D = R.STAIR_DRAWERS, [sx0] = R.STAIR_X, front = oakOf("#c48c57"), box = oakOf("#d8b48a");
     SVAR_MATS.stairdrawers = [front];
     const dark = own("#1c1a18"), moves = [];
     for (let i = 0; i < D.n; i++) {
@@ -462,8 +459,6 @@ function applySuggest() {
     if (SUGG_G.liftcoffee) SUGG_G.liftcoffee.visible = lc; if (SUGG_G.recordtable) SUGG_G.recordtable.visible = rt;
     if (coffeePlain) coffeePlain.visible = !lc && !rt;
     if (SUGG_G.tray) SUGG_G.tray.position.y = lc ? (R.LIFT_COFFEE.h - 42) * M : rt ? (R.RECORD_TABLE.h - 42) * M : 0; }
-  if (SUGG_G.piclights) { SUGG_G.piclights.visible = !!S.sugg.piclights && !caseOn();   // v32: over the two framed LPs, while they hang
-    SUGG_G.piclights.position.y = S.site !== "A" && S.plants === "breast" ? 0.3 : 0; }
   // v26: the runner lies down the middle of whichever table is open
   const rn = SUGG_G.runner;
   if (rn) {
@@ -579,7 +574,7 @@ function buildIdeas() {
     const glaze = ["#e8e2d4", "#9bb0a0", "#c7643a", "#2f4a6e", "#d9a441"].map(c => reg(new THREE.MeshStandardMaterial({ color: c, roughness: 0.3 })));
     const disc = reg(new THREE.MeshStandardMaterial({ color: "#121214", roughness: 0.35 }));
     const xa = x0 + f + 1.5, xb = x1 - f - 1.5, bases = [y0 + f, ...C.shelves.map(y => y + 0.3)];
-    const tops = [...C.shelves.map(y => y - 0.3), y1 - f - 0.6], zb = -2, rr = rnd(77);
+    const tops = [...C.shelves.map(y => y - 0.3), y1 - f - 0.6];
     const cyl = (grp, x, y, z, rt, rb, h, mat, seg = 18) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(rt * M, rb * M, h * M, seg), mat); m.position.copy(v3(x, y + h / 2, z)); grp.add(shadow(m)); return m; };
     const ball = (grp, x, y, z, rad, mat, sy = 1) => { const m = new THREE.Mesh(new THREE.SphereGeometry(rad * M, 16, 12), mat); m.scale.y = sy; m.position.copy(v3(x, y + rad * sy, z)); grp.add(shadow(m)); return m; };
     const TIER = {
@@ -588,7 +583,7 @@ function buildIdeas() {
           if (k % 2) { ibox(grp, x, yb, z0 + 3, w, hh, 5, pal[(k + i) % 10]); ibox(grp, x + 1, yb + 2, z0 + 2.9, w - 2, hh - 5, 0.1, glassM, false); }
           else { cyl(grp, x + w / 2, yb, -6, 2.4, 2.8, hh - 5, pal[(k + i + 3) % 10]); ball(grp, x + w / 2, yb + hh - 5, -6, 2.4, pal[4]); }
           x += w + 4; } },
-      cap(grp, yb, h, i) {              // a cap on its button top, and two figures
+      cap(grp, yb) {                    // a cap on its button top, and two figures
         const cap = new THREE.Mesh(new THREE.SphereGeometry(0.07, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), pal[0]); cap.position.copy(v3(xa + 16, yb, -6.5)); grp.add(shadow(cap));
         const brim = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.006, 0.05), pal[0]); brim.position.copy(v3(xa + 16, yb + 0.3, z0 + 3)); grp.add(brim);
         for (const [x, c] of [[xa + 42, 1], [xa + 58, 3]]) { cyl(grp, x, yb, -6, 2.6, 3, 9, pal[c]); ball(grp, x, yb + 9, -6, 2.6, pal[4]); }
@@ -597,18 +592,18 @@ function buildIdeas() {
         let x = xa + 1; for (let k = 0; x < xb - 14; k++) { const c = pal[(k * 3 + i) % 10];
           const m = ibox(grp, x, yb, -5.5, 13.5, Math.min(h - 1.5, 17), 1.6, c); m.rotation.x = -0.12;
           ibox(grp, x + 1, yb + 12, -5.65, 11.5, 2.4, 0.1, pal[k % 2 ? 8 : 7], false); x += 16.5; } },
-      console(grp, yb, h, i) {          // a handheld, its cartridges, a pad
+      console(grp, yb) {                // a handheld, its cartridges, a pad
         ibox(grp, xa + 6, yb, -7, 9, 15, 3, pal[4]); ibox(grp, xa + 7.5, yb + 8, -7.1, 6, 5, 0.1, disc, false);
         for (let k = 0; k < 6; k++) ibox(grp, xa + 22 + k * 6.5, yb, -8, 5.7, 6.5, 0.8, pal[(k + 1) % 10]);
         ibox(grp, xa + 64, yb, -9, 15, 3, 6, pal[7]); ball(grp, xa + 66, yb + 1, -6, 2.4, pal[7], 0.6); ball(grp, xa + 76, yb + 1, -6, 2.4, pal[7], 0.6); },
       singles(grp, yb, h, i) {          // 7-inch singles face-out, a record peeking out of one
         for (let k = 0; k < 4; k++) { const x = xa + 1 + k * 21.5, m = ibox(grp, x, yb, -5, 18, 18, 0.4, pal[(k * 2 + i * 3 + 1) % 10]); m.rotation.x = -0.1;
           if ((k + i) % 3 === 0) { const r = new THREE.Mesh(new THREE.CylinderGeometry(0.0875, 0.0875, 0.002, 28), disc); r.rotation.x = Math.PI / 2; r.position.copy(v3(x + 13, yb + 9.4, -3.6)); grp.add(r); } } },
-      tapes(grp, yb, h, i) {            // cassettes stacked flat and a row stood up, and a small speaker
+      tapes(grp, yb) {                  // cassettes stacked flat and a row stood up, and a small speaker
         for (let s = 0; s < 3; s++) for (let k = 0; k < 6 - s; k++) ibox(grp, xa + 2 + s * 13, yb + k * 1.75, -9, 11, 1.7, 7, pal[(k + s * 2) % 10]);
         for (let k = 0; k < 6; k++) ibox(grp, xa + 44 + k * 2, yb, -8, 1.7, 11, 7, pal[(k + 5) % 10]);
         ibox(grp, xa + 62, yb, -9, 14, 14, 7, pal[7]); cyl(grp, xa + 69, yb + 4, -9.1, 3.5, 3.5, 0.2, pal[4]); },
-      plants(grp, yb, h, i) {           // small pots, two trailing over the shelf's edge
+      plants(grp, yb) {                 // small pots, two trailing over the shelf's edge
         [0.08, 0.3, 0.55, 0.78, 0.95].forEach((t, k) => plant(grp, xa + 4 + t * (xb - xa - 8), yb, -6, 3.2 + (k % 2), k === 0 || k === 4 ? 1 : 0)); },
       ceramics(grp, yb, h, i) {         // vases, a bud vase and a bowl in mixed glazes
         let x = xa + 4; for (let k = 0; x < xb - 6; k++) { const gz = glaze[(k + i) % glaze.length], kind = (k + i) % 3;
@@ -625,7 +620,7 @@ function buildIdeas() {
     }
     shell.add(g); }
   // 2. glass plant shelves across the window's reveal, on studs and a slim rod from the head
-  { const g = IDEA_G.glass = new THREE.Group(); shell.add(g); lazyVis(g, () => { const GL = I.glass, [wx0, wx1] = GL.x, FZ = R.WINDOW_Z - R.WINDOW_REVEAL, wz = R.WINDOW_Z, mid = (wx0 + wx1) / 2;
+  { const g = IDEA_G.glass = new THREE.Group(); shell.add(g); lazyVis(g, () => { const GL = I.glass, [wx0, wx1] = GL.x, wz = R.WINDOW_Z, mid = (wx0 + wx1) / 2;
     for (const y of GL.ys) {
       ibox(g, wx0, y - GL.t, wz - GL.d, wx1 - wx0, GL.t, GL.d - 0.5, glassM, false);
       for (const x of [wx0 + 0.5, wx1 - 1.5]) ibox(g, x, y - GL.t - 0.8, wz - GL.d / 2 - 1, 1, 0.8, 2, steel, false);
