@@ -19,6 +19,12 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **No shader built:** dump `R3D._dbg.gl.info.programs` (name | cacheKey) before and after; after must be a subset.
 - **A free camera:** `R3D.set({aim})` keeps the camera in the view's room. Set `R3D._dbg.camera.position` instead, in metres:
   world = (−x/100, y/100, z/100) from the model's cm (x mirrored). Raycast `R3D._dbg.scene` (every parent visible) to see what a pixel is.
+- **Touches:** Playwright's touchscreen only taps; for drags, pinches and twists send CDP `Input.dispatchTouchEvent` (a
+  `new_cdp_session`, `touchStart` / `touchMove` / `touchEnd` with `touchPoints`). Chrome hands each finger's move on as its own
+  `pointermove`, so a two-finger gesture must wait till both have moved before it decides what it is (N52's tilt read as a pan).
+- **Listener order on the canvas:** the orbit's (01) runs first, the walk's capture one (14) sets `enableRotate` before it, Edit's (13)
+  turns `controls.enabled` off when a piece is picked up. Over the house `19_view_controls.js` turns the orbit's drags off in a capture
+  listener after 14's, then drives the camera itself; it leaves a drag be while `controls.enabled` is off.
 - **Textures:** CC0 sites (Poly Haven, ambientCG) and GitHub release downloads are blocked; new textures are made in
   `house/textures/build_textures.py` (`--finishes`).
 - **Git:** force-push is refused. After a merged PR, restart the branch from `origin/main` (a fast-forward push works).
@@ -91,6 +97,6 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `page.js`. To see a new round on the phone: open Plan, tap the version.
 - **Landing and welcome:** `build_viewer.LANDING_JS`, `r3d-first` → `demma-landed`; the welcome once a device (`demma-welcome`);
   automated browsers skip both unless `?landing` / `?welcome`.
-- **Back** (`09_house_views.js` `roomHist`), **Esc** (`19_controls.js` `ESC`, top layer only), **Overhead/Angled** (`19_view_controls.js`).
+- **Back** (`09_house_views.js` `roomHist`), **Esc** (`19_controls.js` `ESC`, top layer only), **Overhead/Angled** (`19_view_controls.js`: its own drags, the orbit's off there, V3.07 N52).
 - **Doors:** `14_views_walk.js` `walkDoors` opens a door within 95 cm (not the bin cupboards'). The stairs: both flights 85 wide
   (`geometry.RECESS_W`), `model.stair_soffit` over the lower flight; the site check walks through the living room door at x 339.

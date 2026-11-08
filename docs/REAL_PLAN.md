@@ -301,3 +301,13 @@ merge (merge `main` in, renumber, `checks.py --quick`, `build.py --fast`, push, 
 just before merging). N31 when the client says yes, from #133's branch (merge `main` into it first).
 **With the client:** KTX2 yes or no; the kitchen's door (is there one?); the living room door's width; dark panels or the cream; a
 microwave photo. N50 replaces the `?perf` screenshots.
+
+## 14. Movement and the PC (8 Nov 2026, V3.06)
+
+The client, 8 Nov 2026: "I want to now optimise the pc version as much as the mobile version. Movement does still need some changes. I
+like mobile joystick but in edit mode for moving things it still swings the camera round. When in overhead and angled views it has
+strange movement too on mobile and pc. Not intuitive." Each its own thread; rows added as threads take them.
+
+| # | Task | Aim | Owns | After | Status |
+|---|---|---|---|---|---|
+| N52 | Overhead and Angled as a map on a phone and a PC: one finger or a left-drag moves the ground under it (no swing, no lag, a flick glides), two fingers pinch, twist and (Angled) tilt, the wheel zooms to the pointer, a right-drag turns and tilts | UX | `19_view_controls.js` | | Done V3.07 |
