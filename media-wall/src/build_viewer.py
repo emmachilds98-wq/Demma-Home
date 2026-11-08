@@ -687,7 +687,7 @@ def _short_item(item):
 
 
 # v44: each cost piece's card in Build
-HOW = {"The media wall": "mk-base", "The side wall and the PC": "mk-sidewall", "The dining cabinet": "mk-cabinet", "The chimney breast": "mk-glasscase",
+HOW = {"The media wall": "mk-base", "The side wall and the PC": "mk-sidewall", "The dining cabinet": "mk-cabinet", "Left of the window": "mk-glasscase",
        "Lighting": "job-lighting", "Paint": "job-paint", "Network": "job-network", "Electrics (your own job)": "job-cables",
        "Power and cables": "job-cables", "TV, consoles and AV": "job-connect", "Vinyl kit": "job-connect"}
 

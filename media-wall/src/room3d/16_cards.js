@@ -176,7 +176,7 @@ function actItems(id) {     // [title, how it is now, buttons]
       btn(any ? "Shut every door" : "Open every door", { hdoors: any ? "shut" : "open" }), ...(DS() && HIT(k.slice(5)) ? [btn("Change its size", { actopen: "hsize:" + k.slice(5) })] : [])]]; }
   if (id === "nowplay") return ["Now playing, on the ledge", `${NOWP[S.nowp % NOWP.length].name}`, [   // v39: which LP faces out
       btn("‹", { nowp: "-1" }, false, "q", "The one before"), btn("›", { nowp: "1" }, false, "q", "The next one"),
-      btn("A photo of yours", { nowpic: "1" }), btn("Look at it", { view: "breast" })]];
+      btn("A photo of yours", { nowpic: "1" }), btn("Look at it", { view: S.plants === "breast" ? "corner" : "breast" })]];
   if (id === "measure") { const d = MEAS.d;                               // v39: measure in 3D
     return ["Measure", d ? `${d.toFixed(1)} cm between them (${MEAS.dh.toFixed(1)} across, ${MEAS.dv.toFixed(1)} up)` : MEAS.a ? "Now tap the second point" : "Tap the first point in the room", [
       btn("Measure again", { measure: "again" }), btn("Done", { measure: "done" })]]; }

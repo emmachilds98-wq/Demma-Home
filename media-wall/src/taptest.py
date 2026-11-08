@@ -96,7 +96,7 @@ def run(w, h):
         CEN = "k => { const { THREE } = R3D._dbg; const o = k.split('.').reduce((a, p) => a[p], R3D._dbg); const c = new THREE.Box3().setFromObject(o).getCenter(new THREE.Vector3()); return [-c.x * 100, c.y * 100, c.z * 100]; }"
         pg.evaluate("() => R3D.set({site: 'C', dining: 'folded', sugg: {blind: true}, blind: 'down', curtains: false, view: 'windowwall'})"); pg.wait_for_timeout(800)
         tap(pg.evaluate(CEN, "SUGG_G.blind"), "the blind"); press("Roll it up"); print("   blind:", S("blind"))
-        pg.evaluate("() => R3D.set({sugg: {}, view: 'breast', lp: false})"); pg.wait_for_timeout(800)
+        pg.evaluate("() => R3D.set({sugg: {}, view: 'corner', lp: false})"); pg.wait_for_timeout(800)
         tap(pg.evaluate(CEN, "MOV.records.pivot"), "the vinyl stand"); press("Lift out"); print("   lp:", S("lp"))
         pg.evaluate("() => R3D.set({beside: 'trolley', trolley: 'park', dining: 'folded', view: 'beside'})"); pg.wait_for_timeout(800)
         tray = lambda: (lambda c: [c[0], 84.4, c[2]])(pg.evaluate(CEN, "BES.trolley"))   # its top tray (the frame is open between the trays)

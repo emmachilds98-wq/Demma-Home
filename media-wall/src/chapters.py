@@ -40,16 +40,16 @@ MAKE = [
     ("bar", "The bar", "A cupboard scribed between the cabinet and the wall, an oak counter, the ENHET frame and mirror over it.",
      "render_v99_3d_beside_bar_open.png", [(14, ["The bar beside the cabinet"])],
      ["The bar beside the dining cabinet", "Over the bar"], "1 day", "You"),
-    ("glasscase", "The glass case", "An oak frame on the chimney breast with three glass shelves and a lift-off glass front.",
+    ("glasscase", "The glass case", "An oak frame over the vinyl stand, left of the window, with three glass shelves and a lift-off glass front.",
      "render_v99_3d_glass_case.png", [(9, ["The glass display case"])],
      ["The glass display case's glass", "The glass display case's oak"], "½ day", "You"),
     ("recordtable", "The record table", "Two KALLAX on their backs on a ply base with castors, under a hinged oak lid.",
      "render_v99_3d_sg_recordtable.png", [(14, ["The record table"])], ["The record table"], "½ day", "You"),
     ("ctable", "The C-table", "An oak top over the sofa's open end, an upright and a foot weighed down by a steel plate.",
      "render_v99_3d_sg_cordlamp.png", [(14, ["The C-table"])], ["The C-table: a 400 × 200 × 6 mm steel plate"], "½ day", "You"),   # v44
-    ("fitted", "Bought and fitted: shelves, cabinets, the door shelf", "The alcove shelves, the two wall cabinets and the shelf over the door with its boxes. Nothing to cut but the door shelf.",
-     "render_v99_3d_sg_alcoveshelves.png", [(14, ["The wall cabinets", "The alcove shelves", "Over the hall door"])],
-     ["Two IKEA EKET wall cabinets", "Two oak floating shelves 900 × 230", "An oak shelf over the hall door", "Two IKEA KUGGIS lidded boxes"],
+    ("fitted", "Bought and fitted: cabinets, the door shelf", "The two wall cabinets and the shelf over the door with its boxes. Nothing to cut but the door shelf.",
+     "render_v99_3d_sg_wallcabs.png", [(14, ["The wall cabinets", "Over the hall door"])],
+     ["Two IKEA EKET wall cabinets", "An oak shelf over the hall door", "Two IKEA KUGGIS lidded boxes"],
      "1 day", "You + a helper"),
 ]
 

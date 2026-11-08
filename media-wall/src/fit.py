@@ -401,29 +401,32 @@ _zones_v17 = zones
 
 
 def plants_zone():
+    """V3.14, the client: "the plant shelf on the chimney breast and records on the left of the living room window" (the plan)."""
+    import ideas
     g = G
-    P_, R_ = g.PLANT_STAND, g.RECORD_SHELF
+    P_, R_, K = g.PLANT_STAND, g.RECORD_SHELF, ideas.CASE_CORNER
     curt = g.WINDOW_X[1] + g.CURTAIN["ext"]                     # the curtains' west stack ends here
     box_x = g.PIPE_BOX["x"][0]
-    cx, cz, _f = g.PLANT_LAYOUTS["corner"]["plants"]
-    px0, px1 = cx - P_["w"] / 2, cx + P_["w"] / 2
+    rx = g.PLANT_LAYOUTS["breast"]["records"][0]
+    rx0, rx1 = rx - R_["w"] / 2, rx + R_["w"] / 2
     bw = g.BREAST_X[1] - g.BREAST_X[0]
-    ledge_under = g.NOW_LEDGE["top"] - g.NOW_LEDGE["t"]
     lp_top = R_["shelf_y"] + g.LP
-    frames_bottom = g.FRAMES_Y - g.LP / 2 - 2.0
-    return ("Your plant stand and your vinyl stand (v18.1)", f"the window wall's west end, {r1(box_x - curt)} between the curtains' stack and the pipe boxing; the chimney breast, {r1(bw)} wide", [
-        ("A: the plant stand in the window corner (recommended)", f"{r1(P_['w'])} × {r1(P_['d'])} × {r1(P_['h'])}", ref("plantstand"), f"x {r1(curt)} to {r1(box_x)}",
-         f"x {r1(px0)}–{r1(px1)}: {r1(px0 - curt)} from the curtains, {r1(box_x - px1)} from the boxing; daylight from the window beside it; {r1(g.CEIL - P_['h'])} to the ceiling for the top plants", TIGHT),
-        ("A: the vinyl stand on the breast", f"{r1(R_['w'])} × {r1(R_['d'])} × {r1(R_['h'])}", ref("vinylstand"), f"breast {r1(bw)} wide, the “now playing” ledge's underside at {r1(ledge_under)}",
-         f"{r1((bw - R_['w']) / 2)} each side, {r1(ledge_under - R_['h'])} under the ledge; a step from the turntable", PASS),
-        ("A: LPs in its top bays, face-out", f"2 bays × {r1(R_['bay'])}; an LP {r1(g.LP)}", ref("vinylstand", "media"), f"shelf at about {r1(R_['shelf_y'])}",
+    L = g.NOW_LEDGE
+    ledge_under = L["top"] - L["t"]
+    frames_bottom = g.FRAMES_Y + 30 - g.LP / 2 - 2.0
+    return ("Your plant stand and your vinyl stand (V3.14: the plan)", f"the chimney breast, {r1(bw)} wide; left of the window, {r1(box_x - curt)} between the curtains' stack and the pipe boxing", [
+        ("The plant stand on the breast, centred", f"{r1(P_['w'])} × {r1(P_['d'])} × {r1(P_['h'])}", ref("plantstand"), f"breast {r1(bw)} wide",
+         f"{r1((bw - P_['w']) / 2)} each side; the “now playing” ledge moves with the records", TIGHT),
+        ("The frames over it", f"up 30, from about {r1(frames_bottom)}", ref("room"), f"the stand's top at {r1(P_['h'])}", f"{r1(frames_bottom - P_['h'])} over the top plants", PASS),
+        ("The vinyl stand left of the window", f"{r1(R_['w'])} × {r1(R_['d'])} × {r1(R_['h'])}", ref("vinylstand"), f"x {r1(curt)} to {r1(box_x)}",
+         f"x {r1(rx0)}–{r1(rx1)}: {r1(rx0 - curt)} from the curtains, {r1(box_x - rx1)} from the boxing", PASS),
+        ("LPs in its top bays, face-out", f"2 bays × {r1(R_['bay'])}; an LP {r1(g.LP)}", ref("vinylstand", "media"), f"the “now playing” ledge's underside at {r1(ledge_under)}",
          f"{r1(R_['bay'] - g.LP)} spare a bay; the front LP's top at about {r1(lp_top)}, {r1(ledge_under - lp_top)} under the ledge; about {R_['lps_top']} LPs", TIGHT),
-        ("A: LPs on its bottom shelf, between the wires", f"{R_['wires']} wires {r1(R_['wire_h'])} tall", ref("vinylstand", "media"), f"{r1(R_['w'])} wide, {r1(R_['shelf_y'] - R_['bottom_y'])} high",
+        ("The “now playing” ledge over it", f"{r1(L['x'][1] - L['x'][0])} long, its top at {r1(L['top'])}", ref("media"), f"the curtains' stack to the boxing, {r1(box_x - curt)}",
+         f"{r1((box_x - curt - (L['x'][1] - L['x'][0])) / 2)} each end; three sleeves' tops at {r1(L['top'] + g.LP * 0.99)}, {r1(K['y'][0] - L['top'] - g.LP * 0.99)} under the glass case", TIGHT),
+        ("LPs on its bottom shelf, between the wires", f"{R_['wires']} wires {r1(R_['wire_h'])} tall", ref("vinylstand", "media"), f"{r1(R_['w'])} wide, {r1(R_['shelf_y'] - R_['bottom_y'])} high",
          f"three slots of LPs standing; about {R_['lps_bottom']} more (about {R_['lps_top'] + R_['lps_bottom']} in all)", PASS),
-        ("B: the vinyl stand in the window corner, as today", f"{r1(R_['w'])} wide", ref("vinylstand"), f"{r1(box_x - curt)} between the curtains and the boxing", f"{r1(box_x - curt - R_['w'])} to spare", PASS),
-        ("B: the plant stand on the breast", f"{r1(P_['w'])} wide, {r1(P_['h'])} tall", ref("plantstand"), f"breast {r1(bw)}; the frames from about {r1(frames_bottom)}",
-         f"{r1((bw - P_['w']) / 2)} each side; the “now playing” ledge comes off and the two frames go up 30 (or elsewhere): at {r1(P_['h'])} it stands past the frames' bottoms", TIGHT),
-        ("Your red lamp", "28 base", ref("room"), "the window corner is taken in A and B", "it moves to the sofa's west end (in the 3D room, drag it anywhere)", PASS),
+        ("Your red lamp", "28 base", ref("room"), "the window corner is taken", "at the sofa's west end (in the 3D room, drag it anywhere)", PASS),
     ])
 
 
@@ -587,8 +590,7 @@ def optc_zone():
     in_d = C["in_d"]
     oc, ot = C["open_c"][0] - C["open_c"][1], C["open_t"][0] - C["open_t"][1]
     pb = g.PLANT_B
-    pl = g.PLANT_LAYOUTS["corner"]["plants"]
-    plant_face = pl[1] + g.PLANT_STAND["d"] / 2
+    plant_face = g.CORNER_FRONT                                 # V3.14: the vinyl stand in the window corner
     kg_half = C["top"][0] * C["top"][1] * C["top"][2] * 0.72 / 1000
     lo_top, up0 = C["plinth"] + ch, C["shelf_y"] + C["t"]
     n_floor = C["chairs"] - C["shelf_chairs"]
@@ -625,7 +627,7 @@ def optc_zone():
         ("Stair side: the stair's foot and the door", f"chair backs at z {r1(s_back)}", ref("room", "photo20"), f"the stair box's face at {r1(g.STAIRS_WALL_Z[0])}; the door's edge reaches {r1(arc)}",
          f"{r1(g.STAIRS_WALL_Z[0] - s_back)} from the stair box, {r1(arc - s_back)} from the door's swing: tuck the end chair in after a meal", TIGHT),
         ("Window side: three chairs", f"{st['window'][1]:.1f} of edge each", ref("dining", "sofa"), f"{r1(st['window'][2])} from the sofa's arm (x {r1(g.SOFA_X[1])}) to the cabinet",
-         f"three in comfort; backs at z {r1(w_back)}, {r1(w_back - plant_face)} clear of your plant stand", PASS),
+         f"three in comfort; backs at z {r1(w_back)}, {r1(w_back - plant_face)} clear of your vinyl stand", PASS),
         ("The far end and the coffee table", f"the table ends at x {r1(C['tx'][0])}", ref("dining"), f"the coffee table to x {r1(g.COFFEE['x'][1])}",
          f"{r1(C['tx'][0] - g.COFFEE['x'][1])} between them: the coffee table stays put; a seventh chair fits at the end ({r1(st['end_clear'])} behind its back)", PASS),
         ("The ottoman (v38: a dinner spot)", f"{r1(g.SOFA_POUF['w'])} square", ref("pouf"), f"the open table reaches x {r1(C['tx'][0])}; the ottoman to x {r1(g.SOFA_POUF['x'][1])}",
@@ -755,8 +757,7 @@ def cab_zone():
     under = g.SHELF_B["top"] - g.SHELF_B["t"]
     in_d, bay_t, bay_c = C["in_d"], C["bay_t"], C["bay_c"]
     pb = g.PLANT_B
-    pl = g.PLANT_LAYOUTS["corner"]["plants"]
-    plant_face = pl[1] + g.PLANT_STAND["d"] / 2
+    plant_face = g.CORNER_FRONT                                 # V3.14: the vinyl stand in the window corner
     kg_half = C["top"][0] * C["top"][1] * C["top"][2] * 0.72 / 1000
     base_h = C["base"][1] - C["base"][0]
     lo_top, up0, up_top = C["plinth"] + ch, C["shelf_y"] + C["t"], C["shelf_y"] + C["t"] + ch
@@ -775,8 +776,8 @@ def cab_zone():
          f"{r1(C['door_cw'])} wide, about {C['door_kg'][1]:.0f} kg", ref("piano32"), "a full-height stainless piano hinge each, screwed every 10 cm into a solid oak edge",
          "the hinge's load isn't published: hang the table door, open it flat, and check its far end doesn't drop before you load the cabinet", CHECK),
         ("The table door open", "it turns 180° and lies back flat over the chair door and the wall beyond", ref("piano32", "plantstand"),
-         f"its far end reaches z {r1(C['door_t_open'][1])}; your plant stand's front is at z {r1(plant_face)}",
-         f"{r1(C['door_t_open'][1] - plant_face)} clear of the plant stand; a flush magnet in the chair door's face holds it open", PASS),
+         f"its far end reaches z {r1(C['door_t_open'][1])}; your vinyl stand's front is at z {r1(plant_face)}",
+         f"{r1(C['door_t_open'][1] - plant_face)} clear of the vinyl stand; a flush magnet in the chair door's face holds it open", PASS),
         ("The open table door and the window side's chairs", f"its face, lying open, at x {r1(C['door_t_face'])}", ref("padded", "dining"),
          f"the nearest chair's side at x {r1(near)}", f"{r1(C['door_t_face'] - near)} clear: the chair pulls back past it", PASS),
         ("The chair door open", "it turns 180° and lies back flat over the table door", ref("piano32"), f"the table door {r1(C['door_tw'])} wide",
@@ -808,7 +809,7 @@ def cab_zone():
           f"seated, the backs reach {r1(s_back - arc)} into the door's swing: keep the door shut while you eat. Measure a chair's depth: "
           f"{r1(arc - C['tz'][0] + g.CHAIR_TUCK)} or less and the door clears"), TIGHT if arc - s_back >= 0 else CHECK),
         ("Window side: three chairs", f"{st['window'][1]:.1f} of edge each", ref("dining", "sofa"), f"{r1(st['window'][2])} from the sofa's arm (x {r1(g.SOFA_X[1])}) to the cabinet",
-         f"three in comfort; backs at z {r1(w_back)}, {r1(w_back - plant_face)} clear of your plant stand", PASS),
+         f"three in comfort; backs at z {r1(w_back)}, {r1(w_back - plant_face)} clear of your vinyl stand", PASS),
         ("The far end and the coffee table", f"the table ends at x {r1(C['tx'][0])}", ref("dining"), f"the coffee table to x {r1(g.COFFEE['x'][1])}",
          f"{r1(C['tx'][0] - g.COFFEE['x'][1])} between them: the coffee table stays put; a seventh chair fits at the end ({r1(st['end_clear'])} behind its back)", PASS),
         ("The ottoman (v38: a dinner spot)", f"{r1(g.SOFA_POUF['w'])} square", ref("pouf"), f"the open table reaches x {r1(C['tx'][0])}; the ottoman to x {r1(g.SOFA_POUF['x'][1])}",
@@ -862,8 +863,7 @@ def cab80_zone():
     st = optc_seats(C)
     plate = 27.0
     mid80, mid90 = C["top"][0] - 2 * plate, P["top"][0] - 2 * plate
-    pl = g.PLANT_LAYOUTS["corner"]["plants"]
-    plant_face = pl[1] + g.PLANT_STAND["d"] / 2
+    plant_face = g.CORNER_FRONT                                 # V3.14: the vinyl stand in the window corner
     return ("The more compact version: an 80-wide table (an option)", f"the same two boxes, {r1(C['len'])} long, the table {r1(C['len_open'])} × {r1(C['top'][0])} open", [
         ("Its length", f"z {r1(C['z'][0])} to {r1(C['z'][1])}", ref("photo20", "room"), f"{r1(P['len'])} for the plan's",
          f"{r1(P['len'] - C['len'])} shorter: {r1(C['freed'])} of bare wall by the pipe boxing instead of {r1(P['freed'])}", PASS),
@@ -873,7 +873,7 @@ def cab80_zone():
          f"{r1(mid80)} down the middle for dishes (the plan: {r1(mid90)}): a jug and one dish at a time", TIGHT),
         ("Six chairs inside", f"four standing in the chair box; two lying on their sides need {r1(ch)} + 1", ref("padded"), f"the base is {r1(C['bay_t'])} wide (the plan's {r1(P['bay_t'])})",
          "the two don't fit lying down: four go inside, two live elsewhere (the garage, or folded behind a door)", NO),
-        ("The table door", f"{r1(C['door_tw'])} wide, open over the chair door", ref("piano32"), f"your plant stand's front at z {r1(plant_face)}",
+        ("The table door", f"{r1(C['door_tw'])} wide, open over the chair door", ref("piano32"), f"your vinyl stand's front at z {r1(plant_face)}",
          f"its far end at z {r1(C['door_t_open'][1])}: {r1(C['door_t_open'][1] - plant_face)} clear", PASS),
     ])
 
@@ -963,22 +963,22 @@ ORDER.extend(["glasscut", "acrylicmirror", "bottles", "flapstay", "istoolsott", 
 
 
 def case_zone():
-    """v34: the glass display case on the breast, in the plan (ideas.CASE: 90 × 85 × 12, three glass shelves)."""
+    """V3.14: the glass display case left of the window, over your vinyl stand (ideas.CASE_CORNER: 90 × 85 × 12, three glass shelves)."""
     import ideas
-    C, L, P_ = ideas.CASE, G.NOW_LEDGE, G.PLANT_STAND
+    C, R_ = ideas.CASE_CORNER, G.RECORD_SHELF
     w, h = C["x"][1] - C["x"][0], C["y"][1] - C["y"][0]
-    lp_top = L["top"] + G.LP * 0.99
+    curt, box_x = G.WINDOW_X[1] + G.CURTAIN["ext"], G.PIPE_BOX["x"][0]
+    lp_top = G.NOW_LEDGE["top"] + G.LP * 0.99
     sh = C["shelves"]
     gaps = [sh[0] - C["y"][0] - C["frame"], sh[1] - sh[0], sh[2] - sh[1], C["y"][1] - C["frame"] - sh[2]]
-    return ("The glass display case on the chimney breast (v34: in the plan)", f"{r1(w)} × {r1(h)} × {r1(C['d'])}, from {r1(C['y'][0])} to {r1(C['y'][1])}", [
-        ("On the breast, centred", f"{r1(w)} wide", ref("glasscut"), f"breast {r1(G.BREAST_W)} wide",
-         f"{r1((G.BREAST_W - w) / 2)} each side", PASS),
+    return ("The glass display case left of the window (V3.14: in the plan)", f"{r1(w)} × {r1(h)} × {r1(C['d'])}, from {r1(C['y'][0])} to {r1(C['y'][1])}", [
+        ("On the window wall, over the vinyl stand", f"x {r1(C['x'][0])} to {r1(C['x'][1])}", ref("glasscut"), f"the curtains' stack to {r1(curt)}, the pipe boxing from {r1(box_x)}",
+         f"{r1(C['x'][0] - curt)} from the curtains, {r1(box_x - C['x'][1])} from the boxing", PASS),
         ("Under the ceiling", f"top at {r1(C['y'][1])}", ref("glasscut"), f"{r1(G.CEIL)} ceiling", f"{r1(G.CEIL - C['y'][1])} above it", PASS),
         ("Over the “now playing” sleeves", f"bottom at {r1(C['y'][0])}", ref("media"), f"the sleeves' tops at {r1(lp_top)}", f"{r1(C['y'][0] - lp_top)} between", TIGHT),
-        ("Its four spaces", ", ".join(r1(x) for x in gaps) + " high", ref("glasscut"), "7-inch singles 18.4, boxed games, figures, small plants",
-         "the bottom one takes tumblers and coupes (about 9–14) if you build the drinks cabinet under it", PASS),
+        ("Its four spaces", ", ".join(r1(x) for x in gaps) + " high", ref("glasscut"), "7-inch singles 18.4, boxed games, figures, small plants", "each takes one of them", PASS),
         ("Depth, front to back", f"{r1(C['d'])} deep, a 4 mm front, 6 mm shelves", ref("glasscut"), "the vinyl stand below it stands 32 out",
-         "it stays no further out than a picture ledge; the stand and its sleeves sit under it", PASS),
+         "no further out than a picture ledge; the stand and its sleeves sit under it", PASS),
     ])
 
 
@@ -998,8 +998,8 @@ def drinks_zone():
         ("A: the “now playing” ledge", f"its top at {r1(G.NOW_LEDGE['top'])}", ref("media"), f"the cabinet {r1(D['y'][0])}–{r1(D['y'][1])}",
          "it comes off: the vinyl stand's face-out top bays show what's on", PASS),
         ("B: the trolley, pulled out for dinner", f"{r1(tr['w'])} × {r1(tr['d'])}, to x 326–346", ref("vasagle"),
-         "the open table door's swing (90.5 from its hinge), the window-side chairs, the plant stand",
-         "112 from the door's hinge (the door is 90.5), 13 behind the chairs, 1.3 off the plant stand: it comes out before the table door opens", TIGHT),
+         "the open table door's swing (90.5 from its hinge), the window-side chairs, the vinyl stand",
+         "112 from the door's hinge (the door is 90.5), 13 behind the chairs, beside the vinyl stand: it comes out before the table door opens", TIGHT),
         ("B: on its trays", "bottles on top; glasses, mixers, an ice bucket below", ref("vasagle", "bottles"), "trays 24 apart",
          "the top tray takes the tallest bottle; tumblers and cans fit between the others", PASS),
     ])
@@ -1234,8 +1234,8 @@ def more_storage_zone():
          f"{r1((C['w'] - hb['w']) / 2)} to spare each side", TIGHT),
         ("The built-in cupboard", f"{r1(wd['x'][1] - wd['x'][0])} × {r1(wd['d'])}, to the ceiling", ref("wardrobe"), "60 for a hanging rail; sliding doors need 71",
          f"hinged doors; {r1(wd['behind_chairs'])} to the seated chairs' backs, so open it with the table folded", TIGHT),
-        ("The alcove shelves", f"two {r1(al['w'])} × {r1(al['d'])} at {r1(al['tops'][0])} and {r1(al['tops'][1])}", ref("floatshelf", "solidwall"), f"the plant stand's top {r1(g.PLANT_STAND['h'])}",
-         f"{r1(al['over_stand'])} over it; into the solid wall", PASS),
+        ("The alcove shelves (instead of the glass case)", f"two {r1(al['w'])} × {r1(al['d'])} at {r1(al['tops'][0])} and {r1(al['tops'][1])}", ref("floatshelf", "solidwall"), f"the vinyl stand's top {r1(g.RECORD_SHELF['h'])}",
+         f"{r1(al['tops'][0] - al['t'] - g.RECORD_SHELF['h'])} over it; in the glass case's place; into the solid wall", PASS),
         ("The wall cabinets", f"two {r1(g.EKET[0])} cubes, {r1(wc['y0'])} to {r1(wc['y0'] + g.EKET[2])}", ref("eket"), f"the ceiling at {r1(g.CEIL)}; EKET asks for 5 over it",
          f"{r1(wc['head'])} over them; past the PC shelf's end (z {r1(g.PC_SHELF_Z[1])}) by 4", PASS),
         ("The step drawers", f"three, fronts {r1(sd['w'])} × {r1(sd['h'])}, {r1(sd['depth'])} deep", ref("stepdrawers"), f"a riser {r1(g.STAIR_RISE)} under a 2.2 tread, the stairs {r1(g.STAIR_X[1] - g.STAIR_X[0])} wide",
@@ -1290,7 +1290,7 @@ def counts():
 
 # ---------------------------------------------------------------- v38: the client's picks (geometry.FIRM) are the plan: their rows counted
 FIRM_ROWS = ("Blankets: the tall basket", "Blankets: the basket's corner", "The record table", "The shelf over the door",
-             "Boxes on your black shelf", "D", "The alcove shelves", "The wall cabinets", "The step drawers")
+             "Boxes on your black shelf", "D", "The wall cabinets", "The step drawers")
 _zones_v37 = zones
 
 

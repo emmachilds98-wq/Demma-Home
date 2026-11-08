@@ -27,6 +27,7 @@ const VIEWS = {
   chairs:  { label: "The chair cupboard", eye: [255, 200, -190], at: [460, 95, -262], C: { eye: [262, 170, -120], at: [462, 92, -200] }, fov: 54 },   // v20; v21 clear of the lamp; v30 the compact's chair bay
   windowwall: { label: "Out of the window", eye: [236, 150, -70], at: [236, 120, -309], fov: 66 },   // v17: for the ideas' stills
   breast:  { label: "The chimney breast", eye: [246, 140, -250], at: [246, 120, 0], fov: 54 },   // v17: for the ideas' stills
+  corner:  { label: "Left of the window", eye: [330, 140, -70], at: [392, 120, -309], fov: 56 },   // V3.14: the vinyl stand, the ledge, the glass case
   pc:      { label: "The PC side wall", eye: [345, 135, -168], at: [0, 112, -168], fov: 56 },
   // v31: sitting at the open table's far end, looking at the cabinet; the wall beside the cabinet, by the pipe boxing
   sit:     { label: "Sitting at the table", eye: [258, 115, -128], at: [455, 98, -150], fov: 62 },

@@ -57,7 +57,7 @@ const DEF = { site: "C", dining: "folded",   // v27: the dining cabinet is the p
               lv: null, master: 100, warm: 25, col: { strips: WARM, bar1: WARM, bar2: WARM, lamp0: R.LAMP_RGB[0], lamp1: R.LAMP_RGB[1], lamp2: R.LAMP_RGB[2] },
               ceil: "match", skirt: "match", laser: false, lbox: true, curtains: false, pc: true, ideas: {},   // v17: ideas all off
               // v18: the plant stand and the record shelf's layout, your own moves (edit mode) and the things you've added; the grow lights
-              plants: "corner", layout: {}, added: [], grow: true,
+              plants: R.PLANT_LAYOUT || "breast", layout: {}, added: [], grow: true,
               chairs: "cupboard",   // v20: the chair cupboard beside the table (doors shut); "open", "hooks" or "away" (the garage)
               // v20, client: "give more decor variation and options": the rug, sofa cushions, the curtains, what's in the glass case and its frame
               decor: { rug: "yours", cushions: "none", curtains: "hessian", fill: "collect", frame: "oak", oak: "artisan", floor: "carpet", shelf: "black", pads: "olive", ceiling: "asis", plants: "mix", pots: "mine" },   // v26: the oak, the floor, your shelf; v31: the seat pads
@@ -82,6 +82,8 @@ if (!S.v46) {   // v46, client: "default view could balance lighting throughout 
   S.v46 = 1; S.scene = "evening"; S.lv = null; S.master = 100; }
 if (!S.v51) {   // v51, client: their phone plan is the main plan, "Switch to the pale mint": once, a saved room moves to it
   S.v51 = 1; S.paint = "mint"; S.walls = {}; S.ceil = "match"; S.skirt = "match"; S.ideas = Object.assign({}, S.ideas, DEF.ideas); }
+if (!S.v314) {  // V3.14, client: "It's now definite I also want the plant shelf on the chimney breast and records on the left of the living room window": once, a saved room moves to it
+  S.v314 = 1; S.plants = DEF.plants; for (const k of ["plants", "records"]) if (S.layout && S.layout[k]) delete S.layout[k]; if (S.sugg) S.sugg.alcoveshelves = false; }
 if (!S.v50) {   // v50, client: "make the natural default light a bit cosier and less overly light washed": once, a saved room moves to the new Evening
   S.v50 = 1; S.scene = "evening"; S.lv = null; S.master = 100; S.warm = DEF.warm; }
 

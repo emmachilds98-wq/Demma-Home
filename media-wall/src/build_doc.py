@@ -141,8 +141,8 @@ TRACK = [
     ("To buy", "Three Lee Valley 40574 narrow flip-top hinges (solid brass, 1.27 × 7.0 cm) for the joint <b>(new in v15)</b>", "6 Dining wall", "3", 25, 45),
     ("To buy", "The glass display case's glass: toughened, cut to size, polished edges: a 4 mm front 85.6 × 82.2 that lifts off, and three 6 mm shelves 85.6 × 9.2 <b>(new in v34)</b>", "5 Oak joinery", "1 set", 70, 130),
     ("To buy", "The glass display case's oak and fittings: the frame from the oak offcuts (two sides 85 × 12 × 2, top and bottom 86 × 12 × 2), a 6 mm oak-faced ply back 86 × 81, twelve shelf pins for glass, an oak French cleat 80 long, a warm white LED strip under the top on the strips' app <b>(new in v34)</b>", "5 Oak joinery", "1 set", 20, 40),
-    ("To do", "Build the glass display case and hang it on the chimney breast, from 137 to 222, centred (step 9) <b>(new in v34)</b>", "5 Oak joinery", "", None, None),
-    ("To buy", "The “now playing” ledge on the breast, with the table by the stairs: oak 105.5 × 7 × 2.4 with a 1.5 lip (from the shelf board's offcut), two concealed brackets <b>(new in v16)</b>", "6 Dining wall", "1", 10, 25),
+    ("To do", "Build the glass display case and hang it left of the window over the vinyl stand, from 137 to 222 (step 9) <b>(V3.14)</b>", "5 Oak joinery", "", None, None),
+    ("To buy", "The “now playing” ledge left of the window, under the glass case: oak 105.5 × 7 × 2.4 with a 1.5 lip (from the shelf board's offcut), two concealed brackets <b>(V3.14)</b>", "6 Dining wall", "1", 10, 25),
     ("To do", "Build the dining cabinet: the two boxes, screwed to each other and to the wall, the hinge rail, the two table halves on their aprons and legs, hang the table on its piano hinge, then the two doors on theirs (step 11) <b>(changed in v30)</b>", "6 Dining wall", "", None, None),
     ("To do", "Open the table, level it at 76 and trim the legs to the floor; load the six chairs (two lying in the table box's base, four standing in the chair box) <b>(changed in v30)</b>", "6 Dining wall", "", None, None),
     ("To do", "Swap both ceiling fittings for the spot bars, turned to run from the TV towards the window: like for like, your own job; step 12 has the safe way. The light switches stay as they are (smart bulbs need full power) <b>(changed in v15: no dimmers)</b>", "7 Lighting", "", None, None),
@@ -183,8 +183,6 @@ TRACK += [
     ("To do", "Build the bar beside the dining cabinet: scribe it between the cabinet's end and your shelf's end (the 10 cm gap stays clear for the plant), screw it to the wall and the floor; the mirror, then the ENHET frame from 112 (step 11)", "6 Dining wall", "", None, None),
     ("To buy", "Two IKEA EKET wall cabinets with glass doors, 35 × 35 × 35, walnut effect, with their rails, and plugs and screws for a solid wall", "10 Finishing", "2", 70, 100),
     ("To do", "Hang the two wall cabinets over the sofa's corner, 162 to 197 up, just past the PC shelf's end", "10 Finishing", "", None, None),
-    ("To buy", "Two oak floating shelves 900 × 230 with concealed brackets (B&Q Shelf Depot), for the window corner", "10 Finishing", "2", 70, 110),
-    ("To do", "Fix the two alcove shelves in the window corner, tops at 182 and 212, into the solid wall", "10 Finishing", "", None, None),
     ("To buy", "An oak shelf over the hall door, 91 × 27, on two brackets, and two IKEA KUGGIS lidded boxes 35 × 26 × 15, white", "10 Finishing", "1 set", 35, 60),
     ("To buy", "Two IKEA KUGGIS lidded boxes, 35 × 26 × 15, white, for your black shelf", "10 Finishing", "2", 20, 30),
     ("To buy", "Drawers in the bottom three steps: three drawer boxes in 12 mm ply, 51 × 14.5 fronts in oak, three pairs of 350 mm runners, bearers under the treads", "10 Finishing", "1 set", 180, 320),
@@ -273,7 +271,7 @@ def cab_html():
 <figcaption>Packed away, in the 3D room: the table box and the chair box side by side.</figcaption></figure>
 <ul>
 <li><b>Where the length went.</b> Two chairs now <b>lie on their sides in the table box's base</b>, under the hinge rail, where the sliding cabinet had its drawer. The other four <b>stand in a box one chair wide</b>: two deep on its floor and two deep on its shelf. The chairs are padded, so there are no seat pads to keep.</li>
-<li><b>Hinged doors that turn right back.</b> Each door hangs on a full-height stainless piano hinge{sup("piano32")} with its knuckle just in front of the faces, so it turns 180° and lies flat over its neighbour. Nothing stands out into the room. Open, the table door reaches {n(C['z'][1] - C['door_t_open'][1])} past the cabinet's window end, {n(C['door_t_open'][1] - (G.PLANT_LAYOUTS['corner']['plants'][1] + G.PLANT_STAND['d'] / 2))} clear of your plant stand.</li>
+<li><b>Hinged doors that turn right back.</b> Each door hangs on a full-height stainless piano hinge{sup("piano32")} with its knuckle just in front of the faces, so it turns 180° and lies flat over its neighbour. Nothing stands out into the room. Open, the table door reaches {n(C['z'][1] - C['door_t_open'][1])} past the cabinet's window end, {n(C['door_t_open'][1] - G.CORNER_FRONT)} clear of your vinyl stand.</li>
 <li><b>The table box, at the stair end</b> ({n(C['bay_t'])} inside). The {n(C['len_open'])} × {n(C['top'][0])} solid oak table stands up in it in two {n(C['top'][1])} × {n(C['top'][0])} halves, folded face to face, on its oak hinge rail at {n(C['pivot'][1])}. The two lying chairs are underneath it. Above it is the <b>linen shelf</b> for the cloth, the napkins, the runner and the candles.</li>
 <li><b>The chair box, at the window end</b> ({n(C['bay_c'])} inside): four folded chairs, {n(C['bay_c'] - G.CHAIR_PADDED['folded'][0])} cm wider than a chair, with a fixed shelf at {n(C['shelf_y'] + C['t'])}.</li>
 <li><b>The table is unchanged:</b> the two halves meet flush on three brass flip-top hinges{sup("fliphinge")}, each a centre of staves between pegged breadboard ends. Four tapered oak legs fold flat inside the aprons. Each half is about {kg_half:.0f} kg.</li>
@@ -532,7 +530,7 @@ def steps():
         dict(n=5, part=["Prep"], title="Mark the heights", who="You", time="1 h", buy=[], see=[("wall", "Front view")],
              do=["With the laser level: 73 and 76 for the worktop, 130 and 134 for the Series X shelf, 153 and 155.4 for the ledges, 192 and 196 for the high shelf.",
                  f"The uprights at {n(g.UP_L[0])}–{n(g.UP_L[1])} and {n(g.UP_R[0])}–{n(g.UP_R[1])} cm from the side wall.",
-                 f"On the breast: the “now playing” ledge's top at {n(g.NOW_LEDGE['top'])} and the framed LPs' bottom edges at {n(g.FRAMES_Y)}, centred.",
+                 f"On the breast: the framed LPs' bottom edges at {n(g.FRAMES_Y + 30)}, centred, over the plant stand. Left of the window: the “now playing” ledge's top at {n(g.NOW_LEDGE['top'])}, the glass case from {n(ideas.CASE_CORNER['y'][0])} to {n(ideas.CASE_CORNER['y'][1])}.",
                  "Run the cable detector along every line you will drill, and mark anything it finds."],
              check="Every line level end to end, and the uprights' lines plumb."),
         dict(n=6, part=["Media wall"], title="Build the base", who="You", time="1 day", buy=["4 Base unit"], see=[("build", "Cutting list"), ("wall", "Drawer layouts")],
@@ -562,7 +560,7 @@ def steps():
                  "Lay Deco B's leads in the groove behind the right upright.",
                  "Stand the uprights on their dowels and fix the concealed brackets to the back wall.",
                  "Fit the high shelf and the ledge, then the Series X shelf: wedge its tenons, and peg the housings.",
-                 "On the chimney breast: the “now playing” ledge, its top at 104, on two concealed brackets, 6 cm in from each side of the breast (with the table by the stairs)."],
+                 "Left of the window: the “now playing” ledge, its top at 104, on two concealed brackets, centred over the vinyl stand."],
              check="Uprights plumb, shelves level, the TV slides in with 2 cm each side, and the “now playing” ledge is level with an LP standing on it."),
         dict(n=10, part=["Media wall"], title="The side-wall run and the PC end", who="You", time="1 day", buy=[], see=[("wall", "The side wall")],
              do=["Cut the run from its 225 × 30 × 4 board: mark the front edge from the full-size template (7 cm deep along the LPs, sweeping out to 28 under the PC, a 5 cm radius on the end), jigsaw just outside the line and rout to it with a bearing-guided bit; rout the LED groove under the front edge.",
@@ -599,7 +597,6 @@ def steps():
                  f"The bar: scribe its ply cupboard ({n(G.BAR_BUILT['w'])} × {n(G.BAR_BUILT['d'])} × {n(G.BAR_BUILT['counter'] - G.BAR_BUILT['top_t'])} on a {n(G.BAR_BUILT['plinth'])} plinth) between the cabinet and your shelf's end, keeping the 10 cm gap clear; fix it to the wall and the cabinet, then the counter and the ENHET frame over it, its bottom at {n(G.BAR_BUILT['enhet_y0'])}.",
                  f"The record table: screw the two KALLAX together on their backs, the 12 mm ply base and four castors under them, the oak lid ({n(G.RECORD_TABLE['w'])} × {n(G.RECORD_TABLE['d'])}) on two hinges with two lid stays.",
                  f"The wall cabinets: the two EKET on IKEA's rail over the sofa's corner, bottoms at {n(G.WALL_CABS['y0'])}, the rail into the solid wall.",
-                 f"The alcove shelves: two oak floating shelves {n(G.ALCOVE_SHELVES['w'])} × {n(G.ALCOVE_SHELVES['d'])}, tops at {n(G.ALCOVE_SHELVES['tops'][0])} and {n(G.ALCOVE_SHELVES['tops'][1])}, brackets into the solid wall.",
                  f"Over the hall door: the oak shelf {n(G.DOOR_SHELF['x'][1] - G.DOOR_SHELF['x'][0])} × {n(G.DOOR_SHELF['d'])}, top at {n(G.DOOR_SHELF['top'])}, clear of the architrave; two KUGGIS boxes on it and two on your black shelf.",
                  "The step drawers: with the new stairs, by the joiner (a bearer under each tread)."],
              check="Each piece level and fixed; the C-table stands square and doesn't rock with a mug on its far edge; the bar's door clears the open table door; the record table rolls and its lid stays up; the 10 cm gap is clear."),
@@ -679,7 +676,7 @@ def cuts():
             ("Face frame", "186 × 73 overall, 2 thick, stiles about 5 wide", "1 set", "End stiles scribed to the walls", "Media wall"),
             ("Drawer fronts", "game drawer 56.8 × 6.5 × 2 · plinth drawer 54 × 6 × 2", "1 · 1", "Finger pull cut underneath", "Media wall"),
             ("LP crate lips · slim drawer lips", "36.3 × 5 × 1.5 · 16.5 × 5 × 1.5", "2 · 3", "Cut to the face frame's openings, less 3 mm (v16)", "Media wall"),
-            ("“Now playing” ledge", f"{n(g.NOW_LEDGE['x'][1] - g.NOW_LEDGE['x'][0])} × 7 × 2.4, lip 1.5", "1", "On the breast at 104, two concealed brackets (v16; with the table by the stairs)", "Media wall"),
+            ("“Now playing” ledge", f"{n(g.NOW_LEDGE['x'][1] - g.NOW_LEDGE['x'][0])} × 7 × 2.4, lip 1.5", "1", "Left of the window at 104, over the vinyl stand, two concealed brackets (V3.14)", "Media wall"),
             ("Follower blocks · Xbox One lift block", "19 × 12 × 2 · 15 × 12 × 2", "2 · 1", "Offcuts, felted underneath", "Media wall"),
             ("Wedges · pegs · dowels", "6 × 3, tapering · 10 mm dowel, 5 long · 10 mm dowel", "2 + spares · 6 + 6 · 8", "Glued", "Media wall"),
             # v27: the dining cabinet's table (geometry.OPTC, the same in v30's compact cabinet): the halves, aprons and legs in solid oak
@@ -843,7 +840,6 @@ def buy_first_html():
         ("Glass case", "Buy and adapt", f"Toughened glass cut to size{sup('glasscut')}; the frame from the oak offcuts"),
         ("Record table", "Buy and adapt", f"Two IKEA KALLAX{sup('kallax')} on their backs, an oak lid, castors"),
         ("C-table", "Build", f"Bought ones slide their foot under the sofa{sup('ctablebuy')}; yours sits on the floor, so ours stands beside it on a steel-weighted foot{sup('plazcutz')}"),
-        ("Alcove shelves", "Buy", f"Two oak floating shelves{sup('floatshelf')}"),
         ("Wall cabinets", "Buy", f"Two IKEA EKET{sup('eket')}"),
         ("Shelf over the door", "Buy and adapt", f"Two IKEA KUGGIS boxes{sup('kuggis')}; the shelf from the worktop's offcut"),
         ("Blanket basket · ottoman", "Buy", f"Dibor's Lakelyn{sup('lakelyn')} · the ISTOOLS ottoman{sup('istoolsott')}"),
@@ -930,7 +926,6 @@ def _plan(deck=False):
 <table class="tight"><tr><th>What</th><th>Where</th><th>Size</th></tr>
 <tr><td>Shelf over the hall door, two lidded boxes{sup("kuggis")}</td><td>Over the architrave (check its height)</td><td>{n(g.DOOR_SHELF["x"][1] - g.DOOR_SHELF["x"][0])} × {n(g.DOOR_SHELF["d"])} at {n(g.DOOR_SHELF["y"])}; boxes 35 × 26 × 15</td></tr>
 <tr><td>Two lidded boxes on your black shelf{sup("kuggis")}</td><td>Either side of the laser</td><td>35 × 26 × 15 each</td></tr>
-<tr><td>Two oak alcove shelves{sup("floatshelf")}</td><td>The window corner, over the plant stand</td><td>two {n(g.ALCOVE_SHELVES["w"])} × {n(g.ALCOVE_SHELVES["d"])}, tops at {n(g.ALCOVE_SHELVES["tops"][0])} and {n(g.ALCOVE_SHELVES["tops"][1])}</td></tr>
 <tr><td>Two wall cabinets, glass doors{sup("eket")}</td><td>The side wall over the sofa's corner, past the PC shelf</td><td>two {n(g.EKET[0])} cubes, {n(g.WALL_CABS["y0"])} to {n(g.WALL_CABS["y0"] + g.EKET[2])} up</td></tr>
 <tr><td>Drawers in the bottom three steps{sup("stepdrawers")}</td><td>The stairs by the door</td><td>fronts {n(g.STAIR_DRAWERS["w"])} × {n(g.STAIR_DRAWERS["h"])}, {n(g.STAIR_DRAWERS["depth"])} deep</td></tr>
 <tr><td>Blanket basket, water hyacinth{sup("lakelyn")}</td><td>Against the side wall at the sofa's open end</td><td>{n(g.BLANKET_BASKET["d"])} × {n(g.BLANKET_BASKET["w"])} × {n(g.BLANKET_BASKET["h"])}: five throws folded long{sup("ofelia")} stack {n(5 * g.THROW_LONG[2])} of its {n(g.BLANKET_BASKET["inner"][2])}</td></tr>
@@ -1028,37 +1023,21 @@ def _plan(deck=False):
 </ul>
 
 <h2 class="pb">4 · The records and the turntable</h2>
-<h3>Your plant stand and your vinyl stand (v18)</h3>
+<h3>Your plant stand and your vinyl stand (V3.14)</h3>
 <ul>
 <li><b>Your plant stand:</b> 98 × 29.5 × 158. Two slatted towers of five tiers, with an open middle holding two shelves for taller plants.</li>
 <li><b>Your vinyl stand:</b> 70 × 32 × 78. A black steel frame and rustic wood: two face-out bays on top, LPs standing between wire dividers below.</li>
 <li><b>Sizes</b> from the listings you sent<sup>{fit.ORDER.index("plantstand") + 1},{fit.ORDER.index("vinylstand") + 1}</sup>.</li>
-<li><b>Two good places:</b> the window's west corner and the chimney breast (free now the table is by the stairs), so two layouts. In the 3D room, Tools › Layout switches between them; in Edit room you can drag either anywhere.</li>
+<li><b>The plant stand on the chimney breast</b>, centred, {n((g.BREAST_W - g.PLANT_STAND["w"]) / 2)} clear each side. The two frames go up 30, over the top plants.</li>
+<li><b>The vinyl stand left of the window</b>, centred between the curtains' stack and the pipe boxing, the “now playing” ledge and the glass display case over it: what stood on the breast moves there whole.</li>
+<li>Drip trays or a waterproof mat under the pots; felt pads under the vinyl stand. Your red lamp stands at the sofa's west end.</li>
 </ul>
-<ul>
-<li><b>A, recommended: plants in the window corner, records on the breast.</b><ul>
-<li>The plant stand goes against the window wall, between the curtains' stack and the pipe boxing: {n(g.PIPE_BOX["x"][0] - g.WINDOW_X[1] - g.CURTAIN["ext"])} cm for its 98, so 4.5 each side. Measure before it goes in; if it's tight, open the curtains' stack a little towards the window.</li>
-<li>Its plants get daylight from the window beside them; at 158 it leaves 77 to the ceiling.</li>
-<li>The vinyl stand goes on the breast, centred, under the “now playing” ledge ({n(g.NOW_LEDGE["top"] - g.NOW_LEDGE["t"] - g.RECORD_SHELF["h"])} cm clear). Pick a record from its top bays, play it on the deck an arm's reach away, stand its sleeve on the ledge.</li>
-<li>About {g.RECORD_SHELF["lps_top"] + g.RECORD_SHELF["lps_bottom"]} more LPs.</li></ul></li>
-<li><b>B: records in the window corner, as today, plants on the breast.</b><ul>
-<li>The plants become the breast's display, 9.75 cm clear each side.</li>
-<li>At 158 tall the stand comes up past the two frames, so the frames go up above it (or elsewhere) and the “now playing” ledge comes off.</li></ul></li>
-<li><b>Either way:</b><ul>
-<li>Your red lamp moves from the window corner to the sofa's west end.</li>
-<li>Drip trays or a waterproof mat under the pots protect the slats and the carpet.</li>
-<li>Felt pads under the vinyl stand.</li></ul></li>
-</ul>
-<figure class="render">{img("render_v39_3d_plants_corner.png", "Layout A: your plant stand in the window corner")}
-<figcaption>Layout A, from the 3D room: your plant stand in the window's west corner.</figcaption></figure>
-<figure class="render">{img("render_v39_3d_records_breast.png", "Layout A: your vinyl stand on the breast")}
-<figcaption>Layout A: your vinyl stand on the chimney breast, under the “now playing” ledge, beside the turntable.</figcaption></figure>
-<p>The vinyl is in one place, in the alcove: the deck on the worktop, the records in the two LP crates right underneath it, the preamp tucked under the shelf above, and (v16) the “now playing” ledge on the breast an arm's reach away. Pull a crate, pick a record, play it, and stand its sleeve on the ledge.</p>
+<p>The vinyl is in one place, in the alcove: the deck on the worktop, the records in the two LP crates right underneath it, the preamp tucked under the shelf above, and the vinyl stand and the “now playing” ledge left of the window. Pull a crate, pick a record, play it, and stand its sleeve on the ledge.</p>
 <figure>{drawer()}</figure>
-<h3>The glass display case on the chimney breast</h3>
-<p>You picked it: a tall glass case on the breast, {n(ideas.CASE["x"][1] - ideas.CASE["x"][0])} × {n(ideas.CASE["y"][1] - ideas.CASE["y"][0])} × {n(ideas.CASE["d"])} deep, centred from {n(ideas.CASE["y"][0])} to {n(ideas.CASE["y"][1])}, {n(g.CEIL - ideas.CASE["y"][1])} under the ceiling. Three 6 mm glass shelves on pins, a 4 mm toughened front that lifts off{sup("glasscut")}, a warm strip inside. An oak frame from the offcuts on a hidden cleat, about 16 kg empty. Step 9 builds it; about £90–170.</p>
-<figure class="render">{img("render_v39_3d_glass_case.png", "The glass display case on the chimney breast")}
-<figcaption>The case on the breast with collectibles, the “now playing” ledge and your vinyl stand under it.</figcaption></figure>
+<h3>The glass display case, left of the window</h3>
+<p>You picked it: a tall glass case over your vinyl stand, left of the window (V3.14; it was on the breast), {n(ideas.CASE["x"][1] - ideas.CASE["x"][0])} × {n(ideas.CASE["y"][1] - ideas.CASE["y"][0])} × {n(ideas.CASE["d"])} deep, centred from {n(ideas.CASE["y"][0])} to {n(ideas.CASE["y"][1])}, {n(g.CEIL - ideas.CASE["y"][1])} under the ceiling. Three 6 mm glass shelves on pins, a 4 mm toughened front that lifts off{sup("glasscut")}, a warm strip inside. An oak frame from the offcuts on a hidden cleat, about 16 kg empty. Step 9 builds it; about £90–170.</p>
+<figure class="render">{img("render_v39_3d_glass_case.png", "The glass display case")}
+<figcaption>The glass case with collectibles, the “now playing” ledge and your vinyl stand under it.</figcaption></figure>
 <figure class="render">{img("render_v39_3d_case_mixed.png", "The case with a black frame and a bit of each")}
 <figcaption>The same case with a black frame and a bit of everything: 7-inch singles, a cap and figures, small plants.</figcaption></figure>
 <h3>How bay 3 works (v16)</h3>
@@ -1089,7 +1068,7 @@ def _plan(deck=False):
 <h3>Where every record lives</h3>
 <table class="tight"><tr><th>Where</th><th>What</th><th>How many</th></tr>
 <tr><td>Bay 3, the two LP crates</td><td>LPs, face-out</td><td>About {2 * g.TRAY_LPS} LPs</td></tr>
-<tr><td>The breast (v16)</td><td>The “now playing” ledge</td><td>3 LPs, the one that's on and the next two</td></tr>
+<tr><td>Left of the window (V3.14)</td><td>The “now playing” ledge</td><td>3 LPs, the one that's on and the next two</td></tr>
 <tr><td>Above the TV</td><td>Oak record ledge, the "now playing" wall</td><td>4 LPs</td></tr>
 <tr><td>Side wall</td><td>The oak run round the corner</td><td>4 LPs</td></tr>
 <tr><td>Your vinyl stand (v18.1)</td><td>LPs, face-out on top, spine-up below</td><td>About {g.STAND_LPS} LPs ({g.RECORD_SHELF["lps_top"]} + {g.RECORD_SHELF["lps_bottom"]})</td></tr>
@@ -1193,7 +1172,7 @@ def _plan(deck=False):
 <tr><td>Side wall, double, left outlet</td><td>The 10-gang behind the TV: TV, soundbar, sub, Series X, USB charger (fan stand, pad dock, bias light, HDMI switch), Deco B, Switch 2, the turntable, the preamp, the PC and the uprights' LED driver</td><td>Always on: about 1.55 kW with everything running, PC included</td></tr>
 <tr><td>Side wall, double, right outlet</td><td>The retro 6-way in the channel: Xbox One, Xbox 360, PS3, PS2, PS1, the RetroTINK's USB plug</td><td>The wall switch is the retro switch: off between sessions; up to about 0.8 kW with a launch PS3</td></tr>
 <tr><td>Behind the sofa's short side, double (yours, v23)</td><td>The rear speakers; a spare outlet for a phone charger or a lamp by the sofa</td><td>On</td></tr>
-<tr><td>Window wall behind the plant stand, double (yours, v23)</td><td>Your red lamp and the plant stand's grow lights: both within reach of it, layout A</td><td>On; the grow lights on a plug-in timer</td></tr>
+<tr><td>Window wall behind the vinyl stand, double (yours, v23)</td><td>Your red lamp and the glass case's LED strip</td><td>On</td></tr>
 <tr><td>Ceiling points 1 and 2</td><td>The two spot bars, with smart colour bulbs (v15)</td><td>Switches left on; level and colour from the app</td></tr>
 </table>
 <p class="note">One strip per outlet, never one plugged into another, and each under its 13 A (3 kW) limit: about 1.55 kW on the 10-gang and up to 0.8 kW on the retro 6-way, about 10 A together.</p>

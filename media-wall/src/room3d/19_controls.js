@@ -32,7 +32,7 @@ function optSet(it, on) {
   if (on && (it.set.beside || it.set.sugg === "bartrolley")) { S.site = "C"; S.cab = "compact"; }
   if (on && it.set.sugg === "bartrolley") S.beside = "trolley";                                    // the slim trolley, dressed as a bar
   if (on && it.set.beside && S.sugg.bartrolley) S.sugg = Object.assign({}, S.sugg, { bartrolley: false });   // the rail takes its place
-  if (on && it.set.sugg === "barcase" && S.plants === "breast") S.plants = "corner";
+  if (it.set.sugg === "barcase") S.plants = on ? "corner" : DEF.plants;                           // V3.14: under the case on the breast; off, back to the plan
   if (it.set.sugg) extrasRule("sugg", it.set.sugg, on); else if (it.set.beside) extrasRule("beside", it.set.beside, on);   // v37
 }
 function optPick(gk, v) {
@@ -198,7 +198,7 @@ function lostCheck() {   // inside the room and nearly facing a wall, or looking
   if ((dist < 0.12 || tooSteep) && !b.classList.contains("lost")) { b.classList.add("lost"); setTimeout(() => b.classList.remove("lost"), 5000); }
 }
 function backToPlan() {                   // the plan: your picks, the bar beside the cabinet, no ideas
-  S.sugg = Object.assign({}, DEF.sugg); S.svar = Object.assign({}, DEF.svar); S.ideas = Object.assign({}, DEF.ideas); S.beside = DEF.beside;
+  S.sugg = Object.assign({}, DEF.sugg); S.svar = Object.assign({}, DEF.svar); S.ideas = Object.assign({}, DEF.ideas); S.beside = DEF.beside; S.plants = DEF.plants;
   S.barflap = S.lid = S.ctop = S.sdraw = false; S.trolley = "park"; applySvar(); applyState();
 }
 function setTry(on) {
@@ -291,7 +291,7 @@ root.addEventListener("click", e => {
     const keys = d.sugg ? [d.sugg] : qsa("[data-sugg]").map(x => x.dataset.sugg), on = d.sugg ? !S.sugg[d.sugg] : d.suggall === "on";
     S.sugg = Object.assign({}, S.sugg); keys.forEach(k => { S.sugg[k] = on; if (S.layout["sg_" + k]) delete S.layout["sg_" + k].off; });
     if (on && keys.includes("bartrolley")) { S.beside = "trolley"; S.site = "C"; S.cab = "compact"; }   // v34: it's the slim trolley, dressed
-    if (on && keys.includes("barcase") && S.plants === "breast") S.plants = "corner";                  // v34: under the case, on a free breast
+    if (keys.includes("barcase")) S.plants = on ? "corner" : DEF.plants;                               // v34: under the case, on a free breast
     if (d.sugg) extrasRule("sugg", d.sugg, on);                                                        // v37: one thing per place
     else if (on) { S.sugg.hallbench = S.sugg.wardrobe = false; S.sugg.windowseat = true; S.sugg.alcoveshelves = true; }   // all on: the corner takes the seat
     applyState(); }
@@ -304,7 +304,7 @@ root.addEventListener("click", e => {
   else if (d.decor) {           // v20: decor; picking what's in the case (or its frame) shows the case, which hangs with the table by the stairs
     const [k, v] = d.decor.split(":"), was = caseOn(); S.decor = Object.assign({}, S.decor, { [k]: v });
     if ((k === "fill" || k === "frame") && S.site === "A") S.site = "C";                              // v27: the case needs the breast free (v34: it's the plan)
-    applyState(); if ((k === "fill" || k === "frame") && !was) setView("breast"); }
+    applyState(); if ((k === "fill" || k === "frame") && !was) setView(caseBreast() ? "breast" : "corner"); }
   else if (d.idea) S.ideas = Object.assign({}, S.ideas, { [d.idea]: !S.ideas[d.idea] }), applyLight(), placeAll(), updateCaption(), store.set(KEY, S);
   else if (d.plants) {           // v18: the layout puts the stand and the shelf back on their spots for it
     S.plants = d.plants; for (const k of ["plants", "records"]) if (S.layout[k]) { delete S.layout[k].x; delete S.layout[k].z; delete S.layout[k].rot; }

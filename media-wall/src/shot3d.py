@@ -105,7 +105,7 @@ OPTION_STEMS = ("3d_plants_breast", "3d_ideas_", "3d_case_singles", "3d_decor", 
 FIRM_SG = {f"3d_sg_{k}" for k in G.FIRM["sugg"]}
 is_firm = lambda stem: not stem.startswith(OPTION_STEMS) and (not stem.startswith("3d_sg_") or stem in FIRM_SG)
 
-BASE = {"drawers": False, "ideas": {k: True for k in G.FIRM.get("ideas", [])},   # v43: the C-table is in the plan "pc": True, "plants": "corner", "layout": {}, "added": [], "grow": True, "chairs": "cupboard", "decor": {},
+BASE = {"drawers": False, "ideas": {k: True for k in G.FIRM.get("ideas", [])},   # v43: the C-table is in the plan "pc": True, "plants": G.PLANT_LAYOUT, "layout": {}, "added": [], "grow": True, "chairs": "cupboard", "decor": {},
         "sugg": {k: True for k in G.FIRM["sugg"]}, "svar": dict(G.FIRM["svar"]), "seat": "off", "tod": "evening", "master": 100, "cab": "compact", "cabw": "90", "tdoor": False, "foot": False, "beside": G.FIRM["beside"],
         "blind": "down", "lp": False, "trolley": "park", "lid": False, "barflap": False, "ctop": False, "sdraw": False}   # v34: the blind, the records, the trolley; v35: the ottoman's lid and the bar's flap shut (they carried over from the still before)   # v30: the compact cabinet; v31: the floor outline, beside it
 

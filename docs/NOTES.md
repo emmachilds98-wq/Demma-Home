@@ -113,5 +113,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   = false` in a later listener doesn't stop the capture ones. `movable`'s 8th argument isn't "fixed": the rug drags (only `extra.fixed` holds a piece, and none has it now).
   Synthetic `PointerEvent`s can't take `setPointerCapture`: drive touches through CDP `Input.dispatchTouchEvent` (`check_site.py` `edit_drag`).
 - **Back** (`09_house_views.js` `roomHist`), **Esc** (`19_controls.js` `ESC`, top layer only), **Overhead/Angled** and a room's **Above** (`19_view_controls.js` `mapMode`: its own drags, the orbit's off there, V3.08 N53, V3.13 N55; a touch on a living-room sticker joins the drag from the root's capture, and moves are read on `window`, as the sticker keeps its finger; it turns them off in a canvas capture listener after 14's, and Edit's root capture keeps a piece's press from it).
+- **Moving a breast piece to another wall** (N56): the media wall's groups (`G.*` from `scene3d.json`) and the ideas (`IDEA_G`) are built
+  in the breast's place; turning one round onto the window wall is a group transform, not a rebuild: rotation.y = π, x = −(old centre +
+  new centre)·M, z = the new wall's z·M (`06` `placeCorner`; x is mirrored in `v3`). The plan's layout is one name (`geometry.PLANT_LAYOUT`),
+  but the plan's text, fit rows, buy rows and build steps name places in words: grep "breast", "corner" and the piece's name across
+  `media-wall/src/*.py` when a piece moves (`clash.py` proves nothing overlaps).
 - **Doors:** `14_views_walk.js` `walkDoors` opens a door within 95 cm (not the bin cupboards'). The stairs: both flights 85 wide
   (`geometry.RECESS_W`), `model.stair_soffit` over the lower flight; the site check walks through the living room door at x 339.

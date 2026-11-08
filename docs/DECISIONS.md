@@ -50,6 +50,9 @@ take one out (to `docs/HISTORY.md`) when they change their mind.
   logic ... a hard constraint".
 - **Every record face-out** in the trays; the game drawer's games spine-up behind two face-out bins (18 Oct 2026).
 - **The C-table** stays in the plan (24 Oct 2026, v51): "I want c table".
+- **The plant stand on the chimney breast; the records left of the window** (8 Nov 2026, V3.14): "It's now definite I also want the plant
+  shelf on the chimney breast and records on the left of the living room window, which means the display shelf would move to the left of
+  the window too". The vinyl stand, the "now playing" ledge and the glass case moved there whole; the alcove shelves are an option now.
 - **The lights, dimmers and the socket are theirs to do** (to confirm, still open).
 - **The stair curtain** round the foot of the stairs (27 Oct 2026, v78, v81): an option to look at.
 

@@ -131,7 +131,15 @@ let rugMesh, curtCloth, caseFrameM, cushG, coffeeG, floorMat, shelfMat;
 const SUGG_G = {};
 /* v34, client: "i like the large glass display case on the chimney breast": it's in the plan, so it's on the breast whenever the table
    isn't (the flip-top's site A, set aside) */
-const caseOn = () => S.site !== "A" && S.plants !== "breast";   // layout B's plant stand (158 tall) stands in front of the breast
+const caseOn = () => S.site !== "A" && !(S.plants === "breast" && S.sugg.alcoveshelves);
+/* V3.14, the client: "the plant shelf on the chimney breast and records on the left of the living room window, which means the display
+   shelf would move to the left of the window too": with the plants on the breast (the plan) the case and the "now playing" ledge hang
+   over the vinyl stand left of the window, turned round to face the room (the alcove shelves, an option now, take the case's place) */
+const caseBreast = () => caseOn() && S.plants !== "breast";
+function placeCorner() {
+  const K = R.IDEAS.case_corner, C = R.IDEAS.case, on = S.plants === "breast", ox = -((C.x[0] + C.x[1]) / 2 + (K.x[0] + K.x[1]) / 2) * M;
+  for (const g of [IDEA_G.case, G.now_ledge]) if (g) { g.rotation.y = on ? Math.PI : 0; g.position.x = on ? ox : 0; g.position.z = on ? K.z * M : 0; }
+}
 /* v34: more things that work from a tap (placeWork): the blind rolls up and down, the front records lift out of the vinyl stand, the
    trolley beside the cabinet pulls out for dinner; each an anim, eased by the cabinets' tween */
 const WORK = {};
