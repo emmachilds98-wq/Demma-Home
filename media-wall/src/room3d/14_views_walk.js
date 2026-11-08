@@ -277,7 +277,7 @@ function warmAt(key, go, back) {   // a visit off screen: go there, ask for the 
   dirty(); return true;
 }
 function warmRoom(to) { const v = S.view, rm = RMODE; return warmAt(to, () => enterRoom(to, true), () => { enterRoom(v, true); RMODE = rm; }); }
-/* N52, the client 8 Nov 2026: "optimise the pc version as much as the mobile version": from the whole house the first step into the
+/* N54 (V3.09), the client 8 Nov 2026: "optimise the pc version as much as the mobile version": from the whole house the first step into the
    living room built its 58 shaders on the spot (its own 36 lights; on a Windows PC each goes through the graphics driver's compiler: a
    freeze of seconds), a floor's cut 2 to 5; the rooms were warmed only once you stood in one. Now, a pause at a time, the house warms
    the living room and each floor off screen too */

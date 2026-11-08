@@ -165,10 +165,10 @@ PERF_INIT = """performance.setResourceTimingBufferSize(4000);
 if (%s) try { localStorage.setItem("mw18-3d", JSON.stringify({ quality: "hd", picked: true })); } catch (e) {}   // HD held (no step down mid-count)
 addEventListener("r3d-first", () => { window.__first = R3D._dbg.gl.info.programs.length; });
 (() => { let fr = 0; const L = new WeakMap(), raf = requestAnimationFrame, P = WebGL2RenderingContext.prototype, lk = P.linkProgram, up = P.useProgram; window.__spot = 0;
-  window.requestAnimationFrame = cb => raf(t => { fr++; cb(t); });   // N52: a shader built on the frame that first draws with it (a freeze on a real device)
+  window.requestAnimationFrame = cb => raf(t => { fr++; cb(t); });   // N54: a shader built on the frame that first draws with it (a freeze on a real device)
   P.linkProgram = function (q) { L.set(q, fr); return lk.call(this, q); };
   P.useProgram = function (q) { if (L.has(q)) { if (L.get(q) === fr) window.__spot++; L.delete(q); } return up.call(this, q); }; })();"""
-# N52: from the whole house into the living room once the house's warm-up has visited it: no shader built on the spot
+# N54: from the whole house into the living room once the house's warm-up has visited it: no shader built on the spot
 SPOT = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms));
   for (let i = 0; i < 300 && !(D.WARMED.has("livstand" + D.S.quality) && !D.PRE.queue.length); i++) await sl(1000);
   await sl(2000); const n = window.__spot; R3D.set({ view: "livstand" }); await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(200); await sl(3000);
