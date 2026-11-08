@@ -3,10 +3,10 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V3.15 (8 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
-The version in Plan is a refresh button ("V3.15 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V3.19 (8 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
+The version shows faintly by "Demma's Home" top left (V3.16; not on an iPhone SE, too narrow) and in Plan as a refresh button ("V3.19 ↻"): on the home-screen app, tap it to get the newest.
 
-**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N46 done V3.04, N48 V3.05, N50 V3.06, N52 V3.07; section 13's N53 V3.08, N54 V3.09, N49 V3.10, N51 V3.11, N47 V3.12, N55 V3.13; section 14: N56 V3.14; N63 V3.15 (one light for the house); N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
+**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N46 done V3.04, N48 V3.05, N50 V3.06, N52 V3.07; section 13's N53 V3.08, N54 V3.09, N49 V3.10, N51 V3.11, N47 V3.12, N55 V3.13; section 14: N56 V3.14, N59 V3.15, N60 V3.16, N61 and N62 V3.17, N57 V3.18, N63 V3.19 (one light for the house); N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
 On a weak signal the page opens from the device after 2 s (V3.00, N43, `sw.js`): the new copy is saved for next time, and the version button shows it. The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 
 ## Where it lives
@@ -50,7 +50,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   (View · Look · Measure; in the living room also Room and Edit); the figure bottom right drops you in where you let go.
 - **Rooms:** picking one stands you in it (`goRoom`); its views Be there · In it · Above · On its own. Walk: W A S D, arrows turn,
   the wheel walks (Ctrl + wheel the lens), a double-click or double-tap walks you to a spot, Mouse look (M) on a computer. The eye is
-  solid to walls and furniture; doors open with a tap and stay as left (this device). A shut door opens as you walk up to it, but the bin cupboards' (V2.99: they met across the porch as a second front door). `?room` opens the living room.
+  solid to walls and furniture; doors open with a tap and stay as left (this device). A shut door opens as you walk up to it, but the bin cupboards' (V2.99, V3.17 N61: both open they lie across the porch as a second front door; they start shut, aren't remembered, open one at a time). The hall opens facing the doorway down, the stairs and the lower landing in view (V3.17 N62). `?room` opens the living room.
   Back (the phone's swipe, the browser's) from a room brings you out to the house, one step whatever rooms you went through (V2.96, N39, `roomHist`).
 - **Over the house and a room's Above (V3.08 N53, V3.13 N55, `19_view_controls.js`):** Outside, Angled, Overhead and each room's Above (the living room's too) move as a map, on a phone and a PC alike: one
   finger or a left-drag moves the ground (the spot touched stays under the finger; a flick glides on); two fingers pinch to zoom and
@@ -58,8 +58,12 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   right-drag (or Shift + drag) turns and tilts round the middle. Angled 10°–85° above the ground; Overhead stays flat. The point looked
   at stays round the house (wider with Gardens or Next door). Keys, held and smooth: arrows or W A S D move, Q E turn, + − (R F) zoom,
   Shift hurries; a double-tap or double-click on a room stands you in it, on the ground centres there. The orbit's own drags are off there.
-- **One light (V3.15, N63):** every room and the living room share one exposure a time of day (0.4 by day, 0.58 by evening; the
+- **One light (V3.19, N63):** every room and the living room share one exposure a time of day (0.4 by day, 0.58 by evening; the
   outside 0.32), the fill's tint and the bulbs' colour (Warmth); Fast's living room and whole house as bright as HD's. `applyLight`.
+- **The stick on a phone, every view (V3.15, N59):** bottom left wherever you are (not in Edit, the welcome, a tour or an open panel). Walking it walks;
+  over the house, a floor and a room's Above it moves the map as far as it's pushed (`19_view_controls.js` `mapKeys`, a thumb on it and a finger on
+  the map together); in a view from your eyes (a room's In it, From the sofa ...) it stands you there and walks on (`eyeView`, `startWalk`), as W
+  does on a PC; in On its own, Bird's eye and Dolls' house it glides (`freeMode`). On a PC the held keys glide smoothly there too (they stepped a repeat at a time).
 - **Moving:** the glide after a drag eases the same each 60th of a second at any frame rate (`DAMP`, V2.60); a walk key held over
   half a second eases up to half as quick again (1.4 to 2.1 m/s, `WALK.pace`); Shift still hurries.
 - **The living room** is the media wall project: stickers, Plan · Build · Buy and their sheets, Room, Look, Edit, the item cards.
@@ -73,13 +77,15 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   the living room's is its `S.decor.curtains`).
   The floor's card has three upgrades to try (V3.14, N56): Herringbone oak, Grey oak LVT, Stone porcelain, each a real product's size
   (`fit.SOURCES upfloors`), made by `build_textures.py --floors` / `tiles`, a cost a m² in Changes.
+  A wall's card has Panelling (V3.18, N57, rows [26]–[27]): Shaker strips to 120 in the wall's colour, or oak slats on felt to the ceiling,
+  round doors and windows (`finPanelApply`, `fit.SOURCES panels`); packs and cost on the card and in Changes.
   A bed's duvet and pillows take The bedding (V2.61, N5d: row [20], palette slot 5; their room found in the house's frame,
   `FIN.inv`, so the master's lifting lid keeps it).
   A wall's card has A picture (V2.63, N5e: rows [21] the print, [22] the wall, `finPicApply`; a 52 × 72 RIBBA frame, 150 cm up).
   The floor's card has A plant too (V2.62: row [23], `08_house_catalogue.js` `syncPlants`: one of the catalogue's four, stood in the
   free corner farthest from the doors, clear of the furniture and the doors' swing; a piece like an added one: tap it to move it,
   Another plant, Take it out; the living room keeps its own plants). Look's rows: [18] rug, [19] curtains, [20] bedding, [21]–[22] the Look thread's (a picture),
-  [23] plant, [24]–[25] wallpaper.
+  [23] plant, [24]–[25] wallpaper, [26]–[27] panelling.
   Wallpaper (V2.77, N29, `finPaperApply`): three drawn to real rolls (`fit.SOURCES wallpaper`) on the wall's own face, round its doors
   and windows, up to its ceiling or slope; rolls and cost on the card and in Measure. A maker's paint shows Its maker pairs it with
   (`FIN_PAIRS`, `fit.SOURCES pairings`).
