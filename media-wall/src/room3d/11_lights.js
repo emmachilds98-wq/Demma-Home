@@ -10,7 +10,7 @@ const dayLight = { position: v3(700, 1400, 1100), target: { position: v3(233, 0,
    the back wall, the garden's behind it, as the land steps down. Only in The whole house from outside (a floor shown keeps its cutaway
    clear); built the first time */
 const OUT = { sky: null, ground: null, sunOut: false };
-const sunLux = () => S.view === "house" || (S.quality === "hd" && S.tod === "day") ? SUNCFG.lux * (OUT.sunOut ? SUNCFG.out : 1) : 0;   // V3.14: the whole house in sun in Fast too (it was a third as bright as in HD; the sun is in every shader already)
+const sunLux = () => S.view === "house" || (S.quality === "hd" && S.tod === "day") ? SUNCFG.lux * (OUT.sunOut ? SUNCFG.out : 1) : 0;   // V3.15: the whole house in sun in Fast too (it was a third as bright as in HD; the sun is in every shader already)
 /* V1.5 (BUILD_SPEC phase 5): and out of the living room's window by day, from inside it: the same sky and land, the garden, its trees and
    the building past the fence, in place of the plain sky (v56's stand-in until the outside was modelled); by evening the dusk plane */
 const INSIDE = () => !!ROOMV() && (RMODE === "in" || RMODE === "stand");   // V1.10: standing in one of the house's rooms (In it, Be there)

@@ -23,6 +23,7 @@ the area one copy of the picture covers.
 | The kitchen's black bevelled metro tiles, 20 × 10, light grout (V2.37) | ours: `build_textures.tiles` | 0.4 m | the bevel and the grout in the relief, glazed |
 | uPVC (frames, outside doors, gutters, sills), gloss paint (skirting, inside doors, newel, rail), brushed steel (V2.56) | ours: `build_textures.finishes` | 0.5 m (steel 0.3) | white detail under each one's own colour: faint peel, brush strokes, grain |
 | The dormer's cheeks: dark-stained timber weatherboards, 15 high, lapped (V2.56; the back photo) | ours: `build_textures.finishes` | 0.6 m | the lap's shadow and the grain along the boards |
+| Upgrade floors to try (V3.14, N56; fit.SOURCES upfloors): herringbone oak 90 × 450 at 45°, grey oak LVT planks 17.8 wide, stone porcelain 120 × 60 | ours: `build_textures.floors` (from oak_veneer_01's grain) and `tiles` | 1.27 m, 1.25 m, 2.4 m | each block its own run of the veneer, the bevels sunk |
 
 V1.30 (`docs/UPGRADE_REVIEW.md` U5): the **roughness maps** of the same CC0 assets (Poly Haven's API, 1k, made 512 px grey by
 `build_textures.py --rough`): laminate_floor_02, coated_pine (pine, dark pine), white_maple_veneer (birch), oak_veneer_01, roof_09; centred on

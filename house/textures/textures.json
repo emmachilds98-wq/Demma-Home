@@ -187,5 +187,23 @@
   "size": 0.6,
   "url": "",
   "licence": "ours"
+ },
+ "herring": {
+  "asset": "made by build_textures.floors (from oak_veneer_01)",
+  "size": 1.2728,
+  "url": "",
+  "licence": "ours"
+ },
+ "lvt_grey": {
+  "asset": "made by build_textures.floors (from oak_veneer_01)",
+  "size": 1.246,
+  "url": "",
+  "licence": "ours"
+ },
+ "porcelain": {
+  "asset": "made by build_textures.tiles",
+  "size": 2.4,
+  "url": "",
+  "licence": "ours"
  }
 }

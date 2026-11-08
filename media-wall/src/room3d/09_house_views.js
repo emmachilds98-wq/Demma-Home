@@ -86,7 +86,7 @@ function placeRoomLights() {
     if (L.reach) { l.position.copy(v3(L.x, L.y, L.z)); l.intensity = day ? 0 : L.k * fb.lux; l.color.set(L.col); return; }
     const drop = L.drop != null && !(typeof finGet === "function" && finGet(L.room, 8)) ? L.drop : typeof finFitDrop === "function" ? finFitDrop(L.room) : 40;   // the kitchen's battens are flush
     l.position.copy(v3(L.x, L.y - drop, L.z)); l.intensity = (day ? 1.2 : 5.4) * ks * fb.lux * (L.drop != null ? 0.6 : 1);   // two battens share the room's light
-    if (fb.k) l.color.set(kelvinHex(+fb.k)); else l.color.copy(warmColour()); });   // V3.14: the living room's bulbs' colour (one Warmth for the house) unless the room's own
+    if (fb.k) l.color.set(kelvinHex(+fb.k)); else l.color.copy(warmColour()); });   // V3.15: the living room's bulbs' colour (one Warmth for the house) unless the room's own
   /* V2.39 (REAL_PLAN R1, each window's daylight): the room's two biggest windows light it as the sky does through them, an area light the
      opening's size on the wall's inside face, facing in and a little down; by day the living room window's daylight, by evening its dusk */
   const rid = b && rr && VIEW_ROOM[S.view], op = it => it.op && it.op.axis === "x" && it.op, sz = it => (it.op.b - it.op.a) * (it.op.y1 - it.op.y0);
