@@ -581,13 +581,19 @@ function buildHouse() {
         const ix = Math.max(-(a - rr), Math.min(a - rr, x)), iy = Math.max(-(bb - rr), Math.min(bb - rr, y)), iz = Math.max(-(cc - rr), Math.min(cc - rr, z));
         let nx = x - ix, ny = y - iy, nz = z - iz; const ln = Math.hypot(nx, ny, nz);
         if (ln > 1e-6) { nx /= ln; ny /= ln; nz /= ln; x = ix + nx * rr; y = iy + ny * rr; z = iz + nz * rr; } else { nx = 0; ny = 1; nz = 0; }
-        if (mk === "pillow") { y *= 1 - 0.38 * (Math.pow(Math.abs(sx), 3) + Math.pow(Math.abs(sz), 3)) * 0.5 - 0.12 * Math.abs(sx * sz); }
+        if (mk === "pillow") { y *= 1 - 0.5 * (Math.pow(Math.abs(sx), 2.5) + Math.pow(Math.abs(sz), 2.5)) * 0.5 - 0.2 * Math.abs(sx * sz);   // V2.91 (N36): plumper, its corners pinched
+          y += 0.35 * Math.sin(x * 0.5 + z * 0.3) * (1 - sx * sx) * (1 - sz * sz); }
         else if (mk === "mattress") { if (ny > 0.5) y += 0.9 * (1 - sx * sx) * (1 - sz * sz); }
         else if (mk === "lycksele" || mk === "leather") { const pf = (1 - sx * sx) * (1 - sy * sy) * (1 - sz * sz);   // V2.44: upholstered: each face puffed in its middle
           x += nx * 1.8 * pf; y += ny * 2.6 * pf; z += nz * 1.8 * pf; }
         else if (mk === "duvet") { const wx = cx + x, wz = cz + z;
           const f = 1.25 * Math.sin(wx * 0.15 + Math.sin(wz * 0.045) * 1.9) * Math.sin(wz * 0.11 + 0.6) + 0.45 * Math.sin(wx * 0.41 - wz * 0.27) + 0.2 * Math.sin(wz * 0.9 + wx * 0.2);
-          x += nx * f * (ny > 0.5 ? 0.6 : 1); y += ny * f; z += nz * f * (ny > 0.5 ? 0.6 : 1); }
+          const drape = h > 3 * Math.min(w, d);   // V2.91 (N36): a side hanging down, or the top lying flat
+          if (drape) { const u = w < d ? wz : wx, t = (1 - sy) / 2, wave = 0.9 * t * t * Math.sin(u * 0.13 + 0.8) + 0.25 * t * Math.sin(u * 0.37);
+            if (w < d) x += wave; else z += wave; }   // its hem in soft ripples
+          else { const loft = Math.min(4, 0.04 * Math.min(w, d)) * (1 - Math.pow(Math.abs(sx), 4)) * (1 - Math.pow(Math.abs(sz), 4)),   // lofty in the middle, rolled at its edges
+              g = 1.1 * Math.sin(wx * 0.09 + Math.sin(wz * 0.04) * 1.6) * Math.sin(wz * 0.07 + 0.6);   // long, slow folds on the top
+            x += nx * f * (ny > 0.5 ? 0.6 : 1); y += ny > 0.3 ? ny * (0.5 * f + g + loft) : ny * f; z += nz * f * (ny > 0.5 ? 0.6 : 1); } }
         pos[i] = -(cx + x) * M; pos[i + 1] = (cy + y) * M; pos[i + 2] = (cz + z) * M;
       }
       const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));

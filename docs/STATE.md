@@ -3,8 +3,8 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.90 (7 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
-The version in Plan is a refresh button ("V2.90 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V2.91 (8 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
+The version in Plan is a refresh button ("V2.91 ↻"): on the home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 10 (the rest in parallel chunks A–E, one thread each), section 9 (every task's state).
 Open PRs: #133 (KTX2, WIP), #142 (fonts, N25's rest). The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
@@ -87,6 +87,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Shapes (V2.53, N6):** the master's wardrobes are PAX frames (plinth set back, an oval rail) with garments on hangers, the
   fridge-freezer has its two doors, grip strip and dispenser (the photos), the Kallax its thin shelves, DRÖNA boxes and records, the
   chair-bed its tube frame and leaning back. Cloth profiles get soft edges (`20_go.js` `PSOFT`); no microwave is in the photos.
+  The master's duvet is lofty with slow folds, turned down, its sides and foot hanging in ripples; the pillows plump (V2.91, N36; the catalogue's bed too).
 - **Opening (V2.70, N13):** the shade's and glow's shaders built in the warm-up (`postWarm`), textures sent while it waits (`texWarm`), shadows
   a frame ahead (`preDraw`): the first picture builds 2 shaders (was 16), sends ~20 textures (was 220); then `r3d-first` fires. V2.72 (N14):
   only what the landing shows is built first (45 shaders, not 101; the living room put away first), the rest after the picture (`warmRest`).

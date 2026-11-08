@@ -1383,13 +1383,15 @@ def master(o):
     lid = o.part("bed_lift", (hx, hy, (z0 + z1) / 2), "z", b["lift"])
     lid.box("pine", hx, hy, z0, x1, hy + 2, z1)                    # the slatted lid (the mattress's base)
     lid.box("mattress", x0 + 8, y + 38, z0 + 4, x1 - 3, y + 60, z1 - 4)  # mattress
-    lid.box("duvet", x0 + 50, y + 60, z0 + 2, x1 - 1, y + 66, z1 - 2)
-    lid.box("duvet", x0 + 50, y + 62, z0 + 1, x0 + 68, y + 70, z1 - 1)   # v72 (B4): turned down at the pillows,
+    # V2.91 (N36, the client: the beds "read as flat grey slabs"): the duvet lofty (10 thick, drawn soft in 20_go.js clothBox), its edges
+    # rolled over the mattress's, turned down at the pillows, its sides and foot hanging in soft ripples under the roll; two plump pillows
+    lid.box("duvet", x0 + 56, y + 59, z0 + 0.5, x1 + 0.5, y + 69, z1 - 0.5)
+    lid.box("duvet", x0 + 54, y + 63, z0 + 1, x0 + 74, y + 74, z1 - 1)   # v72 (B4): turned down at the pillows,
     for za, zb in ((z0 + 0.5, z0 + 2.5), (z1 - 2.5, z1 - 0.5)):      # draped down the sides and over the foot
-        lid.box("duvet", x0 + 52, y + 42, za, x1 - 1, y + 64, zb)
-    lid.box("duvet", x1 - 2.5, y + 42, z0 + 2, x1 - 0.5, y + 64, z1 - 2)
-    for pz in (z0 + 10, (z0 + z1) / 2 + 3):
-        lid.box("pillow", x0 + 9, y + 60, pz, x0 + 45, y + 72, pz + 66)
+        lid.box("duvet", x0 + 58, y + 41, za, x1 - 1, y + 63, zb)
+    lid.box("duvet", x1 - 2.5, y + 41, z0 + 3, x1 - 0.5, y + 63, z1 - 3)
+    for pz in (z0 + 8, (z0 + z1) / 2 + 2):
+        lid.box("pillow", x0 + 7, y + 60, pz, x0 + 52, y + 76, pz + 70)   # 48 × 74 (a standard pillow, E), 16 plump
     for za, zb in M_["bedsides"]:                                  # pine bedside drawers, round knobs
         o.item(f"master.bedside{int(za)}", "A pine bedside", "master", src="E", data=("MASTER", "bedsides"), axis="z")
         # V2.44, the client: "blocky ... furniture looks more real": built as a real one is: the carcass, its sides framing the front, a top
