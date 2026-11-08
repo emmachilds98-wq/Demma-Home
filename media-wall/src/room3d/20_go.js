@@ -444,7 +444,7 @@ function pieceShade(F, mat) {
   const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); geo.computeVertexNormals();
   const me = new THREE.Mesh(geo, mat); me.raycast = () => {}; me.renderOrder = 1; me.name = "pieceShade"; return me;
 }
-/* V2.97 (N37): the house from outside: a material's pieces on every floor one draw, not one a floor (each floor's span noted, and the
+/* V2.98 (N37): the house from outside: a material's pieces on every floor one draw, not one a floor (each floor's span noted, and the
    floors shown are always a run, Lower, Lower and Ground, or all four, so one draw range); made when first wanted (09 houseJoin),
    dropped when a floor is built again */
 let HJOIN = null;
@@ -523,7 +523,7 @@ function buildHouse() {
     const roomOf = q => { if (!q.boundingBox) q.computeBoundingBox(); const b = q.boundingBox, x0 = -b.max.x / M, x1 = -b.min.x / M, y0 = b.min.y / M, y1 = b.max.y / M, z0 = b.min.z / M, z1 = b.max.z / M;
       let hit = null; for (const V of RVOL) if (x0 >= V[1] && x1 <= V[2] && y0 >= V[3] && y1 <= V[4] && z0 >= V[5] && z1 <= V[6]) { if (hit) return null; hit = V; } return hit; };
     const put = (g, geos, m, part) => { if (!geos.length) return;
-      if (geos.some(q => q.index) && geos.some(q => !q.index)) geos = geos.map(q => { if (!q.index) return q; const u = q.toNonIndexed(); q.dispose(); return u; });   // V2.97 (N37): boxes with profiles or turned shapes in one draw
+      if (geos.some(q => q.index) && geos.some(q => !q.index)) geos = geos.map(q => { if (!q.index) return q; const u = q.toNonIndexed(); q.dispose(); return u; });   // V2.98 (N37): boxes with profiles or turned shapes in one draw
       let rooms = null;
       if (!part && RVOL.length) { const V = geos.map(roomOf), ord = geos.map((q, i) => i).sort((a, b) => ((V[a] || [])[7] || 0) - ((V[b] || [])[7] || 0) || a - b);
         rooms = []; let at = 0;
@@ -631,7 +631,7 @@ function buildHouse() {
       /* V2.15 (FINISHES F5): each room's ceiling light (its item "light.<room>") its own group, so a fitting chosen in the tray can stand in for it */
       const tg = F.tags || [], lid = t => (t != null && t >= 0 && typeof tg[t] === "string" && tg[t].startsWith("light.")) ? tg[t].slice(6) : null, LG = {};
       const lgOf = r => LG[r] || (LG[r] = (() => { const g = new THREE.Group(); g.userData.finLight = r; cur.add(g); FIN_PEND[r] = g; return g; })());
-      /* V2.97 (N37): one draw a material for each group: a floor's boxes, profiles and turned shapes of one material were two or three */
+      /* V2.98 (N37): one draw a material for each group: a floor's boxes, profiles and turned shapes of one material were two or three */
       const acc = new Map(), add = (g, mk, q) => { let o = acc.get(g); if (!o) acc.set(g, o = {}); (o[mk] = o[mk] || []).push(q); };
       for (const [mk, list] of Object.entries(F.boxes)) { const bt = (F.bt || {})[mk] || [];
         list.forEach(([x0, y0, z0, x1, y1, z1], i) => { const r = lid(bt[i]); add(r ? lgOf(r) : cur, mk, houseBox(mk, x0, y0, z0, x1, y1, z1)); }); }
@@ -659,7 +659,7 @@ function buildHouse() {
         cur.children[cur.children.length - 1].userData.area = L.w * L.d; }   // V1.35: the bigger room's name wins where two overlap
       const partG = (P, into, at) => {                 // a part's group on its pivot, its own parts inside it (V1.26b: a bifold's second panel)
         const pv = v3(...P.pivot), g = new THREE.Group(); g.position.copy(pv).sub(at); into.add(g);
-        const pm = {}, bb = new THREE.Box3(), ad = (mk, q) => { if (into === cur) { q.computeBoundingBox(); bb.union(q.boundingBox); } (pm[mk] = pm[mk] || []).push(q.translate(-pv.x, -pv.y, -pv.z)); };   // V2.97 (N37): a material one draw (boxes and profiles)
+        const pm = {}, bb = new THREE.Box3(), ad = (mk, q) => { if (into === cur) { q.computeBoundingBox(); bb.union(q.boundingBox); } (pm[mk] = pm[mk] || []).push(q.translate(-pv.x, -pv.y, -pv.z)); };   // V2.98 (N37): a material one draw (boxes and profiles)
         for (const [mk, list] of Object.entries(P.boxes)) for (const [x0, y0, z0, x1, y1, z1] of list) ad(mk, houseBox(mk, x0, y0, z0, x1, y1, z1));
         for (const Q of P.prisms || []) ad(Q.m, prismGeo(Q));
         for (const [mk, geos] of Object.entries(pm)) put(g, geos, mat3(mk), true);

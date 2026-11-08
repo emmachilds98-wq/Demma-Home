@@ -39,6 +39,17 @@ ACCESS = """() => { const vis = el => { const r = el.getBoundingClientRect(), cs
   const noname = [...document.querySelectorAll("button, a[href], [role=button], input, select, textarea")].filter(el => vis(el) && !(el.getAttribute("aria-label") || el.getAttribute("title") || el.textContent || el.value || (el.labels && el.labels[0] && el.labels[0].textContent) || "").trim()).map(el => el.outerHTML.slice(0, 80));
   const c = document.querySelector(".r3d-stage canvas"), place = (document.getElementById("brand-place") || {}).textContent || "";
   return { noname: noname.slice(0, 4), label: c && c.getAttribute("aria-label").startsWith(place) ? "" : (c && c.getAttribute("aria-label")) }; }"""
+# V2.97 (N42): every control in the page, shut panels and a card's too: a name a screen reader can say (an icon's word isn't one); none
+# with a positive tabindex; on a PC Tab reads the top row before the 3D, and Esc shuts the top card, then the panel, the focus back on its bubble
+NAMES = r"""() => { const nm = el => { const l = el.getAttribute("aria-label"); if (l) return l;
+    const lb = el.getAttribute("aria-labelledby"); if (lb) return lb.split(/\s+/).map(i => (document.getElementById(i) || {}).textContent || "").join(" ");
+    if (el.labels && el.labels.length) return [...el.labels].map(x => x.textContent).join(" ");
+    const c = el.cloneNode(true); c.querySelectorAll("[aria-hidden=true], .ms").forEach(x => x.remove()); c.querySelectorAll("img[alt]").forEach(i => i.replaceWith(i.alt));
+    return [c.textContent, el.title, /^(button|submit|reset)$/.test(el.type) && el.value, el.placeholder].filter(Boolean).join(" "); };
+  const vis = el => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && !el.closest("[hidden]"); };
+  const all = [...document.querySelectorAll("button, [role=button], [role=tab], [role=switch], input:not([type=hidden]), select, textarea, summary, a[href]")];
+  const bad = all.filter(el => (el.childNodes.length || vis(el)) && !/[\p{L}\p{N}]/u.test(nm(el)));   // an empty one hidden is filled as it opens
+  return { n: all.length, bad: bad.slice(0, 5).map(el => el.outerHTML.slice(0, 120)), pos: [...document.querySelectorAll("[tabindex]")].filter(e => +e.getAttribute("tabindex") > 0).length }; }"""
 # V2.96 (N39): Back from a room brings you out to the house (one step, room to room taking its place), not off the site
 BACK = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), out = [];
   const settle = async () => { await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(200); await sl(300); };
@@ -175,6 +186,41 @@ def over_budget(path, got):
     return [f"{path}: {k} {got.get(k)} over {v}" for k, v in want.items() if not k.startswith("_") and not 0 <= (got.get(k) or 0) <= v]
 
 
+def names_keys(pg, w):
+    """V2.97 (N42): names everywhere (the page as it opens, a door's card in the kitchen, Edit's list), Esc one at a time; on a PC Tab"""
+    out, D = [], "R3D._dbg"
+    def check(when):
+        r = pg.evaluate(NAMES)
+        if r["bad"]: out.append(f"{w}: {when}, controls with no name: {r['bad']}")
+        if r["pos"]: out.append(f"{w}: {r['pos']} with a positive tabindex (Tab jumps out of reading order)")
+    check("as it opens")
+    pg.evaluate(f"() => {{ {D}.openAct('hdoor:door.living_door', [400, 300]); R3D.set({{ view: 'kitchen' }}); }}"); pg.wait_for_timeout(1500); check("a door's card, the kitchen")
+    pg.keyboard.press("Escape"); pg.wait_for_timeout(200)
+    if pg.evaluate(f"() => {D}.actId"): out.append(f"{w}: Esc didn't shut the door's card")
+    pg.evaluate(f"() => {{ {D}.S.edit || document.getElementById('r3d-editbtn').click(); document.getElementById('r3d-add').click(); }}"); pg.wait_for_timeout(800); check("Edit's list")
+    pg.keyboard.press("Escape"); pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
+    if pg.evaluate(f"() => {D}.S.edit"): out.append(f"{w}: two Esc didn't shut Edit's list and then Edit")
+    pg.evaluate("() => R3D.set({ view: 'house' })"); pg.wait_for_timeout(1500)
+    if w < 600: return out
+    seen = []
+    pg.evaluate("() => document.querySelector('.brand').focus()")   # from the brand, top left
+    for _ in range(40):
+        pg.keyboard.press("Tab")
+        k = pg.evaluate("() => { const a = document.activeElement; return a.tagName === 'CANVAS' ? '3D' : a.closest('.r3d-mini') ? 'top' : a.closest('.r3d-dock') ? 'dock' : '' }")
+        if k and (not seen or seen[-1] != k): seen.append(k)
+        if k == "dock": break
+    if seen[:3] != ["top", "3D", "dock"]: out.append(f"{w}: Tab goes {seen} (want the top row, the 3D, the dock)")
+    pg.click("#r3d-dt-look"); pg.wait_for_timeout(500)
+    pg.evaluate(f"() => {D}.openAct('hdoor:door.living_door', [400, 300])"); pg.wait_for_timeout(500)
+    pg.keyboard.press("Escape"); pg.wait_for_timeout(200)
+    one = pg.evaluate(f"() => [!!{D}.actId, DemmaTools.isOpen()]")
+    pg.evaluate("() => document.querySelector('#r3d-panel .r3d-px').focus()"); pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
+    two = pg.evaluate("() => [DemmaTools.isOpen(), document.activeElement.id]")
+    if one != [False, True] or two != [False, "r3d-dt-look"]:
+        out.append(f"{w}: Esc with a card over the Look panel: card {one[0]}, panel {one[1]}, then panel {two[0]}, focus on {two[1]!r} (want the card shut, then the panel, the focus back on Look)")
+    return out
+
+
 class Quiet(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a):
         pass
@@ -213,6 +259,7 @@ def main():
             acc = pg.evaluate(ACCESS)
             if acc["noname"]: fails.append(f"{w}: controls with no name: {acc['noname']}")
             if acc["label"]: fails.append(f"{w}: the 3D's label doesn't say where you are: {acc['label']!r}")
+            fails += names_keys(pg, w)
             if phone:
                 bk = pg.evaluate(BACK)
                 if bk != ["master", "master", "house", True]: fails.append(f"{w}: two rooms, then Back: {bk} (want ['master', 'master', 'house', True]: one step, out to the house)")
@@ -300,7 +347,7 @@ def main():
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
     print("speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room" for k, v in perf.items()))
-    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, Back from a room to the house, down to the lower floor and back, the speed budget on 4 paths, {len(fails)} failed; screenshots in _shots/")
+    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named (shut panels, a card, Edit's list too), Esc one layer a press, Tab the top row then the 3D, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, Back from a room to the house, down to the lower floor and back, the speed budget on 4 paths, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
 

@@ -3,8 +3,8 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.97 (8 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
-The version in Plan is a refresh button ("V2.97 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V2.98 (8 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
+The version in Plan is a refresh button ("V2.98 ↻"): on the home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` sections 11 and 12 (N37, N40, N42–N45 open, a thread each), section 9 (every task's state).
 Open PRs: #133 (KTX2, WIP). The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
@@ -105,8 +105,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   stair box and the door down moved with them. Over the lower flight the living room's flight's plastered underside (`model.stair_soffit`):
   from the hall you see down the stairs, not into the living room's space and its brick; the lower flight runs between walls.
 - **Drawn inside (V2.71, N16):** the room you stand in, the rooms seen from it, the shell; the outside if one has a window (`roomCull`);
-  V2.97 (N37): a room's light, a bed's or a wardrobe's moving part and a door seen from neither side left out with their room.
-- **Fewer draws for the house (V2.97, N37):** a floor's boxes, profiles and turned shapes of one material are one draw (`20_go.js`
+  V2.98 (N37): a room's light, a bed's or a wardrobe's moving part and a door seen from neither side left out with their room.
+- **Fewer draws for the house (V2.98, N37):** a floor's boxes, profiles and turned shapes of one material are one draw (`20_go.js`
   `HBUILD`'s `acc`); from outside, a material's pieces on every floor shown are one draw (`joinBuild`, switched by `09` `houseJoin`,
   dropped when a floor is built again); a setting changed from outside keeps the living room put away (`applyState` → `livShow`).
   The house as it opens: 287 draws to 188 (phone, PC), 288 to 189 (iPhone), 569 to 371 (RTX, HD); after a setting 377 to 188. Same triangles.
@@ -139,6 +139,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Phone and PC look-over (V2.88, N33):** on a touch screen every tap is 44 px (`room3d_page.CSS`, `pointer: coarse`); the small
   pills keep their look (a clear border round each). A card open on a phone or tablet puts the stick and the figure away. The brand and
   Plan · Build · Buy are one height. Shorter captions in Measure, View and Room; the paint swatch says Your pale mint.
+- **Keys on a PC (V2.97, N42):** every control has a name (an icon's word isn't one); one focus ring (`page.css`); Tab goes the top
+  row, the 3D, the dock; Esc shuts the top layer only (`19_controls.js` `ESC`; the sheets, a zoom and the lightbox keep their own).
 - **Sheets:** empty till first needed (V2.80); a shut one is `content-visibility: hidden`, its pictures fetched on opening (V2.54).
 - **Phones without a strong chip** (`LOWD`) take `tex/*_half.<hash>.jpg`, the photos at half size (`split_photos`): 2.3 MB on a first
   visit, not 10.2; the iPhones (Apple GPU) and the PCs keep the full set (V2.58).
@@ -168,7 +170,7 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 
 ## Numbers (V2.74, software graphics in CI's browser: relative, not a real card's; from #131)
 - `sizes`: page 1.0 MB (V2.80), photos 8.6 MB in 72 files (2.3 MB at half size; V2.82, was 11.4 and 3.4), three.js 0.86 MB.
-- Shaders by the first picture: 18–19 (Fast), 49 (HD). Draws: the house 188 (HD on an RTX: 371; V2.97), the living room 254–762 by path.
+- Shaders by the first picture: 18–19 (Fast), 49 (HD). Draws: the house 188 (HD on an RTX: 371; V2.98), the living room 254–762 by path.
 - The repo: 371 files, 59 MB tracked (31 MB the client's photos); `checks.py`'s repo check fails on a build output or a file over 1.5 MB.
 
 ## Open with the client
