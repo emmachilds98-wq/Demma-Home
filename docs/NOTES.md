@@ -1,0 +1,96 @@
+# Notes from the threads: how things work, what bit us, what's left
+
+What the agents learned while doing each task, so a new team doesn't find it again from zero. Until 8 Nov 2026 these lived only in
+the project's memory, outside GitHub. Facts about the house are in `house/HOUSE.md`, the client's choices in `docs/DECISIONS.md`,
+what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (the 6 Nov upgrade review and mobile audit, both at V2.44).
+
+## 1. Working in the sandbox
+- **three.js:** jsDelivr is blocked. `npm ci` gives the local bundle; for the browser checks set `THREE_LOCAL` to an unpacked
+  `three@0.160.0` package (`npm pack three@0.160.0`, then untar it). fonts.googleapis is reachable.
+- **Python:** `pip install -r media-wall/requirements.txt` and `playwright==1.63.0` (it must match the browser in `/opt/pw-browsers`;
+  set `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`). Test scripts use `localcdn.route(pg)` and `pw.launch(p, pw.GL)` from `media-wall/src`.
+- **Speed of a run:** the full `tools/checks.py` takes over 10 minutes here: run it in the background. CI takes about 20 minutes.
+- **Software graphics:** headless Chromium draws with SwiftShader, 0.25–3 s a frame, and has no `KHR_parallel_shader_compile` (the
+  iPhone's Safari has it since 14.5). Frame times mean nothing; count shaders, uploads and draws a frame. Key tests count frames, not sleeps;
+  to test frame-time logic, fake the rAF timestamp (+30 ms a frame) in an init script.
+- **Faking a device:** Playwright at 393 × 852, DPR 3, `isMobile`, `hasTouch`, an init script that answers "Apple GPU" for
+  `UNMASKED_RENDERER` (0x9246), or an RTX 5070 for the PC's HD path. Wrap WebGL `linkProgram`, `texStorage2D`, `drawElements` and rAF
+  to count compiles, uploads and draws per frame. Tag the shadow pass by wrapping `shadowMap.render`.
+- **No shader built:** dump `R3D._dbg.gl.info.programs` (name | cacheKey) before and after; after must be a subset.
+- **A free camera:** `R3D.set({aim})` keeps the camera in the view's room. Set `R3D._dbg.camera.position` instead, in metres:
+  world = (−x/100, y/100, z/100) from the model's cm (x mirrored). Raycast `R3D._dbg.scene` (every parent visible) to see what a pixel is.
+- **Textures:** CC0 sites (Poly Haven, ambientCG) and GitHub release downloads are blocked; new textures are made in
+  `house/textures/build_textures.py` (`--finishes`).
+- **Git:** force-push is refused. After a merged PR, restart the branch from `origin/main` (a fast-forward push works).
+- **The gallery:** `tools/gallery.py _site` shoots fixed views; a before/after pixel diff proves a code trim changed nothing.
+  `--catalogue k,k` puts catalogue pieces in the garage (`_shots/catalogue.jpg`). Bedding needs a viewport over 700 px (`clothBox` is skipped on `LOWD`).
+
+## 2. Merging when threads run side by side
+- **Versions race.** Each PR takes `VERSION`, a line in `docs/HISTORY.md`, `docs/STATE.md` and its plan row, and main moves every few
+  minutes while CI runs about 20. Take the version **at merge time**: once the code is green, merge `main` in (a merge commit, not a
+  rebase), take the next free version, `checks.py --quick` and `build.py --fast`, push, merge straight away. Never take a version below
+  main's. A docs-only conflict needs no second full CI wait. Numbers lost in races (V2.81, V2.84–V2.86) were simply skipped.
+- **A PR that conflicts with main gets no CI** (no merge ref): merge main first. A draft PR once got no runs until marked ready.
+- **Docs-only PRs** skip the browser jobs (the workflow's "Only documents changed?" step) and take no version.
+- **Flaky checks:** `browser (site)` "Measure didn't keep the number typed" was a fixed wait against Measure's 600 ms debounce;
+  #135 waits for the saved row. Draw counts in CI vary: once `rtx draws_house 817 > 640` against 569 locally and on main, and once
+  `iphone draws_living 945 over 295` locally. Re-run before hunting a cause; screenshots are in each run's `screenshots-site` artifact.
+- **The 3D's parts share one scope** (`room3d_src.py` joins them): a new top-level name can clash (`shown` once stopped `R3D.ready`
+  ever firing). Put a `// note` at a line's end only: one put mid-line in a one-line statement commented out the rest of it.
+
+## 3. Speed: what was done, how, what's left
+- **The first picture (N12, N13, N14):** photos sent a few at a time (`upStep`, `gl.initTexture`; `texPut` disposes every clone first:
+  they share GL storage); the house's materials always carry 6 clip planes (`houseClip`) so a cut builds no shader; `compileClipped`
+  (`01_renderer`) asks for shaders grouped by plane set, each group primed by a light-less speck (`prime`); `postWarm`, `texWarm`,
+  `preDraw` warm the composer, photos and shadows; only what the landing shows is built first, the rest after the picture (`warmRest`).
+- **Room to room (N35):** `14_views_walk` `warmNear` warms a room within 1.5 m (`warmRoom`). three 0.160's shared `_depthMaterial`
+  keeps the program of the first object drawn per light state, so stand-in depth materials (`depthMat`) cover every (side, map) mix.
+  Walking hall → living room → landing → lower floor built 36 shaders on the frame that drew them; now 1.
+- **Moving (N11, N17):** the page draws only when something changes (`17_render_loop` `need`). Damping is frame-rate free (`DAMP`).
+  A slow phone walks without the shade and glow, then draws at 1.5× (`phoneCap`).
+- **Draws (N16, N37):** `20_go.js` `put()` sorts a floor's merged meshes by room (`userData.rooms` spans); `09` `roomCull` cuts rooms by
+  draw range through a door graph (`RLINK`). `HBUILD` makes one draw per (group, material); from outside `joinBuild` joins floors and
+  `houseJoin` sets one draw range. The house opens in 188 draws (was 287). Left: rooms gained little (frustum culling already did most);
+  the landing's ~380 on a phone is the living room down the stairwell; HD draws about twice (the GTAO normal pass). Next: the living
+  room's own draws, or the GTAO pass.
+- **Bytes (N2–N4, N25, N32, N43):** photos a hashed JPEG each in `_site/tex`, kept across versions (`demma-keep`); half-size set for
+  `LOWD` phones; esbuild minifies the page; icon font subset; sheets in their own file; fonts don't block; no texel finer than a 4K
+  screen shows (`build_textures.PX`, `--slim`). Tried and dropped: lower JPEG quality (3–8 dB lost for 5–10%), progressive JPEGs.
+  `sw.js` waits 2 s for the page (`WAIT`), then serves the kept copy (tested with a local server whose delay is set by a `.txt` file).
+- **KTX2 (N22/N31, PR #133, WIP):** basisu 1.16.4 pinned at commit 900e40fb5d25, built in CI (no encoder can be fetched here); three's
+  `KTX2Loader` and its basis transcoder (0.5 MB wasm) copied into `_site`; the compressed data put into the same texture objects so no
+  shader changes; JPEG fallback. The tint must stay at build (compressed textures can't be tinted on the page). Waits on Emma's OK.
+- **Lean code (N28, N41):** method: join the parts (`room3d_src.js()`), run ESLint 9 `no-unused-vars` on the one file (install ESLint
+  in a scratch folder, not the repo), read each part, grep every name across `media-wall/src`, `tools`, `house`, `projects` (`R3D.*`
+  hooks are called by `shot3d.py` and `check_site.py`), prove with the gallery. Left: `growGlow` always [] (parts 12, 13), `MOV`'s unread
+  `flat`, the `S.cab === "sliding"` paths, `export3d.py`'s `A_*` `BAR2` keys, unused names in 04 (`aboveAll`, `recP`), 14 (`wheelAcc`),
+  16 and 20 (`sl`), 20 (`id`, `wcm`, a duplicate `collide` key).
+
+## 4. The house beside its photos
+- `tools/compare.py` pairs a photo with a view (`PAIRS`; a second photo of a room is `<view>_<what>`, e.g. `hall_front`);
+  `tools/camfit.py` fits the camera. A sweep can't find the bathroom or the master: they need hand starts (`camfit.START`, solved from
+  the photo's corners) and the bathroom door open (`compare.OPEN`).
+- **The lens cap:** the page's `fitFov` caps a tall view at 95° and reads `aim.fov` as a 16:9 lens, so a phone's 0.5× photo (about 108°
+  on a tall photo) can't be matched. Put the key in `compare.TRUE_FOV` / `LENS` and start near 108° (portrait) or 90° (landscape).
+- The outside photos are wide-angle and distorted, so fits don't converge: read heights as shares of drive-to-gutter in one column of
+  the picture; the first floor's sills and heads (0.71 / 0.96) are the ruler.
+- The kitchen-from-the-landing photo couldn't be fitted and was dropped. Bedroom 2 is the music room: no bed there.
+
+## 5. The site's features: where they live
+- **Look's rows** (`23_finish.js`, `S.fin[room]`): 0–3 walls, 4 ceiling, 5 floor, 6 bulb, 7 lux, 8 fitting, 9–10 outside, 11–16 the
+  living room's walls by name, 17 its skirting and door, 18 rug, 19 curtains, 20 bedding, 21 picture, 22 picture's wall, 23 plant,
+  24–25 wallpaper. A new slot goes in `finClean`, the Paste filter, `roomUps` and a cost in `UPC`.
+- **Changes and costs** (`16_cards.js`): `UPC` rough UK costs (E, Nov 2026; a floor per m²), `roomUps(room)` a room's changes, card id
+  `ups:<room>`; done ticks in `localStorage` `dh-done` (this device only, not in Send); `upsAll()` gives the total for Plan and Measure.
+  The 3D's `qs` is scoped to its root: use `document.getElementById` for the sheets' elements.
+- **The catalogue** (`08_house_catalogue.js`): every piece has a `ref` to a `fit.SOURCES` row and a short `src`; `checks.py` sizes fails
+  a piece with none. Soft edges come from the material (`20_go.js` `ROUND`/`CLOTH`).
+- **Lamps:** `survey_data.LAMPS` → `model.room_lamps`; the viewer reuses the room lights' uniforms (no rebuild). **Shade under pieces:**
+  `model.piece_shade`, moved with edits (`08_house_edits.js editedFloor`).
+- **The refresh button:** `.hello .ver` in Plan; the ↻ is CSS `::after` (`qa.py` reads the text); `version.txt`; handler at the end of
+  `page.js`. To see a new round on the phone: open Plan, tap the version.
+- **Landing and welcome:** `build_viewer.LANDING_JS`, `r3d-first` → `demma-landed`; the welcome once a device (`demma-welcome`);
+  automated browsers skip both unless `?landing` / `?welcome`.
+- **Back** (`09_house_views.js` `roomHist`), **Esc** (`19_controls.js` `ESC`, top layer only), **Overhead/Angled** (`19_view_controls.js`).
+- **Doors:** `14_views_walk.js` `walkDoors` opens a door within 95 cm (not the bin cupboards'). The stairs: both flights 85 wide
+  (`geometry.RECESS_W`), `model.stair_soffit` over the lower flight; the site check walks through the living room door at x 339.

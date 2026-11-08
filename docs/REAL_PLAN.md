@@ -206,19 +206,19 @@ the front, Q8's measurements, dark mode (V1_PLAN phase 8, N9).
 **Needs the client:** a yes or no on KTX2 (N31); `?perf` from the iPhone and the PC (N10, N17); dark panels on a dark device or not
 (N9's rest).
 
-## 9. Handover (7 Nov 2026, V2.74): where every task stands
+## 9. Handover (8 Nov 2026, V3.03): where every task stands
 
-The client stopped all work on 7 Nov 2026. Start with `docs/HANDOVER.md` (how it runs, the open PRs, what waits on Emma). Done means
-merged to `main` and live; In PR means pushed, not merged; Not started means no branch.
+The client stopped work on 8 Nov 2026 (as on 7 Nov at V2.74). Start with `docs/HANDOVER.md` (how it runs, what's open, what waits on
+Emma), then `docs/NOTES.md`. Done means merged to `main` and live; In PR means pushed, not merged.
 
 | State | Tasks |
 |---|---|
-| **Done** (live) | N1, N2, N3, N4, N5, N6, N7, N8, N13, N14, N15, N16, N17, N18, N19, N20, N21, N23, N25, N26, N27, N28, N29, N30 (V2.89), N32 (V2.82), N33 (V2.88), N34 (V2.90), N35 (V2.87), N36 (V2.91), N37 (V2.98) |
+| **Done** (live) | N1–N8, N13–N21, N23–N30, N32–N45 (N38 V2.94, N39 V2.96, N40 V3.01, N41 V2.95, N42 V2.97, N43 V3.00, N44 V3.03, N45 V3.02) |
 | **Done in part** (what's left is named in its row or folded into a later task) | N9 (dark panels: Emma's call), N11 (the PC's `?perf`), N12 (the iPhone's `?perf`), N22 (KTX2 is N31) |
 | **In PR, not merged** | none |
-| **In progress** | N31 (#133, WIP: build side only) |
-| **Not started** | none |
-| **Needs the client** | N10 (`?perf` from the iPhone 15 Pro and the RTX 5070 PC) |
+| **In progress** | N31 (#133, WIP: build side only; waits on Emma's OK) |
+| **Not started** | none: the next section is the new team's |
+| **Needs the client** | N10 (`?perf` from the iPhone 15 Pro and the RTX 5070 PC); the questions in `docs/HANDOVER.md` |
 
 ## 10. Resumed (7 Nov 2026): the rest in parallel chunks
 
