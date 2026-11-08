@@ -22,9 +22,9 @@ const VIEWS = {
   sofa:    { label: "From the sofa", eye: [85, 108, -250], at: [72, 112, 20], fov: 58 },
   door:    { label: "From the door", eye: [372, 165, -6], at: [110, 85, -210], fov: 64 },
   stairs:  { label: "From the stairs", eye: [438, 205, 4], at: [190, 70, -205], fov: 62 },
-  dining:  { label: "The dining table", A: { eye: [250, 140, -262], at: [246, 88, 0] }, B: { eye: [250, 150, -150], at: [467, 112, -185] }, C: { eye: [196, 175, -232], at: [430, 78, -130] }, Cs: { eye: [196, 175, -232], at: [430, 78, -130] }, fov: 60 },   // v21: back from the lamp
-  unfold:  { label: "The table unfolding", C: { eye: [168, 200, -262], at: [392, 84, -138] }, Cs: { eye: [164, 200, -262], at: [388, 84, -138] }, eye: [168, 200, -262], at: [392, 84, -138], fov: 60 },   // v32: "Watch it open", the whole table in view
-  chairs:  { label: "The chair cupboard", eye: [255, 200, -190], at: [460, 95, -262], C: { eye: [262, 170, -120], at: [462, 92, -200] }, Cs: { eye: [228, 178, -150], at: [462, 92, -232] }, fov: 54 },   // v20; v21 clear of the lamp; v30 the compact's chair bay
+  dining:  { label: "The dining table", A: { eye: [250, 140, -262], at: [246, 88, 0] }, B: { eye: [250, 150, -150], at: [467, 112, -185] }, C: { eye: [196, 175, -232], at: [430, 78, -130] }, fov: 60 },   // v21: back from the lamp
+  unfold:  { label: "The table unfolding", C: { eye: [168, 200, -262], at: [392, 84, -138] }, eye: [168, 200, -262], at: [392, 84, -138], fov: 60 },   // v32: "Watch it open", the whole table in view
+  chairs:  { label: "The chair cupboard", eye: [255, 200, -190], at: [460, 95, -262], C: { eye: [262, 170, -120], at: [462, 92, -200] }, fov: 54 },   // v20; v21 clear of the lamp; v30 the compact's chair bay
   windowwall: { label: "Out of the window", eye: [236, 150, -70], at: [236, 120, -309], fov: 66 },   // v17: for the ideas' stills
   breast:  { label: "The chimney breast", eye: [246, 140, -250], at: [246, 120, 0], fov: 54 },   // v17: for the ideas' stills
   pc:      { label: "The PC side wall", eye: [345, 135, -168], at: [0, 112, -168], fov: 56 },
@@ -568,7 +568,6 @@ function syncEye() {         // the height slider follows the camera
   const cm = Math.round(camera.position.y / M); i.value = Math.min(220, Math.max(40, cm)); if (o) o.textContent = cm > 220 ? "above the room" : `${cm} cm`;
 }
 function applyPad() { const p = qs("#r3d-pad"); if (p) p.hidden = !S.pad; }
-let wheelAcc = 0;            // looking round, the wheel (or a two-finger scroll) walks
 /* V1.29 (U2): looking round the wheel walks as far as it turns (it went in 15 cm jumps); a pinch changes the lens (25°–100°). V2.42, the
    client: "movement is difficult again": standing (Be there) the wheel changed the lens instead, a fish-eye in a turn or two; now it walks
    there too, and Ctrl + wheel (a trackpad's pinch) is the lens */
@@ -615,7 +614,7 @@ function setView(name, instant, dur) {
   S.view = name;
   if (RMODE !== "in") setRmode("in", true);                               // v71: a new view starts in the room
   standLook(!!v.stand);                                                     // V1.6: the living room's Be there looks round from where you stand
-  let p = (S.site === "C" && S.cab === "sliding" && v.Cs) || v[S.site] || v;   // v30: "Cs", the sliding cabinet's own eye
+  let p = v[S.site] || v;
   if (name === "house" && camera.aspect < 1.2) { const f = Math.min(0.95, 0.42 / camera.aspect) * 0.72 / freeFrame()[0];   // V2.74 (N18, left by N19): a tenth closer   // V2.46: and back by the share the buttons leave free (the roof was under the floors row)
       // v54: a phone stands further back to take in every floor (V1.30: less far: the buttons take less room)
     p = { eye: p.at.map((a, i) => a + (p.eye[i] - a) * f), at: p.at }; }
