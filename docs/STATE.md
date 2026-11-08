@@ -51,7 +51,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   (View · Look · Measure; in the living room also Room and Edit); the figure bottom right drops you in where you let go.
 - **Rooms:** picking one stands you in it (`goRoom`); its views Be there · In it · Above · On its own. Walk: W A S D, arrows turn,
   the wheel walks (Ctrl + wheel the lens), a double-click or double-tap walks you to a spot, Mouse look (M) on a computer. The eye is
-  solid to walls and furniture; doors open with a tap and stay as left (this device). `?room` opens the living room.
+  solid to walls and furniture; doors open with a tap and stay as left (this device). A shut door opens as you walk up to it, but the bin cupboards' (V2.99: they met across the porch as a second front door). `?room` opens the living room.
   Back (the phone's swipe, the browser's) from a room brings you out to the house, one step whatever rooms you went through (V2.96, N39, `roomHist`).
 - **Over the house (V2.74, N18, `19_view_controls.js`):** Overhead is a map: one finger or a left-drag moves it (the ground stays under
   the finger), two fingers pinch and twist, a right-drag turns; Angled orbits 10°–85° above the ground. The point looked at stays

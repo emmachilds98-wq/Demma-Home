@@ -289,7 +289,9 @@ function walkDoors(x, feet, z) {            // a shut door opens as you come up 
   const now = performance.now(); if (now - WALK.doorT < 200) return; WALK.doorT = now;
   const w = new THREE.Vector3();
   for (const [pk, P] of Object.entries(HPARTS)) {
-    if (!pk.startsWith("door.") || doorOpen(P)) continue;
+    /* V2.99, the client: "a second front door seems to show": the bin cupboards' doors met across the porch as you came up to the front
+       door; they open on a tap only */
+    if (!pk.startsWith("door.") || pk === "door.store_w" || pk === "door.store_e" || doorOpen(P)) continue;
     P.g.getWorldPosition(w); const dx = -w.x / M - x, dz = w.z / M - z, dy = w.y / M - feet;
     if (Math.hypot(dx, dz) < 95 && dy > -40 && dy < 220) swingDoor(pk, true);
   }
