@@ -56,14 +56,14 @@ const HCAT_ADD = ["plant", "snake", "monstera", "olive", "armchair", "sidetable"
   "desklegs", "deskdrawers", "trestle", "bench", "pouffe", "wardrobe2", "sliding", "openrail", "divan", "oakbed", "metalbed"];
 function hcatCard(id) {
   const k = id.split(":")[1], it = HIT(k); if (!it) return null;
-  const nav = (L, i, at) => [btn("‹", { [at]: `${k}:${i - 1}` }, false, "q", "The one before"), btn("›", { [at]: `${k}:${i + 1}` }, false, "q", "The next one")];
+  const nav = (i, at) => [btn("‹", { [at]: `${k}:${i - 1}` }, false, "q", "The one before"), btn("›", { [at]: `${k}:${i + 1}` }, false, "q", "The next one")];
   if (id.startsWith("hswap:")) { const kind = swapKind(k); if (!kind) return null;
     const L = [null, ...hcOf(kind)], i = Math.max(0, L.indexOf(pieceNow(k).swap)), C = HCAT[L[i]];
-    return [C ? C.n : it.n + " (yours)", `${HCAT_KINDS[kind]} · ${i + 1} of ${L.length} · ${C ? C.src : "as planned"}`, [...nav(L, i, "hswapgo"), btn("Keep it", { actopen: "hitem:" + k }, true)]]; }
+    return [C ? C.n : it.n + " (yours)", `${HCAT_KINDS[kind]} · ${i + 1} of ${L.length} · ${C ? C.src : "as planned"}`, [...nav(i, "hswapgo"), btn("Keep it", { actopen: "hitem:" + k }, true)]]; }
   if (it.look) { const L = plantKeys(), i = Math.max(0, L.indexOf(it.add)), C = HCAT[it.add];   // N5: a room's plant, from Look
-    return [C.n, `${roomName(it.look)}'s plant · ${i + 1} of ${L.length} · ${C.src}`, [...nav(L, i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Take it out", { hremove: k })]]; }
+    return [C.n, `${roomName(it.look)}'s plant · ${i + 1} of ${L.length} · ${C.src}`, [...nav(i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Take it out", { hremove: k })]]; }
   const i = Math.max(0, HCAT_ADD.indexOf(it.add)), C = HCAT[it.add];
-  return [C.n, `${i + 1} of ${HCAT_ADD.length} · ${C.src}`, [...nav(HCAT_ADD, i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Take it out", { hremove: k })], null,
+  return [C.n, `${i + 1} of ${HCAT_ADD.length} · ${C.src}`, [...nav(i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Take it out", { hremove: k })], null,
     `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Kinds">${Object.entries(HCAT_KINDS).map(([q, t]) => `<button type="button" data-hcatk="${k}:${q}" aria-pressed="${C.k === q}">${t}</button>`).join("")}</div></div>`];
 }
 /* N23 (REAL_PLAN section 7), the client: "helps me keep track and plan those upgrades": a room's card of its changes (Look's and Edit's),
@@ -191,7 +191,7 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id === "cab" && S.site !== "C") id = "table";
   if (id === "table" && S.site === "C") id = "cab";
   if (id === "cab") {
-    const sl = S.cab === "sliding", d = cabDoors();
+    const d = cabDoors();
     const st = !folded ? `Open for ${S.dining}: the table is out` : d.table ? "Packed away, the table door open" : d.chairs ? "Packed away, the chair door open" : (S.cabw === "80" ? "Packed away: the table and four of the six chairs inside" : "Packed away: the table and the six chairs inside");
     return [S.cabw === "80" ? "The dining cabinet, 80-wide table" : "The dining cabinet", st, [
       btn("Open for six", { dining: "six" }, S.dining === "six"), btn("Open for four", { dining: "four" }, S.dining === "four"),
