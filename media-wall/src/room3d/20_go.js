@@ -669,7 +669,7 @@ function buildHouse() {
       };
       for (const [pk, P] of Object.entries(F.parts || {})) {   // v68: a piece that moves, its boxes round its hinge (V1.26: the doors too)
         const { g, kids } = partG(P, cur, new THREE.Vector3());
-        const was = HPARTS[pk], kept = (S.doors || {})[pk];   // V1.26b: a door stays as you left it (this device)
+        const was = HPARTS[pk], kept = BINS.includes(pk) ? null : (S.doors || {})[pk];   // V1.26b: a door stays as you left it (this device; V3.14: not the bin cupboards')
         HPARTS[pk] = { g, kids, angle: P.angle, axis: P.axis, label: P.label, floor: fk, t: was ? was.t : kept != null ? kept : (P.t0 || 0) };
         partPose(HPARTS[pk]);
       }

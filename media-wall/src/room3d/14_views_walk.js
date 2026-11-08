@@ -298,13 +298,17 @@ function warmNear(x, feet, z) {
   for (const [id, r] of Object.entries(R.HOUSE3.rooms || {})) { const v = ROOM_VIEW[id] || WALK_VIEW[id]; if (v && VIEWS[v] && VIEWS[v].box && near(r[0], r[1], r[2], r[3]) && Math.abs(feet - r[4]) < 230) want.push(v); }
   want.find(v => v !== S.view && warmRoom(v));
 }
+/* V3.14, the client: "still has two front doors": the bin cupboards' doors, once open, were remembered open on the device (V1.26b) and,
+   both open, lie across the porch in front of the front door. They always start shut, aren't remembered, open one at a time (the other
+   shuts) and "Open every door" leaves them */
+const BINS = ["door.store_w", "door.store_e"];
 function walkDoors(x, feet, z) {            // a shut door opens as you come up to it
   const now = performance.now(); if (now - WALK.doorT < 200) return; WALK.doorT = now;
   const w = new THREE.Vector3();
   for (const [pk, P] of Object.entries(HPARTS)) {
     /* V2.99, the client: "a second front door seems to show": the bin cupboards' doors met across the porch as you came up to the front
        door; they open on a tap only */
-    if (!pk.startsWith("door.") || pk === "door.store_w" || pk === "door.store_e" || doorOpen(P)) continue;
+    if (!pk.startsWith("door.") || BINS.includes(pk) || doorOpen(P)) continue;
     P.g.getWorldPosition(w); const dx = -w.x / M - x, dz = w.z / M - z, dy = w.y / M - feet;
     if (Math.hypot(dx, dz) < 95 && dy > -40 && dy < 220) swingDoor(pk, true);
   }

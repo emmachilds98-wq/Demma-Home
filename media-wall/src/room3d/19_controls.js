@@ -123,11 +123,12 @@ const doorOpen = P => !!(P && (P.tw ? P.tw.to === 1 : P.t > 0.5));
 function swingDoor(k, on) {
   const P = HPARTS[k]; if (!P) return;
   P.tw = { a: P.t, to: on ? 1 : 0, t0: performance.now() }; dirty();
-  S.doors = Object.assign({}, S.doors, { [k]: on ? 1 : 0 }); store.set(KEY, S);   // V1.26b: remembered
+  if (BINS.includes(k)) { if (on) BINS.forEach(b => b !== k && doorOpen(HPARTS[b]) && swingDoor(b, false)); }   // V3.14: one at a time, not kept
+  else { S.doors = Object.assign({}, S.doors, { [k]: on ? 1 : 0 }); store.set(KEY, S); }   // V1.26b: remembered
   if (k === "door.living_door") setTimeout(() => { applyFloors(); reshadow(); }, on ? 0 : 950);   // V1.38: what's seen through it (once it's shut)
   else setTimeout(() => roomCull(true), on ? 0 : 950);   // V2.71 (N16): the room behind it drawn (left out once it's shut)
 }
-function swingAll(on) { for (const k of Object.keys(HPARTS)) if (k.startsWith("door.")) swingDoor(k, on); if (actId) renderAct(); }
+function swingAll(on) { for (const k of Object.keys(HPARTS)) if (k.startsWith("door.") && !(on && BINS.includes(k))) swingDoor(k, on); if (actId) renderAct(); }
 /* v71, the client: "three ways to view the room": in it (wide), from above (the ceiling and the floors over it cut away), and the room on
    its own (the house cut to the room's walls, everything else put away), so nothing clips into it */
 const VIEW_ROOM = Object.fromEntries(Object.entries(ROOM_VIEW).map(([r, v]) => [v, r]));
