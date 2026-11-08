@@ -1,5 +1,5 @@
 {
- "_": "V2.75 (N26): the speed budget. tools/checks.py fails a round that goes over: 'site' (tools/check_site.py) measures the paths, 'sizes' the built files. Each number is V2.74's plus about 10%. Lower one when a round wins; raise one only on purpose, saying why in the PR. Measured numbers: _shots/perf.json. V2.87 (N35): shaders_first +1 for Fast (phone, computer): the speck that sets a group's cutting planes before its shaders are asked for (one tiny shader, no lights, kept), so none of the group's own is built on the spot. V2.98 (N37): draws_house lowered to the new numbers plus about 10% (188 phone and PC, 189 iPhone, 371 RTX).",
+ "_": "V2.75 (N26): the speed budget. tools/checks.py fails a round that goes over: 'site' (tools/check_site.py) measures the paths, 'sizes' the built files. Each number is V2.74's plus about 10%. Lower one when a round wins; raise one only on purpose, saying why in the PR. Measured numbers: _shots/perf.json. V2.87 (N35): shaders_first +1 for Fast (phone, computer): the speck that sets a group's cutting planes before its shaders are asked for (one tiny shader, no lights, kept), so none of the group's own is built on the spot. V2.98 (N37): draws_house lowered to the new numbers plus about 10% (188 phone and PC, 189 iPhone, 371 RTX). V3.04 (N46): the RTX's draws lowered to the new numbers plus about 10% (the shade reads the picture's depth: no second pass; 190 house, 387 living room); the iPhone path runs without the shade in software graphics, so its numbers stay.",
  "files": {
   "page_mb": 2.25,
   "three_mb": 0.95,
@@ -29,8 +29,8 @@
   "rtx": {
    "first_visit_mb": 15.0,
    "shaders_first": 54,
-   "draws_house": 410,
-   "draws_living": 840
+   "draws_house": 210,
+   "draws_living": 430
   }
  }
 }
