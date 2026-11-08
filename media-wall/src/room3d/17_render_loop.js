@@ -103,7 +103,7 @@ function frame(now) {
   const walked = walkTick(dt); if (walked) { need = 2; syncEye(); }   // V1.32 (U7)   // V2.30: dt to 100 ms (it held each step to 50: a slow frame slowed the walk)
   if (!tween && !freeAbove() && !walking() && (clampRoom(camera.position) | clampRoom(controls.target, true) | collide())) need = 2;   // v17: never outside the room; v41: nor in the furniture
   const active = moving || changed || !!tween || walked;   // V2.73 (N17): a walk too
-  if (active && mvLast && now - mvLast < 250) { MV.push(now - mvLast); if (MV.length >= 24) { const m = MV.sort((a, b) => a - b)[12]; MV.length = 0;
+  if (active && mvLast && now - mvLast < 250) { MV.push(now - mvLast); if (MV.length >= 24) { const m = MV.sort((a, b) => a - b)[12]; MV.length = 0; FT.mv = m;
     if (m > 28 && !BIG_GPU) slowDev = true; else if (m < 14 && !lowRes && HI) slowDev = false;
     if (PHONE_HD && lowRes && m > 24 && phoneCap > 1.5) capDue = true;   // V2.73 (N17): still slow with the lighter drawing
     if (m > 40 && !BIG_GPU && !houseLite && S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view)) { houseLite = true; sizeRenderer(); toast("A lighter drawing for the house on this computer"); } } }
@@ -132,19 +132,23 @@ function frame(now) {
 let probe = 3; const probeT = [], PX = new Uint8Array(4);
 let preT = 0;
 const FT = []; FT.n = 0;   // v35: the last 60 frames' times, for R3D.perf()
+const med = a => { const s = a.slice().sort((x, y) => x - y); return s.length ? +s[s.length >> 1].toFixed(1) : null; };
+// V3.04 (N50): the graphics chip's family only ("RTX 5070", "Apple GPU"), never the driver's whole string
+const gpuClass = () => (GPU.match(/[rg]tx\s?\d{3,4}\w*|radeon[^,()]*?\d{3,4}\w*|apple (gpu|m\d\w*)|adreno\D{0,4}\d{3}|mali-\w+|immortalis-\w+|xclipse \d+|intel[^,()]*?(arc|iris|uhd)\s?\w*|swiftshader|llvmpipe/i) || ["other"])[0];
 function perfInfo() {   // v35: the counts to watch each round (R3D.perf())
-  const i = gl.info, ls = [], ms = FT.slice().sort((a, b) => a - b);
+  const i = gl.info, ls = [];
   scene.traverseVisible(o => { if (o.isLight) ls.push(o); });
   return { calls: FT.calls, triangles: FT.tris, geometries: i.memory.geometries, textures: i.memory.textures, programs: i.programs.length,
-    lights: ls.length, shadows: ls.filter(l => l.castShadow).length, quality: S.quality, ratio: gl.getPixelRatio(), frameMs: ms.length ? +ms[ms.length >> 1].toFixed(1) : null,
-    warm: PRE.queue.length, errors: store.get("r3d-errors", []).length, gpu: GPU.slice(0, 80), bigGpu: BIG_GPU, ao: aoLive(), goodPhone: GOOD_PHONE, slowDev };   // v39: which graphics card, and whether it starts in HD
+    lights: ls.length, shadows: ls.filter(l => l.castShadow).length, quality: S.quality, ratio: gl.getPixelRatio(), frameMs: med(FT),
+    warm: PRE.queue.length, errors: store.get("r3d-errors", []).length, gpu: GPU.slice(0, 80), bigGpu: BIG_GPU, ao: aoLive(), goodPhone: GOOD_PHONE, slowDev,   // v39: which graphics card, and whether it starts in HD
+    gpuClass: gpuClass(), phone: SMALL, version: R.VERSION || "", moveMs: FT.mv ? +FT.mv.toFixed(1) : null, stillMs: med(probeT), view: S.view };   // V3.04 (N50): a frame while moving (24 frames' middle), a whole still frame (the start's check), for Send
 }
-if (/[?&]perf\b/.test(location.search)) {   // v35: ?perf in the address shows the counts in a corner (for a screenshot)
+if (/[?&]perf\b/.test(location.search)) {   // v35: ?perf shows the counts in a corner   // V3.04 (N50): in fewer words; Measure's Send carries them too
   const box = document.createElement("div"); box.className = "r3d-perf";
-  box.style.cssText = "position:absolute;left:8px;bottom:8px;z-index:30;padding:6px 9px;border-radius:10px;background:rgba(0,0,0,.72);color:#fff;font:12px/1.35 ui-monospace,monospace;pointer-events:none;white-space:pre";
-  root.append(box); let n0 = FT.n, t0 = performance.now();
-  setInterval(() => { if (!gl || !started) return; const p = perfInfo(), t = performance.now(), fps = (FT.n - n0) * 1000 / (t - t0); n0 = FT.n; t0 = t;
-    box.textContent = `${p.quality} · ${fps.toFixed(0)} frames/s · ${p.frameMs} ms\ncalls ${p.calls} · tris ${Math.round(p.triangles / 1000)}k · shaders ${p.programs}\nlights ${p.lights} · shadows ${p.shadows} · ratio ${p.ratio} · errors ${p.errors}`; }, 1000);
+  box.style.cssText = "position:absolute;left:8px;bottom:calc(92px + env(safe-area-inset-bottom));z-index:30;padding:6px 9px;border-radius:10px;background:rgba(0,0,0,.72);color:#fff;font:12px/1.35 ui-monospace,monospace;pointer-events:none;white-space:pre";
+  root.append(box);
+  setInterval(() => { if (!gl || !started) return; const p = perfInfo(), ms = v => v == null ? "–" : v + " ms";
+    box.textContent = `${p.quality.toUpperCase()} · moving ${ms(p.moveMs)} · still ${ms(p.stillMs)}\n${p.calls} draws · ${p.programs} shaders${p.errors ? " · " + p.errors + " errors" : ""}`; }, 1000);
 }
 function autoQuality() {
   const ms = probeT.sort((a, b) => a - b)[1];

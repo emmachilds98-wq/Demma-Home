@@ -74,9 +74,11 @@ function roomEnv() {
   if (S.tod === "day") { if (ENV.studio && scene.environment !== ENV.studio) { scene.environment = ENV.studio; envLevels(true); } return; }   // by day the bright garden in the window swamped it: the studio stays
   if (!ENV.rt) { ENV.rt = new THREE.WebGLCubeRenderTarget(256, { type: THREE.HalfFloatType }); ENV.cam = new THREE.CubeCamera(0.05, 40, ENV.rt); ENV.pm = new THREE.PMREMGenerator(gl); }
   ENV.cam.position.copy(v3(R.W / 2, 125, (R.WINDOW_Z + R.RECESS_Z) / 2));
-  const clip = gl.localClippingEnabled; gl.localClippingEnabled = false;   // the whole room, not the cutaway
+  /* the whole room, not the cutaway. N54: by its cut put out of the way (as updateCut does standing in the room), not by switching cutting
+     off: off, the room drew through shaders of its own, about 20 built on the spot a second after you came in from the house (seconds on a PC) */
+  const A = CLIP[0], an = A.normal.clone(), ak = A.constant; A.normal.set(0, 0, 1); A.constant = 1e3;
   const sunI = sun ? sun.intensity : 0; if (sun) sun.intensity = 0;            // the sun's patch stays out of the reflections (it lit the room twice)
-  try { ENV.cam.update(gl, scene); } finally { gl.localClippingEnabled = clip; if (sun) sun.intensity = sunI; }
+  try { ENV.cam.update(gl, scene); } finally { A.normal.copy(an); A.constant = ak; if (sun) sun.intensity = sunI; }
   const t = ENV.pm.fromCubemap(ENV.rt.texture).texture;
   if (ENV.tex) ENV.tex.dispose();
   ENV.tex = t; scene.environment = t; envLevels(S.tod === "day"); dirty();
@@ -121,7 +123,6 @@ function applyLight() {
     if (h.col) { l.color.set(h.col); if (g && l.intensity > 0) g.material.color.set(h.col); }
   }
   capShadows(hd ? SHADOW_CAP : 0);                            // v18: never more shadowed spots than the graphics card can take
-  growGlow.forEach(m => m.visible = !!S.grow);
   set(lights.tv, L.bias > 0 && hd ? 100 : 0);
   ledMat.color.set(L.strip > 0 ? "#ffd9a8" : "#5a5248").multiplyScalar(L.strip > 0 ? 0.6 + L.strip / 100 * 1.4 : 1);
   runLed.color.set(L.uprights > 0 ? (S.col.strips || "#ffd9a8") : "#5a5248").multiplyScalar(L.uprights > 0 ? 0.6 + L.uprights / 100 * 1.4 : 1);   // v16: smart colour strips

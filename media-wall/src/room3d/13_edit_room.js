@@ -42,11 +42,11 @@ function mergeStatic(g) {
   }
   return g;
 }
-function movable(id, label, g, def, w, d, mats, flat = false, extra = {}) {
+function movable(id, label, g, def, w, d, mats, _flat, extra = {}) {   // _flat: unread, kept by place for the callers
   if (!extra.added && id !== "lamp") mergeStatic(g);   // v22
   const pivot = new THREE.Group(); pivot.add(g); pivot.userData.movId = id;
   movers.add(pivot);
-  MOV[id] = Object.assign({ id, label, pivot, def, w, d, mats, flat, base: mats.map(m => "#" + m.color.getHexString()) }, extra);
+  MOV[id] = Object.assign({ id, label, pivot, def, w, d, mats, base: mats.map(m => "#" + m.color.getHexString()) }, extra);
   return MOV[id];
 }
 function spotOf(id) {
@@ -98,7 +98,6 @@ function hangPlant(par, x, top, z, edges, seed, gapZ) {   // v38: gapZ [the shel
   FLORA_BUILD.pothos(B, v3(x, top + 10.3, z), 20, r, PB.pot / 2);
   floraFlush(hold, par);
 }
-let growGlow = [];
 const GLOW_TEX = canvasTex(128, 128, (c, w, h) => { const gr = c.createRadialGradient(w / 2, h / 2, 2, w / 2, h / 2, w / 2);
   gr.addColorStop(0, "rgba(255,214,160,0.75)"); gr.addColorStop(1, "rgba(255,214,160,0)"); c.fillStyle = gr; c.fillRect(0, 0, w, h); });
 function buildPlantsAndRecords() {
@@ -444,17 +443,33 @@ function addList() {
   qs("#r3d-addlist").innerHTML = removed.map(it => `<button type="button" class="chip" data-putback="${it.id}">↩ ${it.label}</button>`).join("")
     + Object.entries(CATALOGUE).map(([k, c]) => `<button type="button" class="chip" data-add="${k}">${c.label}</button>`).join("");
 }
-canvas.addEventListener("pointerdown", e => {
-  if (!S.edit || e.button > 0) return;
+/* V3.07, the client: "in edit mode for moving things it still swings the camera round": a press on a piece is the piece's alone, caught
+   on the way down (root, capture) before the orbit, Look round's turn and the pinch see it. Near the selected piece (its outline on screen
+   and a finger's width round it) that piece is grabbed, unless another standing piece is under the pointer (the rug gives way). A drag
+   off the pieces still moves the view */
+const boxOf = id => new THREE.Box3().setFromObject(MOV[id].pivot);
+function grabbed(e) {
+  const h = hitMovable(e), it = MOV[selId];
+  if (!it || it.fixed || !shown(it.pivot) || h === selId || (h && !MOV[h].fixed && boxOf(h).max.y > 0.05)) return h;
+  const b = boxOf(selId), r = canvas.getBoundingClientRect(), pad = e.pointerType === "touch" ? 36 : 16, xs = [], ys = [];
+  for (let i = 0; i < 8; i++) { const v = new THREE.Vector3(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z).project(camera);
+    xs.push(r.left + (v.x + 1) / 2 * r.width); ys.push(r.top + (1 - v.y) / 2 * r.height); }
+  const near = (q, a) => q > Math.min(...a) - pad && q < Math.max(...a) + pad;
+  return near(e.clientX, xs) && near(e.clientY, ys) ? selId : h;
+}
+root.addEventListener("pointerdown", e => {
+  if (!S.edit || e.target !== canvas || e.button > 0) return;
+  if (drag) { e.stopPropagation(); return; }           // a second finger while one drags: nothing
+  if (!e.isPrimary) return;                            // a second finger on the room's turn or pinch: still the view's
   downXY = [e.clientX, e.clientY];
-  const id = hitMovable(e);
+  const id = grabbed(e);
   if (!id) return;
-  select(id);
+  if (id !== selId) select(id);
   const it = MOV[id], p = spotOf(id), f = floorAt(e);
   if (!f || it.fixed) { downXY = null; return; }        // v27: built-in pieces are selected, not dragged (and the tap isn't a wall's)
   drag = { id, dx: p.x - f.x, dz: p.z - f.z, x0: p.x, z0: p.z, moved: false, before: snapshot() };
-  controls.enabled = false; canvas.setPointerCapture(e.pointerId);
-});
+  e.stopPropagation(); canvas.setPointerCapture(e.pointerId);
+}, true);
 canvas.addEventListener("pointermove", e => {
   if (!drag) return;
   const f = floorAt(e); if (!f) return;
@@ -466,7 +481,7 @@ canvas.addEventListener("pointermove", e => {
 });
 function endDrag(e) {
   if (drag) {
-    const d = drag; drag = null; controls.enabled = true;
+    const d = drag; drag = null;
     if (d.moved) { UNDO.push(d.before); if (UNDO.length > 10) UNDO.shift(); undoBtn(); setLayout(d.id, { x: d.x, z: d.z }); if (MOV[d.id].lamp) { lamp.position.set(0, 0, 0); built.lamp = null; applyState(); select(d.id); } else { placeAll(); store.set(KEY, S); } }
     return;
   }
@@ -477,7 +492,7 @@ function endDrag(e) {
   downXY = null;
 }
 canvas.addEventListener("pointerup", endDrag);
-canvas.addEventListener("pointercancel", () => { if (drag) { drag = null; controls.enabled = true; placeAll(); } });
+canvas.addEventListener("pointercancel", () => { if (drag) { drag = null; placeAll(); } });
 qs("#r3d-editbtn").addEventListener("click", () => setEdit(!S.edit));
 qs("#r3d-editdone")?.addEventListener("click", () => setEdit(false));   // v26: a way out of Edit room with the Tools panel shut
 qs("#r3d-addfrom")?.addEventListener("click", () => {   // v26: Extras' "Add a piece of furniture": Edit room, its list open
