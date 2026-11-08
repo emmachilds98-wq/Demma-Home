@@ -21,7 +21,7 @@ a { color: var(--oak); }
 .skip:focus { top: 12px; }
 /* V2.97 (N42): one clear ring on every control: 3 px purple, a cream gap (it shows on the 3D); just inside in a sliding row */
 html body :is(a[href], button, summary, input, select, textarea, [tabindex], [role=button], [role=tab], [role=switch]):focus-visible { outline: 3px solid var(--oak); outline-offset: 2px; box-shadow: 0 0 0 5px var(--page); }
-html body :is(.r3d-floors, .r3d-fintray, .r3d-momrow, .r3d-addlist, .r3d-sel, #part-filter) :is(button, input):focus-visible { outline-offset: -3px; box-shadow: none; }
+html body :is(.r3d-floors, .r3d-fintray, .r3d-momrow, .r3d-addlist, .r3d-sel, #part-filter, #r3d-acts) :is(button, input):focus-visible { outline-offset: -3px; box-shadow: none; }
 :focus-visible { outline: 3px solid var(--oak); outline-offset: 2px; }
 :focus:not(:focus-visible) { outline: none; }
 /* the brand pill */
@@ -466,3 +466,7 @@ figure.zoomable::after { content: "⤢"; position: absolute; right: 10px; top: 1
 .brand { box-sizing: border-box; min-height: 52px; } .hnav button { min-width: 44px; }
 @media (min-width: 900px) { .hnav button { min-height: 48px; } }
 @media (pointer: coarse) { .seg button, .btn, .chip, a.btn, .hello .ver { min-height: 44px; } }
+/* N51 (look-over 2): a card's buttons scroll, so their ring is drawn inside (it was cut at the sides); Plan's house changes, a row a room, look and feel like the taps they are; 44 px on a touch screen */
+.money li[data-upsroom] { cursor: pointer; margin: 0 -8px; padding: 0 8px; border-radius: 12px; } .money li[data-upsroom]:hover { background: var(--soft); }
+@media (pointer: coarse) { .money li[data-upsroom] { min-height: 44px; } }
+.home2 > details.fold:not([open]) { align-self: start; margin-top: 12px; }   /* shut, "Where the money goes" is its line, not an empty box Waiting on you's height */
