@@ -74,12 +74,13 @@ const UPC = { walls: [40, 80], wall: [15, 35], ceil: [20, 40], skirt: [15, 35], 
   floor: { carpet_grey: [20, 45], carpet: [20, 45], laminate: [20, 40], oak: [50, 90], pine: [30, 60], tile_f: [35, 70], marble: [80, 150], quarry: [45, 85], herring: [70, 115], lvt_grey: [45, 75], porcelain: [60, 110] },   // a m², laid (N56: fit.SOURCES upfloors)
   fit: { bare: [5, 15], drum: [20, 60], globe: [25, 70], dome: [15, 45], spots: [40, 120] },
   kind: { bed: [200, 550], wardrobe: [150, 450], chest: [60, 220], bedside: [30, 100], desk: [60, 220], shelves: [40, 160], seat: [100, 350], plant: [10, 45], more: [25, 120] },
+  piece: { sofa3: [449, 590], dresser: [155, 200], tvbench: [120, 185] },   // N58: each its own (fit.SOURCES hcmore2), delivery in the top
   plant: { plant: [35, 90], snake: [15, 40], monstera: [30, 90], olive: [60, 160] },   // N40: each plant in its pot, as big as the catalogue's
   paper: [10, 200], panel: [40, 300] };   // N57: on top of the packs: glue, caulk, paint, up to a carpenter's day   // N40: on top of the rolls (the tray's count and price): paste and a brush, up to a decorator's day
 const UPK = "dh-done";
 const upDone = () => { try { return JSON.parse(localStorage.getItem(UPK) || "{}") || {}; } catch (e) { return {}; } };
 const upNm = (L, k) => (L.find(r => r[0] === k) || [0, k])[1];
-const upCat = (key, C) => C.k === "plant" && UPC.plant[key] || UPC.kind[C.k];
+const upCat = (key, C) => UPC.piece[key] || C.k === "plant" && UPC.plant[key] || UPC.kind[C.k];
 function roomUps(room) {   // [{k, t, lo, hi}]: what's changed in a room
   const H = R.HOUSE3 || {}, L = [], add = (k, t, c = [0, 0], n = 1) => L.push({ k, t, lo: Math.round(c[0] * n), hi: Math.round(c[1] * n) });
   if (room === "outside") { const o = (S.fin || {}).outside || {};
