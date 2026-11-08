@@ -257,23 +257,36 @@ function enterRoom(name, warm) {   // V2.42: warm, the warm-up's visit there and
    there */
 const WARMED = new Set();
 function warmSwitch() {
+  if (S.view === "house") return warmHouse();
   if (!(RMODE === "stand" || S.view === "livstand")) return false;
   const to = ["livstand", ...Object.keys(VIEWS).filter(k => VIEWS[k].box)].find(k => k !== S.view && !WARMED.has(k + S.quality));
   return !!to && warmRoom(to);
 }
-function warmRoom(to) {
-  if (!houseG || !R.HOUSE3 || LOWD || WARMED.has(to + S.quality)) return false; WARMED.add(to + S.quality);
+function warmAt(key, go, back) {   // a visit off screen: go there, ask for the shaders of what shows, come back
+  if (!houseG || !R.HOUSE3 || LOWD || WARMED.has(key + S.quality)) return false; WARMED.add(key + S.quality);
   /* V2.64, the client's iPhone: the visit drew the whole room at once, every new shader built one after another before the frame
      ended (a room's 20 to 30: seconds standing still, and a tap then waited for them). Now the room's shaders are only asked for
      (compileClipped, in its lights; one drawn per set of cutting planes) and build in parallel where the browser can, the page still
      answering; into the same kind of target as the frame's, so they match. N35: nothing's drawn into the shadows there, so they're
      kept (they were drawn again after every visit) */
-  const v = S.view, rm = RMODE, was = gl.getRenderTarget(), su = gl.shadowMap.needsUpdate;
+  const was = gl.getRenderTarget(), su = gl.shadowMap.needsUpdate;
   if (!PRE.rt) { PRE.rt = new THREE.WebGLRenderTarget(1, 1); PRE.rt.isXRRenderTarget = true; PRE.rt.texture.colorSpace = gl.outputColorSpace; }
   if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
-  try { enterRoom(to, true); gl.setRenderTarget(postLive() ? PRE.rtAO : PRE.rt); compileClipped(camera, true); }
-  finally { gl.setRenderTarget(was); enterRoom(v, true); RMODE = rm; gl.shadowMap.needsUpdate = su; }
+  try { go(); gl.setRenderTarget(postLive() ? PRE.rtAO : PRE.rt); compileClipped(camera, true); }
+  finally { gl.setRenderTarget(was); back(); gl.shadowMap.needsUpdate = su; }
   dirty(); return true;
+}
+function warmRoom(to) { const v = S.view, rm = RMODE; return warmAt(to, () => enterRoom(to, true), () => { enterRoom(v, true); RMODE = rm; }); }
+/* N52, the client 8 Nov 2026: "optimise the pc version as much as the mobile version": from the whole house the first step into the
+   living room built its 58 shaders on the spot (its own 36 lights; on a Windows PC each goes through the graphics driver's compiler: a
+   freeze of seconds), a floor's cut 2 to 5; the rooms were warmed only once you stood in one. Now, a pause at a time, the house warms
+   the living room and each floor off screen too */
+function warmHouse() {
+  const f = hfloor, to = ["livstand", "fl:ground", "fl:first", "fl:lower"].find(k => k !== "fl:" + f && !WARMED.has(k + S.quality));
+  if (!to || !houseG || !R.HOUSE3 || LOWD) return false;
+  livShow();   // put away from outside: shown for the visit, put away again after (warmAt keeps the shadows as they were)
+  return to === "livstand" ? warmAt(to, () => enterRoom(to, true), () => { enterRoom("house", true); setAbove(false); livingFromOutside(); })
+    : warmAt(to, () => { hfloor = to.slice(3); applyFloors(); }, () => { hfloor = f; applyFloors(); livingFromOutside(); });
 }
 /* N35 (V2.87): walking in from the hall built the living room's 24 shaders (and 4 of its shadows') on the step through its door, the
    idle visit not yet made. Now a room 1.5 m or less away (through a door, up or down its stairs) is visited as you walk up to it, one a

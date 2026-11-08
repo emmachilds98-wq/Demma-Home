@@ -1,5 +1,5 @@
 {
- "_": "V2.75 (N26): the speed budget. tools/checks.py fails a round that goes over: 'site' (tools/check_site.py) measures the paths, 'sizes' the built files. Each number is V2.74's plus about 10%. Lower one when a round wins; raise one only on purpose, saying why in the PR. Measured numbers: _shots/perf.json. V2.87 (N35): shaders_first +1 for Fast (phone, computer): the speck that sets a group's cutting planes before its shaders are asked for (one tiny shader, no lights, kept), so none of the group's own is built on the spot. V2.98 (N37): draws_house lowered to the new numbers plus about 10% (188 phone and PC, 189 iPhone, 371 RTX). V3.04 (N46): the RTX's draws lowered to the new numbers plus about 10% (the shade reads the picture's depth: no second pass; 190 house, 387 living room); the iPhone path runs without the shade in software graphics, so its numbers stay.",
+ "_": "V2.75 (N26): the speed budget. tools/checks.py fails a round that goes over: 'site' (tools/check_site.py) measures the paths, 'sizes' the built files. Each number is V2.74's plus about 10%. Lower one when a round wins; raise one only on purpose, saying why in the PR. Measured numbers: _shots/perf.json. V2.87 (N35): shaders_first +1 for Fast (phone, computer): the speck that sets a group's cutting planes before its shaders are asked for (one tiny shader, no lights, kept), so none of the group's own is built on the spot. V2.98 (N37): draws_house lowered to the new numbers plus about 10% (188 phone and PC, 189 iPhone, 371 RTX). V3.04 (N46): the RTX's draws lowered to the new numbers plus about 10% (the shade reads the picture's depth: no second pass; 190 house, 387 living room); the iPhone path runs without the shade in software graphics, so its numbers stay. V3.08 (N53): shaders_spot, the HD paths' shaders built on the frame that first drew them, from the whole house into the living room once the house has warmed it (was 58 on the RTX path, 27 on the iPhone's; now 0).",
  "files": {
   "page_mb": 2.25,
   "three_mb": 0.95,
@@ -7,7 +7,7 @@
   "half_mb": 2.6
  },
  "paths": {
-  "_": "first_visit_mb: what a first visit fetches from the site (the icon font and the like from elsewhere aside); shaders_first: shader programs built by the first picture; draws_house, draws_living: a frame's draws while moving, the whole house as it opens and standing in the living room (R3D.perf().calls, the shadows' redraw left out). phone: a phone without a strong chip (Fast, half-size photos); computer: no graphics card, 1920 wide (Fast); iphone: Apple graphics (HD); rtx: an NVIDIA RTX (HD, 1280 wide).",
+  "_": "first_visit_mb: what a first visit fetches from the site (the icon font and the like from elsewhere aside); shaders_first: shader programs built by the first picture; draws_house, draws_living: a frame's draws while moving, the whole house as it opens and standing in the living room (R3D.perf().calls, the shadows' redraw left out). phone: a phone without a strong chip (Fast, half-size photos); computer: no graphics card, 1920 wide (Fast); iphone: Apple graphics (HD); rtx: an NVIDIA RTX (HD, 1280 wide); shaders_spot (HD paths): shaders built on the spot going from the whole house into the living room, after the house's warm-up.",
   "phone": {
    "first_visit_mb": 5.8,
    "shaders_first": 21,
@@ -24,13 +24,15 @@
    "first_visit_mb": 15.0,
    "shaders_first": 54,
    "draws_house": 210,
-   "draws_living": 295
+   "draws_living": 295,
+   "shaders_spot": 3
   },
   "rtx": {
    "first_visit_mb": 15.0,
    "shaders_first": 54,
    "draws_house": 210,
-   "draws_living": 430
+   "draws_living": 430,
+   "shaders_spot": 3
   }
  }
 }
