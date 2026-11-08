@@ -24,7 +24,7 @@ START = {"bath": {"eye": [307.4, 384.5, 26.0], "at": [382.7, 417.7, -156.2], "fo
          # door and to it from beside the stairs' box (both the 0.5× lens, about 108°)
          "kitchen": {"eye": [240, -107, -305], "at": [255, -117, -106], "fov": 72},
          "hall": {"eye": [385, 155, 416], "at": [405, 85, 60], "fov": 108}, "hall_front": {"eye": [330, 150, 225], "at": [395, 105, 420], "fov": 108},
-         # V3.06 (N49): the office from its doorway (its front corners and the walls' tops); the landing from the office's doorway (the far
+         # V3.07 (N49): the office from its doorway (its front corners and the walls' tops); the landing from the office's doorway (the far
          # end's corners, the banister's end, the fanlight and the master's switch); the WC from its door (its back wall's corners)
          "office": {"eye": [320.8, 439.3, 283.0], "at": [399.6, 397.0, 461.9], "fov": 90}, "landing": {"eye": [290.7, 370.0, 249.8], "at": [321.2, 378.4, 52.4], "fov": 106},
          "wc": {"eye": [410, -103, -138], "at": [410, -148, -333], "fov": 106}}

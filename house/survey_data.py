@@ -112,7 +112,7 @@ ROOF = dict(pitch=35.0, pitch_back=50.0, eaves_front=495.0, eaves_back=270.0, ov
 OPENINGS = [
     dict(id="kitchen_window", floor="lower", side="n", x=(40.0, 220.0), sill=90.0, head=210.0, kind="window", design="bars", src="B (width), client v73 (centred on the sink, the door moved), E (height)"),
     dict(id="back_door", floor="lower", side="n", x=(228.0, 304.0), sill=0.0, head=205.0, kind="door", design="glazed", src="client v73: \"next to where that side board ends\" (the worktop, 225)"),
-    # V3.06 (N49, photo_wc_25oct on its back wall's corners): the reveal 63 wide, 5 off the party wall (the photo reads 3 ± 4; was 50, 410–460: E)
+    # V3.07 (N49, photo_wc_25oct on its back wall's corners): the reveal 63 wide, 5 off the party wall (the photo reads 3 ± 4; was 50, 410–460: E)
     dict(id="wc_window", floor="lower", side="n", x=(399.0, 462.0), sill=120.0, head=205.0, kind="window", design="bars", src="B; V3.06: the WC photo's back wall (E ±4)", frosted=True),   # V2.40: obscure glass (the photo of 30 Oct)
     dict(id="living_window", floor="ground", side="n", x=LIVING["window_x"], sill=LIVING["window_y"][0], head=LIVING["window_y"][1],
          kind="window", design="living", src="M", skip=True),          # the living room draws its own
@@ -252,7 +252,7 @@ BATH = dict(strip_x=400.0, box_z=-191.0, box_h=125.0, slope_y0=133.0, beam_y=219
 # the WC: the yellow suite, a low-level cistern under the window with its flush pipe; the small wall-hung basin on the right as you go in
 # (the plan's maroon mark), four white tiles over it, the roll holder; white pipes; laminate. Sizes E (standard).
 WC = dict(toilet=dict(x=(417.0, 453.0), d=62.0), cistern=dict(x=(412.0, 458.0), y=(84.0, 112.0), d=14.0),   # V1.40: its top just under the sill, 28 tall (the photo, the window its ruler: tools/camfit.py)
-          # V3.06 (N49, photo_wc_25oct on a camera from its back wall, the phone's own lens): the basin 59 further in, its tiles 44 (both
+          # V3.07 (N49, photo_wc_25oct on a camera from its back wall, the phone's own lens): the basin 59 further in, its tiles 44 (both
           # were by the door; the basin runs past the tiles toward the window), the roll holder in the back corner over the pipe, the riser up the right of the window (was the left corner)
           basin=dict(z=(-243.0, -197.0), d=30.0, rim=80.0), tiles=dict(z=(-222.0, -166.0), y=(82.0, 136.0)), roll=(-301.0, -283.0), riser_x=386.0,
           src="client's photo (what goes where) + standard sizes (E)")
@@ -284,9 +284,9 @@ HALL = dict(door=(386.0, 452.0), door_leaf=False, mirror=dict(z=(302.0, 338.0), 
 # stairwell itself is 85cm wide not including the bannister": the stairwell x 382-467 (85), the posts 8 square (x 374-382, their outside
 # face 93 from the party wall); "85cm from top stair to the wall of the bedroom 3": the top tread's front (z 176.75) to the office's wall
 # (261.7) is 85 already. "square bannister posts not circle tops" (the landing photos): plain square posts, flat tops (V2.20's caps gone).
-LANDING = dict(rail_x=(376.0, 381.0), rail_h=92.0, hatch=dict(x=(305.0, 360.0), z=(140.0, 210.0)), fanlight=(205.0, 228.0),   # v73: the hatch overhead near the office end (both landing photos); V3.06 (N49, the photo from the office): 25 nearer it, 5 to the stairs
+LANDING = dict(rail_x=(376.0, 381.0), rail_h=92.0, hatch=dict(x=(305.0, 360.0), z=(140.0, 210.0)), fanlight=(205.0, 228.0),   # v73: the hatch overhead near the office end (both landing photos); V3.07 (N49, the photo from the office): 25 nearer it, 5 to the stairs
                src="client's photos + standard sizes (E: balustrade 900 high, Approved Document K)")
-# V3.06 (N49, each photo on a camera solved from its corners): the landing's bulb over the banister, level with the hatch's far side
+# V3.07 (N49, each photo on a camera solved from its corners): the landing's bulb over the banister, level with the hatch's far side
 # (was 345, 120); the office's over the window's end of the room, the bulb in front of the window's head in the wide photo (was 375, 372);
 # the WC's 30 further in, about over the pan's front (was -215)
 PENDANTS = {"hall": (345.0, 355.0), "landing": (378.0, 138.0), "bed3": (372.0, 435.0), "wc": (420.0, -245.0)}
@@ -367,7 +367,7 @@ FIT_DOORS = {"kitchen_door": (-115.5, -52.1),   # V1.20, the client: "kitchen do
              # frames as their v69 words, edge to edge: bedroom 2's 3 off the corner, the cupboard's straight after (no sliver between),
              # 15, the master's (76, as bedroom 2's: a 762 door, E), 40 to the corridor's end
              "cupboard_door": (-19.0, 31.0), "bed2_door": (-23.5, 52.5), "master_door": (149.5, 225.5),
-             # V3.06 (N49): photo_landing_from_office_26oct reads the opening about 61 (a 610 leaf), but the client's "stops on the bath,
+             # V3.07 (N49): photo_landing_from_office_26oct reads the opening about 61 (a 610 leaf), but the client's "stops on the bath,
              # 15 behind it" ties the leaf to the bath (184): 61 would need a 192 bath. Kept 68 until the tape (Measure: bath_door, bath_bath)
              "bath_door": (290.2, 358.2)}   # v77, the two photos: in the corner by bedroom 2's door, 68 wide (E: against its 198 height)   # v69/v72/v73: the landing's doors in the client's order
 # V1.20, the client: "the bedroom 2 door opens from the bathroom side of the door frame outwards into the bedroom ... allowing better room

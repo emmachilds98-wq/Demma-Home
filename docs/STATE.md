@@ -3,10 +3,10 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V3.06 (8 Nov 2026), live. A new team works from `docs/HANDOVER.md` (then `docs/NOTES.md`).
-The version in Plan is a refresh button ("V3.06 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V3.07 (8 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
+The version in Plan is a refresh button ("V3.07 ↻"): on the home-screen app, tap it to get the newest.
 
-**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side; N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
+**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N46 done V3.04, N48 V3.05, N50 V3.06, N49 V3.07; N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
 On a weak signal the page opens from the device after 2 s (V3.00, N43, `sw.js`): the new copy is saved for next time, and the version button shows it. The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 
 ## Where it lives
@@ -33,7 +33,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 | `house/` | The house: `survey_data.py` (every size, with its source) → `model.py` (the geometry, every piece tagged with its item) → `export_house.py` (the house file, `house.schema.json`); `measure.py` (what's still a guess: Measure's rows); `client_edits.py`/`.json` (the client's numbers over the guesses); `check_model.py`, `zfight.py`, `privacy_check.py`; `textures/` (the CC0 photos); the facts `HOUSE.md`, `EVIDENCE.md`, `SURVEY.md`, `BUILD_SPEC.md`, `HD_PLAN.md`, `SOURCES.md` |
 | `media-wall/inputs/` | The client's photos and plans (EXIF stripped) |
 | `projects/` | How a project is shaped (`project.schema.json`); a room's own project goes in `projects/<id>/project.json` |
-| `tools/` | `build.py`, `checks.py`, `check_site.py`, `pull_edits.py`, `round.py`, `compare.py` and `camfit.py` (the photos beside the 3D; the bathroom and the master fitted, V2.90; the kitchen and the hall (two of the hall) with the photo's own lens, `TRUE_FOV`, V3.03; the office, the landing and the WC, V3.06) |
+| `tools/` | `build.py`, `checks.py`, `check_site.py`, `pull_edits.py`, `round.py`, `compare.py` and `camfit.py` (the photos beside the 3D; the bathroom and the master fitted, V2.90; the kitchen and the hall (two of the hall) with the photo's own lens, `TRUE_FOV`, V3.03; the office, the landing and the WC, V3.07) |
 | `docs/` | `HANDOVER.md` (start here), `NOTES.md` (what the threads learned), `REAL_PLAN.md` (the plan), this file, `DECISIONS.md`, `HISTORY.md`, `reviews/` (the V2.44 review and audit) |
 | `_site/` (built) | `index.html` (the page), `sheets.<hash>.json` (its sheets), `plan.html` (a step to it), `sw.js`, `version.txt`, `manifest.webmanifest`, `three.<hash>.js`, `photos.<hash>.json`, `data/` (house.json, projects), `media-wall/out/` (PDFs), `media-wall/src/art/` (pictures, icons) |
 
@@ -86,7 +86,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   wallpaper its rolls as counted plus paste up to a decorator's day, V3.01, N40). Plan's home has The house's changes:
   the total, how many done, a row a room (tap: stand in it, its card open); Measure shows the same total (`upsAll`).
 - **Measure** (dock): the sizes still guessed, by room; the colours' m² and litres; Send makes a link of every change
-  (`pull_edits.py --link`).
+  (`pull_edits.py --link`) and this device's speed (V3.06, N50: `R3D.perf()`'s chip family, quality, a frame moving and still, draws,
+  shaders, the view; no place or name), sent even with nothing typed; `pull_edits.py` prints it as a `speed` line beside `tools/perf_budget.json`.
 - **Shapes (V2.53, N6):** the master's wardrobes are PAX frames (plinth set back, an oval rail) with garments on hangers, the
   fridge-freezer has its two doors, grip strip and dispenser (the photos), the Kallax its thin shelves, DRÖNA boxes and records, the
   chair-bed its tube frame and leaning back. Cloth profiles get soft edges (`20_go.js` `PSOFT`); no microwave is in the photos.
@@ -109,7 +110,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **The kitchen and the hall as their photos (V3.03, N44):** the door down 66 inside its frame by the box's corner (was the box's whole end);
   the mirror and the bench along the party wall from near the box to the rack (were by the front door); a radiator under the kitchen's bar,
   the boiler 28 out of the back corner; the kitchen's door frame empty (no leaf in any photo). The door down, the bench and the radiator are in Measure.
-- **The office, the landing and the WC as their photos (V3.06, N49):** each camera solved by hand from the photo's corners with its own lens.
+- **The office, the landing and the WC as their photos (V3.07, N49):** each camera solved by hand from the photo's corners with its own lens.
   The WC window 63 wide (was 50); the WC basin and tiles halfway along the wall (were at the door), the roll holder in the back corner, the
   riser right of the window, a slimmer shade further in; the landing's light over the banister and its hatch nearer the office; the
   office's light toward the window. The WC window's width and the basin's place are in Measure.
@@ -181,7 +182,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 | Emma | PC, NVIDIA RTX 5070, 32 GB (the main way in) | A real graphics card: HD on every visit, never stepped down (V2.25) (soft shadows at 2048, the sun's at 4096, ambient occlusion, glow), drawn at 1.5–2×, the whole house too (V1.11) |
 | Dave | PC, NVIDIA RTX 3060, 32 GB | The same as the RTX 5070 |
 
-Quality is under View → More (HD or Fast). `?perf` at the end of the address shows the counts in a corner: the screenshot to send.
+Quality is under View → More (HD or Fast). Measure's Send carries the speed (V3.06); `?perf` at the end of the address shows the same in a box above the dock.
 
 ## Numbers (V2.74, software graphics in CI's browser: relative, not a real card's; from #131)
 - `sizes`: page 1.0 MB (V2.80), photos 8.6 MB in 72 files (2.3 MB at half size; V2.82, was 11.4 and 3.4), three.js 0.86 MB.
@@ -189,7 +190,7 @@ Quality is under View → More (HD or Fast). `?perf` at the end of the address s
 - The repo: 371 files, 59 MB tracked (31 MB the client's photos); `checks.py`'s repo check fails on a build output or a file over 1.5 MB.
 
 ## Open with the client
-1. `?perf` from the iPhone 15 Pro and the RTX 5070 PC, after opening the house once: a screenshot of the corner box (N10, N17).
+1. The speed from the iPhone 15 Pro and the RTX 5070 PC: open the house, move it a moment, then Measure → Send (N10, N17, N50; no screenshot now).
 2. KTX2 (N31): picked "let CI build it" (7 Nov); confirm before the workflow builds the encoder. Dark panels on a dark device, or the cream (N9).
 3. A microwave photo, if there is one (N6); what to try in each room (N5's trays).
 4. Measure: the living room door's width (drawn 67 since V2.94, to fit beside the 85 stairs); the bathroom door's width (the landing photo

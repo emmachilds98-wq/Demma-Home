@@ -23,7 +23,7 @@ PAIRS = [("kitchen", "photo_kitchen_wide_30oct.jpg"), ("bath", "photo_bathroom_f
          ("wc", "photo_wc_25oct.jpg"), ("front", "photo_house_front_25oct.png"), ("rear", "photo_house_rear_24oct.jpg")]
 W = 720
 # V1.40 (Next 2): where each photo was taken, found by tools/camfit.py (the 3D's edges fitted to the photo's): {view: {eye, at, fov}}
-# V3.06 (N49): the office, the landing and the WC solved by hand from each photo's corners with its own lens (camfit.START)
+# V3.07 (N49): the office, the landing and the WC solved by hand from each photo's corners with its own lens (camfit.START)
 CAMS = {"office": {"eye": [320.8, 439.3, 283.0], "at": [399.6, 397.0, 461.9], "fov": 90}, "landing": {"eye": [290.7, 370.0, 249.8], "at": [321.2, 378.4, 52.4], "fov": 106},
         "wc": {"eye": [410.0, -103.0, -138.0], "at": [410.0, -148.0, -333.0], "fov": 106},
         "bath": {"eye": [307.4, 378.9, 26.0], "at": [349.5, 422.4, -164.6], "fov": 90.9}, "master": {"eye": [268, 371.4, 240], "at": [91.9, 298.6, 300.8], "fov": 74},   # V2.90 (N34) the bathroom (0.42) and the master (0.41) from hand starts (camfit.START)
@@ -31,7 +31,7 @@ CAMS = {"office": {"eye": [320.8, 439.3, 283.0], "at": [399.6, 397.0, 461.9], "f
         "hall": {"eye": [385, 156.9, 416], "at": [417.0, 110.7, 224.1], "fov": 108}, "hall_front": {"eye": [330, 148.1, 225], "at": [410.3, 92.7, 399.6], "fov": 108}}   # V3.03 (N44): 0.49, 0.37, 0.53
 # V3.03 (N44): these cameras' fov is the photo's own, up and down (the phone's 0.5× is about 108° on a tall photo), set on the camera
 # past the page's fitting (fitFov caps a tall screen's at 95, so the room looked too near)
-TRUE_FOV = {"kitchen", "hall", "hall_front", "office", "landing", "wc"}   # V3.06 (N49): the office's landscape 0.5× is about 90°
+TRUE_FOV = {"kitchen", "hall", "hall_front", "office", "landing", "wc"}   # V3.07 (N49): the office's landscape 0.5× is about 90°
 LENS = "v => { const k = R3D._dbg.camera; k.fov = v; k.clearViewOffset(); k.updateProjectionMatrix(); }"
 # V2.90 (N34): the doors open in each photo (shut in the 3D, the bathroom's photo is all door)
 OPEN = {"bath": ["door.bath_door"]}
