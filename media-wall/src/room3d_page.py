@@ -427,9 +427,9 @@ body.hv #r3d-dt-room, body.hv #r3d-editbtn, body.hv #r3d-dp-look > :not(h2):not(
 .r3d-back[hidden] { display: none; }
 .r3d.tools-open .r3d-planbar, .r3d.editing .r3d-planbar, .r3d.touring .r3d-planbar, .r3d.nogl .r3d-planbar { display: none; }
 .r3d-actmore { margin-top: 8px; }
-.r3d-actmore > summary { cursor: pointer; list-style: none; text-align: center; min-height: 40px; display: grid; place-items: center; border: 1.5px solid #e1d6c2; border-radius: 999px; font: 700 14px Figtree, system-ui, sans-serif; }
-.r3d-actmore > summary::after { content: " ▾"; }
-.r3d-actmore[open] > summary::after { content: " ▴"; }
+.r3d-actmore > summary { cursor: pointer; list-style: none; text-align: center; min-height: 40px; display: flex; align-items: center; justify-content: center; gap: 4px; border: 1.5px solid #e1d6c2; border-radius: 999px; font: 700 14px Figtree, system-ui, sans-serif; }
+.r3d-actmore > summary::-webkit-details-marker { display: none; } .r3d-actmore > summary::after { content: "▾"; }
+.r3d-actmore[open] > summary::after { content: "▴"; }
 .r3d-actmore .acts { margin-top: 8px; }
 .r3d-fold { border-top: 2px dashed #e5dccb; padding-top: 6px; }
 .r3d-fold > summary { min-height: 44px; display: flex; align-items: center; }
@@ -458,6 +458,21 @@ body.hv #r3d-dt-room, body.hv #r3d-editbtn, body.hv #r3d-dp-look > :not(h2):not(
   .r3d-mini { gap: 4px; } .r3d-floors:not(.r3d-rmode) button { padding: 0 9px; }
 }
 @media (max-width: 899px) { .r3d:has(.r3d-pop:not([hidden])) :is(.r3d-stick, .r3d-peg) { display: none; } }
+/* N51 (look-over 2): the chips in Changes, the catalogue's kinds and Look's rows a finger's 44 px on a touch screen (their look the same:
+   the outline drawn inside, the clear border the extra); a long chip breaks evenly, not "£15–" then "35"; a toast never takes a tap,
+   and on a phone it sits up top while a card or a panel is open (it covered the card's last buttons). Details ▾ on one line */
+.r3d-finsc button { text-wrap: balance; }
+.r3d-toast { pointer-events: none; }
+@media (pointer: coarse) {
+  .r3d-finsc { row-gap: 0; }
+  .r3d-finsc button { min-height: 44px; border: solid transparent; border-width: 6px 0; background-clip: padding-box; box-shadow: inset 0 0 0 1px #d9d4ca; }
+  .r3d-finsc button[aria-pressed="true"] { border-color: transparent; box-shadow: none; }
+  .ms-erow .ms-ego { min-height: 44px; }
+}
+@media (min-width: 600px) and (max-width: 899px) {   /* a tablet's dock the PC's pill, not a bar the screen's width with three buttons in it */
+  .r3d-dock { left: 50%; right: auto; transform: translateX(-50%); padding: 6px 16px 4px; }
+  .r3d-bubbles, body.hv .r3d-bubbles { width: auto; gap: 12px; } .r3d-bub, body.hv .r3d-bub { flex: 0 0 64px; } }
+@media (max-width: 599px) { .r3d:is(.actopen, .tools-open) .r3d-toast { top: 132px !important; bottom: auto !important; } }
 """
 
 

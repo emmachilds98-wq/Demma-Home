@@ -3,8 +3,8 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V3.03 (8 Nov 2026), live. **Work stopped 8 Nov for a new team: start with `docs/HANDOVER.md`** (then `docs/NOTES.md`).
-The version in Plan is a refresh button ("V3.03 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V3.04 (8 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
+The version in Plan is a refresh button ("V3.04 ↻"): on the home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side; N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
 On a weak signal the page opens from the device after 2 s (V3.00, N43, `sw.js`): the new copy is saved for next time, and the version button shows it. The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
@@ -144,6 +144,9 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Phone and PC look-over (V2.88, N33):** on a touch screen every tap is 44 px (`room3d_page.CSS`, `pointer: coarse`); the small
   pills keep their look (a clear border round each). A card open on a phone or tablet puts the stick and the figure away. The brand and
   Plan · Build · Buy are one height. Shorter captions in Measure, View and Room; the paint swatch says Your pale mint.
+- **Phone and PC look-over 2 (V3.04, N51):** the Changes card's rows, the catalogue's kinds and Look's chips 44 px on a touch screen
+  (`.r3d-finsc`: a clear border the extra, the outline drawn inside), Plan's room rows too; a toast lets taps through and on a phone
+  sits up top while a card or panel is open; a tablet (600–899) has the PC's dock pill; Details ▾ on one line; a card's ring inside it.
 - **Keys on a PC (V2.97, N42):** every control has a name (an icon's word isn't one); one focus ring (`page.css`); Tab goes the top
   row, the 3D, the dock; Esc shuts the top layer only (`19_controls.js` `ESC`; the sheets, a zoom and the lightbox keep their own).
 - **Sheets:** empty till first needed (V2.80); a shut one is `content-visibility: hidden`, its pictures fetched on opening (V2.54).
