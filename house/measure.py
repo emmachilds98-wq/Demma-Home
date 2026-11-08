@@ -29,6 +29,8 @@ ROWS = [
     ("bath_vanity", "bathroom", "The vanity's width", "along its front", lambda: round(D.BATH["vanity"]["z"][1] - D.BATH["vanity"]["z"][0], 1), ("length", ("BATH", "vanity", "z"))),
     ("bath_cord", "bathroom", "The light's pull cord", "ceiling to the bob", lambda: D.PULL_CORDS[0]["drop"], ("set", ("PULL_CORDS", 0, "drop"))),
     ("wc_cord", "wc", "The WC light's pull cord", "ceiling to the bob", lambda: D.PULL_CORDS[1]["drop"], ("set", ("PULL_CORDS", 1, "drop"))),
+    ("bath_mirror", "bathroom", "The mirror's width", "outside the frame", lambda: round(D.BATH["mirror"]["z"][1] - D.BATH["mirror"]["z"][0], 1), ("length", ("BATH", "mirror", "z"))),   # V2.90 (N34)
+    ("bath_door_x", "landing", "The bathroom door's frame from the bath's wall", "inside the bathroom, wall to frame", lambda: round(D.FIT_DOORS["bath_door"][0] - next(r["x0"] for r in M.rooms("first") if r["id"] == "bathroom"), 1), None),   # V2.90 (N34): the photo puts the bath to the right of the doorway, the 3D across it
     ("bath_bath", "bathroom", "The bath's length", "along its rim", lambda: D.BATH["bath"]["l"], ("set", ("BATH", "bath", "l"))),
     ("bath_door", "landing", "The bathroom door's width", "inside the frame", lambda: _door("bath_door"), ("length", ("FIT_DOORS", "bath_door"))),
     ("landing_gap", "landing", "Bedroom 2's frame to the master's", "along the wall", _landing_gap, None),
@@ -37,6 +39,7 @@ ROWS = [
     ("master_door", "landing", "The master door's width", "inside the frame", lambda: _door("master_door"), ("length", ("FIT_DOORS", "master_door"))),
     ("hall_tapestry", "hall", "The tapestry's drop", "top to bottom", lambda: round(D.HALL["tapestry"]["y"][1] - D.HALL["tapestry"]["y"][0], 1), ("length", ("HALL", "tapestry", "y"))),
     ("hall_radiator", "hall", "The hall radiator's width", "end to end", lambda: round(D.HALL["radiator"]["z"][1] - D.HALL["radiator"]["z"][0], 1), ("length", ("HALL", "radiator", "z"))),
+    ("master_bedside", "master", "A bedside's width", "across its top", lambda: round(D.MASTER["bedsides"][0][1] - D.MASTER["bedsides"][0][0], 1), None),   # V2.90 (N34)
     ("master_front", "master", "Wardrobes' front to the front wall", "along the carpet", _master_front, None),
     ("master_alcove", "master", "The wardrobes' alcove width", "wall to wall", lambda: round(D.MASTER["alcove"][1] - D.MASTER["alcove"][0], 1), None),
     ("airing_bed2", "bed2", "How far the boiler cupboard sticks into the room", "from the wall beside it", lambda: D.AIRING["into_bed2"], ("set", ("AIRING", "into_bed2"))),
@@ -47,6 +50,9 @@ ROWS = [
     ("bins", "porch", "The bin cupboard's width", "inside", lambda: 39.0, None),
     ("living_socket", "living", "The side-wall socket, from the corner", "along the wall", lambda: None, None),
     ("garage_box", "garage", "The chipboard box's depth", "out from the back wall", lambda: D.GARAGE_BOX["d"], ("set", ("GARAGE_BOX", "d"))),   # V1.26
+    ("garden_path", "garden", "The path's width", "across the concrete", lambda: D.BACK_GARDEN["path"], ("set", ("BACK_GARDEN", "path"))),   # V2.89 (N30)
+    ("garden_border", "garden", "The bed by the path, fence to path", "across the bed", lambda: D.BACK_GARDEN["border"], ("set", ("BACK_GARDEN", "border"))),
+    ("garden_lawn", "garden", "The lawn's length to the trees", "from the back wall", lambda: D.BACK_GARDEN["lawn_end"], ("set", ("BACK_GARDEN", "lawn_end"))),
     ("secret_pier", "secret", "The brick pier's length", "out from the back wall", lambda: D.SECRET["pier"]["d"], ("set", ("SECRET", "pier", "d"))),
 ]
 

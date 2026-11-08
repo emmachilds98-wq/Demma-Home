@@ -36,14 +36,28 @@ LEVELS = dict(lower=-260.0, ground=0.0, first=260.0, ceil=235.0, slab=25.0, gara
 # V1.4, the far end (the view photos, on v48's fitted camera (garden_window.py, in git history): the lawn runs to the trees at about 17 m, the far fence at
 # 25): a conifer just right of our garden's middle, about 19 m out, about 11 m tall; behind it to the left a clump of four tall pale
 # stems in leaf by summer (photo_garden_summer_24oct.jpg), about 15 m; next door's (west) dark evergreen at its end, about 7.5 m
-PLANTS = [dict(id="cordyline", kind="cordyline", x=370.0, y=-260.0, z=-787.0, h=560.0, fork=200.0, heads=6, spread=380.0, r=13.0, leaf=110.0,
+PLANTS = [dict(id="cordyline", kind="cordyline", x=435.0, y=-260.0, z=-787.0, h=560.0, fork=200.0, heads=6, spread=380.0, r=13.0, leaf=110.0,
                src="B: the back photo (photo_house_rear_24oct.jpg) sized against the house; in our garden: the client (E)"),
           dict(id="conifer", kind="conifer", x=190.0, y=-260.0, z=-2240.0, h=1100.0, spread=360.0, r=18.0, leaf=55.0,
                src="B: the view photos (photo_view_full_24oct.jpg), on the fitted camera (E)"),
           dict(id="end_trees", kind="broadleaf", x=300.0, y=-260.0, z=-2420.0, h=1500.0, spread=900.0, stems=4, r=14.0, leaf=70.0, cards=1800,
                src="B: the view photos, in leaf as the summer photo (photo_garden_summer_24oct.jpg) (E)"),
+          dict(id="shrub_w", kind="broadleaf", x=445.0, y=-260.0, z=-950.0, h=200.0, spread=120.0, stems=3, r=2.5, leaf=22.0, cards=260, tone="red",
+               src="B: the back photo: a red-tipped shrub in the west border behind the cordyline (E)"),
+          dict(id="shrub_e", kind="broadleaf", x=8.0, y=-260.0, z=-420.0, h=190.0, spread=100.0, stems=3, r=2.5, leaf=22.0, cards=220, tone="red",
+               src="B: the back photo: a red-tipped shrub in the east bed by the house (E)"),
           dict(id="next_evergreen", kind="broadleaf", x=640.0, y=-260.0, z=-2380.0, h=750.0, spread=620.0, stems=2, r=12.0, leaf=60.0, cards=1300, dark=True,
                src="B: the view photo, next door's end (E)")]
+
+# V2.89 (N30): the back garden's ground, from the back photo, the summer photo from the dormer and the view photos (E, sized against the
+# house's openings and the garden's width; x as the house's: the east fence at -12, the west at 479). Looking out, from the west fence:
+# a planted border (the cordyline, two red-tipped shrubs, muscari and primroses), the concrete path from the back door to the trees, a
+# strip of muscari along its lawn side, the lawn to the trees at about 17 m, leaf litter under them to the far fence; a narrow bed along
+# the east fence. A wider concrete pad joins the back door to the path. The west fence is low by the house (the view photos), close-board
+# beyond; the east one lower all along (the client's photos, HOUSE.md)
+BACK_GARDEN = dict(x=(-12.0, 479.0), length=2500.0, lawn_end=1700.0, border=80.0, path=70.0, edge=20.0, border_e=30.0,
+                   pad=dict(x0=218.0, d=90.0), fence_w=dict(low=110.0, low_to=450.0, h=180.0), fence_e=120.0,
+                   src="B: the back photo (photo_house_rear_24oct.jpg), the summer photo and the view photos, sized against the house (E)")
 
 # V1.6: the things in the gardens (the view photos, photo_view_full_24oct.jpg; E): ours, by the house on the path's side, the round black
 # table and three folding chairs (two cream recliners, a navy one); east of our fence, past the alley's house, a 3 m trampoline (green
@@ -193,7 +207,7 @@ BED2 = dict(block_z=_block_z, block_x=98.0, low_wall=LOW_WALL,   # v68: from the
 # frame, one each: a top shelf, a hanging rail, three KOMPLEMENT drawers (100 × 58, 16 high: ikea.com), boxes on top to the ceiling. A
 # BILLY (40 × 28 × 202: ikea.com) between the wardrobes and the bed.
 MASTER = dict(bed=dict(x=(0.0, 212.0), z=(245.5, 407.5), head_h=118.0, lift=50.0, boxes=dict(w=60.0, d=40.0, h=25.0)),
-              bedsides=[(203.5, 243.5), (409.5, 449.5)],   # v72: centred on the wall past the alcove; V1.20 17.5 along with the wardrobes (60 clear of them); the king 150 × 200 in its pine frame
+              bedsides=[(203.5, 243.5), (409.5, 449.5)],   # V2.90 (N34): the photo's look about 50 wide, but 40 keeps the wardrobes 60 clear (the client; Measure); v72: centred on the wall past the alcove; V1.20 17.5 along with the wardrobes (60 clear of them); the king 150 × 200 in its pine frame
               chest=dict(x=(107.5, 187.5), z=(454.4, 499.4), h=72.0), wardrobes=dict(x0=0.0, w=100.0, n=2, d=58.0, h=201.0,
               drawer_h=16.0, drawers=3, top_boxes=30.0),   # v69: no BILLY (it blocked a wardrobe): only floor-free storage
               alcove=(0.0, 202.0), src="client (layout, the wardrobes' gap) + standard sizes (E) + ikea.com (KOMPLEMENT, BILLY)")
@@ -203,7 +217,8 @@ MASTER = dict(bed=dict(x=(0.0, 212.0), z=(245.5, 407.5), head_h=118.0, lift=50.0
 # tiled box in the low corner (the plan's black mark), its side the dormer's cheek; ahead the close-coupled toilet under the frosted
 # window; the bath (170 × 70) along the right from the window wall to by the door, a ceiling-hung rail, a white curtain, a black shower
 # head; stone-effect grey wall tiles 60 × 30, black marble-effect floor tiles 60 × 60. Sizes E (standard), placed off the photos.
-BATH = dict(strip_x=400.0, box_z=-191.0, box_h=125.0, slope_y0=133.0, beam_y=219.0, mirror=dict(z=(-151.0, -106.0), y=(115.0, 163.0)), vanity=dict(z=(-171.0, -86.0), d=33.0, top=86.0, basin_d=45.0),
+# V2.90 (N34): the mirror 58 wide (was 45), the photo from the door fitted to the window, toilet, vanity and hinge (E)
+BATH = dict(strip_x=400.0, box_z=-191.0, box_h=125.0, slope_y0=133.0, beam_y=219.0, mirror=dict(z=(-157.5, -99.5), y=(115.0, 163.0)), vanity=dict(z=(-171.0, -86.0), d=33.0, top=86.0, basin_d=45.0),
             slim=dict(z=(-191.0, -171.0), d=30.0, h=80.0), toilet=dict(x=(359.0, 395.0), d=65.0, cistern_h=80.0),
             bath=dict(x=(283.3, 353.0), l=184.0, h=55.0), rail_y=205.0, tiles=dict(sill=90.0, bath=200.0, sink=125.0, cheek=125.0),
             src="client's photos (what goes where) + standard sizes (E)")

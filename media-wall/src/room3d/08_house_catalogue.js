@@ -15,12 +15,15 @@ function hcChest(mat, cols, rows, knob = "knob") {   // drawers: a carcass, its 
   };
 }
 function hcBed(frame) {   // a bed: its frame, the mattress, a duvet over the foot two-thirds, two pillows
-  return (W, H, D, B, L) => {
-    const top = Math.min(56, H - 10);
+  return (W, H, D, B, L) => {   // V2.91 (N36): the duvet lofty, turned down, its sides and foot hanging (soft in clothBox), as the master's
+    const top = Math.min(56, H - 10), z0 = D * 0.34;
     frame(W, H, D, B, L, top - 22);
     B("mattress", 3, top - 22, 9, W - 3, top, D - 2);
-    B("duvet", 1, top - 10, D * 0.34, W - 1, top + 2, D - 0.5);
-    for (const [a, b] of [[9, W / 2 - 4], [W / 2 + 4, W - 9]]) B("pillow", a, top, 11, b, top + 11, 52);
+    B("duvet", 1.5, top - 1, z0, W - 1.5, top + 9, D - 0.5);
+    B("duvet", 2, top + 3, z0 - 2, W - 2, top + 13, z0 + 16);
+    for (const u of [0.5, W - 2.5]) B("duvet", u, top - 18, z0 + 2, u + 2, top + 3, D - 1);
+    B("duvet", 3, top - 18, D - 2.5, W - 3, top + 3, D - 0.5);
+    for (const [a, b] of [[8, W / 2 - 3], [W / 2 + 3, W - 8]]) B("pillow", a, top, 9, b, top + 15, 55);
   };
 }
 function hcShelves(mat, fill) {   // shelving: two sides, a back, shelves, what's on them

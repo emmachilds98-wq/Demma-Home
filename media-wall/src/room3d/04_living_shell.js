@@ -141,7 +141,7 @@ function buildShell() {
   /* v53, client: "Can you make the garden visible through the window at any angle ... both gardens": from above (Whole room, Bird's eye,
      Dolls' house) the back garden is ground under the room: the house's back wall down to the lawn, the patio, the lawn, the path down
      the left, the fences, 25 m out (geometry.GARDEN). Looking out from inside, the photo stays (it carries the real garden) */
-  { const GD = R.GARDEN || { drop: 260, length: 2500, patio: 0, path: 90, fence: 180, fence_r: 120 }, y0 = -GD.drop, z0 = WZ - 30, z1 = z0 - GD.length, x0 = -12, x1 = Wd + 12;
+  { const GD = R.GARDEN || { drop: 260, length: 2500, patio: 0, path: 90, fence: 180, fence_r: 120 }, BG = R.HOUSE3 && R.HOUSE3.garden, y0 = -GD.drop, z0 = WZ - 30, z1 = z0 - GD.length, x0 = BG ? BG.x[0] : -12, x1 = BG ? BG.x[1] : Wd + 12;
     garden3d = new THREE.Group(); garden3d.visible = false; scene.add(garden3d);   // v55: in the scene, so it stays when Lower takes the room off
     const mat = c => reg(new THREE.MeshStandardMaterial({ color: c, roughness: 0.95 }));
     const flat = (xa, xb, za, zb, y, m) => { const p = new THREE.Mesh(new THREE.PlaneGeometry(Math.abs(xb - xa) * M, Math.abs(zb - za) * M), m);
@@ -152,12 +152,29 @@ function buildShell() {
     if (GD.patio > 0) flat(x0, x1, z0, zp, y0 + 2, mat("#a59f94"));                // a patio by the house (none: the lawn runs to the wall)
     const texd = (k, c, w, d) => { const T = R.HOUSE3 && houseTex(k); if (!T) return mat(c); const tx = texClone(T.map); tx.needsUpdate = true; tx.repeat.set(w / 100 / T.size[0], d / 100 / T.size[1]);
       return reg(new THREE.MeshStandardMaterial({ map: tx, roughness: 0.95 })); };   // v59: lawn and concrete, at their size
-    flat(x0, x1 - GD.path, zp, z1, y0, texd("lawn", "#55613f", x1 - GD.path - x0, zp - z1));     // the lawn
-    flat(x1 - GD.path, x1, zp, z1, y0 + 1, texd("concrete", "#9b958a", GD.path, zp - z1));      // the path down the left (looking out)
     const fence = (h, len = GD.length) => { const T = R.HOUSE3 && houseTex("fence"); if (!T) return mat("#6b5644"); const tx = texClone(T.map); tx.needsUpdate = true;   // V1.3: boarded, each board 10 wide
       tx.repeat.set(len / 100 / T.size[0], h / 100 / T.size[1]); return reg(new THREE.MeshStandardMaterial({ map: tx, roughness: 0.9 })); };
     box(x0 - 4, x1 + 4, y0, y0 + GD.fence, z1, z1 - 4, fence(GD.fence, x1 - x0 + 8));   // V1.4: the far fence, 25 m out (the view photos)
-    box(x0 - 4, x0, y0, y0 + (GD.fence_r || GD.fence), z0 - 100, z1, fence(GD.fence_r || GD.fence)); box(x1, x1 + 4, y0, y0 + GD.fence, z0, z1, fence(GD.fence));   // the right one lower, its gate by the house box(x0 - 4, x1 + 4, y0, y0 + GD.fence, z1, z1 - 4, fence);
+    if (BG) {   /* V2.89 (N30), as the photos (survey_data.BACK_GARDEN): looking out from the west fence, the border, the path, its muscari
+                   strip, the lawn to the trees, leaf litter under them; the east bed; the pad from the back door to the path */
+      const xb = x1 - BG.border, xp = xb - BG.path, xe = xp - BG.edge, xl = x0 + BG.border_e, zl = z0 - BG.lawn_end, zd = z0 - BG.pad.d, FW = BG.fence_w;
+      const bed = (n, ...cs) => canvasTex(256, 256, (g, w, h) => { const r = rnd(n); g.fillStyle = "#4a3b2c"; g.fillRect(0, 0, w, h);   // a metre of soil, leaves and flowers
+          for (let i = 0; i < 260; i++) { g.fillStyle = cs[i % cs.length]; g.globalAlpha = 0.5 + r() * 0.5; g.beginPath(); g.arc(r() * w, r() * h, 2 + r() * (i % 3 ? 9 : 4), 0, 7); g.fill(); } }),
+        PT = bed(11, "#4f6b34", "#5d7a3c", "#3f5a2c", "#56743a", "#4a3fb0", "#48662f", "#5d7a3c", "#3f5a2c", "#d9cf86"), LT = bed(23, "#5a4632", "#6b5a3e", "#3d4a2a", "#7a6646");
+      const at = (T, w, d) => { const tx = texClone(T); tx.needsUpdate = true; tx.repeat.set(w / 100, d / 100); return reg(new THREE.MeshStandardMaterial({ map: tx, roughness: 0.95 })); };
+      flat(xl, BG.pad.x0, z0, zd, y0, texd("lawn", "#55613f", BG.pad.x0 - xl, BG.pad.d));       // the lawn, beside the pad
+      flat(xl, xe, zd, zl, y0, texd("lawn", "#55613f", xe - xl, BG.lawn_end - BG.pad.d));         // and to the trees
+      flat(BG.pad.x0, xb, z0, zd, y0 + 1, texd("concrete", "#9b958a", xb - BG.pad.x0, BG.pad.d));  // the pad by the back door
+      flat(xp, xb, zd, zl, y0 + 1, texd("concrete", "#9b958a", BG.path, BG.lawn_end));           // the path down the left (looking out)
+      for (const [xa, xc, za] of [[xe, xp, zd], [xb, x1, z0], [x0, xl, z0]]) flat(xa, xc, za, zl, y0 + 0.5, at(PT, xc - xa, za - zl));   // the beds
+      flat(x0, x1, zl, z1, y0 + 0.3, at(LT, x1 - x0, zl - z1));                                    // under the trees
+      box(x0 - 4, x0, y0, y0 + BG.fence_e, z0 - 100, z1, fence(BG.fence_e));                       // the east fence, lower, its gate by the house
+      box(x1, x1 + 4, y0, y0 + FW.low, z0, z0 - FW.low_to, fence(FW.low, FW.low_to)); box(x1, x1 + 4, y0, y0 + FW.h, z0 - FW.low_to, z1, fence(FW.h, GD.length - FW.low_to));   // the west, low by the house
+    } else {
+      flat(x0, x1 - GD.path, zp, z1, y0, texd("lawn", "#55613f", x1 - GD.path - x0, zp - z1));     // the lawn
+      flat(x1 - GD.path, x1, zp, z1, y0 + 1, texd("concrete", "#9b958a", GD.path, zp - z1));      // the path down the left (looking out)
+      box(x0 - 4, x0, y0, y0 + (GD.fence_r || GD.fence), z0 - 100, z1, fence(GD.fence_r || GD.fence)); box(x1, x1 + 4, y0, y0 + GD.fence, z0, z1, fence(GD.fence));   // the right one lower, its gate by the house
+    }
     if (!R.HOUSE3) box(x0, x1, y0, 0, z0 + 30, z0, mat("#9a5a43"));               // the house's back wall below the room (brick), down to the lawn (v58: the built house has its own)
   }
   sillPlants(wx0, wx1, SL.y, FZ + 2, WZ + SL.nose - 1);

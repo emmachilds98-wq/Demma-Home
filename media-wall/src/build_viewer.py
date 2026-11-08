@@ -1084,7 +1084,7 @@ def _page(site=False):
               else f'<p class="caption">Also on <a href="{PAGES}" target="_blank" rel="noopener">GitHub Pages</a>.</p>')
 
     plan_home = f"""<div class="plan-home" id="plan-home"><div class="panel" id="overview">
-      <div><p class="hello"><span id="hello">Evening, Emma &amp; Dave</span><span class="ver" title="This page is {LABEL}">{LABEL}</span></p><p>The artisan oak media wall in your pale mint, the compact dining cabinet, the network and power: about <b id="d-total">£{money(lo_tot, hi_tot)}</b> in all.</p>
+      <div><p class="hello"><span id="hello">Evening, Emma &amp; Dave</span><button class="ver" type="button" title="Get the latest version">{LABEL}</button></p><p>The artisan oak media wall in your pale mint, the compact dining cabinet, the network and power: about <b id="d-total">£{money(lo_tot, hi_tot)}</b> in all.</p>
         <p class="row"><a class="btn" href="{base}Demmas_Home_{LABEL}_Plan.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">download</span> The plan (PDF)</a><a class="btn" href="{base}Demmas_Home_{LABEL}_Plan_phone.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">smartphone</span> Phone edition</a></p></div>
       {PU.plan_home(ring, sum(1 for r in rows if r["kind"] == "buy"), len(steps())).replace("{MONEY}", PU.money_html(TRACK))}
       <div class="upnext" hidden><span class="n" id="d-nextn">1</span><div><span class="label">Up next</span><h3 id="d-next">Measure and count</h3></div>
@@ -1206,7 +1206,7 @@ def _page(site=False):
     <div class="block"><h2 class="ptitle">Suggestions in the room</h2><p class="caption">Each one switches the room too: close this to see them.</p>{sugg_chips}</div>
     {ideas_panel()}
   </section>"""
-    # V2.85: the fonts' stylesheets don't hold up the first screen: media="print" until they land (a script after a pending stylesheet
+    # V2.92: the fonts' stylesheets don't hold up the first screen: media="print" until they land (a script after a pending stylesheet
     # waits for it: the landing's and the rest's start about 0.26 s later here); the landing covers the page meanwhile
     page = f"""<title>Demma's Home</title>
 {room3d_page.IMPORTMAP}
@@ -1405,6 +1405,7 @@ def pwa_files():
         "name": "Demma's Home", "short_name": "Demma", "start_url": "./", "scope": "./", "display": "standalone",
         "background_color": "#fbf6ec", "theme_color": "#2f4a3c",
         "icons": [{"src": f"media-wall/src/art/icon-{n}.png", "sizes": f"{n}x{n}", "type": "image/png", "purpose": "any maskable"} for n in (192, 512)]}, indent=1))
+    (root / "version.txt").write_text(LABEL)   # V2.83: the version button compares the page with this
     (root / "sw.js").write_text(f"""// v39: the page opens from the device after the first visit (network first for the page, so a new round shows; cache first for the
 // rest: three.js from its CDN, the fonts and the pictures). V2.46: a file named by its contents (tex/<photo>.<hash>.jpg, three.<hash>.js, a
 // CDN file at its version) is kept across versions (K), so a new round doesn't fetch the photos again; its older copy goes. {LABEL}.
@@ -1416,7 +1417,7 @@ self.addEventListener("fetch", e => {{
   const r = e.request; if (r.method !== "GET") return;
   const u = new URL(r.url), page = r.mode === "navigate" || (u.origin === location.origin && (u.pathname.endsWith("/") || u.pathname.endsWith("index.html")));
   if (page) {{ e.respondWith(fetch(r).then(res => {{ const cp = res.clone(); caches.open(C).then(c => c.put(r, cp)); return res; }}).catch(() => caches.match(r).then(m => m || caches.match("./")))); return; }}
-  if (/\\.pdf$/.test(u.pathname)) return;                                   // the PDFs come from the network
+  if (/\\.(pdf|txt)$/.test(u.pathname)) return;                             // the PDFs and version.txt come from the network
   const keep = HASHED.test(u.pathname), into = keep ? K : C;
   e.respondWith(caches.match(r).then(m => m || fetch(r).then(res => {{ if (res.ok || res.type === "opaque") {{ const cp = res.clone();
     caches.open(into).then(async c => {{ if (keep) for (const k of await c.keys()) if (k.url !== r.url && stem(k.url) === stem(r.url)) await c.delete(k); return c.put(r, cp); }}); }} return res; }})));

@@ -34,6 +34,10 @@ CROP = {"granite_tile_03": (0.02, 0.02, 0.31, 0.31)}   # V1.13: a part of the ph
 STIPPLE = {"artex": (0.5, "#f3f2ee")}
 SRC = {"Carpet012": "https://ambientcg.com/view?id=Carpet012"}
 PX = {}                                                          # sizes other than 1024 px (V1.11, the client: "i dont want these low res versions, best textures"; was 512)
+# V2.81 (REAL_PLAN N32): no finer than a pixel can show at the nearest a view comes, on a 4K screen (80° across 2160 px: 0.65 mm a metre
+# away): a floor is 1.6 m under the eye (1 mm), the soft things a metre off (0.65 mm). These were twice as fine (0.25-0.5 mm a pixel); the
+# rest stay, and the living room's oak keeps its 2048 (the client asked for it, V1.11)
+PX.update(carpet=512, carpet_grey=512, check=512, lycksele=512, duvet=512)
 # V1.1: the living room's own surfaces, the photo as it is (room3d.js matches each to its drawn texture's average colour as it loads,
 # so the parts keep their colours and only the grain, weave and relief are real): key: (asset, real size m, map px, normal px, turn,
 # relief). The oak is turned a quarter so its grain runs along the boards, as the drawn oak's does; 0 px leaves that picture out. Veneer
@@ -141,7 +145,7 @@ def main(src):
         m, n = stipple(1024, col)
         m.save(HERE / f"{key}_map.jpg", quality=82, optimize=True); n.save(HERE / f"{key}_nor.jpg", quality=84, optimize=True)
         meta[key] = dict(asset="made by build_textures.stipple", size=size, url="", licence="ours")
-    (HERE / "textures.json").write_text(json.dumps(meta, indent=1))
+    share(meta)
     print("textures", len(meta))
 
 
@@ -151,10 +155,9 @@ def buff():
     from PIL import ImageOps
     g = ImageOps.autocontrast(Image.open(HERE / "brick_map.jpg").convert("L"), cutoff=1)
     ImageOps.colorize(g, black="#7d6e55", white="#f2ead6", mid="#cdbd98").save(HERE / "brick_buff_map.jpg", quality=86)
-    (HERE / "brick_buff_nor.jpg").write_bytes((HERE / "brick_nor.jpg").read_bytes())
     meta = json.loads((HERE / "textures.json").read_text())
-    meta["brick_buff"] = dict(meta["brick"], asset=meta["brick"]["asset"] + " (toned buff)")
-    (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
+    meta["brick_buff"] = dict(meta["brick"], asset=meta["brick"]["asset"] + " (toned buff)", like="brick")   # its relief is brick's
+    share(meta)
 
 
 # V1.30 (U5, docs/UPGRADE_REVIEW.md): where a surface's shine varies (the wood's grain, a floor's wear, the worktop's speckle, the tiles'
@@ -290,5 +293,31 @@ def finishes():
     (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
 
 
+def share(meta):
+    """V2.81 (N32): a picture an earlier key has already (the two carpets' pile, the pines' relief) goes once: the later key drops its copy
+    and says like=<key> (export3d reads that key's file for any it lacks; only when it lacks nothing else that key has); then textures.json"""
+    own = lambda k: {x: HERE / f"{k}_{x}.jpg" for x in ("map", "nor", "rough") if (HERE / f"{k}_{x}.jpg").exists()}
+    for i, k in enumerate(meta):
+        mine = own(k)
+        for o in list(meta)[:i]:
+            theirs = own(o)
+            same = [x for x in mine if x in theirs and mine[x].read_bytes() == theirs[x].read_bytes()]
+            if same and not meta[o].get("like") and not set(theirs) - set(mine):
+                for x in same: mine[x].unlink()
+                meta[k]["like"] = o; break
+    (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
+
+
+def slim():
+    """python3 house/textures/build_textures.py --slim   the pictures in place brought to PX's sizes (no download), then share()"""
+    meta = json.loads((HERE / "textures.json").read_text())
+    for k, px in PX.items():
+        for kind, q in (("map", 78), ("nor", 82), ("rough", 82)):
+            f = HERE / f"{k}_{kind}.jpg"
+            if f.exists() and Image.open(f).width > px:
+                im = Image.open(f); im.convert(im.mode).resize((px, px), Image.LANCZOS).save(f, quality=q, optimize=True); print("slim", f.name, px)
+    share(meta)
+
+
 if __name__ == "__main__":
-    {"--buff": buff, "--rough": rough, "--tiles": tiles, "--finishes": finishes}.get((sys.argv[1:] or [""])[0], lambda: main(sys.argv[1]))()
+    {"--buff": buff, "--rough": rough, "--tiles": tiles, "--finishes": finishes, "--slim": slim}.get((sys.argv[1:] or [""])[0], lambda: main(sys.argv[1]))()
