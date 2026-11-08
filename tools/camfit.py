@@ -14,7 +14,12 @@ import pw, localcdn, compare  # noqa: E402
 
 SITE = ROOT / "_site"
 MARGIN = {"hall": 6}
-BOX = {"hall": [310, 460, 15, 225, 50, 416]}   # the hall's front part runs to the party wall (the mirror, the bench), past its view's box
+BOX = {"hall": [310, 460, 15, 225, 50, 416],   # the hall's front part runs to the party wall (the mirror, the bench), past its view's box
+       "bath": [283, 382, 275, 485, -309, 60]}   # V2.90 (N34): the bathroom's photo is from the landing, through its door
+# V2.90 (N34): hand starts where the photos were taken (the sweep settles wrong in these), each from the photo's corners solved by hand
+# (the window, the toilet, the mirror, the vanity, the door's hinge; the headboard and the ottoman's corners): the bathroom from the landing
+# just out of its door (open as far as the bath lets it), the master from past the bed's foot by the door, low, at the headboard
+START = {"bath": {"eye": [307.4, 384.5, 26.0], "at": [382.7, 417.7, -156.2], "fov": 90.9}, "master": {"eye": [268, 377, 240], "at": [89.4, 301.9, 288.8], "fov": 74}}
 STEP = dict(x=40.0, y=15.0, z=40.0, yaw=10.0, pitch=6.0, fov=8.0)
 
 
@@ -84,9 +89,11 @@ def main(only):
             pg = ctx.new_page(); pg.set_default_timeout(300000); localcdn.route(pg)
             pg.goto(f"http://127.0.0.1:{httpd.server_address[1]}/index.html?noao"); pg.wait_for_function("window.R3D && window.R3D.ready", timeout=240000)
             pg.evaluate("R3D.photos()"); pg.evaluate(f"R3D.set({{view: '{view}', tod: 'day'}})"); pg.wait_for_timeout(2500)
+            for k in compare.OPEN.get(view, []):
+                pg.evaluate("k => R3D._dbg.swingDoor(k, true)", k); pg.wait_for_timeout(1500)
             pg.evaluate("document.querySelector('[data-rmode=\"stand\"]').click()"); pg.wait_for_timeout(2500)   # standing: nothing pulls the eye back into the room's box
             pg.evaluate("document.body.classList.add('bare'); document.querySelectorAll('.r3d-mini, .brand, .r3d-toast, .r3d-stick').forEach(e => e.style.visibility = 'hidden')")
-            v = compare.CAMS.get(view) or pg.evaluate(f"(() => {{ const V = R3D._dbg.VIEWS['{view}']; return {{ eye: V.eye, at: V.at, fov: 70 }}; }})()")
+            v = compare.CAMS.get(view) or START.get(view) or pg.evaluate(f"(() => {{ const V = R3D._dbg.VIEWS['{view}']; return {{ eye: V.eye, at: V.at, fov: 70 }}; }})()")
             c = start_of(v)
             bx = BOX.get(view) or pg.evaluate(f"R3D._dbg.VIEWS['{view}'].box")    # [x0, x1, y0, y1, z0, z1]: the eye stays in the room (or its doorway, 40 on) at a phone's height
             fy = -260.0 if bx[2] < -100 else 260.0 if bx[2] > 200 else 0.0   # its floor (the views' boxes start a little over it)
@@ -116,7 +123,7 @@ def main(only):
                     step = {k: v / 2 for k, v in step.items()}
                 return c, best
             s0 = render(c); starts = [(s0, c)]
-            if view not in compare.CAMS:                      # V1.41: no start near the photo's spot: sweep the room first (its corners, edges'
+            if view not in compare.CAMS and view not in START:   # V1.41: no start near the photo's spot: sweep the room first (its corners, edges'
                 for x in (bx[0], (bx[0] + bx[1]) / 2, bx[1]):   # middles and middle; eight ways each), then refine the best three
                     for z in (bx[4], (bx[4] + bx[5]) / 2, bx[5]):
                         for yw in range(0, 360, 45):

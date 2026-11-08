@@ -273,9 +273,8 @@ Status words as `docs/V1_PLAN.md`. **Agents: work the next row that isn't Done, 
    V1.44 (`model.living_shell`, read by the walk and the shade); V1.45 its walls, floor, ceiling and skirting drawn from it (pixel for
    pixel as before). V1.46 its door, window opening and flight; V1.48 its pipe boxing and radiator: done (the furniture stays the project's pieces).
 2. **Camera-match each view to its photo** (V1.40–V1.41, in part: below): the WC, the office, the landing and the kitchen are fitted
-   (`compare.CAMS`), the hall in part (V1.42); still to fit: the
-   bathroom (the photo is mostly its door frame, from the landing) and the master (people and clutter over its lines): by hand from a
-   start near the photo's spot (`compare.CAMS` is where `camfit.py` starts), or with fresh, tidy photos from each doorway.
+   (`compare.CAMS`), the hall in part (V1.42); V2.90 (N34) the bathroom and the master, from hand starts (`camfit.START`; the
+   bathroom's door opened, `compare.OPEN`): the master lines up, the bathroom's door place waits on the client's tape (Measure).
 3. **The client's iPhones' numbers**: `?perf` and `R3D.timing()` from each, then decide KTX2 (U5) and light maps (U8).
 4. ~~Republish the shared page~~: not wanted (the client, 4 Nov: "i dont need a copy here just update the live github"); the build no longer makes it (V1.37).
 5. ~~The first floor's sloped ceilings' shade~~ (U8): done in V1.39 (below). (The floor labels on a phone: done in V1.35.)
