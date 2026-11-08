@@ -1219,7 +1219,7 @@ def _page(site=False):
 <div class="landing" id="landing" aria-hidden="true">{LANDING_SVG}<i><b></b></i></div>
 <script>{LANDING_JS}</script>
 <div class="brand" role="button" tabindex="0" title="Welcome" aria-controls="r3d-welcome"><span class="mark" aria-hidden="true"><i style="background:var(--peach)"></i><i style="background:var(--mint)"></i><i style="background:var(--lilac)"></i><i style="background:var(--butter)"></i></span>
-  <span><b>Demma's Home</b><small id="brand-place" aria-live="polite">The whole house</small></span></div>
+  <span><b>Demma's Home <span class="bver">{LABEL}</span></b><small id="brand-place" aria-live="polite">The whole house</small></span></div>
 <nav class="hnav" aria-label="The plan">{"".join(f'<button type="button" data-nav="{k}" aria-current="false">{n}</button>' for k, n in (("plan", "Plan"), ("build", "Build"), ("buy", "Buy")))}</nav>
 <main id="room" aria-label="Your room in 3D">{room3d_page.section(gallery3d())}</main>
 {sheet("plan", "Your plan", "map", 300, plan_home + chapters)}
