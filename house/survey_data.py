@@ -137,7 +137,7 @@ DOOR_H = 198.0                                          # the living room's door
 # The lower flight: from the lower landing up to the hall, rising towards the front, under the living room's flight (P: the lower
 # plan's stairs and "UP"; the store is under it, HOUSE.md). 13 risers of 20 (260 floor to floor), goings 22 (Approved Document K).
 LOWER_STAIR = dict(x_px=(262, 405), z0_px=715, n=13, rise=20.0, going=22.0, src="P + E",
-                   x=(408.0, 467.0))   # v66, the client: "make the door align with the given gap from the hallway to the living room, the
+                   x=(382.0, 467.0))   # V2.93: under the living room's flight, now 85 (the stairwell measured upstairs); v66, the client: "make the door align with the given gap from the hallway to the living room, the
                                        # living room has accurate measurements so adjust the other rooms": under the living room's flight
                                        # (geometry.STAIR_X, 59 wide); the plan's 92 put its side wall across the doorway
 
@@ -267,7 +267,8 @@ ARTEX = ["kitchen", "kitchen_1", "kitchen_2", "lower_landing"]
 # V1.12, the client: "i want the door from ground living room to upstairs door to be removed, there is no door on the stair well like
 # that"; their photos of 30 Oct (photo_hall_door_down_frame_30oct, photo_hall_racks_frame_30oct) show it: the frame in the stair box's end,
 # the grille over it, no door, only the old hinges' marks. door_leaf False: the frame and the grille stay, the door and its handle go.
-HALL = dict(door=(410.0, 465.0), door_leaf=False, mirror=dict(z=(354.4, 390.4), y=(70.0, 205.0)), bench=dict(x=(433.0, 467.0), z=(353.4, 393.4), h=45.0),
+# V2.93: the door down across the wider flight (x 386, was 410)
+HALL = dict(door=(386.0, 465.0), door_leaf=False, mirror=dict(z=(354.4, 390.4), y=(70.0, 205.0)), bench=dict(x=(433.0, 467.0), z=(353.4, 393.4), h=45.0),
             racks=[dict(x=(306.0, 340.0), z=(396.4, 419.4), h=180.0), dict(x=(424.0, 462.0), z=(396.4, 419.4), h=120.0)],
             radiator=dict(z=(276.4, 364.4), y=(15.0, 72.0)), switch_z=368.0, tapestry=dict(z=None, y=(3.0, 233.0)),
             src="client's photos (what goes where) + standard sizes (E)")
