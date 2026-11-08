@@ -217,7 +217,7 @@ Emma), then `docs/NOTES.md`. Done means merged to `main` and live; In PR means p
 | **Done in part** (what's left is named in its row or folded into a later task) | N9 (dark panels: Emma's call), N11 (the PC's `?perf`), N12 (the iPhone's `?perf`), N22 (KTX2 is N31) |
 | **In PR, not merged** | none |
 | **In progress** | N31 (#133, WIP: build side only; waits on Emma's OK) |
-| **Not started** | none: the next section is the new team's |
+| **Not started** | section 13 (8 Nov, the new team): N46–N51; N31 waits on the client |
 | **Needs the client** | N10 (`?perf` from the iPhone 15 Pro and the RTX 5070 PC); the questions in `docs/HANDOVER.md` |
 
 ## 10. Resumed (7 Nov 2026): the rest in parallel chunks
@@ -264,3 +264,40 @@ section 11's open rows (N37, N40, N42), sharing no file with them, #149 or #133.
 | N43 | Opens fast on a weak signal: `sw.js` asks the network for the page first with no limit, so a poor phone signal holds the start; after about 2 s the kept copy, the network's put by for next time; tried on a slowed network | Speed (phone) | the `sw.js` text in `build_viewer.py` only | Done (V3.00): 1 s signal, new in 1.08 s; 6 s, kept in 2.05 s; offline 0.06 s |
 | N44 | The kitchen and the hall beside their photos (as N34): `tools/compare.py` and `camfit.py` from a start near each photo's spot (`photo_kitchen_*`, `photo_hall_*`), each difference fixed, sizes cited | Quality | `tools/compare.py`, `tools/camfit.py`, `house/model.py`, `house/survey_data.py`, `house/EVIDENCE.md` | Done (V3.03): the door down 66, the mirror and bench by the box, the kitchen radiator, boiler and empty door frame; the photo's own lens |
 | N45 | The catalogue's pieces made real: Add a piece's 25 with soft edges and cited sizes like the house's own (`hcBed` done), the look in `tools/gallery.py` | Design | `08_house_catalogue.js` (not `hcBed`), their `fit.SOURCES` rows | Done (V3.02): 28 pieces, each a real product's size and shape, 4 source rows |
+
+## 13. The new team's round (8 Nov 2026, V3.03): six side by side, one on the client's yes
+
+The client, 8 Nov 2026: "startup a team to complete upgrades you can find where the last team handed off in the handover.md in github.
+make sure to review and plan for changes in the most effective manner and implement any further improvements you see fit".
+From `docs/HANDOVER.md`'s suggested work, `docs/NOTES.md` section 3's "what's left" and a read of the code at V3.03. The other project's
+PRs (#136, #138, #139) all landed; only #133 (KTX2) is open. Section 9's rules: one task a PR, only its files, the next free version at
+merge (merge `main` in, renumber, `checks.py --quick`, `build.py --fast`, push, merge), `docs/STATE.md` rewritten over main's, a line in
+`docs/HISTORY.md`, the row ticked here, `checks.py`'s lines in the PR, `house/privacy_check.py` before every commit, inside
+`tools/perf_budget.json` (lower a number a task wins; each task touches only its own numbers there).
+
+**What the review found**
+- **HD draws everything twice:** three's GTAO renders the scene again with a normal material for its normals (NOTES §3: "HD draws about
+  twice"); GTAOPass can take the composer's own depth and work its normals from it (`setGBuffer(depth)`, `NORMAL_VECTOR_TYPE` 0), so the
+  second pass goes. That is most of the RTX's 371 house and up to 762 living-room draws, and the iPhone's.
+- **The living room is the heaviest place:** 254–762 draws by path (the house opens in 188 since N37); its fixed parts (shell, brick,
+  shelving, cabinet carcass) are a draw a piece.
+- **Code nothing reads** is still listed in NOTES §3 (`growGlow`, `MOV`'s `flat`, the sliding cabinet's paths, unused names in 04, 14, 16, 20).
+- **`?perf` has waited since 6 Nov** (N10): a screenshot is a chore. The numbers can ride in Measure's Send link instead, read by `pull_edits.py`.
+- **Three photo fits are from before the lens fix** (office, landing, WC): N44 showed the photo's own lens (`compare.TRUE_FOV`) moves things.
+- **Seven tasks added UI since the last look-over (N33, V2.88):** Back, Esc and focus, Changes and costs, the 28 catalogue pieces' cards, the
+  refresh button. Nobody has looked at them together on a small phone and a wide PC.
+
+| # | Task | Aim | Owns | After | Status |
+|---|---|---|---|---|---|
+| N46 | One pass for the shade: GTAO from the composer's depth (a `DepthTexture` on its target, `AO.g.setGBuffer(depth)`), no normal pass; the warm-up target the same kind so no shader is built on the spot; the cutaway still cuts the shade. `R3D.perf()` draws in HD (iPhone, RTX: house and living room) before and after, the look in `tools/gallery.py` (the shade's edges no worse; if they are, say so and keep the half-size trick) | Speed (PC, iPhone) | `01_renderer.js` (`aoComposer`, `draw`, `PRE`'s target), the `iphone` and `rtx` draws in `tools/perf_budget.json` | | Not started |
+| N47 | The living room's own draws: count its draws by material and piece (`R3D._dbg.scene`), merge the fixed parts of one material into one draw (as `20_go.js` `HBUILD`), keeping apart what Edit moves, a tap finds, a light rigs to or a view hides; draws before and after on the phone and PC paths, `draws_living` lowered; the gallery the same; cut `04`'s unused `aboveAll`, `recP` and `05`'s sliding-cabinet paths while there | Speed (all) | `04_living_shell.js`, `05_dining_cabinet.js`, `draws_living` in `tools/perf_budget.json` | | Not started |
+| N48 | Lean code, the rest (NOTES §3): `growGlow` (12, 13), `MOV`'s unread `flat`, the sliding cabinet's lines in 14 and 16, unused `wheelAcc` (14), `sl` (16, 20), `id`, `wcm` and the duplicate `collide` key (20); found by the NOTES §1/§3 method (ESLint `no-unused-vars` on the joined file, every name grepped across `media-wall/src`, `tools`, `house`, `projects`); lines and minified KB before and after; the gallery the same to the pixel | Lean code | `12_furniture_options.js`, `13_edit_room.js`, `14_views_walk.js`, `16_cards.js`, `20_go.js` (unused names only) | | Not started |
+| N49 | The office, the landing and the WC beside their photos again with each photo's own lens (`compare.TRUE_FOV`, `camfit` hand starts as N44); each difference fixed in the model, sizes cited, new guesses in Measure | Quality | `tools/compare.py`, `tools/camfit.py`, `house/model.py`, `house/survey_data.py`, `house/EVIDENCE.md`, `house/HOUSE.md`, `house/measure.py` | | Not started |
+| N50 | Speed numbers without a screenshot: Measure's Send link carries the device's `R3D.perf()` summary (graphics class, quality, frame ms moving and still, draws, shaders; never a place or a name); `pull_edits.py --link` prints it; `?perf`'s box says the same in fewer words. Closes N10 when the client next sends | Speed, UX | `media-wall/src/measure.js`, `tools/pull_edits.py`, the `perfInfo` and `?perf` lines in `17_render_loop.js` | | Not started |
+| N51 | Phone and PC look-over 2 (as N33, for what came since V2.88): the iPhone 15 Pro, SE, Pixel 7, iPad Mini, 1280 and 1920 wide; the welcome, the house, a room, a Changes card, a catalogue piece's card, Measure, Plan's house total, the refresh button, Esc and Tab; fix overlaps, taps under 44 px, cut or crowded text, in fewer words | UX | `media-wall/src/page.css`, `media-wall/src/room3d_page.py` | | Not started |
+| N31 | KTX2 photos (#133): on the client's yes, the workflow builds basisu 1.16.4 (commit 900e40fb5d25), the page's `KTX2Loader` with the JPEG fallback (NOTES §3), the tint kept at build; GPU memory and upload time before and after on the iPhone path; also `export3d.py`'s unused `A_*` and `BAR2` keys (NOTES §3) | Photos | `02_textures.js`, `export3d.py`, `vendor.py`, `house/textures/build_textures.py`, `.github/workflows/build.yml` | the client's yes | Waits on the client |
+
+**Order:** N46–N51 start together, a thread each; no file is shared but `tools/perf_budget.json` (each its own numbers: merge `main`
+just before merging). N31 when the client says yes, from #133's branch (merge `main` into it first).
+**With the client:** KTX2 yes or no; the kitchen's door (is there one?); the living room door's width; dark panels or the cream; a
+microwave photo. N50 replaces the `?perf` screenshots.
