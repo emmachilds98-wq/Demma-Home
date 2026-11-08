@@ -62,6 +62,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `houseJoin` sets one draw range. The house opens in 188 draws (was 287). Left: rooms gained little (frustum culling already did most);
   the landing's ~380 on a phone is the living room down the stairwell; HD draws about twice (the GTAO normal pass). Next: the living
   room's own draws, or the GTAO pass.
+  N47 (V3.12): the living room's fixed parts one draw a material (`04` `bucket`, `mergeStatic` on the cabinet, stairs, chairs). What's left
+  standing in it (phone 235): the house round it ~60 (`G#65`, `roomCull`), the record table under the coffee table 19 and the pouf 22
+  (07, nested groups `mergeStatic` skips), the shell's suggestion groups ~33 (07, 10), the walls a draw each paint (each wall its own
+  material, so Look can colour one). `check_site.py`'s `draws_living` sometimes reads the house's number (185) on the PC and iPhone paths: the view hadn't landed; count a frame yourself.
 - **Bytes (N2–N4, N25, N32, N43):** photos a hashed JPEG each in `_site/tex`, kept across versions (`demma-keep`); half-size set for
   `LOWD` phones; esbuild minifies the page; icon font subset; sheets in their own file; fonts don't block; no texel finer than a 4K
   screen shows (`build_textures.PX`, `--slim`). Tried and dropped: lower JPEG quality (3–8 dB lost for 5–10%), progressive JPEGs.
@@ -108,6 +112,6 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   canvas's capture phase, Edit's drag on the 3D's root in capture (`13`), so it can `stopPropagation` before any of them; `controls.enabled
   = false` in a later listener doesn't stop the capture ones. `movable`'s 8th argument isn't "fixed": the rug drags (only `extra.fixed` holds a piece, and none has it now).
   Synthetic `PointerEvent`s can't take `setPointerCapture`: drive touches through CDP `Input.dispatchTouchEvent` (`check_site.py` `edit_drag`).
-- **Back** (`09_house_views.js` `roomHist`), **Esc** (`19_controls.js` `ESC`, top layer only), **Overhead/Angled** and a room's **Above** (`19_view_controls.js` `mapMode`: its own drags, the orbit's off there, V3.08 N53, V3.12 N55; a touch on a living-room sticker joins the drag from the root's capture, and moves are read on `window`, as the sticker keeps its finger; it turns them off in a canvas capture listener after 14's, and Edit's root capture keeps a piece's press from it).
+- **Back** (`09_house_views.js` `roomHist`), **Esc** (`19_controls.js` `ESC`, top layer only), **Overhead/Angled** and a room's **Above** (`19_view_controls.js` `mapMode`: its own drags, the orbit's off there, V3.08 N53, V3.13 N55; a touch on a living-room sticker joins the drag from the root's capture, and moves are read on `window`, as the sticker keeps its finger; it turns them off in a canvas capture listener after 14's, and Edit's root capture keeps a piece's press from it).
 - **Doors:** `14_views_walk.js` `walkDoors` opens a door within 95 cm (not the bin cupboards'). The stairs: both flights 85 wide
   (`geometry.RECESS_W`), `model.stair_soffit` over the lower flight; the site check walks through the living room door at x 339.

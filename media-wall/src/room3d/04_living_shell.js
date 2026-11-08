@@ -1,14 +1,12 @@
 /* ---------------------------------------------------------------- the room's shell */
 const shell = new THREE.Group(); scene.add(shell);
-const aboveAll = [];
 function rect(cx, cy, cz, w, h, normal, mat) {     // a wall patch w × h (cm) centred at (cx, cy, cz), facing `normal` (room coords)
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(w * M, h * M), mat);
+  const m = new THREE.Object3D(), g = new THREE.PlaneGeometry(w * M, h * M);   // V3.04 (N47): into BUCKET, one draw a paint (it was a draw a patch)
   m.position.copy(v3(cx, cy, cz));
   const n = new THREE.Vector3(-normal[0], normal[1], normal[2]);
-  m.lookAt(m.position.clone().add(n));
-  m.receiveShadow = true; m.castShadow = true;   // v48 §6: walls keep the sun out (it came through every wall but the window's)
-  const uv = m.geometry.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * w / 100, uv.getY(i) * h / 100);
-  shell.add(m); return m;
+  m.lookAt(m.position.clone().add(n)); m.updateMatrix();
+  const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * w / 100, uv.getY(i) * h / 100);
+  bucket(g.applyMatrix4(m.matrix), mat, true);   // v48 §6: walls keep the sun out (it came through every wall but the window's)
 }
 /* V1.39, the client: "Build in our living room properly too": the living room gets the house's soft shade where its floor meets the
    walls (V1.33's houseShade): bands along every wall, the alcove, the breast, the flight's side and foot; on every device (the live
@@ -45,22 +43,24 @@ function wall(axis, c, u0, u1, y0, y1, normal, mat, holes = []) {
     }
   }
 }
-const BUCKET = new Map();   // v14.1: the shell's small parts, merged into one mesh per material
+const BUCKET = new Map();   // v14.1: the shell's fixed parts, merged into one mesh per material (V3.04, N47: walls, ceiling, curtain pole and stairs too)
+function bucket(g, mat, cast = true) {
+  const k = mat.uuid + (cast ? "c" : "");
+  if (!BUCKET.has(k)) BUCKET.set(k, { mat, cast, geos: [] });
+  BUCKET.get(k).geos.push(g.index ? g.toNonIndexed() : g);
+}
 function cube(x, y, z, w, h, d, mat, cast = true) {
   const g = new THREE.BoxGeometry(w * M, h * M, d * M);
   g.translate(-(x + w / 2) * M, (y + h / 2) * M, (z + d / 2) * M);
-  const k = mat.uuid + (cast ? "c" : "");
-  if (!BUCKET.has(k)) BUCKET.set(k, { mat, cast, geos: [] });
-  BUCKET.get(k).geos.push(g);
-  return null;
+  bucket(g, mat, cast);
 }
 function flushCubes(parent) {
-  for (const b of BUCKET.values()) parent.add(shadow(new THREE.Mesh(mergeGeometries(b.geos), b.mat), b.cast));
+  for (const b of BUCKET.values()) { const me = shadow(new THREE.Mesh(mergeGeometries(b.geos), b.mat), b.cast); me.name = "livFixed"; parent.add(me); }
   BUCKET.clear();
 }
 function buildShell() {
   const wP = id => paintMat(lum("#2d5a46") / BASE_L, false, false, "w:" + id), rP = id => paintMat(lum("#264c3a") / BASE_L, false, false, "w:" + id);   // v38: per wall
-  const wallP = wP("window"), recP = rP("door"), ceilP = paintMat(lum("#33604a") / BASE_L, false, false, "ceil");
+  const wallP = wP("window"), ceilP = paintMat(lum("#33604a") / BASE_L, false, false, "ceil");
   const egg = paintMat(lum("#346650") / BASE_L, true, false, "trim");
   const C = R.CEIL, Wd = R.W, A = R.ALC_W, AD = R.ALC_D, [B0, B1] = R.BREAST_X, RZ = R.RECESS_Z, WZ = R.WINDOW_Z;
   const LD = R.HOUSE3.living.door, LW = R.HOUSE3.living.window, [dx0, dx1] = [LD.a, LD.b], DH = LD.h, [wx0, wx1] = LW.x, [wy0, wy1] = LW.y;   // V1.46: the door and the window from the house file
@@ -86,9 +86,9 @@ function buildShell() {
   ceilGlow.wrapS = ceilGlow.wrapT = THREE.ClampToEdgeWrapping;
   ceilMat = ceilP.clone(); ceilMat.emissiveMap = ceilGlow; ceilMat.emissive = new THREE.Color("#ffe2c0"); ceilMat.userData = { ratio: ceilP.userData.ratio, ch: "ceil" };
   paintMats.set("ceilglow", reg(ceilMat));
-  for (const [xa, xb, za, zb] of LS.ceiling) {
-    const m = new THREE.Mesh(new THREE.PlaneGeometry((xb - xa) * M, (zb - za) * M), ceilMat);
-    m.rotation.x = Math.PI / 2; m.position.copy(v3((xa + xb) / 2, C, (za + zb) / 2)); m.receiveShadow = true; m.castShadow = true; shell.add(m);   // v48: and the ceiling
+  for (const [xa, xb, za, zb] of LS.ceiling) {   // V3.04 (N47): its pieces one draw
+    const q = v3((xa + xb) / 2, C, (za + zb) / 2);
+    bucket(new THREE.PlaneGeometry((xb - xa) * M, (zb - za) * M).rotateX(Math.PI / 2).translate(q.x, q.y, q.z), ceilMat, true);   // v48: and the ceiling
   }
   livShade();
   // skirting, eggshell in the wall colour
@@ -104,7 +104,7 @@ function buildShell() {
   const leafBox = (x, y, z, w, h, d, m) => { const me = new THREE.Mesh(new THREE.BoxGeometry(w * M, h * M, d * M), m); me.position.copy(v3(x + w / 2, y + h / 2, z + d / 2)).sub(livLeaf.position); livLeaf.add(shadow(me)); };
   leafBox(dx0, 0, RZ + 1, dx1 - dx0, DH, 4, doorW);
   for (const [y0, y1] of [[14, 98], [112, 186]]) leafBox(dx0 + 9, y0, RZ + 0.6, dx1 - dx0 - 18, y1 - y0, 0.5, doorW);
-  leafBox(dx1 - 12, 100, RZ - 1.6, 9, 1.4, 2.6, brass);
+  leafBox(dx1 - 12, 100, RZ - 1.6, 9, 1.4, 2.6, brass); mergeStatic(livLeaf);   // V3.04 (N47): the leaf and its panels one draw
   // the window: white frame, glass, a sill, the view out
   const white = reg(new THREE.MeshStandardMaterial({ color: "#f1efe9", roughness: 0.45 }));
   const fw = 6, mid = (wx0 + wx1) / 2;
@@ -193,6 +193,8 @@ function buildShell() {
   const rug = new THREE.Mesh(new THREE.BoxGeometry(rugW * M, 0.008, rugD * M),
     [0, 1, 2, 3, 4, 5].map(i => i === 2 ? reg(new THREE.MeshStandardMaterial({ map: RUG_TEX, roughness: 0.97, bumpMap: PILE, bumpScale: 0.35 }))
                                         : reg(new THREE.MeshStandardMaterial({ color: RG.cols[3], roughness: 1 }))));
+  { const G = rug.geometry, ix = Array.from(G.index.array); G.setIndex([...ix.slice(0, 12), ...ix.slice(18), ...ix.slice(12, 18)]);   // V3.04 (N47): its sides one draw, the top one (it was six)
+    G.clearGroups(); G.addGroup(0, 30, 0); G.addGroup(30, 6, 2); }
   rug.position.y = 0.004; rug.rotation.y = Math.PI; rug.receiveShadow = true; rugMesh = rug;
   { const g = new THREE.Group(); g.add(rug);
     movable("rug", "Rug", g, () => ({ x: (RG.x[0] + RG.x[1]) / 2, z: (RG.z[0] + RG.z[1]) / 2, rot: 0 }), rugW, rugD, [], true); }
@@ -201,12 +203,12 @@ function buildShell() {
   // "hessian curtains from dunelm with a wood rail": a coarse natural weave, on a 28 mm wooden pole with rings and ball finials
   const CU = R.CURTAIN, cloth = curtCloth = reg(new THREE.MeshStandardMaterial({ color: CU.col, roughness: 1, side: THREE.DoubleSide, map: HESSIAN, bumpMap: HESSIAN, bumpScale: 0.8 }));
   const wood = reg(new THREE.MeshStandardMaterial({ color: CU.pole_col, map: OAK_TEX, roughness: 0.5 }));  wood.userData.noTint = true;   // v26: yours, not the new oak
-  const poleL = wx1 - wx0 + 2 * CU.ext, pole = new THREE.Mesh(new THREE.CylinderGeometry(CU.pole / 2 * M, CU.pole / 2 * M, poleL * M, 16), wood);
-  pole.rotation.z = Math.PI / 2; pole.position.copy(v3((wx0 + wx1) / 2, CU.rail_y + CU.pole / 2, CU.z + 1)); shell.add(shadow(pole));
+  const poleL = wx1 - wx0 + 2 * CU.ext, pq = v3((wx0 + wx1) / 2, CU.rail_y + CU.pole / 2, CU.z + 1);   // V3.04 (N47): the pole and its finials one draw
+  bucket(new THREE.CylinderGeometry(CU.pole / 2 * M, CU.pole / 2 * M, poleL * M, 16).rotateZ(Math.PI / 2).translate(pq.x, pq.y, pq.z), wood);
   for (const xf of [wx0 - CU.ext - CU.finial / 2, wx1 + CU.ext + CU.finial / 2]) {
-    const f = new THREE.Mesh(new THREE.SphereGeometry(CU.finial / 2 * M, 16, 12), wood); f.position.copy(v3(xf, CU.rail_y + CU.pole / 2, CU.z + 1)); shell.add(shadow(f));
+    const q = v3(xf, CU.rail_y + CU.pole / 2, CU.z + 1); bucket(new THREE.SphereGeometry(CU.finial / 2 * M, 16, 12).translate(q.x, q.y, q.z), wood);
   }
-  { const rings = [];                                                     // rings, one every 10 cm (v22: one mesh)
+  { const rings = [];                                                     // rings, one every 10 cm (v22: one mesh; no shadows, so their own)
     for (let x = wx0 - CU.ext + 3; x < wx1 + CU.ext - 2; x += 10) {
       const g = new THREE.TorusGeometry(0.02, 0.0035, 6, 16); g.rotateY(Math.PI / 2); const q = v3(x, CU.rail_y + CU.pole / 2, CU.z + 1); g.translate(q.x, q.y, q.z); rings.push(g); }
     shell.add(new THREE.Mesh(mergeGeometries(rings), wood)); }
@@ -226,7 +228,7 @@ function buildShell() {
   curtOpen.add(panel(wx0 - CU.ext, CU.stack, CU.folds), panel(wx1 + CU.ext - CU.stack, CU.stack, CU.folds));
   const half = (wx1 - wx0) / 2 + CU.ext;
   curtShut.add(panel(wx0 - CU.ext, half, CU.folds * 2.2), panel(wx0 - CU.ext + half, half, CU.folds * 2.2));
-  shell.add(curtOpen, curtShut);
+  shell.add(mergeStatic(curtOpen), mergeStatic(curtShut));   // V3.04 (N47): each pair one draw
   // shelf B: the client's 2 m black floating shelf on the stairs wall
   const sb = R.SHELF_B, black = shelfMat = reg(new THREE.MeshStandardMaterial({ color: "#1a1a1b", map: BLANK, roughness: 0.55 }));
   cube(Wd - sb.d, sb.top - sb.t, sb.z[1], sb.d, sb.t, sb.z[0] - sb.z[1], black);
@@ -338,6 +340,7 @@ function buildStairs() {
   solid([[zl - nose, top - tb], [zl1, top - tb], [zl1, top], [zl - nose, top]], sx0, sx1, oak);   // the landing's boards
   const pitch = z => r + (z - z0) / gq * r, zf = z0 + (21 - r) / r * gq;   // the string: 24 deep along the pitch line, capped 3 over it
   solid([[z0, 0], [zf, 0], [zl, top - 21], [zl1, top - 21], [zl1, top + 3], [zl, top + 3], [z0, pitch(z0) + 3]], sx0 - 2.2, sx0 - 0.2, str);
+  mergeStatic(g);   // V3.04 (N47): the treads and the landing's boards one draw (they were 13)
 }
 /* v40: the flip-top's chair cupboard, its hooks and the fold-down seat are gone (never shown since the dining cabinet became the only
    table in v33; the code is in git history, v40) */

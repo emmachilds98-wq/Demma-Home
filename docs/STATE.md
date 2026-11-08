@@ -3,10 +3,10 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V3.12 (8 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
-The version in Plan is a refresh button ("V3.12 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V3.13 (8 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
+The version in Plan is a refresh button ("V3.13 ↻"): on the home-screen app, tap it to get the newest.
 
-**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N46 done V3.04, N48 V3.05, N50 V3.06, N52 V3.07; section 13's N53 V3.08, N54 V3.09, N49 V3.10, N51 V3.11, N55 V3.12; N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
+**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N46 done V3.04, N48 V3.05, N50 V3.06, N52 V3.07; section 13's N53 V3.08, N54 V3.09, N49 V3.10, N51 V3.11, N47 V3.12, N55 V3.13; N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
 On a weak signal the page opens from the device after 2 s (V3.00, N43, `sw.js`): the new copy is saved for next time, and the version button shows it. The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 
 ## Where it lives
@@ -52,7 +52,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   the wheel walks (Ctrl + wheel the lens), a double-click or double-tap walks you to a spot, Mouse look (M) on a computer. The eye is
   solid to walls and furniture; doors open with a tap and stay as left (this device). A shut door opens as you walk up to it, but the bin cupboards' (V2.99: they met across the porch as a second front door). `?room` opens the living room.
   Back (the phone's swipe, the browser's) from a room brings you out to the house, one step whatever rooms you went through (V2.96, N39, `roomHist`).
-- **Over the house and a room's Above (V3.08 N53, V3.12 N55, `19_view_controls.js`):** Outside, Angled, Overhead and each room's Above (the living room's too) move as a map, on a phone and a PC alike: one
+- **Over the house and a room's Above (V3.08 N53, V3.13 N55, `19_view_controls.js`):** Outside, Angled, Overhead and each room's Above (the living room's too) move as a map, on a phone and a PC alike: one
   finger or a left-drag moves the ground (the spot touched stays under the finger; a flick glides on); two fingers pinch to zoom and
   twist to turn round the spot between them, and in Angled slide up or down together to tilt; the wheel zooms to the pointer; a
   right-drag (or Shift + drag) turns and tilts round the middle. Angled 10°–85° above the ground; Overhead stays flat. The point looked
@@ -130,6 +130,9 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   on each of its two targets; normals worked out from it), not a second draw of the scene for normals: HD's draws about halved (the house
   365 to 190 on an RTX, 365 to 190 on an iPhone with the shade; the living room 749 to 387, 504 to 264), 126 fewer shaders; the cutaway
   cuts it as drawn, and the old pass's black patches at the floor's cut edges are gone.
+- **Fewer draws for the living room (V3.12, N47):** its fixed parts one draw a material (`04_living_shell.js` `bucket`: walls, ceiling,
+  pole; the stairs' treads, the door leaf, the curtains, the rug's sides; `05` the cabinet's carcasses, chairs, table halves, buttons).
+  A frame standing in it 246 to 235 (phone), 260 to 249 (iPhone), 387 to 373 (RTX); from above 444 to 376; at the table for six 275 to 167.
 - **Quality:** a real graphics card opens in HD and never steps down (V2.25); iPhones start in HD at 2× and step down only if slow, always through the composer (the shade off never rebuilds a shader; a slow one leaves it out while you drag; the house's materials always carry 6 cutting planes, `houseClip`, so a floor's or a room's cut builds no shaders; the start and the rooms' warm-up (`warmSwitch`) compile by cutting planes, in parallel, `compileClipped`, V2.64); View →
   More has HD or Fast. In HD each room is lit by its ceiling light and its windows' daylight, with soft shadows and ambient occlusion; by evening the
   lamps the client has light theirs too (the office's purple lamp, the bathroom mirror's bar; V2.48), the kitchen from its two LED battens. Every standing piece
@@ -197,7 +200,7 @@ Quality is under View → More (HD or Fast). Measure's Send carries the speed (V
 
 ## Numbers (V2.74, software graphics in CI's browser: relative, not a real card's; from #131)
 - `sizes`: page 1.0 MB (V2.80), photos 8.6 MB in 72 files (2.3 MB at half size; V2.82, was 11.4 and 3.4), three.js 0.86 MB.
-- Shaders by the first picture: 18–19 (Fast), 49 (HD). Draws: the house 188 (HD on an RTX: 190; V3.04), the living room 254–387 by path.
+- Shaders by the first picture: 18–19 (Fast), 49 (HD). Draws: the house 188 (HD on an RTX: 190; V3.04), the living room 235–373 by path (V3.12).
 - The repo: 371 files, 59 MB tracked (31 MB the client's photos); `checks.py`'s repo check fails on a build output or a file over 1.5 MB.
 
 ## Open with the client
