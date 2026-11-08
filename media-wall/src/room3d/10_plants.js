@@ -2,14 +2,14 @@
    Client: "more HD realistic plants". Every leaf is a shaped mesh (a grid along its outline, folded on the midrib and curled to the tip)
    with a painted texture (midrib, veins, variegation) and its own shade of green; six kinds suit the room's spots. Each group's leaves
    merge into one mesh a material and its pots into one a finish, so a shelf of plants is a handful of draw calls. */
-const FLORA_KINDS = {     // outline (half-width over the length, a fraction of it), texture, roughness, cut-outs
-  pothos: { w: t => 0.44 * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.62)), 0.7) + (t < 0.1 ? 0.06 : 0), rough: 0.55 },
-  snake: { w: t => 0.075 * (1 - Math.pow(t, 4)) * (0.75 + 0.25 * Math.sin(Math.PI * t)) + 0.004, rough: 0.5, rows: 12 },
-  monstera: { w: t => 0.44 * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.8)), 0.8) + 0.02, rough: 0.34, cut: true },
-  fern: { w: t => 0.15 * Math.sin(Math.PI * Math.min(1, t * 1.05)) + 0.01, rough: 0.7, cut: true, rows: 12 },
-  spider: { w: t => 0.035 * (1 - t * t) + 0.003, rough: 0.6, rows: 12 },
-  calathea: { w: t => 0.3 * Math.pow(Math.sin(Math.PI * t), 0.9) + 0.01, rough: 0.48 },
-  ficus: { w: t => 0.3 * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.9)), 0.8) + 0.01, rough: 0.3 },
+const FLORA_KINDS = {     // outline (half-width over the length, a fraction of it), texture, cut-outs
+  pothos: { w: t => 0.44 * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.62)), 0.7) + (t < 0.1 ? 0.06 : 0) },
+  snake: { w: t => 0.075 * (1 - Math.pow(t, 4)) * (0.75 + 0.25 * Math.sin(Math.PI * t)) + 0.004, rows: 12 },
+  monstera: { w: t => 0.44 * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.8)), 0.8) + 0.02, cut: true },
+  fern: { w: t => 0.15 * Math.sin(Math.PI * Math.min(1, t * 1.05)) + 0.01, cut: true, rows: 12 },
+  spider: { w: t => 0.035 * (1 - t * t) + 0.003, rows: 12 },
+  calathea: { w: t => 0.3 * Math.pow(Math.sin(Math.PI * t), 0.9) + 0.01 },
+  ficus: { w: t => 0.3 * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.9)), 0.8) + 0.01 },
 };
 function leafTexture(kind) {         // u across the leaf (0 and 1 its edges, 0.5 the midrib), v from stem (0) to tip (1)
   const W = 256, H = 512;
@@ -73,7 +73,7 @@ const FLORA = new Map(), ATLAS_KINDS = ["pothos", "snake", "monstera", "fern", "
 let FLORA_ATLAS = null;
 function floraAtlas() {
   if (FLORA_ATLAS) return FLORA_ATLAS;
-  const tex = canvasTex(1024, 1024, (g, w, h) => {
+  const tex = canvasTex(1024, 1024, g => {
     ATLAS_KINDS.forEach((k, i) => { const t = leafTexture(k); g.drawImage(t.image, (i % 4) * 256, (1 - Math.floor(i / 4)) * 512); t.dispose(); });
     g.fillStyle = "#d9d9d4"; g.fillRect(768, 256, 256, 256);                                 // the stalks (their colour is per vertex)
     g.drawImage(SOIL_TEX.image, 768, 0, 256, 256);
