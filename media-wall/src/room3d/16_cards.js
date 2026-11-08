@@ -71,7 +71,7 @@ function hcatCard(id) {
    carries the choice, so a new choice starts unticked. Costs E: typical UK retail and trade prices, Nov 2026, a room's floor by its area */
 const UPC = { walls: [40, 80], wall: [15, 35], ceil: [20, 40], skirt: [15, 35], bulbs: [10, 30], rug: [40, 160], curt: [30, 100], bed: [25, 70], pic: [15, 60],
   frames: [150, 600], door_out: [30, 150], door: [150, 500], window: [400, 1500],
-  floor: { carpet_grey: [20, 45], carpet: [20, 45], laminate: [20, 40], oak: [50, 90], pine: [30, 60], tile_f: [35, 70], marble: [80, 150], quarry: [45, 85] },   // a m², laid
+  floor: { carpet_grey: [20, 45], carpet: [20, 45], laminate: [20, 40], oak: [50, 90], pine: [30, 60], tile_f: [35, 70], marble: [80, 150], quarry: [45, 85], herring: [70, 115], lvt_grey: [45, 75], porcelain: [60, 110] },   // a m², laid (N56: fit.SOURCES upfloors)
   fit: { bare: [5, 15], drum: [20, 60], globe: [25, 70], dome: [15, 45], spots: [40, 120] },
   kind: { bed: [200, 550], wardrobe: [150, 450], chest: [60, 220], bedside: [30, 100], desk: [60, 220], shelves: [40, 160], seat: [100, 350], plant: [10, 45], more: [25, 120] },
   plant: { plant: [35, 90], snake: [15, 40], monstera: [30, 90], olive: [60, 160] },   // N40: each plant in its pot, as big as the catalogue's

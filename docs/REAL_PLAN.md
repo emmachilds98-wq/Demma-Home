@@ -305,3 +305,14 @@ merge (merge `main` in, renumber, `checks.py --quick`, `build.py --fast`, push, 
 just before merging). N31 when the client says yes, from #133's branch (merge `main` into it first).
 **With the client:** KTX2 yes or no; the kitchen's door (is there one?); the living room door's width; dark panels or the cream; a
 microwave photo. N50 replaces the `?perf` screenshots.
+
+## 14. Finishes and furniture (8 Nov 2026, V3.13): one thread, a task a PR
+
+The client, 8 Nov 2026: "Then continue improving flooring, wall and furniture upgrades." One thread, in turn; each its own files. The
+living room's layout (shelves, records) and the house's lighting are other threads' this round.
+
+| # | Task | Aim | Owns | After | Status |
+|---|---|---|---|---|---|
+| N56 | Upgrade floors to try: herringbone oak, grey oak LVT, stone porcelain in a floor's card, each a real product's size, made here from the oak veneer's grain; costs a m² | Quality | `house/textures/build_textures.py` (`floors`, `TILED`), the new textures, `23_finish.js` `FIN_FLOORS`, `16_cards.js` `UPC.floor`, `fit.SOURCES upfloors` | | Done V3.14 |
+| N57 | Walls: panelling to try (a wall's card): shaker or slatted panels to a real product's size, in the wall's paint, round doors and windows | Quality | `23_finish.js`, `16_cards.js` `UPC`, `fit.SOURCES` | N56 | Open |
+| N58 | Furniture: the house's pieces nearer their photos (softer cushions, real legs and handles where they are boxes) | Quality | `08_house_catalogue.js`, `house/model.py` (pieces only) | N56 | Open |

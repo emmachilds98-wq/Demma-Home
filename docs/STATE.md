@@ -3,10 +3,10 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V3.13 (8 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
-The version in Plan is a refresh button ("V3.13 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V3.14 (8 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
+The version in Plan is a refresh button ("V3.14 ↻"): on the home-screen app, tap it to get the newest.
 
-**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N46 done V3.04, N48 V3.05, N50 V3.06, N52 V3.07; section 13's N53 V3.08, N54 V3.09, N49 V3.10, N51 V3.11, N47 V3.12, N55 V3.13; N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
+**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N46 done V3.04, N48 V3.05, N50 V3.06, N52 V3.07; section 13's N53 V3.08, N54 V3.09, N49 V3.10, N51 V3.11, N47 V3.12, N55 V3.13; section 14: N56 V3.14; N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
 On a weak signal the page opens from the device after 2 s (V3.00, N43, `sw.js`): the new copy is saved for next time, and the version button shows it. The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 
 ## Where it lives
@@ -69,6 +69,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   A room's floor card has The rug (V2.57, N5b: row [18], laid by `finRugApply` at a standard size; the living room's is its `S.decor.rug`).
   A wall's card has The curtains (V2.59, N5c: row [19], `finCurtApply` at the room's windows from `R.HOUSE3.windows_in`;
   the living room's is its `S.decor.curtains`).
+  The floor's card has three upgrades to try (V3.14, N56): Herringbone oak, Grey oak LVT, Stone porcelain, each a real product's size
+  (`fit.SOURCES upfloors`), made by `build_textures.py --floors` / `tiles`, a cost a m² in Changes.
   A bed's duvet and pillows take The bedding (V2.61, N5d: row [20], palette slot 5; their room found in the house's frame,
   `FIN.inv`, so the master's lifting lid keeps it).
   A wall's card has A picture (V2.63, N5e: rows [21] the print, [22] the wall, `finPicApply`; a 52 × 72 RIBBA frame, 150 cm up).

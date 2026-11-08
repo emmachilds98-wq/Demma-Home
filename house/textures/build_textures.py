@@ -195,7 +195,8 @@ def rough():
 # bevel mm, the face's look, face and grout roughness, every other row along by (V2.40: the bathroom's photo: its wall tiles stacked)
 TILED = {"marble": (1.2, 1024, (60, 60), "#141416", "#38383c", 2, 1, "veins", (0.1, 0.8), 0),
          "stone": (1.2, 1024, (60, 30), "#cbc6bd", "#9d978c", 2.5, 1, "stone", (0.4, 0.85), 0),
-         "metro": (0.4, 512, (20, 10), "#131416", "#c9c5bd", 2, 5, "", (0.06, 0.85), 0.5)}
+         "metro": (0.4, 512, (20, 10), "#131416", "#c9c5bd", 2, 5, "", (0.06, 0.85), 0.5),
+         "porcelain": (2.4, 1024, (120, 60), "#d6d0c4", "#b8b1a4", 2, 0.5, "lime", (0.5, 0.85), 0.5)}   # V3.14 (N56): an upgrade floor
 
 
 def fbm(px, seed, base=4, octaves=5, stretch=1):
@@ -236,6 +237,11 @@ def tiles():
             ln = (1 - np.abs(st * 2 - 1)) ** 12 * np.clip((sh(fbm(px, 23, 3, 4, 8)) - 0.35) * 2.5, 0, 1)   # and thin darker veins in them
             k = 1 + (st - 0.5) * 0.15 + (m - 0.5) * 0.05 + ((ti % 5) - 2) * 0.015 - ln * 0.14
             col_ = c0[None, None] * k[..., None]; h = h + np.where(inG, 0, (m - 0.5) * 0.02)
+        elif look == "lime":                                                   # V3.14: a limestone print: soft clouds, fine specks, each tile its own
+            yi, xi = np.mgrid[0:px, 0:px]; sh = lambda f: f[(yi + (ti * 131).astype(int)) % px, (xi + (ti * 57).astype(int)) % px]
+            m, f2, sp = sh(fbm(px, 61, 3, 6)), sh(fbm(px, 62, 8, 4)), sh(fbm(px, 63, 64, 2))
+            k = 1 + (m - 0.5) * 0.09 + (f2 - 0.5) * 0.04 - np.clip(sp - 0.82, 0, 1) * 0.6 + ((ti % 5) - 2) * 0.01
+            col_ = c0[None, None] * k[..., None]
         else:
             col_ = c0[None, None] * (0.97 + 0.06 * fbm(px, 31, 4, 3))[..., None]
         gc = np.array([int(grout[i:i + 2], 16) for i in (1, 3, 5)], np.float32)
@@ -293,6 +299,61 @@ def finishes():
     (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
 
 
+# V3.14 (N56): three upgrade floors to try (23_finish.js FIN_FLOORS), made here from the oak veneer's own grain (no download), drawn to
+# real products' sizes (fit.SOURCES "upfloors"): key: (texture's size m, px, kind, block or plank w × l cm, tone (sat, bright, warm))
+# herring: 90 × 450 engineered oak blocks, 4V bevelled, laid herringbone at 45° (repeats every 2 × 9 × 5 × √2 cm along both ways);
+# lvt_grey: grey oak LVT planks 17.8 wide, micro-bevelled, ends staggered (each 124.6 long, 2% over 121.9, so the picture repeats in 7 rows);
+# porcelain (in TILED): 120 × 60 stone-effect porcelain, 2 mm grout, half-bond
+UPFLOORS = {"herring": (2 * 0.09 * 5 * 2 ** 0.5, 1024, "herring", (9, 45), (0.7, 1.12, -4)),
+            "lvt_grey": (7 * 0.178, 1024, "planks", (17.8, 124.6), (0.12, 1.12, -6))}
+
+
+def floors():
+    """python3 house/textures/build_textures.py --floors   writes <key>_map, _nor and _rough.jpg for UPFLOORS from oak_map (ours)"""
+    import numpy as np
+    meta = json.loads((HERE / "textures.json").read_text())
+    src = np.asarray(Image.open(HERE / "oak_map.jpg").convert("RGB"), np.float32)   # 1 m of veneer, the grain down the picture
+    sp = src.shape[0] / 100.0                                                         # its px a cm
+    for key, (size, px, kind, (bw, bl), (sat, bri, warm)) in UPFLOORS.items():
+        rng = np.random.default_rng(len(key) * 7)
+        cm = size * 100 / px
+        y, x = np.mgrid[0:px, 0:px].astype(np.float32) * cm
+        if kind == "herring":                                                         # in blocks' widths, turned 45°: rows of steps
+            a, b = (x + y) / 2 ** 0.5 / bw, (y - x) / 2 ** 0.5 / bw; n = bl / bw
+            bid, u, v = np.full(x.shape, -1, np.int64), np.zeros_like(x), np.zeros_like(x)   # which block, along it and across it (cm)
+            for m in range(-12, 13):                                                  # (k % 2n, m % 2) names a block within the repeat
+                qa, qb = a - m * n, b + m * n
+                k = np.floor(qb); hit = (bid < 0) & (qa >= k) & (qa < k + n)          # a block along a: [k, k+n] × [k, k+1]
+                bid = np.where(hit, ((k % (2 * n)) * 4 + (m % 2) * 2).astype(np.int64), bid); u = np.where(hit, (qa - k) * bw, u); v = np.where(hit, (qb - k) * bw, v)
+                k = np.floor(qa) - n; hit = (bid < 0) & (qb >= k + 1 - n) & (qb < k + 1)   # one across: [k+n, k+n+1] × [k+1-n, k+1]
+                bid = np.where(hit, ((k % (2 * n)) * 4 + (m % 2) * 2 + 1).astype(np.int64), bid); u = np.where(hit, (qb - (k + 1 - n)) * bw, u); v = np.where(hit, (qa - k - n) * bw, v)
+            idx = bid                                                                 # a block a repeat away is the same one: (its step mod 2n, its row mod 2, which way)
+        else:                                                                         # planks along y, rows across x, ends staggered
+            row = np.floor(x / bw); u0 = (y + (row * 0.37 % 1) * bl) % bl
+            idx = row.astype(np.int64); u, v = u0, x - row * bw
+        nb = int(idx.max()) + 1
+        ox, oy, kk = rng.random(nb) * (100 - bw), rng.random(nb) * 100, 0.86 + 0.28 * rng.random(nb)   # each its own run of the veneer, a shade apart
+        sx = ((ox[idx] + v) * sp).astype(int) % src.shape[1]; sy = ((oy[idx] + u) * sp).astype(int) % src.shape[0]
+        col = src[sy, sx] * kk[idx][..., None]
+        g = col.mean(-1, keepdims=True); col = g + (col - g) * sat                     # the finish's colour: oiled natural, or grey
+        col = col * bri + np.array([warm, warm * 0.3, -warm], np.float32)
+        if kind == "planks": col = col * 0.55 + np.array([150, 146, 140], np.float32) * 0.45   # a grey wash over the grain (LVT's print)
+        d = np.minimum(np.minimum(u, bl - u), np.minimum(v, bw - v))                    # to the block's nearest edge (cm)
+        bev = 0.25 if kind == "herring" else 0.12                                       # 4V; LVT's micro-bevel
+        e = np.clip(d / bev, 0, 1); col = col * (0.62 + 0.38 * e)[..., None]
+        gr = (src[sy, sx].mean(-1) / 255)                                               # the grain's relief (brushed): darker sinks
+        h = (1 - (1 - e) ** 2) * 0.1 + gr * 0.02
+        gy, gx = np.gradient(h, cm)
+        nrm = np.dstack([-gx, gy, np.ones_like(h)]); nrm /= np.linalg.norm(nrm, axis=-1, keepdims=True)
+        r = np.where(e < 1, 0.8, 0.55 if kind == "herring" else 0.45) + (gr - 0.5) * 0.1
+        Image.fromarray(np.clip(col, 0, 255).astype("uint8")).save(HERE / f"{key}_map.jpg", quality=84, optimize=True)
+        Image.fromarray(((nrm + 1) * 127.5).clip(0, 255).astype("uint8")).save(HERE / f"{key}_nor.jpg", quality=86, optimize=True)
+        Image.fromarray((np.clip(r, 0, 1) * 255).astype("uint8")).resize((px // 2,) * 2, Image.BOX).save(HERE / f"{key}_rough.jpg", quality=86)
+        meta[key] = dict(asset="made by build_textures.floors (from oak_veneer_01)", size=round(size, 4), url="", licence="ours")
+        print("floors", key, nb, "pieces")
+    (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
+
+
 def share(meta):
     """V2.81 (N32): a picture an earlier key has already (the two carpets' pile, the pines' relief) goes once: the later key drops its copy
     and says like=<key> (export3d reads that key's file for any it lacks; only when it lacks nothing else that key has); then textures.json"""
@@ -320,4 +381,4 @@ def slim():
 
 
 if __name__ == "__main__":
-    {"--buff": buff, "--rough": rough, "--tiles": tiles, "--finishes": finishes, "--slim": slim}.get((sys.argv[1:] or [""])[0], lambda: main(sys.argv[1]))()
+    {"--buff": buff, "--rough": rough, "--tiles": tiles, "--finishes": finishes, "--floors": floors, "--slim": slim}.get((sys.argv[1:] or [""])[0], lambda: main(sys.argv[1]))()
