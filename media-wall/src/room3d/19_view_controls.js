@@ -8,7 +8,7 @@
    the ground (no room there) centres it */
 const mapMode = () => walking() ? null : S.view === "house" ? (hfview === "top" ? "top" : "angle")   // V3.09: a room's Above too (the living room's is at an angle)
   : ROOMV() && RMODE === "above" ? "top" : S.view === "room" ? "angle" : null;
-/* V3.14: the rest of the views from above (a room's On its own, the living room's own, Bird's eye, Dolls' house): the keys and the stick glide
+/* V3.15: the rest of the views from above (a room's On its own, the living room's own, Bird's eye, Dolls' house): the keys and the stick glide
    there too (they stepped a key's repeat at a time); the orbit keeps its drags */
 const freeMode = () => !walking() && !mapMode() && !eyeView() && !!VIEWS[S.view] ? "free" : null;
 const MAP_POLAR = { top: [0.003, 0.003], angle: [5 * Math.PI / 180, 80 * Math.PI / 180] };   // from straight up: Angled 85° to 10° above the ground
@@ -37,7 +37,7 @@ const MAPK = new Map(), MAPONCE = new Set(), MAP_KEYS = Object.assign({}, WALK_K
 let mapT = 0, mapFast = false;
 function mapKeys(m) {
   const now = performance.now(), dt = Math.min(0.1, (now - (mapT || now)) / 1000); mapT = now;
-  const [sx, sy] = WALK.stick, stk = sx * sx + sy * sy > 0.004;   // V3.14: the phone's stick, as far as it's pushed
+  const [sx, sy] = WALK.stick, stk = sx * sx + sy * sy > 0.004;   // V3.15: the phone's stick, as far as it's pushed
   if ((!MAPK.size && !MAPONCE.size && !stk) || !m || tween) { MAPONCE.clear(); return false; }
   if (typeof PRE !== "undefined") PRE.idleT = now;   // the warm-up waits while you move
   const cam = camera.position, t = controls.target, k = Math.max(dt, MAPONCE.size ? 0.08 : 0) * (mapFast ? 2.5 : 1), on = c => MAPK.has(c) || MAPONCE.has(c) ? 1 : 0;

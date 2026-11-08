@@ -299,10 +299,21 @@ merge (merge `main` in, renumber, `checks.py --quick`, `build.py --fast`, push, 
 | N53 | Overhead and Angled as a map on a phone and a PC (the client, 8 Nov: "When in overhead and angled views it has strange movement too on mobile and pc. Not intuitive"): one finger or a left-drag moves the ground under it (no swing, no lag, a flick glides), two fingers pinch, twist and (Angled) tilt, the wheel zooms to the pointer, a right-drag turns and tilts | UX | `19_view_controls.js` | | Done V3.08 |
 | N54 | The PC as smooth as the phone into a room (the client, 8 Nov: "optimise the pc version as much as the mobile version"): count the shaders built on the spot on the RTX path from the house into its floors, the living room and the rooms; warm what's missing off screen; a site check on both HD paths | Speed (PC, iPhone) | `14_views_walk.js` (`warmHouse`, `warmAt`), `roomEnv` in `12_furniture_options.js`, `tools/check_site.py` (`SPOT`), `shaders_spot` in `tools/perf_budget.json` | | Done V3.09: the journey 88 to 2 (PC), 42 to 2 (iPhone); the living room from the house 58 to 0 |
 | N55 | A room's Above as a map too (after N53, the same drags as the house's views; the living room's Above at an angle, a finger on a sticker still drags) | UX | `19_view_controls.js` | N53 | Done V3.13 |
-| N56 | The stick in every view on a phone (the client, 8 Nov: "add the joystick to all views for mobile movement and make sure pc movement is still optimised"): the map's views move with it, a view from your eyes stands you there, the rest glide; the PC's held keys glide in those too | UX | `14_views_walk.js`, `19_view_controls.js` | N55 | Done V3.14 |
+| N59 | The stick in every view on a phone (the client, 8 Nov: "add the joystick to all views for mobile movement and make sure pc movement is still optimised"): the map's views move with it, a view from your eyes stands you there, the rest glide; the PC's held keys glide in those too | UX | `14_views_walk.js`, `19_view_controls.js` | N55 | Done V3.15 |
 | N31 | KTX2 photos (#133): on the client's yes, the workflow builds basisu 1.16.4 (commit 900e40fb5d25), the page's `KTX2Loader` with the JPEG fallback (NOTES §3), the tint kept at build; GPU memory and upload time before and after on the iPhone path; also `export3d.py`'s unused `A_*` and `BAR2` keys (NOTES §3) | Photos | `02_textures.js`, `export3d.py`, `vendor.py`, `house/textures/build_textures.py`, `.github/workflows/build.yml` | the client's yes | Waits on the client |
 
 **Order:** N46–N51 start together, a thread each; no file is shared but `tools/perf_budget.json` (each its own numbers: merge `main`
 just before merging). N31 when the client says yes, from #133's branch (merge `main` into it first).
 **With the client:** KTX2 yes or no; the kitchen's door (is there one?); the living room door's width; dark panels or the cream; a
 microwave photo. N50 replaces the `?perf` screenshots.
+
+## 14. Finishes and furniture (8 Nov 2026, V3.13): one thread, a task a PR
+
+The client, 8 Nov 2026: "Then continue improving flooring, wall and furniture upgrades." One thread, in turn; each its own files. The
+living room's layout (shelves, records) and the house's lighting are other threads' this round.
+
+| # | Task | Aim | Owns | After | Status |
+|---|---|---|---|---|---|
+| N56 | Upgrade floors to try: herringbone oak, grey oak LVT, stone porcelain in a floor's card, each a real product's size, made here from the oak veneer's grain; costs a m² | Quality | `house/textures/build_textures.py` (`floors`, `TILED`), the new textures, `23_finish.js` `FIN_FLOORS`, `16_cards.js` `UPC.floor`, `fit.SOURCES upfloors` | | Done V3.14 |
+| N57 | Walls: panelling to try (a wall's card): shaker or slatted panels to a real product's size, in the wall's paint, round doors and windows | Quality | `23_finish.js`, `16_cards.js` `UPC`, `fit.SOURCES` | N56 | Open |
+| N58 | Furniture: the house's pieces nearer their photos (softer cushions, real legs and handles where they are boxes) | Quality | `08_house_catalogue.js`, `house/model.py` (pieces only) | N56 | Open |

@@ -216,7 +216,7 @@ def edit_drag(pg, w):
 
 
 def stick_all(pg, w):
-    """V3.14: the phone's stick in every view: over the house it moves the map, in a room's Above too, in its In it it stands you there"""
+    """V3.15: the phone's stick in every view: over the house it moves the map, in a room's Above too, in its In it it stands you there"""
     out, at = [], "() => { const t = R3D._dbg.controls.target, s = document.querySelector('.r3d-stick'); return [t.x, t.z, getComputedStyle(s).display, R3D._dbg.RMODE]; }"
     for how, go in (("the house", "R3D.set({ view: 'house' })"), ("the hall's Above", "R3D.set({ view: 'hall' }); setTimeout(() => document.querySelector('[data-rmode=above]').click(), 1500)"),
                     ("the hall's In it", "document.querySelector('[data-rmode=in]').click()")):

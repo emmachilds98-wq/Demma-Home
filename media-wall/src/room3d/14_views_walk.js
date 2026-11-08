@@ -323,7 +323,7 @@ function walkTick(dt) {
   if (WALK.v.lengthSq() < 1e-5 && !turn) { if (WALK.feet === null) WALK.feet = camera.position.y / M - STAND_EYE; return false; }
   return walkMove(WALK.v.x, WALK.v.y, turn, dt);
 }
-/* V1.32: the phone's stick (bottom left): drag it the way to go. V3.14, the client: "add the joystick to all views for mobile movement":
+/* V1.32: the phone's stick (bottom left): drag it the way to go. V3.15, the client: "add the joystick to all views for mobile movement":
    walking it walks you; over the house, a floor and a room's Above it moves the map (19_view_controls.js mapKeys); in a view from your
    eyes it stands you there and walks on */
 const COARSE = !!(window.matchMedia && matchMedia("(pointer: coarse)").matches);
@@ -349,7 +349,7 @@ document.addEventListener("pointerlockchange", () => { const on = mlookOn(); roo
   if (on) toast("Mouse look: move to look, W A S D to walk, click to open, Esc to stop"); });
 addEventListener("mousemove", e => { if (mlookOn() && (e.movementX || e.movementY)) lookTurn(-e.movementX, -e.movementY); });
 function syncStick() {
-  const on = RMODE === "stand" && !!ROOMV() || S.view === "livstand"; STICK.hidden = !COARSE; root.classList.toggle("walking", on && COARSE);   // V3.14: the stick in every view
+  const on = RMODE === "stand" && !!ROOMV() || S.view === "livstand"; STICK.hidden = !COARSE; root.classList.toggle("walking", on && COARSE);   // V3.15: the stick in every view
   if (MLOOK) MLOOK.hidden = COARSE || !on; if (!on && mlookOn()) document.exitPointerLock();
   if (on && !WALK.hinted) { WALK.hinted = true;   // V2.42: each visit (it was once ever), the keys as they are
     setTimeout(() => toast(COARSE ? "Walk with the stick, drag to look" : "W S walk · ← → turn · A D step aside · drag or M to look · double-click a floor to go there"), 700); }
@@ -453,7 +453,7 @@ function goStand(x, fy, z, look, dur) {      // Be there at (x, z) on the floor 
   else { standSpot = [x, z, dx, dz, dur]; if (S.view !== v) setView(v); setRmode("stand"); }
   walked = true; dirty(); return true;
 }
-/* V3.14: a view from your own eyes (a room's In it, the living room's From the sofa, the window ...): a walk key or the stick stands you there */
+/* V3.15: a view from your own eyes (a room's In it, the living room's From the sofa, the window ...): a walk key or the stick stands you there */
 const eyeView = () => (!!ROOMV() && RMODE === "in") || (!ROOMV() && !!VIEWS[S.view] && !VIEWS[S.view].above && S.view !== "house" && S.view !== "livstand");
 function startWalk() {                      // a walk key in a room's In it: stand where you are, then walk on
   if (!R.HOUSE3 || tween || !eyeView()) return false;
