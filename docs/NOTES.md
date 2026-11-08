@@ -62,9 +62,9 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   shader changes; JPEG fallback. The tint must stay at build (compressed textures can't be tinted on the page). Waits on Emma's OK.
 - **Lean code (N28, N41):** method: join the parts (`room3d_src.js()`), run ESLint 9 `no-unused-vars` on the one file (install ESLint
   in a scratch folder, not the repo), read each part, grep every name across `media-wall/src`, `tools`, `house`, `projects` (`R3D.*`
-  hooks are called by `shot3d.py` and `check_site.py`), prove with the gallery. Left: `growGlow` always [] (parts 12, 13), `MOV`'s unread
-  `flat`, the `S.cab === "sliding"` paths, `export3d.py`'s `A_*` `BAR2` keys, unused names in 04 (`aboveAll`, `recP`), 14 (`wheelAcc`),
-  16 and 20 (`sl`), 20 (`id`, `wcm`, a duplicate `collide` key).
+  hooks are called by `shot3d.py` and `check_site.py`), prove with the gallery. N48 (V3.05) cut 12, 13, 14, 16 and 20's;
+  `movable`'s `_flat` stays by place (04 and 07 pass it). Left: the `S.cab === "sliding"` paths in 05, 15 (`LOOK_STR`) and 19 (`d.cab`),
+  `export3d.py`'s `A_*` `BAR2` keys, 04's `aboveAll`, `recP` (N47).
 
 ## 4. The house beside its photos
 - `tools/compare.py` pairs a photo with a view (`PAIRS`; a second photo of a room is `<view>_<what>`, e.g. `hall_front`);

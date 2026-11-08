@@ -187,7 +187,8 @@ function preDraw() {                  // the frame before the first: the shadows
 }
 /* v40, client: "better rendering and graphics": ambient occlusion (three's GTAO), the soft shade where things meet. Always in the HD
    pictures; live in HD on a real graphics card (aoLive). With it the room draws into the composer's target (linear, tone-mapped at the
-   end), so the warm-up draws into a target of the same kind and the shaders match. */
+   end), so the warm-up draws into a target of the same kind and the shaders match. N46: the shade reads that target's depth
+   (cut by the cutaway as drawn) instead of drawing the scene a second time for its normals: HD's draws about halved */
 const AO = { c: null, g: null };
 /* v73 (B): if the house still runs under 25 frames a second in HD (the gaps while it moves), it drops its ambient occlusion and draws at
    1× (the living room keeps its HD); once, for this visit (?houselite forces it, for a check) */
@@ -205,13 +206,13 @@ const postLive = () => S.quality === "hd" && (BIG_GPU || GOOD_PHONE || /[?&]ao\b
 const aoLive = () => postLive() && (BIG_GPU || phoneAO || /[?&]ao\b/.test(location.search)) && !(houseLite && R.HOUSE3 && HOUSEV(S.view)) && !(dragLite() && lowRes);   // ?ao tries it anywhere; V2.64: a slow phone leaves the shade out while you drag, not the sharpness (no new buffers)
 function aoComposer(w, h, pr) {
   if (!AO.c) {
-    const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: SMALL ? (GOOD_PHONE ? 4 : 0) : 4 });   // anti-aliased, as on screen
-    AO.c = new EffectComposer(gl, rt); AO.c.addPass(new RenderPass(scene, camera));
-    AO.g = new GTAOPass(scene, camera, w, h); AO.g.blendIntensity = 0.9;
+    const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: SMALL ? (GOOD_PHONE ? 4 : 0) : 4, depthTexture: new THREE.DepthTexture(w, h) });   // anti-aliased, as on screen
+    AO.c = new EffectComposer(gl, rt); AO.c.renderTarget2.depthTexture = new THREE.DepthTexture(w, h);   // a depth of its own (a clone shares the first's GL texture)
+    AO.c.addPass(new RenderPass(scene, camera));
+    AO.g = new GTAOPass(scene, camera, w, h); AO.g.blendIntensity = 0.9; AO.g.setGBuffer(rt.depthTexture);   // N46: shades from the picture's own depth (normals from it), no second pass
     { const gs = AO.g.setSize.bind(AO.g); AO.g.setSize = (w_, h_) => LIVE ? gs(Math.ceil(w_ / 2), Math.ceil(h_ / 2)) : gs(w_, h_); }   // V2.30: the soft shade at half size while you look round (a quarter of its cost); the saved pictures at full
     AO.g.updateGtaoMaterial({ radius: 0.3, distanceExponent: 1.4, thickness: 1.2, scale: 1.1, samples: SMALL && !GOOD_PHONE ? 8 : 16, distanceFallOff: 1 });
     AO.g.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: SMALL && !GOOD_PHONE ? 8 : 16 });
-    clipMat(AO.g.normalMaterial);                                    // the cutaway cuts the depth it shades from, too
     AO.c.addPass(AO.g);
     // v48 §5, client: "improving the renders graphics and quality": a soft glow round what's brighter than white (the LED strips, the lamp's
     // shades, the lit spot heads, the screen), in HD on a real graphics card and in every saved picture; the phone's Fast view has none
@@ -224,7 +225,8 @@ function aoComposer(w, h, pr) {
 function draw() {                     // a frame: through the composer with AO, or straight to the screen
   if (postLive()) { const sz = gl.getSize(new THREE.Vector2()); if (!AO.c || AO.w !== sz.x || AO.h !== sz.y || AO.pr !== gl.getPixelRatio()) { aoComposer(sz.x, sz.y, gl.getPixelRatio()); AO.w = sz.x; AO.h = sz.y; AO.pr = gl.getPixelRatio(); }
     const glow = AO.b.enabled; if (dragLite() && lowRes) AO.b.enabled = false;   // V2.73 (N17): no glow on a phone while it moves (its 10 passes); back as it stops
-    AO.g.enabled = aoLive(); gl.info.autoReset = false; gl.info.reset(); AO.c.render(); gl.info.autoReset = true; AO.b.enabled = glow; }   // the count covers every pass
+    AO.g.enabled = aoLive(); if (AO.g.depthTexture !== AO.c.readBuffer.depthTexture) AO.g.setGBuffer(AO.c.readBuffer.depthTexture);   // the target the scene draws into this frame
+    gl.info.autoReset = false; gl.info.reset(); AO.c.render(); gl.info.autoReset = true; AO.b.enabled = glow; }   // the count covers every pass
   else gl.render(scene, camera);
 }
 function syncRig() {                  // each frame: a rigged light follows its owner, and leaves with it (a rebuilt cabinet)

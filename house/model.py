@@ -2220,13 +2220,13 @@ def wc(o):
     for za_, zb_ in ((tl["z"][0], zm - 0.3), (zm + 0.3, tl["z"][1])):
         for ya_, yb_ in ((tl["y"][0], ym - 0.3), (ym + 0.3, tl["y"][1])):
             o.box("tile_w", xe - 0.2, y + ya_, za_, xe + 0.6, y + yb_, zb_)
-    ra, rb = W["roll"]                                                                        # V3.04 (N49): in the back corner, over the pipe
+    ra, rb = W["roll"]                                                                        # V3.06 (N49): in the back corner, over the pipe
     o.box("chrome", xe, y + 92, ra, xe + 7, y + 94, rb)                                       # the roll holder
     ring = lambda cx_, cy_, r_, n=20: [(cx_ + r_ * math.cos(i * 2 * math.pi / n), cy_ + r_ * math.sin(i * 2 * math.pi / n)) for i in range(n)]
     o.prism("paper", "z", ra + 4, rb - 4, ring(xe + 5.8, y + 86.5, 5.5))                      # V2.22 (REAL_PLAN R4): a roll, round, under its bar
     o.item("wc.pipes", "The pipes", "wc", kind="fitting", src="client's photo", measure=False)
     o.prism("upvc", "x", 374.6 + 1, WIDTH - 1, [(zb + 1.5 + 1.6 * math.cos(i * math.pi / 6), y + 61.5 + 1.6 * math.sin(i * math.pi / 6)) for i in range(12)])   # the white pipes (V2.22: round)
-    o.lathe("upvc", W["riser_x"], y + 60, zb + 1.5, [(0, 0), (1.6, 0), (1.6, CEIL - 60), (0, CEIL - 60)])   # V3.04 (N49): up the right of the window to the ceiling
+    o.lathe("upvc", W["riser_x"], y + 60, zb + 1.5, [(0, 0), (1.6, 0), (1.6, CEIL - 60), (0, CEIL - 60)])   # V3.06 (N49): up the right of the window to the ceiling
     # V2.40 (REAL_PLAN R5, the photo of 30 Oct): the black pedal bin and the toilet brush in the corner by the basin's wall, a black mat round the pan
     o.item("wc.bin", "The pedal bin and brush", "wc", kind="decor", src="client's photo (30 Oct) + E (a 3 L pedal bin)", measure=False)
     bx_, bz_ = xe + 14, zb + 14
@@ -2303,7 +2303,7 @@ def pendants(o, floor):
         # V1.24 (Q6): turned, not boxes: a round ceiling rose, the flex, a lampholder and a pear-shaped bulb (E: a standard GLS, 60 dia.)
         o.lathe("upvc", px, y - 2, pz, [(0, 0), (4, 0), (5, 0.6), (5, 1.7), (0, 1.7)])
         if rid == "wc":                                            # its yellow drum shade with the white band (the photo)
-            # V3.04 (N49): 10 across and 22 down (the photo on its camera; was 15 and 28)
+            # V3.06 (N49): 10 across and 22 down (the photo on its camera; was 15 and 28)
             o.lathe("primrose", px, y - 26, pz, [(0, 0), (5, 0), (5, 20), (1.5, 20), (1.5, 22), (0, 22)])
             o.lathe("upvc", px, y - 20, pz, [(0, 0), (5.2, 0), (5.2, 6), (0, 6)])
         else:
