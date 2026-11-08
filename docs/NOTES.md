@@ -79,6 +79,11 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `movable`'s `_flat` stays by place (04 and 07 pass it). Left: the `S.cab === "sliding"` paths in 05, 15 (`LOOK_STR`) and 19 (`d.cab`),
   `export3d.py`'s `A_*` `BAR2` keys, 04's `aboveAll`, `recP` (N47).
 
+- **One light (N63):** to compare rooms' light, shoot each view (`R3D.set({view, tod, quality})`, 3.5 s) at 640 × 400 with the UI hidden
+  and take the mean grey: the rooms' own colours spread it about ±20, so look for a view outside that. A light that's always visible
+  (the sun, `skyFill`, `hemi`) can change intensity or colour freely (no shader); `visible` or a new light rebuilds them. In Fast the living
+  room has no window light, so `skyFill` (otherwise 0 there) fills it. After setting a light by hand, `dispatchEvent(new Event('resize'))` to redraw.
+
 ## 4. The house beside its photos
 - `tools/compare.py` pairs a photo with a view (`PAIRS`; a second photo of a room is `<view>_<what>`, e.g. `hall_front`);
   `tools/camfit.py` fits the camera. A sweep can't find the bathroom or the master: they need hand starts (`camfit.START`, solved from
