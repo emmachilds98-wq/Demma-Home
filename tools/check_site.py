@@ -163,7 +163,16 @@ PERF_INIT = """performance.setResourceTimingBufferSize(4000);
 (() => { const gpu = %s; if (gpu) for (const C of [WebGLRenderingContext, WebGL2RenderingContext]) { const g = C.prototype.getParameter;
   C.prototype.getParameter = function (p) { return p === 0x9245 || p === 0x9246 ? gpu : g.call(this, p); }; } })();
 if (%s) try { localStorage.setItem("mw18-3d", JSON.stringify({ quality: "hd", picked: true })); } catch (e) {}   // HD held (no step down mid-count)
-addEventListener("r3d-first", () => { window.__first = R3D._dbg.gl.info.programs.length; });"""
+addEventListener("r3d-first", () => { window.__first = R3D._dbg.gl.info.programs.length; });
+(() => { let fr = 0; const L = new WeakMap(), raf = requestAnimationFrame, P = WebGL2RenderingContext.prototype, lk = P.linkProgram, up = P.useProgram; window.__spot = 0;
+  window.requestAnimationFrame = cb => raf(t => { fr++; cb(t); });   // N54: a shader built on the frame that first draws with it (a freeze on a real device)
+  P.linkProgram = function (q) { L.set(q, fr); return lk.call(this, q); };
+  P.useProgram = function (q) { if (L.has(q)) { if (L.get(q) === fr) window.__spot++; L.delete(q); } return up.call(this, q); }; })();"""
+# N54: from the whole house into the living room once the house's warm-up has visited it: no shader built on the spot
+SPOT = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms));
+  for (let i = 0; i < 300 && !(D.WARMED.has("livstand" + D.S.quality) && !D.PRE.queue.length); i++) await sl(1000);
+  await sl(2000); const n = window.__spot; R3D.set({ view: "livstand" }); await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(200); await sl(3000);
+  return window.__spot - n; }"""
 PERF = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms));
   const settle = async () => { await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(200); await sl(1200); };
   await R3D.photos(); let n = -1, k = 0;                       // the first visit: until nothing more is fetched for 3 s
@@ -184,6 +193,26 @@ HD_PATHS = (("iphone", 393, 852, True, "Apple GPU"), ("rtx", 1280, 800, False, "
 def over_budget(path, got):
     want = BUDGET["paths"][path]
     return [f"{path}: {k} {got.get(k)} over {v}" for k, v in want.items() if not k.startswith("_") and not 0 <= (got.get(k) or 0) <= v]
+
+
+# V3.07: Edit room on a phone, "Look round from here" on: a finger dragging the ottoman moves it, not the view (it turned the view too)
+EDITPT = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)); if (window.DemmaTools && DemmaTools.isOpen()) DemmaTools.close();
+  R3D.set({ view: 'room' }); await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(200);
+  D.S.edit || document.getElementById('r3d-editbtn').click(); document.querySelector('[data-cam=look]').click(); await sl(500);
+  const b = new D.THREE.Box3().setFromObject(D.MOV.pouf.pivot), v = b.getCenter(new D.THREE.Vector3()).setY(b.max.y * 0.6).project(D.camera), r = document.querySelector('.r3d canvas').getBoundingClientRect();
+  return [r.left + (v.x + 1) / 2 * r.width, r.top + (1 - v.y) / 2 * r.height]; }"""
+EDITAT = "() => { const D = R3D._dbg, c = D.camera.position, t = D.controls.target; return [c.x, c.y, c.z, t.x, t.y, t.z, D.MOV.pouf.pivot.position.x, D.MOV.pouf.pivot.position.z]; }"
+
+
+def edit_drag(pg, w):
+    x, y = pg.evaluate(EDITPT); a = pg.evaluate(EDITAT); cdp = pg.context.new_cdp_session(pg)
+    T = lambda t, X=0, Y=0: cdp.send("Input.dispatchTouchEvent", {"type": t, "touchPoints": [] if t == "touchEnd" else [{"x": X, "y": Y, "id": 1}]})
+    T("touchStart", x, y)
+    for i in range(1, 7): T("touchMove", x + 8 * i, y - 4 * i); pg.wait_for_timeout(100)
+    T("touchEnd"); pg.wait_for_timeout(800); z = pg.evaluate(EDITAT)
+    cam, moved = max(abs(p - q) for p, q in zip(a[:6], z[:6])), max(abs(a[6] - z[6]), abs(a[7] - z[7]))
+    pg.evaluate("() => { document.getElementById('r3d-undo').click(); document.querySelector('[data-cam=orbit]').click(); document.getElementById('r3d-editbtn').click(); R3D.set({ view: 'house' }); }"); pg.wait_for_timeout(1500)
+    return [] if cam < 1e-4 and moved > 0.05 else [f"{w}: dragging the ottoman in Edit (Look round on): the view moved {cam:.3f} m, the ottoman {moved:.3f} m (want the view still, the ottoman moved)"]
 
 
 def names_keys(pg, w):
@@ -261,6 +290,7 @@ def main():
             if acc["label"]: fails.append(f"{w}: the 3D's label doesn't say where you are: {acc['label']!r}")
             fails += names_keys(pg, w)
             if phone:
+                fails += edit_drag(pg, w)
                 bk = pg.evaluate(BACK)
                 if bk != ["master", "master", "house", True]: fails.append(f"{w}: two rooms, then Back: {bk} (want ['master', 'master', 'house', True]: one step, out to the house)")
             pg.click("[data-hfloor=first]"); pg.wait_for_timeout(2500)
@@ -338,7 +368,7 @@ def main():
             ctx.add_init_script(PERF_INIT % (json.dumps(gpu), "true")); pg = ctx.new_page(); pg.set_default_timeout(600000); localcdn.route(pg); errs = []
             pg.on("pageerror", lambda e: errs.append("pageerror: " + str(e)[:300]))
             pg.goto(base + "index.html"); pg.wait_for_function("window.R3D && window.R3D.ready && window.__first", timeout=600000)
-            perf[name] = pg.evaluate(PERF); fails += over_budget(name, perf[name])
+            perf[name] = pg.evaluate(PERF); perf[name]["shaders_spot"] = pg.evaluate(SPOT); fails += over_budget(name, perf[name])
             if perf[name]["quality"] != "hd": fails.append(f"{name}: drawn in {perf[name]['quality']}, not HD")
             if errs: fails.append(f"{name}: errors: {errs[:4]}")
             ctx.close()
@@ -346,7 +376,7 @@ def main():
     (SHOTS / "perf.json").write_text(json.dumps(perf, indent=1))
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
-    print("speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room" for k, v in perf.items()))
+    print("speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room" + (f", {v['shaders_spot']} built on the spot into it" if "shaders_spot" in v else "") for k, v in perf.items()))
     print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named (shut panels, a card, Edit's list too), Esc one layer a press, Tab the top row then the 3D, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, Back from a room to the house, down to the lower floor and back, the speed budget on 4 paths, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
