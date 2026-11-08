@@ -259,7 +259,7 @@ check("kitchen: the back door next to the worktop's end, clear of the window and
       f"worktop to {wt_end}, door {bd_['x'][0]:.0f}–{bd_['x'][1]:.0f}, window to {kw_['x'][1]:.0f}, the bar from {K_['bar']['x'][0]:.1f}")
 check("kitchen: the bar along the whole wall, back wall to the door's frame", abs(K_["bar"]["z"][0] - kr_["z0"]) < 0.5 and 0 <= (kd_["a"] - 6) - K_["bar"]["z"][1] <= 3,
       f"z {K_['bar']['z'][0]:.1f} to {K_['bar']['z'][1]:.1f} ({K_['bar']['z'][1] - K_['bar']['z'][0]:.0f} long); the back wall {kr_['z0']:.1f}, the frame {kd_['a'] - 6:.1f}")
-# V2.97 (N44): the photo of 30 Oct has it about 28 out of the corner, its flue across into it
+# V3.03 (N44): the photo of 30 Oct has it about 28 out of the corner, its flue across into it
 check("kitchen: the boiler by the back corner over the bar's far end", K_["boiler"]["z"][0] - kr_["z0"] <= 40 and K_["bar"]["z"][0] <= K_["boiler"]["z"][0],
       f"boiler z {K_['boiler']['z'][0]:.0f}–{K_['boiler']['z'][1]:.0f}")
 ek_ = [k for k, a, b in K_["east"]]; ci_ = ek_.index("cooker")

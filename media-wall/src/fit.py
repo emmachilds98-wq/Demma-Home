@@ -1427,6 +1427,24 @@ SOURCES["ceiltrack"] = ("B&Q: White Hidden Ceiling Fix Aluminium Curtain Hanging
 SOURCES["ohspencil"] = ("B&Q (OHS): Pencil Pleat Blackout Curtains, thermal, tape top, 66\" × 90\": each panel 168 × 229 cm, a pair, "
                         "£22.99; charcoal, silver grey, beige (diy.com, 5027434112784)")
 ORDER.extend(["ceiltrack", "ohspencil"])                                                  # v78: the stair curtain (an option)
+# V3.02 (N45): the "Add a piece" catalogue's pieces, each to a real product's size (options, to look at)
+SOURCES["hcikea"] = ("IKEA UK (Nov 2026), assembled sizes W × D × H cm: MALM chests of 3 drawers 80 × 48 × 78, 6 drawers 160 × 48 × 78, "
+                     "2 drawers 40 × 48 × 55 (MALM buying guide, Apr 2025); TARVA 5-drawer chest, pine, 76 × 40 × 127; PAX frame 100 × 58 × 201 "
+                     "(202.145.66); PAX / MEHAMN/AULI sliding doors, oak effect and mirror glass, 150 × 66 × 201; MULIG clothes rack 99 × 46 × 151; "
+                     "BILLY bookcase, oak effect, 80 × 28 × 202; KALLAX 147 × 39 × 147; LAGKAPTEN / ADILS desk 140 × 60 (594.172.52, ADILS legs 70); "
+                     "LAGKAPTEN / ALEX desk 120 × 60, ALEX drawer unit 36 × 70; LINNMON / FINNVARD table 150 × 75, the trestle 46 × 70, 71–93 high; "
+                     "NESTTUN bed 150 × 200: 156 × 207, 95 high, footboard 35; LANDSKRONA armchair 89 × 89 × 78, seat 44 high; KEJSARKRONA bench "
+                     "140 × 35 × 45; SANDARED pouffe 45 across, 33 high; LISTERBY side table, oak, 50 across, 56 high (ikea.com/gb)")
+SOURCES["hcbeds"] = ("Beds and bedsides: Next Divan, king divan 150 × 200, base 35.5 high, headboard 137 high (nextdivan.co.uk); Bensons, "
+                     "Brompton fabric headboard 10 deep; The Furniture Market, Cheshire solid oak 5 ft bed, slatted headboard, "
+                     "163 × 215, headboard 110 high; Daals, Marcel 1-drawer bedside, light oak, 45 × 38.5 × 56, legs 8.7; "
+                     "Mallet & Plane, Okayama oak bedside, two drawers on black legs, 45 × 40 × 55, 16 clear of the floor")
+SOURCES["hcplants"] = ("Plants (UK shops, Nov 2026): Beards & Daisies, fiddle-leaf fig 140–150 tall in a 27 pot; Patch, snake plant "
+                       "90–100 tall, 27 nursery pot, its pot 30 across and 28 high; The Lechuza, monstera 70 across, 100–130 tall "
+                       "(Plantdrop's in a 27 pot); Olive Grove Oundle, lollipop olive tree 150 tall, crown 60–80, pot 45 across, 38 high")
+SOURCES["hcmore"] = ("Cox & Cox, leaning oak ladder shelf, five shelves, 60 × 47 × 187 (coxandcox.co.uk); Dunelm, Marin black wood "
+                     "floor lamp with a 45 cm white linen drum shade, 155 high (dunelm.com, 1000233870)")
+ORDER.extend(["hcikea", "hcbeds", "hcplants", "hcmore"])
 _zones_v42 = zones
 
 

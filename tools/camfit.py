@@ -20,7 +20,7 @@ BOX = {"hall": [310, 460, 15, 225, 50, 416],   # the hall's front part runs to t
 # (the window, the toilet, the mirror, the vanity, the door's hinge; the headboard and the ottoman's corners): the bathroom from the landing
 # just out of its door (open as far as the bath lets it), the master from past the bed's foot by the door, low, at the headboard
 START = {"bath": {"eye": [307.4, 384.5, 26.0], "at": [382.7, 417.7, -156.2], "fov": 90.9}, "master": {"eye": [268, 377, 240], "at": [89.4, 301.9, 288.8], "fov": 74},
-         # V2.97 (N44, compare.TRUE_FOV): the kitchen from the window end by the bar; the hall from the front
+         # V3.03 (N44, compare.TRUE_FOV): the kitchen from the window end by the bar; the hall from the front
          # door and to it from beside the stairs' box (both the 0.5× lens, about 108°)
          "kitchen": {"eye": [240, -107, -305], "at": [255, -117, -106], "fov": 72},
          "hall": {"eye": [385, 155, 416], "at": [405, 85, 60], "fov": 108}, "hall_front": {"eye": [330, 150, 225], "at": [395, 105, 420], "fov": 108}}
@@ -86,7 +86,7 @@ def main(only):
         for view, photo in compare.PAIRS:
             if only and view not in only or view in compare.OUTSIDE:
                 continue
-            room = view.split("_")[0]                         # V2.97 (N44): "hall_front" is the hall's second photo
+            room = view.split("_")[0]                         # V3.03 (N44): "hall_front" is the hall's second photo
             ph = ImageOps.exif_transpose(Image.open(compare.IN / photo)).convert("RGB")
             W = 360; H = round(W * ph.height / ph.width)
             P = edges(ph, W, H); P4 = grow(P, 4)

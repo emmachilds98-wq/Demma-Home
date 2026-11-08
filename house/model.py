@@ -1191,7 +1191,7 @@ def kitchen(o):
         zc = (bo["z"][0] + bo["z"][1]) / 2 + dz
         o.box("chrome", xw - 4, Y(B["h"]), zc - 1, xw - 2, Y(bo["y"][0]), zc + 1)
     o.item("kitchen.radiator", "The kitchen radiator", "kitchen", kind="radiator", src="client's photo (30 Oct) + E", data=("KITCHEN", "radiator"), axis="z")
-    r_ = K["radiator"]; radiator(o, "z", xw, -1, r_["z"][0], r_["z"][1], Y(r_["y"][0]), Y(r_["y"][1]))   # V2.97 (N44): under the bar
+    r_ = K["radiator"]; radiator(o, "z", xw, -1, r_["z"][0], r_["z"][1], Y(r_["y"][0]), Y(r_["y"][1]))   # V3.03 (N44): under the bar
     o.item("kitchen.chairs", "The bar stools", "kitchen", src="client's photos (30 Oct) + E", measure=False)
     for cx_, cz_ in K["chairs"]:                                   # V1.14: bar stools, as the photos (they were low chairs)
         bar_stool(o, cx_, cz_, Y(0), "+x")
@@ -1725,7 +1725,7 @@ SKIRT_ROOMS = {"hall", "landing", "landing_top", "bed3", "master", "master_b", "
 SKIRT_H, SKIRT_T = 10.0, 1.5                                       # E: a 94 mm torus skirting
 DOOR_LEAF = {"wc_door": "door_white", "bath_door": "door_white", "bed2_door": "door_white",
              "master_door": "door_white", "bed3_door": "door_white"}   # v73, the client: the bathroom's is white too (the wood was an old photo)
-# V2.97 (N44): the kitchen's door frame stands empty (photo_kitchen_from_door_25oct, _wide_ and _bar_boiler_30oct: no leaf either way, a
+# V3.03 (N44): the kitchen's door frame stands empty (photo_kitchen_from_door_25oct, _wide_ and _bar_boiler_30oct: no leaf either way, a
 # hinge's plate on its frame; one opening in would stand over the bar or across the switch, one opening out across the stairs' foot)
 
 

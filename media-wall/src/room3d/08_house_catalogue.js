@@ -5,13 +5,14 @@
      {item: "add.<n>", field: "add", value: <key>, room, x, z, y}     a piece added where the floor was tapped (Take it out removes it)
    A piece is built in its own frame: u along its wall (0 to W), v up (0 to H), t out from its back (0 at the wall, D at its front). */
 const HCAT_KINDS = { bed: "Beds", wardrobe: "Wardrobes", chest: "Chests", bedside: "Bedsides", desk: "Desks", shelves: "Shelves", seat: "Seats", plant: "Plants", more: "More" };
-function hcChest(mat, cols, rows, knob = "knob") {   // drawers: a carcass, its fronts with a shadow gap, a knob each
+function hcChest(mat, cols, rows, knob = "knob") {   // drawers: a carcass, its fronts with a shadow gap, a knob each ("grip": MALM's grip along each front's top)
   return (W, H, D, B) => {
     B(mat, 0, 0, 0, W, H, D - 2); B("gap", 1, 6, D - 2.1, W - 1, H - 2, D - 2); B(mat, 1, 0, D - 6, W - 1, 6, D - 5);   // the plinth, set back
-    const cw = (W - 2) / cols, rh = (H - 8) / rows;
+    const cw = (W - 2) / cols, rh = (H - 8) / rows, g = knob === "grip" ? 2 : 0;
     for (let c = 0; c < cols; c++) for (let r = 0; r < rows; r++) { const u0 = 1 + c * cw, v0 = 6 + r * rh, cu = u0 + cw / 2, cv = v0 + rh * 0.62;
-      B(mat, u0 + 0.3, v0 + 0.3, D - 2, u0 + cw - 0.3, v0 + rh - 0.3, D - 0.4);
-      B(knob, cu - 1.6, cv - 1.6, D - 0.4, cu + 1.6, cv + 1.6, D); }
+      B(mat, u0 + 0.3, v0 + 0.3, D - 2, u0 + cw - 0.3, v0 + rh - 0.3 - g, D - 0.4);
+      if (g) B("gap", u0 + 0.3, v0 + rh - 0.3 - g, D - 2, u0 + cw - 0.3, v0 + rh - 0.3, D - 1.4);   // V3.02 (N45): the grip, a groove in shadow
+      else B(knob, cu - 1.6, cv - 1.6, D - 0.4, cu + 1.6, cv + 1.6, D); }
   };
 }
 function hcBed(frame) {   // a bed: its frame, the mattress, a duvet over the foot two-thirds, two pillows
@@ -39,97 +40,106 @@ const hcBooks = (B, u0, u1, v, h, D, i) => {   // books along a shelf, every hei
   while (u < u1 - 4) { const w = 2 + (k * 37 % 5) * 0.6, hh = h * (0.62 + (k * 53 % 7) * 0.045); if (k % 9 === 4) { u += 6; k++; continue; }
     B("book" + (k % 6), u, v, D - 4 - 18, Math.min(u1 - 1, u + w), v + Math.min(hh, h - 1), D - 4); u += w + 0.2; k++; }
 };
+/* V3.02 (N45): each piece a real one's size (fit.SOURCES hcikea, hcbeds, hcplants, hcmore, rugsizes: its "ref"), built to its shape */
+const hcLegs = (m, W, D, h, r, i = 3) => (B, L) => { for (const [u, t] of [[i, i], [W - i, i], [i, D - i], [W - i, D - i]]) L(m, u, t, 0, [[0, 0], [r, 0], [r * 0.8, h], [0, h]]); };   // four turned legs, tapering
 const HCAT = {
-  divan: { n: "Divan bed, upholstered headboard", k: "bed", w: 150, d: 205, h: 120, src: "E (a king divan, 150 × 200, headboard 120 high)",
-    b: hcBed((W, H, D, B, L, v) => { B("felt", 0, 0, 0, W, H, 8); B("felt", 2, 0, 8, W - 2, v, D); }) },
-  oakbed: { n: "Oak bed, slatted headboard", k: "bed", w: 160, d: 210, h: 110, src: "E (a king frame, 160 × 210, headboard 110 high)",
+  divan: { n: "Divan bed, upholstered headboard", k: "bed", w: 150, d: 210, h: 137, ref: "hcbeds", src: "Next Divan king, 150 × 200, headboard 137",
+    b: hcBed((W, H, D, B, L, v) => { B("lycksele", 0, 30, 0, W, H, 9); for (const u of [12, W - 16]) B("black", u, 0, 3, u + 4, 30, 6);
+      B("cloth5", 1, 3, 10, W - 1, v, D); for (const [u, t] of [[6, 14], [W - 9, 14], [6, D - 6], [W - 9, D - 6]]) B("black", u, 0, t, u + 3, 3, t + 3); }) },
+  oakbed: { n: "Oak bed, slatted headboard", k: "bed", w: 163, d: 215, h: 110, ref: "hcbeds", src: "The Furniture Market Cheshire oak, 163 × 215 × 110",
     b: hcBed((W, H, D, B, L, v) => {
       for (const u of [0, W - 7]) { B("oak", u, 0, 0, u + 7, H, 7); B("oak", u, 0, D - 7, u + 7, 45, D); }
       for (let u = 12; u < W - 14; u += 14) B("oak", u, v + 20, 2, u + 8, H - 12, 5);
       B("oak", 7, H - 12, 1, W - 7, H - 4, 6); B("oak", 7, v - 14, 0, W - 7, v + 20, 4);
       B("oak", 0, 14, 7, 5, v, D - 7); B("oak", W - 5, 14, 7, W, v, D - 7); B("oak", 7, 14, D - 5, W - 7, 40, D);
       B("pine", 5, v - 2, 7, W - 5, v, D - 5); }) },
-  metalbed: { n: "Black metal bed", k: "bed", w: 145, d: 200, h: 105, src: "E (a double frame, 145 × 200, headboard 105 high)",
+  metalbed: { n: "Black metal bed", k: "bed", w: 156, d: 207, h: 95, ref: "hcikea", src: "IKEA NESTTUN 150 × 200: 156 × 207 × 95",
     b: hcBed((W, H, D, B, L, v) => {
-      for (const u of [0, W - 3]) { B("black", u, 0, 0, u + 3, H, 3); B("black", u, 0, D - 3, u + 3, 70, D); }
+      for (const u of [0, W - 3]) { B("black", u, 0, 0, u + 3, H, 3); B("black", u, 0, D - 3, u + 3, 38, D); }
       for (const vv of [v + 12, H - 3]) B("black", 3, vv, 0.5, W - 3, vv + 3, 2.5);
       for (let u = 14; u < W - 12; u += 12) B("black", u, v + 15, 1, u + 1.6, H - 3, 2.2);
-      B("black", 3, 66, D - 2.5, W - 3, 69, D - 0.5); B("black", 0, v - 4, 3, 3, v, D - 3); B("black", W - 3, v - 4, 3, W, v, D - 3);
+      for (let vv = v + 26; vv < H - 8; vv += 12) B("black", 3, vv, 0.8, W - 3, vv + 1.6, 2.4);   // its net: bars both ways
+      B("black", 3, 32, D - 2.5, W - 3, 35, D - 0.5); B("black", 0, v - 4, 3, 3, v, D - 3); B("black", W - 3, v - 4, 3, W, v, D - 3);
       B("birch", 3, v - 2, 3, W - 3, v, D - 3); }) },
-  wardrobe2: { n: "Two-door wardrobe, white", k: "wardrobe", w: 100, d: 58, h: 201, src: "E (a 2-door wardrobe, 100 × 58 × 201)",
+  wardrobe2: { n: "Two-door wardrobe, white", k: "wardrobe", w: 100, d: 58, h: 201, ref: "hcikea", src: "IKEA PAX, 100 × 58 × 201",
     b: (W, H, D, B) => { B("door_white", 0, 0, 0, W, H, D - 2); B("door_white", 1, 0, D - 6, W - 1, 8, D - 5);
       for (const [a, b] of [[0.3, W / 2 - 0.3], [W / 2 + 0.3, W - 0.3]]) B("door_white", a, 8.3, D - 2, b, H - 0.3, D - 0.4);
       for (const u of [W / 2 - 5, W / 2 + 3.5]) B("handle_black", u, H * 0.45, D - 0.4, u + 1.5, H * 0.45 + 32, D); } },
-  sliding: { n: "Sliding-door wardrobe, oak and mirror", k: "wardrobe", w: 150, d: 62, h: 210, src: "E (a 2-door sliding wardrobe, 150 × 62 × 210)",
-    b: (W, H, D, B) => { B("oak", 0, 0, 0, W, H, D - 6); B("steel", 0, H - 4, D - 6, W, H, D); B("steel", 0, 0, D - 6, W, 2, D);
-      B("oak", 0.5, 2, D - 6, W / 2 + 2, H - 4, D - 4); B("mirror", W / 2 - 2, 2, D - 3.5, W - 0.5, H - 4, D - 1.5);
-      B("handle_black", 3, H * 0.4, D - 4, 4.5, H * 0.4 + 40, D - 3.5); B("handle_black", W - 4.5, H * 0.4, D - 1.5, W - 3, H * 0.4 + 40, D - 1); } },
-  openrail: { n: "Open clothes rail and shelves", k: "wardrobe", w: 120, d: 50, h: 190, src: "E (an open rail, 120 × 50 × 190)",
-    b: (W, H, D, B) => { for (const u of [0, W - 3]) for (const t of [2, D - 5]) B("steel", u, 0, t, u + 3, H, t + 3);
-      B("birch", 0, 18, 0, W, 21, D); B("birch", 0, H - 3, 0, W, H, D); B("steel", 3, H - 24, D / 2 - 1, W - 3, H - 22, D / 2 + 1);
-      for (let u = 8, k = 0; u < W - 10; u += 6.5, k++) B("cloth" + (k * 3 % 7), u, H - 24 - 80 - (k % 3) * 12, D / 2 - 22, u + 4.5, H - 25, D / 2 + 22);
-      for (let u = 6; u < W - 30; u += 34) B("storebox", u, 21, 6, u + 30, 41, D - 6); } },
-  chest3: { n: "Chest of three drawers, white", k: "chest", w: 80, d: 48, h: 78, src: "E (a 3-drawer chest, 80 × 48 × 78)", b: hcChest("door_white", 1, 3) },
-  chest6: { n: "Wide chest of six drawers, oak", k: "chest", w: 120, d: 48, h: 78, src: "E (a 6-drawer chest, 120 × 48 × 78)", b: hcChest("oak", 2, 3) },
-  tallboy: { n: "Tall chest of five drawers, pine", k: "chest", w: 60, d: 45, h: 120, src: "E (a 5-drawer tallboy, 60 × 45 × 120)", b: hcChest("pine", 1, 5) },
-  bsdrawer: { n: "Bedside, a drawer and a shelf", k: "bedside", w: 45, d: 40, h: 55, src: "E (a bedside, 45 × 40 × 55)",
-    b: (W, H, D, B) => { B("oak", 0, 0, 0, 2, H, D); B("oak", W - 2, 0, 0, W, H, D); B("oak", 2, 0, 0, W - 2, H, 1.5); B("oak", 2, 4, 1.5, W - 2, 6, D);
-      B("oak", 2, H - 2, 1.5, W - 2, H, D); B("oak", 2, H - 16, 1.5, W - 2, H - 14, D); B("oak", 2.3, H - 13.7, D - 2, W - 2.3, H - 2.3, D - 0.5);
-      B("knob", W / 2 - 1.6, H - 9.6, D - 0.5, W / 2 + 1.6, H - 6.4, D); B("book1", 6, 6, 8, 26, 9, 30); } },
-  bswhite: { n: "Bedside of two drawers, white", k: "bedside", w: 40, d: 40, h: 50, src: "E (a 2-drawer bedside, 40 × 40 × 50)", b: hcChest("door_white", 1, 2) },
-  bslegs: { n: "Bedside on legs, oak and black", k: "bedside", w: 45, d: 38, h: 58, src: "E (a bedside on legs, 45 × 38 × 58)",
-    b: (W, H, D, B) => { for (const [u, t] of [[1, 1], [W - 3, 1], [1, D - 3], [W - 3, D - 3]]) B("black", u, 0, t, u + 2, H - 20, t + 2);
-      B("oak", 0, H - 20, 0, W, H, D - 1); B("oak", 1, H - 18, D - 1, W - 1, H - 2, D - 0.3); B("handle_black", W / 2 - 6, H - 11, D - 0.3, W / 2 + 6, H - 9.5, D); } },
-  desklegs: { n: "Oak desk on black legs", k: "desk", w: 140, d: 70, h: 75, src: "E (a desk, 140 × 70 × 75)",
-    b: (W, H, D, B) => { B("oak", 0, H - 3, 0, W, H, D); for (const [u, t] of [[2, 2], [W - 6, 2], [2, D - 6], [W - 6, D - 6]]) B("black", u, 0, t, u + 4, H - 3, t + 4); B("black", 6, H - 10, 3, W - 6, H - 3, 5); } },
-  deskdrawers: { n: "Desk with a drawer pedestal", k: "desk", w: 120, d: 60, h: 75, src: "E (a desk, 120 × 60 × 75, drawers 40 wide)",
-    b: (W, H, D, B) => { B("birch", 0, H - 3, 0, W, H, D); hcChest("door_white", 1, 3)(40, H - 3, D - 2, (m, a, b, c, d, e, f) => B(m, W - 41 + a, b, c, W - 41 + d, e, f));
-      B("door_white", 1, 0, 1, 3, H - 3, D - 1); B("door_white", 3, H - 12, 1, W - 41, H - 3, 3); } },
-  trestle: { n: "Trestle desk, birch and pine", k: "desk", w: 150, d: 75, h: 75, src: "E (a trestle desk, 150 × 75 × 75)",
-    b: (W, H, D, B) => { B("birch", 0, H - 2.5, 0, W, H, D);
-      for (const u of [12, W - 16]) { B("pine", u, 0, 4, u + 4, H - 2.5, 7); B("pine", u, 0, D - 7, u + 4, H - 2.5, D - 4); B("pine", u, H - 8, 4, u + 4, H - 2.5, D - 4); B("pine", u, 20, 4, u + 4, 24, D - 4); } } },
-  bookcase: { n: "Oak bookcase", k: "shelves", w: 80, d: 30, h: 180, src: "E (a bookcase, 80 × 30 × 180)", b: hcShelves("oak", hcBooks) },
-  cubes: { n: "Cube shelving with boxes, white", k: "shelves", w: 147, d: 39, h: 147, src: "E (a 4 × 4 cube unit, 147 × 39 × 147)",
+  sliding: { n: "Sliding-door wardrobe, oak and mirror", k: "wardrobe", w: 150, d: 66, h: 201, ref: "hcikea", src: "IKEA PAX / MEHAMN/AULI, 150 × 66 × 201",
+    b: (W, H, D, B) => { B("door_white", 0, 0, 0, W, H, D - 8); B("steel", 0, H - 4, D - 8, W, H, D); B("steel", 0, 0, D - 8, W, 2, D);
+      B("oak", 0.5, 2, D - 7.5, W / 2 + 2, H - 4, D - 5.5); B("mirror", W / 2 - 2, 2, D - 4, W - 0.5, H - 4, D - 2);
+      for (const v of [H * 0.33, H * 0.66]) B("steel", 0.5, v, D - 5.5, W / 2 + 2, v + 0.8, D - 5.2);   // MEHAMN's oak in three panels
+      B("handle_black", 3, H * 0.4, D - 5.5, 4.5, H * 0.4 + 40, D - 4.5); B("handle_black", W - 4.5, H * 0.4, D - 2, W - 3, H * 0.4 + 40, D - 1); } },
+  openrail: { n: "Open clothes rail, white", k: "wardrobe", w: 99, d: 46, h: 151, ref: "hcikea", src: "IKEA MULIG, 99 × 46 × 151",
+    b: (W, H, D, B) => { for (const u of [0, W - 2.5]) { for (const t of [3, D - 5.5]) B("steel", u, 0, t, u + 2.5, H - 8, t + 2.5); B("steel", u, H - 10.5, D / 2 - 1.2, u + 2.5, H, D / 2 + 1.2); B("steel", u, H - 10.5, 3, u + 2.5, H - 8, D - 3); B("steel", u, 0, 3, u + 2.5, 2.5, D - 3); }
+      B("steel", 2.5, H - 3, D / 2 - 1.2, W - 2.5, H - 0.5, D / 2 + 1.2); for (const t of [5, 15, 25, 35]) B("steel", 2.5, 16, t, W - 2.5, 17.5, t + 1.5);   // the rail, the shelf's bars
+      for (let u = 7, k = 0; u < W - 9; u += 6.5, k++) B("cloth" + (k * 3 % 7), u, H - 6 - 58 - (k % 3) * 12, D / 2 - 21, u + 4.5, H - 6, D / 2 + 21);
+      for (let u = 5; u < W - 30; u += 34) B("storebox", u, 17.5, 6, u + 30, 37.5, D - 6); } },
+  chest3: { n: "Chest of three drawers, white", k: "chest", w: 80, d: 48, h: 78, ref: "hcikea", src: "IKEA MALM, 80 × 48 × 78", b: hcChest("door_white", 1, 3, "grip") },
+  chest6: { n: "Wide chest of six drawers, oak", k: "chest", w: 160, d: 48, h: 78, ref: "hcikea", src: "IKEA MALM, 160 × 48 × 78", b: hcChest("oak", 2, 3, "grip") },
+  tallboy: { n: "Tall chest of five drawers, pine", k: "chest", w: 76, d: 40, h: 127, ref: "hcikea", src: "IKEA TARVA, 76 × 40 × 127", b: hcChest("pine", 1, 5) },
+  bsdrawer: { n: "Bedside, a drawer and a shelf", k: "bedside", w: 45, d: 38.5, h: 56, ref: "hcbeds", src: "Daals Marcel, 45 × 38.5 × 56",
+    b: (W, H, D, B, L) => { hcLegs("oak", W, D, 8.7, 1.6)(B, L); B("oak", 0, 8.7, 0, 2, H, D); B("oak", W - 2, 8.7, 0, W, H, D); B("oak", 2, 8.7, 0, W - 2, H, 1.5); B("oak", 2, 8.7, 1.5, W - 2, 10.7, D);
+      B("oak", 2, H - 2, 1.5, W - 2, H, D); B("oak", 2, H - 18, 1.5, W - 2, H - 16, D); B("oak", 2.3, H - 15.7, D - 2, W - 2.3, H - 2.3, D - 0.5);
+      B("handle_black", W / 2 - 6, H - 9.6, D - 0.5, W / 2 + 6, H - 8.4, D); B("book1", 6, 10.7, 8, 26, 13.7, 30); } },
+  bswhite: { n: "Bedside of two drawers, white", k: "bedside", w: 40, d: 48, h: 55, ref: "hcikea", src: "IKEA MALM, 40 × 48 × 55", b: hcChest("door_white", 1, 2, "grip") },
+  bslegs: { n: "Bedside on legs, oak and black", k: "bedside", w: 45, d: 40, h: 55, ref: "hcbeds", src: "Mallet & Plane Okayama, 45 × 40 × 55",
+    b: (W, H, D, B) => { for (const [u, t] of [[1, 1], [W - 3, 1], [1, D - 3], [W - 3, D - 3]]) B("black", u, 0, t, u + 2, 16, t + 2);
+      B("oak", 0, 16, 0, W, H, D - 1); const m = 16 + (H - 16) * 0.45;
+      B("oak", 1, 17, D - 1, W - 1, m - 0.3, D - 0.3); B("oak", 1, m + 0.3, D - 1, W - 1, H - 1, D - 0.3);
+      for (let u = 5; u < W - 4; u += 5) B("gap", u, 17.5, D - 0.35, u + 0.4, H - 1.5, D - 0.25); } },   // its routed fronts
+  desklegs: { n: "Oak-effect desk on black legs", k: "desk", w: 140, d: 60, h: 73.6, ref: "hcikea", src: "IKEA LAGKAPTEN / ADILS, 140 × 60",
+    b: (W, H, D, B, L) => { B("birch", 0, H - 3.6, 0, W, H, D); hcLegs("black", W, D, H - 3.6, 2, 5)(B, L); } },
+  deskdrawers: { n: "Desk with a drawer pedestal", k: "desk", w: 120, d: 60, h: 73.6, ref: "hcikea", src: "IKEA LAGKAPTEN / ALEX, 120 × 60",
+    b: (W, H, D, B, L) => { B("birch", 0, H - 3.6, 0, W, H, D); hcChest("door_white", 1, 5, "grip")(36, 70, 58, (m, a, b, c, d, e, f) => B(m, W - 37 + a, b, 1 + c, W - 37 + d, e, 1 + f));
+      for (const t of [5, D - 5]) L("door_white", 5, t, 0, [[0, 0], [2, 0], [2, H - 3.6], [0, H - 3.6]]); } },
+  trestle: { n: "Trestle desk, white and birch", k: "desk", w: 150, d: 75, h: 74.4, ref: "hcikea", src: "IKEA LINNMON / FINNVARD, 150 × 75",
+    b: (W, H, D, B) => { B("door_white", 0, H - 3.4, 0, W, H, D);
+      for (const u of [8, W - 54]) { for (const uu of [u, u + 42]) { B("birch", uu, 0, 4, uu + 4, H - 3.4, 7); B("birch", uu, 0, D - 7, uu + 4, H - 3.4, D - 4); B("birch", uu, H - 8, 4, uu + 4, H - 3.4, D - 4); }
+        B("birch", u, 18, 4, u + 46, 20, D - 4); } } },   // each trestle's shelf
+  bookcase: { n: "Oak bookcase", k: "shelves", w: 80, d: 28, h: 202, ref: "hcikea", src: "IKEA BILLY, 80 × 28 × 202", b: hcShelves("oak", hcBooks) },
+  cubes: { n: "Cube shelving with boxes, white", k: "shelves", w: 147, d: 39, h: 147, ref: "hcikea", src: "IKEA KALLAX, 147 × 39 × 147",
     b: (W, H, D, B) => { const nu = Math.max(1, Math.round(W / 36)), nv = Math.max(1, Math.round(H / 36)), cu = (W - 3) / nu, cv = (H - 3) / nv;
       B("door_white", 0, 0, 0, W, H, 1);
       for (let i = 0; i <= nu; i++) B("door_white", i * cu, 0, 1, i * cu + 3, H, D);
       for (let j = 0; j <= nv; j++) B("door_white", 0, j * cv, 1, W, j * cv + 3, D);
       for (let i = 0; i < nu; i++) for (let j = 0; j < nv; j++) { const u = i * cu + 3, v = j * cv + 3;
         if ((i + j) % 2) B("storebox", u + 0.5, v, 3, u + cu - 3.5, v + cv - 3.5, D - 0.5); else if (j) hcBooks(B, u, u + cu - 3, v, cv - 4, D, i + j); } } },
-  ladder: { n: "Ladder shelf, oak", k: "shelves", w: 65, d: 40, h: 180, src: "E (a leaning ladder shelf, 65 × 40 × 180)",
-    b: (W, H, D, B) => { const n = 5, vv = i => 2 + i * (H - 6) / (n - 1), dd = i => D * (1 - i * 0.18);   // deeper at the foot, leaning to the wall
-      for (let i = 0; i < n; i++) { B("oak", 3, vv(i), 0, W - 3, vv(i) + 2, dd(i)); if (i < n - 1) for (const u of [0, W - 3]) B("oak", u, i ? vv(i) : 0, dd(i + 1) - 3, u + 3, vv(i + 1) + 2, dd(i)); }
+  ladder: { n: "Ladder shelf, oak", k: "shelves", w: 60, d: 47, h: 187, ref: "hcmore", src: "Cox & Cox leaning oak, 60 × 47 × 187",
+    b: (W, H, D, B) => { const n = 5, vv = i => 20 + i * (H - 24) / (n - 1), dd = i => D * (1 - i * 0.18);   // deeper at the foot, leaning to the wall
+      for (let i = 0; i < n; i++) { B("oak", 3, vv(i), 0, W - 3, vv(i) + 2, dd(i)); for (const u of [0, W - 3]) B("oak", u, i ? vv(i) : 0, dd(i + 1) - 3, u + 3, (i < n - 1 ? vv(i + 1) : H - 2) + 2, dd(i)); }
       B("ivy", W / 2 - 8, vv(n - 1) + 2, 4, W / 2 + 8, vv(n - 1) + 12, dd(n - 1) - 2); hcBooks(B, 3, W - 3, vv(1) + 2, 28, dd(1), 2); } },
-  armchair: { n: "Armchair, green weave", k: "seat", w: 80, d: 82, h: 85, src: "E (an armchair, 80 × 82 × 85)",
-    b: (W, H, D, B) => { for (const [u, t] of [[4, 4], [W - 8, 4], [4, D - 8], [W - 8, D - 8]]) B("oak", u, 0, t, u + 4, 14, t + 4);
-      B("cloth3", 0, 14, 0, W, 40, D); B("cloth3", 0, 40, 0, W, H, 16); B("cloth3", 0, 40, 16, 12, 64, D); B("cloth3", W - 12, 40, 16, W, 64, D);
-      B("cloth4", 12, 40, 16, W - 12, 50, D - 1); B("cloth1", W / 2 - 20, 50, 16, W / 2 + 20, 84, 27); } },
-  bench: { n: "Oak bench", k: "seat", w: 100, d: 35, h: 45, src: "E (a bench, 100 × 35 × 45)",
-    b: (W, H, D, B) => { B("oak", 0, H - 4, 0, W, H, D); for (const u of [5, W - 9]) B("oak", u, 0, 2, u + 4, H - 4, D - 2); B("oak", 9, 12, D / 2 - 2, W - 9, 16, D / 2 + 2); } },
-  pouffe: { n: "Round pouffe, rust", k: "seat", w: 50, d: 50, h: 40, src: "E (a pouffe, 50 across, 40 high)",
-    b: (W, H, D, B, L) => { L("cloth2", W / 2, D / 2, 0, [[0, 0], [W / 2 - 1, 0], [W / 2, 3], [W / 2, H - 4], [W / 2 - 2, H - 0.5], [0, H]]); } },
-  plant: { n: "Fiddle-leaf fig, white pot", k: "plant", w: 45, d: 45, h: 140, src: "E (a fiddle-leaf fig, 140 tall, in a 30 pot)",
-    b: (W, H, D, B, L) => { L("pot", W / 2, D / 2, 0, [[0, 0], [11, 0], [15, 30], [15.5, 32], [0, 32]]);
-      L("timber", W / 2, D / 2, 30, [[0, 0], [1.5, 0], [1.5, H * 0.45], [0, H * 0.45]]);
+  armchair: { n: "Armchair, green weave", k: "seat", w: 89, d: 89, h: 78, ref: "hcikea", src: "IKEA LANDSKRONA, 89 × 89 × 78",
+    b: (W, H, D, B, L) => { hcLegs("oak", W, D, 12, 2, 6)(B, L);
+      B("cloth3", 0, 12, 0, W, 34, D); B("cloth3", 0, 34, 0, W, H - 6, 12); B("cloth3", 0, 34, 12, 12, 60, D); B("cloth3", W - 12, 34, 12, W, 60, D);
+      B("cloth3", 12.5, 34, 28, W - 12.5, 44, D - 0.5); B("cloth3", 12.5, 34, 12, W - 12.5, H, 28); } },   // the seat cushion (44 high), the back's
+  bench: { n: "Oak bench", k: "seat", w: 140, d: 35, h: 45, ref: "hcikea", src: "IKEA KEJSARKRONA, 140 × 35 × 45",
+    b: (W, H, D, B) => { B("oak", 0, H - 4, 0, W, H, D); for (const u of [8, W - 12]) B("door_white", u, 0, 2, u + 4, H - 4, D - 2); B("door_white", 12, 12, D / 2 - 2, W - 12, 16, D / 2 + 2); } },
+  pouffe: { n: "Round pouffe, rust", k: "seat", w: 45, d: 45, h: 33, ref: "hcikea", src: "IKEA SANDARED, 45 across, 33 high",
+    b: (W, H, D, B, L) => { L("cloth2", W / 2, D / 2, 0, [[0, 0], [W / 2 - 2, 0], [W / 2, 3], [W / 2, H - 5], [W / 2 - 3, H - 0.8], [W / 2 - 8, H], [0, H]]); } },
+  plant: { n: "Fiddle-leaf fig, white pot", k: "plant", w: 50, d: 50, h: 140, ref: "hcplants", src: "Beards & Daisies, 140 tall, 27 pot",
+    b: (W, H, D, B, L) => { L("pot", W / 2, D / 2, 0, [[0, 0], [12, 0], [15, 28], [15.5, 30], [0, 30]]);
+      L("timber", W / 2, D / 2, 28, [[0, 0], [1.5, 0], [1.5, H * 0.45], [0, H * 0.45]]);
       L("ivy", W / 2, D / 2, H * 0.32, [[0, 0], [W * 0.32, H * 0.12], [W / 2, H * 0.36], [W * 0.38, H * 0.56], [W * 0.16, H * 0.66], [0, H * 0.68]]); } },
-  snake: { n: "Snake plant, white pot", k: "plant", w: 35, d: 35, h: 90, src: "E (a snake plant, 90 tall, in a 27 pot)",
-    b: (W, H, D, B, L) => { L("pot", W / 2, D / 2, 0, [[0, 0], [10, 0], [13, 24], [13.5, 26], [0, 26]]);
-      for (let i = 0; i < 9; i++) { const a = i * 2.4, r = 3 + (i % 3) * 2.5, u = W / 2 + Math.cos(a) * r, t = D / 2 + Math.sin(a) * r;
-        B("ivy", u - 1.6, 22, t - 0.6, u + 1.6, 26 + (H - 26) * (0.55 + (i * 37 % 9) / 20), t + 0.6); } } },
-  monstera: { n: "Monstera, seagrass basket", k: "plant", w: 70, d: 70, h: 100, src: "E (a monstera, 100 tall, 70 across, in a 38 basket)",
-    b: (W, H, D, B, L) => { L("sisal", W / 2, D / 2, 0, [[0, 0], [16, 0], [19, 32], [0, 32]]);
-      L("ivy", W / 2, D / 2, 30, [[0, 0], [W * 0.3, 8], [W / 2, (H - 30) * 0.45], [W * 0.44, (H - 30) * 0.7], [W * 0.22, H - 32], [0, H - 30]]); } },
-  olive: { n: "Olive tree, grey planter", k: "plant", w: 55, d: 55, h: 150, src: "E (an olive tree, 150 tall, in a 40 planter)",
-    b: (W, H, D, B, L) => { L("concrete", W / 2, D / 2, 0, [[0, 0], [16, 0], [19, 40], [19.5, 42], [0, 42]]);
-      L("timber", W / 2, D / 2, 40, [[0, 0], [2.5, 0], [2, H * 0.4], [0, H * 0.4]]);
+  snake: { n: "Snake plant, white pot", k: "plant", w: 35, d: 35, h: 95, ref: "hcplants", src: "Patch, 90–100 tall, 30 pot",
+    b: (W, H, D, B, L) => { L("pot", W / 2, D / 2, 0, [[0, 0], [12, 0], [15, 26], [15, 28], [0, 28]]);
+      for (let i = 0; i < 11; i++) { const a = i * 2.4, r = 2.5 + (i % 3) * 2.8, u = W / 2 + Math.cos(a) * r, t = D / 2 + Math.sin(a) * r;
+        B("ivy", u - 1.8, 24, t - 0.6, u + 1.8, 28 + (H - 28) * (0.55 + (i * 37 % 9) / 20), t + 0.6); } } },
+  monstera: { n: "Monstera, seagrass basket", k: "plant", w: 70, d: 70, h: 100, ref: "hcplants", src: "The Lechuza, 70 across, 100 tall",
+    b: (W, H, D, B, L) => { L("sisal", W / 2, D / 2, 0, [[0, 0], [13, 0], [16, 28], [0, 28]]);
+      L("ivy", W / 2, D / 2, 26, [[0, 0], [W * 0.3, 8], [W / 2, (H - 26) * 0.45], [W * 0.44, (H - 26) * 0.7], [W * 0.22, H - 28], [0, H - 26]]); } },
+  olive: { n: "Olive tree, grey planter", k: "plant", w: 70, d: 70, h: 150, ref: "hcplants", src: "Olive Grove Oundle, 150 tall, 45 pot",
+    b: (W, H, D, B, L) => { L("concrete", W / 2, D / 2, 0, [[0, 0], [20, 0], [22.5, 36], [22.5, 38], [0, 38]]);
+      L("timber", W / 2, D / 2, 38, [[0, 0], [2.5, 0], [2, H * 0.4], [0, H * 0.4]]);
       L("ivy", W / 2, D / 2, H * 0.5, [[0, 0], [W * 0.3, H * 0.06], [W / 2, H * 0.22], [W * 0.4, H * 0.38], [W * 0.12, H * 0.49], [0, H * 0.5]]); } },
-  rug: { n: "Rug", k: "more", w: 160, d: 230, h: 1, src: "E (a 160 × 230 rug)",
+  rug: { n: "Rug", k: "more", w: 160, d: 230, h: 1, ref: "rugsizes", src: "Argos's usual size, 160 × 230",
     b: (W, H, D, B) => { B("rug", 0, 0, 0, W, Math.max(0.6, H), D); B("sisal", 4, Math.max(0.6, H), 4, W - 4, Math.max(0.6, H) + 0.2, 8); B("sisal", 4, Math.max(0.6, H), D - 8, W - 4, Math.max(0.6, H) + 0.2, D - 4); } },
-  floorlamp: { n: "Floor lamp, linen shade", k: "more", w: 40, d: 40, h: 160, src: "E (a floor lamp, 160 tall, 40 shade)",
-    b: (W, H, D, B, L) => { L("black", W / 2, D / 2, 0, [[0, 0], [13, 0], [13, 1.5], [3, 3], [0, 3]]); B("black", W / 2 - 1, 3, D / 2 - 1, W / 2 + 1, H - 22, D / 2 + 1);
-      L("paper", W / 2, D / 2, H - 30, [[0, 0], [W / 2 - 0.5, 0], [W / 2 * 0.72, 30], [0, 30]]); } },
-  sidetable: { n: "Round side table, oak", k: "more", w: 45, d: 45, h: 50, src: "E (a side table, 45 across, 50 high)",
-    b: (W, H, D, B, L) => { L("oak", W / 2, D / 2, 0, [[0, 0], [14, 0], [14, 2], [2.5, 3], [2.5, H - 3], [W / 2, H - 3], [W / 2, H], [0, H]]); } },
+  floorlamp: { n: "Floor lamp, linen shade", k: "more", w: 45, d: 45, h: 155, ref: "hcmore", src: "Dunelm Marin, 155 tall, 45 shade",
+    b: (W, H, D, B, L) => { L("black", W / 2, D / 2, 0, [[0, 0], [13, 0], [13, 2.5], [10, 4], [3, 5], [0, 5]]); L("black", W / 2, D / 2, 5, [[0, 0], [1.4, 0], [1, H - 30], [0, H - 30]]);
+      L("paper", W / 2, D / 2, H - 28, [[0, 0], [W / 2 - 0.5, 0], [W / 2 - 0.5, 28], [0, 28]]); } },
+  sidetable: { n: "Round side table, oak", k: "more", w: 50, d: 50, h: 56, ref: "hcikea", src: "IKEA LISTERBY, 50 across, 56 high",
+    b: (W, H, D, B, L) => { L("oak", W / 2, D / 2, H - 3, [[0, 0], [W / 2, 0], [W / 2, 3], [0, 3]]); hcLegs("oak", W, D, H - 3, 1.8, 11)(B, L);
+      for (const [u0, t0, u1, t1] of [[11, 10, W - 11, 12], [11, D - 12, W - 11, D - 10], [10, 11, 12, D - 11], [W - 12, 11, W - 10, D - 11]]) B("oak", u0, H - 9, t0, u1, H - 3, t1); } },
 };
 /* which pieces swap, and for what: by the kind of thing it is (its id), standing on the floor, one that turns (no lid or doors of its own) */
 const HSWAP_OF = [[/(^|\.)bed$|bed_/, "bed"], [/wardrobe/, "wardrobe"], [/bedside/, "bedside"], [/chest/, "chest"], [/desk$/, "desk"],

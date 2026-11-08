@@ -165,7 +165,7 @@ KITCHEN = dict(
     # v73: "it should be a table along that whole wall, boiler goes on the corner of the room on the right end of the table if you're
     # looking from the oven": from the back wall to the kitchen door's frame; the boiler in the back corner over its far end
     bar=dict(x=(304.8, 364.8), z=(-309.0, -123.0), h=92.0), chairs=[(276, -250), (276, -170)],
-    # V2.97 (N44, photo_kitchen_bar_boiler_30oct, scaled by the bar's 92 top and its 186 run): the boiler about 28 out of the back corner,
+    # V3.03 (N44, photo_kitchen_bar_boiler_30oct, scaled by the bar's 92 top and its 186 run): the boiler about 28 out of the back corner,
     # its underside at about 140; a white panel radiator under the bar (E: 900 × 600, 15 up)
     boiler=dict(z=(-282.0, -242.0), y=(140.0, 215.0), d=30.0), radiator=dict(z=(-264.0, -174.0), y=(15.0, 75.0)),
     src="client's photos (positions) + standard sizes (E)")
@@ -269,7 +269,7 @@ ARTEX = ["kitchen", "kitchen_1", "kitchen_2", "lower_landing"]
 # V1.12, the client: "i want the door from ground living room to upstairs door to be removed, there is no door on the stair well like
 # that"; their photos of 30 Oct (photo_hall_door_down_frame_30oct, photo_hall_racks_frame_30oct) show it: the frame in the stair box's end,
 # the grille over it, no door, only the old hinges' marks. door_leaf False: the frame and the grille stay, the door and its handle go.
-# V2.93: the door down across the wider flight (x 386, was 410). V2.97 (N44, both hall photos on their fitted cameras): the door down
+# V2.93: the door down across the wider flight (x 386, was 410). V3.03 (N44, both hall photos on their fitted cameras): the door down
 # 66 inside its frame (was 79, the box's whole end), by the box's corner; the mirror and the bench along the party wall from near the
 # box's end to the rack (were by the front door), the mirror on the bench's back (E: 36 × 135; the bench a storage bench and a cube, 90)
 HALL = dict(door=(386.0, 452.0), door_leaf=False, mirror=dict(z=(302.0, 338.0), y=(55.0, 190.0)), bench=dict(x=(433.0, 467.0), z=(305.0, 395.4), h=45.0),

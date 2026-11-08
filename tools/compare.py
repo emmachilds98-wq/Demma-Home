@@ -16,7 +16,7 @@ SITE = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else ROOT / "_site").resolv
 OUT = ROOT / "_shots" / "compare"
 IN = ROOT / "media-wall/inputs"
 # the view and the photo it was made from (room3d.js VIEWS' notes, house/EVIDENCE.md)
-# V2.97 (N44): a second photo of a room is "<view>_<what>" (the hall to its front door)
+# V3.03 (N44): a second photo of a room is "<view>_<what>" (the hall to its front door)
 PAIRS = [("kitchen", "photo_kitchen_wide_30oct.jpg"), ("bath", "photo_bathroom_from_door_27oct.jpg"),
          ("hall", "photo_hall_to_living_25oct.jpg"), ("hall_front", "photo_hall_front_door_25oct.jpg"),
          ("office", "photo_office_wide_25oct.jpg"), ("master", "photo_master_bed_25oct.jpg"), ("landing", "photo_landing_from_office_26oct.jpg"),
@@ -26,8 +26,8 @@ W = 720
 CAMS = {"office": {"eye": [263.0, 432.5, 282], "at": [369.3, 390.5, 446.1], "fov": 75.0}, "landing": {"eye": [330, 443.8, 220.0], "at": [330.9, 380.2, 30.4], "fov": 70}, "wc": {"eye": [415.0, -96.9, -132.0], "at": [423.6, -140.0, -327.1], "fov": 70},
         "bath": {"eye": [307.4, 378.9, 26.0], "at": [349.5, 422.4, -164.6], "fov": 90.9}, "master": {"eye": [268, 371.4, 240], "at": [91.9, 298.6, 300.8], "fov": 74},   # V2.90 (N34) the bathroom (0.42) and the master (0.41) from hand starts (camfit.START)
         "kitchen": {"eye": [240, -107, -305], "at": [255.0, -117.0, -105.8], "fov": 76.0},
-        "hall": {"eye": [385, 156.9, 416], "at": [417.0, 110.7, 224.1], "fov": 108}, "hall_front": {"eye": [330, 148.1, 225], "at": [410.3, 92.7, 399.6], "fov": 108}}   # V2.97 (N44): 0.49, 0.37, 0.53
-# V2.97 (N44): these cameras' fov is the photo's own, up and down (the phone's 0.5× is about 108° on a tall photo), set on the camera
+        "hall": {"eye": [385, 156.9, 416], "at": [417.0, 110.7, 224.1], "fov": 108}, "hall_front": {"eye": [330, 148.1, 225], "at": [410.3, 92.7, 399.6], "fov": 108}}   # V3.03 (N44): 0.49, 0.37, 0.53
+# V3.03 (N44): these cameras' fov is the photo's own, up and down (the phone's 0.5× is about 108° on a tall photo), set on the camera
 # past the page's fitting (fitFov caps a tall screen's at 95, so the room looked too near)
 TRUE_FOV = {"kitchen", "hall", "hall_front"}
 LENS = "v => { const k = R3D._dbg.camera; k.fov = v; k.clearViewOffset(); k.updateProjectionMatrix(); }"
