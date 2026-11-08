@@ -19,6 +19,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **No shader built:** dump `R3D._dbg.gl.info.programs` (name | cacheKey) before and after; after must be a subset.
 - **A free camera:** `R3D.set({aim})` keeps the camera in the view's room. Set `R3D._dbg.camera.position` instead, in metres:
   world = (−x/100, y/100, z/100) from the model's cm (x mirrored). Raycast `R3D._dbg.scene` (every parent visible) to see what a pixel is.
+- **Touches:** Playwright's touchscreen only taps; for drags, pinches and twists send CDP `Input.dispatchTouchEvent` (a
+  `new_cdp_session`, `touchStart` / `touchMove` / `touchEnd` with `touchPoints`). The rig's ~1 s frames fold quick moves into one
+  `pointermove`, so a flick is sent as `PointerEvent`s from the page. Chrome hands each finger's move on as its own
+  `pointermove`, so a two-finger gesture must wait till both have moved before it decides what it is (N52's tilt read as a pan).
 - **Textures:** CC0 sites (Poly Haven, ambientCG) and GitHub release downloads are blocked; new textures are made in
   `house/textures/build_textures.py` (`--finishes`).
 - **Git:** force-push is refused. After a merged PR, restart the branch from `origin/main` (a fast-forward push works).
@@ -95,6 +99,6 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   canvas's capture phase, Edit's drag on the 3D's root in capture (`13`), so it can `stopPropagation` before any of them; `controls.enabled
   = false` in a later listener doesn't stop the capture ones. `movable`'s 8th argument isn't "fixed": the rug drags (only `extra.fixed` holds a piece, and none has it now).
   Synthetic `PointerEvent`s can't take `setPointerCapture`: drive touches through CDP `Input.dispatchTouchEvent` (`check_site.py` `edit_drag`).
-- **Back** (`09_house_views.js` `roomHist`), **Esc** (`19_controls.js` `ESC`, top layer only), **Overhead/Angled** (`19_view_controls.js`).
+- **Back** (`09_house_views.js` `roomHist`), **Esc** (`19_controls.js` `ESC`, top layer only), **Overhead/Angled** (`19_view_controls.js`: its own drags, the orbit's off there, V3.08 N53; it turns them off in a canvas capture listener after 14's, and Edit's root capture keeps a piece's press from it).
 - **Doors:** `14_views_walk.js` `walkDoors` opens a door within 95 cm (not the bin cupboards'). The stairs: both flights 85 wide
   (`geometry.RECESS_W`), `model.stair_soffit` over the lower flight; the site check walks through the living room door at x 339.
