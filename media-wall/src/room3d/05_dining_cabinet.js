@@ -1,9 +1,9 @@
 /* v26: option C, the dining cabinet; v27: the plan, made for six; v29: two sliding doors (OPTC). v30, client: "is there anyway you can
    optimise the dining cabinet build to fit the chairs in a better way so the cabinet doesnt have to be so big", "show me both versions":
-   the compact cabinet (CAB) is the plan, the sliding one the alternative. S.site "C"; S.cab "compact" / "sliding"; S.dining folded /
+   the compact cabinet (CAB) is the plan (V3.04, N47: the sliding one's paths gone; it was never built after v39). S.site "C"; S.dining folded /
    four / six; S.chairs "open" opens the chair door (the table folded); S.tdoor opens the table door with the table still folded.
    The doors move by tween (cabTween), so a tap in the room swings or slides them; a still (R3D.set) snaps them. */
-const cabC = () => (S.cab === "sliding" ? R.OPTC : S.cabw === "80" && R.CAB80 ? R.CAB80 : R.CAB);   // v30: the cabinet on show; v33: its 80-wide version
+const cabC = () => (S.cabw === "80" && R.CAB80 ? R.CAB80 : R.CAB);   // v30: the cabinet on show; v33: its 80-wide version
 /* v32: everything in the cabinets that moves is an "anim": one number p, 0 to 1, and what it does to the model (a door's swing or
    slide, a chair drawn out, the table's joints); twTo eases p, the show sets it from its own clock */
 const ease = k => (k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2);
@@ -57,6 +57,7 @@ function cabKit() {      // the parts both cabinets share: materials, the table 
     }
     const off = [hinge.position.clone(), hinge.position.clone().add(joint.position)];
     half.forEach((h, i) => [...h.children].forEach(o => { o.position.sub(off[i]); (i ? joint : hinge).add(o); }));
+    mergeStatic(hinge); mergeStatic(joint);   // V3.04 (N47): each half one draw a material (its legs turn: groups, kept)
     const at = (p, a) => ease(Math.min(1, Math.max(0, (p - RIG[a]) / (RIG[a + 1] - RIG[a]))));
     root.userData.rig = anim(p => {
       hinge.rotation.z = Math.PI / 2 - Math.PI / 4 * (at(p, 0) + at(p, 2));
@@ -78,12 +79,14 @@ function cabKit() {      // the parts both cabinets share: materials, the table 
     };
     const BTN = new THREE.CylinderGeometry(0.008, 0.008, 0.005, 10);
     const buttons = (mesh, cols, rows, w, h, face) => {     // buttons on a cushion's face (its own frame: x across, y up or z along)
+      const geos = [];                                       // V3.04 (N47): a cushion's buttons one draw (they were one each)
       for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
-        const b = new THREE.Mesh(BTN, K.linenBtn), u = ((i + 0.5) / cols - 0.5) * w * M, v = ((j + 0.5) / rows - 0.5) * h * M;
+        const b = new THREE.Object3D(), u = ((i + 0.5) / cols - 0.5) * w * M, v = ((j + 0.5) / rows - 0.5) * h * M;
         if (face === "top") b.position.set(u, 0, v); else { b.position.set(u, v, 0); b.rotation.x = Math.PI / 2; }
         b.position[face === "top" ? "y" : "z"] = face === "top" ? mesh.userData.t / 2 * M : -mesh.userData.t / 2 * M;
-        mesh.add(b);
+        b.updateMatrix(); geos.push(BTN.clone().applyMatrix4(b.matrix));
       }
+      mesh.add(new THREE.Mesh(mergeGeometries(geos), K.linenBtn));
     };
     const paddedOpen = (g, x, z, face) => {
       const P = R.CHAIR_PADDED, c = new THREE.Group(), sw = P.w, sh = P.seat_h, bh = P.h, [cw, cd] = P.seat, cu = P.cushion;
@@ -100,7 +103,7 @@ function cabKit() {      // the parts both cabinets share: materials, the table 
       seat.userData.t = cu; seat.position.copy(v3(0, sh - cu / 2, -3)); c.add(shadow(seat)); buttons(seat, 3, 3, cw - 13, cd - 13, "top");
       const back = new THREE.Mesh(new RoundedBoxGeometry((sw - 5.6) * M, 22 * M, 5 * M, 3, 0.02), K.linen);
       back.userData.t = 5; back.position.copy(v3(0, 67.5, 20.6)); back.rotation.x = Math.atan2(4.5, 22.7); c.add(shadow(back)); buttons(back, 3, 2, sw - 18, 12, "front");
-      c.position.copy(v3(x, 0, z)); c.rotation.y = { n: 0, w: Math.PI, e: Math.PI / 2 }[face] || 0; g.add(c);
+      mergeStatic(c); c.position.copy(v3(x, 0, z)); c.rotation.y = { n: 0, w: Math.PI, e: Math.PI / 2 }[face] || 0; g.add(c);   // V3.04 (N47): its bent-wood sides one draw
     };
     for (const [k, list] of Object.entries(C.seats)) {
       const g = new THREE.Group(); g.userData.chairs = [];
@@ -140,13 +143,13 @@ function cabKit() {      // the parts both cabinets share: materials, the table 
   return K;
 }
 
-let optC = null;                                     // v39: the sliding cabinet isn't built any more (see below)
+let optC = null;                                     // v39: the sliding cabinet isn't built any more (16_cards still reads the name)
 /* v32: each cabinet's moving parts (cabP() the one on show): its table door and chair door, the chairs in the chair box (stand) and in
    the base (base), the pads on the table door, the table (rig), the chairs at the table (seats) */
 const CABP = {};
-const cabP = () => (S.cab === "sliding" ? CABP.sliding : CABP.compact);
+const cabP = () => CABP.compact;
 function slideOut(parent, d = 60) {      // a folded chair (or the pads) drawn straight out of the cabinet into the room, then put down
-  return fill => { const g = new THREE.Group(); fill(g); parent.add(g); return anim(v => { g.position.x = d * M * v; g.visible = v < 0.999; }); };
+  return fill => { const g = new THREE.Group(); fill(g); mergeStatic(g); parent.add(g); return anim(v => { g.position.x = d * M * v; g.visible = v < 0.999; }); };   // V3.04 (N47): a chair one draw a material
 }
 /* v39: the sliding cabinet (v29's buildOptC) is gone: since v33 every state opens on the compact cabinet (applyState), so it was built
    and never shown. Its numbers stay in geometry.OPTC; the code is in git history, v39. */
@@ -212,6 +215,7 @@ function buildCab(C = cabC()) {
     for (const e of [0.2, 0.8]) bx(cabPads, xf + C.door + 0.4 - ax, y0 + ph - 1, z0 + pw * e - 0.6, 0.4, 9, 1.2, K.pad);   // its two ties, on the hook
   }
   cabDoor.T.add(cabPads);
+  mergeStatic(cab); mergeStatic(cbox); mergeStatic(cabPads);   // V3.04 (N47): the carcasses and the pads one draw a material (what moves is in its own group, kept)
   // v32 (a suggestion): a 40 cm motion-sensing light bar under each box's top, at the front, lit while its door is open
   { const g = SUGG_G.cablights = new THREE.Group(), barM = reg(new THREE.MeshStandardMaterial({ color: "#eeebe4", roughness: 0.4 }));
     const glowC = new THREE.MeshBasicMaterial({ color: "#ffd59a", toneMapped: false }); SVAR_MATS.cablights = [glowC];
@@ -302,8 +306,8 @@ function cabGo(P) {
 }
 let cabStill = 0;
 function placeOptC() {
-  const on = S.site === "C", sliding = S.cab === "sliding";
-  if (cab) cab.visible = on && !sliding;
+  const on = S.site === "C";
+  if (cab) cab.visible = on;
   const P = cabP();
   if (on && P && !SH) cabGo(P);                        // v32: while "Watch it open" runs, its clock moves the cabinet
   placeFoot(); placeBeside();
@@ -464,13 +468,13 @@ function placeWork() {      // v34
   // the trolley parks behind the table door's line: back it goes once the door has shut (the open door lies over its spot)
   if (WORK.trolley) {
     if (S.beside !== "trolley") twTo(WORK.trolley, 0, 0);
-    else if (!cabSnap && S.site === "C" && S.cab === "compact" && cabDoors().table && cabP() && cabP().doorT.p > 0.02) {}   // the door's over its spot: it waits (a still or a link just puts it there)
+    else if (!cabSnap && S.site === "C" && cabDoors().table && cabP() && cabP().doorT.p > 0.02) {}   // the door's over its spot: it waits (a still or a link just puts it there)
     else twTo(WORK.trolley, S.trolley === "out" ? 1 : 0, 3200, Math.max(0, cabStill - performance.now()));
   }
 }
 function placeBeside() {
   if (!beside) return;
-  const on = S.site === "C" && S.cab === "compact";
+  const on = S.site === "C";
   for (const [k, g] of Object.entries(BES)) g.visible = on && S.beside === k;
   beside.position.z = S.cabw === "80" && R.CAB80 ? (R.CAB.z[1] - R.CAB80.z[1]) / 2 * M : 0;   // v33: centred in the longer gap
 }
@@ -495,7 +499,7 @@ function buildFoot(C) {
 }
 function placeFoot() {
   const want = !!S.foot && S.site === "C" && S.dining === "folded";
-  const fk = S.cab + S.cabw;
+  const fk = S.cabw;
   if (want && footKey !== fk) { if (foot) scene.remove(foot); foot = buildFoot(cabC()); clipGroup(foot); scene.add(foot); footKey = fk; }
   if (foot) foot.visible = want;
 }
