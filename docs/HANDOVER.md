@@ -92,6 +92,7 @@ Five from before V2.0 hold commits not in `main`, work since redone or dropped: 
 The older list (measurements still guessed, smaller confirmations) is in `docs/STATE.md`, "Open with the client", and in Measure on the site.
 
 ## Suggested next work for the new team
+**Taken up 8 Nov 2026:** the new team's round is `docs/REAL_PLAN.md` section 13 (N46–N51 side by side, N31 on Emma's yes).
 1. Ask Emma the six questions above; act on her answers (each one small PR).
 2. N31 (KTX2) on her OK, from #133.
 3. With her `?perf` numbers: the living room's own draws and the GTAO pass (`docs/NOTES.md` section 3), then the code trims listed there.
