@@ -367,7 +367,25 @@ WEL?.addEventListener("click", e => { const b = e.target.closest("[data-wgo]"); 
 BRAND?.addEventListener("click", () => welcome(!!WEL && WEL.hidden));
 BRAND?.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); welcome(!!WEL && WEL.hidden); } });
 canvas.addEventListener("pointerdown", () => welcome(false));
-document.addEventListener("keydown", e => { if (e.key === "Escape") welcome(false); });
+/* V2.96 (N42): Esc shuts the top card or panel, one a press (it shut them all at once), and the focus goes back to what opened it. The
+   Plan's sheets, a zoomed picture and the lightbox keep their own Esc */
+const escBack = (el, to) => { if (to && (!document.activeElement || document.activeElement === document.body || el?.contains(document.activeElement))) to.focus({ preventScroll: true }); };
+const ESC = [
+  [() => WEL && !WEL.hidden, () => { welcome(false); escBack(WEL, BRAND); }],
+  [() => popId, () => { const was = popId; closePop(); stickEls[was]?.focus(); }],
+  [() => actId, () => { closeAct(); escBack(act, canvas); }],
+  [() => MEAS.on, endMeasure],
+  [() => S.edit && !qs("#r3d-addlist").hidden, () => { qs("#r3d-addlist").hidden = true; escBack(qs("#r3d-addlist"), qs("#r3d-add")); }],
+  [() => S.edit && selId, () => select(null)],
+  [() => window.DemmaTools?.isOpen(), () => { const b = qs("[data-drawer][aria-selected=true]") || qs("[data-tools-toggle]"); DemmaTools.close(); escBack(qs("#r3d-panel"), b); }],
+  [() => tourSt, tourEnd], [() => SH, () => showStop(true)],
+  [() => S.edit, () => { setEdit(false); escBack(qs("#r3d-editbar"), qs("#r3d-editbtn")); }],
+  [() => document.body.classList.contains("bare"), () => setBare(false)]];
+addEventListener("keydown", e => {
+  if (e.key !== "Escape" || document.pointerLockElement || document.body.matches(".sheet-open, .ov-open") || document.querySelector(".ov:not([hidden]), #lightbox:not([hidden])")) return;
+  const top = ESC.find(([open]) => open()); if (!top) return;
+  e.preventDefault(); e.stopImmediatePropagation(); top[1]();
+}, true);
 const welOnce = () => setTimeout(() => { try {   // automated browsers (the checks) go straight to work, unless ?welcome
   if (S.view !== "house" || (navigator.webdriver && !/[?&]welcome\b/.test(location.search)) || localStorage.getItem("demma-welcome")) return;
   localStorage.setItem("demma-welcome", "1"); welcome(true); } catch (e) {} }, 300);
