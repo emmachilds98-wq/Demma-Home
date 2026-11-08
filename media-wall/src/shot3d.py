@@ -77,7 +77,7 @@ SHOTS = [
     ("3d_beside_trolley_out", dict(view="dining", site="C", dining="six", scene="bright", beside="trolley", trolley="out", layout={"lamp": {"off": True}},
                                     aim=dict(eye=[235, 165, -285], at=[345, 55, -245], fov=55)),
      "BESIDE THE CABINET - the slim trolley pulled out for dinner, clear of the table door's swing (lamp hidden) - bright, table rule"),
-    ("3d_bar_shut", dict(view="breast", site="C", dining="folded", scene="bright", sugg={"barcase": True}), "THE CHIMNEY BREAST - the glass case, and the drinks cabinet under it (a suggestion), shut - bright"),
+    ("3d_bar_shut", dict(view="breast", site="C", dining="folded", scene="bright", sugg={"barcase": True}, plants="corner"), "THE CHIMNEY BREAST - the glass case, and the drinks cabinet under it (a suggestion), shut - bright"),
     ("3d_ottoman", dict(site="C", dining="folded", scene="bright", tod="day", lid=True, aim=dict(eye=[300, 150, -60], at=[238, 30, -157], fov=50)),
      "THE STORAGE OTTOMAN - navy velvet, its lid lifted off - daytime"),
     # v37: the bar built in beside the cabinet (shut, then open in the evening), the shoe cabinets in the same place, your black shelf's

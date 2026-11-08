@@ -106,7 +106,7 @@ def run(w, h):
         pg.evaluate("() => R3D.set({beside: 'clear', trolley: 'park', dining: 'folded', sugg: {floorplant: true}, view: 'pc'})"); pg.wait_for_timeout(800)
         if tap((lambda c: [c[0], 10, c[2]])(pg.evaluate(CEN, "SUGG_G.floorplant.pivot")), "the floor plant's pot (a suggestion)"): press("Terracotta"); print("   svar:", S("svar"))
         # v34: the drinks cabinet's front, the storage ottoman's lid
-        pg.evaluate("() => R3D.set({sugg: {barcase: true}, barflap: false, view: 'breast'})"); pg.wait_for_timeout(800)
+        pg.evaluate("() => R3D.set({sugg: {barcase: true}, plants: 'corner', barflap: false, view: 'breast'})"); pg.wait_for_timeout(800)
         if tap((lambda c: [c[0], 120, -20.5])(pg.evaluate(CEN, "SUGG_G.barcase")), "the drinks cabinet's front"): press("Open the bar"); print("   barflap:", S("barflap"))
         pg.evaluate("() => R3D.set({sugg: {}, lid: false, aim: {eye: [300, 150, -60], at: [238, 30, -157], fov: 50}})"); pg.wait_for_timeout(800)
         if tap((lambda c: [c[0], 44, c[2]])(pg.evaluate(CEN, "MOV.pouf.pivot")), "the ottoman's lid"): press("Lift the lid"); print("   lid:", S("lid"))
