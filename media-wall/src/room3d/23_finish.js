@@ -343,6 +343,7 @@ function finTakes() {
     for (const k of LIV_W) { const w = la.walls[k], hex = S.walls[k] || paintHex(); if (w) by[hex] = (by[hex] || 0) + w[0]; }
     for (const [hex, m2] of Object.entries(by)) { const l = lit(m2); rows.push(`<div class="ms-erow"><b>${roomName(LIVR)}</b> walls, ${paint(hex)}: ${m2.toFixed(1)} m², about ${l} L (${tins(l)} × 2.5 L)</div>`); }
     if (la.ceiling) { const hex = chHex("ceil"), l = lit(la.ceiling); rows.push(`<div class="ms-erow"><b>${roomName(LIVR)}</b> ceiling, ${paint(hex)}: ${la.ceiling.toFixed(1)} m², about ${l} L (${tins(l)} × 2.5 L)</div>`); } }
+  const T = R.HOUSE3 ? upsAll()[1] : { n: 0 }; if (T.n) rows.push(`<div class="ms-erow"><b>All the changes</b> ${T.n}, about ${upRange(T.lo, T.hi) || "£0"}</div>`);   // N40: the house's total, sent with the rest
   list.innerHTML = rows.join(""); box.hidden = !rows.length;
 }
 /* V2.13 (F6): a room's look copied to another (Copy this room on its card; Paste on any other room's), and the whole house's colours, floors
