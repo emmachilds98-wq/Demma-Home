@@ -7,7 +7,7 @@ const VIEWS = {
   livstand: { label: "Standing in the living room", eye: [372, 160, -6], at: [110, 150, -210], fov: STAND_FOV, stand: true },   // V1.6: Be there, from the door
   livalone: { label: "The living room on its own", eye: [-170, 520, 230], at: [240, 40, -140], fov: 46, above: true },   // v78b: from the hall's corner, the ceiling off
   landing: { label: "Landing", eye: [330, 425, 250], at: [345, 330, -60], fov: 80, box: [288, 402, 275, 485, -72, 256] },     // v66: from the top of the stairs
-  hall:    { label: "Entrance hall", eye: [395, 165, 345], at: [445, -100, 170], fov: 80, box: [310, 398, 15, 225, 50, 416] },   // V3.16 (N61), the client: "I can't see down to the lower floor" (standing in the hall): facing the doorway down, the stairs and the landing below in view   // v66: in from the front door
+  hall:    { label: "Entrance hall", eye: [395, 165, 345], at: [445, -100, 170], fov: 80, box: [310, 398, 15, 225, 50, 416] },   // V3.17 (N62), the client: "I can't see down to the lower floor" (standing in the hall): facing the doorway down, the stairs and the landing below in view   // v66: in from the front door
   garage:  { label: "Garage", eye: [250, 145, 483], at: [100, 40, 120], fov: 80, box: [8, 284, -10, 215, 52, 493] },          // v66: from inside its door
   wc:      { label: "WC", eye: [420, -95, -142], at: [420, -190, -290], fov: 80, box: [380, 462, -255, -30, -304, -140] },      // v66: from its door
   bath:    { label: "Bathroom", eye: [325, 424, -48], at: [410, 318, -240], fov: 84, box: [288, 462, 275, 485, -282, -44] },   // v75/v76/v77: from its door (v77 in the corner)   // v65: from its door, as the client's photos
@@ -298,7 +298,7 @@ function warmNear(x, feet, z) {
   for (const [id, r] of Object.entries(R.HOUSE3.rooms || {})) { const v = ROOM_VIEW[id] || WALK_VIEW[id]; if (v && VIEWS[v] && VIEWS[v].box && near(r[0], r[1], r[2], r[3]) && Math.abs(feet - r[4]) < 230) want.push(v); }
   want.find(v => v !== S.view && warmRoom(v));
 }
-/* V3.16, the client: "still has two front doors": the bin cupboards' doors, once open, were remembered open on the device (V1.26b) and,
+/* V3.17, the client: "still has two front doors": the bin cupboards' doors, once open, were remembered open on the device (V1.26b) and,
    both open, lie across the porch in front of the front door. They always start shut, aren't remembered, open one at a time (the other
    shuts) and "Open every door" leaves them */
 const BINS = ["door.store_w", "door.store_e"];

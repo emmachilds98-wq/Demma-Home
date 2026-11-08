@@ -106,6 +106,8 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `model.piece_shade`, moved with edits (`08_house_edits.js editedFloor`).
 - **The refresh button:** `.hello .ver` in Plan; the ↻ is CSS `::after` (`qa.py` reads the text); `version.txt`; handler at the end of
   `page.js`. To see a new round on the phone: open Plan, tap the version.
+  The version also shows faintly in the brand pill (`.brand .bver`, V3.16): the client looks for it on the first screen, not in Plan.
+  On an iPhone SE (375) the brand and Plan · Build · Buy already touch (the nav's 44 px min-widths), so it's hidden at 380 px and under.
 - **Landing and welcome:** `build_viewer.LANDING_JS`, `r3d-first` → `demma-landed`; the welcome once a device (`demma-welcome`);
   automated browsers skip both unless `?landing` / `?welcome`.
 - **Who gets a press first** (N52): OrbitControls listens on the canvas from `01` (first), Look round's turn (`14` `LD_`) in the
@@ -117,5 +119,5 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `19_view_controls.js` `mapKeys` (with the held keys), a view from the eyes calls `startWalk` (`eyeView`). A mouse drag on it in Playwright
   is enough to test it (it never reads `pointerType`); check `stick_all`. Note: `pip install -r media-wall/requirements.txt` can lift
   Playwright past 1.63.0 and its browser; put 1.63.0 back.
-- **Doors:** `14_views_walk.js` `walkDoors` opens a door within 95 cm (not the bin cupboards': `BINS`). A door's open state is kept on the device (`S.doors`), so a fix to how a door opens must also ignore what a device already saved (V3.16 N60: the bin doors kept open from before V2.99 still showed as a second front door). The stairs: both flights 85 wide
+- **Doors:** `14_views_walk.js` `walkDoors` opens a door within 95 cm (not the bin cupboards': `BINS`). A door's open state is kept on the device (`S.doors`), so a fix to how a door opens must also ignore what a device already saved (V3.17 N61: the bin doors kept open from before V2.99 still showed as a second front door). The stairs: both flights 85 wide
   (`geometry.RECESS_W`), `model.stair_soffit` over the lower flight; the site check walks through the living room door at x 339.
