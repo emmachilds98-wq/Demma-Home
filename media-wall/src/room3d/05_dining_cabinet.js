@@ -23,7 +23,6 @@ function cabKit() {      // the parts both cabinets share: materials, the table 
     pad: mat({ color: "#8e9a80", roughness: 0.95 }),                      // sage linen seat pads
     linen: mat({ color: "#8f7d69", roughness: 0.97 }),                    // v33: the padded chairs' linen, the colour of your photo
     linenBtn: mat({ color: "#6e5f4f", roughness: 0.8 }),                  // their buttons
-    alu: mat({ color: "#b9bcc0", roughness: 0.35, metalness: 0.8 }),
     steel: mat({ color: "#c9cbcd", roughness: 0.3, metalness: 0.9 }),     // v30: the piano hinges' knuckles
     plate: mat({ color: "#f4f1ea", roughness: 0.35 }),
     cloth: ["#efe7d8", "#8e9a80", "#c7643a"].map(c => mat({ color: c, roughness: 0.95 })),
@@ -58,7 +57,7 @@ function cabKit() {      // the parts both cabinets share: materials, the table 
     }
     const off = [hinge.position.clone(), hinge.position.clone().add(joint.position)];
     half.forEach((h, i) => [...h.children].forEach(o => { o.position.sub(off[i]); (i ? joint : hinge).add(o); }));
-    const at = (p, a, b) => ease(Math.min(1, Math.max(0, (p - RIG[a]) / (RIG[a + 1] - RIG[a]))));
+    const at = (p, a) => ease(Math.min(1, Math.max(0, (p - RIG[a]) / (RIG[a + 1] - RIG[a]))));
     root.userData.rig = anim(p => {
       hinge.rotation.z = Math.PI / 2 - Math.PI / 4 * (at(p, 0) + at(p, 2));
       joint.rotation.z = Math.PI - (Math.PI - 0.35) * at(p, 3) - 0.35 * at(p, 5);
@@ -67,27 +66,9 @@ function cabKit() {      // the parts both cabinets share: materials, the table 
     });
     return root;
   };
-  // the chairs at the table: slatted beech folding chairs with sage pads, the back legs rising to a two-rail back; a plate at each
+  // the chairs at the table; a plate at each
   K.seats = C => {
     const out = {}, [tz0, tz1] = C.tz, tx0 = C.tx[0], py = C.pivot[1], tt = C.top[2];
-    const chairOpen = (g, x, z, face) => {
-      if (R.CHAIR_PADDED) return paddedOpen(g, x, z, face);   // v33: your grey padded chairs are the plan's
-      const c = new THREE.Group(), sw = R.CHAIR[0], sd = R.CHAIR[1], sh = R.CHAIR[3], bh = R.CHAIR[2];
-      for (let i = 0; i < 4; i++) lb(c, 0, sh - 2.2, -sd / 2 + 6 + i * 9.4, sw - 4, 2.2, 8.2, K.beech);         // the seat's slats
-      for (const xx of [-sw / 2 + 1.5, sw / 2 - 1.5]) {
-        const back = lb(c, xx, 0, sd / 2 - 5, 2.6, bh, 3, K.beech); back.rotation.x = -0.06;              // the back legs, rising to the back
-        lb(c, xx, 0, -sd / 2 + 4, 2.6, sh - 2.2, 2.6, K.beech);                                           // the front legs
-        lb(c, xx, sh - 5, 0, 2.2, 3, sd - 6, K.beech);                                                    // the seat's side rails
-      }
-      for (const y of [bh - 9, bh - 21]) lb(c, 0, y, sd / 2 - 5.5, sw - 3, 7, 1.8, K.beech);             // two back rails
-      lb(c, 0, 14, -sd / 2 + 4, sw - 5, 2.2, 2.2, K.beech);                                               // the stretcher
-      const [pw, , pt] = R.CAB.pad;                                                                      // v31: a 40 × 40 tie-on pad, tied to the back legs
-      const p = new THREE.Mesh(new RoundedBoxGeometry(pw * M, pt * M, pw * M, 2, 0.012), K.pad); p.position.copy(v3(0, sh + pt / 2, -1)); c.add(shadow(p));
-      for (const xx of [-sw / 2 + 1.5, sw / 2 - 1.5]) lb(c, xx, sh - 7, sd / 2 - 7.5, 1.4, 8, 1.4, K.pad);   // the ties round the back legs
-      c.position.copy(v3(x, 0, z));
-      c.rotation.y = { n: 0, w: Math.PI, e: Math.PI / 2 }[face] || 0;                                     // the back away from the table (local +z is the back)
-      g.add(c);
-    };
     // v33: your padded folding chairs (Brayden Studio), drawn from the photo you sent (inputs/chairs_padded_listing_photo.webp): bent-wood
     // sides, each back upright curving forward at the seat into the front leg, the back leg crossing it under the seat; a thick buttoned
     // cushion on the seat (47 × 47, 6.5) and a buttoned pad between the uprights, reclined to 110°
@@ -124,7 +105,7 @@ function cabKit() {      // the parts both cabinets share: materials, the table 
     for (const [k, list] of Object.entries(C.seats)) {
       const g = new THREE.Group(); g.userData.chairs = [];
       for (const [x, z, f] of list) {
-        chairOpen(g, x, z, f);
+        paddedOpen(g, x, z, f);
         const c = g.children[g.children.length - 1], pz = f === "n" ? tz0 - 16 : f === "w" ? tz1 + 16 : C.cz, pxp = f === "e" ? tx0 + 16 : x;
         const pl = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.008, 28), K.plate); pl.position.copy(v3(pxp, py + tt + 0.4, pz)); g.add(pl);
         const home = c.position.clone(), back = new THREE.Vector3(Math.sin(c.rotation.y), 0, Math.cos(c.rotation.y));   // v32: drawn in along its back's line
@@ -134,9 +115,8 @@ function cabKit() {      // the parts both cabinets share: materials, the table 
     }
     return out;
   };
-  // a folded chair standing up, its room-side face at x0 (cz its centre along the wall)
   // v33: a folded chair standing up (your grey padded ones, 47 wide, 10 thick, 90 tall), its room-side face at x0, cz its centre along the wall
-  const FOLD = () => (R.CHAIR_PADDED ? R.CHAIR_PADDED.folded : R.CHAIR_FOLDED);
+  const FOLD = () => R.CHAIR_PADDED.folded;
   K.fchair = (g, x0, y0, cz) => {
     const [cw, cdep, ch] = FOLD();
     for (const sd of [-1, 1]) {
@@ -180,9 +160,9 @@ let cab = null, cabRig = null, cabSeats = {}, cabIn = null, cabDoor = {}, cabPad
 function buildCab(C = cabC()) {
   if (!C) return;
   const K = cabKit(), bx = K.bx, W = R.W, t = C.t, xf = C.front, xi = C.inner, deepIn = C.in_d;
-  const [cw, cdep] = R.CHAIR_FOLDED;
+  const [, cdep] = R.CHAIR_FOLDED;
   cab = new THREE.Group(); cab.name = "cab"; cab.userData.w = C.top[0];
-  const cbox = new THREE.Group(), packs = true;   // v33: the chair box in its own group
+  const cbox = new THREE.Group();   // v33: the chair box in its own group
   // two carcasses: each two ends, a top, a floor on a plinth set 2.5 back (a shadow line), a back; the boxes screwed together
   for (const [a, b] of [C.z_t, C.z_c]) {
     const span = a - b - 2 * t, tg = a === C.z_c[0] ? cbox : cab;
@@ -221,7 +201,7 @@ function buildCab(C = cabC()) {
   };
   door("T", C.door_t[0], C.door_t[1], C.door_t[1] - C.hinge_gap / 2);
   door("C", C.door_c[0], C.door_c[1], C.door_c[0] + C.hinge_gap / 2); cbox.add(cabDoor.C);
-  cbox.visible = packs; cabIn.visible = packs; cab.add(cbox);
+  cab.add(cbox);
   // the six pads on the table door's back, two across and three high, from the hinge rail's underside up (v31: 40 × 40 tie-on pads,
   // their ties hanging; the rail and the linen shelf stand back so they can)
   cabPads = new THREE.Group();
@@ -323,7 +303,6 @@ function cabGo(P) {
 let cabStill = 0;
 function placeOptC() {
   const on = S.site === "C", sliding = S.cab === "sliding";
-  if (optC) optC.visible = on && sliding;
   if (cab) cab.visible = on && !sliding;
   const P = cabP();
   if (on && P && !SH) cabGo(P);                        // v32: while "Watch it open" runs, its clock moves the cabinet
@@ -450,7 +429,7 @@ function buildBeside() {
     const cup = mat({ color: "#efe7d8", roughness: 0.5 });
     for (let i = 0; i < 3; i++) { const c = new THREE.Mesh(new THREE.CylinderGeometry(4 * M, 3.4 * M, 9 * M, 16), cup); c.position.copy(v3(x0 + tr.d / 2, tr.tiers[tr.tiers.length - 1] + 5.3, z0 + 8 + i * (tr.w - 16) / 2)); g.add(c); }
     // v34: the slim trolley as a drinks trolley (a suggestion): bottles on the top tray, glasses, mixers and an ice bucket below
-    { const dk = SUGG_G.bartrolley = new THREE.Group(), r = rnd(23), xm = x0 + tr.d / 2, [t1, t2, t3, t4] = tr.tiers;
+    { const dk = SUGG_G.bartrolley = new THREE.Group(), r = rnd(23), xm = x0 + tr.d / 2, [, t2, t3, t4] = tr.tiers;
       const tint = reg(new THREE.MeshPhysicalMaterial({ color: "#3f6b3a", roughness: 0.08, transmission: 0.35, transparent: true, opacity: 0.88 })), clear = reg(new THREE.MeshPhysicalMaterial({ color: "#e8eef0", roughness: 0.06, transmission: 0.6, transparent: true, opacity: 0.55 }));
       SVAR_MATS.bartrolley = [tint];
       for (let i = 0; i < 4; i++) { const bh = 26 + r() * 7, br = 3.7 + r() * 0.8, zz = z0 + 5.5 + i * (tr.w - 11) / 3;

@@ -106,7 +106,7 @@ function buildPlantsAndRecords() {
   const pots = ["#ece6da", "#c9c2b4", "#b5643f", "#7f8f72", "#2f2f2f"].map(c => reg(new THREE.MeshStandardMaterial({ color: c, roughness: 0.75 })));
   // v18.1: the plant stand from the client's listing: 98 × 29.5 × 158, slatted wood, two five-tier towers and an open middle with two shelves
   { const g = new THREE.Group(), wood = reg(new THREE.MeshStandardMaterial({ color: PS.col, map: OAK_TEX, roughness: 0.6 })); wood.userData.noTint = true;
-    const w = PS.w, d = PS.d, h = PS.h, [cl, cm, cr] = PS.cols, pt = PS.post;
+    const w = PS.w, d = PS.d, h = PS.h, [cl, , cr] = PS.cols, pt = PS.post;
     const xs = [-w / 2 + pt / 2, -w / 2 + cl, w / 2 - cr, w / 2 - pt / 2];                  // the four post lines across
     for (const x of xs) for (const z of [-d / 2 + pt / 2, d / 2 - pt / 2]) lb(g, x, 0, z, pt, h, pt, wood);
     const standPots = [];                                                                       // v40: where the stand's pots go; its plants are a spot
@@ -229,7 +229,7 @@ const CATALOGUE = {
     lb(g, 0, 0, 11.5, 56, 6, 2, m); lb(g, 0, 178, 0.5, 62, 2.4, 31.5, m);                  // the kick board, set back; the top
     for (const y of [6, 42, 78, 114, 150]) lb(g, 0, y, 0, 56, 2, 30, m);
     const r = rnd(9), mt = c => reg(new THREE.MeshStandardMaterial({ color: c, roughness: 0.62 }));
-    const spines = ["#2f3e5c", "#d24b33", "#e9e3d3", "#14806d", "#f0c24b", "#6b4f7a", "#1f1f21", "#b98250", "#8b9878"].map(mt), pages = mt("#efe9dc");
+    const spines = ["#2f3e5c", "#d24b33", "#e9e3d3", "#14806d", "#f0c24b", "#6b4f7a", "#1f1f21", "#b98250", "#8b9878"].map(mt);
     const book = (x, y, bw, bh, bd, lean = 0) => {
       const b = lb(g, x, y, 13 - bd / 2 - r() * 1.2, bw, bh, bd, spines[Math.floor(r() * spines.length)]);
       if (lean) { b.rotation.z = lean; b.position.x -= Math.sin(lean) * bh / 2 * M; b.position.y -= (1 - Math.cos(lean)) * bh / 2 * M; }
