@@ -39,6 +39,12 @@ ACCESS = """() => { const vis = el => { const r = el.getBoundingClientRect(), cs
   const noname = [...document.querySelectorAll("button, a[href], [role=button], input, select, textarea")].filter(el => vis(el) && !(el.getAttribute("aria-label") || el.getAttribute("title") || el.textContent || el.value || (el.labels && el.labels[0] && el.labels[0].textContent) || "").trim()).map(el => el.outerHTML.slice(0, 80));
   const c = document.querySelector(".r3d-stage canvas"), place = (document.getElementById("brand-place") || {}).textContent || "";
   return { noname: noname.slice(0, 4), label: c && c.getAttribute("aria-label").startsWith(place) ? "" : (c && c.getAttribute("aria-label")) }; }"""
+# V2.95 (N39): Back from a room brings you out to the house (one step, room to room taking its place), not off the site
+BACK = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), out = [], n0 = history.length;
+  const settle = async () => { await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(200); await sl(300); };
+  R3D.set({ view: "kitchen" }); await settle(); R3D.set({ view: "master" }); await settle(); out.push(D.S.view, history.length - n0);
+  history.back(); await settle(); out.push(D.S.view, location.pathname.endsWith("index.html") || location.pathname.endsWith("/"));
+  return out; }"""
 # V1.53: the first floor from overhead fits the screen (flyTo had held it to 6 m), and the figure dropped on bedroom 3 stands you there
 FIN3 = """async () => { const sl = ms => new Promise(r => setTimeout(r, ms)), cv = document.querySelector('.r3d canvas'), out = {};   // V2.6 (FINISHES F3)
   const settle = async () => { await sl(300); for (let i = 0; i < 150 && R3D._dbg.flying; i++) await sl(200); await sl(600); };
@@ -207,6 +213,9 @@ def main():
             acc = pg.evaluate(ACCESS)
             if acc["noname"]: fails.append(f"{w}: controls with no name: {acc['noname']}")
             if acc["label"]: fails.append(f"{w}: the 3D's label doesn't say where you are: {acc['label']!r}")
+            if phone:
+                bk = pg.evaluate(BACK)
+                if bk != ["master", 1, "house", True]: fails.append(f"{w}: two rooms, then Back: {bk} (want ['master', 1, 'house', True]: one step, out to the house)")
             pg.click("[data-hfloor=first]"); pg.wait_for_timeout(2500)
             if phone:
                 fh = pg.evaluate("() => document.getElementById('r3d-floors').getBoundingClientRect().height")
@@ -291,7 +300,7 @@ def main():
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
     print("speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room" for k, v in perf.items()))
-    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, down to the lower floor and back, the speed budget on 4 paths, {len(fails)} failed; screenshots in _shots/")
+    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, Back from a room to the house, down to the lower floor and back, the speed budget on 4 paths, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
 

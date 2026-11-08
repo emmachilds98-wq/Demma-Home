@@ -34,6 +34,26 @@ function goRoom(v) {
   setView(v); if (VIEWS[v] && VIEWS[v].box) setRmode("stand");
   if (tween && far) tween.dur = Math.max(tween.dur, 1100);   // from the whole house, a glide in, not a dive
 }
+/* V2.95 (N39): a room is a step in the history, so the phone's back swipe and the browser's Back bring you out to the house, not off the
+   site; another room takes that step's place, the house gives it back. setView calls roomHist; a sheet's own steps sit on top (page_router) */
+const HIST = Math.random().toString(36).slice(2);
+let histPop = false, histBack = false;
+function roomHist() {
+  if (!started || histPop || histBack || !R.HOUSE) return;   // a step back on its way: its popstate syncs
+  const st = history.state || {};
+  try {
+    if (S.view !== "house") { if (st.r3d) history.replaceState({ ...st, r3d: S.view }, ""); else history.pushState({ r3d: S.view, k: HIST }, ""); }
+    else if (st.r3d && st.k === HIST) { histBack = true; history.back(); }
+    else if (st.r3d) history.replaceState(null, "");
+  } catch (e) {}
+}
+addEventListener("popstate", e => {
+  if (!started || !R.HOUSE) return;
+  if (histBack) { histBack = false; roomHist(); return; }   // our own step back: if a room was picked meanwhile, its step again
+  const v = (e.state && e.state.r3d) || "house";
+  if (v === S.view || (v !== "house" && !VIEWS[v])) return;
+  histPop = true; try { if (v === "house") wholeRoom(); else goRoom(v); } finally { histPop = false; }
+});
 function syncRmode() {
   if (typeof syncStick === "function") try { syncStick(); } catch (e) {}   // V1.32: the walk's stick
   const rm = qs("#r3d-rmode"); if (!rm) return;
