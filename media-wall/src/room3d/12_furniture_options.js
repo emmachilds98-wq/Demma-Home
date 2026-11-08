@@ -24,7 +24,7 @@ function drop(group, list) {   // take a fixture and its lights out of the scene
   list.length = 0;
 }
 let built = {};
-function applyState() { const out = livShow(); try { setState(); } finally { if (out) livingFromOutside(); } }   // V2.96 (N37): from outside, a setting changed kept the living room shown (+91 draws)
+function applyState() { const out = livShow(); try { setState(); } finally { if (out) livingFromOutside(); } }   // V2.97 (N37): from outside, a setting changed kept the living room shown (+91 draws)
 function setState() {
   solidDirty();
   S.site = "C"; S.cab = "compact"; if (S.cabw !== "80") S.cabw = "90";   // v33, client: "the compact cabinet is our only choice for the table now"

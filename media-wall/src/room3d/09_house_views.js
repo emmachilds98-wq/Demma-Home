@@ -34,6 +34,26 @@ function goRoom(v) {
   setView(v); if (VIEWS[v] && VIEWS[v].box) setRmode("stand");
   if (tween && far) tween.dur = Math.max(tween.dur, 1100);   // from the whole house, a glide in, not a dive
 }
+/* V2.96 (N39): a room is a step in the history, so the phone's back swipe and the browser's Back bring you out to the house, not off the
+   site; another room takes that step's place, the house gives it back. setView calls roomHist; a sheet's own steps sit on top (page_router) */
+const HIST = Math.random().toString(36).slice(2);
+let histPop = false, histBack = false;
+function roomHist() {
+  if (!started || histPop || histBack || !R.HOUSE) return;   // a step back on its way: its popstate syncs
+  const st = history.state || {};
+  try {
+    if (S.view !== "house") { if (st.r3d) history.replaceState({ ...st, r3d: S.view }, ""); else history.pushState({ r3d: S.view, k: HIST }, ""); }
+    else if (st.r3d && st.k === HIST) { histBack = true; history.back(); }
+    else if (st.r3d) history.replaceState(null, "");
+  } catch (e) {}
+}
+addEventListener("popstate", e => {
+  if (!started || !R.HOUSE) return;
+  if (histBack) { histBack = false; roomHist(); return; }   // our own step back: if a room was picked meanwhile, its step again
+  const v = (e.state && e.state.r3d) || "house";
+  if (v === S.view || (v !== "house" && !VIEWS[v])) return;
+  histPop = true; try { if (v === "house") wholeRoom(); else goRoom(v); } finally { histPop = false; }
+});
 function syncRmode() {
   if (typeof syncStick === "function") try { syncStick(); } catch (e) {}   // V1.32: the walk's stick
   const rm = qs("#r3d-rmode"); if (!rm) return;
@@ -214,7 +234,7 @@ function roomUncull() {
   for (const me of CULLM) { me.geometry.setDrawRange(0, Infinity); me.layers.enable(0); for (const t of me.userData.twins || []) t.visible = false; }
   CULLG.forEach(g => g.visible = true); CULLM = []; CULLG = [];
 }
-function houseJoin(on) {   // V2.96 (N37): not culling by room (the house from outside), the floors shown drawn a material at a time (20_go joinBuild)
+function houseJoin(on) {   // V2.97 (N37): not culling by room (the house from outside), the floors shown drawn a material at a time (20_go joinBuild)
   const ks = on && houseG && houseG.visible && R.HOUSE3 ? JOIN_FL.filter(k => HFLOOR[k] && HFLOOR[k].visible) : [];
   const run = ks.length > 1 && JOIN_FL.indexOf(ks[ks.length - 1]) - JOIN_FL.indexOf(ks[0]) === ks.length - 1 ? new Set(ks) : null;
   if (!run && !HJOIN) return;
@@ -252,7 +272,7 @@ function roomCull(again) {   // again: a door swung (only this part of applyFloo
     me.geometry.setDrawRange(runs[0][0], runs[0][1] - runs[0][0]);
     const tw = me.userData.twins || (me.userData.twins = []);
     for (let i = 1; i < runs.length; i++) { const t = tw[i - 1] || (tw[i - 1] = twin(me)); t.geometry.setDrawRange(runs[i][0], runs[i][1] - runs[i][0]); t.visible = true; } });
-  /* V2.96 (N37): and what moves or swaps (a room's light, a bed, a wardrobe's doors) where its room is left out, and a door seen from neither side */
+  /* V2.97 (N37): and what moves or swaps (a room's light, a bed, a wardrobe's doors) where its room is left out, and a door seen from neither side */
   const off = g => g.traverse(me => { if (me.isMesh && me.layers.isEnabled(0)) { me.layers.disable(0); CULLM.push(me); } });
   for (const [r, g] of Object.entries(FIN_PEND)) if (!see.has(r)) off(g);
   const dside = {}; for (const [pk, a, b] of roomDoors().list) dside[pk] = [a, b];
