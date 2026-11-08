@@ -30,6 +30,7 @@ html body :is(.r3d-floors, .r3d-fintray, .r3d-momrow, .r3d-addlist, .r3d-sel, #p
 .brand .mark i { border-radius: 50%; }
 .brand b { display: block; font: 600 18px/1.1 var(--display); }
 .brand small { display: block; font: 600 12px/1.2 var(--body); color: var(--mut2); }
+.brand .bver { font: 500 11px/1 var(--body); color: var(--mut2); letter-spacing: .02em; white-space: nowrap; }   /* V3.15: the version on the first screen too, faint (client: "the mobile version doesn't have a version number") */
 /* v28, client: "make sure version number is visible somewhere even if its faint so i can tell updates are done when i load": V2.66 (N19), in Plan, by the hello */
 .hello .ver { margin-left: 6px; padding: 8px 6px; border: 0; background: none; cursor: pointer; font: 500 13px/1 var(--body); color: var(--mut2); letter-spacing: .02em; vertical-align: middle; }
 .hello .ver::after { content: " \21bb"; }
@@ -58,7 +59,7 @@ html body :is(.r3d-floors, .r3d-fintray, .r3d-momrow, .r3d-addlist, .r3d-sel, #p
   body.sheet-open .rail { display: none; }
   .brand { left: 12px; top: max(12px, env(safe-area-inset-top)); padding: 6px 14px 6px 6px; }
   .brand .mark { width: 34px; height: 34px; padding: 8px; border-radius: 12px; }
-  .brand small { display: block; font-size: 11.5px; }   /* V1.2: on a phone the second line says where you are, in place of the version */
+  .brand small { display: block; font-size: 11.5px; }   /* V1.2: on a phone the second line says where you are */
   .brand b { font-size: 16px; }
 }
 /* sheets: they slide up over the room */
@@ -315,6 +316,7 @@ body.sheet-open .hnav { display: none; }
 .sheet { left: 16px; }
 @media (max-width: 899px) { .hnav { top: max(12px, env(safe-area-inset-top)); right: 12px; } .hnav button { padding: 0 12px; font-size: 14px; } }
 @media (max-width: 420px) { .hnav { gap: 0; } .hnav button { padding: 0 8px; font-size: 13px; } .brand { padding-right: 10px; gap: 8px; } .brand .mark { width: 30px; height: 30px; padding: 7px; } .brand b { font-size: 15px; } }   /* V2.76 (N20): the brand and Plan · Build · Buy side by side on an iPhone SE (375) */
+@media (max-width: 380px) { .brand .bver { display: none; } }   /* V3.15: no room on an iPhone SE beside Plan · Build · Buy; the version is in Plan there */
 /* v39, item 13: before and after, your photo over the plan, a slider between */
 .ba-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
 .ba { margin: 0; }
