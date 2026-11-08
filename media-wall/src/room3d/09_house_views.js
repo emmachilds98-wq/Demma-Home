@@ -214,9 +214,21 @@ function roomUncull() {
   for (const me of CULLM) { me.geometry.setDrawRange(0, Infinity); me.layers.enable(0); for (const t of me.userData.twins || []) t.visible = false; }
   CULLG.forEach(g => g.visible = true); CULLM = []; CULLG = [];
 }
+function houseJoin(on) {   // V2.96 (N37): not culling by room (the house from outside), the floors shown drawn a material at a time (20_go joinBuild)
+  const ks = on && houseG && houseG.visible && R.HOUSE3 ? JOIN_FL.filter(k => HFLOOR[k] && HFLOOR[k].visible) : [];
+  const run = ks.length > 1 && JOIN_FL.indexOf(ks[ks.length - 1]) - JOIN_FL.indexOf(ks[0]) === ks.length - 1 ? new Set(ks) : null;
+  if (!run && !HJOIN) return;
+  if (!HJOIN) joinBuild();
+  for (const me of HJOIN.list) { let a = Infinity, b = 0;
+    for (const [fk, s, n] of me.userData.span) if (run && run.has(fk)) { a = Math.min(a, s); b = Math.max(b, s + n); }
+    me.visible = b > a; me.geometry.setDrawRange(me.visible ? a : 0, me.visible ? b - a : Infinity);
+    for (const [fk, , , src] of me.userData.span) if (me.visible && run.has(fk)) src.layers.disable(0); else src.layers.enable(0); }
+  HJOIN.G.visible = !!run;
+}
 function roomCull(again) {   // again: a door swung (only this part of applyFloors)
   if (again) { if (!houseG) return; roomUncull(); }
   const liv = S.view === "livstand" && houseG && houseG.visible && R.HOUSE3 && R.HOUSE3.rooms;
+  houseJoin(!liv && !(INSIDE() && houseG && R.HOUSE3 && R.HOUSE3.rooms));
   if (!liv && !(INSIDE() && houseG && R.HOUSE3 && R.HOUSE3.rooms)) { if (again) dirty(); if (cullKey) { cullKey = ""; reshadow(); } return; }
   const seeds = liv ? ["landing", doorOpen(HPARTS["door.living_door"]) && "hall"]   // from the living room: up its stairs, and the hall through its door
     : [VIEW_ROOM[S.view], hereRoom, ...Object.keys(WALK_VIEW).filter(k => WALK_VIEW[k] === S.view)];
@@ -240,6 +252,11 @@ function roomCull(again) {   // again: a door swung (only this part of applyFloo
     me.geometry.setDrawRange(runs[0][0], runs[0][1] - runs[0][0]);
     const tw = me.userData.twins || (me.userData.twins = []);
     for (let i = 1; i < runs.length; i++) { const t = tw[i - 1] || (tw[i - 1] = twin(me)); t.geometry.setDrawRange(runs[i][0], runs[i][1] - runs[i][0]); t.visible = true; } });
+  /* V2.96 (N37): and what moves or swaps (a room's light, a bed, a wardrobe's doors) where its room is left out, and a door seen from neither side */
+  const off = g => g.traverse(me => { if (me.isMesh && me.layers.isEnabled(0)) { me.layers.disable(0); CULLM.push(me); } });
+  for (const [r, g] of Object.entries(FIN_PEND)) if (!see.has(r)) off(g);
+  const dside = {}; for (const [pk, a, b] of roomDoors().list) dside[pk] = [a, b];
+  for (const [pk, P] of Object.entries(HPARTS)) { const d = dside[pk], r = P.g.userData.room; if (d ? !see.has(d[0]) && !see.has(d[1]) : r && !see.has(r)) off(P.g); }
   const key = [...see].sort().join() + CULLG.length;
   if (again) dirty();
   if (key !== cullKey) { cullKey = key; reshadow(); }

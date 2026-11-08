@@ -444,6 +444,26 @@ function pieceShade(F, mat) {
   const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); geo.computeVertexNormals();
   const me = new THREE.Mesh(geo, mat); me.raycast = () => {}; me.renderOrder = 1; me.name = "pieceShade"; return me;
 }
+/* V2.96 (N37): the house from outside: a material's pieces on every floor one draw, not one a floor (each floor's span noted, and the
+   floors shown are always a run, Lower, Lower and Ground, or all four, so one draw range); made when first wanted (09 houseJoin),
+   dropped when a floor is built again */
+let HJOIN = null;
+const JOIN_FL = ["lower", "ground", "first", "roof"];
+function joinBuild() {
+  const by = new Map(), G = new THREE.Group(), list = [];
+  for (const fk of JOIN_FL) for (const me of (HFLOOR[fk] || { children: [] }).children) if (me.userData.fm) { if (!by.has(me.material)) by.set(me.material, []); by.get(me.material).push(me); }
+  for (const [m, L] of by) { if (L.length < 2) continue;
+    const mixed = L.some(q => q.geometry.index) && L.some(q => !q.geometry.index), geos = L.map(q => mixed && q.geometry.index ? q.geometry.toNonIndexed() : q.geometry), span = [];
+    let at = 0; for (let i = 0; i < L.length; i++) { const q = geos[i], n = q.index ? q.index.count : q.attributes.position.count; span.push([L[i].userData.fm, at, n, L[i]]); at += n; }
+    const geo = mergeGeometries(geos); geos.forEach((q, i) => { if (q !== L[i].geometry) q.dispose(); }); if (!geo) continue;
+    const me = new THREE.Mesh(geo, m); me.castShadow = L[0].castShadow; me.receiveShadow = true; me.visible = false; me.userData.span = span; G.add(me); list.push(me); }
+  houseG.add(G); return (HJOIN = { G, list });
+}
+function joinDrop() {
+  if (!HJOIN) return;
+  for (const me of HJOIN.list) { me.geometry.dispose(); for (const sp of me.userData.span) sp[3].layers.enable(0); }
+  houseG.remove(HJOIN.G); HJOIN = null;
+}
 function buildHouse() {
   const HS = R.HOUSE; if (!HS) return;
   houseG = new THREE.Group(); houseG.visible = false; scene.add(houseG);
@@ -503,6 +523,7 @@ function buildHouse() {
     const roomOf = q => { if (!q.boundingBox) q.computeBoundingBox(); const b = q.boundingBox, x0 = -b.max.x / M, x1 = -b.min.x / M, y0 = b.min.y / M, y1 = b.max.y / M, z0 = b.min.z / M, z1 = b.max.z / M;
       let hit = null; for (const V of RVOL) if (x0 >= V[1] && x1 <= V[2] && y0 >= V[3] && y1 <= V[4] && z0 >= V[5] && z1 <= V[6]) { if (hit) return null; hit = V; } return hit; };
     const put = (g, geos, m, part) => { if (!geos.length) return;
+      if (geos.some(q => q.index) && geos.some(q => !q.index)) geos = geos.map(q => { if (!q.index) return q; const u = q.toNonIndexed(); q.dispose(); return u; });   // V2.96 (N37): boxes with profiles or turned shapes in one draw
       let rooms = null;
       if (!part && RVOL.length) { const V = geos.map(roomOf), ord = geos.map((q, i) => i).sort((a, b) => ((V[a] || [])[7] || 0) - ((V[b] || [])[7] || 0) || a - b);
         rooms = []; let at = 0;
@@ -511,7 +532,7 @@ function buildHouse() {
         geos = ord.map(i => geos[i]); if (rooms.length === 1 && !rooms[0][0]) rooms = null; }
       const me = new THREE.Mesh(worldUV(mergeGeometries(geos), m.userData.hk), m); me.receiveShadow = true;   // V2.8: the stair wall takes shadows as the living room's stair wall below it does (V2.2 took them off: two shades along the flight)
       if (rooms) me.userData.rooms = rooms;
-      me.castShadow = !m.transparent; g.add(me); geos.forEach(q => q.dispose()); };   // v69: the house's walls and pieces cast the sun's shadow (as the living room's)
+      me.castShadow = !m.transparent; g.add(me); geos.forEach(q => q.dispose()); return me; };   // v69: the house's walls and pieces cast the sun's shadow (as the living room's)
     const mx = new THREE.Matrix4();
     /* v69 (B4), the client: "more realistic like our living room": furniture, fittings and soft things with rounded edges (cm by
        material: the whites and woods a little, the suite and cushions a lot); walls, floors and frames stay sharp */
@@ -602,7 +623,7 @@ function buildHouse() {
     /* V1 (Phase 3): a floor can be built again with the client's edits (editedFloor: the edited pieces moved and sized, the walls round a
        door or a window following it); the floor keeps its group, so what's shown and hidden stays as it was */
     HBUILD = (fk, F) => {
-      cur = HFLOOR[fk];
+      joinDrop(); cur = HFLOOR[fk];
       if (cur) { for (const c of [...cur.children]) { if (c.userData.hlabel) continue; cur.remove(c); c.traverse(o => o.geometry && o.geometry.dispose()); } }
       else { cur = HFLOOR[fk] = new THREE.Group(); houseG.add(cur); }
       const fresh = !cur.userData.built; cur.userData.built = true;
@@ -610,12 +631,11 @@ function buildHouse() {
       /* V2.15 (FINISHES F5): each room's ceiling light (its item "light.<room>") its own group, so a fitting chosen in the tray can stand in for it */
       const tg = F.tags || [], lid = t => (t != null && t >= 0 && typeof tg[t] === "string" && tg[t].startsWith("light.")) ? tg[t].slice(6) : null, LG = {};
       const lgOf = r => LG[r] || (LG[r] = (() => { const g = new THREE.Group(); g.userData.finLight = r; cur.add(g); FIN_PEND[r] = g; return g; })());
-      for (const [mk, list] of Object.entries(F.boxes)) { const bt = (F.bt || {})[mk] || [], main = [], by = {};
-        list.forEach((q, i) => { const r = lid(bt[i]); (r ? (by[r] = by[r] || []) : main).push(q); });
-        put(cur, main.map(([x0, y0, z0, x1, y1, z1]) => houseBox(mk, x0, y0, z0, x1, y1, z1)), mat3(mk));
-        for (const [r, L] of Object.entries(by)) put(lgOf(r), L.map(([x0, y0, z0, x1, y1, z1]) => houseBox(mk, x0, y0, z0, x1, y1, z1)), mat3(mk)); }
+      /* V2.96 (N37): one draw a material for each group: a floor's boxes, profiles and turned shapes of one material were two or three */
+      const acc = new Map(), add = (g, mk, q) => { let o = acc.get(g); if (!o) acc.set(g, o = {}); (o[mk] = o[mk] || []).push(q); };
+      for (const [mk, list] of Object.entries(F.boxes)) { const bt = (F.bt || {})[mk] || [];
+        list.forEach(([x0, y0, z0, x1, y1, z1], i) => { const r = lid(bt[i]); add(r ? lgOf(r) : cur, mk, houseBox(mk, x0, y0, z0, x1, y1, z1)); }); }
       SHARED = new Set();
-      const byMat = {};
       const PSOFT = { lycksele: 2.2, pillow: 3, cloth: 0.7 };   // V2.46 (N6): the cloth profiles (the chair-bed, the garments) with soft edges, kept to their outline
       const prismGeo = P => {                         // a profile extruded: along x the profile is (z, y), along z it is (x, y)
         const r = SMALL && !GOOD_PHONE ? 0 : Math.min(PSOFT[P.m] ?? (P.m.startsWith("cloth") ? PSOFT.cloth : 0), (P.b - P.a) / 2 - 0.1);
@@ -630,22 +650,20 @@ function buildHouse() {
         if (P.axis === "z") { const A = Object.values(g.attributes);   // V1.31 (U6): mirrored (x flipped), so its faces turned inside out: wound back
           for (let i = 0; i + 2 < g.attributes.position.count; i += 3) for (const a of A) for (let c = 0; c < a.itemSize; c++) { const t = a.array[(i + 1) * a.itemSize + c]; a.array[(i + 1) * a.itemSize + c] = a.array[(i + 2) * a.itemSize + c]; a.array[(i + 2) * a.itemSize + c] = t; } }
         return g; };
-      for (const P of F.prisms) (byMat[P.m] = byMat[P.m] || []).push(prismGeo(P));
-      for (const [mk, geos] of Object.entries(byMat)) put(cur, geos, mat3(mk));
-      const byL = {}, lL = {};                        // v70: the suite's turned shapes (pans, seats, bowls); V2.15: a room's light's in its group
-      for (const L of F.lathes || []) { const g = new THREE.LatheGeometry(L.p.map(([r, h]) => new THREE.Vector2(r * M, h * M)), LOWD ? 12 : 28);
-        g.scale(L.s[0], 1, L.s[1]); const c = v3(L.c[0], L.c[1], L.c[2]); g.translate(c.x, c.y, c.z); const r = lid(L.t);
-        const into = r ? (lL[r] = lL[r] || {}) : byL; (into[L.m] = into[L.m] || []).push(g); }
-      for (const [mk, geos] of Object.entries(byL)) put(cur, geos, mat3(mk));
-      for (const [r, by] of Object.entries(lL)) for (const [mk, geos] of Object.entries(by)) put(lgOf(r), geos, mat3(mk));
+      for (const P of F.prisms) add(cur, P.m, prismGeo(P));
+      for (const L of F.lathes || []) { const g = new THREE.LatheGeometry(L.p.map(([r, h]) => new THREE.Vector2(r * M, h * M)), LOWD ? 12 : 28);   // v70: the suite's turned shapes (pans, seats, bowls); V2.15: a room's light's in its group
+        g.scale(L.s[0], 1, L.s[1]); const c = v3(L.c[0], L.c[1], L.c[2]); g.translate(c.x, c.y, c.z); const r = lid(L.t); add(r ? lgOf(r) : cur, L.m, g); }
+      for (const [g, o] of acc) for (const [mk, geos] of Object.entries(o)) { const me = put(g, geos, mat3(mk)); if (me && g === cur) me.userData.fm = fk; }
       { const ps = pieceShade(F, m3.shade_piece || (m3.shade_piece = pieceShadeMat())); if (ps) cur.add(ps); }   // V2.52 (R2)
       if (fresh) for (const L of F.labels || []) { label([L.name, [L.use, `about ${L.w.toFixed(1)} × ${L.d.toFixed(1)} m`].filter(Boolean).join(" · ")], L.x, L.y, L.z, 190);
         cur.children[cur.children.length - 1].userData.area = L.w * L.d; }   // V1.35: the bigger room's name wins where two overlap
       const partG = (P, into, at) => {                 // a part's group on its pivot, its own parts inside it (V1.26b: a bifold's second panel)
         const pv = v3(...P.pivot), g = new THREE.Group(); g.position.copy(pv).sub(at); into.add(g);
-        for (const [mk, list] of Object.entries(P.boxes)) put(g, list.map(([x0, y0, z0, x1, y1, z1]) => houseBox(mk, x0, y0, z0, x1, y1, z1).translate(-pv.x, -pv.y, -pv.z)), mat3(mk), true);
-        const pm = {}; for (const Q of P.prisms || []) (pm[Q.m] = pm[Q.m] || []).push(prismGeo(Q).translate(-pv.x, -pv.y, -pv.z));
+        const pm = {}, bb = new THREE.Box3(), ad = (mk, q) => { if (into === cur) { q.computeBoundingBox(); bb.union(q.boundingBox); } (pm[mk] = pm[mk] || []).push(q.translate(-pv.x, -pv.y, -pv.z)); };   // V2.96 (N37): a material one draw (boxes and profiles)
+        for (const [mk, list] of Object.entries(P.boxes)) for (const [x0, y0, z0, x1, y1, z1] of list) ad(mk, houseBox(mk, x0, y0, z0, x1, y1, z1));
+        for (const Q of P.prisms || []) ad(Q.m, prismGeo(Q));
         for (const [mk, geos] of Object.entries(pm)) put(g, geos, mat3(mk), true);
+        if (into === cur && !bb.isEmpty()) { const V = roomOf({ boundingBox: bb }); if (V) g.userData.room = V[0]; }   // the room that holds it whole (09 roomCull)
         const kids = Object.values(P.parts || {}).map(Q => Object.assign(partG(Q, g, pv), { angle: Q.angle, axis: Q.axis }));
         return { g, kids };
       };
