@@ -90,7 +90,7 @@ were kept here until V1.36 (5.9 MB); they're in git: `git show 7d8ec00:house/evi
 | The kitchen's cupboard (its front from the front wall) | 82 | 60 | the client: "in line with the fridge" |
 | The first floor's stairwell (its end) and landing | to z 170 | to z 229, the flight's top | the landing photos: the stairs come up to the landing |
 | The living room's top landing (`geometry.LANDING_D`) | 90 | 32 | the hall's photo: the door down sits about 1.3 m from the front door |
-| The stairwells' width (both floors) | 92 (lower), 89 (first) | 59 (x 408–467); the first floor's 85 measured (V2.24, x 382–467) | the living room's measured flight (the client: "the living room has accurate measurements so adjust the other rooms"); the hall's floor runs across its door |
+| The stairwells' width (both floors) | 92 (lower), 89 (first) | 85 (x 382–467) both flights since V2.94, the first floor's measured (V2.24); was 59 (x 408–467) | the living room's measured flight (the client: "the living room has accurate measurements so adjust the other rooms"); the hall's floor runs across its door |
 | The landing wall (v72, the client) | doors at the plans' places | bedroom 2's 94, the cupboard 100, 15, the master's 94, 34 to the end | the client's order and sizes; it adds up to the wall's 339 |
 | Bedroom 2 / the master (v72, the client) | the line at z 13 | z 54.5 behind the wardrobes (an L) | "bigger on the right side"; the master 3.81 past its alcove |
 | The hall/garage wall (v69, the client) | the hall from x 284 | from x 303.5 | "the whole wall" moves into the house, in line with the living room's breast (measured): the garage 2.91, the hall 1.02, the meter cupboard 38 inside: measure |

@@ -627,7 +627,7 @@ function setView(name, instant, dur) {
   syncRmode();                                                              // v78b: the living room's three too
   store.set(KEY, S); updateCaption(); brandPlace();
   if (started) outdoor();                                                   // V1.5: the living room's window, by day, out to the modelled outside
-  roomHist();                                                               // V2.95 (N39): Back brings you out to the house
+  roomHist();                                                               // V2.96 (N39): Back brings you out to the house
 }
 /* the camera to an eye and a point to look at (room cm); v32: also a piece's own close look (R3D.set's "aim") */
 function flyTo(e, a, fov, above, instant, dur) {

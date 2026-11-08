@@ -34,7 +34,7 @@ function goRoom(v) {
   setView(v); if (VIEWS[v] && VIEWS[v].box) setRmode("stand");
   if (tween && far) tween.dur = Math.max(tween.dur, 1100);   // from the whole house, a glide in, not a dive
 }
-/* V2.95 (N39): a room is a step in the history, so the phone's back swipe and the browser's Back bring you out to the house, not off the
+/* V2.96 (N39): a room is a step in the history, so the phone's back swipe and the browser's Back bring you out to the house, not off the
    site; another room takes that step's place, the house gives it back. setView calls roomHist; a sheet's own steps sit on top (page_router) */
 const HIST = Math.random().toString(36).slice(2);
 let histPop = false, histBack = false;

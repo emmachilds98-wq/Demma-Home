@@ -83,7 +83,10 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
   - **The hall and the living room's door (the client, 25 Oct: "make the door align with the given gap from the hallway to the living
     room, the living room has accurate measurements so adjust the other rooms"):** the stairwells fitted to the living room's measured
     flight (59 wide, x 408–467; the plans read 92): the hall's floor now runs right across the door (x 316–399), the flight plastered
-    off from the hall. Modelled v66.
+    off from the hall. Modelled v66. **V2.94 (the client, 8 Nov: "adjust the stairwells so the first floor stairs align with the
+    bannister properly rather than leaving a hole"):** both flights 85 wide (x 382–467) under the landing's banister; the living room's
+    door gives way to 67 (x 305.5–372.5, between the breast and the stairs' low wall: to measure), the hall's stair box and the door
+    down with it; the living room's flight has a plastered underside over the lower flight, and the lower flight runs between walls.
 - **The WC (the client's photo, 25 Oct; modelled v67):** a yellow suite: a low-level cistern under the window with its flush pipe, the
   pan; the small wall-hung basin on the right as you go in (the plan's maroon mark) with four white tiles over it, the roll holder; white
   pipes; grey wood-effect laminate; a yellow and white ceiling shade. V1.40 (the photo matched to the 3D, the window as its ruler): the
@@ -119,7 +122,7 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
   - **The stairwell at the first floor, measured (the client, 5 Nov, V2.24):** 85 cm wide from the party wall, not counting the banister;
     93 from that wall to the outside of the banister's posts (so the posts 8 square); 85 from the top stair to bedroom 3's wall (as drawn
     already). The banister's posts are plain and square with flat tops (no round caps). The short wall by the bathroom door is now 18
-    (the bathroom door's 68 is a guess: measure it). Still to confirm: is the living room's flight itself 85 wide too (it's drawn 59)?
+    (the bathroom door's 68 is a guess: measure it). The living room's flight drawn 85 too since V2.94 (the client).
   - **Walls smooth, ceilings artex** (the client, 5 Nov): every wall flat emulsion; every ceiling the popcorn artex, white in the house (the living room's as picked in Look).
   - **The store under the lower stairs runs back to the line of the wall past the stairs' top step** (the client, 5 Nov, wall D on our
     plan): its back wall one straight line with that one; a washer dryer fits in the corner there with the store door still opening.

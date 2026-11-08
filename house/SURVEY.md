@@ -62,7 +62,7 @@ Each one is a one-line change once it comes in. "What moves" is what the model m
 | Room | Plan says | Check |
 |---|---|---|
 | Living room | **measured: 467 × 347, ceiling 235** (done) | The side-wall socket's distance and height (still open) |
-| Entrance hall and stairs | the stairs fitted to the living room's flight (59 wide) | **The stairs up from the living room: how many steps, and how deep each tread is** (fitted to the photos, v67); the lower flight's width; from the front door to the door down to the lower stairs |
+| Entrance hall and stairs | both flights 85 wide, as the stairwell measured upstairs (V2.94; was 59) | **The stairs up from the living room: how many steps, and how deep each tread is** (fitted to the photos, v67); the lower flight's width; from the front door to the door down to the lower stairs |
 | Bin cupboards by the front door (two) | right about 60 × 73, left about 41 × 73 inside (plan) | Each one's inside width and depth, and its door's width; **which bins** (a 240 L wheelie bin needs 58 × 74) |
 | Garage | | Inside length and width; the door's width and height; height |
 | Front door and porch | an open porch, the step, the door ahead (client) | The porch's width and depth; the step's height; the door's size |

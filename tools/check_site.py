@@ -23,12 +23,12 @@ WALK = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   if (window.DemmaTools && DemmaTools.isOpen()) DemmaTools.close();   // V1.48: no panel re-framing the view while walking
   R3D.set({ view: "hall" }); await settle(); document.querySelector('[data-rmode="stand"]').click(); await settle();
   const legs = [], leg = n => legs.push(n + " " + at().map(Math.round).join(",") + " " + Math.round(D.WALK.feet ?? -1) + " " + D.S.view);
-  await go(357, -100, 60, () => at()[1] < -60); leg("in"); await go(400, -55, 20, () => at()[0] > 396); await go(437, -55, 15, () => at()[0] > 432); leg("foot");   // V1.57: to the stairs' foot, not into the cabinet by them (437, -100 was inside it)
+  await go(339, -100, 60, () => at()[1] < -60); leg("in"); await go(400, -66, 20, () => at()[0] > 396); await go(437, -66, 15, () => at()[0] > 432); leg("foot");   // V1.57: to the stairs' foot, not into the cabinet by them (437, -100 was inside it); V2.94: through the narrower door's middle (339), clear of the wider flight's low wall (its corner at z -39)
   await go(437, 600, 40, () => D.WALK.feet > 255 && at()[1] > 215); const top = D.WALK.feet; leg("top");
   await go(437, 205, 10, () => at()[1] < 207); await go(300, 60, 15, () => false); await sl(400); const stay = Math.round(D.WALK.feet); leg("bed2way");   // V1.55: for bedroom 2 from the stairs' top: still on the landing
   await go(437, 230, 15, () => at()[1] > 226);
   await go(330, 230, 12, () => at()[0] < 340); await go(437, 230, 12, () => at()[0] > 432); await go(437, -300, 40, () => at()[1] < -70); leg("down");
-  await go(357, -10, 20, () => at()[0] < 362); await go(357, 400, 30, () => at()[1] > 150);
+  await go(339, -70, 20, () => at()[0] < 344); await go(339, 400, 40, () => at()[1] > 150);   // V2.94: along the room to the door's middle, then out (not across the wider flight's foot)
   leg("out");
   await go(445, 320, 30, () => false); await go(450, 250, 20, () => false); leg("under");   // V1.57: in the hall under the living room's stairs: still the hall
   await go(430, 320, 30, () => at()[1] > 315); await go(430, -90, 160, () => D.WALK.feet < -250); const low = Math.round(D.WALK.feet); leg("lower");   // down the lower stairs: the lower floor
@@ -39,7 +39,7 @@ ACCESS = """() => { const vis = el => { const r = el.getBoundingClientRect(), cs
   const noname = [...document.querySelectorAll("button, a[href], [role=button], input, select, textarea")].filter(el => vis(el) && !(el.getAttribute("aria-label") || el.getAttribute("title") || el.textContent || el.value || (el.labels && el.labels[0] && el.labels[0].textContent) || "").trim()).map(el => el.outerHTML.slice(0, 80));
   const c = document.querySelector(".r3d-stage canvas"), place = (document.getElementById("brand-place") || {}).textContent || "";
   return { noname: noname.slice(0, 4), label: c && c.getAttribute("aria-label").startsWith(place) ? "" : (c && c.getAttribute("aria-label")) }; }"""
-# V2.95 (N39): Back from a room brings you out to the house (one step, room to room taking its place), not off the site
+# V2.96 (N39): Back from a room brings you out to the house (one step, room to room taking its place), not off the site
 BACK = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), out = [];
   const settle = async () => { await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(200); await sl(300); };
   R3D.set({ view: "kitchen" }); await settle(); R3D.set({ view: "master" }); await settle(); out.push(D.S.view, (history.state || {}).r3d);   // not history.length: an earlier step forward (PERF's) is counted till replaced

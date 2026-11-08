@@ -387,6 +387,8 @@ for rid in _rooms:
         continue
     A = _area(rid)
     for k in ("floor", "ceiling"):
+        if (rid, k) == ("lower_stairs", "ceiling"):
+            continue                                       # V2.93: the living room's flight's sloped underside (stair_soffit), a strip flat beside it
         v = (_sr[rid].get(k) or {}).get("area")
         if v is not None and A > 0.2 and not (0.55 * A <= v <= 1.15 * A):
             _off.append(f"{rid} {k} {v} of {A:.2f}")
