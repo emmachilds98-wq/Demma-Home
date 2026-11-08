@@ -19,6 +19,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **No shader built:** dump `R3D._dbg.gl.info.programs` (name | cacheKey) before and after; after must be a subset.
 - **A free camera:** `R3D.set({aim})` keeps the camera in the view's room. Set `R3D._dbg.camera.position` instead, in metres:
   world = (−x/100, y/100, z/100) from the model's cm (x mirrored). Raycast `R3D._dbg.scene` (every parent visible) to see what a pixel is.
+- **Touches:** Playwright's touchscreen only taps; for drags, pinches and twists send CDP `Input.dispatchTouchEvent` (a
+  `new_cdp_session`, `touchStart` / `touchMove` / `touchEnd` with `touchPoints`). The rig's ~1 s frames fold quick moves into one
+  `pointermove`, so a flick is sent as `PointerEvent`s from the page. Chrome hands each finger's move on as its own
+  `pointermove`, so a two-finger gesture must wait till both have moved before it decides what it is (N52's tilt read as a pan).
 - **Textures:** CC0 sites (Poly Haven, ambientCG) and GitHub release downloads are blocked; new textures are made in
   `house/textures/build_textures.py` (`--finishes`).
 - **Git:** force-push is refused. After a merged PR, restart the branch from `origin/main` (a fast-forward push works).
@@ -46,6 +50,11 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Room to room (N35):** `14_views_walk` `warmNear` warms a room within 1.5 m (`warmRoom`). three 0.160's shared `_depthMaterial`
   keeps the program of the first object drawn per light state, so stand-in depth materials (`depthMat`) cover every (side, map) mix.
   Walking hall → living room → landing → lower floor built 36 shaders on the frame that drew them; now 1.
+- **From the house (N54):** warmSwitch only ran standing in a room, so picking the living room from the house built its 58 (its
+  36 lights) on the spot; `warmHouse` visits it and each floor (`hfloor`) off screen, `livShow()` first (it's put away from outside).
+  A cube camera's pass with `localClippingEnabled = false` builds a whole set of 0-plane shaders: move the planes aside instead
+  (`roomEnv`). Find such shaders by diffing `gl.info.programs` cacheKeys before/after a step: index 48 + 2 per define is
+  `numClippingPlanes`. `check_site` `SPOT` counts programs first used on the frame they were linked (rAF and WebGL2 wrapped).
 - **Moving (N11, N17):** the page draws only when something changes (`17_render_loop` `need`). Damping is frame-rate free (`DAMP`).
   A slow phone walks without the shade and glow, then draws at 1.5× (`phoneCap`).
 - **Draws (N16, N37):** `20_go.js` `put()` sorts a floor's merged meshes by room (`userData.rooms` spans); `09` `roomCull` cuts rooms by
@@ -66,9 +75,9 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   shader changes; JPEG fallback. The tint must stay at build (compressed textures can't be tinted on the page). Waits on Emma's OK.
 - **Lean code (N28, N41):** method: join the parts (`room3d_src.js()`), run ESLint 9 `no-unused-vars` on the one file (install ESLint
   in a scratch folder, not the repo), read each part, grep every name across `media-wall/src`, `tools`, `house`, `projects` (`R3D.*`
-  hooks are called by `shot3d.py` and `check_site.py`), prove with the gallery. Left: `growGlow` always [] (parts 12, 13), `MOV`'s unread
-  `flat`, the `S.cab === "sliding"` paths, `export3d.py`'s `A_*` `BAR2` keys, unused names in 04 (`aboveAll`, `recP`), 14 (`wheelAcc`),
-  16 and 20 (`sl`), 20 (`id`, `wcm`, a duplicate `collide` key).
+  hooks are called by `shot3d.py` and `check_site.py`), prove with the gallery. N48 (V3.05) cut 12, 13, 14, 16 and 20's;
+  `movable`'s `_flat` stays by place (04 and 07 pass it). Left: the `S.cab === "sliding"` paths in 05, 15 (`LOOK_STR`) and 19 (`d.cab`),
+  `export3d.py`'s `A_*` `BAR2` keys, 04's `aboveAll`, `recP` (N47).
 
 ## 4. The house beside its photos
 - `tools/compare.py` pairs a photo with a view (`PAIRS`; a second photo of a room is `<view>_<what>`, e.g. `hall_front`);
@@ -76,6 +85,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   the photo's corners) and the bathroom door open (`compare.OPEN`).
 - **The lens cap:** the page's `fitFov` caps a tall view at 95° and reads `aim.fov` as a 16:9 lens, so a phone's 0.5× photo (about 108°
   on a tall photo) can't be matched. Put the key in `compare.TRUE_FOV` / `LENS` and start near 108° (portrait) or 90° (landscape).
+- **A hand start (N49):** read a few points whose room cm are sure (a wall's four corners, a ceiling corner, a fanlight, a switch) off the
+  photo on a pixel grid, then solve the eye, turn, tilt and roll at the photo's lens by least squares (scipy, in a scratch folder); a
+  wall seen square on gives its own sizes by its four corners alone (a homography). A wide (landscape) 0.5× photo is about 90° up.
+  Clutter and the client's planned furniture fool `camfit`'s edge score: check the side-by-side by eye.
 - The outside photos are wide-angle and distorted, so fits don't converge: read heights as shares of drive-to-gutter in one column of
   the picture; the first floor's sills and heads (0.71 / 0.96) are the ruler.
 - The kitchen-from-the-landing photo couldn't be fitted and was dropped. Bedroom 2 is the music room: no bed there.
@@ -95,6 +108,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `page.js`. To see a new round on the phone: open Plan, tap the version.
 - **Landing and welcome:** `build_viewer.LANDING_JS`, `r3d-first` → `demma-landed`; the welcome once a device (`demma-welcome`);
   automated browsers skip both unless `?landing` / `?welcome`.
-- **Back** (`09_house_views.js` `roomHist`), **Esc** (`19_controls.js` `ESC`, top layer only), **Overhead/Angled** (`19_view_controls.js`).
+- **Who gets a press first** (N52): OrbitControls listens on the canvas from `01` (first), Look round's turn (`14` `LD_`) in the
+  canvas's capture phase, Edit's drag on the 3D's root in capture (`13`), so it can `stopPropagation` before any of them; `controls.enabled
+  = false` in a later listener doesn't stop the capture ones. `movable`'s 8th argument isn't "fixed": the rug drags (only `extra.fixed` holds a piece, and none has it now).
+  Synthetic `PointerEvent`s can't take `setPointerCapture`: drive touches through CDP `Input.dispatchTouchEvent` (`check_site.py` `edit_drag`).
+- **Back** (`09_house_views.js` `roomHist`), **Esc** (`19_controls.js` `ESC`, top layer only), **Overhead/Angled** (`19_view_controls.js`: its own drags, the orbit's off there, V3.08 N53; it turns them off in a canvas capture listener after 14's, and Edit's root capture keeps a piece's press from it).
 - **Doors:** `14_views_walk.js` `walkDoors` opens a door within 95 cm (not the bin cupboards'). The stairs: both flights 85 wide
   (`geometry.RECESS_W`), `model.stair_soffit` over the lower flight; the site check walks through the living room door at x 339.

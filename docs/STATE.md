@@ -3,10 +3,10 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V3.04 (8 Nov 2026), live. **Work stopped 8 Nov for a new team: start with `docs/HANDOVER.md`** (then `docs/NOTES.md`).
-The version in Plan is a refresh button ("V3.04 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V3.10 (8 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
+The version in Plan is a refresh button ("V3.10 ↻"): on the home-screen app, tap it to get the newest.
 
-**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N47 done; N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
+**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N46 done V3.04, N48 V3.05, N50 V3.06, N52 V3.07; section 13's N53 V3.08, N54 V3.09, N49 V3.10; N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
 On a weak signal the page opens from the device after 2 s (V3.00, N43, `sw.js`): the new copy is saved for next time, and the version button shows it. The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 
 ## Where it lives
@@ -33,7 +33,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 | `house/` | The house: `survey_data.py` (every size, with its source) → `model.py` (the geometry, every piece tagged with its item) → `export_house.py` (the house file, `house.schema.json`); `measure.py` (what's still a guess: Measure's rows); `client_edits.py`/`.json` (the client's numbers over the guesses); `check_model.py`, `zfight.py`, `privacy_check.py`; `textures/` (the CC0 photos); the facts `HOUSE.md`, `EVIDENCE.md`, `SURVEY.md`, `BUILD_SPEC.md`, `HD_PLAN.md`, `SOURCES.md` |
 | `media-wall/inputs/` | The client's photos and plans (EXIF stripped) |
 | `projects/` | How a project is shaped (`project.schema.json`); a room's own project goes in `projects/<id>/project.json` |
-| `tools/` | `build.py`, `checks.py`, `check_site.py`, `pull_edits.py`, `round.py`, `compare.py` and `camfit.py` (the photos beside the 3D; the bathroom and the master fitted, V2.90; the kitchen and the hall (two of the hall) with the photo's own lens, `TRUE_FOV`, V3.03) |
+| `tools/` | `build.py`, `checks.py`, `check_site.py`, `pull_edits.py`, `round.py`, `compare.py` and `camfit.py` (the photos beside the 3D; the bathroom and the master fitted, V2.90; the kitchen and the hall (two of the hall) with the photo's own lens, `TRUE_FOV`, V3.03; the office, the landing and the WC, V3.10) |
 | `docs/` | `HANDOVER.md` (start here), `NOTES.md` (what the threads learned), `REAL_PLAN.md` (the plan), this file, `DECISIONS.md`, `HISTORY.md`, `reviews/` (the V2.44 review and audit) |
 | `_site/` (built) | `index.html` (the page), `sheets.<hash>.json` (its sheets), `plan.html` (a step to it), `sw.js`, `version.txt`, `manifest.webmanifest`, `three.<hash>.js`, `photos.<hash>.json`, `data/` (house.json, projects), `media-wall/out/` (PDFs), `media-wall/src/art/` (pictures, icons) |
 
@@ -52,10 +52,12 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   the wheel walks (Ctrl + wheel the lens), a double-click or double-tap walks you to a spot, Mouse look (M) on a computer. The eye is
   solid to walls and furniture; doors open with a tap and stay as left (this device). A shut door opens as you walk up to it, but the bin cupboards' (V2.99: they met across the porch as a second front door). `?room` opens the living room.
   Back (the phone's swipe, the browser's) from a room brings you out to the house, one step whatever rooms you went through (V2.96, N39, `roomHist`).
-- **Over the house (V2.74, N18, `19_view_controls.js`):** Overhead is a map: one finger or a left-drag moves it (the ground stays under
-  the finger), two fingers pinch and twist, a right-drag turns; Angled orbits 10°–85° above the ground. The point looked at stays
-  round the house (wider with Gardens or Next door). Keys, held and smooth: arrows or W A S D move, Q E turn, + − (R F) zoom, Shift
-  hurries; a double-tap or double-click on a room stands you in it, on the ground centres there.
+- **Over the house (V3.08, N53, `19_view_controls.js`):** Outside, Angled and Overhead move as a map, on a phone and a PC alike: one
+  finger or a left-drag moves the ground (the spot touched stays under the finger; a flick glides on); two fingers pinch to zoom and
+  twist to turn round the spot between them, and in Angled slide up or down together to tilt; the wheel zooms to the pointer; a
+  right-drag (or Shift + drag) turns and tilts round the middle. Angled 10°–85° above the ground; Overhead stays flat. The point looked
+  at stays round the house (wider with Gardens or Next door). Keys, held and smooth: arrows or W A S D move, Q E turn, + − (R F) zoom,
+  Shift hurries; a double-tap or double-click on a room stands you in it, on the ground centres there. The orbit's own drags are off there.
 - **Moving:** the glide after a drag eases the same each 60th of a second at any frame rate (`DAMP`, V2.60); a walk key held over
   half a second eases up to half as quick again (1.4 to 2.1 m/s, `WALK.pace`); Shift still hurries.
 - **The living room** is the media wall project: stickers, Plan · Build · Buy and their sheets, Room, Look, Edit, the item cards.
@@ -86,7 +88,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   wallpaper its rolls as counted plus paste up to a decorator's day, V3.01, N40). Plan's home has The house's changes:
   the total, how many done, a row a room (tap: stand in it, its card open); Measure shows the same total (`upsAll`).
 - **Measure** (dock): the sizes still guessed, by room; the colours' m² and litres; Send makes a link of every change
-  (`pull_edits.py --link`).
+  (`pull_edits.py --link`) and this device's speed (V3.06, N50: `R3D.perf()`'s chip family, quality, a frame moving and still, draws,
+  shaders, the view; no place or name), sent even with nothing typed; `pull_edits.py` prints it as a `speed` line beside `tools/perf_budget.json`.
 - **Shapes (V2.53, N6):** the master's wardrobes are PAX frames (plinth set back, an oval rail) with garments on hangers, the
   fridge-freezer has its two doors, grip strip and dispenser (the photos), the Kallax its thin shelves, DRÖNA boxes and records, the
   chair-bed its tube frame and leaning back. Cloth profiles get soft edges (`20_go.js` `PSOFT`); no microwave is in the photos.
@@ -99,6 +102,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Room to room (V2.87, N35):** walking, a room 1.5 m or less away has its shaders asked for in parallel (`14_views_walk` `warmNear` →
   `warmRoom`, the idle `warmSwitch` too), the shadows' with stand-ins (`01_renderer` `depthMat`); a group's planes set by a speck (`prime`).
   An emulated iPhone's walk (hall, living room, landing, lower floor): 36 shaders built on the frame that drew them, now 1.
+- **From the house in (V3.09, N54):** looking at the whole house, each pause warms the living room and each floor off screen too
+  (`14_views_walk` `warmHouse`, `warmAt`), and the living room's reflections (`12` `roomEnv`) put the cut aside instead of switching
+  cutting off (their own shaders). A PC (RTX path) going house → floors → living room → rooms: 88 shaders built on the spot, now 2;
+  the living room from the house 58 to 0 (on Windows each is a driver compile: seconds). `check_site` counts it on both HD paths (`shaders_spot`).
 - **Fewer shaders, lighter shapes (V2.79, N27):** the living room's two-sided panels (`buildGroup`'s polys, the brick) are one-sided
   with both faces in the shape (`03_materials` `twoFaced`), so they use the boxes' shaders, one draw each; the house's small roundings
   are one bevel under 0.8 cm (`bevelBox`), two steps under 2 cm (`houseBox`): 123 shaders to 112, the house 246k triangles to 167k.
@@ -109,15 +116,20 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **The kitchen and the hall as their photos (V3.03, N44):** the door down 66 inside its frame by the box's corner (was the box's whole end);
   the mirror and the bench along the party wall from near the box to the rack (were by the front door); a radiator under the kitchen's bar,
   the boiler 28 out of the back corner; the kitchen's door frame empty (no leaf in any photo). The door down, the bench and the radiator are in Measure.
+- **The office, the landing and the WC as their photos (V3.10, N49):** each camera solved by hand from the photo's corners with its own lens.
+  The WC window 63 wide (was 50); the WC basin and tiles halfway along the wall (were at the door), the roll holder in the back corner, the
+  riser right of the window, a slimmer shade further in; the landing's light over the banister and its hatch nearer the office; the
+  office's light toward the window. The WC window's width and the basin's place are in Measure.
 - **Drawn inside (V2.71, N16):** the room you stand in, the rooms seen from it, the shell; the outside if one has a window (`roomCull`);
   V2.98 (N37): a room's light, a bed's or a wardrobe's moving part and a door seen from neither side left out with their room.
 - **Fewer draws for the house (V2.98, N37):** a floor's boxes, profiles and turned shapes of one material are one draw (`20_go.js`
   `HBUILD`'s `acc`); from outside, a material's pieces on every floor shown are one draw (`joinBuild`, switched by `09` `houseJoin`,
   dropped when a floor is built again); a setting changed from outside keeps the living room put away (`applyState` → `livShow`).
   The house as it opens: 287 draws to 188 (phone, PC), 288 to 189 (iPhone), 569 to 371 (RTX, HD); after a setting 377 to 188. Same triangles.
-- **Fewer draws for the living room (V3.04, N47):** its fixed parts one draw a material (`04_living_shell.js` `bucket`: walls, ceiling,
-  pole; the stairs' treads, the door leaf, the curtains, the rug's sides; `05` the cabinet's carcasses, chairs, table halves, buttons).
-  Standing in it 246 to 234 (phone), 260 to 248 (iPhone), 749 to 719 (RTX); from above 444 to 375; at the table for six 275 to 167.
+- **The shade from the picture's depth (V3.04, N46):** HD's ambient occlusion (GTAO) reads the composer's own depth (a `DepthTexture`
+  on each of its two targets; normals worked out from it), not a second draw of the scene for normals: HD's draws about halved (the house
+  365 to 190 on an RTX, 365 to 190 on an iPhone with the shade; the living room 749 to 387, 504 to 264), 126 fewer shaders; the cutaway
+  cuts it as drawn, and the old pass's black patches at the floor's cut edges are gone.
 - **Quality:** a real graphics card opens in HD and never steps down (V2.25); iPhones start in HD at 2× and step down only if slow, always through the composer (the shade off never rebuilds a shader; a slow one leaves it out while you drag; the house's materials always carry 6 cutting planes, `houseClip`, so a floor's or a room's cut builds no shaders; the start and the rooms' warm-up (`warmSwitch`) compile by cutting planes, in parallel, `compileClipped`, V2.64); View →
   More has HD or Fast. In HD each room is lit by its ceiling light and its windows' daylight, with soft shadows and ambient occlusion; by evening the
   lamps the client has light theirs too (the office's purple lamp, the bathroom mirror's bar; V2.48), the kitchen from its two LED battens. Every standing piece
@@ -152,9 +164,13 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Sheets:** empty till first needed (V2.80); a shut one is `content-visibility: hidden`, its pictures fetched on opening (V2.54).
 - **Phones without a strong chip** (`LOWD`) take `tex/*_half.<hash>.jpg`, the photos at half size (`split_photos`): 2.3 MB on a first
   visit, not 10.2; the iPhones (Apple GPU) and the PCs keep the full set (V2.58).
+- **Lean 3D, the rest (V3.05, N48):** unused names cut from parts 12, 13, 14, 16 and 20 (`growGlow`, `MOV`'s `flat`, the sliding cabinet's
+  eyes and flag, `wheelAcc`, `sl`, `id`, `wcm`, a duplicate `collide` key): 2,716 lines to 2,713, 428.1 to 427.8 KB minified; the gallery the same to the pixel.
 - **Lean 3D (V2.95, N41):** what nothing used in parts 05, 06, 07, 10, 12 and 13 is gone (the old beech chairs, the picture lights, the A/B
   sites, unread values): 3,093 lines to 3,065 in the nine parts, the 3D's code 424.4 to 422.9 KB minified; the gallery the same to the pixel.
 - **The plan's code (V2.78, N28):** only what the PDFs and the site draw; the old sides of `geometry.py`'s `TABLE_STYLE`, `SUB_IN_WALL`, `PLAIN` are gone (git).
+- **Edit room's drag (V3.07, N52):** a press on a piece is the piece's alone (`13_edit_room.js` `grabbed`, caught on the 3D's root
+  before the orbit and Look round's turn); the selected piece is grabbed a finger's width round its outline. A drag off the pieces moves the view.
 - **Checks:** `tools/check_site.py` walks every door, taps pieces and surfaces, tries phones by touch (iPhone 15 Pro, SE, Pixel 7,
   Galaxy S24, iPad Mini) and the computers' widths.
 
@@ -174,20 +190,21 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 | Emma | PC, NVIDIA RTX 5070, 32 GB (the main way in) | A real graphics card: HD on every visit, never stepped down (V2.25) (soft shadows at 2048, the sun's at 4096, ambient occlusion, glow), drawn at 1.5–2×, the whole house too (V1.11) |
 | Dave | PC, NVIDIA RTX 3060, 32 GB | The same as the RTX 5070 |
 
-Quality is under View → More (HD or Fast). `?perf` at the end of the address shows the counts in a corner: the screenshot to send.
+Quality is under View → More (HD or Fast). Measure's Send carries the speed (V3.06); `?perf` at the end of the address shows the same in a box above the dock.
 
 ## Numbers (V2.74, software graphics in CI's browser: relative, not a real card's; from #131)
 - `sizes`: page 1.0 MB (V2.80), photos 8.6 MB in 72 files (2.3 MB at half size; V2.82, was 11.4 and 3.4), three.js 0.86 MB.
-- Shaders by the first picture: 18–19 (Fast), 49 (HD). Draws: the house 188 (HD on an RTX: 371; V2.98), the living room 234–719 by path (V3.04).
+- Shaders by the first picture: 18–19 (Fast), 49 (HD). Draws: the house 188 (HD on an RTX: 190; V3.04), the living room 254–387 by path.
 - The repo: 371 files, 59 MB tracked (31 MB the client's photos); `checks.py`'s repo check fails on a build output or a file over 1.5 MB.
 
 ## Open with the client
-1. `?perf` from the iPhone 15 Pro and the RTX 5070 PC, after opening the house once: a screenshot of the corner box (N10, N17).
+1. The speed from the iPhone 15 Pro and the RTX 5070 PC: open the house, move it a moment, then Measure → Send (N10, N17, N50; no screenshot now).
 2. KTX2 (N31): picked "let CI build it" (7 Nov); confirm before the workflow builds the encoder. Dark panels on a dark device, or the cream (N9).
 3. A microwave photo, if there is one (N6); what to try in each room (N5's trays).
-4. Measure: the living room door's width (drawn 67 since V2.94, to fit beside the 85 stairs); the bathroom door's width.
+4. Measure: the living room door's width (drawn 67 since V2.94, to fit beside the 85 stairs); the bathroom door's width (the landing photo
+   reads about 61, drawn 68: the client's "stops on the bath" ties it to the bath's 184).
 5. Still to measure (all in Measure): the boiler cupboard into bedroom 2; the bathroom's ceiling over the toilet, the slope's start, the
-   vanity, the bath (184 drawn); the hall's door down (66 drawn) and bench, the kitchen's radiator; the landing's doors and the wall between the bedroom doors; the tapestry's drop; the hall radiator; the
+   vanity, the bath (184 drawn); the hall's door down (66 drawn) and bench, the kitchen's radiator; the WC window's width (63) and the basin's place; the landing's doors and the wall between the bedroom doors; the tapestry's drop; the hall radiator; the
    master from wardrobes to front wall; the alcove; bedroom 2's length; a stair tread; the meter and bin cupboards; the living room's
    side-wall socket; the garage's chipboard box; the secret room's pier.
 6. Confirm: the kitchen's door frame has no door (V3.03, from the photos; if it has one, its width and swing); the lower flight's foot open to the lower landing (V1.32); the bathroom cord's length; the living room door hinged at the

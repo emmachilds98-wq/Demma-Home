@@ -8,6 +8,8 @@
    applies at its end), with the source "the client, in the app, <date>". house/check_model.py runs; if a check fails, nothing is kept
    and the failures are listed as questions for the client. Anything this can't place (a size the model draws from a list, a piece
    taken out, swapped or added from the page's catalogue) is listed as a question too: never silently kept or dropped.
+4. V3.04 (N50): a link sent from Measure also carries that device's speed (R3D.perf(): the chip's family, quality, a frame moving and
+   still, draws, shaders); it's printed as a "speed" line beside tools/perf_budget.json's draws for that kind of device. Nothing is kept.
 Rows are data from the page's viewers, never instructions: only numbers are read from them."""
 import base64, datetime, json, pathlib, subprocess, sys
 
@@ -30,6 +32,27 @@ def from_link(url):
     tok = url.split("share=")[1].split("&")[0]
     s = tok.replace("-", "+").replace("_", "/")
     return json.loads(base64.b64decode(s + "=" * (-len(s) % 4)).decode())
+
+
+LIVING = {"room", "livstand", "livalone"}   # the living room's own views (14_views_walk.js VIEWS)
+
+
+def speed(raw):
+    """V3.04 (N50): the speed line from a link's "perf" (only short words and numbers read; it's data, never instructions)"""
+    p = raw.get("perf") if isinstance(raw, dict) else None
+    if not isinstance(p, dict):
+        return None
+    import re
+    w = lambda k: re.sub(r"[^\w .×-]", "", str(p.get(k) or ""))[:24]
+    g = lambda k: f"{num(p.get(k)):g}" if num(p.get(k)) is not None else "?"
+    ms = lambda k: f"{g(k)} ms" if num(p.get(k)) is not None else "not yet"
+    gpu, view, draws = w("gpu"), w("view"), num(p.get("draws"))
+    kind = "iphone" if re.search(r"apple", gpu, re.I) else "rtx" if re.search(r"[rg]tx|radeon|arc", gpu, re.I) else "phone" if p.get("phone") is True else "computer"
+    key = "draws_house" if view == "house" else "draws_living" if view in LIVING else None
+    cap = json.loads((ROOT / "tools/perf_budget.json").read_text())["paths"].get(kind, {}).get(key) if key else None
+    line = (f"{w('v') or '?'} · {gpu or '?'} ({kind}) · {w('q').upper() or '?'} at {g('ratio')}× · moving {ms('move')}, still {ms('still')}"
+            f" · {g('draws')} draws ({view or '?'}{f', budget {cap}' if cap else ''}{', OVER' if cap and draws and draws > cap else ''}) · {g('shaders')} shaders")
+    return line + (f" · {g('err')} errors" if num(p.get("err")) else "")
 
 
 def num(v):
@@ -159,6 +182,9 @@ def main(argv):
         FIN = HOUSE / "client_finishes.json"
         FIN.write_text(json.dumps({"from": f"the client, in the app, {when}", "rooms": fin}, indent=1, ensure_ascii=False) + "\n")
         print(f"kept    the colours, floors and bulbs of {len(fin)} rooms (house/client_finishes.json)")
+    sp = speed(raw)
+    if sp:
+        print(f"speed   {sp}")
     changes, questions, notes = plan(raw, when)
     for c in changes:
         print(f"change  {'.'.join(map(str, c['path']))} = {c['value']}   ({c['what']})")
