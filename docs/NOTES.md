@@ -91,6 +91,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `page.js`. To see a new round on the phone: open Plan, tap the version.
 - **Landing and welcome:** `build_viewer.LANDING_JS`, `r3d-first` → `demma-landed`; the welcome once a device (`demma-welcome`);
   automated browsers skip both unless `?landing` / `?welcome`.
+- **Who gets a press first** (N52): OrbitControls listens on the canvas from `01` (first), Look round's turn (`14` `LD_`) in the
+  canvas's capture phase, Edit's drag on the 3D's root in capture (`13`), so it can `stopPropagation` before any of them; `controls.enabled
+  = false` in a later listener doesn't stop the capture ones. `movable`'s 8th argument isn't "fixed": the rug drags (only `extra.fixed` holds a piece, and none has it now).
+  Synthetic `PointerEvent`s can't take `setPointerCapture`: drive touches through CDP `Input.dispatchTouchEvent` (`check_site.py` `edit_drag`).
 - **Back** (`09_house_views.js` `roomHist`), **Esc** (`19_controls.js` `ESC`, top layer only), **Overhead/Angled** (`19_view_controls.js`).
 - **Doors:** `14_views_walk.js` `walkDoors` opens a door within 95 cm (not the bin cupboards'). The stairs: both flights 85 wide
   (`geometry.RECESS_W`), `model.stair_soffit` over the lower flight; the site check walks through the living room door at x 339.
