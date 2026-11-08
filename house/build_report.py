@@ -9,7 +9,7 @@ from playwright.sync_api import sync_playwright
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 H = ROOT / "house"; IN = ROOT / "media-wall/inputs"; EV = H / "evidence"; OUT = H / "out"
 OUT.mkdir(exist_ok=True)
-sys.path.insert(0, str(H)); import survey_data as D   # V2.92: the garden ideas
+sys.path.insert(0, str(H)); import survey_data as D   # V2.93: the garden ideas
 TMP = pathlib.Path(tempfile.mkdtemp())
 
 

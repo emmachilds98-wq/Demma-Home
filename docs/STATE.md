@@ -3,11 +3,11 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.92 (8 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
-The version in Plan is a refresh button ("V2.92 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V2.93 (8 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
+The version in Plan is a refresh button ("V2.93 ↻"): on the home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 10 (the rest in parallel chunks A–E, one thread each), section 9 (every task's state).
-Open PRs: #133 (KTX2, WIP), #142 (fonts, N25's rest). The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
+Open PRs: #133 (KTX2, WIP). The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 
 ## Where it lives
 - **The site on GitHub Pages:** https://emmachilds98-wq.github.io/Demma-Home/ (built and published by the workflow on every push to
@@ -110,7 +110,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   lawn (the gardens', next door's, the ground's) is one patchwork shader, `03_materials` `grassy`: the photo or its larger turned copy
   over metres, lighter and darker slower still, so no grid shows (V2.68). The back garden as its photos (V2.89, N30,
   `survey_data.BACK_GARDEN`, drawn in `04_living_shell.js` `garden3d`): looking out, the west border with the cordyline and a
-  red-tipped shrub, the path from a pad by the back door, a muscari strip, the lawn to the trees at 17 m, leaf litter beyond, the east bed. Four ideas to look at, in the plan only (V2.92, `GARDEN_IDEAS`).
+  red-tipped shrub, the path from a pad by the back door, a muscari strip, the lawn to the trees at 17 m, leaf litter beyond, the east bed. Four ideas to look at, in the plan only (V2.93, `GARDEN_IDEAS`).
 - **Offline:** `sw.js` keeps the page's last copy and every picture; a file named by its contents (the photos, `three.<hash>.js`)
   stays in `demma-keep` across versions, so a new round doesn't fetch it again (V2.47).
   **Get the latest:** the version in Plan (`.hello .ver`, "V2.87 ↻") is a button, for the home-screen app that has no reload: it reads
@@ -123,6 +123,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **A light start (V2.80, N25):** the icon font only the symbols drawn (`icon_names`, a name a script swaps in goes in `ICONS_SET`;
   1.29 MB to 25 KB); the sheets' markup and scripts in `sheets.<hash>.json` (`pack_sheets`), fetched when idle, built on first need
   (`SHEETS_JS`; `DemmaSheets.load()` for the checks): 1,565 elements at the start, was 14,695; suggestions and ideas built when first shown (`lazyVis`).
+  The fonts' stylesheets don't hold up the first screen (`media="print"` till they land): the 3D's start about 0.25 s sooner (V2.92).
 - **Lighter photos (V2.82, N32):** none finer than a 4K screen shows at the nearest a view comes (`build_textures.PX`, `--slim`): the
   carpets, the blanket's, the sofa-bed's and the duvet's weave at 512; a key whose picture another has says `like` (`export3d` `pic`).
 - **Phone and PC look-over (V2.88, N33):** on a touch screen every tap is 44 px (`room3d_page.CSS`, `pointer: coarse`); the small

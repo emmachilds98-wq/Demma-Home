@@ -59,7 +59,7 @@ BACK_GARDEN = dict(x=(-12.0, 479.0), length=2500.0, lawn_end=1700.0, border=80.0
                    pad=dict(x0=218.0, d=90.0), fence_w=dict(low=110.0, low_to=450.0, h=180.0), fence_e=120.0,
                    src="B: the back photo (photo_house_rear_24oct.jpg), the summer photo and the view photos, sized against the house (E)")
 
-# V2.92 (N30's rest; the client, 8 Nov 2026: "make decisions for me"): ideas for the back garden, only to look at (one line each: what,
+# V2.93 (N30's rest; the client, 8 Nov 2026: "make decisions for me"): ideas for the back garden, only to look at (one line each: what,
 # where, size, rough cost £, source); no build, no buy rows (CLAUDE.md's core plan vs options)
 GARDEN_IDEAS = [
     ("A sandstone patio by the back door", "In place of the concrete pad, out to the path", "about 4 × 3 m (12 m²)", (1000, 1600),
