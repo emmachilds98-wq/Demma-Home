@@ -16,13 +16,21 @@ SITE = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else ROOT / "_site").resolv
 OUT = ROOT / "_shots" / "compare"
 IN = ROOT / "media-wall/inputs"
 # the view and the photo it was made from (room3d.js VIEWS' notes, house/EVIDENCE.md)
-PAIRS = [("kitchen", "photo_kitchen_wide_30oct.jpg"), ("bath", "photo_bathroom_from_door_27oct.jpg"), ("hall", "photo_hall_to_living_25oct.jpg"),
+# V2.97 (N44): a second photo of a room is "<view>_<what>" (the hall to its front door)
+PAIRS = [("kitchen", "photo_kitchen_wide_30oct.jpg"), ("bath", "photo_bathroom_from_door_27oct.jpg"),
+         ("hall", "photo_hall_to_living_25oct.jpg"), ("hall_front", "photo_hall_front_door_25oct.jpg"),
          ("office", "photo_office_wide_25oct.jpg"), ("master", "photo_master_bed_25oct.jpg"), ("landing", "photo_landing_from_office_26oct.jpg"),
          ("wc", "photo_wc_25oct.jpg"), ("front", "photo_house_front_25oct.png"), ("rear", "photo_house_rear_24oct.jpg")]
 W = 720
 # V1.40 (Next 2): where each photo was taken, found by tools/camfit.py (the 3D's edges fitted to the photo's): {view: {eye, at, fov}}
-CAMS = {"office": {"eye": [263.0, 432.5, 282], "at": [369.3, 390.5, 446.1], "fov": 75.0}, "landing": {"eye": [330, 443.8, 220.0], "at": [330.9, 380.2, 30.4], "fov": 70}, "wc": {"eye": [415.0, -96.9, -132.0], "at": [423.6, -140.0, -327.1], "fov": 70}, "kitchen": {"eye": [182.0, -105.0, -300], "at": [30.9, -138.0, -426.8], "fov": 78.0}, "hall": {"eye": [415.0, 153.8, 405.0], "at": [416.1, 101.4, 212.0], "fov": 75},
-        "bath": {"eye": [307.4, 378.9, 26.0], "at": [349.5, 422.4, -164.6], "fov": 90.9}, "master": {"eye": [268, 371.4, 240], "at": [91.9, 298.6, 300.8], "fov": 74}}   # the fits that read true (the hall's in part); V2.90 (N34) the bathroom (0.42) and the master (0.41) from hand starts (camfit.START)
+CAMS = {"office": {"eye": [263.0, 432.5, 282], "at": [369.3, 390.5, 446.1], "fov": 75.0}, "landing": {"eye": [330, 443.8, 220.0], "at": [330.9, 380.2, 30.4], "fov": 70}, "wc": {"eye": [415.0, -96.9, -132.0], "at": [423.6, -140.0, -327.1], "fov": 70},
+        "bath": {"eye": [307.4, 378.9, 26.0], "at": [349.5, 422.4, -164.6], "fov": 90.9}, "master": {"eye": [268, 371.4, 240], "at": [91.9, 298.6, 300.8], "fov": 74},   # V2.90 (N34) the bathroom (0.42) and the master (0.41) from hand starts (camfit.START)
+        "kitchen": {"eye": [240, -107, -305], "at": [255.0, -117.0, -105.8], "fov": 76.0},
+        "hall": {"eye": [385, 156.9, 416], "at": [417.0, 110.7, 224.1], "fov": 108}, "hall_front": {"eye": [330, 148.1, 225], "at": [410.3, 92.7, 399.6], "fov": 108}}   # V2.97 (N44): 0.49, 0.37, 0.53
+# V2.97 (N44): these cameras' fov is the photo's own, up and down (the phone's 0.5× is about 108° on a tall photo), set on the camera
+# past the page's fitting (fitFov caps a tall screen's at 95, so the room looked too near)
+TRUE_FOV = {"kitchen", "hall", "hall_front"}
+LENS = "v => { const k = R3D._dbg.camera; k.fov = v; k.clearViewOffset(); k.updateProjectionMatrix(); }"
 # V2.90 (N34): the doors open in each photo (shut in the 3D, the bathroom's photo is all door)
 OPEN = {"bath": ["door.bath_door"]}
 # V2.75 (N21): the outside, the whole house with the street and the gardens on, seen from where the agent's photos were taken (by eye)
@@ -44,6 +52,7 @@ def main():
     with sync_playwright() as p:
         b = pw.launch(p, pw.GL)
         for view, photo in PAIRS:
+            room = view.split("_")[0]
             if not (IN / photo).exists():
                 print("no photo", photo); continue
             ph = ImageOps.exif_transpose(Image.open(IN / photo)).convert("RGB")
@@ -51,7 +60,7 @@ def main():
             ctx = b.new_context(viewport={"width": W, "height": h}, device_scale_factor=1, service_workers="block")
             pg = ctx.new_page(); pg.set_default_timeout(300000); localcdn.route(pg)
             pg.goto(f"http://127.0.0.1:{httpd.server_address[1]}/index.html?noao"); pg.wait_for_function("window.R3D && window.R3D.ready", timeout=240000)
-            pg.evaluate("R3D.photos()"); pg.evaluate(f"R3D.set({{view: '{'house' if view in OUTSIDE else view}', tod: 'day', hstreet: true, hgarden: true}})"); pg.wait_for_timeout(3500)
+            pg.evaluate("R3D.photos()"); pg.evaluate(f"R3D.set({{view: '{'house' if view in OUTSIDE else room}', tod: 'day', hstreet: true, hgarden: true}})"); pg.wait_for_timeout(3500)
             for k in OPEN.get(view, []):
                 pg.evaluate("k => R3D._dbg.swingDoor(k, true)", k); pg.wait_for_timeout(1500)
             if view in OUTSIDE:
@@ -59,6 +68,8 @@ def main():
             elif view in CAMS:                                  # V1.40: standing where the photo was taken (standing: not pulled back into the room's box)
                 pg.evaluate("document.querySelector('[data-rmode=\"stand\"]').click()"); pg.wait_for_timeout(2500)
                 pg.evaluate("a => R3D.set({ aim: a })", CAMS[view]); pg.wait_for_timeout(1500)
+                if view in TRUE_FOV:
+                    pg.evaluate(LENS, CAMS[view]["fov"]); pg.wait_for_timeout(500)
             pg.evaluate("document.body.classList.add('bare'); document.querySelectorAll('.r3d-mini, .brand, .r3d-toast, .r3d-stick').forEach(e => e.style.visibility = 'hidden')")
             pg.wait_for_timeout(600)
             shot = OUT / f"{view}_3d.png"; pg.screenshot(path=str(shot)); ctx.close()
