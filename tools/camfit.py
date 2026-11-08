@@ -19,7 +19,11 @@ BOX = {"hall": [310, 460, 15, 225, 50, 416],   # the hall's front part runs to t
 # V2.90 (N34): hand starts where the photos were taken (the sweep settles wrong in these), each from the photo's corners solved by hand
 # (the window, the toilet, the mirror, the vanity, the door's hinge; the headboard and the ottoman's corners): the bathroom from the landing
 # just out of its door (open as far as the bath lets it), the master from past the bed's foot by the door, low, at the headboard
-START = {"bath": {"eye": [307.4, 384.5, 26.0], "at": [382.7, 417.7, -156.2], "fov": 90.9}, "master": {"eye": [268, 377, 240], "at": [89.4, 301.9, 288.8], "fov": 74}}
+START = {"bath": {"eye": [307.4, 384.5, 26.0], "at": [382.7, 417.7, -156.2], "fov": 90.9}, "master": {"eye": [268, 377, 240], "at": [89.4, 301.9, 288.8], "fov": 74},
+         # V3.03 (N44, compare.TRUE_FOV): the kitchen from the window end by the bar; the hall from the front
+         # door and to it from beside the stairs' box (both the 0.5× lens, about 108°)
+         "kitchen": {"eye": [240, -107, -305], "at": [255, -117, -106], "fov": 72},
+         "hall": {"eye": [385, 155, 416], "at": [405, 85, 60], "fov": 108}, "hall_front": {"eye": [330, 150, 225], "at": [395, 105, 420], "fov": 108}}
 STEP = dict(x=40.0, y=15.0, z=40.0, yaw=10.0, pitch=6.0, fov=8.0)
 
 
@@ -80,29 +84,32 @@ def main(only):
     with sync_playwright() as p:
         b = pw.launch(p, pw.GL)
         for view, photo in compare.PAIRS:
-            if only and view not in only:
+            if only and view not in only or view in compare.OUTSIDE:
                 continue
+            room = view.split("_")[0]                         # V3.03 (N44): "hall_front" is the hall's second photo
             ph = ImageOps.exif_transpose(Image.open(compare.IN / photo)).convert("RGB")
             W = 360; H = round(W * ph.height / ph.width)
             P = edges(ph, W, H); P4 = grow(P, 4)
             ctx = b.new_context(viewport={"width": W, "height": H}, device_scale_factor=1, service_workers="block")
             pg = ctx.new_page(); pg.set_default_timeout(300000); localcdn.route(pg)
             pg.goto(f"http://127.0.0.1:{httpd.server_address[1]}/index.html?noao"); pg.wait_for_function("window.R3D && window.R3D.ready", timeout=240000)
-            pg.evaluate("R3D.photos()"); pg.evaluate(f"R3D.set({{view: '{view}', tod: 'day'}})"); pg.wait_for_timeout(2500)
+            pg.evaluate("R3D.photos()"); pg.evaluate(f"R3D.set({{view: '{room}', tod: 'day'}})"); pg.wait_for_timeout(2500)
             for k in compare.OPEN.get(view, []):
                 pg.evaluate("k => R3D._dbg.swingDoor(k, true)", k); pg.wait_for_timeout(1500)
             pg.evaluate("document.querySelector('[data-rmode=\"stand\"]').click()"); pg.wait_for_timeout(2500)   # standing: nothing pulls the eye back into the room's box
             pg.evaluate("document.body.classList.add('bare'); document.querySelectorAll('.r3d-mini, .brand, .r3d-toast, .r3d-stick').forEach(e => e.style.visibility = 'hidden')")
-            v = compare.CAMS.get(view) or START.get(view) or pg.evaluate(f"(() => {{ const V = R3D._dbg.VIEWS['{view}']; return {{ eye: V.eye, at: V.at, fov: 70 }}; }})()")
+            v = compare.CAMS.get(view) or START.get(view) or pg.evaluate(f"(() => {{ const V = R3D._dbg.VIEWS['{room}']; return {{ eye: V.eye, at: V.at, fov: 70 }}; }})()")
             c = start_of(v)
-            bx = BOX.get(view) or pg.evaluate(f"R3D._dbg.VIEWS['{view}'].box")    # [x0, x1, y0, y1, z0, z1]: the eye stays in the room (or its doorway, 40 on) at a phone's height
+            bx = BOX.get(room) or pg.evaluate(f"R3D._dbg.VIEWS['{room}'].box")    # [x0, x1, y0, y1, z0, z1]: the eye stays in the room (or its doorway, 40 on) at a phone's height
             fy = -260.0 if bx[2] < -100 else 260.0 if bx[2] > 200 else 0.0   # its floor (the views' boxes start a little over it)
-            g = MARGIN.get(view, 40)                          # how far past the room's box (a doorway); the hall's front door is the porch's
+            g = MARGIN.get(room, 40)                          # how far past the room's box (a doorway); the hall's front door is the porch's
             ok = lambda t: bx[0] - g <= t["x"] <= bx[1] + g and bx[4] - g <= t["z"] <= bx[5] + g and fy + 110 <= t["y"] <= fy + 190
             c["y"] = min(max(c["y"], fy + 110), fy + 190)
 
             def render(c):
                 pg.evaluate("a => R3D.set({ aim: a })", cam_of(c)); pg.wait_for_timeout(350)
+                if view in compare.TRUE_FOV:
+                    pg.evaluate(compare.LENS, c["fov"]); pg.wait_for_timeout(150)
                 return score(P, P4, edges(Image.open(io.BytesIO(pg.screenshot())), W, H))
             def refine(c, best):
                 step = dict(STEP)
@@ -112,7 +119,7 @@ def main(only):
                         for k in ("yaw", "pitch", "fov", "x", "z", "y"):
                             for sgn in (1, -1):
                                 t = dict(c); t[k] += sgn * step[k]
-                                if (k == "fov" and not 35 <= t[k] <= 100) or not ok(t):
+                                if (k == "fov" and not 35 <= t[k] <= 115) or not ok(t):
                                     continue
                                 s = render(t)
                                 if s > best:

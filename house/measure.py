@@ -38,6 +38,9 @@ ROWS = [
     ("airing_door", "landing", "The boiler cupboard door's width", "inside the frame", lambda: _door("airing_door"), ("length", ("FIT_DOORS", "airing_door"))),
     ("master_door", "landing", "The master door's width", "inside the frame", lambda: _door("master_door"), ("length", ("FIT_DOORS", "master_door"))),
     ("hall_tapestry", "hall", "The tapestry's drop", "top to bottom", lambda: round(D.HALL["tapestry"]["y"][1] - D.HALL["tapestry"]["y"][0], 1), ("length", ("HALL", "tapestry", "y"))),
+    ("kitchen_radiator", "kitchen", "The radiator under the bar's width", "end to end", lambda: round(D.KITCHEN["radiator"]["z"][1] - D.KITCHEN["radiator"]["z"][0], 1), ("length", ("KITCHEN", "radiator", "z"))),   # V3.03 (N44)
+    ("hall_door_down", "hall", "The door down's width", "inside the frame", lambda: round(D.HALL["door"][1] - D.HALL["door"][0], 1), ("length", ("HALL", "door"))),   # V3.03 (N44)
+    ("hall_bench", "hall", "The bench's length", "along the wall", lambda: round(D.HALL["bench"]["z"][1] - D.HALL["bench"]["z"][0], 1), ("length", ("HALL", "bench", "z"))),   # V3.03 (N44)
     ("hall_radiator", "hall", "The hall radiator's width", "end to end", lambda: round(D.HALL["radiator"]["z"][1] - D.HALL["radiator"]["z"][0], 1), ("length", ("HALL", "radiator", "z"))),
     ("master_bedside", "master", "A bedside's width", "across its top", lambda: round(D.MASTER["bedsides"][0][1] - D.MASTER["bedsides"][0][0], 1), None),   # V2.90 (N34)
     ("master_front", "master", "Wardrobes' front to the front wall", "along the carpet", _master_front, None),
