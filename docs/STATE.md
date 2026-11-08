@@ -3,11 +3,12 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V2.95 (8 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
-The version in Plan is a refresh button ("V2.95 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V2.96 (8 Nov 2026), live. Work resumed 7 Nov after the handover (`docs/HANDOVER.md`).
+The version in Plan is a refresh button ("V2.96 ↻"): on the home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 11 (N39–N42 and N37, five side by side, a thread each), section 9 (every task's state).
-Open PRs: #133 (KTX2, WIP). The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
+Open PRs: #133 (KTX2, WIP).
+On a weak signal the page opens from the device after 2 s (V2.96, N43, `sw.js`): the new copy is saved for next time, and the version button shows it. The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 
 ## Where it lives
 - **The site on GitHub Pages:** https://emmachilds98-wq.github.io/Demma-Home/ (built and published by the workflow on every push to
