@@ -42,11 +42,11 @@ function mergeStatic(g) {
   }
   return g;
 }
-function movable(id, label, g, def, w, d, mats, flat = false, extra = {}) {
+function movable(id, label, g, def, w, d, mats, _flat, extra = {}) {   // _flat: unread, kept by place for the callers
   if (!extra.added && id !== "lamp") mergeStatic(g);   // v22
   const pivot = new THREE.Group(); pivot.add(g); pivot.userData.movId = id;
   movers.add(pivot);
-  MOV[id] = Object.assign({ id, label, pivot, def, w, d, mats, flat, base: mats.map(m => "#" + m.color.getHexString()) }, extra);
+  MOV[id] = Object.assign({ id, label, pivot, def, w, d, mats, base: mats.map(m => "#" + m.color.getHexString()) }, extra);
   return MOV[id];
 }
 function spotOf(id) {
@@ -98,7 +98,6 @@ function hangPlant(par, x, top, z, edges, seed, gapZ) {   // v38: gapZ [the shel
   FLORA_BUILD.pothos(B, v3(x, top + 10.3, z), 20, r, PB.pot / 2);
   floraFlush(hold, par);
 }
-let growGlow = [];
 const GLOW_TEX = canvasTex(128, 128, (c, w, h) => { const gr = c.createRadialGradient(w / 2, h / 2, 2, w / 2, h / 2, w / 2);
   gr.addColorStop(0, "rgba(255,214,160,0.75)"); gr.addColorStop(1, "rgba(255,214,160,0)"); c.fillStyle = gr; c.fillRect(0, 0, w, h); });
 function buildPlantsAndRecords() {

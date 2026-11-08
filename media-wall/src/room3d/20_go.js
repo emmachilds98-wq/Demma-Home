@@ -364,7 +364,7 @@ function townTex() {    // the hill's face from across the valley: clusters of t
 }
 function worldUV(geo, k, off) {
   const T = houseTex(k); if (!T) return geo;
-  const P = geo.attributes.position, N = geo.attributes.normal, uv = new Float32Array(P.count * 2), [sw, sh] = T.size, ox = off ? off.x : 0, oy = off ? off.y : 0, oz = off ? off.z : 0, sl = 1 / Math.cos(35 * Math.PI / 180);
+  const P = geo.attributes.position, N = geo.attributes.normal, uv = new Float32Array(P.count * 2), [sw, sh] = T.size, ox = off ? off.x : 0, oy = off ? off.y : 0, oz = off ? off.z : 0;
   for (let i = 0; i < P.count; i++) {
     const x = P.getX(i) + ox, y = P.getY(i) + oy, z = P.getZ(i) + oz, nx = Math.abs(N.getX(i)), ny = Math.abs(N.getY(i)), nz = Math.abs(N.getZ(i));
     let u, v;
@@ -394,7 +394,7 @@ function houseShade(H3, m3) {
     g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); g.computeVertexNormals();
     const me = new THREE.Mesh(g, mat); me.raycast = () => {}; me.renderOrder = 1; into.add(me); };
   const FK = { "-260": "lower", "0": "ground", "260": "first" }, per = {};
-  for (const [id, r] of Object.entries(H3.rooms || {})) {
+  for (const r of Object.values(H3.rooms || {})) {
     const fk = FK[String(r[4])]; if (!fk || !HFLOOR[fk]) continue;
     const [x0, x1, z0, z1, fy] = r, W = Math.min(26, (x1 - x0) / 3, (z1 - z0) / 3), P = per[fk] = per[fk] || { f: [[], []], c: [[], []] };
     const edges = [[[x0, z0], [x1, z0], [0, 1]], [[x1, z1], [x0, z1], [0, -1]], [[x0, z1], [x0, z0], [1, 0]], [[x1, z0], [x1, z1], [-1, 0]]];
@@ -473,7 +473,7 @@ function buildHouse() {
   const box = (xa, xb, ya, yb, za, zb, c) => { const p = v3((xa + xb) / 2, (ya + yb) / 2, (za + zb) / 2), g = new THREE.BoxGeometry(Math.max(1, Math.abs(xb - xa)) * M, Math.max(1, Math.abs(yb - ya)) * M, Math.max(1, Math.abs(zb - za)) * M);
     if (TK[c]) worldUV(g, TK[c], p);
     const b = new THREE.Mesh(g, mat(c)); b.position.copy(p); b.receiveShadow = true; cur.add(b); return b; };
-  const label = (lines, x, y, z, wcm) => {
+  const label = (lines, x, y, z) => {
     const cv = document.createElement("canvas"), g = cv.getContext("2d"); cv.width = 512; cv.height = 160;
     g.fillStyle = "rgba(255,252,245,0.92)"; g.beginPath(); g.roundRect ? g.roundRect(4, 4, 504, 152, 40) : g.rect(4, 4, 504, 152); g.fill();
     g.fillStyle = "#1d2a22"; g.textAlign = "center"; g.font = "600 52px Figtree, system-ui, sans-serif"; g.fillText(lines[0], 256, lines[1] ? 70 : 96, 470);
@@ -655,7 +655,7 @@ function buildHouse() {
         g.scale(L.s[0], 1, L.s[1]); const c = v3(L.c[0], L.c[1], L.c[2]); g.translate(c.x, c.y, c.z); const r = lid(L.t); add(r ? lgOf(r) : cur, L.m, g); }
       for (const [g, o] of acc) for (const [mk, geos] of Object.entries(o)) { const me = put(g, geos, mat3(mk)); if (me && g === cur) me.userData.fm = fk; }
       { const ps = pieceShade(F, m3.shade_piece || (m3.shade_piece = pieceShadeMat())); if (ps) cur.add(ps); }   // V2.52 (R2)
-      if (fresh) for (const L of F.labels || []) { label([L.name, [L.use, `about ${L.w.toFixed(1)} × ${L.d.toFixed(1)} m`].filter(Boolean).join(" · ")], L.x, L.y, L.z, 190);
+      if (fresh) for (const L of F.labels || []) { label([L.name, [L.use, `about ${L.w.toFixed(1)} × ${L.d.toFixed(1)} m`].filter(Boolean).join(" · ")], L.x, L.y, L.z);
         cur.children[cur.children.length - 1].userData.area = L.w * L.d; }   // V1.35: the bigger room's name wins where two overlap
       const partG = (P, into, at) => {                 // a part's group on its pivot, its own parts inside it (V1.26b: a bifold's second panel)
         const pv = v3(...P.pivot), g = new THREE.Group(); g.position.copy(pv).sub(at); into.add(g);
@@ -684,7 +684,7 @@ function buildHouse() {
     for (const r of F.rooms) {
       box(r.x0, r.x1, F.y - 6, F.y, r.z0, r.z1, FLOOR[r.id] || (F.id === "first" ? "#d9cbb3" : "#ddd3c2"));
       for (const [xa, xb, za, zb] of [[r.x0, r.x1, r.z0, r.z0 + 6], [r.x0, r.x1, r.z1 - 6, r.z1], [r.x0, r.x0 + 6, r.z0, r.z1], [r.x1 - 6, r.x1, r.z0, r.z1]]) box(xa, xb, F.y, F.y + WH, za, zb, WALL);
-      if (r.name) label([r.name, [r.use, `${r.w.toFixed(1)} × ${r.d.toFixed(1)} m`].filter(Boolean).join(" · ")], (r.x0 + r.x1) / 2, F.y + WH + 40, (r.z0 + r.z1) / 2, Math.min(260, Math.max(150, r.x1 - r.x0)));
+      if (r.name) label([r.name, [r.use, `${r.w.toFixed(1)} × ${r.d.toFixed(1)} m`].filter(Boolean).join(" · ")], (r.x0 + r.x1) / 2, F.y + WH + 40, (r.z0 + r.z1) / 2);
     }
     for (const s of F.solids) box(s.x0, s.x1, F.y, F.y + WH + 20, s.z0, s.z1, "#4a463f");
     for (const f of F.fixtures || []) box(f.x0 + 2, f.x1 - 2, F.y, F.y + f.h, f.z0 + 2, f.z1 - 2, "#f4f3ef");   // v57: the fittings the client marked
@@ -692,12 +692,12 @@ function buildHouse() {
       const b = box(s.x0, s.x1, F.y, F.y + WH + 20, s.z0, s.z1, "#cfc6b6"), pa = b.geometry.attributes.position, h = (WH + 20) * M;
       for (let i = 0; i < pa.count; i++) if (pa.getY(i) > 0 && pa.getX(i) > 0) pa.setY(i, -h / 2 + 40 * M);   // three's +x is the east (x flipped)
       pa.needsUpdate = true; b.geometry.computeVertexNormals();
-      if (s.name) label([s.name, s.use], (s.x0 + s.x1) / 2, F.y + WH + 40, (s.z0 + s.z1) / 2, 150);
+      if (s.name) label([s.name, s.use], (s.x0 + s.x1) / 2, F.y + WH + 40, (s.z0 + s.z1) / 2);
     }
     for (const w of F.windows) box(w.x0, w.x1, F.y + 70, F.y + WH + 8, w.side === "n" ? F.zn - 4 : F.zs - 6, w.side === "n" ? F.zn + 6 : F.zs + 4, "#9ccbe6");
     for (const d of F.doors) box(d.x0, d.x1, F.y, F.y + 4, d.side === "n" ? F.zn - 8 : F.zs - 4, d.side === "n" ? F.zn + 4 : F.zs + 8, "#8a6a4a");
     const xs = F.rooms.map(r => [r.x0, r.x1]).flat();
-    label([F.title.split(" · ")[0], F.title.split(" · ")[1] || ""], (Math.min(...xs) + Math.max(...xs)) / 2, F.y + WH + 160, F.zn - 120, 420);
+    label([F.title.split(" · ")[0], F.title.split(" · ")[1] || ""], (Math.min(...xs) + Math.max(...xs)) / 2, F.y + WH + 160, F.zn - 120);
   }
   cur = HFLOOR.out = new THREE.Group(); houseG.add(cur);
   buildPlants(cur);                                                               // V1.3: the cordyline in the back garden (with Gardens)
@@ -720,8 +720,8 @@ function buildHouse() {
   box(ge, ge1, B0, dr + 1, zf + 550, zf + 750, "#c9c5bd");           // the pavement
   box(ge, ge1, B0, dr - 2, zf + 750, zf + 1250, "#5b5b5e");          // the road
   if (H3) { box(ge, ge1, -275, B0, zf, zf + 1250, "#6e5b45"); box(-120, -28, -275, B0, 100, zf, "#6e5b45"); }   // v58: the ground the street stands on
-  label(["The front garden", "the drive, the lawn · sizes to come"], (gx0 + hx1) / 2, 120, zf + 280, 260);
-  label(["The back garden", "about 25 m"], 240, -260 + 160, -309 - 900, 380);
+  label(["The front garden", "the drive, the lawn · sizes to come"], (gx0 + hx1) / 2, 120, zf + 280);
+  label(["The back garden", "about 25 m"], 240, -260 + 160, -309 - 900);
   /* v55, client: "The alley has stairs down": down the side of the house (the gate side, the east), level from the street along the
      front, then stairs down to the garden's level by the back, the gate at the bottom. Rough until measured. v66: between the two end
      walls (ours at -28, next door's at -125), from the drive's level */
@@ -744,7 +744,7 @@ function buildHouse() {
     for (const yy of [yTop + 25, yTop + 155]) box(ax0 + 8, ax1 - 13, yy, yy + 10, zg - 2.5, zg, "#6b5644");           // ledges inside
     box(ax1 - 22, ax1 - 16, yTop + 100, yTop + 112, zg + 2.9, zg + 4.5, "#26282a");                                 // the latch
   }
-  label(["The alley", "stairs down to the garden"], (ax0 + ax1) / 2, 120, -40, 220);
+  label(["The alley", "stairs down to the garden"], (ax0 + ax1) / 2, 120, -40);
   finFloorApply();   // V2.7 (FINISHES F4): the floors chosen in the tray, on their rooms
 }
 function buildSun() {
@@ -822,7 +822,7 @@ function start() {
       if (addp && CATALOGUE[addp.type]) { const a = { id: "a" + Date.now().toString(36), type: addp.type, x: addp.x, z: addp.z }; pushUndo(); addThing(a); if (addp.rot) setLayout(a.id, { rot: addp.rot }); placeAll(); store.set(KEY, S); dirty(); }
       if (showat != null) { showOpen(); if (SH) { SH.own = true; SH.paused = true; SH.t = showat; showPose(SH.t); showCard(); qs("#r3d-show").hidden = true; } }
       if (o.view) setView(o.view, true); if (aim) flyTo(aim.eye, aim.at, aim.fov || 55, !!aim.above, true); },   // v58: "above" lets a look stand off (the house)
-    still, finish, finishes: () => JSON.parse(JSON.stringify(finAll(false))), setFinishes: o => finImport(o), ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { get flying() { return !!tween; }, openAct, finAll, get H3() { return R.HOUSE3; }, get RMODE() { return RMODE; }, spotAt, goStandAt: goStand, HPARTS, PICK, HEDITS, get actId() { return actId; }, swingDoor, WALK, walkMove, collide, bodyBlocked, floorAtCm, HSOLID, livSolids, livFloors,  swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, collide, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG, warmSwitch, WARMED },
+    still, finish, finishes: () => JSON.parse(JSON.stringify(finAll(false))), setFinishes: o => finImport(o), ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { get flying() { return !!tween; }, openAct, finAll, get H3() { return R.HOUSE3; }, get RMODE() { return RMODE; }, spotAt, goStandAt: goStand, HPARTS, PICK, HEDITS, get actId() { return actId; }, swingDoor, WALK, walkMove, collide, bodyBlocked, floorAtCm, HSOLID, livSolids, livFloors,  swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG, warmSwitch, WARMED },
     errors: () => store.get("r3d-errors", []),                                       // v35: what the trap kept
     timing: () => Object.assign({ page: Math.round(performance.now()) }, START_MS),     // V1.31: the start's steps (ms from start()), and the page's age
     perf: perfInfo,                                                                   // v35: the counts to watch each round
