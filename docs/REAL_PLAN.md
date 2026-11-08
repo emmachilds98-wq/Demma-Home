@@ -253,3 +253,14 @@ free version at merge, `docs/STATE.md` rewritten, a line in `docs/HISTORY.md`, t
 | N42 | Keys and names on a PC: every button and pill named for a screen reader (`aria-label` where it's an icon), a clear focus ring, Tab in the order the eye reads, Escape shuts the top card or panel everywhere; a check in `check_site.py` that no button is nameless | PC UX, quality | `room3d_page.py`, `page.css`, `19_controls.js` (keys only) | Open |
 
 **Order:** all five at once. N39 and N42 both add a check to `check_site.py`: each its own function, merge main before merging.
+
+## 12. The round after (8 Nov 2026, V2.96): three more side by side
+
+The client, 8 Nov 2026: "Add anything needed into the plan with the needed agents and start more threads". Three tasks beside
+section 11's open rows (N37, N40, N42), sharing no file with them, #149 or #133. Section 9's rules.
+
+| # | Task | Aim | Owns | Status |
+|---|---|---|---|---|
+| N43 | Opens fast on a weak signal: `sw.js` asks the network for the page first with no limit, so a poor phone signal holds the start; after about 2 s the kept copy, the network's put by for next time; tried on a slowed network | Speed (phone) | the `sw.js` text in `build_viewer.py` only | Open |
+| N44 | The kitchen and the hall beside their photos (as N34): `tools/compare.py` and `camfit.py` from a start near each photo's spot (`photo_kitchen_*`, `photo_hall_*`), each difference fixed, sizes cited | Quality | `tools/compare.py`, `tools/camfit.py`, `house/model.py`, `house/survey_data.py`, `house/EVIDENCE.md` | Open |
+| N45 | The catalogue's pieces made real: Add a piece's 25 with soft edges and cited sizes like the house's own (`hcBed` done), the look in `tools/gallery.py` | Design | `08_house_catalogue.js` (not `hcBed`), their `fit.SOURCES` rows | Open |
