@@ -1372,6 +1372,11 @@ SOURCES["upfloors"] = ("Upgrade floors (Nov 2026; N56 draws them to these sizes,
                        "Van Gogh about £33 a m²; Concept Tiles, Evolution Stone porcelain 1200 × 600, £60–64 a m² (concepttiles.co.uk). "
                        "Laid costs add a fitter's (E)")
 ORDER.append("upfloors")
+SOURCES["panels"] = ("Wall panelling (Nov 2026; N57 draws it to these sizes, options to look at): B&Q, Cheshire Mouldings MDF Shaker wall panelling "
+                     "kit, 8 strips 2400 × 97 × 9 mm, moisture resistant, paintable, £36.97 (diy.com, 5055170393310); B&Q (Panels By Sofia), acoustic "
+                     "slat wall panel, natural oak veneer, 2400 × 608 × 21 mm on acoustic felt, £71.99 (diy.com, 5061038531787); slats 27 wide, "
+                     "13 apart, 12 deep on 9 mm of felt (soundtreating.com wood slat wall panel; savoytimber.com: slat 2400 × 27 × 12)")
+ORDER.append("panels")
 
 
 # ---------------------------------------------------------------- v39: the plan's fit proof is the firm plan's (options: one line each, section 12)
