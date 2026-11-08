@@ -59,6 +59,19 @@ BACK_GARDEN = dict(x=(-12.0, 479.0), length=2500.0, lawn_end=1700.0, border=80.0
                    pad=dict(x0=218.0, d=90.0), fence_w=dict(low=110.0, low_to=450.0, h=180.0), fence_e=120.0,
                    src="B: the back photo (photo_house_rear_24oct.jpg), the summer photo and the view photos, sized against the house (E)")
 
+# V2.92 (N30's rest; the client, 8 Nov 2026: "make decisions for me"): ideas for the back garden, only to look at (one line each: what,
+# where, size, rough cost £, source); no build, no buy rows (CLAUDE.md's core plan vs options)
+GARDEN_IDEAS = [
+    ("A sandstone patio by the back door", "In place of the concrete pad, out to the path", "about 4 × 3 m (12 m²)", (1000, 1600),
+     "Indian sandstone £80–130 a m² laid (less.co.uk patio cost guide, 2026)"),
+    ("Trellis on the low fence by the house", "On top of the west fence's low first 4.5 m", "4.5 m × 30–60 cm", (180, 340),
+     "fence-top trellis £40–75 a metre fitted (nearmetrades.uk trellis guide, 2026)"),
+    ("Festoon lights over the patio", "From the back wall to the fence posts", "10 m, 20 warm-white bulbs", (40, 90),
+     "a 10 m IP65 festoon (simplyled.co.uk, nxt gen 8913); the price E"),
+    ("A hardwood bench under the trees", "Where the lawn ends at 17 m, facing the house", "120 × 60 × 90", (95, 250),
+     "2-seat hardwood benches (gardenoasis.co.uk Kingfisher £95; leisurebench.co.uk Boston £208)"),
+]
+
 # V1.6: the things in the gardens (the view photos, photo_view_full_24oct.jpg; E): ours, by the house on the path's side, the round black
 # table and three folding chairs (two cream recliners, a navy one); east of our fence, past the alley's house, a 3 m trampoline (green
 # pad, black net) about 13 m out and a brown shed with a grey shingle roof at the end; west, next door's orange-brown shed at its end
