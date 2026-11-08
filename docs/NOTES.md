@@ -119,5 +119,5 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `19_view_controls.js` `mapKeys` (with the held keys), a view from the eyes calls `startWalk` (`eyeView`). A mouse drag on it in Playwright
   is enough to test it (it never reads `pointerType`); check `stick_all`. Note: `pip install -r media-wall/requirements.txt` can lift
   Playwright past 1.63.0 and its browser; put 1.63.0 back.
-- **Doors:** `14_views_walk.js` `walkDoors` opens a door within 95 cm (not the bin cupboards'). The stairs: both flights 85 wide
+- **Doors:** `14_views_walk.js` `walkDoors` opens a door within 95 cm (not the bin cupboards': `BINS`). A door's open state is kept on the device (`S.doors`), so a fix to how a door opens must also ignore what a device already saved (V3.17 N61: the bin doors kept open from before V2.99 still showed as a second front door). The stairs: both flights 85 wide
   (`geometry.RECESS_W`), `model.stair_soffit` over the lower flight; the site check walks through the living room door at x 339.
