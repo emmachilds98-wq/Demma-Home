@@ -629,7 +629,7 @@ canvas.addEventListener("wheel", e => {
   if (S.cam !== "look") return;
   e.preventDefault();
   if (e.ctrlKey && (RMODE === "stand" || S.view === "livstand")) { lens(camera.fov * Math.exp(e.deltaY * 0.0012)); return; }
-  const k = Math.min(1.5, Math.abs(e.deltaY) / 100); if (k > 0.02) walk(e.deltaY < 0 ? "f" : "b", k);
+  const k = Math.min(1.5, Math.abs(e.deltaY) / 100); if (k > 0.002) walk(e.deltaY < 0 ? "f" : "b", k);   // V3.26: 0.02 before; the eased wheel comes in small steps
 }, { passive: false });
 const PINCH = new Map(); let pinch0 = null;
 canvas.addEventListener("pointerdown", e => { if (e.pointerType === "touch") PINCH.set(e.pointerId, [e.clientX, e.clientY]); if (PINCH.size === 2) { const [a, b] = [...PINCH.values()]; pinch0 = [Math.hypot(a[0] - b[0], a[1] - b[1]), camera.fov]; } });

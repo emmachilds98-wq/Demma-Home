@@ -3,10 +3,10 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V3.25 (9 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
-The version shows faintly by "Demma's Home" top left (V3.16; not on an iPhone SE, too narrow) and in Plan as a refresh button ("V3.25 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V3.26 (9 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
+The version shows faintly by "Demma's Home" top left (V3.16; not on an iPhone SE, too narrow) and in Plan as a refresh button ("V3.26 ↻"): on the home-screen app, tap it to get the newest.
 
-**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N46 done V3.04, N48 V3.05, N50 V3.06, N52 V3.07; section 13's N53 V3.08, N54 V3.09, N49 V3.10, N51 V3.11, N47 V3.12, N55 V3.13; section 14: N56 V3.14, N59 V3.15, N60 V3.16, N61 and N62 V3.17, N57 V3.18, N63 V3.19 (one light for the house), N58 V3.20, N64 V3.21 (the breast and window corner, a shorter Room menu); section 15 (9 Nov, the PC as fluid as the phone, the panels cleaned up): N67 V3.22, N65 V3.23 (no freeze stepping into a room); N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
+**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N46 done V3.04, N48 V3.05, N50 V3.06, N52 V3.07; section 13's N53 V3.08, N54 V3.09, N49 V3.10, N51 V3.11, N47 V3.12, N55 V3.13; section 14: N56 V3.14, N59 V3.15, N60 V3.16, N61 and N62 V3.17, N57 V3.18, N63 V3.19 (one light for the house), N58 V3.20, N64 V3.21 (the breast and window corner, a shorter Room menu); section 15 (9 Nov, the PC as fluid as the phone, the panels cleaned up): N67 V3.22, N65 V3.23 (no freeze stepping into a room), N68 V3.25 (the room cards), N66 V3.26 (the wheel eased); N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
 On a weak signal the page opens from the device after 2 s (V3.00, N43, `sw.js`): the new copy is saved for next time, and the version button shows it. The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 
 ## Where it lives
@@ -123,6 +123,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **No freeze on a PC (V3.23, N65):** where the browser builds shaders in parallel (`PARALLEL()`), the idle warm-up asks for each room's
   (from the house too, `warmTo`) and then the hidden parts a dozen at a time (`01` `precompileBatch`) beside the page; a room picked before
   its shaders are ready is built first and shown when done ("Opening ..." after 250 ms; `14` `readyThen`, `09` `goRoom`). Elsewhere, as before.
+- **The wheel eased (V3.26, N66):** each notch glides over about a fifth of a second, the same total (the orbit, the map, a walk;
+  `19` at the end, synthetic wheel events to the canvas). Ctrl + wheel (a trackpad's pinch) and sideways scrolls come as they are.
 - **From the house in (V3.09, N54):** looking at the whole house, each pause warms the living room and each floor off screen too
   (`14_views_walk` `warmHouse`, `warmAt`), and the living room's reflections (`12` `roomEnv`) put the cut aside instead of switching
   cutting off (their own shaders). A PC (RTX path) going house → floors → living room → rooms: 88 shaders built on the spot, now 2;
