@@ -93,8 +93,8 @@ function finish(room, surface, hex) {   // R3D.finish: a room's walls (or one si
 function houseTex(k) {
   if (k in HTEX) return HTEX[k];
   if (k === "paint") return (HTEX[k] = null);
-  if (/^cloth\d$/.test(k)) { const J = houseTex("check");   // V3.32 (N82): the garments and soft things in their own colours, with the knit's relief (they were flat card)
-    return (HTEX[k] = J && J.normal ? { map: null, normal: J.normal, size: J.size, bump: 0, rough: null, roughMean: 0, tint: true } : null); }   // V2.2, the client: "ensure walls are all smooth": flat emulsion, no plaster relief
+  if (/^cloth\d$/.test(k)) { const J = houseTex("check"), W = houseTex("duvet");   // V3.32 (N82): the garments in their own colours over the poplin's white, with the knit's relief (they were flat card); a map and a relief, as the throw's: no shader of their own
+    return (HTEX[k] = J && J.normal && W && W.map ? { map: W.map, normal: J.normal, size: J.size, bump: 0, rough: null, roughMean: 0, tint: true } : null); }   // V2.2, the client: "ensure walls are all smooth": flat emulsion, no plaster relief
   /* v70 (BUILD_SPEC phase 3): CC0 photo-textures (Poly Haven, house/SOURCES.md) and our own (build_textures.py) where we have them; the drawn
      ones below for the rest (V2.37: the ones a photo replaced gone) */
   const pkey = { party: "brick", soldier: "brick", pillow: "duvet", mattress: "duvet", ceiling: "artex", knob: "pine_dark", ...HTEX_AS }[k] || k, pm = PMETA[pkey];   // V1.21: the bedding's one cotton
