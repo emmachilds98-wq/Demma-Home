@@ -101,7 +101,12 @@ function placeRoomLights() {
   const key = b ? b.join() : "";
   if (key === roomKey) return; roomKey = key;
   const d = b ? v3((b[0] + b[1]) / 2, 0, (b[4] + b[5]) / 2).sub(sun.userData.t0).setY(0) : new THREE.Vector3();
-  sun.position.copy(sun.userData.p0).add(d); sun.target.position.copy(sun.userData.t0).add(d); sun.target.updateMatrixWorld();
+  sun.position.copy(sun.userData.p0).add(d); sun.target.position.copy(sun.userData.t0).add(d);
+  /* V3.33 (N85): a room whose biggest window looks out of the front has the front's sun (from the south-south-west, as outside), not the
+     living room's morning sun from the back, which the room's back wall stopped: its window's patch on the floor, as the living room's */
+  if (ws[0] && rr && ws[0].op.line > (rr[2] + rr[3]) / 2) { const t = v3((b[0] + b[1]) / 2, b[2], (b[4] + b[5]) / 2);
+    sun.target.position.copy(t); sun.position.copy(t).addScaledVector(dayLight.position.clone().sub(dayLight.target.position).normalize(), sun.userData.p0.distanceTo(sun.userData.t0)); }
+  sun.target.updateMatrixWorld();
   reshadow();
 }
 /* v69 (B3) had each room's own reflections caught when you entered it (a cube camera round the whole scene, then every house material
