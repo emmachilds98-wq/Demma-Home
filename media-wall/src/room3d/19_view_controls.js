@@ -171,7 +171,7 @@ function mapCentre(e) {
 { const T = { angle: "From an angle: drag to move, right-drag or two fingers to turn and tilt, scroll or pinch to zoom",
               top: "From straight above: drag to move, right-drag or two fingers to turn, scroll or pinch to zoom" };
   qsa("[data-hfview]").forEach(b => { if (T[b.dataset.hfview]) b.title = T[b.dataset.hfview]; }); }
-/* V3.24, the client 9 Nov 2026: "i want pc to be better ... it is still clunky i want fluid like the mobile version". A phone's pinch
+/* V3.26, the client 9 Nov 2026: "i want pc to be better ... it is still clunky i want fluid like the mobile version". A phone's pinch
    zooms smoothly; a mouse wheel jumped a notch at a time (the orbit 3 %, the map 16 %, a walk 11 cm, all in one frame). Now each notch is
    eased out over about a fifth of a second, frame by frame, and the same total arrives: the room, the map and a walk all glide. A
    trackpad's pinch (Ctrl + wheel) and a sideways scroll come as they are */
