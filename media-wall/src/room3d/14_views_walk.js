@@ -653,10 +653,12 @@ canvas.addEventListener("pointermove", e => { if (!PINCH.has(e.pointerId)) retur
 ["pointerup", "pointercancel", "pointerleave"].forEach(t => canvas.addEventListener(t, e => { PINCH.delete(e.pointerId); if (PINCH.size < 2) pinch0 = null; }));
 ["pointerdown", "pointermove", "keydown", "wheel"].forEach(t => root.addEventListener(t, e => { if (t !== "pointermove" || e.buttons || mlookOn()) PRE.idleT = performance.now(); }, { passive: true, capture: true }));   // V2.42: mouse look is moving too   // v39: a mouse just moving over the room doesn't hold up the warm-up   // v35: the shader warm-up waits while you use the room
 let padT = null;             // a move button held down keeps moving, in smaller steps
-const padStop = () => { if (padT) { clearTimeout(padT.t); clearInterval(padT.i); padT = null; } };
+const padStop = () => { if (padT) { if (padT.k) WALK.keys.delete(padT.k); clearTimeout(padT.t); clearInterval(padT.i); padT = null; } };
 root.addEventListener("pointerdown", e => {
   const b = e.target.closest("[data-walk]"); if (!b) return;
-  e.preventDefault(); padStop(); const k = b.dataset.walk; walk(k);
+  e.preventDefault(); padStop(); const k = b.dataset.walk;
+  if ("fblr".includes(k) || k === "tl" || k === "tr") { if (walking() || startWalk()) { WALK.keys.add(k); padT = { k }; dirty(); return; } }   // V3.29: held, a walk eased every frame (it stepped every 60 ms)
+  walk(k);
   padT = { t: setTimeout(() => { if (padT) padT.i = setInterval(() => walk(k, 0.4), 60); }, 300) };
 });
 ["pointerup", "pointercancel"].forEach(ev => document.addEventListener(ev, padStop)); window.addEventListener("blur", padStop);
@@ -669,7 +671,7 @@ document.addEventListener("keydown", e => {   // V1.53: the page's too (not only
   e.preventDefault();
   if ((k === "l" || k === "r") && e.key.startsWith("Arrow") && (walking() || (ROOMV() && RMODE === "in"))) k = k === "l" ? "tl" : "tr";   // V2.42: in a room ← → turn, as a game's (A and D step aside)
   if (walking()) { if (k !== "u" && k !== "dn") WALK.keys.add(k); dirty(); return; }   // V1.32: held, not a step a press
-  if ("fblr".includes(k) && startWalk()) { WALK.keys.add(k); return; }               // V1.53: in a room, a walk key stands you there and walks on
+  if (["f", "b", "l", "r", "tl", "tr"].includes(k) && startWalk()) { WALK.keys.add(k); return; }   // V1.53: in a room, a walk key stands you there and walks on; V3.29: a turn key too (it turned 10° a key repeat, half a second late)
   walk(k);
 });
 document.addEventListener("keyup", e => { WALK.fast = e.shiftKey; const k = WALK_KEYS[e.key.toLowerCase()]; if (k) { WALK.keys.delete(k); if (k === "l" || k === "r") WALK.keys.delete("t" + k); } });
