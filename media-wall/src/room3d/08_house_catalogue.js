@@ -117,6 +117,18 @@ const HCAT = {
     b: (W, H, D, B) => { B("oak", 0, H - 4, 0, W, H, D); for (const u of [8, W - 12]) B("door_white", u, 0, 2, u + 4, H - 4, D - 2); B("door_white", 12, 12, D / 2 - 2, W - 12, 16, D / 2 + 2); } },
   pouffe: { n: "Round pouffe, rust", k: "seat", w: 45, d: 45, h: 33, ref: "hcikea", src: "IKEA SANDARED, 45 across, 33 high",
     b: (W, H, D, B, L) => { L("cloth2", W / 2, D / 2, 0, [[0, 0], [W / 2 - 2, 0], [W / 2, 3], [W / 2, H - 5], [W / 2 - 3, H - 0.8], [W / 2 - 8, H], [0, H]]); } },
+  sofa3: { n: "Three-seat sofa, dark blue", k: "seat", w: 228, d: 95, h: 83, ref: "hcmore2", src: "IKEA KIVIK, 228 × 95 × 83, seat 45",   // V3.16 (N58)
+    b: (W, H, D, B, L) => { hcLegs("black", W, D, 4, 2, 8)(B, L); const a = (W - 180) / 2;   // its wide arms, a seat 180 × 60 at 45, three cushions each way
+      B("cloth0", 0, 4, 0, W, 30, D); for (const u of [0, W - a]) B("cloth0", u, 30, 0, u + a, 62, D); B("cloth0", a, 30, 0, W - a, H - 6, 14);
+      for (let i = 0; i < 3; i++) { const u0 = a + i * 60 + 0.4, u1 = a + (i + 1) * 60 - 0.4;
+        B("cloth0", u0, 30, D - 61, u1, 45, D - 1); B("cloth0", u0, 45, 14, u1, H - 2, 30); } } },
+  dresser: { n: "Dressing table with mirror, white", k: "more", w: 100, d: 50, h: 159, ref: "hcmore2", src: "IKEA HEMNES, 100 × 50, 159 with its mirror",
+    b: (W, H, D, B, L) => { hcLegs("door_white", W, D, 71, 2.2, 4)(B, L); B("door_white", 0, 71, 0, W, 74, D);
+      B("door_white", 3, 60, 3, W - 3, 71, D - 3); B("door_white", 6, 60.6, D - 3, W - 6, 70.4, D - 2.4); B("knob", W / 2 - 1.5, 64, D - 2.4, W / 2 + 1.5, 67, D - 0.6);   // the drawer under the top
+      B("door_white", 12, 74, 2, W - 12, H, 5); B("mirror", 16, 78, 5, W - 16, H - 4, 5.3); } },   // the mirror in its frame, at the back
+  tvbench: { n: "TV bench, white and walnut", k: "more", w: 180, d: 42, h: 38, ref: "hcmore2", src: "IKEA BESTÅ, 180 × 42 × 38",
+    b: (W, H, D, B) => { B("door_white", 0, 0, 0, W, H, D - 2); B("gap", 0.5, 0.5, D - 2.05, W - 0.5, H - 0.5, D - 2);
+      for (let i = 0; i < 3; i++) B("door_wood", i * W / 3 + 0.3, 0.3, D - 2, (i + 1) * W / 3 - 0.3, H - 0.3, D); } },   // three push-open doors
   plant: { n: "Fiddle-leaf fig, white pot", k: "plant", w: 50, d: 50, h: 140, ref: "hcplants", src: "Beards & Daisies, 140 tall, 27 pot",
     b: (W, H, D, B, L) => { L("pot", W / 2, D / 2, 0, [[0, 0], [12, 0], [15, 28], [15.5, 30], [0, 30]]);
       L("timber", W / 2, D / 2, 28, [[0, 0], [1.5, 0], [1.5, H * 0.45], [0, H * 0.45]]);

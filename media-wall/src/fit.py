@@ -1456,6 +1456,10 @@ SOURCES["hcplants"] = ("Plants (UK shops, Nov 2026): Beards & Daisies, fiddle-le
 SOURCES["hcmore"] = ("Cox & Cox, leaning oak ladder shelf, five shelves, 60 × 47 × 187 (coxandcox.co.uk); Dunelm, Marin black wood "
                      "floor lamp with a 45 cm white linen drum shade, 155 high (dunelm.com, 1000233870)")
 ORDER.extend(["hcikea", "hcbeds", "hcplants", "hcmore"])
+SOURCES["hcmore2"] = ("IKEA UK (Nov 2026), assembled W × D × H cm: KIVIK three-seat sofa 228 × 95 × 83, seat 180 wide, 60 deep, 45 high, £449–550 "
+                      "(ikea.com/gb, 794.828.35; shopbam.co.uk review, 3 Oct 2026); HEMNES dressing table with mirror, white, 100 × 50 × 159, £155 "
+                      "(303.744.13); BESTÅ TV bench with doors, 180 × 42 × 38, £120–185 (ikea.com/gb)")
+ORDER.append("hcmore2")
 _zones_v42 = zones
 
 
