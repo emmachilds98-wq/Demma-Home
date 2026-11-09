@@ -210,7 +210,7 @@ details.r3d-more[open] > summary::before { content: "– "; }
 .r3d-size { font-size: 12.5px; color: var(--mut); font-variant-numeric: tabular-nums; }
 .r3d.editing canvas { cursor: pointer; }
 @media (min-width: 900px) {
-  .r3d-panel { left: auto; right: 16px; top: 16px; bottom: 104px; transform: none; width: min(420px, 38vw); max-height: none; }
+  .r3d-panel { left: auto; right: 16px; top: 16px; bottom: auto; transform: none; width: min(420px, 38vw); max-height: calc(100dvh - 200px); }   /* V3.27: as tall as it needs */
 }
 @media (max-width: 899px) {
   .r3d-dock { left: 8px; right: 8px; transform: none; bottom: max(8px, env(safe-area-inset-bottom)); justify-content: center; padding: 6px 4px 4px; border-radius: 28px; }
@@ -401,7 +401,7 @@ body.bare .r3d-peg, .r3d.editing .r3d-peg { display: none; }
 .r3d-stick i { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%; background: var(--ink, #1d2a22);
   transform: translate(var(--x, 0px), var(--y, 0px)); }
 /* V1.30 (U3): only the tools that work where you are (room3d.js brandPlace) */
-body.hv #r3d-dt-room, body.hv #r3d-editbtn, body.hv #r3d-dp-look > :not(h2):not(#r3d-finsch), body.hroom .hnav { display: none !important; }
+body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-editbtn, body.hv #r3d-dp-look > :not(h2):not(#r3d-finsch), body.hroom .hnav { display: none !important; }
 @media (max-width: 899px) { body.hv .r3d-bubbles { justify-content: center; gap: 28px; } body.hv .r3d-bub { flex: 0 0 auto; } }
 /* V1.30: on a phone the small buttons share a row (six rows were the top half of the screen); the floors and rooms a row each, a fade
    where there's more to slide to */
@@ -687,7 +687,8 @@ def controls(gallery=""):
               '<div class="grp"><span class="label">Something of your own</span><div class="seg"><button type="button" class="chip" id="r3d-addfrom">'
               '<span class="ms" aria-hidden="true">add</span> Add a piece of furniture</button></div>'
               '<span class="caption">Then drag it where you like.</span></div>')
-    views = "".join(f'<button type="button" class="chip" data-view="{k}" aria-pressed="false">{v}</button>' for k, v in VIEWS)
+    HOUSE_ROOMS = {"house", "kitchen", "office", "bed2", "master", "bath"}   # V3.27: reached through the 3D (the floors' row, a tap), not a list here
+    views = "".join(f'<button type="button" class="chip" data-view="{k}" aria-pressed="false">{v}</button>' for k, v in VIEWS if k not in HOUSE_ROOMS)
     # v31, client: "explore what could go next to the dining cabinet in the compact version": the wall between it and the pipe boxing
     BESIDE_SEG = ('<h3 class="r3d-sub">Beside the cabinet</h3>'
                   + seg("beside", [(k, v["name"]) for k, v in G.BESIDE["opts"].items()], f"The {G.BESIDE['len']:.0f} cm of wall by the pipe boxing")
@@ -708,14 +709,14 @@ def controls(gallery=""):
                 '<label><i><input type="color" id="r3d-custom" value="#899081" aria-label="Any colour for the walls"></i>Any colour</label></div></div>')
     return {
         # v39 (the approved redesign): Find flies to any piece or view, so nobody hunts through menus
-        "views": '<div class="grp r3d-find"><label class="label" for="r3d-find">Find something in the room</label><div class="seg">'
+        "views": '<div class="grp r3d-find r3d-findgrp"><label class="label" for="r3d-find">Find something in the room</label><div class="seg">'
                  '<input type="search" id="r3d-find" list="r3d-findlist" placeholder="The record table, the bar, the lamp…" autocomplete="off">'
                  '<button type="button" class="chip" id="r3d-findgo">Go</button></div><datalist id="r3d-findlist"></datalist></div>'
                  # v39, item 13: measure in 3D
                  + '<div class="grp"><div class="seg"><button type="button" class="chip" id="r3d-measure"><span class="ms" aria-hidden="true">straighten</span> Measure: tap two points</button></div></div>'
                  + f'<div class="grp r3d-tourgo"><div class="seg"><button class="chip" type="button" id="r3d-tourbtn" title="{len(tour())} stops, about a minute"><span class="ms" aria-hidden="true">play_circle</span> Take the tour</button>'
                  '<button type="button" class="chip" id="r3d-full"><span class="ms" aria-hidden="true">fullscreen</span> Full screen</button></div></div>'
-                 + f'<div class="grp"><span class="label">Where you look from</span><div class="r3d-views" role="group" aria-label="Camera">{views}</div></div>'
+                 + f'<div class="grp r3d-lviews"><span class="label">Where you look from</span><div class="r3d-views" role="group" aria-label="Camera">{views}</div></div>'
                  # v37: the lights live here now (they were their own tab): the presets, daytime, every light's slider and colour, the quality
                  + '<h3 class="r3d-sub" id="r3d-lightsh">Lights <span class="r3d-litst" id="r3d-litst"></span></h3>' + lights
                  + '<details class="r3d-more r3d-fold"><summary>More: quality, moving round, sharing, pictures</summary>'
