@@ -57,7 +57,7 @@ const solidDirty = () => { SOLID = null; };
 function solidBoxes() {
   if (SOLID) return SOLID;
   // V1.57: not the drawers in the stairs' bottom steps (you walk on them: they're the treads), their box stood across the stairs' foot
-  const objs = [G.sofa, S.drawers ? G.unit_out : G.unit_in, cab, ...Object.values(MOV).map(m => m && m.pivot), ...Object.values(BES || {}), ...Object.entries(SUGG_G).filter(([k]) => k !== "stairdrawers").map(([, g]) => g)];
+  const objs = [G.sofa, S.drawers ? G.unit_out : G.unit_in, cab, ...Object.values(MOV).map(m => m && m.pivot), ...Object.values(BES || {}), ...Object.entries(SUGG_G).filter(([k]) => k !== "stairdrawers" && k !== "stairscurtain").map(([, g]) => g)];
   SOLID = [];
   for (const o of objs) {
     if (!o || !o.isObject3D || !shown(o)) continue;
@@ -142,6 +142,8 @@ const FLIGHT = () => LIV().flight;
 function livSolids() {                      // room cm [x0, y0, z0, x1, y1, z1]: its walls (the door's gap), the flight's open side, the ceiling, the pipe box; what stands in it
   const L = LIV(), b = L.solids.slice(), d = L.door;
   if (!doorOpen(HPARTS["door.living_door"])) b.push([d.a, -60, d.line, d.b, d.h, d.line + 6]);   // its door shut (it opens as you reach it)
+  { const sc = R.STAIR_CURTAIN, s = sc && scShut(); if (s) { const t = sc.track_w, [s0, s1] = sc.side || [0, 0];   // V3.31: the stair curtain drawn across stops you (one box round both would close the foot even drawn back)
+    b.push([sc.x[0], -60, sc.z - t, sc.x[1], 240, sc.z]); if (sc.side) b.push([sc.x[0], -60, s0, sc.x[0] + t, 240, s1]); } }
   for (const q of solidBoxes()) b.push([-q.max.x / M + 12, q.min.y / M, q.min.z / M + 12, -q.min.x / M - 12, q.max.y / M, q.max.z / M - 12]);   // three's x flipped; V1.57: without the eye's 12 cm (the body has its own 18: the two closed the stairs' foot)
   return b;
 }
@@ -333,8 +335,11 @@ function warmNear(x, feet, z) {
    both open, lie across the porch in front of the front door. They always start shut, aren't remembered, open one at a time (the other
    shuts) and "Open every door" leaves them */
 const BINS = ["door.store_w", "door.store_e"];
+const scShut = () => { const g = SUGG_G.stairscurtain; return !!g && shown(g) && !S.scopen; };
 function walkDoors(x, feet, z) {            // a shut door opens as you come up to it
   const now = performance.now(); if (now - WALK.doorT < 200) return; WALK.doorT = now;
+  { const sc = R.STAIR_CURTAIN;              // V3.31: and the stair curtain draws back as you come up to it
+    if (sc && scShut() && feet < 60 && x > sc.x[0] - 80 && x < sc.x[1] + 20 && z > sc.z - 80 && z < (sc.side ? sc.side[1] : sc.z) + 20) { S.scopen = true; placeWork(); store.set(KEY, S); } }
   const w = new THREE.Vector3();
   for (const [pk, P] of Object.entries(HPARTS)) {
     /* V2.99, the client: "a second front door seems to show": the bin cupboards' doors met across the porch as you came up to the front
