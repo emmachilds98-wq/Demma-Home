@@ -103,7 +103,7 @@ function precompileStep() {           // from the frame loop, when nothing's mov
   PRE.done++;
   return true;
 }
-/* V3.22: where the browser builds shaders in parallel (Chrome on a PC, Safari), the hidden parts are asked for a dozen at a time
+/* V3.23: where the browser builds shaders in parallel (Chrome on a PC, Safari), the hidden parts are asked for a dozen at a time
    (compileClipped), not drawn one by one: each draw waited for its shaders, on Windows the driver's compiler (a second or more each,
    the page held); now they build beside the page, which keeps answering */
 function precompileBatch() {
@@ -122,7 +122,7 @@ function precompileBatch() {
    last, so the house's 6 planes and the living room's 2 never matched and were built again, one at a time, on the frame that first
    showed them (34 to 44: seconds on a phone). Now the scene is compiled in groups with the same planes, each after a speck with those
    planes is drawn off screen (prime: which sets three's planes to its) */
-function compileClipped(cam, shownOnly, roots) {   // shownOnly: what's shown now (the rooms' warm-up), not every hidden part too; roots: only these hidden parts (V3.22)
+function compileClipped(cam, shownOnly, roots) {   // shownOnly: what's shown now (the rooms' warm-up), not every hidden part too; roots: only these hidden parts (V3.23)
   const key = m => gl.localClippingEnabled && m.clippingPlanes && m.clippingPlanes.length ? m.clippingPlanes.length + (m.clipIntersection ? "i" : "u") : "0";
   const G = new Map(), D = new Map(), put = (M, k, o, m) => { if (!M.has(k)) M.set(k, []); M.get(k).push([o, m]); };
   (roots ? f => roots.forEach(r => r.traverse(f)) : f => scene[shownOnly ? "traverseVisible" : "traverse"](f))(o => { const m = [].concat(o.material || [])[0]; if (m && (o.isMesh || o.isLine || o.isPoints || o.isSprite)) put(G, key(m), o, o.material); });

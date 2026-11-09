@@ -148,7 +148,7 @@ document.addEventListener("keydown", e => { const li = e.key === "Enter" && e.ta
 function upsGo(room) {
   window.dispatchEvent(new CustomEvent("demma-open", { detail: { sheet: "room" } }));
   const card = () => setTimeout(() => openAct("ups:" + room, [stage.clientWidth / 2, stage.clientHeight * 0.3]), 120);
-  if (ROOM_VIEW[room]) return goRoom(ROOM_VIEW[room], false, card);   // V3.22: once there (it may build first)
+  if (ROOM_VIEW[room]) return goRoom(ROOM_VIEW[room], false, card);   // V3.23: once there (it may build first)
   if (room === "outside" && S.view !== "house") setView("house");
   card();
 }

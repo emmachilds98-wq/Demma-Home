@@ -258,7 +258,7 @@ function enterRoom(name, warm) {   // V2.42: warm, the warm-up's visit there and
    there */
 const WARMED = new Set();
 function warmSwitch() {
-  if (S.view === "house") { if (warmHouse()) return true; if (!PARALLEL() || !houseG || !R.HOUSE3 || LOWD) return false;   // V3.22: then each room, one at a time, beside the page
+  if (S.view === "house") { if (warmHouse()) return true; if (!PARALLEL() || !houseG || !R.HOUSE3 || LOWD) return false;   // V3.23: then each room, one at a time, beside the page
     const to = Object.keys(VIEWS).find(k => VIEWS[k].box && !WARMED.has(k + S.quality)); return !!to && !!warmTo(to); }
   if (!(RMODE === "stand" || S.view === "livstand")) return false;
   const to = ["livstand", ...Object.keys(VIEWS).filter(k => VIEWS[k].box)].find(k => k !== S.view && !WARMED.has(k + S.quality));
@@ -277,10 +277,10 @@ function warmAt(key, go, back) {   // a visit off screen: go there, ask for the 
   let job = Promise.resolve();
   try { go(); gl.setRenderTarget(postLive() ? PRE.rtAO : PRE.rt); job = capWait(compileClipped(camera, true)); }
   finally { gl.setRenderTarget(was); back(); gl.shadowMap.needsUpdate = su; }
-  WARMP.set(key + S.quality, job); WARMB = job; job.then(() => { if (WARMB === job) WARMB = null; });   // V3.22: the build's promise, so a room can wait for it
+  WARMP.set(key + S.quality, job); WARMB = job; job.then(() => { if (WARMB === job) WARMB = null; });   // V3.23: the build's promise, so a room can wait for it
   dirty(); return true;
 }
-/* V3.22, the client 9 Nov 2026: "i want pc to be better ... it is still clunky i want fluid like the mobile version". Measured on her
+/* V3.23, the client 9 Nov 2026: "i want pc to be better ... it is still clunky i want fluid like the mobile version". Measured on her
    RTX 5070 PC (Chrome, Direct3D 11): moving runs at the screen's 155 frames a second, but the living room picked from the house in
    its first seconds froze the page 27 s: its 31 shaders (36 lights each) went through Windows' compiler on the frame that showed them,
    the warm-up not yet there. Now, where the browser builds shaders in parallel, a room picked before its shaders are ready is built

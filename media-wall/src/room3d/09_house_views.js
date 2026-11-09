@@ -30,7 +30,7 @@ const LIVV = () => !HOUSEV(S.view) && !!VIEWS[S.view];
    it, Above and On its own stay a tap away. R3D.set, the tour and links keep each view as it is */
 function goRoom(v, now, after) {
   if (v === "room") v = "livstand";
-  if (!now) return readyThen(v, () => { goRoom(v, true); if (after) after(); });   // V3.22: its shaders built first where they aren't (no freeze on a PC)
+  if (!now) return readyThen(v, () => { goRoom(v, true); if (after) after(); });   // V3.23: its shaders built first where they aren't (no freeze on a PC)
   const far = S.view === "house" || !HOUSEV(S.view) !== !HOUSEV(v);
   setView(v); if (VIEWS[v] && VIEWS[v].box) setRmode("stand");
   if (tween && far) tween.dur = Math.max(tween.dur, 1100);   // from the whole house, a glide in, not a dive
