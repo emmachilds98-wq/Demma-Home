@@ -3,10 +3,10 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V3.20 (8 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
-The version shows faintly by "Demma's Home" top left (V3.16; not on an iPhone SE, too narrow) and in Plan as a refresh button ("V3.20 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V3.21 (8 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
+The version shows faintly by "Demma's Home" top left (V3.16; not on an iPhone SE, too narrow) and in Plan as a refresh button ("V3.21 ↻"): on the home-screen app, tap it to get the newest.
 
-**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N46 done V3.04, N48 V3.05, N50 V3.06, N52 V3.07; section 13's N53 V3.08, N54 V3.09, N49 V3.10, N51 V3.11, N47 V3.12, N55 V3.13; section 14: N56 V3.14, N59 V3.15, N60 V3.16, N61 and N62 V3.17, N57 V3.18, N63 V3.19 (one light for the house), N58 V3.20; N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
+**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N46 done V3.04, N48 V3.05, N50 V3.06, N52 V3.07; section 13's N53 V3.08, N54 V3.09, N49 V3.10, N51 V3.11, N47 V3.12, N55 V3.13; section 14: N56 V3.14, N59 V3.15, N60 V3.16, N61 and N62 V3.17, N57 V3.18, N63 V3.19 (one light for the house), N58 V3.21; N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
 On a weak signal the page opens from the device after 2 s (V3.00, N43, `sw.js`): the new copy is saved for next time, and the version button shows it. The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 
 ## Where it lives
@@ -67,6 +67,12 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
 - **Moving:** the glide after a drag eases the same each 60th of a second at any frame rate (`DAMP`, V2.60); a walk key held over
   half a second eases up to half as quick again (1.4 to 2.1 m/s, `WALK.pace`); Shift still hurries.
 - **The living room** is the media wall project: stickers, Plan · Build · Buy and their sheets, Room, Look, Edit, the item cards.
+- **The breast and the window corner (V3.21, N64, the client's decision):** the plant stand on the chimney breast (the frames up 30 over
+  it); left of the window, the vinyl stand centred (x 391.5) with the "now playing" ledge and the glass case over it (`geometry.PLANT_LAYOUT`
+  "breast", `ideas.CASE_CORNER`; in the 3D the case and the ledge are the breast's groups turned round, `06` `placeCorner`). The alcove
+  shelves left the plan (an option, in the case's place); the drinks cabinet under the case (an option) puts the old layout back while on.
+  View: Left of the window (`corner`). Room: Set it for (the set-ups, one sliding row), the table, the drawers and the record table's lid
+  side by side, More, Options and ideas, then Save my plan and Try options on one row; the plant stand's choice is gone.
 - **Change the house:** tap a wall, ceiling or floor for its colours card (`23_finish.js`: paints, floors, bulbs and fittings, lighter
   and darker, a colour from a photo, This wall · This room · Whole floor); a window's or door's card colours its outside. Look saves
   and switches named schemes. The living room is on the same rows (V2.51, N5a): its walls, ceiling and skirting open the same card;

@@ -992,7 +992,7 @@ def power():
     o.append(t(430, 420, "one strip per socket, never one plugged into another", 10, "middle", 500, VIN_S))
     notes = ["The socket on the side wall is a single today: you swap it for a double at the same spot (like for like, your own job: step 3).",
              "The retro switch moves to the wall: with the TV 2 cm from the left upright, the 10-gang's own switches can't be reached any more.",
-             "Rear speakers: your double socket behind the sofa's short side (v23). Your lamp and the grow lights: the double behind the plant stand.",
+             "Rear speakers: your double socket behind the sofa's short side (v23). Your lamp: the double behind the vinyl stand.",
              ("The sub plugs into the 10-gang: its lead drops through the worktop's slot to the back of bay 2. Both spot bars use existing ceiling points." if G.SUB_IN_WALL else "The sub plugs into the 10-gang: its lead runs along the channel and the breast's skirting. Both spot bars use existing ceiling points."),
              "Load check: the 10-gang about 1.55 kW with everything on, PC included (850 W at most); the 6-way up to 0.8 kW. Each under 13 A (3 kW).",
              "Check the 10-gang is surge-protected; if not, use a surge-protected one for the TV and consoles. Label both outlets."]
@@ -1934,9 +1934,9 @@ def cab_plan():
     o.append(t(X((P_["x"][0] + P_["x"][1]) / 2), Y(P_["z"][0]) + 12, "ottoman: to the sofa", 8.5, "middle", 600, "#a3352b"))
     sz = g.STAIRS_WALL_Z[0]
     o.append(f'<rect x="{X(g.ROOM_W):.1f}" y="{Y(sz):.1f}" width="{(g.ROOM_W - g.STAIR_X[0]) * k:.1f}" height="{(sz - C["z"][0]) * k:.1f}" fill="#fbe7e1" fill-opacity="0.8"/>')
-    pl = g.PLANT_LAYOUTS["corner"]["plants"]; PS = g.PLANT_STAND
+    pl = g.PLANT_LAYOUTS[g.PLANT_LAYOUT]["records"]; PS = g.RECORD_SHELF   # V3.14: the vinyl stand left of the window
     o.append(f'<rect x="{X(pl[0] + PS["w"] / 2):.1f}" y="{Y(pl[1] - PS["d"] / 2):.1f}" width="{PS["w"] * k:.1f}" height="{PS["d"] * k:.1f}" fill="#e6f0dc" stroke="#6f9a5a"/>')
-    o.append(t(X(pl[0]), Y(pl[1]) + 4, "plant stand", 8.5, "middle", 600, "#3f6a2e"))
+    o.append(t(X(pl[0]), Y(pl[1]) + 4, "vinyl stand", 8.5, "middle", 600, "#3f6a2e"))
     # the two boxes, and the doors: the table door turned back flat, the chair door shut
     for a, b in (C["z_t"], C["z_c"]):
         o.append(f'<rect x="{X(g.ROOM_W):.1f}" y="{Y(b):.1f}" width="{C["d"] * k:.1f}" height="{(a - b) * k:.1f}" fill="{OAKF}" stroke="{OAKD}" stroke-width="1.6"/>')

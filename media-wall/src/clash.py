@@ -43,20 +43,14 @@ def pieces():
     b.append(box("PC", (0, g.PC_CASE[0]), (g.PC_SHELF_TOP, g.PC_SHELF_TOP + g.PC_CASE[1]), g.PC_Z))
     wc = g.WALL_CABS
     b.append(box("wall cabinets", (0, g.EKET[1]), (wc["y0"], wc["y0"] + g.EKET[2]), wc["z"]))
-    # the chimney breast: the glass case, the "now playing" ledge, your vinyl stand under it
-    c = ideas.CASE
-    b.append(box("glass case", c["x"], c["y"], (-c["d"], 0)))
-    nl = g.NOW_LEDGE
-    b.append(box("now-playing ledge", nl["x"], (nl["top"] - nl["t"], nl["top"]), (-nl["d"], 0)))
-    lay = g.PLANT_LAYOUTS["corner"]
-    rx, rz, _f = lay["records"]; RS = g.RECORD_SHELF
-    b.append(box("vinyl stand", (rx - RS["w"] / 2, rx + RS["w"] / 2), (0, RS["h"]), (rz - RS["d"] / 2, rz + RS["d"] / 2)))
-    # the window corner: the plant stand, the alcove shelves; the lamp at the sofa's west end
+    # V3.14: the chimney breast holds the plant stand (the "now playing" ledge off); left of the window, the vinyl stand under the glass case
+    lay = g.PLANT_LAYOUTS[g.PLANT_LAYOUT]
     px, pz, _f = lay["plants"]; PS = g.PLANT_STAND
     b.append(box("plant stand", (px - PS["w"] / 2, px + PS["w"] / 2), (0, PS["h"]), (pz - PS["d"] / 2, pz + PS["d"] / 2)))
-    al = g.ALCOVE_SHELVES
-    for i, top in enumerate(al["tops"]):
-        b.append(box(f"alcove shelf {i + 1}", al["x"], (top - al["t"], top), (g.WINDOW_Z, g.WINDOW_Z + al["d"])))
+    rx, rz, _f = lay["records"]; RS = g.RECORD_SHELF
+    b.append(box("vinyl stand", (rx - RS["w"] / 2, rx + RS["w"] / 2), (0, RS["h"]), (rz - RS["d"] / 2, rz + RS["d"] / 2)))
+    c = ideas.CASE_CORNER
+    b.append(box("glass case", c["x"], c["y"], (c["z"], c["z"] + c["d"])))
     lx, lz = g.FLOOR_LAMP_SPOTS["sofa"][1]; r = g.FLOOR_LAMP["base"] / 2
     b.append(box("red lamp", (lx - r, lx + r), (0, g.FLOOR_LAMP["h"]), (lz - r, lz + r)))
     # the sofa (the seat and its back), the coffee table, the ottoman, the basket, the rear speakers

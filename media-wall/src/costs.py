@@ -6,7 +6,7 @@ totals always match it. A row is matched on the start of its text; one nobody na
 import re
 
 # (piece, the row's text starts with, quantity shown, short name); pieces in this order
-PIECES = ["The media wall", "The side wall and the PC", "The dining cabinet", "The chimney breast", "Lighting", "Paint",
+PIECES = ["The media wall", "The side wall and the PC", "The dining cabinet", "Left of the window", "Lighting", "Paint",
           "Network", "Electrics (your own job)", "Power and cables", "TV, consoles and AV", "Vinyl kit", "Your picks", "Finishing touches",
           "Can wait (after you move in)"]   # v41: the picks on their own; what can wait split off
 SHORT = [
@@ -40,9 +40,9 @@ SHORT = [
     ("The dining cabinet", "Folding, self-locking table-leg brackets", "1 set", "Folding leg brackets (4), tabletop fasteners (16)"),
     ("The dining cabinet", "Three Lee Valley 40574", "3", "Lee Valley flip-top hinge"),
     ("The dining cabinet", "Folding chairs, six: your grey padded", "3 pairs", "Grey padded folding chairs (Brayden Studio)"),
-    ("The chimney breast", "The glass display case's glass", "1 set", "Glass case: 4 mm toughened front, three 6 mm shelves, cut to size"),
-    ("The chimney breast", "The glass display case's oak", "1 set", "Glass case: oak frame, oak-faced ply back, pins, cleat, LED strip"),
-    ("The chimney breast", "The “now playing” ledge", "1", "“Now playing” oak ledge and brackets"),
+    ("Left of the window", "The glass display case's glass", "1 set", "Glass case: 4 mm toughened front, three 6 mm shelves, cut to size"),
+    ("Left of the window", "The glass display case's oak", "1 set", "Glass case: oak frame, oak-faced ply back, pins, cleat, LED strip"),
+    ("Left of the window", "The “now playing” ledge", "1", "“Now playing” oak ledge and brackets"),
     ("Lighting", "Two Dunelm Elements Wolston", "2", "Dunelm Wolston 4-light spot bar"),
     ("Lighting", "Eight smart colour E14 bulbs", "8", "Smart colour E14 bulb"),
     ("Lighting", "Smart colour strips", "1 set", "Smart colour LED strip, 4.5 m, with channels"),
@@ -124,7 +124,6 @@ SHORT += [
     ("The dining cabinet", "The bar beside the dining cabinet", "1 set", "The bar: oak-faced ply cupboard, oak counter, hinges"),
     ("The dining cabinet", "Over the bar", "1 set", "Over the bar: IKEA ENHET frame, mirror, glass rail, LED"),
     ("Your picks", "Two IKEA EKET wall cabinets", "2", "IKEA EKET wall cabinet, 35 cube, glass door"),
-    ("Your picks", "Two oak floating shelves 900 × 230", "2", "Oak floating shelf, 900 × 230"),
     ("Your picks", "An oak shelf over the hall door", "1 set", "Oak shelf over the door, two KUGGIS boxes"),
     ("Your picks", "Two IKEA KUGGIS lidded boxes", "2", "IKEA KUGGIS box, 35 × 26 × 15"),
     ("Can wait (after you move in)", "Drawers in the bottom three steps", "1 set", "Step drawers: ply boxes, oak fronts, runners"),

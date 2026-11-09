@@ -19,7 +19,7 @@ def _from(key, place):
 PIECES = [
     _from("base", "wall"), _from("worktop", "wall"), _from("uprights", "wall"),
     _from("sidewall", "side"),
-    _from("glasscase", "breast"),
+    _from("glasscase", "window"),   # V3.14: over the vinyl stand, left of the window
     dict(key="doorshelf", title="The shelf over the door and its boxes", place="breast", pic="render_v99_3d_sg_doorshelf.png",
          spec=[(14, ["Over the hall door"])], buy=["An oak shelf over the hall door", "Two IKEA KUGGIS lidded boxes"], cut="fitted",
          time="2 h", who="You", what="An oak shelf on two brackets over the hall door, two lidded boxes on it."),
@@ -28,9 +28,6 @@ PIECES = [
     dict(key="wallcabs", title="The wall cabinets", place="sofa", pic="render_v99_3d_sg_wallcabs.png",
          spec=[(14, ["The wall cabinets"])], buy=["Two IKEA EKET wall cabinets"], cut=None,
          time="2 h", who="You + a helper", what="Two glass-fronted cabinets on a rail over the sofa's corner."),
-    dict(key="alcove", title="The alcove shelves", place="window", pic="render_v99_3d_sg_alcoveshelves.png",
-         spec=[(14, ["The alcove shelves"])], buy=["Two oak floating shelves 900 × 230"], cut=None,
-         time="2 h", who="You", what="Two oak floating shelves on concealed brackets in the window corner."),
 ]
 JOB_PIECES = [dict(key=k, title=t, place="whole", pic=None, spec=spec, buy=buy, cut=None, time=time, who="You", what=what, job=True)
               for k, t, what, spec, buy, time in C.JOBS]
@@ -42,14 +39,14 @@ PLACES = [
     ("breast", "Chimney breast and door", 20, [(G.BREAST_X[0] + G.BREAST_X[1]) / 2, 175, -2], [0, -1], "wall", "breast", "records"),
     ("dining", "Dining wall and bar", 60, [G.ROOM_W - 12, 110, G.CAB["cz"]], [-1, 0], "stairs", "dining", "dining"),
     ("sofa", "The sofa", 250, [(G.SOFA_X[0] + G.SOFA_X[1]) / 2, 70, G.SOFA_BACK_Z + 55], None, "", "sofa", "c-room"),
-    ("window", "Window corner", 150, [G.WINDOW_X[1] + 60, 150, G.WINDOW_Z + 4], [0, 1], "", "windowwall", "c-room"),
+    ("window", "Window corner", 150, [G.WINDOW_X[1] + 60, 150, G.WINDOW_Z + 4], [0, 1], "", "corner", "records"),   # V3.14: the records and the glass case
 ]
 PLACE_NAME = {p[0]: p[1] for p in PLACES} | {"whole": "The whole room"}
 
 # what each piece needs done first: one line, not an order
 NEEDS = {"base": "The Cat6, the socket and the PC's conduits (Cables) and the paint first: the base hides that wall.",
          "worktop": "The base, levelled and fixed.", "uprights": "The worktop on.", "sidewall": "The uprights in (the run's cleat meets the left one).",
-         "glasscase": "The breast painted.", "cabinet": "The stairs wall painted; the black shelf's 10 cm gap kept.",
+         "glasscase": "The window wall painted.", "cabinet": "The stairs wall painted; the black shelf's 10 cm gap kept.",
          "bar": "The dining cabinet in (the bar is scribed to it).", "doorshelf": "The architrave's top measured (Check).",
          "lighting": "Cables done; the paint dry.", "connect": "The media wall built."}
 

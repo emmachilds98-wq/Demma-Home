@@ -476,10 +476,15 @@ _BREAST_CX = (BREAST_X[0] + BREAST_X[1]) / 2
 PLANT_LAYOUTS = {
     "corner": dict(name="Plants in the window corner, vinyl stand on the breast", plants=(391.5, WINDOW_Z + 1.0 + PLANT_STAND["d"] / 2, 1),
                    records=(_BREAST_CX, -1.0 - RECORD_SHELF["d"] / 2, -1)),
-    "breast": dict(name="Vinyl stand in the window corner, plants on the breast", plants=(_BREAST_CX, -1.0 - PLANT_STAND["d"] / 2, -1),
-                   records=(383.5, WINDOW_Z + 1.0 + RECORD_SHELF["d"] / 2, 1)),
+    "breast": dict(name="Plants on the breast, vinyl stand and glass case left of the window", plants=(_BREAST_CX, -1.0 - PLANT_STAND["d"] / 2, -1),
+                   records=(391.5, WINDOW_Z + 1.0 + RECORD_SHELF["d"] / 2, 1)),   # V3.14: centred in the corner, under the glass case
 }
-PLANT_LAYOUT = "corner"          # the recommendation: daylight for the plants, the records beside the turntable
+# V3.14, the client (8 Nov 2026): "It's now definite I also want the plant shelf on the chimney breast and records on the left of the
+# living room window, which means the display shelf would move to the left of the window too": the plan is "breast" (the glass case
+# hangs over the vinyl stand in the window corner, in the alcove shelves' place: ideas.CASE_CORNER). "corner" is the old layout, kept for
+# the drinks cabinet under the case (an option on the breast).
+PLANT_LAYOUT = "breast"
+CORNER_FRONT = PLANT_LAYOUTS["breast"]["records"][1] + RECORD_SHELF["d"] / 2   # -276: the vinyl stand's front in the window corner
 LAMP_DEFAULT = "sofa"            # v18: the window corner is taken either way, so the red lamp starts at the sofa's west end
 
 # ---------------------------------------------------------------- v19 (20 Oct): LP totals and storing the dining chairs
@@ -924,8 +929,9 @@ STAIR_CURTAIN["side_len"] = round(STAIR_CURTAIN["side"][1] - STAIR_CURTAIN["side
 # the black shelf, the shelf over the door, the lift-top coffee table, the sage-stripe rug; and, from the brief, "dining cabinet with bar
 # beside it". These are in the buy list, the build and the HD stills; every other choice is an option, only to look at (CLAUDE.md).
 FIRM = dict(
-    sugg=["blanketbasket", "stairdrawers", "wallcabs", "alcoveshelves", "shelfboxes", "doorshelf", "recordtable"],
-    svar={"blanketbasket": "natural", "stairdrawers": "oak", "wallcabs": "walnut", "alcoveshelves": "oak", "shelfboxes": "white",
+    # V3.14: the alcove shelves came out: the glass case hangs in their place, over the vinyl stand
+    sugg=["blanketbasket", "stairdrawers", "wallcabs", "shelfboxes", "doorshelf", "recordtable"],
+    svar={"blanketbasket": "natural", "stairdrawers": "oak", "wallcabs": "walnut", "shelfboxes": "white",
           "doorshelf": "white", "recordtable": "oak"},
     beside="bar", cabw="90", decor={"rug": "stripes", "ceiling": "stipple"},   # v45: the Artex stipple ceiling
     ideas=["ctable"],                         # v43, client: "I want the c table in the current main plan"
