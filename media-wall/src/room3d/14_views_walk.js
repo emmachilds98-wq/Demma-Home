@@ -132,7 +132,7 @@ function houseCollide() {                   // true if it moved the eye
    knee, the hip and the eye (so not over a bed or through a wardrobe), steps up a stair (a rise up to 35) and follows the floor down;
    it slides along what it meets. Walk into the next room and its name, its lights and what's drawn follow you (the eye stays where it
    is); a door opens as you reach it. V1.38: the living room too (below) */
-const WALK = { keys: new Set(), stick: [0, 0], v: new THREE.Vector2(), feet: null, doorT: 0, warmT: 0, hinted: false, held: 0, pace: 1 };
+const WALK = { keys: new Set(), stick: [0, 0], v: new THREE.Vector2(), feet: null, doorT: 0, warmT: 0, hinted: false, held: 0, pace: 1, tv: 0 };
 const walking = () => (RMODE === "stand" && !!ROOMV() || S.view === "livstand") && !tween;   // V1.38: and the living room's Be there
 /* V1.38 (UPGRADE_REVIEW Next 1), the client: "review how to make the movement within the house better": the living room is drawn on its
    own (geometry.py's measured room, not the house file), so a walk takes its walls, its furniture and its flight from that: in through
@@ -354,8 +354,11 @@ function walkTick(dt) {
      eases up to half as quick again (a stroll to a brisk walk, 1.4 to 2.1 m/s) over the next second, as a game's does */
   WALK.held = want.lengthSq() > 0.25 ? WALK.held + dt : 0;
   { const u = Math.min(1, Math.max(0, WALK.held - 0.5)); WALK.pace = 1 + 0.5 * u * u * (3 - 2 * u); }
-  const turn = (k.has("tr") ? 1 : 0) - (k.has("tl") ? 1 : 0);
-  if (WALK.v.lengthSq() < 1e-5 && !turn) { if (WALK.feet === null) WALK.feet = camera.position.y / M - STAND_EYE; return false; }
+  /* V3.28, the client 9 Nov 2026: "the pc version still moves extremely rigidly like im moving frames rather than being a person in the
+     room": ← → turned at full speed from the first frame and stopped dead; now a turn eases in and out as the walk does */
+  WALK.tv += ((k.has("tr") ? 1 : 0) - (k.has("tl") ? 1 : 0) - WALK.tv) * Math.min(1, dt * 9);
+  const turn = Math.abs(WALK.tv) < 1e-3 ? 0 : WALK.tv;
+  if (WALK.v.lengthSq() < 1e-5 && !turn) { WALK.tv = 0; if (WALK.feet === null) WALK.feet = camera.position.y / M - STAND_EYE; return false; }
   return walkMove(WALK.v.x, WALK.v.y, turn, dt);
 }
 /* V1.32: the phone's stick (bottom left): drag it the way to go. V3.15, the client: "add the joystick to all views for mobile movement":
@@ -382,9 +385,9 @@ MLOOK?.addEventListener("click", () => mlook(!mlookOn()));
 document.addEventListener("keydown", e => { if ((e.key === "m" || e.key === "M") && !e.ctrlKey && !e.metaKey && !e.altKey && !/input|textarea|select/i.test(e.target.tagName) && walking()) mlook(!mlookOn()); });
 document.addEventListener("pointerlockchange", () => { const on = mlookOn(); root.classList.toggle("mlook", on); MLOOK?.setAttribute("aria-pressed", String(on));
   if (on) toast("Mouse look: move to look, W A S D to walk, click to open, Esc to stop"); });
-addEventListener("mousemove", e => { if (mlookOn() && (e.movementX || e.movementY)) lookTurn(-e.movementX, -e.movementY); });
+addEventListener("mousemove", e => { if (mlookOn() && (e.movementX || e.movementY)) lookPend(-e.movementX, -e.movementY); });
 function syncStick() {
-  const on = RMODE === "stand" && !!ROOMV() || S.view === "livstand"; STICK.hidden = !COARSE; root.classList.toggle("walking", on && COARSE);   // V3.15: the stick in every view
+  const on = RMODE === "stand" && !!ROOMV() || S.view === "livstand"; STICK.hidden = false; root.classList.toggle("walking", on && COARSE);   // V3.15: the stick in every view; V3.28: on a computer too (the mouse drags it), as on the phone
   if (MLOOK) MLOOK.hidden = COARSE || !on; if (!on && mlookOn()) document.exitPointerLock();
   if (on && !WALK.hinted) { WALK.hinted = true;   // V2.42: each visit (it was once ever), the keys as they are
     setTimeout(() => toast(COARSE ? "Walk with the stick, drag to look" : "W S walk · ← → turn · A D step aside · drag or M to look · double-click a floor to go there"), 700); }
@@ -612,7 +615,19 @@ function lookTurn(dx, dy) {
 canvas.addEventListener("pointerdown", e => { LD_.ids.add(e.pointerId); controls.enableRotate = !inPlace();   // before the orbit sees it (capture)
   if (!inPlace() || tween || LD_.ids.size > 1 || (e.pointerType === "mouse" && e.button !== 0)) { LD_.id = null; return; }
   LD_.id = e.pointerId; LD_.x = e.clientX; LD_.y = e.clientY; }, true);
-addEventListener("pointermove", e => { if (e.pointerId !== LD_.id || !inPlace()) return; const dx = e.clientX - LD_.x, dy = e.clientY - LD_.y; LD_.x = e.clientX; LD_.y = e.clientY; if (dx || dy) lookTurn(dx, dy); });
+addEventListener("pointermove", e => { if (e.pointerId !== LD_.id || !inPlace()) return; const dx = e.clientX - LD_.x, dy = e.clientY - LD_.y; LD_.x = e.clientX; LD_.y = e.clientY; if (dx || dy) (e.pointerType === "mouse" ? lookPend : lookTurn)(dx, dy); });
+/* V3.28: a mouse's moves come in bursts that don't keep step with the frames (a few one frame, none the next), so a look round with it
+   jerked where a finger's didn't; its moves now gather and are let out over the next frames (a 35 ms ease), every frame a share */
+const LOOKP = [0, 0];
+function lookPend(dx, dy) { LOOKP[0] += dx; LOOKP[1] += dy; dirty(); }
+function lookTick(dt) {
+  if (!LOOKP[0] && !LOOKP[1]) return false;
+  if (tween || !(inPlace() || mlookOn())) { LOOKP[0] = LOOKP[1] = 0; return false; }
+  const f = 1 - Math.exp(-Math.max(dt, 1 / 240) / 0.035);
+  let dx = LOOKP[0] * f, dy = LOOKP[1] * f;
+  if (Math.abs(LOOKP[0] - dx) < 0.05 && Math.abs(LOOKP[1] - dy) < 0.05) { dx = LOOKP[0]; dy = LOOKP[1]; }
+  LOOKP[0] -= dx; LOOKP[1] -= dy; lookTurn(dx, dy); return true;
+}
 for (const ev of ["pointerup", "pointercancel"]) addEventListener(ev, e => { LD_.ids.delete(e.pointerId); if (e.pointerId === LD_.id) LD_.id = null; });
 let eyeT = 0;
 function syncEye() {         // the height slider follows the camera
