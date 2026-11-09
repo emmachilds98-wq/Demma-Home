@@ -327,8 +327,15 @@ living room's layout (shelves, records) and the house's lighting are other threa
 
 The client, 9 Nov 2026: "i want pc to be better, i dont understand how to give you info but it is still clunky i want fluid like the
 mobile version. go through UI areas and info also and review how to improve and clean up these areas to look and be used better".
+Measured on her own PC (RTX 5070, 2560 × 1440 at 155 Hz, Chrome on Direct3D 11, a headless copy with its own profile): moving runs at
+155 frames a second in the house, the living room and the hall (draws 190–394, a frame 1–2 ms of the page's time), so the card isn't
+short. Two things were: the living room picked from the house in its first seconds froze the page 27 s (its 31 shaders through
+Windows' compiler on the frame that showed them; a second visit, Chrome's cache warm, 65 ms), and the wheel jumped a notch at a time.
 
 | # | Task | Aim | Owns | After | Status |
 |---|---|---|---|---|---|
+| N65 | No freeze stepping into a room on a PC: where the browser builds shaders in parallel, rooms and hidden parts are asked for beside the page (rooms first, from the house too), and a room picked before it's ready is built first ("Opening ..."), then shown | Speed (PC) | `01_renderer.js` (`precompileBatch`, `compileClipped` roots), `14_views_walk.js` (`warmAt`, `warmTo`, `readyThen`), `09_house_views.js` `goRoom`, `16_cards.js` `upsGo`, `17_render_loop.js` | | Done V3.23 |
+| N66 | The wheel eased: each notch spread over about a fifth of a second (the room's zoom, the map's, a walk), the same total | Feel (PC) | `19_view_controls.js` | N65 | Open |
 | N67 | The Plan, Build and Buy sheets tidied at 393, 1280 and 2560: one centred column on a PC with the room dimmed round it, full width on a phone, the cost cards two up on a phone, fewer words, bigger taps | Look (PC and phone) | `media-wall/src/build_viewer.py`, `media-wall/src/page.css` | | Done V3.22 (#183) |
-| N68 | The cards over the 3D tidied (a wall's, a floor's, a piece's, Changes, Add a piece): one shape (main tray, three buttons, More), nothing cut off on a phone or a PC, fewer words | Look (PC and phone) | `media-wall/src/room3d/16_cards.js`, `media-wall/src/room3d/23_finish.js` (text and layout, not the costs) | | Done V3.23 |
+| N68 | The cards over the 3D tidied (a wall's, a floor's, a piece's, Changes, Add a piece): one shape (main tray, three buttons, More), nothing cut off on a phone or a PC, fewer words | Look (PC and phone) | `media-wall/src/room3d/16_cards.js`, `media-wall/src/room3d/23_finish.js` (text and layout, not the costs) | | Done V3.25 |
+

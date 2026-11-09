@@ -258,7 +258,8 @@ function enterRoom(name, warm) {   // V2.42: warm, the warm-up's visit there and
    there */
 const WARMED = new Set();
 function warmSwitch() {
-  if (S.view === "house") return warmHouse();
+  if (S.view === "house") { if (warmHouse()) return true; if (!PARALLEL() || !houseG || !R.HOUSE3 || LOWD) return false;   // V3.23: then each room, one at a time, beside the page
+    const to = Object.keys(VIEWS).find(k => VIEWS[k].box && !WARMED.has(k + S.quality)); return !!to && !!warmTo(to); }
   if (!(RMODE === "stand" || S.view === "livstand")) return false;
   const to = ["livstand", ...Object.keys(VIEWS).filter(k => VIEWS[k].box)].find(k => k !== S.view && !WARMED.has(k + S.quality));
   return !!to && warmRoom(to);
@@ -273,9 +274,38 @@ function warmAt(key, go, back) {   // a visit off screen: go there, ask for the 
   const was = gl.getRenderTarget(), su = gl.shadowMap.needsUpdate;
   if (!PRE.rt) { PRE.rt = new THREE.WebGLRenderTarget(1, 1); PRE.rt.isXRRenderTarget = true; PRE.rt.texture.colorSpace = gl.outputColorSpace; }
   if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
-  try { go(); gl.setRenderTarget(postLive() ? PRE.rtAO : PRE.rt); compileClipped(camera, true); }
+  let job = Promise.resolve();
+  try { go(); gl.setRenderTarget(postLive() ? PRE.rtAO : PRE.rt); job = capWait(compileClipped(camera, true)); }
   finally { gl.setRenderTarget(was); back(); gl.shadowMap.needsUpdate = su; }
+  WARMP.set(key + S.quality, job); WARMB = job; job.then(() => { if (WARMB === job) WARMB = null; });   // V3.23: the build's promise, so a room can wait for it
   dirty(); return true;
+}
+/* V3.23, the client 9 Nov 2026: "i want pc to be better ... it is still clunky i want fluid like the mobile version". Measured on her
+   RTX 5070 PC (Chrome, Direct3D 11): moving runs at the screen's 155 frames a second, but the living room picked from the house in
+   its first seconds froze the page 27 s: its 31 shaders (36 lights each) went through Windows' compiler on the frame that showed them,
+   the warm-up not yet there. Now, where the browser builds shaders in parallel, a room picked before its shaders are ready is built
+   first (the page still answering, "Opening ..." on a toast) and shown when they are; a room already built opens at once */
+const WARMP = new Map(); let WARMB = null;
+const capWait = (p, ms = 8000) => Promise.race([p.catch(() => {}), new Promise(r => setTimeout(r, ms))]);   // a build never holds the queue past 8 s   // a build's promise by view; WARMB: the one still building (one at a time)
+const PARALLEL = () => !!(gl.extensions && gl.extensions.has("KHR_parallel_shader_compile"));
+function warmTo(to) {   // the off-screen visit to a room from wherever you are (the house or a room), its build's promise
+  const k = to + S.quality; if (WARMP.has(k)) return WARMP.get(k);
+  if (S.view === "house") { const f = hfloor; livShow();
+    warmAt(to, () => enterRoom(to, true), () => { enterRoom("house", true); setAbove(false); hfloor = f; applyFloors(); livingFromOutside(); }); }
+  else warmRoom(to);
+  return WARMP.get(k) || Promise.resolve();
+}
+let goWait = null;
+function readyThen(to, go) {   // go now if the room's shaders are built (or can't be built ahead here), else build them first
+  if (!PARALLEL() || !houseG || !R.HOUSE3 || LOWD || to === S.view || !VIEWS[to] || to === "house") return go();
+  const k = to + S.quality, p = WARMP.get(k);
+  if (WARMED.has(k) && !p) return go();
+  const mine = goWait = { to }, t0 = performance.now();
+  const job = p || warmTo(to), slow = setTimeout(() => { if (goWait === mine) toast("Opening " + (VIEWS[to].label || "the room").replace(/^The /, "the ") + " ..."); }, 250);
+  Promise.race([job, new Promise(r => setTimeout(r, 20000))]).then(() => {
+    clearTimeout(slow); if (goWait !== mine) return; goWait = null;   // another pick since: that one wins
+    if (performance.now() - t0 > 250) { const t = qs("#r3d-toast"); if (t) t.hidden = true; }
+    go(); });
 }
 function warmRoom(to) { const v = S.view, rm = RMODE; return warmAt(to, () => enterRoom(to, true), () => { enterRoom(v, true); RMODE = rm; }); }
 /* N54 (V3.09), the client 8 Nov 2026: "optimise the pc version as much as the mobile version": from the whole house the first step into the
