@@ -322,3 +322,12 @@ living room's layout (shelves, records) and the house's lighting are other threa
 | N56 | Upgrade floors to try: herringbone oak, grey oak LVT, stone porcelain in a floor's card, each a real product's size, made here from the oak veneer's grain; costs a m² | Quality | `house/textures/build_textures.py` (`floors`, `TILED`), the new textures, `23_finish.js` `FIN_FLOORS`, `16_cards.js` `UPC.floor`, `fit.SOURCES upfloors` | | Done V3.14 |
 | N57 | Walls: panelling to try (a wall's card): shaker or slatted panels to a real product's size, in the wall's paint, round doors and windows | Quality | `23_finish.js`, `16_cards.js` `UPC`, `fit.SOURCES` | N56 | Done V3.18: Shaker (B&Q 97 × 9 strips) and oak slats (27/13 on felt), packs and cost |
 | N58 | Furniture: the house's pieces nearer their photos (softer cushions, real legs and handles where they are boxes) | Quality | `08_house_catalogue.js`, `house/model.py` (pieces only) | N56 | Done V3.20: a KIVIK sofa, a HEMNES dressing table, a BESTÅ TV bench added (real sizes, costs) |
+
+## 15. The PC as fluid as the phone, and the panels cleaned up (9 Nov 2026, V3.21): a task a PR
+
+The client, 9 Nov 2026: "i want pc to be better, i dont understand how to give you info but it is still clunky i want fluid like the
+mobile version. go through UI areas and info also and review how to improve and clean up these areas to look and be used better".
+
+| # | Task | Aim | Owns | After | Status |
+|---|---|---|---|---|---|
+| N67 | The Plan, Build and Buy sheets tidied at 393, 1280 and 2560: one centred column on a PC with the room dimmed round it, full width on a phone, the cost cards two up on a phone, fewer words, bigger taps | Look (PC and phone) | `media-wall/src/build_viewer.py`, `media-wall/src/page.css` | | Done V3.22 (#183) |
