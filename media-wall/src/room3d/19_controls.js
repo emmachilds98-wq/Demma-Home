@@ -200,7 +200,7 @@ function lostCheck() {   // inside the room and nearly facing a wall, or looking
 }
 function backToPlan() {                   // the plan: your picks, the bar beside the cabinet, no ideas
   S.sugg = Object.assign({}, DEF.sugg); S.svar = Object.assign({}, DEF.svar); S.ideas = Object.assign({}, DEF.ideas); S.beside = DEF.beside; S.plants = DEF.plants;
-  S.barflap = S.lid = S.ctop = S.sdraw = false; S.trolley = "park"; applySvar(); applyState();
+  S.barflap = S.lid = S.ctop = S.sdraw = S.scopen = false; S.trolley = "park"; applySvar(); applyState();
 }
 function setTry(on) {
   tryOpts = !!on; root.classList.toggle("trying", tryOpts);
@@ -328,7 +328,8 @@ root.addEventListener("click", e => {
   else if (d.lp) { S.lp = d.lp === "out"; applyState(); }
   else if (d.trolley) { S.trolley = d.trolley; if (d.trolley === "out") { S.beside = "trolley"; S.site = "C"; S.cab = "compact"; } applyState(); }
   else if (d.beside) { S.beside = d.beside; if (d.beside !== "clear") { S.site = "C"; S.cab = "compact"; } extrasRule("beside", d.beside, true); applyState(); }   // v31; v37: one thing per place
-  else if (d.sdraw) { S.sdraw = d.sdraw === "out"; applyState(); }                                // v37: the drawers in the bottom steps
+  else if (d.sdraw) { S.sdraw = d.sdraw === "out"; applyState(); }
+  else if (d.scopen) { S.scopen = d.scopen === "open"; applyState(); }                             // V3.30: the stair curtain                                // v37: the drawers in the bottom steps
   else if (d.foot) { S.foot = d.foot === "on"; if (S.foot) { S.site = "C"; S.dining = "folded"; } applyState(); }
   else if (d.pad) S.pad = d.pad === "on", applyPad(), store.set(KEY, S);
   else if (d.quality) S.quality = d.quality, S.picked = true, applyLight(), store.set(KEY, S);

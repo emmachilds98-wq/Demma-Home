@@ -462,7 +462,8 @@ function placeWork() {      // v34
   twTo(WORK.ctop, S.ctop ? 1 : 0, 1200);
   if (WORK.rlid) twTo(WORK.rlid, S.ctop ? 1 : 0, 1200);                                          // v38: the record table's lid
   twTo(WORK.barflap3, S.barflap ? 1 : 0, 1400);                                                    // v37: the built-in bar's doors open with it
-  twTo(WORK.sdraw, S.sdraw ? 1 : 0, 1500);                                                          // v37: the drawers in the bottom steps
+  twTo(WORK.sdraw, S.sdraw ? 1 : 0, 1500);
+  twTo(WORK.scurt, S.scopen ? 1 : 0, 1300);                                                        // V3.30: the stair curtain drawn back or across                                                          // v37: the drawers in the bottom steps
   twTo(WORK.lid, S.lid ? 1 : 0, 1500);
   twTo(WORK.lp, S.lp ? 1 : 0, 1300);
   // the trolley parks behind the table door's line: back it goes once the door has shut (the open door lies over its spot)

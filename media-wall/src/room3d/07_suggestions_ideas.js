@@ -340,14 +340,20 @@ function buildStorage37(own) {
   if (R.STAIR_CURTAIN) { const g = SUGG_G.stairscurtain = new THREE.Group(); shell.add(g); lazyVis(g, () => { const SC = R.STAIR_CURTAIN, C = R.CEIL, [x0, x1] = SC.x, w = x1 - x0;
     const cl = own("#cbb994"); cl.side = THREE.DoubleSide; cl.roughness = 0.95; cl.bumpMap = HESSIAN; cl.bumpScale = 0.5; SVAR_MATS.stairscurtain = [cl];
     const tm = reg(new THREE.MeshStandardMaterial({ color: "#f1f0ec", roughness: 0.4, metalness: 0.2 })), top = C - SC.track_h;
-    const panel = (len, at, ry) => { const folds = Math.round(len / 9.5), geo = new THREE.PlaneGeometry(len * M, SC.drop * M, folds * 8, 1), pos = geo.attributes.position;
+    /* V3.30, the client: "make the curtain on the stairwell openable so I can walk up": each panel hangs from the end it gathers to (the
+       foot's at the wall, the side's at the door's wall) and draws back there (S.scopen, WORK.scurt: a tap's card, or walking up to it) */
+    const pivs = [], panel = (len, stack, far) => { const folds = Math.round(len / 9.5), geo = new THREE.PlaneGeometry(len * M, SC.drop * M, folds * 8, 1), pos = geo.attributes.position;
       for (let i = 0; i < pos.count; i++) pos.setZ(i, Math.sin(pos.getX(i) / (len * M) * Math.PI * 2 * folds) * 3.2 * M);   // pleats about 9.5 apart, 3.2 deep
-      geo.computeVertexNormals(); const pm = new THREE.Mesh(geo, cl); pm.position.copy(at); pm.rotation.y = ry; g.add(shadow(pm)); };
+      geo.translate(len * M / 2, 0, 0); geo.computeVertexNormals();
+      const pv = new THREE.Group(), d = far.clone().sub(stack); pv.position.copy(stack); pv.rotation.y = Math.atan2(-d.z, d.x);
+      pv.add(shadow(new THREE.Mesh(geo, cl))); g.add(pv); pivs.push(pv); };
+    const y = top - SC.drop / 2;
     ibox(g, x0, C - 0.7, SC.z - SC.track_w, w, 0.7, SC.track_w, tm);                      // across the foot, on the bulkhead's underside
-    panel(w, v3((x0 + x1) / 2, top - SC.drop / 2, SC.z - SC.track_w / 2), 0);
+    panel(w, v3(x1, y, SC.z - SC.track_w / 2), v3(x0, y, SC.z - SC.track_w / 2));
     if (SC.side) { const [s0, s1] = SC.side;                                              // v81: and along the open side, to the door's wall
       ibox(g, x0, C - 0.7, s0, SC.track_w, 0.7, s1 - s0, tm);
-      panel(s1 - s0, v3(x0 + SC.track_w / 2, top - SC.drop / 2, (s0 + s1) / 2), Math.PI / 2); } }); }
+      panel(s1 - s0, v3(x0 + SC.track_w / 2, y, s1), v3(x0 + SC.track_w / 2, y, s0)); }
+    WORK.scurt = anim(v => pivs.forEach(p => p.scale.set(1 - 0.8 * v, 1, 1 + 1.6 * v)), S.scopen ? 1 : 0); }); }   // drawn back: a fifth of its length, its pleats deeper
   { const g = SUGG_G.lpledges = new THREE.Group(); shell.add(g); lazyVis(g, () => { const wood = own("#c48c57"), y = 108; SVAR_MATS.lpledges = [wood];
     const covers = ["#d94f2b", "#2f4e6e", "#e9c46a", "#1b1c1f"].map(c => own(c));
     [-171, -251].forEach((zc, j) => { const z0 = zc - 27.5;                                                   // under the PC shelf, under the wall cabinets
