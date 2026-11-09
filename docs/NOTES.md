@@ -79,6 +79,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `movable`'s `_flat` stays by place (04 and 07 pass it). Left: the `S.cab === "sliding"` paths in 05, 15 (`LOOK_STR`) and 19 (`d.cab`),
   `export3d.py`'s `A_*` `BAR2` keys, 04's `aboveAll`, `recP` (N47).
 
+- **A room's light (N80):** `applyLight` zeroes every light but the fill in a room of the house; it must leave the house's own (`userData.houseLight`) and the sun alone, as `placeRoomLights` runs before it, not after (a second change of a light left rooms lit by the fill alone). To compare a room with the living room, shoot both and take the mean grey (about 150 is the living room's by day).
 - **One light (N63):** to compare rooms' light, shoot each view (`R3D.set({view, tod, quality})`, 3.5 s) at 640 × 400 with the UI hidden
   and take the mean grey: the rooms' own colours spread it about ±20, so look for a view outside that. A light that's always visible
   (the sun, `skyFill`, `hemi`) can change intensity or colour freely (no shader); `visible` or a new light rebuilds them. In Fast the living
@@ -129,5 +130,5 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   new centre)·M, z = the new wall's z·M (`06` `placeCorner`; x is mirrored in `v3`). The plan's layout is one name (`geometry.PLANT_LAYOUT`),
   but the plan's text, fit rows, buy rows and build steps name places in words: grep "breast", "corner" and the piece's name across
   `media-wall/src/*.py` when a piece moves (`clash.py` proves nothing overlaps).
-- **Doors:** `14_views_walk.js` `walkDoors` opens a door within 95 cm (and draws the stair curtain back, V3.30) (not the bin cupboards': `BINS`). A door's open state is kept on the device (`S.doors`), so a fix to how a door opens must also ignore what a device already saved (V3.17 N61: the bin doors kept open from before V2.99 still showed as a second front door). The stairs: both flights 85 wide
+- **Doors:** `14_views_walk.js` `walkDoors` opens a door within 95 cm (and draws the stair curtain back, V3.31) (not the bin cupboards': `BINS`). A door's open state is kept on the device (`S.doors`), so a fix to how a door opens must also ignore what a device already saved (V3.17 N61: the bin doors kept open from before V2.99 still showed as a second front door). The stairs: both flights 85 wide
   (`geometry.RECESS_W`), `model.stair_soffit` over the lower flight; the site check walks through the living room door at x 339.

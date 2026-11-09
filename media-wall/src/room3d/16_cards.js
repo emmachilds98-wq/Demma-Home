@@ -241,7 +241,7 @@ function actItems(id) {     // [title, how it is now, buttons]
       ...(k === "barcase" || k === "barside" ? [btn(S.barflap ? "Close the bar" : "Open the bar", { barflap: S.barflap ? "shut" : "open" })] : []),
       ...(k === "liftcoffee" ? [btn(S.ctop ? "Put the top down" : "Lift the top", { ctop: S.ctop ? "down" : "up" })] : []),
       ...(k === "recordtable" ? [btn(S.ctop ? "Close the lid" : "Lift the lid", { ctop: S.ctop ? "down" : "up" })] : []),   // v38
-      ...(k === "stairscurtain" ? [btn(S.scopen ? "Draw it across" : "Open it", { scopen: S.scopen ? "shut" : "open" })] : []),   // V3.30
+      ...(k === "stairscurtain" ? [btn(S.scopen ? "Draw it across" : "Open it", { scopen: S.scopen ? "shut" : "open" })] : []),   // V3.31
       ...(k === "stairdrawers" ? [btn(S.sdraw ? "Push the drawers in" : "Pull the drawers out", { sdraw: S.sdraw ? "in" : "out" })] : []),   // v37
       ...(sg ? (SVAR[k] || []).map(([v, n]) => btn(n, { svar: `${k}:${v}` }, svarOf(k) === v)) : []),
       ...(it && !it.fixed ? [btn("Move it", { actedit: it.id })] : []),

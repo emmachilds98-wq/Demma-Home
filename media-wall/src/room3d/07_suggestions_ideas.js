@@ -340,7 +340,7 @@ function buildStorage37(own) {
   if (R.STAIR_CURTAIN) { const g = SUGG_G.stairscurtain = new THREE.Group(); shell.add(g); lazyVis(g, () => { const SC = R.STAIR_CURTAIN, C = R.CEIL, [x0, x1] = SC.x, w = x1 - x0;
     const cl = own("#cbb994"); cl.side = THREE.DoubleSide; cl.roughness = 0.95; cl.bumpMap = HESSIAN; cl.bumpScale = 0.5; SVAR_MATS.stairscurtain = [cl];
     const tm = reg(new THREE.MeshStandardMaterial({ color: "#f1f0ec", roughness: 0.4, metalness: 0.2 })), top = C - SC.track_h;
-    /* V3.30, the client: "make the curtain on the stairwell openable so I can walk up": each panel hangs from the end it gathers to (the
+    /* V3.31, the client: "make the curtain on the stairwell openable so I can walk up": each panel hangs from the end it gathers to (the
        foot's at the wall, the side's at the door's wall) and draws back there (S.scopen, WORK.scurt: a tap's card, or walking up to it) */
     const pivs = [], panel = (len, stack, far) => { const folds = Math.round(len / 9.5), geo = new THREE.PlaneGeometry(len * M, SC.drop * M, folds * 8, 1), pos = geo.attributes.position;
       for (let i = 0; i < pos.count; i++) pos.setZ(i, Math.sin(pos.getX(i) / (len * M) * Math.PI * 2 * folds) * 3.2 * M);   // pleats about 9.5 apart, 3.2 deep
