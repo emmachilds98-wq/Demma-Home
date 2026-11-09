@@ -171,3 +171,20 @@ function mapCentre(e) {
 { const T = { angle: "From an angle: drag to move, right-drag or two fingers to turn and tilt, scroll or pinch to zoom",
               top: "From straight above: drag to move, right-drag or two fingers to turn, scroll or pinch to zoom" };
   qsa("[data-hfview]").forEach(b => { if (T[b.dataset.hfview]) b.title = T[b.dataset.hfview]; }); }
+/* V3.24, the client 9 Nov 2026: "i want pc to be better ... it is still clunky i want fluid like the mobile version". A phone's pinch
+   zooms smoothly; a mouse wheel jumped a notch at a time (the orbit 3 %, the map 16 %, a walk 11 cm, all in one frame). Now each notch is
+   eased out over about a fifth of a second, frame by frame, and the same total arrives: the room, the map and a walk all glide. A
+   trackpad's pinch (Ctrl + wheel) and a sideways scroll come as they are */
+{ const EASED = new WeakSet(); let pend = 0, at = null, raf = 0, tw = 0;
+  const step = now => { const dt = Math.min(0.25, Math.max(0.001, (now - tw) / 1000)); tw = now;
+    let d = pend * (1 - Math.exp(-dt / 0.07)); if (Math.abs(pend - d) < 3) d = pend; pend -= d;
+    const ev = new WheelEvent("wheel", { deltaY: d, deltaMode: 0, clientX: at[0], clientY: at[1], shiftKey: at[2], bubbles: true, cancelable: true });
+    EASED.add(ev); canvas.dispatchEvent(ev); raf = pend ? requestAnimationFrame(step) : 0; };
+  root.addEventListener("wheel", e => {
+    if (e.target !== canvas || EASED.has(e) || e.ctrlKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+    e.preventDefault(); e.stopPropagation();
+    const dy = e.deltaY * (e.deltaMode === 1 ? 33 : e.deltaMode === 2 ? 400 : 1);
+    if (pend && Math.sign(dy) !== Math.sign(pend)) pend = 0;   // the other way: the rest of the last notch dropped
+    pend += dy; at = [e.clientX, e.clientY, e.shiftKey];
+    if (!raf) { tw = performance.now() - 16; raf = requestAnimationFrame(step); }
+  }, { capture: true, passive: false }); }

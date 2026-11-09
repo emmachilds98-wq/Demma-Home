@@ -335,6 +335,6 @@ Windows' compiler on the frame that showed them; a second visit, Chrome's cache 
 | # | Task | Aim | Owns | After | Status |
 |---|---|---|---|---|---|
 | N65 | No freeze stepping into a room on a PC: where the browser builds shaders in parallel, rooms and hidden parts are asked for beside the page (rooms first, from the house too), and a room picked before it's ready is built first ("Opening ..."), then shown | Speed (PC) | `01_renderer.js` (`precompileBatch`, `compileClipped` roots), `14_views_walk.js` (`warmAt`, `warmTo`, `readyThen`), `09_house_views.js` `goRoom`, `16_cards.js` `upsGo`, `17_render_loop.js` | | Done V3.23 |
-| N66 | The wheel eased: each notch spread over about a fifth of a second (the room's zoom, the map's, a walk), the same total | Feel (PC) | `19_view_controls.js` | N65 | Open |
+| N66 | The wheel eased: each notch spread over about a fifth of a second (the room's zoom, the map's, a walk), the same total | Feel (PC) | `19_view_controls.js` | N65 | Done V3.24: a notch eases out over ~0.2 s (70 ms time constant), the total checked the same here (orbit 18.25 → 15.71 m, a walk 12 cm, eased or not) |
 | N67 | The Plan, Build and Buy sheets tidied at 393, 1280 and 2560: one centred column on a PC with the room dimmed round it, full width on a phone, the cost cards two up on a phone, fewer words, bigger taps | Look (PC and phone) | `media-wall/src/build_viewer.py`, `media-wall/src/page.css` | | Done V3.22 (#183) |
 
