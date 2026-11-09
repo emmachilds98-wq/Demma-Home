@@ -25,6 +25,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `pointermove`, so a two-finger gesture must wait till both have moved before it decides what it is (N52's tilt read as a pan).
 - **Textures:** CC0 sites (Poly Haven, ambientCG) and GitHub release downloads are blocked; new textures are made in
   `house/textures/build_textures.py` (`--finishes`).
+- **A material's name is its texture's (N84):** `20_go.js` gives a `MATS` key the picture of the same name, and a dict keeps only a key's last row: the upgrade floor `porcelain` (V3.14) put its beige tile on the basin; a `#` comment mid-line in `MATS` hid the rows after it. A normal map's step is 1/127.5: a tile's tilt under about 0.01 doesn't show; 0.012–0.02 a tile breaks the reflections as real lippage does.
 - **Git:** force-push is refused. After a merged PR, restart the branch from `origin/main` (a fast-forward push works).
 - **The gallery:** `tools/gallery.py _site` shoots fixed views; a before/after pixel diff proves a code trim changed nothing.
   `--catalogue k,k` puts catalogue pieces in the garage (`_shots/catalogue.jpg`). Bedding needs a viewport over 700 px (`clothBox` is skipped on `LOWD`).
