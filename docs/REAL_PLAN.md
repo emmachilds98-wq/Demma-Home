@@ -331,6 +331,8 @@ Measured on her own PC (RTX 5070, 2560 × 1440 at 155 Hz, Chrome on Direct3D 11,
 155 frames a second in the house, the living room and the hall (draws 190–394, a frame 1–2 ms of the page's time), so the card isn't
 short. Two things were: the living room picked from the house in its first seconds froze the page 27 s (its 31 shaders through
 Windows' compiler on the frame that showed them; a second visit, Chrome's cache warm, 65 ms), and the wheel jumped a notch at a time.
+Measured again on V3.26 live (a fresh profile, the room picked as a click does, 4 s after the page opened): the living room opens in
+1.1 s (its fly), the longest frame 103 ms; the kitchen after it 26 ms, the main bedroom after 20 s idle 7 ms. The freeze is gone.
 
 | # | Task | Aim | Owns | After | Status |
 |---|---|---|---|---|---|
@@ -338,4 +340,5 @@ Windows' compiler on the frame that showed them; a second visit, Chrome's cache 
 | N66 | The wheel eased: each notch spread over about a fifth of a second (the room's zoom, the map's, a walk), the same total | Feel (PC) | `19_view_controls.js` | N65 | Done V3.26: a notch eases out over ~0.2 s (70 ms time constant), the total checked the same here (orbit 18.25 → 15.71 m, a walk 12 cm, eased or not) |
 | N67 | The Plan, Build and Buy sheets tidied at 393, 1280 and 2560: one centred column on a PC with the room dimmed round it, full width on a phone, the cost cards two up on a phone, fewer words, bigger taps | Look (PC and phone) | `media-wall/src/build_viewer.py`, `media-wall/src/page.css` | | Done V3.22 (#183) |
 | N68 | The cards over the 3D tidied (a wall's, a floor's, a piece's, Changes, Add a piece): one shape (main tray, three buttons, More), nothing cut off on a phone or a PC, fewer words | Look (PC and phone) | `media-wall/src/room3d/16_cards.js`, `media-wall/src/room3d/23_finish.js` (text and layout, not the costs) | | Done V3.25 |
+| N69 | The PC's framing: the whole house centred between the rows and the dock with its roof clear (it sat left and under the rows), a panel only as tall as it needs, the View panel without the house's rooms (reached through the 3D) or the find box in the house's views | Look (PC) | `room3d_page.py` (the panel's CSS, `HOUSE_ROOMS`), `17_render_loop.js` `measureShift`, `14_views_walk.js` `setView` | N66 | Done V3.27 |
 

@@ -32,13 +32,10 @@ function measureShift(open) {
     const r = p.getBoundingClientRect(); cover = r;
     if (innerWidth >= 900) shift.x = Math.round(Math.max(0, w - r.left - railR) / 2);
     else shift.y = Math.round(Math.max(0, h - r.top) / 4);
-  } else if (S.view === "house" && innerWidth < 600 && w) {   // V1.30 (U3): on a phone the house sits in the middle of the space under the buttons
+  } else if (S.view === "house" && w) {   // V1.30 (U3): on a phone the house sits in the middle of the space under the buttons; V3.27: on a computer too (the rows are along the top since V2.76)
     let top = 0; for (const el of document.querySelectorAll(".r3d-mini > :not([hidden]), .brand")) { const r = el.getBoundingClientRect(); if (r.height) top = Math.max(top, r.bottom); }
     const dock = document.querySelector(".r3d-dock"), bot = dock ? dock.getBoundingClientRect().top : h;
-    if (top > 0 && bot > top) shift.y = -Math.round(((top + bot) / 2 - h / 2));
-  } else if (S.view === "house" && innerWidth >= 900 && w) {   // V2.46: on a computer the house sits left of the floors' and rooms' rows (their labels were under them)
-    let left = w; for (const el of document.querySelectorAll("#r3d-floors:not([hidden]), #r3d-hrooms:not([hidden])")) { const r = el.getBoundingClientRect(); if (r.width) left = Math.min(left, r.left); }
-    shift.x = Math.round(Math.max(0, w - left - 16) / 4);   // a quarter: half the rows' width, so the floor still fits
+    if (top > 0 && bot > top) shift.y = -Math.round(((top + bot) / 2 - h / 2) + (innerWidth >= 900 ? (bot - top) * 0.12 : 0));   // V3.27: a computer's house drawn above its aim (the roof under the rows): a little lower
   }
   applyShift(); dirty();
 }
