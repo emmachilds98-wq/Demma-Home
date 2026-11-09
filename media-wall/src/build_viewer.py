@@ -697,13 +697,12 @@ def cost_overview():
     without incorporating large explanations": each piece, its things to buy (quantity × short name) and their estimates."""
     import costs
     ov = costs.overview(TRACK)
-    tl, th = sum(r[1] for r in ov), sum(r[2] for r in ov)
     cards = "".join(
         f'<details class="cpiece"><summary><span class="cpn">{html.escape(p)}</span><span class="cpc">£{money(lo, hi)}</span><span class="cpi">{len(items)} to buy</span></summary>'
         f'<table class="ctab"><tbody>' + "".join(f'<tr><td class="q">{html.escape(costs.qty(q))}</td><td>{html.escape(n)}</td><td class="m">£{money(a, b)}</td></tr>' for q, n, a, b in items)
         + '</tbody></table>' + (f'<p class="cmk"><a class="btn" href="#{HOW[p]}" data-mk="{HOW[p]}" data-tab="build"><span class="ms" aria-hidden="true">construction</span> How to make it</a></p>' if p in HOW else "")
         + '</details>' for p, lo, hi, items in ov)
-    return (f'<div class="qhead"><h3 class="ptitle">Cost overview</h3><span class="caption">Each piece, what to buy for it, and about what it costs: £{money(tl, th)} in all</span></div>'
+    return (f'<h3 class="ptitle">By piece</h3>'
             f'<div class="cpieces">{cards}</div>'
             f'<p class="cfoot"><button type="button" class="btn" id="co-copy"><span class="ms" aria-hidden="true">content_copy</span> Copy the shopping list</button>'
             f'<button type="button" class="btn" id="co-all">Open them all</button><span class="caption" id="co-st" aria-live="polite"></span></p>'
@@ -1168,15 +1167,15 @@ def _page(site=False):
     build_body = f"""<section class="panel" id="build">
     <div class="qhead"><div class="meter"><span class="bar"><i id="k-bar"></i></span><span id="k-count">0 tasks done</span></div>
       <span class="row"><a class="btn" href="{base}Demmas_Home_{LABEL}_Build_Guide.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">download</span> Build guide (PDF)</a><a class="btn" href="{base}Demmas_Home_{LABEL}_Build_Guide_phone.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">smartphone</span> Phone</a></span></div>
-    <p class="caption">Any order: open a piece, then Check, Buy, Cut and Build. Tap a place in the room to jump here.</p>
+    <p class="caption">Open a piece: Check, Buy, Cut, Build, in any order.</p>
     {places_html}
-    <details class="fold" id="cuts"><summary>For the timber merchant: the cutting list</summary>
+    <details class="fold" id="cuts"><summary>Cutting list (for the timber merchant)</summary>
       <div class="row"><button class="btn" id="copy-cuts" type="button">Copy as text</button><span class="caption" id="cuts-st" aria-live="polite"></span></div>
       <textarea id="cuts-box" class="caption" rows="8" hidden readonly aria-label="The cutting list as text">{html.escape(cuts_text())}</textarea>
       <h2 class="ptitle sr-only">Cutting list for the timber merchant</h2>
       <div class="doc">{deck_section(cuts_html())}</div>
     </details>
-    <details class="fold"><summary>Good to know: time, tools, techniques and pitfalls</summary><div class="doc">{GUIDE_TIME}{guide_tools()}{GUIDE_TECHNIQUES}{GUIDE_PITFALLS}</div></details>
+    <details class="fold"><summary>Good to know: tools, time, pitfalls</summary><div class="doc">{GUIDE_TIME}{guide_tools()}{GUIDE_TECHNIQUES}{GUIDE_PITFALLS}</div></details>
     <details class="fold" id="order"><summary>Every step in one list (<span id="s-count">0 of {len(steps())} steps done</span>)</summary><p class="caption">A step ticks itself when its tasks are done.</p><span class="bar sr-only"><i id="s-bar"></i></span><ol class="steps-list" id="steps-ol">{"".join(step_cards)}</ol></details>
   </section>"""
     buy_body = f"""<section class="panel" id="buy">
@@ -1188,7 +1187,7 @@ def _page(site=False):
     </div>
     <div class="picked" id="picked" hidden><div class="qhead"><h3 class="ptitle">Added by you</h3><span class="caption" id="picked-sum"></span></div><ul id="picked-l"></ul></div>
     {cost_overview()}
-    <details class="fold" id="buyorder"><summary>The shopping list in build order: tick it off, note what you paid</summary>
+    <details class="fold" id="buyorder"><summary>Shopping list, in build order</summary>
     <div class="qhead">
       <div class="seg" role="group" aria-label="Show">
         <button type="button" data-filter="all" aria-pressed="true">Everything</button>
@@ -1196,10 +1195,10 @@ def _page(site=False):
         <button type="button" data-filter="buys" aria-pressed="false">Things to buy</button>
         <button type="button" data-filter="jobs" aria-pressed="false">Jobs only</button>
       </div></div>
-    <p class="caption" id="t-note">Each phase names the step it's for. Tick what you buy and note what you paid; you both see it.</p>
+    <p class="caption" id="t-note">Tick what you buy; note what you paid.</p>
     <div id="tracker">{"".join(ph_html)}</div>
     <details class="fold"><summary>Cost by phase, low to high</summary>{cost_chart(phases)}</details></details>
-    <p class="notice">Already owned: Virgin Hub 5, three Deco X1500s, two TL-SG105S switches (both become spares), LG OLED C6 55" and its stand, a 10-gang, the Hisense AX5100G 5.1 soundbar, the Series X fan stand, the turntable, the L-sofa and all the consoles. Estimates are approximate UK prices.</p>
+    <details class="fold owned"><summary>Already owned</summary><p class="notice">Virgin Hub 5, three Deco X1500s, two TL-SG105S switches (both become spares), LG OLED C6 55" and its stand, a 10-gang, the Hisense AX5100G 5.1 soundbar, the Series X fan stand, the turntable, the L-sofa and all the consoles. Estimates are approximate UK prices.</p></details>
   </section>"""
     ideas_body = f"""<section class="panel" id="ideas">
     <div class="shortbar" id="shortbar"><div><span class="label" id="sb-count">Nothing added to the plan yet</span><b id="sb-total">The plan: £{money(lo_tot, hi_tot)}</b></div><a class="btn" href="#buy" data-go="buy">See the buy list</a></div>
@@ -1221,6 +1220,7 @@ def _page(site=False):
 <div class="brand" role="button" tabindex="0" title="Welcome" aria-controls="r3d-welcome"><span class="mark" aria-hidden="true"><i style="background:var(--peach)"></i><i style="background:var(--mint)"></i><i style="background:var(--lilac)"></i><i style="background:var(--butter)"></i></span>
   <span><b>Demma's Home <span class="bver">{LABEL}</span></b><small id="brand-place" aria-live="polite">The whole house</small></span></div>
 <nav class="hnav" aria-label="The plan">{"".join(f'<button type="button" data-nav="{k}" aria-current="false">{n}</button>' for k, n in (("plan", "Plan"), ("build", "Build"), ("buy", "Buy")))}</nav>
+<div class="scrim" data-close aria-hidden="true"></div>
 <main id="room" aria-label="Your room in 3D">{room3d_page.section(gallery3d())}</main>
 {sheet("plan", "Your plan", "map", 300, plan_home + chapters)}
 {sheet("build", "Build", "construction", 50, build_body)}

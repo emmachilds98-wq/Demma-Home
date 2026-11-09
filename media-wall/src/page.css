@@ -63,18 +63,20 @@ html body :is(.r3d-floors, .r3d-fintray, .r3d-momrow, .r3d-addlist, .r3d-sel, #p
   .brand b { font-size: 16px; }
 }
 /* sheets: they slide up over the room */
-.sheet { position: fixed; z-index: 40; top: 16px; bottom: 16px; left: 112px; right: 16px; border-radius: 32px; background: var(--page); box-shadow: var(--shadow);
+/* N67: on a PC one centred column (1200 at most) over the room, the room dimmed round it; a tap beside it closes it */
+.sheet { position: fixed; z-index: 40; top: 16px; bottom: 16px; left: max(16px, 50% - 600px); right: max(16px, 50% - 600px); border-radius: 32px; background: var(--page); box-shadow: var(--shadow);
   transform: translateY(calc(100% + 40px)); visibility: hidden; transition: transform .5s var(--sheet), visibility 0s .5s; display: grid; grid-template-rows: auto 1fr; overflow: hidden; }
 .sheet.shut { content-visibility: hidden; }   /* V2.51 (speed): a shut sheet costs no layout, its pictures wait */
 .sheet.open { transform: none; visibility: visible; transition: transform .5s var(--sheet), visibility 0s; }
 .shd { display: flex; align-items: center; gap: 12px; padding: 18px 22px 10px clamp(18px, 3vw, 34px); position: relative; }
 .shd h2 { margin: 0; font-size: clamp(24px, 3vw, 32px); flex: 1; display: flex; align-items: center; gap: 12px; }
 .shd h2 i { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: oklch(0.8 0.11 var(--h)); font-style: normal; }
-.shd .close { width: 46px; height: 46px; border: 0; border-radius: 50%; background: var(--soft); color: var(--ink); cursor: pointer; display: grid; place-items: center; transition: transform .3s var(--spring); }
+.shd .close { margin-left: auto; flex: none; width: 46px; height: 46px; border: 0; border-radius: 50%; background: var(--soft); color: var(--ink); cursor: pointer; display: grid; place-items: center; transition: transform .3s var(--spring); }
 .shd .close:hover { transform: rotate(90deg); }
 .grab { display: none; }
 .sbd { overflow: auto; overscroll-behavior: contain; padding: 6px clamp(16px, 3vw, 34px) 60px; }
-.sbd > .panel, .sbd .chapter { max-width: 1040px; margin: 0 auto; }
+.scrim { display: none; }
+@media (min-width: 900px) { body.sheet-open .scrim { display: block; position: fixed; inset: 0; z-index: 39; background: #0c0a1066; cursor: pointer; } }
 @media (max-width: 899px) {
   .sheet { left: 0; right: 0; top: max(10px, env(safe-area-inset-top)); bottom: 0; border-radius: 28px 28px 0 0; }
   .sbd { padding-bottom: 110px; }
@@ -313,7 +315,6 @@ body.ov-open .r3d-dock { visibility: hidden; }
 .shnav button { flex: 1; }
 .shnav button[aria-current=true] { background: var(--ink); color: var(--page); }
 body.sheet-open .hnav { display: none; }
-.sheet { left: 16px; }
 @media (max-width: 899px) { .hnav { top: max(12px, env(safe-area-inset-top)); right: 12px; } .hnav button { padding: 0 12px; font-size: 14px; } }
 @media (max-width: 420px) { .hnav { gap: 0; } .hnav button { padding: 0 8px; font-size: 13px; } .brand { padding-right: 10px; gap: 8px; } .brand .mark { width: 30px; height: 30px; padding: 7px; } .brand b { font-size: 15px; } }   /* V2.76 (N20): the brand and Plan · Build · Buy side by side on an iPhone SE (375) */
 @media (max-width: 380px) { .brand .bver { display: none; } }   /* V3.16: no room on an iPhone SE beside Plan · Build · Buy; the version is in Plan there */
@@ -472,3 +473,15 @@ figure.zoomable::after { content: "⤢"; position: absolute; right: 10px; top: 1
 .money li[data-upsroom] { cursor: pointer; margin: 0 -8px; padding: 0 8px; border-radius: 12px; } .money li[data-upsroom]:hover { background: var(--soft); }
 @media (pointer: coarse) { .money li[data-upsroom] { min-height: 44px; } }
 .home2 > details.fold:not([open]) { align-self: start; margin-top: 12px; }   /* shut, "Where the money goes" is its line, not an empty box Waiting on you's height */
+/* N67 (the sheets tidied at 393, 1280 and 2560): the cost cards two to a row on a phone, the open one the full row; Buy's rows and
+   amounts a finger's height; the places in Build closer */
+@media (max-width: 599px) {
+  .cpieces { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .cpiece { padding: 0 12px; border-radius: 18px; } .cpiece[open] { grid-column: 1 / -1; }
+  .cpiece > summary { grid-template-columns: 1fr; padding: 10px 0; }
+  .cpiece .cpn { font-size: 15px; line-height: 1.2; } .cpiece .cpc { font-size: 14px; }
+}
+#build .place { margin: 0; } .place .sec-h { margin-top: 4px; }
+summary .pf a { display: inline-block; padding: 6px 2px; margin: -6px 0; }
+@media (pointer: coarse) { .items .paid input { min-height: 40px; } .items li { padding-block: 10px; } }
+details.owned .notice { margin: 8px 0 0; }
