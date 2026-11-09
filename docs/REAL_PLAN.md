@@ -344,3 +344,17 @@ Measured again on V3.26 live (a fresh profile, the room picked as a click does, 
 | N70 | Moving on a PC as a person, not frame to frame (the client: "the pc version still moves extremely rigidly like im moving frames rather than being a person in the room"): a mouse's look round let out frame by frame (its moves came in uneven bursts), ← → turns eased in and out, the phone's stick on the PC too | Feel (PC) | `14_views_walk.js` (`lookPend`/`lookTick`, `walkTick`, `syncStick`), `17_render_loop.js` | N69 | Done V3.28 |
 | N71 | Still "slow and blocky when moving" on the PC (the client, 9 Nov 19:04): her PC's frames were quick when measured (about 6 ms moving), so the stepped moves that were left: ← → in a room before you'd walked turned 10° a key repeat, the on-screen arrows stepped every 60 ms; both now glide every frame. `?perf` names the chip, the sharpness and the worst stall, for her screenshot | Feel (PC) | `14_views_walk.js`, `17_render_loop.js` | N70 | Done V3.29 |
 
+## 16. Every room as good as the living room (9 Nov 2026, V3.29): a task a PR
+
+The client, 9 Nov 2026: "improve the graphics quality of other rooms to match like the living room. We should now focus on making
+everything look good and then making it customisable". Shot side by side (`tools/gallery.py`, a view a room, by day and evening in HD),
+the rooms read flat and grey beside the living room: lit mostly by one even fill (2.6) with their windows at a seventh of the living
+room's (10 to its 70), so white walls came out mid-grey with no shape; and any light change in a room (Warmth) put out its sun, its
+ceiling light and its windows' light for good. The front rooms look out on a flat green plane to the horizon.
+
+| # | Task | Aim | Owns | After | Status |
+|---|---|---|---|---|---|
+| N80 | The rooms' light as the living room's: their windows' daylight 60 (was 10), the ceiling light by day 3 (was 1.2), the even fill 1.4 in a room with windows (was 2.6); a room's sun, ceiling and window lights kept when a light changes | Look | `09_house_views.js` `placeRoomLights`, `12_furniture_options.js` `applyLight` | | Done V3.30: whites read white with shape from the window (master 135 to 156 mean grey, the office 129 to 150, the kitchen 121 to 156; the living room 146); no shader or draw added |
+| N81 | What the rooms see out of their windows: the front rooms a flat green plane to the horizon | Look | `11_lights.js` `outdoor`, `20_go.js` | N80 | Waits on the client: what's across the road |
+| N82 | The rooms' surfaces and soft things nearer the living room's (walls, ceilings, fabrics) | Look | `20_go.js` `houseTex`, `house/textures/` | N80 | |
+

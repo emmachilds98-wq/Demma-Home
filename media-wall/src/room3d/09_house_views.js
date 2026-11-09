@@ -86,16 +86,17 @@ function placeRoomLights() {
   ROOMLIGHTS.forEach((l, k) => { const L = list[k]; l.visible = !!L; if (!L) return; l.distance = L.reach ? L.reach * M : 7;
     if (L.reach) { l.position.copy(v3(L.x, L.y, L.z)); l.intensity = day ? 0 : L.k * fb.lux; l.color.set(L.col); return; }
     const drop = L.drop != null && !(typeof finGet === "function" && finGet(L.room, 8)) ? L.drop : typeof finFitDrop === "function" ? finFitDrop(L.room) : 40;   // the kitchen's battens are flush
-    l.position.copy(v3(L.x, L.y - drop, L.z)); l.intensity = (day ? 1.2 : 5.4) * ks * fb.lux * (L.drop != null ? 0.6 : 1);   // two battens share the room's light
+    l.position.copy(v3(L.x, L.y - drop, L.z)); l.intensity = (day ? 3 : 5.4) * ks * fb.lux * (L.drop != null ? 0.6 : 1);   // two battens share the room's light
     if (fb.k) l.color.set(kelvinHex(+fb.k)); else l.color.copy(warmColour()); });   // V3.19: the living room's bulbs' colour (one Warmth for the house) unless the room's own
   /* V2.39 (REAL_PLAN R1, each window's daylight): the room's two biggest windows light it as the sky does through them, an area light the
      opening's size on the wall's inside face, facing in and a little down; by day the living room window's daylight, by evening its dusk */
   const rid = b && rr && VIEW_ROOM[S.view], op = it => it.op && it.op.axis === "x" && it.op, sz = it => (it.op.b - it.op.a) * (it.op.y1 - it.op.y0);
   const ws = rid ? Object.values(R.HOUSE3.items || {}).filter(it => it.k === "window" && it.r === rid && op(it)).sort((p, q) => sz(q) - sz(p)) : [];
+  /* V3.30 (living room quality): by day 60, the living room's window's 70 for its size (10 left the rooms flat, lit by the even fill) */
   WINLIGHTS.forEach((l, k) => { const o = ws[k] && ws[k].op; l.visible = !!o; if (!o) return;
     const cx = (o.a + o.b) / 2, cy = (o.y0 + o.y1) / 2, d = Math.sign((rr[2] + rr[3]) / 2 - o.line) || 1;
     l.width = (o.b - o.a) * M; l.height = (o.y1 - o.y0) * M; l.position.copy(v3(cx, cy, o.line + d * 3)); l.lookAt(v3(cx, cy - 40, o.line + d * 100));
-    l.intensity = day ? 10 : 3; l.color.set(day ? "#eef0f2" : "#7d89b8"); });
+    l.intensity = day ? 60 : 3; l.color.set(day ? "#eef0f2" : "#7d89b8"); });
   if (was && ROOMLIGHTS[0].position.distanceToSquared(was) > 1e-6) reshadow();   // V2.17: its shadows follow it (a fitting's height, the next room)
   const key = b ? b.join() : "";
   if (key === roomKey) return; roomKey = key;

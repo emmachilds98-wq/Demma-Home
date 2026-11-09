@@ -79,6 +79,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `movable`'s `_flat` stays by place (04 and 07 pass it). Left: the `S.cab === "sliding"` paths in 05, 15 (`LOOK_STR`) and 19 (`d.cab`),
   `export3d.py`'s `A_*` `BAR2` keys, 04's `aboveAll`, `recP` (N47).
 
+- **A room's light (N80):** `applyLight` zeroes every light but the fill in a room of the house; it must leave the house's own (`userData.houseLight`) and the sun alone, as `placeRoomLights` runs before it, not after (a second change of a light left rooms lit by the fill alone). To compare a room with the living room, shoot both and take the mean grey (about 150 is the living room's by day).
 - **One light (N63):** to compare rooms' light, shoot each view (`R3D.set({view, tod, quality})`, 3.5 s) at 640 × 400 with the UI hidden
   and take the mean grey: the rooms' own colours spread it about ±20, so look for a view outside that. A light that's always visible
   (the sun, `skyFill`, `hemi`) can change intensity or colour freely (no shader); `visible` or a new light rebuilds them. In Fast the living
