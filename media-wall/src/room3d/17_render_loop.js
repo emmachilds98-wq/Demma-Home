@@ -100,6 +100,7 @@ function frame(now) {
   const walked = walkTick(dt) | lookTick(dt); if (walked) { need = 2; syncEye(); }   // V3.28: and a mouse's look round, let out frame by frame   // V1.32 (U7)   // V2.30: dt to 100 ms (it held each step to 50: a slow frame slowed the walk)
   if (!tween && !freeAbove() && !walking() && (clampRoom(camera.position) | clampRoom(controls.target, true) | collide())) need = 2;   // v17: never outside the room; v41: nor in the furniture
   const active = moving || changed || !!tween || walked;   // V2.73 (N17): a walk too
+  if (active && mvLast && now - mvLast < 1000) { const g_ = now - mvLast; if (now - (FT.worstT || 0) > 3000 || g_ >= (FT.worst || 0)) { FT.worst = g_; FT.worstT = now; } }   // V3.29: the longest gap while moving (the last 3 s), for ?perf
   if (active && mvLast && now - mvLast < 250) { MV.push(now - mvLast); if (MV.length >= 24) { const m = MV.sort((a, b) => a - b)[12]; MV.length = 0; FT.mv = m;
     if (m > 28 && !BIG_GPU) slowDev = true; else if (m < 14 && !lowRes && HI) slowDev = false;
     if (PHONE_HD && lowRes && m > 24 && phoneCap > 1.5) capDue = true;   // V2.73 (N17): still slow with the lighter drawing
@@ -140,14 +141,14 @@ function perfInfo() {   // v35: the counts to watch each round (R3D.perf())
   return { calls: FT.calls, triangles: FT.tris, geometries: i.memory.geometries, textures: i.memory.textures, programs: i.programs.length,
     lights: ls.length, shadows: ls.filter(l => l.castShadow).length, quality: S.quality, ratio: gl.getPixelRatio(), frameMs: med(FT),
     warm: PRE.queue.length, errors: store.get("r3d-errors", []).length, gpu: GPU.slice(0, 80), bigGpu: BIG_GPU, ao: aoLive(), goodPhone: GOOD_PHONE, slowDev,   // v39: which graphics card, and whether it starts in HD
-    gpuClass: gpuClass(), phone: SMALL, version: R.VERSION || "", moveMs: FT.mv ? +FT.mv.toFixed(1) : null, stillMs: med(probeT), view: S.view };   // V3.04 (N50): a frame while moving (24 frames' middle), a whole still frame (the start's check), for Send
+    gpuClass: gpuClass(), phone: SMALL, version: R.VERSION || "", moveMs: FT.mv ? +FT.mv.toFixed(1) : null, worstMs: FT.worst ? Math.round(FT.worst) : null, stillMs: med(probeT), view: S.view };   // V3.04 (N50): a frame while moving (24 frames' middle), a whole still frame (the start's check), for Send
 }
 if (/[?&]perf\b/.test(location.search)) {   // v35: ?perf shows the counts in a corner   // V3.04 (N50): in fewer words; Measure's Send carries them too
   const box = document.createElement("div"); box.className = "r3d-perf";
   box.style.cssText = "position:absolute;left:8px;bottom:calc(92px + env(safe-area-inset-bottom));z-index:30;padding:6px 9px;border-radius:10px;background:rgba(0,0,0,.72);color:#fff;font:12px/1.35 ui-monospace,monospace;pointer-events:none;white-space:pre";
   root.append(box);
   setInterval(() => { if (!gl || !started) return; const p = perfInfo(), ms = v => v == null ? "–" : v + " ms";
-    box.textContent = `${p.quality.toUpperCase()} · moving ${ms(p.moveMs)} · still ${ms(p.stillMs)}\n${p.calls} draws · ${p.programs} shaders${p.errors ? " · " + p.errors + " errors" : ""}`; }, 1000);
+    box.textContent = `${p.quality.toUpperCase()} · moving ${ms(p.moveMs)} · worst ${ms(p.worstMs)} · still ${ms(p.stillMs)}\n${p.gpuClass} · ${+p.ratio.toFixed(2)}×${lowRes ? " (lower while moving)" : ""} · ${p.calls} draws · ${p.programs} shaders${p.errors ? " · " + p.errors + " errors" : ""}`; }, 1000);   // V3.29: the chip, the sharpness, the worst gap
 }
 function autoQuality() {
   const ms = probeT.sort((a, b) => a - b)[1];
