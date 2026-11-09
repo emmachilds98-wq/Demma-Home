@@ -331,6 +331,8 @@ Measured on her own PC (RTX 5070, 2560 × 1440 at 155 Hz, Chrome on Direct3D 11,
 155 frames a second in the house, the living room and the hall (draws 190–394, a frame 1–2 ms of the page's time), so the card isn't
 short. Two things were: the living room picked from the house in its first seconds froze the page 27 s (its 31 shaders through
 Windows' compiler on the frame that showed them; a second visit, Chrome's cache warm, 65 ms), and the wheel jumped a notch at a time.
+Measured again on V3.26 live (a fresh profile, the room picked as a click does, 4 s after the page opened): the living room opens in
+1.1 s (its fly), the longest frame 103 ms; the kitchen after it 26 ms, the main bedroom after 20 s idle 7 ms. The freeze is gone.
 
 | # | Task | Aim | Owns | After | Status |
 |---|---|---|---|---|---|
