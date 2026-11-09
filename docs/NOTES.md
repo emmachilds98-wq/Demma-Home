@@ -65,7 +65,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   N47 (V3.12): the living room's fixed parts one draw a material (`04` `bucket`, `mergeStatic` on the cabinet, stairs, chairs). What's left
   standing in it (phone 235): the house round it ~60 (`G#65`, `roomCull`), the record table under the coffee table 19 and the pouf 22
   (07, nested groups `mergeStatic` skips), the shell's suggestion groups ~33 (07, 10), the walls a draw each paint (each wall its own
-  material, so Look can colour one). `check_site.py`'s `draws_living` sometimes reads the house's number (185) on the PC and iPhone paths: the view hadn't landed; count a frame yourself.
+  material, so Look can colour one). `check_site.py`'s `draws_living` sometimes reads the house's number (185) on the PC and iPhone paths: the view hadn't landed; count a frame yourself. V3.26: its `still()` now waits for a frame drawn since (CI's frames take seconds, so 600 ms read the fly's last frame, house and room both: 770–945).
 - **Bytes (N2–N4, N25, N32, N43):** photos a hashed JPEG each in `_site/tex`, kept across versions (`demma-keep`); half-size set for
   `LOWD` phones; esbuild minifies the page; icon font subset; sheets in their own file; fonts don't block; no texel finer than a 4K
   screen shows (`build_textures.PX`, `--slim`). Tried and dropped: lower JPEG quality (3–8 dB lost for 5–10%), progressive JPEGs.

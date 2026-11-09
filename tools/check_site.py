@@ -165,7 +165,7 @@ PERF_INIT = """performance.setResourceTimingBufferSize(4000);
 if (%s) try { localStorage.setItem("mw18-3d", JSON.stringify({ quality: "hd", picked: true })); } catch (e) {}   // HD held (no step down mid-count)
 addEventListener("r3d-first", () => { window.__first = R3D._dbg.gl.info.programs.length; });
 (() => { let fr = 0; const L = new WeakMap(), raf = requestAnimationFrame, P = WebGL2RenderingContext.prototype, lk = P.linkProgram, up = P.useProgram; window.__spot = 0;
-  window.requestAnimationFrame = cb => raf(t => { fr++; cb(t); });   // N54: a shader built on the frame that first draws with it (a freeze on a real device)
+  window.requestAnimationFrame = cb => raf(t => { fr++; window.__fr = fr; cb(t); });   // N54: a shader built on the frame that first draws with it (a freeze on a real device)
   P.linkProgram = function (q) { L.set(q, fr); return lk.call(this, q); };
   P.useProgram = function (q) { if (L.has(q)) { if (L.get(q) === fr) window.__spot++; L.delete(q); } return up.call(this, q); }; })();"""
 # N54: from the whole house into the living room once the house's warm-up has visited it: no shader built on the spot
@@ -180,7 +180,8 @@ PERF = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   const nav = performance.getEntriesByType("navigation")[0]; let bytes = nav ? nav.encodedBodySize : 0;
   for (const e of performance.getEntriesByType("resource")) if (e.name.startsWith(location.origin)) bytes += e.encodedBodySize;
   const still = async () => { const g = D.gl.shadowMap; let c = 1e9;   // a frame's draws while you move: the shadows' redraw (a room change) left out
-    for (let i = 0; i < 3; i++) { g.needsUpdate = false; D.controls.dispatchEvent({ type: "change" }); await sl(600); c = Math.min(c, R3D.perf().calls); }
+    const fresh = async () => { const f = window.__fr || 0; for (let i = 0; i < 100 && (window.__fr || 0) < f + 2; i++) await sl(200); };   // V3.26: a frame drawn since (CI's frames take seconds: 600 ms read the fly's last, house and room both, 770-945)
+    for (let i = 0; i < 3; i++) { g.needsUpdate = false; D.controls.dispatchEvent({ type: "change" }); await sl(600); await fresh(); c = Math.min(c, R3D.perf().calls); }
     g.needsUpdate = true; D.controls.dispatchEvent({ type: "change" }); return c; };
   const h = await still();                                     // the house as it opens (R3D.set shows the living room from outside: 91 more draws)
   R3D.set({ view: "livstand" }); await settle(); const l = await still(); R3D.set({ view: "house" }); await settle();
