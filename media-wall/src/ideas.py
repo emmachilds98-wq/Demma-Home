@@ -53,12 +53,15 @@ IDEAS = [
 # where each 3D idea is drawn (room cm)
 CASE = dict(x=((G.BREAST_X[0] + G.BREAST_X[1]) / 2 - 45.0, (G.BREAST_X[0] + G.BREAST_X[1]) / 2 + 45.0), y=(137.0, 222.0), d=12.0, frame=2.0,
             shelves=(158.0, 179.0, 200.0))   # v20, client: "make glass display cabinet on wall taller": 85 tall (was 50), three glass shelves
+# V3.14: the plan hangs it in the window corner over your vinyl stand, where the alcove shelves were (their 90 width, clear of the
+# curtains' stack at 338 and the pipe boxing at 445); CASE["x"] stays the breast's, for the drinks cabinet option under it there
+CASE_CORNER = dict(CASE, x=G.ALCOVE_SHELVES["x"], z=G.WINDOW_Z)
 GLASS = dict(x=G.WINDOW_X, ys=(130.0, 170.0), d=18.0, t=1.0)
 # v43, client: "I want the c table in the current main plan". Your sofa sits flat on the floor, so no foot can slide under it (as a
 # bought C-table's does): the upright stands out past the sofa's end and a steel plate weighs the foot down. "over": how far the top
 # reaches over the seat; the foot runs from 3 under the sofa's edge (its plinth's inset) to the upright's outer face.
 CTABLE = dict(x=(40.0, 85.0), top=62.0, depth=30.0, over=12.0, t=1.8, plate=(40.0, 20.0, 0.6), felt=0.3, seat_top=52.0)
-SPOTS = dict(case=CASE, glass=GLASS, ctable=CTABLE)   # v18: the plant ladder is dropped: your new plant stand does its job
+SPOTS = dict(case=CASE, case_corner=CASE_CORNER, glass=GLASS, ctable=CTABLE)   # v18: the plant ladder is dropped: your new plant stand does its job
 
 
 def idea_options():

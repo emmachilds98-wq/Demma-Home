@@ -18,7 +18,7 @@ ON_WALL = {"bookcase": 15.0, "ladder": 15.0, "mirror": 4.0}   # half its depth: 
 
 BASE = dict(site="C", cab="compact", dining="folded", tdoor=False, chairs="cupboard", scene="bright", tod="day", master=100)
 EVENING = dict(scene="cosy", tod="evening")
-SUGG_STATE = {"fairy": EVENING, "candles": EVENING, "shelfled": EVENING, "lantern": EVENING, "pclamp": EVENING, "barcase": dict(barflap=True, **EVENING), "bartrolley": dict(beside="trolley", trolley="out", dining="six", layout={"lamp": {"off": True}}, **EVENING),
+SUGG_STATE = {"fairy": EVENING, "candles": EVENING, "shelfled": EVENING, "lantern": EVENING, "pclamp": EVENING, "barcase": dict(barflap=True, plants="corner", **EVENING), "bartrolley": dict(beside="trolley", trolley="out", dining="six", layout={"lamp": {"off": True}}, **EVENING),
               "runner": dict(dining="six"), "cablights": dict(tdoor=True, **EVENING), "hanger": {}, "blind": {},
               "barside": dict(barflap=True, **EVENING), "liftcoffee": dict(ctop=True), "recordtable": dict(ctop=True)}
 SUGG_STATE.update(stairdrawers=dict(sdraw=True))   # v37: the step drawers pulled out

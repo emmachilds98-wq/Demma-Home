@@ -449,7 +449,7 @@ function buildSeatAndPouf() {
 }
 function applySuggest() {
   for (const k of ["art", "clock", "tray", "fairy", "hanger", "trail", "throw", "pclamp", "candles", "mirror", "shelfled", "blind", "cablights", "bartrolley"]) if (SUGG_G[k]) SUGG_G[k].visible = !!S.sugg[k];
-  if (SUGG_G.barcase) SUGG_G.barcase.visible = !!S.sugg.barcase && caseOn();                          // v34: under the case
+  if (SUGG_G.barcase) SUGG_G.barcase.visible = !!S.sugg.barcase && caseBreast();                          // v34: under the case
   for (const k of ["barside", "doorshelf", "shelfboxes"]) if (SUGG_G[k]) SUGG_G[k].visible = !!S.sugg[k];   // v36
   for (const k of ["stairdrawers", "alcoveshelves", "windowseat", "wardrobe", "wallcabs", "overdoor"]) if (SUGG_G[k]) SUGG_G[k].visible = !!S.sugg[k];   // v37
   for (const k of ["growlights", "curtainmotor", "lpledges", "cordlamp", "stairscurtain"]) if (SUGG_G[k]) SUGG_G[k].visible = !!S.sugg[k];   // v43: the four new options; v78 the stair curtain

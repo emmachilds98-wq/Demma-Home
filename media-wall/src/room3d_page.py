@@ -13,7 +13,7 @@ IMPORTMAP = ('<script type="importmap">' + json.dumps({"imports": {"three": THRE
 
 VIEWS = [("room", "The whole room"), ("house", "The whole house"), ("kitchen", "The kitchen"), ("office", "The office"), ("bed2", "Music room"), ("master", "Master bedroom"), ("bath", "Bathroom"), ("windowwall", "Out of the window"), ("window", "From the window"), ("wall", "The media wall"), ("sofa", "From the sofa"), ("door", "From the door"),
          ("stairs", "From the stairs"), ("dining", "The dining cabinet"), ("chairs", "Where the chairs live"), ("sit", "Sitting at the table"),
-         ("beside", "Beside the cabinet"), ("breast", "The chimney breast"),
+         ("beside", "Beside the cabinet"), ("breast", "The chimney breast"), ("corner", "Left of the window"),
          ("pc", "The PC side wall"), ("plan", "Bird’s eye"), ("doll", "Dolls’ house")]   # v21: the whole room first; v31: sitting down, beside the cabinet
 
 CSS = """
@@ -324,7 +324,10 @@ details.r3d-more[open] > summary::before { content: "– "; }
 .r3d:not(.trying) .r3d-plansum, .r3d:not(.trying) .r3d-planbar { display: none; }
 .r3d-planbar { justify-content: center; }
 .r3d-minib.lost { animation: r3dLost 1.6s ease-in-out 3; }
-.r3d-tryrow { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.r3d-ui .r3d-tryrow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; } .r3d-tryrow .caption:empty { display: none; }
+.r3d-tryrow > button { flex: 1 1 0; width: auto; min-width: max-content; justify-content: center; } .r3d-try { box-shadow: none; }
+/* V3.14: the table, the drawers and the record table's lid side by side where they fit */
+.r3d-roomsegs { display: flex; flex-wrap: wrap; column-gap: 18px; } .r3d-roomsegs > .grp { flex: none; }
 .r3d-painth { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
 .r3d-wallsel { min-height: 40px; border: 0; border-radius: 999px; padding: 0 14px; background: #efe7d8; color: var(--ink); font: 600 14px Figtree, system-ui, sans-serif; }
 #r3d-lightsh .r3d-litst { font: 500 13px Figtree, system-ui, sans-serif; color: var(--mut); margin-left: 6px; }
@@ -433,7 +436,7 @@ body.hv #r3d-dt-room, body.hv #r3d-editbtn, body.hv #r3d-dp-look > :not(h2):not(
 .r3d-actmore .acts { margin-top: 8px; }
 .r3d-fold { border-top: 2px dashed #e5dccb; padding-top: 6px; }
 .r3d-fold > summary { min-height: 44px; display: flex; align-items: center; }
-.r3d-momrow { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+.r3d-ui .r3d-momrow { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
 .r3d-momrow button { flex: none; }
 @media (max-width: 899px) { .r3d-planbar { bottom: calc(max(8px, env(safe-area-inset-bottom)) + 84px); } }
 @media (min-width: 900px) { .r3d-panel { top: 80px; } }   /* v39: under Plan · Build · Buy */
@@ -591,7 +594,7 @@ DECOR = [("rug", "Rug", [("yours", "Arches (the plan's)"), ("jute", "Jute flatwe
 # v38: one line each on what a ceiling design takes and costs (fit.SOURCES: skimartex, artextest, pubeam, orac)
 CEIL_NOTE = ("Smooth £300–700; a pattern £200–600; beams about £1,050; coffers £450–900; an LED cove £750–850. "
              "Test old Artex for asbestos first.")   # v33: the tie-on seat pads went with the FRÖSVI (your padded chairs need none)
-DECOR_GROUPS = [("Plants", ("plants", "pots")), ("Wood and floor", ("oak", "floor", "shelf")), ("Soft things", ("cushions", "curtains")), ("The glass case on the breast", ("fill", "frame"))]   # v39: the ceiling and the rug lead Look
+DECOR_GROUPS = [("Plants", ("plants", "pots")), ("Wood and floor", ("oak", "floor", "shelf")), ("Soft things", ("cushions", "curtains")), ("The glass case", ("fill", "frame"))]   # v39: the ceiling and the rug lead Look
 
 
 def tour():
@@ -740,18 +743,19 @@ def controls(gallery=""):
         # v31, client: "upgrade the views and layouts area of the site to ensure it reflects our recent upgrades": grouped, the compact cabinet
         # first, with what goes beside it, how it opens, the floor it needs, and ready-made set-ups to try
         # v39: Room, by place (the approved redesign): the set-ups, then one main choice for each place; the rest under More
+        # V3.14, the client: "Adjust and optimise the living room menu": a set-up first, the three things you open and shut side by side,
+        # the plant stand's choice gone (it's decided), shorter words; Try options beside Save my plan at the foot
         "room": "".join([
-            '<div class="grp r3d-tryrow"><button type="button" class="r3d-try" id="r3d-try" role="switch" aria-checked="false">Try options <i aria-hidden="true"></i></button>'
-            '<span class="caption">What else could go in each place</span></div>',
-            '<div class="seg r3d-moments r3d-momrow" role="group" aria-label="Try a set-up">'
+            '<div class="grp"><span class="label">Set it for</span><div class="seg r3d-moments r3d-momrow" role="group" aria-label="Set the room for">'
             '<button type="button" data-moment="dinner">Dinner for six</button><button type="button" data-moment="film">Film night</button>'
             '<button type="button" data-moment="games">Games night</button><button type="button" data-moment="drinks">Drinks</button>'
-            '<button type="button" data-moment="four">Lunch for four</button><button type="button" data-moment="morning">Morning</button></div>',
-            seg("dining", [("folded", "Folded"), ("four", "Four"), ("six", "Six")], "Dining wall and bar · the table"),
-            seg("drawers", [("in", "In"), ("out", "Out")], "Media wall · the drawers"),
-            seg("ctop", [("down", "Lid down"), ("up", "Lid up")], "The sofa · the record table"),
-            seg("plants", [(k, {"corner": "In the corner", "breast": "By the breast"}.get(k, v["name"])) for k, v in G.PLANT_LAYOUTS.items()], "Window corner · the plant stand"),
-            '<details class="r3d-more r3d-fold"><summary>More: the chair door, watch it open, the curtains</summary>',
+            '<button type="button" data-moment="four">Lunch for four</button><button type="button" data-moment="morning">Morning</button></div></div>',
+            '<div class="r3d-roomsegs">',
+            seg("dining", [("folded", "Folded"), ("four", "Four"), ("six", "Six")], "The table"),
+            seg("drawers", [("in", "In"), ("out", "Out")], "Media wall drawers"),
+            seg("ctop", [("down", "Down"), ("up", "Up")], "Record table lid"),
+            '</div>',
+            '<details class="r3d-more r3d-fold"><summary>More: the table doors, the curtains</summary>',
             seg("cabw", [("90", f"{G.CAB['top'][0]:g} wide (the plan)"), ("80", f"{G.CAB80['top'][0]:g} wide, four chairs")], "The table's width"),
             seg("tdoor", [("shut", "Shut"), ("open", "Open")], "The table door"),
             seg("chairs", [("cupboard", "Shut"), ("open", "Open")], "The chair door"),
@@ -760,13 +764,14 @@ def controls(gallery=""):
             '<div class="grp"><div class="seg"><button type="button" data-tog="curtains" aria-pressed="false">Curtains drawn</button></div></div>',
             BESIDE_SEG,
             '</details>',
-            '<details class="r3d-more r3d-fold" id="r3d-optfold"><summary>Options, ideas and your own furniture</summary>',
+            '<details class="r3d-more r3d-fold" id="r3d-optfold"><summary>Options and ideas</summary>',
             opts_html(), picks, ideas_g, sugg_g,
             '<p class="caption"><button type="button" class="chip" data-nav="ideas">Every idea, with pictures</button></p></details>',
             # v39, item 13: "Save my plan"; v50, client: "Improve the save copy paste criteria and selection to get better info ... now
             # we have a lot of custom options": choose what goes in, read it, then share, copy or save it for us
-            '<div class="grp"><div class="seg"><button type="button" class="btn primary" data-myplan="1" aria-expanded="false" aria-controls="r3d-planbox"><span class="ms" aria-hidden="true">send</span> Save my plan</button></div>'
-            '<span class="caption" id="r3d-myplanst" aria-live="polite">Everything you\'ve set, to send us.</span></div>'
+            '<div class="grp r3d-tryrow"><button type="button" class="btn primary" data-myplan="1" aria-expanded="false" aria-controls="r3d-planbox"><span class="ms" aria-hidden="true">send</span> Save my plan</button>'
+            '<button type="button" class="r3d-try" id="r3d-try" role="switch" aria-checked="false" title="What else could go in each place">Try options <i aria-hidden="true"></i></button>'
+            '<span class="caption" id="r3d-myplanst" aria-live="polite"></span></div>'
             '<div class="r3d-planbox" id="r3d-planbox" hidden>'
             '<div class="r3d-setups" id="r3d-setups" hidden></div>'
             '<input type="text" id="r3d-planname" maxlength="60" placeholder="Name it, e.g. Our plan, 24 Oct" aria-label="A name for this plan">'
@@ -860,8 +865,6 @@ def hotspots():
     g = G
     pc_z = (g.PC_Z[0] + g.PC_Z[1]) / 2
     rug_w, rug_d = g.RUG["x"][1] - g.RUG["x"][0], g.RUG["z"][1] - g.RUG["z"][0]
-    pl = g.PLANT_LAYOUTS["corner"]["plants"]
-    PS = g.PLANT_STAND
     # v46, client: "drill down into tasks for each piece of the room when I click on them": six places, each card lists its pieces
     import pieces as P, chapters as C
     out = []

@@ -37,7 +37,7 @@ function setState() {
   built.bar1 = b1k;
   const lk = S.lamp + JSON.stringify(S.layout.lamp || {}) + fixKey("lamp");
   if (built.lamp !== lk) { buildLamp(); built.lamp = lk; }
-  if (G.now_ledge) G.now_ledge.visible = S.plants !== "breast" && !(S.sugg.barcase && caseOn());   // v18: with the plants on the breast the ledge comes off; v34: the drinks cabinet takes its place
+  if (G.now_ledge) G.now_ledge.visible = !(S.plants === "breast" && S.sugg.alcoveshelves) && !(S.sugg.barcase && caseBreast());   // V3.14: it moves with the records; v34: the drinks cabinet takes its place
   placeChairs();                                                                   // v20: the chair cupboard, its doors, the chairs in it
   placeWork();                                                                     // v34: the blind, the records, the trolley
   applyDecor();                                                                    // v20: the rug, cushions, curtains, the case's fill and frame
@@ -132,7 +132,8 @@ function applyLight() {
   laserDots.visible = S.laser && !day;
   if (pcGlow) { pcGlow.visible = !!S.pc; pcLight.visible = !!S.pc; }
   for (const [k, g] of Object.entries(IDEA_G)) g.visible = k === "case" ? caseOn() : !!S.ideas[k];          // v17: ideas, off by default
-  if (G.frames) G.frames.visible = !caseOn();                                                                 // the case replaces the frames
+  if (G.frames) G.frames.visible = !caseBreast();                                                             // the case replaces the frames
+  placeCorner();
   if (G.frames) G.frames.position.y = S.site !== "A" && S.plants === "breast" ? 0.3 : 0;                        // v18.1: up 30 over the 158 plant stand
   if (ideaLed) ideaLed.color.set(day ? "#8a8578" : "#fff1d6");
   curtShut.visible = !!S.curtains; curtOpen.visible = !S.curtains;

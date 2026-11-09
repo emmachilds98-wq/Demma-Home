@@ -110,10 +110,10 @@ def full():
                     f"Mark the uprights' positions from the side wall: the left one {n(g.UP_L[0])}–{n(g.UP_L[1])}, the right one {n(g.UP_R[0])}–{n(g.UP_R[1])}. Turn the laser to its vertical line and draw both lines from the worktop line to the ceiling.",
                     f"Mark the base from the side wall along the floor: filler 0–{n(g.FILLER)}, then " + ", ".join(f"{nm} {n(a)}–{n(b)}" for (a, b), nm in sorted(zip(g.BAYS, ["bay 1", "bay 2", "bay 3"]))) + f", filler to {n(g.ALC_W)}.",
                 ]),
-                ("On the chimney breast", [
-                    f"Find the breast's centre: {n(g.BREAST_W / 2)} cm from its alcove-side corner. Draw it plumb from the floor to 170.",
-                    f"Mark the “now playing” ledge's top at {n(g.NOW_LEDGE['top'])}, level, and its two concealed brackets 6 cm in from each side of the breast.",
-                    "Mark the glass display case's bottom edge at 137 and its top at 222, 90 wide, centred on the line; its oak cleat's top edge at 212. (The dining table isn't here: it's in its cabinet by the stairs, step 11.)",
+                ("Left of the window (V3.14: the plant stand goes on the breast)", [
+                    f"Find the middle between the curtains' stack and the pipe boxing: {n(g.PLANT_LAYOUTS['breast']['records'][0])} cm from the alcove's side wall. Draw it plumb from the floor to 225.",
+                    f"Mark the “now playing” ledge's top at {n(g.NOW_LEDGE['top'])}, level, and its two concealed brackets 6 cm in from each end, centred on the line.",
+                    "Mark the glass display case's bottom edge at 137 and its top at 222, 90 wide, centred on the line; its oak cleat's top edge at 212.",
                 ]),
                 ("Check for cables", [
                     "Run the detector along every line where you'll drill: the cleats, the spacer blocks, the upright brackets, the ledge's brackets, the PC shelf and, on the stairs wall, the cabinet's two wall brackets.",
@@ -290,19 +290,19 @@ def full():
                     "Feed the Series X shelf's tenons through the mortises from the turntable side, onto its cleat. Glue the wedges and drive them into the kerfs from the TV side. When dry, saw them flush and plane: proud, they'd touch the TV.",
                     "Pegs: drill 10 mm through each upright's face into the housed shelf ends, 4 cm deep, about 4 cm from the front edge. Glue in a peg and saw it flush.",
                 ]),
-                ("The “now playing” ledge on the breast (v16)", [
+                ("The “now playing” ledge left of the window (V3.14)", [
                     f"Cut it {n(g.NOW_LEDGE['x'][1] - g.NOW_LEDGE['x'][0])} × 7 × 2.4 from the shelf board's offcut and glue a 1.5 cm lip along its front edge, so a sleeve stands against the wall without sliding.",
-                    f"Mark a level line on the chimney breast at {n(g.NOW_LEDGE['top'] - g.NOW_LEDGE['t'])} (the ledge's underside), {n(g.NOW_LEDGE['x'][0] - g.BREAST_X[0])} cm in from each side of the breast.",
+                    f"Mark a level line on the window wall at {n(g.NOW_LEDGE['top'] - g.NOW_LEDGE['t'])} (the ledge's underside), centred over the vinyl stand.",
                     "Fit its two concealed brackets to the maker's instructions, slide the ledge on, and stand three LPs on it.",
                 ]),
-                ("The glass display case on the breast (v34)", [
+                ("The glass display case left of the window (V3.14)", [
                     "Rout a 5 mm groove 6 mm deep along the inside of the top and bottom pieces, 1.5 cm in from their front edges, for the glass front: the top's groove 12 mm deep, so the front lifts up into it and drops into the bottom one.",
                     "Rout a 6 mm rebate along the back edges of all four pieces for the ply back.",
                     "Drill the shelf-pin holes on the sides' inner faces, front and back, 3 cm in from each edge: at 19, 40 and 61 above the bottom piece's top (the shelves at 158, 179 and 200 on the wall).",
                     "Glue and dowel the frame together (sides between the top and the bottom), check the diagonals, then glue and pin the ply back into its rebate.",
-                    "Stick the LED strip under the top, just behind the groove, and run its lead out through a 10 mm hole in the back's top corner, down the breast's side to a plug (the strips' app runs it).",
-                    "Screw one cleat strip to the case's back, 10 under its top, the bevel down and facing the wall. Screw the other to the breast at 212 (its top edge), level, the bevel up and facing out, with 5 × 60 screws in plugs every 20 cm.",
-                    "Lift the case onto the cleat (two people: about 16 kg before the glass), check it's level, and fix its bottom edge to the breast with two small mirror plates.",
+                    "Stick the LED strip under the top, just behind the groove, and run its lead out through a 10 mm hole in the back's top corner, down beside the pipe boxing to the double behind the vinyl stand (the strips' app runs it).",
+                    "Screw one cleat strip to the case's back, 10 under its top, the bevel down and facing the wall. Screw the other to the window wall at 212 (its top edge), level, the bevel up and facing out, with 5 × 60 screws in plugs every 20 cm.",
+                    "Lift the case onto the cleat (two people: about 16 kg before the glass), check it's level, and fix its bottom edge to the wall with two small mirror plates.",
                     "Fit the pins and lay in the three glass shelves; lift the front up into the top groove and drop it into the bottom one. Fill it.",
                 ]),
             ]),
@@ -510,10 +510,6 @@ def full():
                 ("The wall cabinets", [
                     f"Mark the rail's line over the sofa's corner, the cabinets' bottoms at {n(g.WALL_CABS['y0'])}; detector first.",
                     "Screw IKEA's rail to the wall with 5 × 60 screws in brown plugs, level; hang the two EKET on it and tighten their fittings.",
-                ]),
-                ("The alcove shelves", [
-                    f"Mark the tops at {n(g.ALCOVE_SHELVES['tops'][0])} and {n(g.ALCOVE_SHELVES['tops'][1])} in the window corner; detector first.",
-                    "Fix each concealed bracket with its own screws into plugs in the solid wall, check it's level, and slide the shelf on.",
                 ]),
                 ("Over the hall door, and the boxes", [
                     f"The oak shelf's top at {n(g.DOOR_SHELF['top'])}, on two brackets above the architrave (check it's no more than {n(g.ARCHITRAVE)} wide).",
