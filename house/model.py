@@ -1537,7 +1537,7 @@ def music(o):
         o.box("steel", rx, y + tr["y"], dz0 + 10, rx + 2, y + tr["y"] + 3, dz1)      # the runners
     ky0 = y + tr["y"] + 2
     o.box("black", kb["x"][0], ky0, tz1 - kb["d"] - 2, kb["x"][1], ky0 + kb["h"], tz1 - 2)
-    o.box("ceramic", kb["x"][0] + 3, ky0 + kb["h"] - 6, tz1 - 2 - 15, kb["x"][1] - 3, ky0 + kb["h"] - 4, tz1 - 1.7)   # the keys
+    o.box("sanitary", kb["x"][0] + 3, ky0 + kb["h"] - 6, tz1 - 2 - 15, kb["x"][1] - 3, ky0 + kb["h"] - 4, tz1 - 1.7)   # the keys
     for k in range(52):
         xx = kb["x"][0] + 3 + (kb["x"][1] - kb["x"][0] - 6) * k / 52
         o.box("black", xx - 0.3, ky0 + kb["h"] - 4, tz1 - 2 - 15, xx + 0.3, ky0 + kb["h"] - 3, tz1 - 8) if k % 7 not in (2, 6) else None
@@ -1640,8 +1640,8 @@ def bathroom(o):
     for (x0_, x1_, z0_, z1_) in ((xw - v["basin_d"], bx0_, za - 1, zb + 1), (bx1_, xw, za - 1, zb + 1), (bx0_, bx1_, za - 1, bz0_), (bx0_, bx1_, bz1_, zb + 1)):
         o.box("fitting", x0_, yt - 4, z0_, x1_, yt, z1_)
     for (x0_, x1_, z0_, z1_) in ((bx0_, bx0_ + 1.2, bz0_, bz1_), (bx1_ - 1.2, bx1_, bz0_, bz1_), (bx0_ + 1.2, bx1_ - 1.2, bz0_, bz0_ + 1.2), (bx0_ + 1.2, bx1_ - 1.2, bz1_ - 1.2, bz1_)):
-        o.box("ceramic", x0_, yb, z0_, x1_, yt - 0.05, z1_)
-    o.box("ceramic", bx0_ + 1.2, yb, bz0_ + 1.2, bx1_ - 1.2, yb + 1.2, bz1_ - 1.2)
+        o.box("sanitary", x0_, yb, z0_, x1_, yt - 0.05, z1_)
+    o.box("sanitary", bx0_ + 1.2, yb, bz0_ + 1.2, bx1_ - 1.2, yb + 1.2, bz1_ - 1.2)
     o.lathe("chrome", (bx0_ + bx1_) / 2, yb + 1.2, (bz0_ + bz1_) / 2, [(0, 0), (2, 0), (2, 0.2), (0, 0.2)])
     sec = [za, za + 28, za + 56.5, zb]                              # a drawer over a door at the far end, two doors nearer the door
     for zz in sec[1:-1]:
@@ -2410,9 +2410,10 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "eaves": ("#e7e1d6", 0.9), "garage_blue": ("#2c3b63", 0.45), "garage_white": ("#ecebe7", 0.4), "garage_black": ("#26282a", 0.45), "timber": ("#8a5a35", 0.8), "pane": ("#3a4550", 0.08),
     "gloss": ("#f4f4f1", 0.12), "gap": ("#9b9a95", 0.6), "black": ("#1d1d1f", 0.5), "black_app": ("#1f2023", 0.35), "glass_dark": ("#17191c", 0.1),
     "ring": ("#2b2c2e", 0.6), "steel": ("#c8cacc", 0.25), "steel_dark": ("#8e9195", 0.35), "worktop": ("#26282a", 0.22), "metro": ("#111214", 0.1),
-    "chrome": ("#e4e6e9", 0.06), "ceramic": ("#eef0f0", 0.1), "primrose": ("#e3cf5c", 0.25), "tile_w": ("#f2f2ef", 0.2), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "rug": ("#5b5e66", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
+    "chrome": ("#e4e6e9", 0.06), "sanitary": ("#eef0f0", 0.1), "primrose": ("#e3cf5c", 0.25), "tile_w": ("#f2f2ef", 0.2), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "rug": ("#5b5e66", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
     "cloth0": ("#3d4a5c", 0.95), "cloth1": ("#b9b2a6", 0.95), "cloth2": ("#7a2f2f", 0.95), "cloth3": ("#2f3b2f", 0.95), "cloth4": ("#d8d2c4", 0.95), "cloth5": ("#555555", 0.95), "cloth6": ("#9b8b6e", 0.95), "curtain": ("#f4f3ef", 0.9), "stone": ("#cbc6bd", 0.35), "marble": ("#141416", 0.1), "led": ("#ffffff", 0.3), "lamp_purple": ("#c9a6ff", 0.3), "chalk": ("#222423", 0.85), "storebox": ("#c9c1b2", 0.95), "contact": ("#000000", 1.0), "mattress": ("#f0eee8", 0.9), "pillow": ("#f4f1eb", 0.95), "trim": ("#5a5d60", 0.5), "gutter": ("#f2f2ef", 0.4), "lead": ("#6c7072", 0.55), "birch": ("#dcc8a2", 0.7), "lycksele": ("#5b6b78", 0.95), "grille": ("#e8dcc4", 0.6), "ceiling": ("#f3f2ee", 0.95),
-    "laminate": ("#a9a39a", 0.7), "oak": ("#b8844f", 0.55), "herring": ("#b48a5c", 0.6), "lvt_grey": ("#8e8b87", 0.5), "porcelain": ("#d6d0c4", 0.5), "screen": ("#0d0f12", 0.15), "pc_white": ("#eeeeec", 0.3), "pc_glow": ("#dfe6ff", 0.2),   # V3.14 (N56): the upgrade floors; V3.32 (N84): the screens and the PC back (this comment had hidden them since)
+    "laminate": ("#a9a39a", 0.7), "oak": ("#b8844f", 0.55), "herring": ("#b48a5c", 0.6), "lvt_grey": ("#8e8b87", 0.5), "porcelain": ("#d6d0c4", 0.5),   # V3.14 (N56): the upgrade floors
+    "screen": ("#0d0f12", 0.15), "pc_white": ("#eeeeec", 0.3), "pc_glow": ("#dfe6ff", 0.2),   # V3.32 (N82): a note mid-line (V3.14) had left these three out of the list: grey and matt since
     "pegboard": ("#f4f4f2", 0.6), "ivy": ("#2f5a2b", 0.8), "blind": ("#4a4d52", 0.9), "blind_cloth": ("#4a4d52", 0.9), "books": ("#8a3b2e", 0.8), "jar": ("#d9a441", 0.4), "pot": ("#e8e3d8", 0.5),
     "carpet_grey": ("#6f6f73", 1.0), "red_gloss": ("#c8201e", 0.15), "red_back": ("#9d1714", 0.4), "cat": ("#bdbcb8", 1.0), "sisal": ("#cdb88f", 0.9),
     "pink": ("#e8607a", 0.8), "bathmat": ("#1c1c1e", 0.97), "pine": ("#c99a55", 0.55), "pine_dark": ("#7a5a30", 0.6), "knob": ("#7a5a30", 0.45), "shoe_black": ("#1b1b1d", 0.45), "shoe_white": ("#ecebe6", 0.5), "shoe_tan": ("#8a5a34", 0.55), "shoe_grey": ("#6b6e73", 0.75), "newel": ("#f4f3ef", 0.35), "rail_white": ("#f4f3ef", 0.35), "handle_black": ("#151517", 0.4), "bin_white": ("#f1f1ef", 0.3), "paper": ("#f7f6f2", 0.9), "monitor_back": ("#202124", 0.45), "mouse": ("#1a1a1c", 0.35), "key_dark": ("#2b2c30", 0.55), "key_pink": ("#f6cddb", 0.5),
