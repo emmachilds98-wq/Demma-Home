@@ -97,7 +97,7 @@ function frame(now) {
   if (cabTween(now)) need = 2;                                    // v30: the cabinet's doors swinging or sliding
   if (liftTick(now)) need = 2;                                    // v68: Lift the bed
   if (showTick(now)) need = 2;                                    // v32: "Watch it open"
-  const walked = walkTick(dt); if (walked) { need = 2; syncEye(); }   // V1.32 (U7)   // V2.30: dt to 100 ms (it held each step to 50: a slow frame slowed the walk)
+  const walked = walkTick(dt) | lookTick(dt); if (walked) { need = 2; syncEye(); }   // V3.28: and a mouse's look round, let out frame by frame   // V1.32 (U7)   // V2.30: dt to 100 ms (it held each step to 50: a slow frame slowed the walk)
   if (!tween && !freeAbove() && !walking() && (clampRoom(camera.position) | clampRoom(controls.target, true) | collide())) need = 2;   // v17: never outside the room; v41: nor in the furniture
   const active = moving || changed || !!tween || walked;   // V2.73 (N17): a walk too
   if (active && mvLast && now - mvLast < 250) { MV.push(now - mvLast); if (MV.length >= 24) { const m = MV.sort((a, b) => a - b)[12]; MV.length = 0; FT.mv = m;
