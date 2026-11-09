@@ -28,8 +28,9 @@ const LIVV = () => !HOUSEV(S.view) && !!VIEWS[S.view];
 /* V2.43, the client: "i want the first person pov like a game to be the main in the room way to look at the room": a room you pick (its
    name on the house, or by name) stands you in it at your eyes, to walk and look round (Be there; the living room's Standing in it); In
    it, Above and On its own stay a tap away. R3D.set, the tour and links keep each view as it is */
-function goRoom(v) {
+function goRoom(v, now, after) {
   if (v === "room") v = "livstand";
+  if (!now) return readyThen(v, () => { goRoom(v, true); if (after) after(); });   // V3.22: its shaders built first where they aren't (no freeze on a PC)
   const far = S.view === "house" || !HOUSEV(S.view) !== !HOUSEV(v);
   setView(v); if (VIEWS[v] && VIEWS[v].box) setRmode("stand");
   if (tween && far) tween.dur = Math.max(tween.dur, 1100);   // from the whole house, a glide in, not a dive
@@ -52,7 +53,7 @@ addEventListener("popstate", e => {
   if (histBack) { histBack = false; roomHist(); return; }   // our own step back: if a room was picked meanwhile, its step again
   const v = (e.state && e.state.r3d) || "house";
   if (v === S.view || (v !== "house" && !VIEWS[v])) return;
-  histPop = true; try { if (v === "house") wholeRoom(); else goRoom(v); } finally { histPop = false; }
+  histPop = true; try { if (v === "house") wholeRoom(); else goRoom(v, true); } finally { histPop = false; }
 });
 function syncRmode() {
   if (typeof syncStick === "function") try { syncStick(); } catch (e) {}   // V1.32: the walk's stick

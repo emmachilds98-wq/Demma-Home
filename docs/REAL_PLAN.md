@@ -322,3 +322,18 @@ living room's layout (shelves, records) and the house's lighting are other threa
 | N56 | Upgrade floors to try: herringbone oak, grey oak LVT, stone porcelain in a floor's card, each a real product's size, made here from the oak veneer's grain; costs a m² | Quality | `house/textures/build_textures.py` (`floors`, `TILED`), the new textures, `23_finish.js` `FIN_FLOORS`, `16_cards.js` `UPC.floor`, `fit.SOURCES upfloors` | | Done V3.14 |
 | N57 | Walls: panelling to try (a wall's card): shaker or slatted panels to a real product's size, in the wall's paint, round doors and windows | Quality | `23_finish.js`, `16_cards.js` `UPC`, `fit.SOURCES` | N56 | Done V3.18: Shaker (B&Q 97 × 9 strips) and oak slats (27/13 on felt), packs and cost |
 | N58 | Furniture: the house's pieces nearer their photos (softer cushions, real legs and handles where they are boxes) | Quality | `08_house_catalogue.js`, `house/model.py` (pieces only) | N56 | Done V3.20: a KIVIK sofa, a HEMNES dressing table, a BESTÅ TV bench added (real sizes, costs) |
+
+## 15. The PC as fluid as the phone, and the panels cleaned up (9 Nov 2026, V3.21): a task a PR
+
+The client, 9 Nov 2026: "i want pc to be better, i dont understand how to give you info but it is still clunky i want fluid like the
+mobile version. go through UI areas and info also and review how to improve and clean up these areas to look and be used better".
+Measured on her own PC (RTX 5070, 2560 × 1440 at 155 Hz, Chrome on Direct3D 11, a headless copy with its own profile): moving runs at
+155 frames a second in the house, the living room and the hall (draws 190–394, a frame 1–2 ms of the page's time), so the card isn't
+short. Two things were: the living room picked from the house in its first seconds froze the page 27 s (its 31 shaders through
+Windows' compiler on the frame that showed them; a second visit, Chrome's cache warm, 65 ms), and the wheel jumped a notch at a time.
+
+| # | Task | Aim | Owns | After | Status |
+|---|---|---|---|---|---|
+| N65 | No freeze stepping into a room on a PC: where the browser builds shaders in parallel, rooms and hidden parts are asked for beside the page (rooms first, from the house too), and a room picked before it's ready is built first ("Opening ..."), then shown | Speed (PC) | `01_renderer.js` (`precompileBatch`, `compileClipped` roots), `14_views_walk.js` (`warmAt`, `warmTo`, `readyThen`), `09_house_views.js` `goRoom`, `16_cards.js` `upsGo`, `17_render_loop.js` | | Done V3.22 |
+| N66 | The wheel eased: each notch spread over about a fifth of a second (the room's zoom, the map's, a walk), the same total | Feel (PC) | `19_view_controls.js` | N65 | Open |
+

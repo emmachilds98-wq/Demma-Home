@@ -103,19 +103,33 @@ function precompileStep() {           // from the frame loop, when nothing's mov
   PRE.done++;
   return true;
 }
+/* V3.22: where the browser builds shaders in parallel (Chrome on a PC, Safari), the hidden parts are asked for a dozen at a time
+   (compileClipped), not drawn one by one: each draw waited for its shaders, on Windows the driver's compiler (a second or more each,
+   the page held); now they build beside the page, which keeps answering */
+function precompileBatch() {
+  if (PRE.busy || !PRE.queue.length || !LIVE || (gl.shadowMap.enabled && gl.shadowMap.needsUpdate)) return false;
+  const roots = PRE.queue.splice(0, 12).filter(o => o.visible === false && o.parent);
+  if (!roots.length) return true;
+  if (!PRE.rt) { PRE.rt = new THREE.WebGLRenderTarget(1, 1); PRE.rt.isXRRenderTarget = true; PRE.rt.texture.colorSpace = gl.outputColorSpace; }
+  if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
+  const was = gl.getRenderTarget(); let job;
+  try { gl.setRenderTarget(postLive() ? PRE.rtAO : PRE.rt); job = compileClipped(camera, false, roots); } catch (e) { job = Promise.resolve(); } finally { gl.setRenderTarget(was); }
+  PRE.busy = true; Promise.race([job.catch(() => {}), new Promise(r => setTimeout(r, 8000))]).then(() => { PRE.busy = false; PRE.done += roots.length; });
+  return true;
+}
 /* V2.64, the client's iPhone froze on the first tap on a floor: three's compileAsync (the start's shaders, built in parallel where the
    browser can: Safari and Chrome have KHR_parallel_shader_compile) builds every shader for the cutting planes of whatever was drawn
    last, so the house's 6 planes and the living room's 2 never matched and were built again, one at a time, on the frame that first
    showed them (34 to 44: seconds on a phone). Now the scene is compiled in groups with the same planes, each after a speck with those
    planes is drawn off screen (prime: which sets three's planes to its) */
-function compileClipped(cam, shownOnly) {   // shownOnly: what's shown now (the rooms' warm-up), not every hidden part too
+function compileClipped(cam, shownOnly, roots) {   // shownOnly: what's shown now (the rooms' warm-up), not every hidden part too; roots: only these hidden parts (V3.22)
   const key = m => gl.localClippingEnabled && m.clippingPlanes && m.clippingPlanes.length ? m.clippingPlanes.length + (m.clipIntersection ? "i" : "u") : "0";
   const G = new Map(), D = new Map(), put = (M, k, o, m) => { if (!M.has(k)) M.set(k, []); M.get(k).push([o, m]); };
-  scene[shownOnly ? "traverseVisible" : "traverse"](o => { const m = [].concat(o.material || [])[0]; if (m && (o.isMesh || o.isLine || o.isPoints || o.isSprite)) put(G, key(m), o, o.material); });
+  (roots ? f => roots.forEach(r => r.traverse(f)) : f => scene[shownOnly ? "traverseVisible" : "traverse"](f))(o => { const m = [].concat(o.material || [])[0]; if (m && (o.isMesh || o.isLine || o.isPoints || o.isSprite)) put(G, key(m), o, o.material); });
   /* N35 (V2.87): and the shadows' own: three draws each caster into a shadow with a material of its own (cut, mapped or not) that it
      can't be asked to build ahead, so a stand-in like it, one of a kind, is put on each caster for the asking (and taken off) */
   const lit = []; scene.traverseVisible(l => { if (l.isLight) lit.push(l); });
-  if (gl.shadowMap.enabled) { const pts = new Set(lit.filter(l => l.castShadow).map(l => !!l.isPointLight));
+  if (gl.shadowMap.enabled && !roots) { const pts = new Set(lit.filter(l => l.castShadow).map(l => !!l.isPointLight));
     for (const pt of pts) scene.traverseVisible(o => { if (!o.isMesh || !o.castShadow || !o.material) return; const d = Array.isArray(o.material) ? o.material.map(m => depthMat(m, pt)) : depthMat(o.material, pt), d0 = [].concat(d)[0]; put(D, "s" + (d0.clipShadows ? key(d0) : "0"), o, d); }); }
   const jobs = [], was = gl.getRenderTarget();
   if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });

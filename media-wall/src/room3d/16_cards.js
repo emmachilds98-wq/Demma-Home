@@ -147,8 +147,10 @@ document.addEventListener("click", e => { const li = e.target.closest("[data-ups
 document.addEventListener("keydown", e => { const li = e.key === "Enter" && e.target.closest && e.target.closest("[data-upsroom]"); if (li) upsGo(li.dataset.upsroom); });
 function upsGo(room) {
   window.dispatchEvent(new CustomEvent("demma-open", { detail: { sheet: "room" } }));
-  if (ROOM_VIEW[room]) goRoom(ROOM_VIEW[room]); else if (room === "outside" && S.view !== "house") setView("house");
-  setTimeout(() => openAct("ups:" + room, [stage.clientWidth / 2, stage.clientHeight * 0.3]), 120);
+  const card = () => setTimeout(() => openAct("ups:" + room, [stage.clientWidth / 2, stage.clientHeight * 0.3]), 120);
+  if (ROOM_VIEW[room]) return goRoom(ROOM_VIEW[room], false, card);   // V3.22: once there (it may build first)
+  if (room === "outside" && S.view !== "house") setView("house");
+  card();
 }
 const MAKE_CARD = { recordtable: "mk-recordtable", ctable: "mk-ctable", wallcabs: "mk-wallcabs", alcoveshelves: "mk-alcove", doorshelf: "mk-doorshelf", shelfboxes: "mk-doorshelf" };   // v44
 function actItems(id) {     // [title, how it is now, buttons]
