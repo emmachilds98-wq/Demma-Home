@@ -61,9 +61,9 @@ function hcatCard(id) {
     const L = [null, ...hcOf(kind)], i = Math.max(0, L.indexOf(pieceNow(k).swap)), C = HCAT[L[i]];
     return [C ? C.n : it.n + " (yours)", `${HCAT_KINDS[kind]} · ${i + 1} of ${L.length} · ${C ? C.src : "as planned"}`, [...nav(i, "hswapgo"), btn("Keep it", { actopen: "hitem:" + k }, true)]]; }
   if (it.look) { const L = plantKeys(), i = Math.max(0, L.indexOf(it.add)), C = HCAT[it.add];   // N5: a room's plant, from Look
-    return [C.n, `${roomName(it.look)}'s plant · ${i + 1} of ${L.length} · ${C.src}`, [...nav(i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Take it out", { hremove: k })]]; }
+    return [C.n, `${roomName(it.look)}'s plant · ${i + 1} of ${L.length} · ${C.src}`, [...nav(i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Remove", { hremove: k })]]; }
   const i = Math.max(0, HCAT_ADD.indexOf(it.add)), C = HCAT[it.add];
-  return [C.n, `${i + 1} of ${HCAT_ADD.length} · ${C.src}`, [...nav(i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Take it out", { hremove: k })], null,
+  return [C.n, `${i + 1} of ${HCAT_ADD.length} · ${C.src}`, [...nav(i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Remove", { hremove: k })], null,
     `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Kinds">${Object.entries(HCAT_KINDS).map(([q, t]) => `<button type="button" data-hcatk="${k}:${q}" aria-pressed="${C.k === q}">${t}</button>`).join("")}</div></div>`];
 }
 /* N23 (REAL_PLAN section 7), the client: "helps me keep track and plan those upgrades": a room's card of its changes (Look's and Edit's),
@@ -126,9 +126,9 @@ function upSum(L) { return { n: L.length, d: L.filter(u => u.done).length, lo: L
 const upRooms = () => R.HOUSE3 ? [...new Set(["outside", LIVR, ...Object.keys(R.HOUSE3.rooms || {})])].filter(r => r === "outside" || roomName(r)) : [];
 function upsCard(room) {
   const L = roomUps(room), s = upSum(L);
-  return [`${room === "outside" ? "Outside" : roomName(room)}: changes`, L.length ? `${s.d} of ${s.n} done${s.hi ? " · " + upRange(s.lo, s.hi) : ""}` : "None yet",
+  return [`${room === "outside" ? "Outside" : roomName(room)}: changes`, L.length ? `${s.d} of ${s.n} done${s.hi ? " · " + upRange(s.lo, s.hi) : ""}` : "Nothing changed yet",
     [btn("All rooms", { upsall: "1" })], null,
-    `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Changes: tap one when it's done">${L.map(u => `<button type="button" data-updone="${encodeURIComponent(u.k)}" aria-pressed="${u.done}">${u.done ? "✓ " : ""}${u.t}${u.hi ? ` · ${upRange(u.lo, u.hi)}` : ""}</button>`).join("")}</div></div>`];
+    `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Tap one when it's done">${L.map(u => `<button type="button" data-updone="${encodeURIComponent(u.k)}" aria-pressed="${u.done}">${u.done ? "✓ " : ""}${u.t}${u.hi ? ` · ${upRange(u.lo, u.hi)}` : ""}</button>`).join("")}</div></div>`];
 }
 const upsBtn = room => { const n = room && roomUps(room).length; return n ? [btn(`Changes (${n})`, { actopen: "ups:" + room })] : []; };
 function upsAll() {   // [rows a room, the house's total]: Plan's and Measure's (N40) the same
@@ -154,18 +154,18 @@ const MAKE_CARD = { recordtable: "mk-recordtable", ctable: "mk-ctable", wallcabs
 function actItems(id) {     // [title, how it is now, buttons]
   const folded = S.dining === "folded", lv = k => (S.lv[k] ?? 0) > 0;
   if (id === "hbed") { const P_ = HPARTS.bed_lift, up = !!(P_ && (P_.tw ? P_.tw.to === 1 : P_.t > 0.5));   // v71, the client: the bed as a card, like the living room's
-    return ["Your ottoman bed", up ? "Lifted on its struts: four storage boxes inside" : "Pine, the base lifts from the foot", [
-      btn(up ? "Lower the bed" : "Lift the bed", { hbed: up ? "down" : "up" }), ...(ROOMV() && RMODE !== "above" ? [btn("See it from above", { rmode: "above" })] : [])], null, finBedTray("master")]; }   // N5d: its bedding
+    return ["Ottoman bed", up ? "Lifted: four storage boxes inside" : "Pine; the base lifts from the foot", [
+      btn(up ? "Lower the bed" : "Lift the bed", { hbed: up ? "down" : "up" }), ...(ROOMV() && RMODE !== "above" ? [btn("View from above", { rmode: "above" })] : [])], null, finBedTray("master")]; }   // N5d: its bedding
   if (id.startsWith("fin:")) { const c = finCard(id), [, rm, sl] = id.split(":");   // V2.6: a wall's or a ceiling's colours (23_finish.js)
     if (c && sl === "5" && DS() && TAPAT && R.HOUSE3 && (R.HOUSE3.rooms || {})[rm] && rm !== "living") c[2].unshift(btn("Add a piece here", { hadd: rm }));   // V2.46 (N7): from the catalogue
-    if (c) c[2].unshift(...upsBtn(rm));   // N23: the room's changes
+    if (c) c[2].push(...upsBtn(rm));   // N23: the room's changes (N68: after the card's own buttons)
     return c; }
   if (id.startsWith("ups:")) return upsCard(id.slice(4));   // N23
   if (id.startsWith("hswap:") || id.startsWith("hadd:")) return hcatCard(id);   // V2.46 (N7): swap a piece, or which piece you've added
   if (id.startsWith("hitem:")) { const k = id.slice(6), it = HIT(k); if (!it) return null;   // V1.50: a piece in the house, its size
     const sw = pieceNow(k).swap;
-    return [sw ? HCAT[sw].n : it.n, pieceLine(k), [btn(it.op ? "Change its size" : "Move or resize", { actopen: "hsize:" + k }), ...(it.add ? [btn(it.look ? "Another plant" : "Another piece", { actopen: "hadd:" + k })] : swapKind(k) ? [btn("Swap it", { actopen: "hswap:" + k })] : []),
-      ...(pieceDelta(k).some(Boolean) && !it.add ? [btn("As planned", { hreset: k })] : []), ...(it.op ? [] : [btn("Take it out", { hremove: k })]),
+    return [sw ? HCAT[sw].n : it.n, pieceLine(k), [btn(it.op ? "Change its size" : "Move or resize", { actopen: "hsize:" + k }), ...(it.add ? [btn(it.look ? "Change plant" : "Change piece", { actopen: "hadd:" + k })] : swapKind(k) ? [btn("Swap it", { actopen: "hswap:" + k })] : []),
+      ...(pieceDelta(k).some(Boolean) && !it.add ? [btn("As planned", { hreset: k })] : []), ...(it.op ? [] : [btn("Remove", { hremove: k })]),
       ...(it.k === "window" || /^(back|garage)_door$/.test(k) ? [btn("Colour outside", { actopen: "fin:outside:9" })] : []), ...upsBtn(it.r)], null,   // V2.38 (F12): its frame's outside
       it.k === "light" && it.r ? `<div class="r3d-fin"><span class="r3d-finlab">The bulbs</span>${finBulbTray(it.r)}${finFitTray(it.r)}</div>` : /\.bed$/.test(k) && it.r ? finBedTray(it.r) : null]; }   // N5d: a bed's bedding   // V2.9: a light's bulbs; V2.15: its fitting
   if (id.startsWith("hsize:")) { const k = id.slice(6), it = HIT(k); if (!it) return null; const c = pieceNow(k), door = it.k === "door";
@@ -176,12 +176,12 @@ function actItems(id) {     // [title, how it is now, buttons]
     const any = Object.entries(HPARTS).some(([q, Q]) => q.startsWith("door.") && doorOpen(Q));
     return [P.label || "The door", op ? (Math.abs(P.angle) < 89 ? "Open as far as it goes" : "Open") : "Shut", [
       btn(op ? "Shut it" : "Open it", { hdoor: k }), ...(k === "door.hall_porch" ? [btn("Colour outside", { actopen: "fin:outside:10" })] : []),   // V2.38 (F12)
-      btn(any ? "Shut every door" : "Open every door", { hdoors: any ? "shut" : "open" }), ...(DS() && HIT(k.slice(5)) ? [btn("Change its size", { actopen: "hsize:" + k.slice(5) })] : [])]]; }
-  if (id === "nowplay") return ["Now playing, on the ledge", `${NOWP[S.nowp % NOWP.length].name}`, [   // v39: which LP faces out
+      btn(any ? "Shut all doors" : "Open all doors", { hdoors: any ? "shut" : "open" }), ...(DS() && HIT(k.slice(5)) ? [btn("Change its size", { actopen: "hsize:" + k.slice(5) })] : [])]]; }
+  if (id === "nowplay") return ["Now playing", `${NOWP[S.nowp % NOWP.length].name}`, [   // v39: which LP faces out
       btn("‹", { nowp: "-1" }, false, "q", "The one before"), btn("›", { nowp: "1" }, false, "q", "The next one"),
-      btn("A photo of yours", { nowpic: "1" }), btn("Look at it", { view: S.plants === "breast" ? "corner" : "breast" })]];
+      btn("Your photo", { nowpic: "1" }), btn("Look at it", { view: S.plants === "breast" ? "corner" : "breast" })]];
   if (id === "measure") { const d = MEAS.d;                               // v39: measure in 3D
-    return ["Measure", d ? `${d.toFixed(1)} cm between them (${MEAS.dh.toFixed(1)} across, ${MEAS.dv.toFixed(1)} up)` : MEAS.a ? "Now tap the second point" : "Tap the first point in the room", [
+    return ["Measure", d ? `${d.toFixed(1)} cm between them (${MEAS.dh.toFixed(1)} across, ${MEAS.dv.toFixed(1)} up)` : MEAS.a ? "Tap the second point" : "Tap the first point", [
       btn("Measure again", { measure: "again" }), btn("Done", { measure: "done" })]]; }
   if (id.startsWith("opt:")) {                                            // v39: Try options' card: this place's options, ‹ › through them
     const [, pl, ix] = id.split(":"), L = placeOpts(pl); if (!L.length) return null;
@@ -189,20 +189,20 @@ function actItems(id) {     // [title, how it is now, buttons]
     return [it.title + (firm ? " (your plan)" : ""), `${g.title} · ${i + 1} of ${L.length} · ${it.size}${it.cost ? ` · £${it.cost[0]}–${it.cost[1]}` : ""}`, [
       btn("‹", { optcyc: `${pl}:${i - 1}` }, false, "q", "The one before"), btn("›", { optcyc: `${pl}:${i + 1}` }, false, "q", "The next one"),
       on ? btn("Keep it", { optkeep: "1" }, true) : btn("Try it", { optcyc: `${pl}:${i}` }),
-      ...(it.aim ? [btn("See it", { optsee: g.k })] : []), btn("Back to my plan", { optclear: "1" })]];
+      ...(it.aim ? [btn("See it", { optsee: g.k })] : []), btn("My plan", { optclear: "1" })]];
   }
   if (id === "cab" && S.site !== "C") id = "table";
   if (id === "table" && S.site === "C") id = "cab";
   if (id === "cab") {
     const d = cabDoors();
-    const st = !folded ? `Open for ${S.dining}: the table is out` : d.table ? "Packed away, the table door open" : d.chairs ? "Packed away, the chair door open" : (S.cabw === "80" ? "Packed away: the table and four of the six chairs inside" : "Packed away: the table and the six chairs inside");
+    const st = !folded ? `Open for ${S.dining}: the table is out` : d.table ? "Packed away, the table door open" : d.chairs ? "Packed away, the chair door open" : (S.cabw === "80" ? "Packed away: table and four chairs inside" : "Packed away: table and six chairs inside");
     return [S.cabw === "80" ? "The dining cabinet, 80-wide table" : "The dining cabinet", st, [
       btn("Open for six", { dining: "six" }, S.dining === "six"), btn("Open for four", { dining: "four" }, S.dining === "four"),
       btn(folded ? "Folded away" : "Fold it away", { dining: "folded" }, folded),
       ...(folded ? [btn(d.table ? "Shut the table door" : "Open the table door", { tdoor: d.table ? "shut" : "open" }),
                     btn(d.chairs ? "Shut the chair door" : "Open the chair door", { chairs: d.chairs ? "cupboard" : "open" })] : []),
-      btn("Watch it open, step by step", { showopen: "1" }),
-      btn(S.cabw === "80" ? "Show the 90-wide table (the plan)" : "Show the 80-wide version (10 shorter)", { cabw: S.cabw === "80" ? "90" : "80" }),
+      btn("Watch it open", { showopen: "1" }),
+      btn(S.cabw === "80" ? "Show the 90-wide (plan)" : "Show the 80-wide", { cabw: S.cabw === "80" ? "90" : "80" }),
       btn("Look at it", { view: "dining" }), btn("How to make it", { actmk: "mk-cabinet" }), btn("Read about it", { actgo: "dining" })]];
   }
   if (id === "table") return [S.site === "A" ? "The flip-top on the breast (the alternative)" : "The flip-top by the stairs (the alternative)", folded ? "Folded" : `Open for ${S.dining}`, [
@@ -211,29 +211,29 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id === "wall") return ["The media wall", S.drawers ? "Every drawer pulled out" : "Drawers shut", [
       btn(S.drawers ? "Push the drawers in" : "Pull the drawers out", { drawers: S.drawers ? "in" : "out" }),
       btn(lv("bias") ? "TV off" : "TV on", { layer: "bias:" + (lv("bias") ? "off" : "on") }), btn("Film lights", { scene: "film" }, S.scene === "film"),
-      btn("Choose the LP on the ledge", { actopen: "nowplay" }),               // v39: "a now playing swap: tap the turntable"
+      btn("The LP on the ledge", { actopen: "nowplay" }),               // v39: "a now playing swap: tap the turntable"
       btn("Look at it", { view: "wall" }), btn("How to make it", { actmk: "mk-base" }), btn("Read about it", { actgo: "wall" })]];
   if (id === "tv") return ["The TV", lv("bias") ? "On, its bias light behind it" : "Off", [
       btn(lv("bias") ? "Turn it off" : "Turn it on", { layer: "bias:" + (lv("bias") ? "off" : "on") }), btn("Film lights", { scene: "film" }, S.scene === "film"), btn("Look at it", { view: "sofa" })]];
   if (id === "lamp" || id === "bar1" || id === "bar2") return fixCard(id, lv(id));
   if (id === "curtains") return ["The curtains", S.curtains ? "Drawn" : "Open", [btn(S.curtains ? "Open them" : "Draw them", { tog: "curtains" })]];
-  if (id === "lbox") return ["Your OBEGRÄNSAD light box", S.lbox ? "On" : "Off", [btn(S.lbox ? "Turn it off" : "Turn it on", { tog: "lbox" })]];
+  if (id === "lbox") return ["OBEGRÄNSAD light box", S.lbox ? "On" : "Off", [btn(S.lbox ? "Turn it off" : "Turn it on", { tog: "lbox" })]];
   if (id === "pc") return ["Your PC", S.pc ? "Lit" : "Dark", [btn(S.pc ? "Lights off" : "Lights on", { tog: "pc" }), btn("Look at it", { view: "pc" }), btn("How to make it", { actmk: "mk-sidewall" }), btn("Read about it", { actgo: "side" })]];
   if (id === "beside") { const B = R.BESIDE, cur = S.beside;           // v34
     return ["Beside the cabinet", (B.opts[cur] || {}).name || cur, [
       ...Object.entries(B.opts).map(([k, o]) => btn(o.name, { beside: k }, cur === k)),
       ...(cur === "bar" ? [btn(S.barflap ? "Close the bar" : "Open the bar", { barflap: S.barflap ? "shut" : "open" })] : []),   // v37
-      ...(cur === "trolley" ? [btn(S.trolley === "out" ? (cabDoors().table ? "Park it by the wall (once the table is folded)" : "Park it by the wall") : (cabDoors().table ? "Pull it out (once the table is folded)" : "Pull it out for dinner"), { trolley: S.trolley === "out" ? "park" : "out" })] : []),
+      ...(cur === "trolley" ? [btn(S.trolley === "out" ? (cabDoors().table ? "Park it (fold the table first)" : "Park it by the wall") : (cabDoors().table ? "Pull it out (fold the table first)" : "Pull it out"), { trolley: S.trolley === "out" ? "park" : "out" })] : []),
       ...(cur === "bar" ? [btn("How to make it", { actmk: "mk-bar" })] : []), btn("Look at it", { view: "beside" }), btn("Read about it", { actgo: "dining" })]]; }
-  if (id === "records") return ["Your vinyl stand", S.lp ? "The front record of each bay lifted out" : "Two face-out bays on top, LPs filed below", [
+  if (id === "records") return ["Vinyl stand", S.lp ? "Front records lifted out" : "Two face-out bays, LPs filed below", [
       btn(S.lp ? "Put the records back" : "Lift out the front records", { lp: S.lp ? "in" : "out" }),
-      btn(S.ideas.clean ? "Take away the record-care caddy" : "Add a record-care caddy (an idea)", { idea: "clean" }, !!S.ideas.clean),
+      btn(S.ideas.clean ? "Remove the record caddy" : "Add a record caddy", { idea: "clean" }, !!S.ideas.clean),
       btn("Move it", { actedit: "records" })]];
   if (id.startsWith("sg:") || id.startsWith("id:")) {
     const sg = id.startsWith("sg:"), k = id.slice(3), nm = ((sg ? PD.sugg : PD.ideas)[k] || [k])[0], it = sg && MOV["sg_" + k];
     if (!(sg ? S.sugg : S.ideas)[k]) return null;                        // taken away: the card closes
     const firm = R.FIRM && (sg ? R.FIRM.sugg : R.FIRM.ideas || []).includes(k);   // v38: the client's picks are the plan (v43: the C-table too)
-    return [nm, firm ? "In your plan" : sg ? "An option: not in the plan's costs" : "An idea: not in the plan's costs", [
+    return [nm, firm ? "In your plan" : sg ? "An option, not costed" : "An idea, not costed", [
       ...(firm && MAKE_CARD[k] ? [btn("How to make it", { actmk: MAKE_CARD[k] })] : []),   // v44: its card in Build
       ...(k === "blind" ? [btn(S.blind === "up" ? "Pull it down" : "Roll it up", { blind: S.blind === "up" ? "down" : "up" })] : []),
       ...(k === "barcase" || k === "barside" ? [btn(S.barflap ? "Close the bar" : "Open the bar", { barflap: S.barflap ? "shut" : "open" })] : []),
@@ -242,11 +242,11 @@ function actItems(id) {     // [title, how it is now, buttons]
       ...(k === "stairdrawers" ? [btn(S.sdraw ? "Push the drawers in" : "Pull the drawers out", { sdraw: S.sdraw ? "in" : "out" })] : []),   // v37
       ...(sg ? (SVAR[k] || []).map(([v, n]) => btn(n, { svar: `${k}:${v}` }, svarOf(k) === v)) : []),
       ...(it && !it.fixed ? [btn("Move it", { actedit: it.id })] : []),
-      btn("Take it away", sg ? { sugg: k } : { idea: k }), btn("See its card", { actideas: (sg ? "sugg-" : "idea-") + k })]]; }
-  if (id === "mov:pouf") return ["Your storage ottoman", S.lid ? "The lid off: your board games in three layers, the cards along one side" : "Navy velvet, its padded lid on: your games and cards inside", [   // v34
+      btn("Remove", sg ? { sugg: k } : { idea: k }), btn("Read about it", { actideas: (sg ? "sugg-" : "idea-") + k })]]; }
+  if (id === "mov:pouf") return ["Storage ottoman", S.lid ? "Lid off: games in three layers, cards along one side" : "Navy velvet: games and cards inside", [   // v34
       btn(S.lid ? "Put the lid back" : "Lift the lid", { lid: S.lid ? "on" : "off" }), btn("Move it", { actedit: "pouf" }), btn("Read about it", { actgo: "c-room" })]];
   if (id.startsWith("mov:")) { const it = MOV[id.slice(4)]; if (!it) return null;
-    return [it.label, it.fixed ? "Built in: it can come off, but not move" : "Drag it in Edit room, or change its colour", [btn(it.fixed ? "Take it off or put it back" : "Move it", { actedit: it.id })]]; }
+    return [it.label, it.fixed ? "Built in: it comes off, but doesn't move" : "Drag it in Edit, or change its colour", [btn(it.fixed ? "Take off or put back" : "Move it", { actedit: it.id })]]; }
   return null;
 }
 /* v38: a fixture's card: on or off, turn it as a whole (15° a tap, 5° with Shift held), then one head at a time */
@@ -305,27 +305,33 @@ function fixAct(d, fine) {             // the card's fixture and head buttons; t
   else return false;
   applyState(); syncButtons(); return true;
 }
+/* N68 (REAL_PLAN section 15), the client: "go through UI areas and info also and review how to improve and clean up these areas": every
+   card the same shape: its name, how it is now, its main tray, three buttons, then More (the other buttons and trays: a wall's curtains,
+   picture, wallpaper and panelling, a floor's rug and plant); a card never runs past the top pills or the dock: it scrolls inside */
 function renderAct() {
   const items = actId && actItems(actId);
   if (!items) { closeAct(); return; }
-  const [title, st, bs] = items;
+  const [title, st, bs, fields, tray, extra] = items;
   qs("#r3d-act-h").textContent = title; qs("#r3d-act-st").textContent = st;
   qsa(".r3d-actmore", act).forEach(m => m.remove());
   const box = qs("#r3d-acts"); box.textContent = "";
   qsa(".r3d-actfields").forEach(m => m.remove()); qsa(".r3d-fin", act).forEach(m => m.remove());
-  if (items[4]) { const w = document.createElement("div"); w.innerHTML = items[4]; box.before(w.firstElementChild); }   // V2.6: a wall's colours
-  if (items[3]) { const w = document.createElement("div"); w.className = "r3d-actfields";   // V1.50: a piece's sizes, a stepper each
-    w.innerHTML = items[3].map(([f, t, v]) => `<div class="fld"><span>${t}</span><span class="stp"><button type="button" data-hstep="${f}" data-by="-1" aria-label="${t}: 1 cm less">−</button>`
+  if (tray) { const w = document.createElement("div"); w.innerHTML = tray; box.before(w.firstElementChild); }   // V2.6: a wall's colours
+  if (fields) { const w = document.createElement("div"); w.className = "r3d-actfields";   // V1.50: a piece's sizes, a stepper each
+    w.innerHTML = fields.map(([f, t, v]) => `<div class="fld"><span>${t}</span><span class="stp"><button type="button" data-hstep="${f}" data-by="-1" aria-label="${t}: 1 cm less">−</button>`
       + `<input type="number" inputmode="decimal" step="1" value="${v}" data-hfield="${f}" aria-label="${t} in cm"><button type="button" data-hstep="${f}" data-by="1" aria-label="${t}: 1 cm more">+</button></span></div>`).join("")
-      + `<p class="note">${DS() && DS().mode === "shared" ? "Saved for you both as you go" : "Saved on this device · Send in Measure shares it"}</p>`;
+      + `<p class="note">${DS() && DS().mode === "shared" ? "Saved for you both" : "Saved on this device"}</p>`;
     box.before(w); }
   if (/^(hitem|hsize|hswap|hadd):/.test(actId)) selOf(actId.split(":")[1]); else clearSel();
-  // v39 (the approved redesign): a card shows its first three buttons; everything else sits under Details
-  let shownN = 0, into = box, more = null;
+  // v39 (the approved redesign): a card shows its first three buttons; everything else sits under More
+  let shownN = 0, more = null;
+  const fold = () => { if (!more) { more = document.createElement("details"); more.className = "r3d-actmore"; more.open = actMoreOpen;
+    more.innerHTML = '<summary>More</summary><div class="acts"></div>'; more.addEventListener("toggle", () => { actMoreOpen = more.open; placeAct(); }); box.after(more); }
+    return more.querySelector(".acts"); };
+  if (extra) { const w = document.createElement("div"); w.innerHTML = extra; fold().before(w.firstElementChild); }
   for (const b of bs) {
-    if (shownN >= 3 && !more) { more = document.createElement("details"); more.className = "r3d-actmore"; more.open = actMoreOpen;
-      more.innerHTML = '<summary>Details</summary><div class="acts"></div>'; more.addEventListener("toggle", () => { actMoreOpen = more.open; placeAct(); }); box.after(more); into = more.querySelector(".acts"); }
-    if (b.sep) { const h = document.createElement("span"); h.className = "r3d-actsep"; h.textContent = b.sep; (shownN >= 3 ? into : box).appendChild(h); continue; }   // v38
+    const into = shownN >= 3 ? fold() : box;
+    if (b.sep) { const h = document.createElement("span"); h.className = "r3d-actsep"; h.textContent = b.sep; into.appendChild(h); continue; }   // v38
     shownN++;
     const el = document.createElement("button"); el.type = "button"; el.textContent = b.label;
     for (const [k, v] of Object.entries(b.attrs)) el.dataset[k] = v;
@@ -333,16 +339,26 @@ function renderAct() {
     if (b.on !== undefined) el.setAttribute("aria-pressed", String(!!b.on));
     into.appendChild(el);
   }
+  if (more && !fold().children.length) fold().remove();
+  qsa(".acts", act).forEach(a => { a.style.maxHeight = "none"; a.style.overflowY = "visible"; });   // the card scrolls as one, not a box in it
   placeAct();
 }
 function placeAct() {
-  if (!actXY) return;
-  const sw = stage.clientWidth, sh = stage.clientHeight, pw = act.offsetWidth || 300, ph = act.offsetHeight || 200;
+  if (!actXY || act.hidden) return;
+  act.style.maxHeight = ""; act.style.overflowY = "";
+  const sr = stage.getBoundingClientRect(), sw = stage.clientWidth, sh = stage.clientHeight, sheet = matchMedia("(max-width: 899px)").matches;   // a phone's card is a sheet over the dock (room3d_page.py)
+  let top0 = 12;   // clear of the brand, Plan · Build · Buy and the view's pills
+  for (const el of document.querySelectorAll(".brand, .hnav, .r3d-mini")) { const r = el.getBoundingClientRect(); if (r.height && r.top - sr.top < sh / 3) top0 = Math.max(top0, r.bottom - sr.top + 8); }
+  const fit = room => { if (act.offsetHeight > room) { const cs = getComputedStyle(act); act.style.maxHeight = Math.max(160, room - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)) + "px"; act.style.overflowY = "auto"; } };
+  if (sheet) { fit(act.getBoundingClientRect().bottom - sr.top - top0); return; }
+  fit(sh - 90 - top0);
+  const pw = act.offsetWidth || 300, ph = act.offsetHeight || 200;
   const left = Math.max(12, Math.min(sw - pw - 12, actXY[0] - pw / 2));
-  const below = actXY[1] + 22 + ph < sh - 90, top = below ? actXY[1] + 22 : Math.max(12, actXY[1] - ph - 22);
+  const below = actXY[1] + 22 + ph < sh - 90, top = Math.max(top0, Math.min(sh - 90 - ph, below ? actXY[1] + 22 : actXY[1] - ph - 22));
   act.style.left = left + "px"; act.style.top = top + "px"; act.style.setProperty("--ax", (actXY[0] - left) + "px");
   act.classList.toggle("above", !below);
 }
+addEventListener("resize", () => { if (actId) placeAct(); });
 let actMoreOpen = false;
 function openAct(id, xy) {
   if (popId) closePop(); clearAim();
@@ -389,8 +405,8 @@ if (act) {
     if (d.finplant != null && actId && actId.startsWith("fin:")) { plantSet(actId.split(":")[1], d.finplant || null); renderAct(); return; }   // N5
     if (d.hremove && HIT(d.hremove) && HIT(d.hremove).look) { const r = HIT(d.hremove).look; closeAct(); plantSet(r, null); return; }
     if (d.hremove && HIT(d.hremove) && HIT(d.hremove).add) { const k = d.hremove, ds = DS(); closeAct();   // an added piece: its rows go
-      Promise.all(Object.entries(ds.rows("edits")).filter(([, v]) => v && v.item === k).map(([rid]) => ds.del("edits", rid))).then(() => toast("Taken out")); return; }
-    if (d.hremove) { const k = d.hremove; closeAct(); setPiece(k, "removed", true).then(() => toast(`${HIT(k).n} taken out · Measure, Changed in the 3D, puts it back`)); return; }   // V2.34
+      Promise.all(Object.entries(ds.rows("edits")).filter(([, v]) => v && v.item === k).map(([rid]) => ds.del("edits", rid))).then(() => toast("Removed")); return; }
+    if (d.hremove) { const k = d.hremove; closeAct(); setPiece(k, "removed", true).then(() => toast(`${HIT(k).n} removed · Measure puts it back`)); return; }   // V2.34
     if (d.hturn) { setPiece(d.hturn, "turn", (pieceNow(d.hturn).turn + 1) % 4); return; }   // V2.33: a quarter turn each press
     if (d.hreset) { const k = d.hreset, ds = DS(); if (!ds) return;
       Promise.all(Object.entries(ds.rows("edits")).filter(([, v]) => v && v.item === k && v.field !== "add").map(([rid]) => ds.del("edits", rid))).then(() => { if (actId) renderAct(); }); return; }

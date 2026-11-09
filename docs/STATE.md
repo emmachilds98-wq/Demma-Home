@@ -3,8 +3,8 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V3.22 (9 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
-The version shows faintly by "Demma's Home" top left (V3.16; not on an iPhone SE, too narrow) and in Plan as a refresh button ("V3.22 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V3.23 (9 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
+The version shows faintly by "Demma's Home" top left (V3.16; not on an iPhone SE, too narrow) and in Plan as a refresh button ("V3.23 ↻"): on the home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N46 done V3.04, N48 V3.05, N50 V3.06, N52 V3.07; section 13's N53 V3.08, N54 V3.09, N49 V3.10, N51 V3.11, N47 V3.12, N55 V3.13; section 14: N56 V3.14, N59 V3.15, N60 V3.16, N61 and N62 V3.17, N57 V3.18, N63 V3.19 (one light for the house), N58 V3.21; section 15 (9 Nov, the PC as fluid as the phone, the panels cleaned up): N67 V3.22; N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
 On a weak signal the page opens from the device after 2 s (V3.00, N43, `sw.js`): the new copy is saved for next time, and the version button shows it. The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
@@ -197,6 +197,12 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   before the orbit and Look round's turn); the selected piece is grabbed a finger's width round its outline. A drag off the pieces moves the view.
 - **Checks:** `tools/check_site.py` walks every door, taps pieces and surfaces, tries phones by touch (iPhone 15 Pro, SE, Pixel 7,
   Galaxy S24, iPad Mini) and the computers' widths.
+
+- **The room cards tidied (V3.23, N68, `16_cards.js` `renderAct`/`placeAct`, `23_finish.js` `finBtns`):** every card the same shape:
+  its name, how it is now, its main tray, three buttons, then More ▾ (the other buttons and trays: a wall's curtains, picture, wallpaper
+  and panelling, a ceiling's bulbs and fitting, a floor's rug and plant; Copy, Paste and Changes). A colour or floor card's buttons:
+  Undo, As planned, Hold to compare. A card never runs under the top pills or past the dock: it scrolls inside (phone, SE, laptop, PC).
+  Fewer words: Remove (was Take it out), Change piece, Shades of it, Goes with it, "as planned" for "as drawn".
 
 ## Each round
 1. Read `CLAUDE.md`, `docs/HANDOVER.md`, `docs/REAL_PLAN.md` section 9, this file, `docs/NOTES.md` for the part you touch.
