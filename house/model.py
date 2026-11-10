@@ -2015,39 +2015,50 @@ def piece_shade(o, floor):
     two chairs are two) for the viewer's soft shade round its foot and up the wall beside it (20_go.js pieceShade), worked out once here
     so phones pay nothing. [tag, x0, z0, x1, z1, y0, h]: the tag so it moves with the piece when the client moves it."""
     fy, rects = FLOOR_Y[floor], {}
-    def add(t, x0, y0, z0, x1, y1, z1):
+    def add(t, x0, y0, z0, x1, y1, z1, box=True):
         if t >= 0 and ITEMS.get(o.tags[t], {}).get("kind") in SHADE_KINDS:
-            rects.setdefault(t, []).append([x0, y0, z0, x1, y1, z1])
+            rects.setdefault(t, []).append([x0, y0, z0, x1, y1, z1, box])
     for m, boxes in o.boxes.items():
         if m != "contact" and m not in STRUCTURE:                    # not the secret room's earth or its pier
             for b, t in zip(boxes, o.bt.get(m, [])):
                 add(t, *b)
     for L in o.lathes:
         (cx, y0, cz), r, h = L["c"], max(q[0] for q in L["p"]), max(q[1] for q in L["p"])
-        add(L["t"], cx - r * L["s"][0], y0, cz - r * L["s"][1], cx + r * L["s"][0], y0 + h, cz + r * L["s"][1])
+        add(L["t"], cx - r * L["s"][0], y0, cz - r * L["s"][1], cx + r * L["s"][0], y0 + h, cz + r * L["s"][1], False)
     for P in o.prisms:
         us, vs = [q[0] for q in P["pts"]], [q[1] for q in P["pts"]]
         if P["axis"] == "y":
-            add(P["t"], min(us), P["a"], min(vs), max(us), P["b"], max(vs))
+            add(P["t"], min(us), P["a"], min(vs), max(us), P["b"], max(vs), False)
         elif P["axis"] == "x":
-            add(P["t"], P["a"], min(vs), min(us), P["b"], max(vs), max(us))
+            add(P["t"], P["a"], min(vs), min(us), P["b"], max(vs), max(us), False)
         else:
-            add(P["t"], min(us), min(vs), P["a"], max(us), max(vs), P["b"])
+            add(P["t"], min(us), min(vs), P["a"], max(us), max(vs), P["b"], False)
     for part in o.parts.values():
         for m, boxes in part["out"].boxes.items():
             for b, t in zip(boxes, part["out"].bt.get(m, [])):
                 add(t, *b)
     out = []
     for t, rs in rects.items():
-        groups = []                                                  # the shapes that touch (2 cm) are one piece
-        for r in rs:
-            hit = [g for g in groups if r[0] <= g[3] + 2 and g[0] <= r[3] + 2 and r[2] <= g[5] + 2 and g[2] <= r[5] + 2]
+        # V3.34: the shade follows what stands on the floor, box by box: a box from the floor (a plinth, a carcass, a fridge) at least 10 cm
+        # each way. A run of units round a corner was one rectangle (its bounding box out over the floor), a chair's star base a square
+        # round its castors: pale squares with dark rims in every room. Round and star shapes (lathes, prisms) cast none of their own.
+        foot = [r for r in rs if r[6] and r[1] - fy < 8 and min(r[3] - r[0], r[5] - r[2]) >= 10]
+        groups = []                                                  # the boxes that touch (2 cm) are one piece
+        for r in foot:
+            r = [r[0], r[2], r[3], r[5], [r]]
+            hit = [g for g in groups if r[0] <= g[2] + 2 and g[0] <= r[2] + 2 and r[1] <= g[3] + 2 and g[1] <= r[3] + 2]
             for g in hit:
-                groups.remove(g); r = [min(r[0], g[0]), min(r[1], g[1]), min(r[2], g[2]), max(r[3], g[3]), max(r[4], g[4]), max(r[5], g[5])]
+                groups.remove(g); r = [min(r[0], g[0]), min(r[1], g[1]), max(r[2], g[2]), max(r[3], g[3]), r[4] + g[4]]
             groups.append(r)
-        for x0, y0, z0, x1, y1, z1 in groups:                        # on the floor, as tall as a stool, not a sliver
-            if y0 - fy < 8 and y1 - y0 >= 25 and min(x1 - x0, z1 - z0) >= 10:
-                out.append([t, round(x0, 1), round(z0, 1), round(x1, 1), round(z1, 1), round(fy, 1), round(y1 - y0, 1)])
+        for x0, z0, x1, z1, bs in groups:
+            xs, zs = sorted({v for b in bs for v in (b[0], b[3])}), sorted({v for b in bs for v in (b[2], b[5])})   # how much of its outline it fills
+            cov = sum((xa - xb) * (za - zb) for xb, xa in zip(xs, xs[1:]) for zb, za in zip(zs, zs[1:])
+                      if any(b[0] <= (xb + xa) / 2 <= b[3] and b[2] <= (zb + za) / 2 <= b[5] for b in bs))
+            parts = [(x0, z0, x1, z1)] if cov >= 0.95 * (x1 - x0) * (z1 - z0) else [(b[0], b[2], b[3], b[5]) for b in bs]   # an L: each box its own
+            for a0, c0, a1, c1 in parts:
+                h = max(r[4] for r in rs if r[0] < a1 and a0 < r[3] and r[2] < c1 and c0 < r[5]) - fy
+                if h >= 25:
+                    out.append([t, round(a0, 1), round(c0, 1), round(a1, 1), round(c1, 1), round(fy, 1), round(h, 1)])
     o.shade = out
 
 

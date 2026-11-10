@@ -440,7 +440,7 @@ function pieceShadeMat() {   // houseShade's kind of material (the same shader),
   m.clippingPlanes = []; return m;
 }
 function pieceShade(F, mat) {
-  const rooms = Object.values(R.HOUSE3.rooms || {}), pos = [], uv = [], U = [[0, 0], [1, 0], [1, 1], [0, 1]];   // v 0 (the canvas's dark top, as CanvasTexture turns it) at the piece
+  const rooms = Object.values(R.HOUSE3.rooms || {}), pos = [], uv = [], U = [[0, 1], [1, 1], [1, 0], [0, 0]];   // V3.34: v 1 (the canvas's dark top: CanvasTexture flips it, as houseShade's) at the piece; it was v 0, the shade dark at its far edge, a pale square with a dark rim round every piece
   const quad = P => { for (const i of [0, 1, 2, 0, 2, 3]) { const q = v3(...P[i]); pos.push(q.x, q.y, q.z); uv.push(U[i][0], U[i][1]); } };
   for (const [, x0, z0, x1, z1, y0, h] of F.shade || []) {
     const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, g = Math.max(5, Math.min(11, Math.min(x1 - x0, z1 - z0) * 0.22)), y = y0 + 0.35, hb = Math.min(h, 210);
