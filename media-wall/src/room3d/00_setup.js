@@ -71,7 +71,10 @@ DEF.lamp = R.LAMP_DEFAULT || "sofa";
    other choice is an option to look at */
 if (R.FIRM) { DEF.sugg = Object.fromEntries(R.FIRM.sugg.map(k => [k, true])); DEF.svar = Object.assign({}, R.FIRM.svar);
   DEF.beside = R.FIRM.beside; DEF.cabw = R.FIRM.cabw; DEF.decor = Object.assign({}, DEF.decor, R.FIRM.decor);
-  DEF.ideas = Object.fromEntries((R.FIRM.ideas || []).map(k => [k, true])); }   // v43: the C-table is in the plan   // v18: the window corner holds the plant stand or the record shelf   // v16: the table by the stairs by default; the laser off
+  DEF.ideas = Object.fromEntries((R.FIRM.ideas || []).map(k => [k, true])); }
+/* N99, the client (10 Nov 2026): "The stairwell curtains are also missing I want them there just with the ability to draw them open and
+   edit them": the stair curtain is up by default, drawn back so the stairs stay open to walk and see; its card draws it across, a colour */
+if (R.STAIR_CURTAIN) { DEF.sugg.stairscurtain = true; DEF.scopen = true; }   // v43: the C-table is in the plan   // v18: the window corner holds the plant stand or the record shelf   // v16: the table by the stairs by default; the laser off
 const KEY = "mw18-3d";
 const S = Object.assign({}, DEF, store.get(KEY, {}));
 if (!S.open147) { S.curtains = false; S.blinds = false; S.open147 = true; }   // V1.47, the client: "pull blinds up and open curtains in all rooms": once, whatever was saved
@@ -84,6 +87,8 @@ if (!S.v51) {   // v51, client: their phone plan is the main plan, "Switch to th
   S.v51 = 1; S.paint = "mint"; S.walls = {}; S.ceil = "match"; S.skirt = "match"; S.ideas = Object.assign({}, S.ideas, DEF.ideas); }
 if (!S.v314) {  // V3.14, client: "It's now definite I also want the plant shelf on the chimney breast and records on the left of the living room window": once, a saved room moves to it
   S.v314 = 1; S.plants = DEF.plants; for (const k of ["plants", "records"]) if (S.layout && S.layout[k]) delete S.layout[k]; if (S.sugg) S.sugg.alcoveshelves = false; }
+if (!S.scback && R.STAIR_CURTAIN) {   // N99: once, a saved room gets the stair curtain back, drawn open
+  S.scback = 1; S.sugg = Object.assign({}, S.sugg, { stairscurtain: true }); S.scopen = true; }
 if (!S.v50) {   // v50, client: "make the natural default light a bit cosier and less overly light washed": once, a saved room moves to the new Evening
   S.v50 = 1; S.scene = "evening"; S.lv = null; S.master = 100; S.warm = DEF.warm; }
 
