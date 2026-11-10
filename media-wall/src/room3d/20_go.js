@@ -395,13 +395,22 @@ function houseShade(H3, m3) {
   const mesh = (pos, uv, mat, into) => { if (!pos.length) return; const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); g.computeVertexNormals();
     const me = new THREE.Mesh(g, mat); me.raycast = () => {}; me.renderOrder = 1; into.add(me); };
+  /* V3.35, the client: "obscure squares / lines" up the stairs: a band whose strip crosses a stairwell's opening (no floor, or no ceiling,
+     there: model.stair_wells) hung in the air over the flight; each edge keeps only its parts clear of them */
+  const WL = H3.wells || { floor: [], ceil: [] };
+  const clear = (holes, y, a, b, n, w) => { const ax = n[0] === 0, k = ax ? 0 : 1, c = 1 - k, lo = Math.min(a[c], a[c] + n[c] * w), hi = Math.max(a[c], a[c] + n[c] * w);
+    let seg = [[Math.min(a[k], b[k]), Math.max(a[k], b[k])]];
+    for (const h of holes || []) { if (Math.abs(h[4] - y) > 2) continue; const [h0, h1] = ax ? [h[0], h[1]] : [h[2], h[3]], [c0, c1] = ax ? [h[2], h[3]] : [h[0], h[1]];
+      if (hi > c0 + 0.5 && lo < c1 - 0.5) seg = seg.flatMap(([s0, s1]) => [[s0, Math.min(s1, h0)], [Math.max(s0, h1), s1]]).filter(([s0, s1]) => s1 - s0 > 2); }
+    const pt = v => ax ? [v, a[1]] : [a[0], v];
+    return seg.map(([s0, s1]) => b[k] >= a[k] ? [pt(s0), pt(s1)] : [pt(s1), pt(s0)]); };
   const FK = { "-260": "lower", "0": "ground", "260": "first" }, per = {};
   for (const r of Object.values(H3.rooms || {})) {
     const fk = FK[String(r[4])]; if (!fk || !HFLOOR[fk]) continue;
     const [x0, x1, z0, z1, fy] = r, W = Math.min(26, (x1 - x0) / 3, (z1 - z0) / 3), P = per[fk] = per[fk] || { f: [[], []], c: [[], []] };
     const edges = [[[x0, z0], [x1, z0], [0, 1]], [[x1, z1], [x0, z1], [0, -1]], [[x0, z1], [x0, z0], [1, 0]], [[x1, z0], [x1, z1], [-1, 0]]];
-    for (const [a, b, n] of edges) band(P.f[0], P.f[1], a, b, n, fy + 0.3, W, true);
-    if (fk !== "first") for (const [a, b, n] of edges) band(P.c[0], P.c[1], a, b, n, fy + (H3.ceil || 235) - 0.3, W * 0.8, false);   // flat ceilings (the first floor's: below)
+    for (const [a, b, n] of edges) for (const [p, q] of clear(WL.floor, fy, a, b, n, W)) band(P.f[0], P.f[1], p, q, n, fy + 0.3, W, true);
+    if (fk !== "first") for (const [a, b, n] of edges) for (const [p, q] of clear(WL.ceil, fy + (H3.ceil || 235), a, b, n, W * 0.8)) band(P.c[0], P.c[1], p, q, n, fy + (H3.ceil || 235) - 0.3, W * 0.8, false);   // flat ceilings (the first floor's: below)
   }
   for (const [fk, P] of Object.entries(per)) { mesh(P.f[0], P.f[1], matF, HFLOOR[fk]); mesh(P.c[0], P.c[1], matC, fk === "lower" ? HFLOOR.ground : HFLOOR[fk] === HFLOOR.ground ? (HFLOOR.first || HFLOOR.ground) : HFLOOR[fk]); }
   if (H3.shade_ceil && HFLOOR.first) {   // V1.39 (Next 5): the first floor's ceiling where it's flat along the walls, the back slope's crease, the dormer's sides (model.ceiling_shade)
@@ -522,7 +531,9 @@ function buildHouse() {
        outlines share: none, always drawn). A floor's mesh of a material keeps each room's pieces together, in the rooms' order, each
        room's span noted (userData.rooms: [room, first, count]), so standing in a room the rest can be left out (09 roomCull) */
     const RVOL = Object.entries(H3.rooms || {}).map(([id, r], i) => [id, r[0] - 1, r[1] + 1, r[4] - 2, r[4] + (r[4] >= 260 ? 420 : (H3.ceil || 235) + 2), r[2] - 1, r[3] + 1, i + 1]);
+    const FLIGHT = ((H3.wells || {}).flight || []).map(f => Object.assign([...f], { V: RVOL.find(V => V[0] === "lower_stairs") })).filter(f => f.V);
     const roomOf = q => { if (!q.boundingBox) q.computeBoundingBox(); const b = q.boundingBox, x0 = -b.max.x / M, x1 = -b.min.x / M, y0 = b.min.y / M, y1 = b.max.y / M, z0 = b.min.z / M, z1 = b.max.z / M;
+      for (const F of FLIGHT) if (x0 >= F[0] - 1 && x1 <= F[1] + 1 && z0 >= F[2] - 1 && z1 <= F[3] + 1 && y0 >= F[4] - 2 && y0 < F[4] + 260 && y1 <= F[4] + 360) return F.V;   // V3.35: the lower flight's treads and rail are the lower stairs' (inside the store's outline, they went with it)
       let hit = null; for (const V of RVOL) if (x0 >= V[1] && x1 <= V[2] && y0 >= V[3] && y1 <= V[4] && z0 >= V[5] && z1 <= V[6]) { if (hit) return null; hit = V; } return hit; };
     const put = (g, geos, m, part) => { if (!geos.length) return;
       if (geos.some(q => q.index) && geos.some(q => !q.index)) geos = geos.map(q => { if (!q.index) return q; const u = q.toNonIndexed(); q.dispose(); return u; });   // V2.98 (N37): boxes with profiles or turned shapes in one draw
