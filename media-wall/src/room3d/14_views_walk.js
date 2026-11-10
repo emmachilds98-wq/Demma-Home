@@ -288,10 +288,10 @@ function warmAt(key, go, back) {   // a visit off screen: go there, ask for the 
   const was = gl.getRenderTarget(), su = gl.shadowMap.needsUpdate;
   if (!PRE.rt) { PRE.rt = new THREE.WebGLRenderTarget(1, 1); PRE.rt.isXRRenderTarget = true; PRE.rt.texture.colorSpace = gl.outputColorSpace; }
   if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
-  let job = Promise.resolve();
-  try { go(); gl.setRenderTarget(postLive() ? PRE.rtAO : PRE.rt); job = capWait(compileClipped(camera, true)); }
+  let job = Promise.resolve(); const vis = [];
+  try { go(); scene.traverseVisible(o => { if (o.isMesh) vis.push(o); }); gl.setRenderTarget(postLive() ? PRE.rtAO : PRE.rt); job = capWait(compileClipped(camera, true)); }
   finally { gl.setRenderTarget(was); back(); gl.shadowMap.needsUpdate = su; }
-  WARMP.set(key + S.quality, job); WARMB = job; job.then(() => { if (WARMB === job) WARMB = null; });   // V3.23: the build's promise, so a room can wait for it
+  WARMP.set(key + S.quality, job); WARMB = job; job.then(() => { if (WARMB === job) WARMB = null; geoWarm(vis); });   // V3.51 (N103): then its shapes   // V3.23: the build's promise, so a room can wait for it
   dirty(); return true;
 }
 /* V3.23, the client 9 Nov 2026: "i want pc to be better ... it is still clunky i want fluid like the mobile version". Measured on her
