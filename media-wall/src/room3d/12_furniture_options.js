@@ -61,7 +61,7 @@ function warmColour() { const w = Math.max(0, Math.min(100, S.warm ?? 50)) / 50;
 function envLevels(day) {
   const own = ENV.tex && scene.environment === ENV.tex, g = own ? ENV.gain : 1;
   if (winGlass) { winGlass.userData.envK = day ? 0.4 : 1.2; winGlass.opacity = day ? 0.06 : 0.1; }
-  glassAll();   // V3.51 (N103): the house's windows by the time of day
+  glassAll();   // V3.52 (N104): the house's windows by the time of day
   MATS.forEach(m => { if (!("envMapIntensity" in m)) return;
     if (m.userData.envK === undefined) m.userData.envK = m.roughness < 0.25 ? 2.4 : m.roughness < 0.5 ? 1.5 : m.roughness > 0.85 ? 0.7 : 1;
     m.envMapIntensity = (day ? 0.16 : 0.12) * m.userData.envK * g; });   // v50: day 0.25 → 0.16, less washed

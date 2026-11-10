@@ -143,7 +143,7 @@ function houseEnv() {
 }
 const finishEnv = m => m.userData.hk === "glass" ? (S.tod === "day" ? 0.3 : 0.75) : m.userData.hk === "screen" ? 0.18 : m.roughness <= 0.3 ? 0.9 : m.roughness <= 0.6 ? 0.6 : 0.45;   // v72 (B3): gloss, satin, matt; V3.32 (N82): a screen that's off dark glass, as the living room's TV (the bright stock room in it read as a whiteboard)
 let HENVK = 1;
-/* V3.51 (N103): the windows' glass by the time of day. Frosted (the bathroom's, the WC's) glows with the daylight through it, as the
+/* V3.52 (N104): the windows' glass by the time of day. Frosted (the bathroom's, the WC's) glows with the daylight through it, as the
    photo, instead of showing the garden misted; by evening it's dark frosted glass with the room's light on it (it was flat navy).
    Clear glass by evening catches more of the room, as a real pane at night. Colours and strengths only: no shader built */
 function glassTod(m) {
