@@ -469,6 +469,43 @@ def contrast():
     (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
 
 
+def flakes():
+    """python3 house/textures/build_textures.py --flakes   V3.50 (N102): the garage's chipboard box read as flat tan card: pressed wood
+    chips, a few mm each, light and dark, lying every way, a hair of relief between them (map, relief, roughness: the marble's mix)"""
+    import numpy as np
+    from PIL import ImageDraw, ImageFilter
+    meta = json.loads((HERE / "textures.json").read_text())
+    key, size, px = "chipboard", 0.6, 512
+    rng = np.random.default_rng(99)
+    tone = Image.new("L", (px, px), 128); hgt = Image.new("L", (px, px), 0)
+    dt, dh = ImageDraw.Draw(tone), ImageDraw.Draw(hgt)
+    for _ in range(26000):                                                    # the chips, smallest last so they lie on top
+        x, y = rng.random(2) * px; L = rng.uniform(1.5, 7.0); W = L * rng.uniform(0.15, 0.4); a = rng.random() * np.pi
+        c, s_ = np.cos(a), np.sin(a)
+        pts = [(x + c * u - s_ * v, y + s_ * u + c * v) for u, v in ((-L, -W), (L, -W), (L, W), (-L, W))]
+        t = int(np.clip(rng.normal(128, 34) - (60 if rng.random() < 0.08 else 0), 10, 240)); h = int(rng.uniform(60, 255))   # one in twelve a dark bark chip
+        for ox in (-px, 0, px):                                               # drawn again across each edge: it tiles
+            for oy in (-px, 0, px):
+                q = [(u + ox, v + oy) for u, v in pts]
+                dt.polygon(q, fill=t); dh.polygon(q, fill=h)
+    t = np.asarray(tone, np.float32) / 128 - 1
+    t = t * 0.2 + 0.05 * (fbm(px, 98, 3, 3) - 0.5)                           # each chip ±20 %, a slow cloud over the sheet
+    base = np.array([200, 173, 128], np.float32)                              # MATS chipboard
+    col_ = base[None, None] * (1 + t)[..., None]
+    col_ = col_ * (1 - 0.35 * np.clip(-t, 0, None))[..., None] + np.clip(-t, 0, None)[..., None] * np.array([-18, -10, 0], np.float32)   # the dark chips browner
+    cm = size * 100 / px
+    h = np.asarray(hgt.filter(ImageFilter.GaussianBlur(0.4)), np.float32) / 255 * 0.02
+    gy, gx = np.gradient(h, cm)
+    nrm = np.dstack([-gx, gy, np.ones_like(h)]); nrm /= np.linalg.norm(nrm, axis=-1, keepdims=True)
+    r = 0.85 + (np.asarray(hgt, np.float32) / 255 - 0.6) * 0.12
+    Image.fromarray(np.clip(col_, 0, 255).astype("uint8")).save(HERE / f"{key}_map.jpg", quality=84, optimize=True)
+    Image.fromarray(((nrm + 1) * 127.5).clip(0, 255).astype("uint8")).save(HERE / f"{key}_nor.jpg", quality=84, optimize=True)
+    Image.fromarray((np.clip(r, 0, 1) * 255).astype("uint8")).resize((px // 2,) * 2, Image.BOX).save(HERE / f"{key}_rough.jpg", quality=80)
+    meta[key] = {"asset": "made by build_textures.flakes", "size": size, "url": "", "licence": "ours"}
+    (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
+    print("flakes", key)
+
+
 def share(meta):
     """V2.81 (N32): a picture an earlier key has already (the two carpets' pile, the pines' relief) goes once: the later key drops its copy
     and says like=<key> (export3d reads that key's file for any it lacks; only when it lacks nothing else that key has); then textures.json"""
@@ -496,4 +533,4 @@ def slim():
 
 
 if __name__ == "__main__":
-    {"--buff": buff, "--rough": rough, "--tiles": tiles, "--finishes": finishes, "--floors": floors, "--slim": slim, "--seams": seams, "--polish": polish, "--contrast": contrast}.get((sys.argv[1:] or [""])[0], lambda: main(sys.argv[1]))()
+    {"--buff": buff, "--rough": rough, "--tiles": tiles, "--finishes": finishes, "--floors": floors, "--slim": slim, "--seams": seams, "--polish": polish, "--contrast": contrast, "--flakes": flakes}.get((sys.argv[1:] or [""])[0], lambda: main(sys.argv[1]))()
