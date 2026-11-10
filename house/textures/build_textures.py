@@ -327,7 +327,7 @@ def finishes():
 # porcelain (in TILED): 120 × 60 stone-effect porcelain, 2 mm grout, half-bond
 UPFLOORS = {"herring": (2 * 0.09 * 5 * 2 ** 0.5, 1024, "herring", (9, 45), (0.7, 1.12, -4)),
             "lvt_grey": (7 * 0.178, 1024, "planks", (17.8, 124.6), (0.12, 1.12, -6)),
-            "board": (1.2, 512, "boards", (15, 120), (0.35, 1.25, 2))}   # V3.52 (N104): the stores' and cupboards' floorboards (a drawn canvas): 15 cm pine-pale boards
+            "board": (1.2, 512, "boards", (15, 120), (0.35, 1.25, 2))}   # V3.53 (N105): the stores' and cupboards' floorboards (a drawn canvas): 15 cm pine-pale boards
 
 
 def floors():
