@@ -215,5 +215,11 @@
   "size": 0.6,
   "url": "",
   "licence": "ours"
+ },
+ "chipboard": {
+  "asset": "made by build_textures.flakes",
+  "size": 0.6,
+  "url": "",
+  "licence": "ours"
  }
 }
