@@ -90,7 +90,8 @@
   "asset": "white_maple_veneer",
   "size": 0.8,
   "url": "https://polyhaven.com/a/white_maple_veneer",
-  "licence": "CC0"
+  "licence": "CC0",
+  "contrast": 3.0
  },
  "oak": {
   "asset": "oak_veneer_01",
@@ -205,6 +206,12 @@
  "porcelain": {
   "asset": "made by build_textures.tiles",
   "size": 2.4,
+  "url": "",
+  "licence": "ours"
+ },
+ "tile_w": {
+  "asset": "made by build_textures.tiles",
+  "size": 0.6,
   "url": "",
   "licence": "ours"
  }

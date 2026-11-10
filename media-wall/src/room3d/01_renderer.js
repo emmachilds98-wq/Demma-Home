@@ -8,7 +8,7 @@ try {
   msg.innerHTML = 'Your browser can’t show the 3D room here (no WebGL). The <a href="#views" data-go="views">drawn views</a> show every option.';
   throw e;
 }
-gl.debug.checkShaderErrors = !!navigator.webdriver || /[?&]debug\b/.test(location.search);   // V3.43 (N95), the client 10 Nov 2026: "smooth motion like im there when walking through the house": each new shader asked the graphics card for its error log, a wait of its own; the checks (and CI) keep it, ?debug too
+gl.debug.checkShaderErrors = !!navigator.webdriver || /[?&]debug\b/.test(location.search);   // V3.44 (N96), the client 10 Nov 2026: "smooth motion like im there when walking through the house": each new shader asked the graphics card for its error log, a wait of its own; the checks (and CI) keep it, ?debug too
 gl.outputColorSpace = THREE.SRGBColorSpace;
 gl.toneMapping = THREE.AgXToneMapping;   // v44: AgX over ACES: the wall reads nearer Card Room Green and the glass case and window keep their highlights
 /* v39, client: "PC should be using GPU in order to speed up and keep frames high since most PCs will have 1060 or higher": the renderer
