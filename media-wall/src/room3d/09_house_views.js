@@ -111,7 +111,7 @@ function placeRoomLights() {
   sun.target.updateMatrixWorld();
   reshadow();
 }
-/* V3.40 (N91), the client: "lighting should stay the same in every room to stop transition changes": walking through a door, the lights
+/* V3.40 (N92), the client: "lighting should stay the same in every room to stop transition changes": walking through a door, the lights
    the room sets (its ceiling light, its windows', the fills, the sun) ease to the next room's over half a second instead of jumping. Any
    new value set while you walk or fly is taken as the target, the light shown going there; still pictures and the controls set at once */
 const LEASE = new Map();
