@@ -326,7 +326,8 @@ def finishes():
 # lvt_grey: grey oak LVT planks 17.8 wide, micro-bevelled, ends staggered (each 124.6 long, 2% over 121.9, so the picture repeats in 7 rows);
 # porcelain (in TILED): 120 × 60 stone-effect porcelain, 2 mm grout, half-bond
 UPFLOORS = {"herring": (2 * 0.09 * 5 * 2 ** 0.5, 1024, "herring", (9, 45), (0.7, 1.12, -4)),
-            "lvt_grey": (7 * 0.178, 1024, "planks", (17.8, 124.6), (0.12, 1.12, -6))}
+            "lvt_grey": (7 * 0.178, 1024, "planks", (17.8, 124.6), (0.12, 1.12, -6)),
+            "board": (1.2, 512, "boards", (15, 120), (0.35, 1.25, 2))}   # V3.53 (N105): the stores' and cupboards' floorboards (a drawn canvas): 15 cm pine-pale boards
 
 
 def floors():
@@ -498,7 +499,7 @@ def flakes():
     gy, gx = np.gradient(h, cm)
     nrm = np.dstack([-gx, gy, np.ones_like(h)]); nrm /= np.linalg.norm(nrm, axis=-1, keepdims=True)
     r = 0.85 + (np.asarray(hgt, np.float32) / 255 - 0.6) * 0.12
-    Image.fromarray(np.clip(col_, 0, 255).astype("uint8")).save(HERE / f"{key}_map.jpg", quality=84, optimize=True)
+    Image.fromarray(np.clip(col_, 0, 255).astype("uint8")).save(HERE / f"{key}_map.jpg", quality=78, optimize=True)
     Image.fromarray(((nrm + 1) * 127.5).clip(0, 255).astype("uint8")).save(HERE / f"{key}_nor.jpg", quality=84, optimize=True)
     Image.fromarray((np.clip(r, 0, 1) * 255).astype("uint8")).resize((px // 2,) * 2, Image.BOX).save(HERE / f"{key}_rough.jpg", quality=80)
     meta[key] = {"asset": "made by build_textures.flakes", "size": size, "url": "", "licence": "ours"}
