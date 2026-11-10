@@ -50,6 +50,7 @@ function outdoor() {
     buildBeyond(null, g);                                                                           // V1.4: the hill opposite
     scene.add(g);
   }
+  if (OUT.ground && !OUT.street) OUT.street = buildStreet(OUT.ground);   // V3.44 (N81): the street out front (with the house's materials, once they're made)
   if (house && !OUT.skyEnv) {   // V1.13 (QUALITY_PLAN Q3): outside, the house reflects its own sky: an environment made from a sky like the
     // one shown, at the room reflection's size (so swapping them rebuilds no shaders), once
     const pm = new THREE.PMREMGenerator(gl), sk = new Sky(), sc = new THREE.Scene(), u = sk.material.uniforms, u0 = OUT.sky.material.uniforms;
