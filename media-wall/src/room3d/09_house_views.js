@@ -111,6 +111,24 @@ function placeRoomLights() {
   sun.target.updateMatrixWorld();
   reshadow();
 }
+/* V3.40 (N92), the client: "lighting should stay the same in every room to stop transition changes": walking through a door, the lights
+   the room sets (its ceiling light, its windows', the fills, the sun) ease to the next room's over half a second instead of jumping. Any
+   new value set while you walk or fly is taken as the target, the light shown going there; still pictures and the controls set at once */
+const LEASE = new Map();
+function lightEase() {
+  const now = performance.now(), go = LIVE && ((typeof walking === "function" && walking()) || !!tween);
+  let busy = false;
+  for (const l of [...ROOMLIGHTS, ...WINLIGHTS, hemi, skyFill, sun]) { if (!l) continue;
+    let e = LEASE.get(l); if (!e) LEASE.set(l, e = { shown: l.intensity, from: l.intensity, to: l.intensity, t0: 0 });
+    const v0 = l.intensity;
+    if (v0 !== e.shown) {   // a new value was set: a real change eases (while walking or flying); a small one, or the same set again, is taken as it is
+      if (go && Math.abs(v0 - e.to) > 0.05 * Math.max(Math.abs(v0), Math.abs(e.to), 0.05)) { e.from = e.shown; e.t0 = now; } else if (!go) e.t0 = 0;
+      e.to = v0; }
+    const k = go ? Math.min(1, (now - e.t0) / 450) : 1, v = k >= 1 ? e.to : e.from + (e.to - e.from) * k * k * (3 - 2 * k);
+    l.intensity = e.shown = v; if (k < 1) busy = true; }
+  if (busy) dirty();   // only while an ease runs (under half a second): the pauses stay free for the warm-up
+}
+scene.onBeforeRender = lightEase;
 /* v69 (B3) had each room's own reflections caught when you entered it (a cube camera round the whole scene, then every house material
    recompiled). v73, the client: "consistent crashing on PC when accessing rooms": that froze the page for seconds each time (and leaked
    a texture a visit), long enough for a PC's graphics driver to give up; phones never ran it. Now one neutral room reflection, made once,

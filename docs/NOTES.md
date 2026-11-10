@@ -138,3 +138,4 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   outline, so the house file's `wells.flight` claims it for the lower stairs (V3.37). Anything drawn per room edge (`houseShade`'s bands)
   must skip the stairwells' openings (`wells.floor`, `wells.ceil`), or it hangs in the air. In the living room's view the house under the
   landing's floor over the room is cut away (`09` `livClip`) except `stairpaint`: a piece that must show there takes that material.
+- **The rooms' light by their size** (`09` `placeRoomLights` `ks`, 0.75 to 1.3): it evens how bright the rooms look (one strength for all made the small rooms brighter and the spread wider, N92). Change a light's intensity freely: `lightEase` eases it while walking; it reads `l.intensity` as the target, so never `*=` a room light.
