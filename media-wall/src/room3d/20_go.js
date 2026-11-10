@@ -94,6 +94,13 @@ function finish(room, surface, hex) {   // R3D.finish: a room's walls (or one si
     if (c) { d[i] = Math.round(Math.min(1, c.r) * 255); d[i + 1] = Math.round(Math.min(1, c.g) * 255); d[i + 2] = Math.round(Math.min(1, c.b) * 255); d[i + 3] = 255; } else d[i + 3] = 0; }
   FIN.pal.needsUpdate = true; dirty(); return true;
 }
+/* V3.44 (N96): the black things (the desk chairs, the stools, the monitors' backs, the handles) drew near pure black in every room, their
+   shapes lost: a plain colour darker than #383838 is raised to it, its hue kept (black still black, its form now reads in the light). A
+   screen, the glass and the shade where things meet stay as they are */
+const BLACK_MIN = 0x38 / 255, BLACK_KEEP = new Set(["contact", "screen", "glass_dark", "pc_glow", "led"]);
+function liftBlack(c) { const t = {}; c.getRGB(t, THREE.SRGBColorSpace); const mx = Math.max(t.r, t.g, t.b); if (mx >= BLACK_MIN) return c;
+  if (mx < 1e-3) return c.setRGB(BLACK_MIN, BLACK_MIN, BLACK_MIN, THREE.SRGBColorSpace);
+  const f = BLACK_MIN / mx; return c.setRGB(t.r * f, t.g * f, t.b * f, THREE.SRGBColorSpace); }
 function houseTex(k) {
   if (k in HTEX) return HTEX[k];
   if (k === "paint") return (HTEX[k] = null);
@@ -302,6 +309,68 @@ function buildBeyond(grp, land) {
       pts.forEach((p, i) => { o.position.copy(p); o.rotation.set((rnd() - 0.5) * 1.2, rnd() * Math.PI * 2, (rnd() - 0.5) * 1.2); o.scale.setScalar(2.4 + rnd() * 1.6); o.updateMatrix(); im.setMatrixAt(i, o.matrix); });
       im.raycast = () => {}; land.add(im); }
   }
+}
+/* V3.44 (N81), the client: "improve the graphics quality of other rooms to match like the living room": out of the front rooms' windows
+   the land ran flat and green to the sky. Now a street: the road and its pavements both ways, and across it a row of brick terraces
+   (front gardens, low walls, white windows, doors, tiled roofs, chimneys, lamp posts). A stand-in, not the real street (no address, no
+   photo of it): it changes when the client says what's across the road. One draw a finish; every finish a photo and its relief on the
+   ground's own shader (map and relief, both sides, no cut), so no shader of its own */
+function buildStreet(land) {
+  const H = R.HOUSE3; if (!land || !H || H.front == null || !FIN.mat3) return false;
+  const dr = H.drive ?? -15, zf = H.front, zr0 = zf + 750, zr1 = zf + 1250, zp = zr1 + 200, zF = zp + 550, DEP = 800, EAVE = dr + 520, RIDGE = dr + 790;
+  const X0 = -4200, X1 = 5600, by = {}, put = (k, g) => (by[k] = by[k] || []).push(g);
+  const box = (k, x0, y0, z0, x1, y1, z1) => { const g = new THREE.BoxGeometry(Math.abs(x1 - x0) * M, Math.abs(y1 - y0) * M, Math.abs(z1 - z0) * M);
+    const c = v3((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2); g.translate(c.x, c.y, c.z); put(k, g); };
+  const tri = (k, pts, out) => {   // a flat face from house points (a triangle or a quad), its normal the way of out (house x, y, z)
+    const P = pts.map(p => v3(...p)), n = new THREE.Vector3().subVectors(P[1], P[0]).cross(new THREE.Vector3().subVectors(P[2], P[0])).normalize(), o = v3(...out).normalize();
+    if (n.dot(o) < 0) n.negate();
+    const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(P.flatMap(p => [p.x, p.y, p.z]), 3));
+    g.setAttribute("normal", new THREE.Float32BufferAttribute(P.flatMap(() => [n.x, n.y, n.z]), 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(P.flatMap(() => [0, 0]), 2));
+    g.setIndex(P.length === 4 ? [0, 1, 2, 0, 2, 3] : [0, 1, 2]); put(k, g); };
+  let sd = 4517; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+  // the road and our side's pavement on past our plot, the kerbs, the far pavement
+  box("road", X0, dr - 6, zr0, X1, dr - 2, zr1);
+  box("paving", X0, dr - 6, zf + 550, X1, dr + 1, zr0); box("paving", X0, dr - 6, zr1, X1, dr + 1, zp);
+  box("kerb", X0, dr - 6, zr0 - 15, X1, dr + 2, zr0); box("kerb", X0, dr - 6, zr1, X1, dr + 2, zr1 + 15);
+  // across the road: terraces of four, each house 500 wide, a gap between the blocks
+  for (let b0 = X0 + 200; b0 + 2000 <= X1; b0 += 2450) {
+    const b1 = b0 + 2000, brick = rnd() < 0.5 ? "brick" : "brick2";
+    box(brick, b0, dr - 6, zF, b1, EAVE, zF + DEP);
+    for (const x of [b0, b1]) tri(brick, [[x, EAVE, zF], [x, RIDGE, zF + DEP / 2], [x, EAVE, zF + DEP]], [x === b0 ? -1 : 1, 0, 0]);   // the gables
+    const yE = EAVE - 12, zA = zF - 30, zB = zF + DEP + 30, xa = b0 - 15, xb = b1 + 15;
+    tri("roof", [[xa, yE, zA], [xb, yE, zA], [xb, RIDGE, zF + DEP / 2], [xa, RIDGE, zF + DEP / 2]], [0, 1, -1]);
+    tri("roof", [[xa, yE, zB], [xb, yE, zB], [xb, RIDGE, zF + DEP / 2], [xa, RIDGE, zF + DEP / 2]], [0, 1, 1]);
+    box("frame", xa, yE - 18, zA - 2, xb, yE + 4, zA + 6);                                                       // the fascia and gutter
+    for (let i = 0; i < 4; i++) {
+      const a = b0 + i * 500, flip = i % 2 === 1, X = u => flip ? a + 500 - u : a + u;   // pairs mirrored: doors side by side
+      if (i > 0 && i % 2 === 0) box(brick, a - 30, RIDGE - 40, zF + DEP / 2 - 45, a + 30, RIDGE + 110, zF + DEP / 2 + 45);   // a chimney on the party wall
+      const win = (u0, u1, y0, y1) => { const x0 = Math.min(X(u0), X(u1)), x1 = Math.max(X(u0), X(u1));
+        box("frame", x0, y0, zF - 5, x1, y1, zF); box("pane", x0 + 7, y0 + 7, zF - 6, x1 - 7, y1 - 7, zF - 5);
+        const m = (x0 + x1) / 2; box("frame", m - 3, y0, zF - 8, m + 3, y1, zF - 5);
+        box("kerb", x0 - 6, y0 - 7, zF - 10, x1 + 6, y0, zF); };
+      win(60, 250, dr + 90, dr + 215); win(60, 250, dr + 330, dr + 450); win(320, 450, dr + 330, dr + 450);
+      const d0 = Math.min(X(345), X(440)), d1 = Math.max(X(345), X(440));
+      box(rnd() < 0.5 ? "door" : "door2", d0, dr, zF - 4, d1, dr + 205, zF); box("frame", d0 - 6, dr, zF - 5, d1 + 6, dr + 211, zF - 3);
+      box("frame", d0 - 25, dr + 225, zF - 70, d1 + 25, dr + 233, zF);                                            // the canopy over the door
+      box("kerb", d0 - 10, dr - 6, zp, d1 + 10, dr + 1, zF);                                                      // the path
+      const w0 = Math.min(X(0), X(320)), w1 = Math.max(X(0), X(320)), hedge = rnd() < 0.4;                     // the garden's wall or hedge
+      if (hedge) box("hedge", w0 + 10, dr - 2, zp + 15, w1 - 10, dr + 95, zp + 70); else { box(brick, w0, dr - 2, zp, w1, dr + 55, zp + 23); box("kerb", w0 - 2, dr + 55, zp - 2, w1 + 2, dr + 61, zp + 25); }
+    }
+  }
+  for (let x = X0 + 900; x < X1; x += 3000) {   // lamp posts on the far pavement
+    box("post", x - 6, dr, zr1 + 45, x + 6, dr + 620, zr1 + 57); box("post", x - 5, dr + 608, zr1 - 60, x + 5, dr + 618, zr1 + 57); box("lamp", x - 14, dr + 596, zr1 - 75, x + 14, dr + 608, zr1 - 30); }
+  /* each finish the house's own material (a copy, its colour tinted where said, uncut): its program already built, so the street adds
+     none (the phone's first picture has no shader to spare) */
+  const FIN_ = { road: ["road"], paving: ["paving"], kerb: ["concrete"], brick: ["brick"], brick2: ["brick_buff"], roof: ["tile"], frame: ["upvc"], pane: ["pane"],
+    door: ["door_out", "#3c4a5c"], door2: ["door_out", "#6b2a2a"], hedge: ["ivy"], post: ["steel_dark"], lamp: ["upvc", "#fff3dd"] };
+  const g = new THREE.Group(); g.name = "street";
+  for (const [k, L] of Object.entries(by)) {
+    const [hk, col] = FIN_[k], src = FIN.mat3(hk), geo = mergeGeometries(L); L.forEach(q => q.dispose());
+    worldUV(geo, hk);
+    const mt = reg(src.clone()); mt.onBeforeCompile = src.onBeforeCompile; mt.customProgramCacheKey = src.customProgramCacheKey; mt.userData = { street: k };
+    if (col) mt.color.set(col); houseClip(mt, [], false); if (k === "road") { mt.polygonOffset = true; mt.polygonOffsetFactor = 2; mt.polygonOffsetUnits = 2; }
+    const m = new THREE.Mesh(geo, mt); m.receiveShadow = true; m.raycast = () => {}; m.name = "street_" + k; g.add(m); }
+  land.add(g); return true;
 }
 /* V1.6: the things in the gardens (survey_data.GARDEN_THINGS, from the view photos): ours (the round table and its chairs, with Gardens)
    and next door's (the trampoline, the sheds, with Next door); and for the living room's window, next door's back lawns and fences */
@@ -525,6 +594,7 @@ function buildHouse() {
       const NS = { paint: 0.3, ceiling: 0.3, brick: 0.7, party: 0.7, soldier: 0.7 }[k];   // V1.47, the client: "walls ... have a rugged non flat effect ... should be smooth or have less of that look": the relief turned down
       if (m.normalMap && NS) m.normalScale.set(NS, NS);
       if (!LOWD) { m.userData.hk = k; m.envMap = houseEnv(); m.envMapIntensity = finishEnv(m); }   // v73: one neutral room, made once (V1.13: the iPhones too)
+      if (!m.map && !gl3 && !BLACK_KEEP.has(k)) liftBlack(m.color);   // V3.44 (N96): a black piece shows its shape (it drew as a hole)
       if (k === "mirror") { m.color.set("#ffffff"); m.map = MIRROR_SHEEN; }   // V1.17: the hall's and the bathroom's mirrors as the living room's (grey before; as metal, black)
       const rk = (H3.depth_rank || {})[k] ?? 3;   // V1.31 (U6): where faces lie in one plane the higher rank is drawn (house/model.py depth_rank); constant, so nothing shows through at a slant
       if (rk) { m.polygonOffset = true; m.polygonOffsetFactor = 0; m.polygonOffsetUnits = -2 * rk; }
