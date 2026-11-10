@@ -414,6 +414,33 @@ def seams():
     (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
 
 
+# V3.40 (N92): the kitchen's worktop is a polished black speckled laminate in the photos, not rough stone: the granite photo's relief
+# (steepened 1.4 for a room's distance, V1.13) broke every reflection into grit. Its relief kept at a quarter (a polished face's faint
+# ripple), and a roughness map from the speckle: the pale flecks glassier than the black between (the shine glints, as the photo's does).
+# Once: textures.json notes it ("polished"). key: (relief kept, roughness spread round its mean)
+POLISH = {"worktop": (0.25, 0.35)}
+
+
+def polish():
+    """python3 house/textures/build_textures.py --polish   flattens <key>_nor.jpg and writes <key>_rough.jpg from <key>_map.jpg"""
+    import numpy as np
+    meta = json.loads((HERE / "textures.json").read_text())
+    for key, (keep, spread) in POLISH.items():
+        if meta[key].get("polished"):
+            print("polish", key, "already done"); continue
+        n = np.asarray(Image.open(HERE / f"{key}_nor.jpg").convert("RGB"), np.float32) / 127.5 - 1
+        n[..., :2] *= keep; n[..., 2] = np.sqrt(np.clip(1 - (n[..., :2] ** 2).sum(-1), 0.05, 1))
+        n /= np.linalg.norm(n, axis=-1, keepdims=True)
+        Image.fromarray(((n + 1) * 127.5).clip(0, 255).astype("uint8")).save(HERE / f"{key}_nor.jpg", quality=86, optimize=True)
+        g = np.asarray(Image.open(HERE / f"{key}_map.jpg").convert("L").resize((512, 512), Image.LANCZOS), np.float32) / 255
+        z = (g - g.mean()) / (g.std() or 1)                                   # a fleck's paleness, in spreads
+        r = 0.85 * (1 - spread * np.tanh(z * 0.8))                            # pale: glassier; the dark between: a touch duller
+        Image.fromarray((np.clip(r, 0, 1) * 255).astype("uint8")).save(HERE / f"{key}_rough.jpg", quality=78, optimize=True)
+        meta[key]["polished"] = True
+        print("polish", key)
+    (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
+
+
 def share(meta):
     """V2.81 (N32): a picture an earlier key has already (the two carpets' pile, the pines' relief) goes once: the later key drops its copy
     and says like=<key> (export3d reads that key's file for any it lacks; only when it lacks nothing else that key has); then textures.json"""
@@ -441,4 +468,4 @@ def slim():
 
 
 if __name__ == "__main__":
-    {"--buff": buff, "--rough": rough, "--tiles": tiles, "--finishes": finishes, "--floors": floors, "--slim": slim, "--seams": seams}.get((sys.argv[1:] or [""])[0], lambda: main(sys.argv[1]))()
+    {"--buff": buff, "--rough": rough, "--tiles": tiles, "--finishes": finishes, "--floors": floors, "--slim": slim, "--seams": seams, "--polish": polish}.get((sys.argv[1:] or [""])[0], lambda: main(sys.argv[1]))()
