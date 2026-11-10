@@ -135,6 +135,6 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Doors:** `14_views_walk.js` `walkDoors` opens a door within 95 cm (and draws the stair curtain back, V3.31) (not the bin cupboards': `BINS`). A door's open state is kept on the device (`S.doors`), so a fix to how a door opens must also ignore what a device already saved (V3.17 N61: the bin doors kept open from before V2.99 still showed as a second front door). The stairs: both flights 85 wide
   (`geometry.RECESS_W`), `model.stair_soffit` over the lower flight; the site check walks through the living room door at x 339.
 - **A piece's room for the culling** (`20_go` `roomOf`) is the one room outline that holds it whole; the lower flight lies in the store's
-  outline, so the house file's `wells.flight` claims it for the lower stairs (V3.36). Anything drawn per room edge (`houseShade`'s bands)
+  outline, so the house file's `wells.flight` claims it for the lower stairs (V3.37). Anything drawn per room edge (`houseShade`'s bands)
   must skip the stairwells' openings (`wells.floor`, `wells.ceil`), or it hangs in the air. In the living room's view the house under the
   landing's floor over the room is cut away (`09` `livClip`) except `stairpaint`: a piece that must show there takes that material.
