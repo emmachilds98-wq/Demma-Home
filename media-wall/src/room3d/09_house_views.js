@@ -199,7 +199,7 @@ function applyFloors() {
       const fk = { "-260": "lower", "0": "ground", "260": "first" }[String(rr[4])];
       const see = new Set([fk, { lower: "ground", ground: "first", first: "roof" }[fk], "out", "street", "nextThings"]);   // V1.47: the outside by evening too, in the evening's light (V1.15 hid it: it stayed in daylight)
       for (const k of ["street", "nextThings"]) if (HFLOOR[k]) HFLOOR[k].visible = true;   // V1.10: next door and the street through the windows
-      /* V3.47 (N99), the client: "walls sometimes glitch out and appear as brick ... in the doorway to bedroom three looking down the stairs":
+      /* V3.48 (N100), the client: "walls sometimes glitch out and appear as brick ... in the doorway to bedroom three looking down the stairs":
          a first-floor room with its door open onto the landing sees down the stairwell too, but only the landing drew the ground floor and
          the living room's flight there, so the party wall's bare brick showed below the banister. Such a room now draws them as the landing does */
       const well = rid === "landing" || (fk === "first" && roomSees([rid]).has("landing"));

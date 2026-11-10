@@ -125,7 +125,7 @@ function swingDoor(k, on) {
   P.tw = { a: P.t, to: on ? 1 : 0, t0: performance.now() }; dirty();
   if (BINS.includes(k)) { if (on) BINS.forEach(b => b !== k && doorOpen(HPARTS[b]) && swingDoor(b, false)); }   // V3.17: one at a time, not kept
   else { S.doors = Object.assign({}, S.doors, { [k]: on ? 1 : 0 }); store.set(KEY, S); }   // V1.26b: remembered
-  const onLanding = R.HOUSE3 && R.HOUSE3.rooms && roomDoors().list.some(([pk, a, b]) => pk === k && (a === "landing" || b === "landing"));   // V3.47 (N99): the stairwell seen through it
+  const onLanding = R.HOUSE3 && R.HOUSE3.rooms && roomDoors().list.some(([pk, a, b]) => pk === k && (a === "landing" || b === "landing"));   // V3.48 (N100): the stairwell seen through it
   if (k === "door.living_door" || onLanding) setTimeout(() => { applyFloors(); reshadow(); }, on ? 0 : 950);   // V1.38: what's seen through it (once it's shut)
   else setTimeout(() => roomCull(true), on ? 0 : 950);   // V2.71 (N16): the room behind it drawn (left out once it's shut)
 }
@@ -201,7 +201,7 @@ function lostCheck() {   // inside the room and nearly facing a wall, or looking
 }
 function backToPlan() {                   // the plan: your picks, the bar beside the cabinet, no ideas
   S.sugg = Object.assign({}, DEF.sugg); S.svar = Object.assign({}, DEF.svar); S.ideas = Object.assign({}, DEF.ideas); S.beside = DEF.beside; S.plants = DEF.plants;
-  S.barflap = S.lid = S.ctop = S.sdraw = S.scopen = false; S.trolley = "park"; applySvar(); applyState();
+  S.barflap = S.lid = S.ctop = S.sdraw = false; S.scopen = DEF.scopen; S.trolley = "park"; applySvar(); applyState();   // N99: the stair curtain drawn back
 }
 function setTry(on) {
   tryOpts = !!on; root.classList.toggle("trying", tryOpts);
