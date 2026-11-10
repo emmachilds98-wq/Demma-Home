@@ -316,7 +316,7 @@ function buildBeyond(grp, land) {
    photo of it): it changes when the client says what's across the road. One draw a finish; every finish a photo and its relief on the
    ground's own shader (map and relief, both sides, no cut), so no shader of its own */
 function buildStreet(land) {
-  const H = R.HOUSE3; if (!land || !H || H.front == null) return;
+  const H = R.HOUSE3; if (!land || !H || H.front == null || !FIN.mat3) return false;
   const dr = H.drive ?? -15, zf = H.front, zr0 = zf + 750, zr1 = zf + 1250, zp = zr1 + 200, zF = zp + 550, DEP = 800, EAVE = dr + 520, RIDGE = dr + 790;
   const X0 = -4200, X1 = 5600, by = {}, put = (k, g) => (by[k] = by[k] || []).push(g);
   const box = (k, x0, y0, z0, x1, y1, z1) => { const g = new THREE.BoxGeometry(Math.abs(x1 - x0) * M, Math.abs(y1 - y0) * M, Math.abs(z1 - z0) * M);
@@ -359,16 +359,18 @@ function buildStreet(land) {
   }
   for (let x = X0 + 900; x < X1; x += 3000) {   // lamp posts on the far pavement
     box("post", x - 6, dr, zr1 + 45, x + 6, dr + 620, zr1 + 57); box("post", x - 5, dr + 608, zr1 - 60, x + 5, dr + 618, zr1 + 57); box("lamp", x - 14, dr + 596, zr1 - 75, x + 14, dr + 608, zr1 - 30); }
-  const FIN = { road: ["road", "#ffffff"], paving: ["paving", "#ffffff"], kerb: ["concrete", "#e3ded4"], brick: ["brick", "#ffffff"], brick2: ["brick_buff", "#ffffff"],
-    roof: ["tile", "#ffffff"], frame: ["concrete", "#ffffff", 0.5], pane: ["road", "#30373f", 0.15], door: ["paving", "#3c4a5c", 0.5], door2: ["paving", "#6b2a2a", 0.5],
-    hedge: ["lawn", "#5a7046"], post: ["road", "#55595e", 0.6], lamp: ["concrete", "#fff3dd", 0.4] };
+  /* each finish the house's own material (a copy, its colour tinted where said, uncut): its program already built, so the street adds
+     none (the phone's first picture has no shader to spare) */
+  const FIN_ = { road: ["road"], paving: ["paving"], kerb: ["concrete"], brick: ["brick"], brick2: ["brick_buff"], roof: ["tile"], frame: ["upvc"], pane: ["pane"],
+    door: ["door_out", "#3c4a5c"], door2: ["door_out", "#6b2a2a"], hedge: ["ivy"], post: ["steel_dark"], lamp: ["upvc", "#fff3dd"] };
   const g = new THREE.Group(); g.name = "street";
   for (const [k, L] of Object.entries(by)) {
-    const [tk, col, rough] = FIN[k], T = houseTex(tk), geo = mergeGeometries(L); L.forEach(q => q.dispose());
-    if (T && T.map) worldUV(geo, tk);
-    const mt = reg(new THREE.MeshStandardMaterial({ color: col, map: T ? T.map : null, normalMap: T && T.normal || null, roughness: rough ?? 0.95, side: THREE.DoubleSide, polygonOffset: k === "road", polygonOffsetFactor: 2, polygonOffsetUnits: 2 }));
-    mt.clippingPlanes = []; const m = new THREE.Mesh(geo, mt); m.receiveShadow = true; m.raycast = () => {}; m.name = "street_" + k; g.add(m); }
-  land.add(g);
+    const [hk, col] = FIN_[k], src = FIN.mat3(hk), geo = mergeGeometries(L); L.forEach(q => q.dispose());
+    worldUV(geo, hk);
+    const mt = reg(src.clone()); mt.onBeforeCompile = src.onBeforeCompile; mt.customProgramCacheKey = src.customProgramCacheKey; mt.userData = { street: k };
+    if (col) mt.color.set(col); houseClip(mt, [], false); if (k === "road") { mt.polygonOffset = true; mt.polygonOffsetFactor = 2; mt.polygonOffsetUnits = 2; }
+    const m = new THREE.Mesh(geo, mt); m.receiveShadow = true; m.raycast = () => {}; m.name = "street_" + k; g.add(m); }
+  land.add(g); return true;
 }
 /* V1.6: the things in the gardens (survey_data.GARDEN_THINGS, from the view photos): ours (the round table and its chairs, with Gardens)
    and next door's (the trampoline, the sheds, with Next door); and for the living room's window, next door's back lawns and fences */
