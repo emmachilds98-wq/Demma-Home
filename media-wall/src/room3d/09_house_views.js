@@ -141,11 +141,38 @@ function houseEnv() {
   if (!HENV) { const pm = new THREE.PMREMGenerator(gl), rs = new RoomEnvironment(); HENV = pm.fromScene(rs, 0.04).texture; pm.dispose(); rs.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
   return HENV;
 }
+/* V3.47 (N99), the client: "continue further shader and detail improvements": the hall's and the bathroom's mirrors showed a painted
+   sheen (a grey-blue gradient), never the room. Standing in one of those rooms in HD (drawn through the shade's composer, so the frame's shaders are already the kind a reflection draws with), once you've paused, the room is drawn round the
+   mirror, a face a frame (six frames, never while you move), and blurred as the house's own reflection is, so the mirror shows its room;
+   no shader added (the same kind and size of reflection). Made again for the evening */
+const MIR = { done: {}, face: 0, key: null, cc: null, rt: null, white: null };
+const NOMIR = /[?&]nomirror\b/.test(location.search);   // ?nomirror: the painted sheen, as before
+const MIRROR_AT = { hall: "hall.mirror", bathroom: "bath.mirror" };
+function mirrorStep() {
+  const here = RMODE === "stand" ? hereRoom : VIEW_ROOM[S.view], m = HMATS && HMATS.mirror, it = MIRROR_AT[here], b = it && R.HOUSE3 && R.HOUSE3.items && R.HOUSE3.items[it] && R.HOUSE3.items[it].b;
+  if (!m || !b || !postLive() || NOMIR || !ROOMV() || !(RMODE === "in" || RMODE === "stand") || !m.envMap) return false;
+  const key = here + S.tod;
+  if (MIR.done[here] && MIR.done[here].key === key) { if (m.envMap === MIR.done[here].tex) return false; mirrorUse(m, MIR.done[here].tex); return true; }
+  if (MIR.key !== key) { MIR.key = key; MIR.face = 0; }
+  if (!MIR.rt) { MIR.rt = new THREE.WebGLCubeRenderTarget(256, { type: THREE.HalfFloatType }); MIR.cc = new THREE.CubeCamera(0.03, 40, MIR.rt); }
+  const cc = MIR.cc; if (cc.coordinateSystem !== gl.coordinateSystem) { cc.coordinateSystem = gl.coordinateSystem; cc.updateCoordinateSystem(); }
+  cc.position.copy(v3(b[0] - 4, (b[1] + b[4]) / 2, (b[2] + b[5]) / 2)); cc.updateMatrixWorld(true);   // just in front of the glass (both face into their rooms, -x)
+  const prev = gl.getRenderTarget(), vis = m.visible; m.visible = false;
+  gl.setRenderTarget(MIR.rt, MIR.face); gl.render(scene, cc.children[MIR.face]); gl.setRenderTarget(prev); m.visible = vis;
+  if (++MIR.face < 6) return true;
+  MIR.face = 0; const pm = new THREE.PMREMGenerator(gl), tex = pm.fromCubemap(MIR.rt.texture).texture; pm.dispose();
+  const old = MIR.done[here]; MIR.done[here] = { key, tex }; mirrorUse(m, tex); if (old && old.tex !== tex) old.tex.dispose();
+  return true;
+}
+function mirrorUse(m, tex) {
+  if (!MIR.white) MIR.white = canvasTex(4, 4, (g, w, h) => { g.fillStyle = "#ffffff"; g.fillRect(0, 0, w, h); }, true);
+  m.userData.real = true; m.envMap = tex; m.envMapIntensity = 1; m.metalness = 1; m.roughness = 0.03; m.color.set("#f4f6f6"); m.map = MIR.white; dirty();
+}
 const finishEnv = m => m.userData.hk === "glass" ? 0.3 : m.userData.hk === "screen" ? 0.18 : m.roughness <= 0.3 ? 0.9 : m.roughness <= 0.6 ? 0.6 : 0.45;   // v72 (B3): gloss, satin, matt; V3.32 (N82): a screen that's off dark glass, as the living room's TV (the bright stock room in it read as a whiteboard)
 let HENVK = 1;
 function houseEnvK(k) {   // V2.21 (REAL_PLAN R1): the house's reflections scaled (an evening in a room: its own light leads)
   if (!HMATS || k === HENVK) return; HENVK = k;
-  for (const m of Object.values(HMATS)) if (m && m.envMap && "envMapIntensity" in m) m.envMapIntensity = finishEnv(m) * k;
+  for (const m of Object.values(HMATS)) if (m && m.envMap && "envMapIntensity" in m) m.envMapIntensity = m.userData.real ? 1 : finishEnv(m) * k;   // V3.47: a mirror shows its room as it is
   for (const m of paintMats.values()) if (m && m.envMap && m.userData.hk) m.envMapIntensity = finishEnv(m) * k;
 }
 let RMODE = "in", hidMode = [], RPLANES = [];   // v71: how a room of the house is seen (in it, above, on its own) and what that put away
