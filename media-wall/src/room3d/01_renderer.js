@@ -192,7 +192,7 @@ function texWarm() {                  // every texture onto the chip in slices o
   const L = [...T], step = () => { const t0 = performance.now(); while (L.length && performance.now() - t0 < 8) { try { gl.initTexture(L.pop()); } catch (e) {} } if (L.length) setTimeout(step, 0); };
   step();
 }
-/* V3.50 (N102), the client 10 Nov 2026: "i want smooth motion like im there when walking through the house": a room's shaders were
+/* V3.51 (N103), the client 10 Nov 2026: "i want smooth motion like im there when walking through the house": a room's shaders were
    built ahead, but its shapes went to the graphics card on the frame that first showed them (from the hall, 305 shapes, 15 MB, in
    the one frame by the living room's door). Now a room's shapes go after its warm-up's shaders, a few at a time between frames,
    drawn at 1 × 1 in one plain material (no lights: no new shaders); nothing with its own before-draw step (the room's stickers) */
