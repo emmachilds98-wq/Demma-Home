@@ -124,7 +124,7 @@ function frame(now) {
   const go = moving || (walked && dragLite());
   if (go && slowDev) { if (!dragT) dragT = now; still_t = now; if (!lowRes && now - dragT > 150) { lowRes = true; dragLite() ? dirty() : sizeRenderer(); } }
   else { dragT = 0; if (active) still_t = now; else if (lowRes && now - still_t > 250) { lowRes = false; if (capDue) { capDue = false; phoneCap = 1.5; sizeRenderer(); } else dragLite() ? dirty() : sizeRenderer(); } }
-  /* V3.53 (N105), the client 10 Nov 2026, the phone smoother: an iPhone in HD kept the soft shade and the glow on every frame of a walk or
+  /* V3.54 (N106), the client 10 Nov 2026, the phone smoother: an iPhone in HD kept the soft shade and the glow on every frame of a walk or
      a drag unless its frames had already run slow (slowDev), about 25 passes a frame where the PC now draws 3 (V3.39); now a phone in HD
      leaves them out while it moves too, the same way (the same shaders, the passes skipped), back a quarter of a second after you stop */
   if (MOVE_LITE && (BIG_GPU || PHONE_HD)) { if (active || walking() && (WALK.v.lengthSq() > 1e-5 || WALK.keys.size)) { if (!moveLite) moveLite = true; } else if (moveLite && now - still_t > 250) { moveLite = false; need = Math.max(need, 1); } }   // V3.39 (N91)
