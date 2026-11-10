@@ -120,7 +120,7 @@ function lightEase() {
   let busy = false;
   for (const l of [...ROOMLIGHTS, ...WINLIGHTS, hemi, skyFill, sun]) { if (!l) continue;
     let e = LEASE.get(l); if (!e) LEASE.set(l, e = { shown: l.intensity, from: l.intensity, to: l.intensity, t0: 0 });
-    if (l.intensity !== e.shown) { e.from = go && LIVE ? e.shown : l.intensity; e.to = l.intensity; e.t0 = now; }
+    if (l.intensity !== e.shown && l.intensity !== e.to) { e.from = go && LIVE ? e.shown : l.intensity; e.to = l.intensity; e.t0 = now; }   // the same target set again each frame doesn't start it over (it held the page busy: no warm-up in the pauses)
     const k = LIVE ? Math.min(1, (now - e.t0) / 450) : 1, v = e.from + (e.to - e.from) * k * k * (3 - 2 * k);
     l.intensity = e.shown = v; if (k < 1) busy = true; }
   if (busy) dirty();
