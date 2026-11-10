@@ -12,6 +12,7 @@ On a weak signal the page opens from the device after 2 s (V3.00, N43, `sw.js`):
 ## Where it lives
 - **The site on GitHub Pages:** https://emmachilds98-wq.github.io/Demma-Home/ (built and published by the workflow on every push to
   `main`, a few minutes after the merge since V1.35; Pages' source is GitHub Actions). `plan.html` is a tiny step to it (old links, their view kept, V2.80).
+- **A guide for a friend** (10 Nov 2026): `docs/GUIDE_FOR_A_FRIEND.md`, how to make one of these for another home with an agent (no house data in it).
 - **No shared page any more** (4 Nov 2026): the claude.ai copy (V1.27) isn't republished; its database's Measure rows are still read by
   `pull_edits.py`. On Pages, Measure keeps rows on the device and Send makes a link (`pull_edits.py --link`). The old repo `DIY` (rounds 1–82): read-only.
 
