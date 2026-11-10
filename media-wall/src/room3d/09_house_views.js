@@ -141,7 +141,7 @@ function houseEnv() {
   if (!HENV) { const pm = new THREE.PMREMGenerator(gl), rs = new RoomEnvironment(); HENV = pm.fromScene(rs, 0.04).texture; pm.dispose(); rs.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
   return HENV;
 }
-/* V3.49 (N101), the client: "continue further shader and detail improvements": the hall's and the bathroom's mirrors showed a painted
+/* V3.50 (N102), the client: "continue further shader and detail improvements": the hall's and the bathroom's mirrors showed a painted
    sheen (a grey-blue gradient), never the room. Standing in one of those rooms in HD (drawn through the shade's composer, so the frame's shaders are already the kind a reflection draws with), once you've paused, the room is drawn round the
    mirror, a face a frame (six frames, never while you move), and blurred as the house's own reflection is, so the mirror shows its room;
    no shader added (the same kind and size of reflection). Made again for the evening */
@@ -172,7 +172,7 @@ const finishEnv = m => m.userData.hk === "glass" ? 0.3 : m.userData.hk === "scre
 let HENVK = 1;
 function houseEnvK(k) {   // V2.21 (REAL_PLAN R1): the house's reflections scaled (an evening in a room: its own light leads)
   if (!HMATS || k === HENVK) return; HENVK = k;
-  for (const m of Object.values(HMATS)) if (m && m.envMap && "envMapIntensity" in m) m.envMapIntensity = m.userData.real ? 1 : finishEnv(m) * k;   // V3.49: a mirror shows its room as it is
+  for (const m of Object.values(HMATS)) if (m && m.envMap && "envMapIntensity" in m) m.envMapIntensity = m.userData.real ? 1 : finishEnv(m) * k;   // V3.50: a mirror shows its room as it is
   for (const m of paintMats.values()) if (m && m.envMap && m.userData.hk) m.envMapIntensity = finishEnv(m) * k;
 }
 let RMODE = "in", hidMode = [], RPLANES = [];   // v71: how a room of the house is seen (in it, above, on its own) and what that put away
@@ -226,14 +226,18 @@ function applyFloors() {
       const fk = { "-260": "lower", "0": "ground", "260": "first" }[String(rr[4])];
       const see = new Set([fk, { lower: "ground", ground: "first", first: "roof" }[fk], "out", "street", "nextThings"]);   // V1.47: the outside by evening too, in the evening's light (V1.15 hid it: it stayed in daylight)
       for (const k of ["street", "nextThings"]) if (HFLOOR[k]) HFLOOR[k].visible = true;   // V1.10: next door and the street through the windows
-      if (rid === "landing") see.add("ground");
+      /* V3.49 (N101), the client: "walls sometimes glitch out and appear as brick ... in the doorway to bedroom three looking down the stairs":
+         a first-floor room with its door open onto the landing sees down the stairwell too, but only the landing drew the ground floor and
+         the living room's flight there, so the party wall's bare brick showed below the banister. Such a room now draws them as the landing does */
+      const well = rid === "landing" || (fk === "first" && roomSees([rid]).has("landing"));
+      if (well) see.add("ground");
       if (rid === "hall") see.add("lower");
       for (const [k, g] of Object.entries(HFLOOR)) if (!see.has(k) && g.visible) { g.visible = false; hidReal.push(g); }
       // v81: the hall and the garage don't see it either (its door is shut; the hall has the door's own face): 600 draws there, now 160
       const lr = o => o !== houseG && o !== garden3d && o !== lightRig && !o.isLight && o !== (sun && sun.target) && o !== view && o.visible;
       const peek = rid === "hall" && doorOpen(HPARTS["door.living_door"]);   // V1.38: its door open, the living room through it
-      if (rid !== "landing" && !peek) scene.children.forEach(o => { if (lr(o)) { o.visible = false; hidReal.push(o); } });
-      else if (rid === "landing") {   // v81: from the landing (its eye at x 402 or less) the living room shows only down the stairwell (from 408): each piece clear of
+      if (!well && !peek) scene.children.forEach(o => { if (lr(o)) { o.visible = false; hidReal.push(o); } });
+      else if (well) {   // v81: from the landing (its eye at x 402 or less) the living room shows only down the stairwell (from 408): each piece clear of
         // the flight's side is left out of the camera's layer (not hidden, so a switch on or off meanwhile still holds): 556 draws, now about 250
         const lim = -(R.STAIR_X[0] - 3) * M, bb = new THREE.Box3(); scene.updateMatrixWorld();
         scene.children.forEach(o => { if (lr(o)) o.traverse(m => { if ((m.isMesh || m.isPoints || m.isLine) && !m.isInstancedMesh && m.layers.isEnabled(0)) {
