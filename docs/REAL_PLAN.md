@@ -381,3 +381,44 @@ ceiling light and its windows' light for good. The front rooms look out on a fla
 | N104 | The windows' glass (the coordinator's split of the client's "Split agents into tasks to optimise those upgrades too"): the bathroom's and the WC's frosted glass showed the garden misted by day and flat navy by evening (the dusk veil drew over it: it wrote no depth). Now by day it glows with the daylight through it, as the photo; by evening dark frosted glass with the room's light on it; clear glass catches more of the room by evening; from outside by day the frosted panes stay pale, not lit. Mirrors are #209's | Look | `09_house_views.js` (`glassTod`, `glassAll`, `finishEnv`'s glass), a call each in `11_lights.js` `outdoor`, `12_furniture_options.js` `envLevels`, `20_go.js` `mat3` | | Done V3.52: colours, strengths and depth only, no shader or draw added; shots at 393 and 1280 |
 | N105 | The store rooms', cupboards' and lower stairs' floorboards were a drawn canvas of four stripes: 15 cm boards from the oak veneer's photo, pale and less yellow, ends staggered, a micro-bevel and each board a hair off level | Look | `house/textures/build_textures.py` (`UPFLOORS` `board`), the board's pictures | N102 | Done V3.53: no shader added (map, relief and roughness: the marble's mix), +90 KB; `artex_nor` re-saved smaller to stay in `photos_mb` |
 | N106 | The phone smoother while moving (the client, 10 Nov 2026: "Split agents into tasks to optimise those upgrades too"; the phone's thread): an iPhone in HD kept the shade (GTAO) and the glow (bloom, 10 passes) on every frame of a walk or drag unless its frames had already run past 28 ms; now `moveLite` covers `PHONE_HD` as it does a PC (V3.39), back 0.25 s after you stop | Speed (phone) | `17_render_loop.js` (the `moveLite` gate) | N91 | Done V3.54: a walking frame on the iPhone path 40 framebuffer binds, 23 clears, 4 blits to 9, 9, 1; same draws (247 to 234), no shader, still picture unchanged |
+
+## 17. The next looks round (10 Nov 2026, V3.54): seven streams side by side
+
+The client, 10 Nov 2026: "Split up work to improve the quality into more agents if it improves timing on getting this done faster or do
+a full review to make an upgrade plan then split up tasks". Reviewed on V3.54, every room by day and evening in HD at 1280 × 800
+(`tools/gallery.py`) and at phone size (393 × 852, the iPhone's HD path); shots in the project files (`quality-review/`). The rules stay:
+no furniture added, moved or reshaped; one warm, always-on light in every room; inside `tools/perf_budget.json`.
+
+**What the review found.** The living room still leads because of its shade where surfaces meet: on every path without GTAO (all but a
+big card), the other rooms' wall-to-ceiling, wall-to-floor and corner lines are flat, so the hall, landing, garage and WC read as
+cardboard. The artex ceilings are too loud up close on a phone (living room, kitchen). The ceiling bulbs read as unlit white blobs,
+even by evening. The doors and white joinery have little shape (the landing's doors). Whites clip on a phone (the master's bedding).
+Outside, the trees are noisy leaf cards, a striped band shows on the far hill on a phone, and the roof is flat beige until its photo
+arrives. The living room's and a room's Above views sit in a black void. On a phone the living room's Above stickers overlap
+("Window corner" cut off) and the walk stick's grey disc is heavy over the picture.
+
+**Not in this round (in flight elsewhere):** always-on lights, the lower stairwell lit from the hall and the mirrors (#209, N107–N108,
+"Match all rooms to living room quality": `09` `placeRoomLights` `lightEase` `mirrorStep`, `11_lights.js`, `12` `applyLight`); the phone's
+shadow staggering (`17_render_loop.js`, "Make the phone version smoother"); the PC's smoothness ("Make the PC version fluid"). No row
+below owns those files or functions. KTX2 (N31, #133) and the real view across the road wait on the client.
+
+**The photo budget is full** (`photos_mb` 9.5 of 9.5 at V3.54). N109 makes room first: any row that adds a picture waits on it or pays for
+itself by shrinking another (say which in the PR). Raising `photos_mb` is the client's call, not an agent's; KTX2 would free most of it.
+
+| # | Stream | Task | Owns | After | Status |
+|---|---|---|---|---|---|
+| N109 | A Textures | Room in the photo budget: re-save the biggest maps no screen shows at full size (the lawn's and road's relief and colour, the brick's relief, `lr_hessian_nor`, `lr_cord_nor`) at the size a 4K screen shows from where you stand (`build_textures.PX`, `--slim`), gallery pixel-diff to prove no visible loss; aim ≥ 1 MB free; `perf_budget.json` lowered to the new number + 10 % | `house/textures/build_textures.py` (`slim`, `PX`), those maps' pictures, `tools/perf_budget.json` (`photos_mb` only) | | Open |
+| N110 | A Textures | Quieter ceilings: the artex's peaks softer and finer (phone, up close: living room, kitchen read as loud grit), its relief nearer the photos of 30 Oct; the map made smaller in the same go | `build_textures.py` (`stipple`, `STIPPLE`), `artex_*` pictures, `20_go.js` `NS` (the ceiling's normal scale only) | N109 | Open |
+| N111 | A Textures | Doors and white joinery with shape: the doors' panel grooves and the architraves' and skirting's mouldings catch light and shade (a relief map from the door photos), the white satin's sheen kept | `build_textures.py` (a new `joinery` step), `model.MATS` `door_white`, `door_cream`, `door_wood`, `skirting` keys | N110 | Open |
+| N112 | B Shade | The shade where surfaces meet, in every room and on every path (what GTAO gives the living room on a big card): soft dark bands along each room's wall–ceiling, wall–floor and wall–wall corners, made at build from the room's outline as N90's contact shade (`contact` material, no new shader, a draw a floor), fading over 15–25 cm, off where GTAO runs | `house/model.py` (`piece_shade` and a new `edge_shade`, not the pieces), `20_go.js` `pieceShade` | | Open |
+| N113 | C Whites | Whites that don't clip on a phone: the bedding, the WC and bath's porcelain and the white units a hair below pure white (as the living room's), so their folds and edges show by day; the black–white balance checked in each room's day shot | `house/model.py` `MATS` (`duvet`, `pillow`, `sanitary`, `gloss` only) | | Open |
+| N114 | D Outside | The outside as good as the rooms: the trees' crowns as soft clumps (fewer, larger leaf cards with a darker core, no salt-and-pepper); the far hill's stripe band on a phone gone; the roof's tiles first in the photo queue so the house never opens with a flat roof; the stand-in street's lamp posts and windows warm by evening | `20_go.js` (`buildTrees`, the valley's `trees`, `buildStreet`), the photo order (`02_textures.js` `PWAIT`: the roof's `tile` first), `10_plants.js` | | Open |
+| N115 | E Backdrop | No black void: a room's Above and On its own views (and the living room's) over a soft cream-to-warm-grey backdrop in the old design's colours (the page's cream), the whole house's sky unchanged | `01_renderer.js` (`scene.background` only), a small backdrop switch in `19_view_controls.js` | | Open |
+| N116 | F Bulbs | The ceiling bulbs read lit: the bulb's glass warm and glowing by day and evening (it's `led` at 1.5, white, so it reads as a white blob without bloom), and a faint warm halo on the ceiling round each pendant (a shared additive disc, no new shader on the paths that lack bloom). Materials only: the lights themselves are #209's | `house/model.py` `pendants` (the bulb's material key only: a new `bulb`), `model.MATS` `bulb`, `20_go.js` `mat3` emissive table | N107–N108 merged | Open |
+| N117 | G Phone UI | The phone's overlays tidied: the living room's Above stickers never overlap or run off screen (placed round each other, the smallest dropped first); the walk stick lighter (a thin ring, the knob only while held, the grey disc gone); the first-walk hint once, short | `15_tour_link_stickers.js`, `media-wall/src/page.css` (the stick and stickers only), `room3d_page.py` (the stick's markup) | | Open |
+
+**Streams run side by side; inside a stream, one after another** (they share `build_textures.py` or `model.MATS`). Two streams touch
+`20_go.js` in different functions (A: `NS`; B: `pieceShade`; D: trees and street; F: `mat3`'s emissive table): whoever merges second
+merges main in first and keeps the other's change. `model.MATS` is shared by A (N111), C and F, each its own keys only. Every row:
+before/after at 393 and 1280 in the project files, `tools/checks.py` lines in the PR, `house/privacy_check.py`, the next free version at
+merge, its row ticked here and `docs/STATE.md` rewritten.
