@@ -192,6 +192,27 @@ function texWarm() {                  // every texture onto the chip in slices o
   const L = [...T], step = () => { const t0 = performance.now(); while (L.length && performance.now() - t0 < 8) { try { gl.initTexture(L.pop()); } catch (e) {} } if (L.length) setTimeout(step, 0); };
   step();
 }
+/* V3.50 (N102), the client 10 Nov 2026: "i want smooth motion like im there when walking through the house": a room's shaders were
+   built ahead, but its shapes went to the graphics card on the frame that first showed them (from the hall, 305 shapes, 15 MB, in
+   the one frame by the living room's door). Now a room's shapes go after its warm-up's shaders, a few at a time between frames,
+   drawn at 1 × 1 in one plain material (no lights: no new shaders); nothing with its own before-draw step (the room's stickers) */
+const GEO_DONE = new WeakSet(), GEO_Q = []; let geoT = 0, geoH = null;
+function geoWarm(list) {
+  for (const o of list) if (o.isMesh && o.geometry && !GEO_DONE.has(o.geometry) && o.onBeforeRender === THREE.Object3D.prototype.onBeforeRender) { GEO_DONE.add(o.geometry); GEO_Q.push(o); }
+  if (GEO_Q.length && !geoT) geoT = setTimeout(geoStep, 0);
+}
+function geoStep() {
+  geoT = 0; if (!PRE.rt) return;
+  if (!geoH) { geoH = new THREE.Scene(); geoH.overrideMaterial = new THREE.MeshBasicMaterial(); geoH.matrixWorldAutoUpdate = false; }
+  const was = gl.getRenderTarget(), su = gl.shadowMap.needsUpdate, au = gl.shadowMap.autoUpdate, ar = gl.info.autoReset, t0 = performance.now();
+  try { gl.shadowMap.autoUpdate = false; gl.info.autoReset = false; gl.setRenderTarget(PRE.rt);
+    while (GEO_Q.length && performance.now() - t0 < 3) {
+      const o = GEO_Q.splice(0, 6), fc = o.map(m => m.frustumCulled); o.forEach(m => { m.frustumCulled = false; });
+      geoH.children = o; try { gl.render(geoH, camera); } finally { geoH.children = []; o.forEach((m, i) => { m.frustumCulled = fc[i]; }); } }
+  } catch (e) { GEO_Q.length = 0; }
+  finally { gl.setRenderTarget(was); gl.shadowMap.needsUpdate = su; gl.shadowMap.autoUpdate = au; gl.info.autoReset = ar; }
+  if (GEO_Q.length) geoT = setTimeout(geoStep, 16);
+}
 function preDraw() {                  // the frame before the first: the shadows (and their depth shaders) drawn off screen, at 1 × 1
   livingFromOutside();               // what the first frame hides first (outside, the living room), so its shadows aren't drawn twice
   if (!gl.shadowMap.enabled) return; reshadow();   // V2.72: always (the start may have drawn them already: their depth shaders weren't built)
