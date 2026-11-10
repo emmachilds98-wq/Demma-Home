@@ -221,5 +221,11 @@
   "size": 0.6,
   "url": "",
   "licence": "ours"
+ },
+ "board": {
+  "asset": "made by build_textures.floors (from oak_veneer_01)",
+  "size": 1.2,
+  "url": "",
+  "licence": "ours"
  }
 }
