@@ -125,7 +125,8 @@ function swingDoor(k, on) {
   P.tw = { a: P.t, to: on ? 1 : 0, t0: performance.now() }; dirty();
   if (BINS.includes(k)) { if (on) BINS.forEach(b => b !== k && doorOpen(HPARTS[b]) && swingDoor(b, false)); }   // V3.17: one at a time, not kept
   else { S.doors = Object.assign({}, S.doors, { [k]: on ? 1 : 0 }); store.set(KEY, S); }   // V1.26b: remembered
-  if (k === "door.living_door") setTimeout(() => { applyFloors(); reshadow(); }, on ? 0 : 950);   // V1.38: what's seen through it (once it's shut)
+  const onLanding = R.HOUSE3 && R.HOUSE3.rooms && roomDoors().list.some(([pk, a, b]) => pk === k && (a === "landing" || b === "landing"));   // V3.47 (N99): the stairwell seen through it
+  if (k === "door.living_door" || onLanding) setTimeout(() => { applyFloors(); reshadow(); }, on ? 0 : 950);   // V1.38: what's seen through it (once it's shut)
   else setTimeout(() => roomCull(true), on ? 0 : 950);   // V2.71 (N16): the room behind it drawn (left out once it's shut)
 }
 function swingAll(on) { for (const k of Object.keys(HPARTS)) if (k.startsWith("door.") && !(on && BINS.includes(k))) swingDoor(k, on); if (actId) renderAct(); }
