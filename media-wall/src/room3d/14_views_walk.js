@@ -85,7 +85,7 @@ function hsolidSet(fk, F) {
   const skin = new Set(["ceiling", "artex"]);   // V1.32: a walk ignores the ceilings' skins (each has a slab or the roof over it; the lower store's runs over the flight)
   // V1.57: and the chairs and stools (the office's stood in its doorway, a step in: you'd push past one), not the eye's view of them
   const tags = F.tags || [], soft = t => t != null && t >= 0 && /\.(chairs?|stools?)$/.test(tags[t] || ""), nl = (F.lathes || []).length;
-  /* V3.47 (N99), the client: "the joystick default view as I'm walking round the house be able to go over things like chairs and the
+  /* V3.48 (N100), the client: "the joystick default view as I'm walking round the house be able to go over things like chairs and the
      sofa so I can view from corners": a walk passes over the furnishings (furniture, things on them, appliances, lamps, radiators,
      switches): only the head meets them (a wardrobe, a wall unit, a tall rack still stop you), and you don't climb onto them. Walls,
      doors, windows, the stairs, the banisters and the fittings stop the whole body as before */
@@ -109,7 +109,7 @@ function polyNear(pts, u, w, r) {          // inside the outline, or within r of
   }
   return inside || d2 < r * r;
 }
-function hBlocked(x, y, z, r = EYE_R, all = false, head = true) {    // room cm; all: the floors not drawn too, and not the ceilings' skins (walking); head false: not the furnishings (V3.47)
+function hBlocked(x, y, z, r = EYE_R, all = false, head = true) {    // room cm; all: the floors not drawn too, and not the ceilings' skins (walking); head false: not the furnishings (V3.48)
   for (const S_ of Object.values(HSOLID)) {
     if (!S_.g || (!all && !shown(S_.g))) continue;
     const bx = !all ? S_.b : head ? S_.w : S_.wb, px = !all ? S_.p : head ? S_.pw : S_.pb;
@@ -149,7 +149,7 @@ const walking = () => (RMODE === "stand" && !!ROOMV() || S.view === "livstand") 
 const LIV = () => R.HOUSE3.living;   // V1.44 (V1_PLAN phase 5): the living room's shell from the house file (house/model.py living_shell)
 const FLIGHT = () => LIV().flight;
 const livSolids = () => livWalls().concat(livFurn());
-function livFurn() {                        // what stands in it (V3.47: only the head meets it on a walk)
+function livFurn() {                        // what stands in it (V3.48: only the head meets it on a walk)
   return solidBoxes().map(q => [-q.max.x / M + 12, q.min.y / M, q.min.z / M + 12, -q.min.x / M - 12, q.max.y / M, q.max.z / M - 12]);   // three's x flipped; V1.57: without the eye's 12 cm (the body has its own 18: the two closed the stairs' foot)
 }
 function livWalls() {                       // room cm [x0, y0, z0, x1, y1, z1]: its walls (the door's gap), the flight's open side, the ceiling, the pipe box
@@ -179,7 +179,7 @@ function floorAtCm(x, z, feet) {            // V1.57: a foot, not a point: a hai
 function floorAt1(x, z, feet) {             // the top of what's underfoot: the highest at or under a step up (24: the stairs' 20, not a bed's base: V1.53)
   let best = -Infinity;
   const under = q => { if (x > q[0] && x < q[3] && z > q[2] && z < q[5] && q[4] <= feet + 24 && q[4] > best) best = q[4]; };
-  for (const S_ of Object.values(HSOLID)) if (S_.g) (S_.fl || S_.b).forEach(under);   // V3.47: not onto the furnishings
+  for (const S_ of Object.values(HSOLID)) if (S_.g) (S_.fl || S_.b).forEach(under);   // V3.48: not onto the furnishings
   if (nearLiving(x, feet, z)) livFloors().forEach(under);
   return best;
 }
