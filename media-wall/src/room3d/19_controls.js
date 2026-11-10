@@ -200,7 +200,7 @@ function lostCheck() {   // inside the room and nearly facing a wall, or looking
 }
 function backToPlan() {                   // the plan: your picks, the bar beside the cabinet, no ideas
   S.sugg = Object.assign({}, DEF.sugg); S.svar = Object.assign({}, DEF.svar); S.ideas = Object.assign({}, DEF.ideas); S.beside = DEF.beside; S.plants = DEF.plants;
-  S.barflap = S.lid = S.ctop = S.sdraw = S.scopen = false; S.trolley = "park"; applySvar(); applyState();
+  S.barflap = S.lid = S.ctop = S.sdraw = false; S.scopen = DEF.scopen; S.trolley = "park"; applySvar(); applyState();   // N99: the stair curtain drawn back
 }
 function setTry(on) {
   tryOpts = !!on; root.classList.toggle("trying", tryOpts);

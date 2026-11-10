@@ -141,7 +141,7 @@ function houseEnv() {
   if (!HENV) { const pm = new THREE.PMREMGenerator(gl), rs = new RoomEnvironment(); HENV = pm.fromScene(rs, 0.04).texture; pm.dispose(); rs.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
   return HENV;
 }
-/* V3.47 (N99), the client: "continue further shader and detail improvements": the hall's and the bathroom's mirrors showed a painted
+/* V3.49 (N101), the client: "continue further shader and detail improvements": the hall's and the bathroom's mirrors showed a painted
    sheen (a grey-blue gradient), never the room. Standing in one of those rooms in HD (drawn through the shade's composer, so the frame's shaders are already the kind a reflection draws with), once you've paused, the room is drawn round the
    mirror, a face a frame (six frames, never while you move), and blurred as the house's own reflection is, so the mirror shows its room;
    no shader added (the same kind and size of reflection). Made again for the evening */
@@ -172,7 +172,7 @@ const finishEnv = m => m.userData.hk === "glass" ? 0.3 : m.userData.hk === "scre
 let HENVK = 1;
 function houseEnvK(k) {   // V2.21 (REAL_PLAN R1): the house's reflections scaled (an evening in a room: its own light leads)
   if (!HMATS || k === HENVK) return; HENVK = k;
-  for (const m of Object.values(HMATS)) if (m && m.envMap && "envMapIntensity" in m) m.envMapIntensity = m.userData.real ? 1 : finishEnv(m) * k;   // V3.47: a mirror shows its room as it is
+  for (const m of Object.values(HMATS)) if (m && m.envMap && "envMapIntensity" in m) m.envMapIntensity = m.userData.real ? 1 : finishEnv(m) * k;   // V3.49: a mirror shows its room as it is
   for (const m of paintMats.values()) if (m && m.envMap && m.userData.hk) m.envMapIntensity = finishEnv(m) * k;
 }
 let RMODE = "in", hidMode = [], RPLANES = [];   // v71: how a room of the house is seen (in it, above, on its own) and what that put away

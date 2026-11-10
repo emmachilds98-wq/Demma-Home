@@ -58,7 +58,7 @@ function outdoor() {
     u.sunPosition.value.copy(dayLight.position).sub(dayLight.target.position).normalize(); sk.scale.setScalar(50); sc.add(sk);
     OUT.skyEnv = pm.fromScene(sc, 0.02, 0.1, 100).texture; pm.dispose(); sk.geometry.dispose(); sk.material.dispose();
   }
-  if (HMATS && OUT.skyEnv) { const e = house ? OUT.skyEnv : houseEnv(); for (const m of Object.values(HMATS)) if (m.envMap && m.envMap !== e && !m.userData.real) m.envMap = e; }   // V3.47: a mirror keeps its room
+  if (HMATS && OUT.skyEnv) { const e = house ? OUT.skyEnv : houseEnv(); for (const m of Object.values(HMATS)) if (m.envMap && m.envMap !== e && !m.userData.real) m.envMap = e; }   // V3.49: a mirror keeps its room
   const liv = room && !HOUSEV(S.view);   // the living room is drawn on its own: its outside brings the gardens; a house room has the house's
   if (liv && !OUT.plants) { OUT.plants = new THREE.Group(); buildPlants(OUT.plants); buildBeyond(OUT.plants, null);   // V1.6: and the gardens round ours
     buildThings(OUT.plants, "ours"); buildThings(OUT.plants, "next"); buildNextGardens(OUT.plants); scene.add(OUT.plants); }   // the house's own are in its outside, built with it
