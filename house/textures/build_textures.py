@@ -222,35 +222,55 @@ def tiles():
         d = np.minimum(np.minimum(lx, tw - lx), np.minimum(ly, th - ly))       # to the tile's nearest edge
         g = gmm / 20; inG = d < g
         h = np.where(inG, 0.0, np.clip((d - g) / max(bmm / 10, cm), 0, 1))
-        h = np.where(inG, 0, 1 - (1 - h) ** 2) * (0.15 + bmm / 10 * 0.4)      # cm: the grout 1.5 mm down, the bevel's rise
+        h = np.where(inG, 0, 1 - (1 - h) ** 2) * (0.25 + bmm / 10 * 0.4)      # cm: the grout 2.5 mm down (V3.32, N84: was 1.5, lost at a room's distance), the bevel's rise
         ti = (row * 7 + col * 3) % 11                                          # each tile its own
         c0 = np.array([int(face[i:i + 2], 16) for i in (1, 3, 5)], np.float32)
-        if look == "veins":                                                    # white veins across black on the slant, hairlines off them
-            n, n2, mk = fbm(px, 11, 3, 5), fbm(px, 12, 5, 5), fbm(px, 13, 4, 4); ph = ti * 1.7
-            v1 = 1 - np.abs(np.sin((x * 0.6 + y * 0.8) / 11 + n * 3.2 + ph))
-            v2 = 1 - np.abs(np.sin((x * 0.9 - y * 0.45) / 5 + n2 * 4 + ph * 2))
-            vein = v1 ** 16 * (0.45 + 0.55 * mk) + v2 ** 40 * 0.55 * np.clip(mk * 2 - 0.7, 0, 1) + v1 ** 3 * 0.08
-            col_ = c0[None, None] * (0.92 + n2[..., None] * 0.25) + np.clip(vein, 0, 1)[..., None] * (np.array([228, 228, 232]) - c0)
+        yi, xi = np.mgrid[0:px, 0:px]
+        if look == "veins":                                                    # V3.32 (N84): the photo's Nero Marquina look: hairline white veins
+            sh = lambda f, s=1: f[(yi + (ti * 89 * s).astype(int)) % px, (xi + (ti * 53 * s).astype(int)) % px]   # each tile its own run
+            def line(n, w):                                                    # a level line of soft noise, w px wide whatever its slope
+                gy_, gx_ = np.gradient(n); return np.exp(-(np.abs(n - 0.5) / (np.hypot(gx_, gy_) + 1e-4) / w) ** 2)
+            rs = np.random.default_rng(5); A = np.radians(35 + rs.normal(0, 18, 11)); P = rs.uniform(70, 110, 11); Q = rs.random(11)
+            t_ = ti.astype(int); ca, sa = np.cos(A[t_]), np.sin(A[t_])                # each tile its own slant, spacing and place
+            u1 = (lx * ca + ly * sa) / P[t_] + Q[t_] + sh(fbm(px, 11, 3, 5)) * 0.35   # the big veins: one or two a tile, drifting on the slant
+            u2 = (lx * -sa + ly * ca) / 26 + sh(fbm(px, 12, 4, 5), 2) * 1.1              # hairline branches off them, across
+            u3 = (lx * np.cos(A[t_] + 0.5) + ly * np.sin(A[t_] + 0.5)) / (P[t_] * 0.6) + Q[t_] * 3 + sh(fbm(px, 15, 4, 5), 4) * 0.5   # a fainter one crossing
+            main, fine, third = (0.5 + 0.5 * np.sin(u * 2 * np.pi) for u in (u1, u2, u3))
+            mask, cloud = sh(fbm(px, 13, 3, 4), 3), fbm(px, 14, 3, 5)
+            near = line(main, 90)                                              # the branches only by a big vein, as in the photo
+            vein = np.maximum.reduce([line(main, 1.3) * np.clip(mask * 1.8 - 0.3, 0, 1), line(fine, 0.6) * near * np.clip(mask * 2.5 - 1.2, 0, 1) * 0.7,
+                              line(third, 0.8) * np.clip(1.6 - mask * 2.6, 0, 1) * 0.45])
+            halo = line(main, 7) * 0.06                                        # a faint grey bloom beside the big vein, not a glow
+            k = 0.86 + 0.32 * cloud + ((ti % 5) - 2) * 0.02                    # charcoal clouds, a shade apart tile to tile
+            col_ = c0[None, None] * k[..., None] + np.clip(vein + halo, 0, 1)[..., None] * (np.array([226, 226, 230]) - c0)
         elif look == "stone":                                                  # V2.40 (the photo): a travertine look: bands of thin grey
-            yi, xi = np.mgrid[0:px, 0:px]; sh = lambda f: f[(yi + (ti * 97).astype(int)) % px, xi]   # each tile its own run of the stone
+            sh = lambda f: f[(yi + (ti * 97).astype(int)) % px, xi]           # each tile its own run of the stone
             m, st = fbm(px, 21, 6, 5), sh(fbm(px, 22, 3, 6, 24))               # fine streaks along the tile, a shade apart tile to tile
             ln = (1 - np.abs(st * 2 - 1)) ** 12 * np.clip((sh(fbm(px, 23, 3, 4, 8)) - 0.35) * 2.5, 0, 1)   # and thin darker veins in them
             k = 1 + (st - 0.5) * 0.15 + (m - 0.5) * 0.05 + ((ti % 5) - 2) * 0.015 - ln * 0.14
             col_ = c0[None, None] * k[..., None]; h = h + np.where(inG, 0, (m - 0.5) * 0.02)
         elif look == "lime":                                                   # V3.14: a limestone print: soft clouds, fine specks, each tile its own
-            yi, xi = np.mgrid[0:px, 0:px]; sh = lambda f: f[(yi + (ti * 131).astype(int)) % px, (xi + (ti * 57).astype(int)) % px]
+            sh = lambda f: f[(yi + (ti * 131).astype(int)) % px, (xi + (ti * 57).astype(int)) % px]
             m, f2, sp = sh(fbm(px, 61, 3, 6)), sh(fbm(px, 62, 8, 4)), sh(fbm(px, 63, 64, 2))
             k = 1 + (m - 0.5) * 0.09 + (f2 - 0.5) * 0.04 - np.clip(sp - 0.82, 0, 1) * 0.6 + ((ti % 5) - 2) * 0.01
             col_ = c0[None, None] * k[..., None]
-        else:
-            col_ = c0[None, None] * (0.97 + 0.06 * fbm(px, 31, 4, 3))[..., None]
+        else:                                                                  # V3.32 (N84): glazed, each tile a hair its own shade
+            col_ = c0[None, None] * (0.95 + 0.06 * fbm(px, 31, 4, 3) + ((ti % 5) - 2) * 0.025)[..., None]
+        # V3.32 (N84): a glazed or polished face is never quite flat: each tile laid a hair off level (lippage) and its glaze a little
+        # wavy, so the reflections break tile to tile as in the photos (a step or two of the normal map's 8 bits; the metro's handmade
+        # wave most); the joint's shadow under the tile's lip, and the grout's sand
+        rs = np.random.default_rng(len(key) * 31); tilt = rs.normal(0, 1, (11, 2)) * (0.012 if look else 0.02)
+        wav = fbm(px, 71, 3, 3) * (0.03 if look else 0.08)
+        h = h + np.where(inG, fbm(px, 42, 48, 2) * 0.03, tilt[ti.astype(int), 0] * (lx - tw / 2) + tilt[ti.astype(int), 1] * (ly - th / 2) + wav)
+        col_ = col_ * (1 - 0.14 * np.clip(1 - (d - g) / 0.35, 0, 1) ** 2)[..., None]   # the tile's edge darker into the joint
         gc = np.array([int(grout[i:i + 2], 16) for i in (1, 3, 5)], np.float32)
-        col_ = np.where(inG[..., None], gc * (0.94 + 0.08 * fbm(px, 41, 16, 3))[..., None], col_)
+        col_ = np.where(inG[..., None], gc * ((0.94 + 0.08 * fbm(px, 41, 16, 3)) * (0.82 + 0.18 * np.clip(d / g * 1.4, 0, 1)))[..., None], col_)
         gy, gx = np.gradient(h, cm)                                            # cm per cm, rows down the picture
         nrm = np.dstack([-gx, gy, np.ones_like(h)]); nrm /= np.linalg.norm(nrm, axis=-1, keepdims=True)
+        rface = rf * (0.8 + 0.4 * fbm(px, 72, 2, 4))                           # V3.32: the shine a little uneven (wear, a wipe), never patchy
         Image.fromarray(np.clip(col_, 0, 255).astype("uint8")).save(HERE / f"{key}_map.jpg", quality=84, optimize=True)
         Image.fromarray(((nrm + 1) * 127.5).clip(0, 255).astype("uint8")).save(HERE / f"{key}_nor.jpg", quality=88, optimize=True)
-        Image.fromarray((np.where(inG, rg, rf) * 255).astype("uint8")).resize((px // 2,) * 2, Image.BOX).save(HERE / f"{key}_rough.jpg", quality=88)
+        Image.fromarray((np.where(inG, rg, rface) * 255).astype("uint8")).resize((px // 2,) * 2, Image.BOX).save(HERE / f"{key}_rough.jpg", quality=88)
         meta[key] = dict(asset="made by build_textures.tiles", size=size, url="", licence="ours")
         print("tiles", key)
     (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
@@ -344,6 +364,7 @@ def floors():
         gr = (src[sy, sx].mean(-1) / 255)                                               # the grain's relief (brushed): darker sinks
         h = (1 - (1 - e) ** 2) * 0.1 + gr * 0.02
         gy, gx = np.gradient(h, cm)
+        tl = rng.normal(0, 0.012, (nb, 2)); gx = gx + tl[idx, 0]; gy = gy + tl[idx, 1]   # V3.35 (N86): each board a hair off level, its sheen its own
         nrm = np.dstack([-gx, gy, np.ones_like(h)]); nrm /= np.linalg.norm(nrm, axis=-1, keepdims=True)
         r = np.where(e < 1, 0.8, 0.55 if kind == "herring" else 0.45) + (gr - 0.5) * 0.1
         Image.fromarray(np.clip(col, 0, 255).astype("uint8")).save(HERE / f"{key}_map.jpg", quality=84, optimize=True)
@@ -351,6 +372,45 @@ def floors():
         Image.fromarray((np.clip(r, 0, 1) * 255).astype("uint8")).resize((px // 2,) * 2, Image.BOX).save(HERE / f"{key}_rough.jpg", quality=86)
         meta[key] = dict(asset="made by build_textures.floors (from oak_veneer_01)", size=round(size, 4), url="", licence="ours")
         print("floors", key, nb, "pieces")
+    (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
+
+
+# V3.35 (N86): the laminate's planks read as planks: Poly Haven's normal map is all but flat, so the joints (its picture's dark 1-2 px lines:
+# a row every 128 px, each row's end joints) are cut into it as a micro-bevelled V (0.6 mm), and each plank laid a hair off level as real
+# boards are (the sheen breaks plank to plank, a step or two of the normal map's 8 bits). Once: textures.json notes it ("seams")
+SEAMS = {"laminate": (0.06, 0.012)}   # key: (groove cm, a plank's tilt)
+
+
+def seams():
+    """python3 house/textures/build_textures.py --seams   cuts the joints into <key>_nor.jpg from <key>_map.jpg (no download)"""
+    import numpy as np
+    from PIL import ImageFilter
+    meta = json.loads((HERE / "textures.json").read_text())
+    for key, (depth, tilt) in SEAMS.items():
+        if meta[key].get("seams"):
+            print("seams", key, "already cut"); continue
+        g = np.asarray(Image.open(HERE / f"{key}_map.jpg").convert("L"), np.float32); px = g.shape[0]; cm = meta[key]["size"] * 100 / px
+        rows = np.where(g.mean(1) < g.mean() - 20)[0]                         # the long joints: rows far darker than the rest
+        rows = [r for i, r in enumerate(rows) if not i or r - rows[i - 1] > 4]
+        seam = np.zeros_like(g); seam[rows] = 1; pid = np.zeros(g.shape, np.int64)
+        edges = rows + [rows[0] + px]
+        for i, (a, b) in enumerate(zip(edges, edges[1:])):                    # each row of planks, its end joints
+            ys = np.arange(a + 3, b - 2) % px; c = g[ys].mean(0)
+            ends = np.where(c < c.mean() - 25)[0]; ends = [e for j, e in enumerate(ends) if not j or e - ends[j - 1] > 4]
+            for e in ends: seam[ys, e] = 1
+            cut = [0] + list(ends) + [px]
+            for j, (u, v) in enumerate(zip(cut, cut[1:])): pid[np.ix_(ys, np.arange(u, v))] = i * 16 + j
+            if ends: pid[np.ix_(ys, np.arange(ends[-1], px))] = i * 16       # the last plank wraps round to the first
+        v = np.asarray(Image.fromarray((seam * 255).astype("uint8")).filter(ImageFilter.GaussianBlur(1.0)), np.float32) / 255
+        h = -depth * np.clip(v / (v.max() or 1) * 1.6, 0, 1)
+        rs = np.random.default_rng(9); t = rs.normal(0, tilt, (pid.max() + 1, 2)); y, x = np.mgrid[0:px, 0:px] * cm
+        gy, gx = np.gradient(h, cm); gx = gx + t[pid, 0]; gy = gy + t[pid, 1]
+        n0 = np.asarray(Image.open(HERE / f"{key}_nor.jpg").convert("RGB"), np.float32) / 127.5 - 1   # the photo's own relief kept
+        sx, sy = n0[..., 0] / np.maximum(n0[..., 2], 0.2), n0[..., 1] / np.maximum(n0[..., 2], 0.2)
+        nrm = np.dstack([sx - gx, sy + gy, np.ones_like(h)]); nrm /= np.linalg.norm(nrm, axis=-1, keepdims=True)
+        Image.fromarray(((nrm + 1) * 127.5).clip(0, 255).astype("uint8")).save(HERE / f"{key}_nor.jpg", quality=88, optimize=True)
+        meta[key]["seams"] = True
+        print("seams", key, len(rows), "rows,", int(seam.sum()), "px of joint")
     (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
 
 
@@ -381,4 +441,4 @@ def slim():
 
 
 if __name__ == "__main__":
-    {"--buff": buff, "--rough": rough, "--tiles": tiles, "--finishes": finishes, "--floors": floors, "--slim": slim}.get((sys.argv[1:] or [""])[0], lambda: main(sys.argv[1]))()
+    {"--buff": buff, "--rough": rough, "--tiles": tiles, "--finishes": finishes, "--floors": floors, "--slim": slim, "--seams": seams}.get((sys.argv[1:] or [""])[0], lambda: main(sys.argv[1]))()
