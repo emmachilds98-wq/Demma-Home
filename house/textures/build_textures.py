@@ -446,20 +446,22 @@ def polish():
 # 4-level spread round its mean (a real birch face shows its figure and its darker lines from across a room). Its light and shade steepened
 # round the mean, the darker lines a touch more amber (as lacquered birch yellows). Once: textures.json notes it ("contrast").
 # key: (steeper by, the darker lines' warmth)
-CONTRAST = {"birch": (3.0, 0.35)}
+CONTRAST = {"birch": (3.0, 0.35), "concrete": (0.55, 0.0, 0.7)}   # concrete (N96): the trowel swirls at half, the brown three-tenths left
 
 
 def contrast():
     """python3 house/textures/build_textures.py --contrast   steepens <key>_map.jpg's light and shade in place (no download)"""
     import numpy as np
     meta = json.loads((HERE / "textures.json").read_text())
-    for key, (k, warm) in CONTRAST.items():
+    for key, (k, warm, *grey) in CONTRAST.items():
         if meta[key].get("contrast"):
             print("contrast", key, "already done"); continue
         a = np.asarray(Image.open(HERE / f"{key}_map.jpg").convert("RGB"), np.float32)
         m = a.mean((0, 1)); L = a.mean(-1, keepdims=True); d = L - L.mean()
         out = a + d * (k - 1)                                                 # the same hue, the shade k times as deep
         out = out + np.clip(-d, 0, None) * warm * np.array([0.25, 0.0, -0.6])  # the darker lines warmer
+        if grey:                                                              # the hue taken toward its grey by that part
+            out = out + (out.mean(-1, keepdims=True) - out) * grey[0]; m = m + (m.mean() - m) * grey[0]
         out = out - (out.mean((0, 1)) - m)                                    # the mean kept: MATS's colour holds
         Image.fromarray(np.clip(out, 0, 255).astype("uint8")).save(HERE / f"{key}_map.jpg", quality=84, optimize=True)
         meta[key]["contrast"] = k

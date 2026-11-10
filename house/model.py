@@ -2426,7 +2426,7 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "brick": ("#9a4b36", 0.92), "party": ("#9a4b36", 0.92), "soldier": ("#83402e", 0.9), "paint": ("#f1ede5", 0.85), "stairpaint": ("#2d5a46", 0.92),
     "upvc": ("#f5f5f2", 0.35), "frame_out": ("#f5f5f2", 0.35), "door_out": ("#f5f5f2", 0.35), "glass": ("#dfe9ee", 0.03), "glass_frost": ("#e8edef", 0.5), "artex": ("#f3f2ee", 0.97), "door_cream": ("#e8ddc2", 0.4), "mirror": ("#eef2f3", 0.04), "brass": ("#c9b58a", 0.3), "rib": ("#e2e2de", 0.5),
     "tile": ("#7b5a4b", 0.85), "ridge": ("#6d4c3f", 0.85), "hung": ("#6f4636", 0.85), "felt": ("#3d3b3a", 0.9),
-    "slab": ("#cfc8bb", 0.95), "carpet": ("#cdbfa6", 1.0), "tile_f": ("#d9d4cb", 0.6), "vinyl": ("#cdd8da", 0.6), "concrete": ("#a8a49c", 0.95),
+    "slab": ("#cfc8bb", 0.95), "carpet": ("#cdbfa6", 1.0), "tile_f": ("#d9d4cb", 0.6), "vinyl": ("#cdd8da", 0.6), "concrete": ("#b1afaa", 0.85),
     "earth": ("#8a8173", 1.0), "brick_buff": ("#d6c7a3", 0.92), "chipboard": ("#c8ad80", 0.85), "porch_in": ("#a7a49c", 0.9), "bin": ("#2f3236", 0.6), "recycle": ("#2b5d9a", 0.6), "quarry": ("#b25a43", 0.7), "board": ("#c4b79f", 0.9), "fitting": ("#f6f6f3", 0.18),
     "eaves": ("#e7e1d6", 0.9), "garage_blue": ("#2c3b63", 0.45), "garage_white": ("#ecebe7", 0.4), "garage_black": ("#26282a", 0.45), "timber": ("#8a5a35", 0.8), "pane": ("#3a4550", 0.08),
     "gloss": ("#f4f4f1", 0.12), "gap": ("#9b9a95", 0.6), "black": ("#1d1d1f", 0.5), "black_app": ("#1f2023", 0.35), "glass_dark": ("#17191c", 0.1),
