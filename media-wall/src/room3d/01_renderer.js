@@ -216,8 +216,15 @@ let phoneAO = GOOD_PHONE, phoneAOoff = false, phoneCap = 2;   // V1.11: on from 
    And a phone in HD always draws through the composer, the shade on or off: the shaders for a target and for the screen differ, so
    the shade going off after the speed check built every shader in sight again (15 to 30 programs: seconds on a phone) */
 const PHONE_HD = GOOD_PHONE && !BIG_GPU, dragLite = () => PHONE_HD && postLive();
+/* V3.37 (N88), the client 10 Nov 2026: "pc is getting better but still some stutter when moving, i want smooth motion like im there when
+   walking through the house". The phone leaves out the soft shade and the glow while it moves and is smooth; a PC kept both on every
+   frame of a walk, on a 144-165 Hz screen close to the frame's whole time (6-7 ms), so a frame now and then missed its turn: an uneven
+   step, a stutter. Now a PC does as the phone does: while you walk, look round or drag, the shade and the glow wait (the same shaders,
+   the passes skipped, nothing rebuilt), and they come back a quarter of a second after you stop. ?fullmove keeps them on */
+let moveLite = false;
+const MOVE_LITE = !/[?&]fullmove\b/.test(location.search);
 const postLive = () => S.quality === "hd" && (BIG_GPU || GOOD_PHONE || /[?&]ao\b/.test(location.search)) && !/[?&]noao\b/.test(location.search);   // V2.64: drawn through the composer
-const aoLive = () => postLive() && (BIG_GPU || phoneAO || /[?&]ao\b/.test(location.search)) && !(houseLite && R.HOUSE3 && HOUSEV(S.view)) && !(dragLite() && lowRes);   // ?ao tries it anywhere; V2.64: a slow phone leaves the shade out while you drag, not the sharpness (no new buffers)
+const aoLive = () => postLive() && (BIG_GPU || phoneAO || /[?&]ao\b/.test(location.search)) && !(houseLite && R.HOUSE3 && HOUSEV(S.view)) && !(dragLite() && lowRes) && !moveLite;   // ?ao tries it anywhere; V2.64: a slow phone leaves the shade out while you drag, not the sharpness (no new buffers)
 function aoComposer(w, h, pr) {
   if (!AO.c) {
     const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: SMALL ? (GOOD_PHONE ? 4 : 0) : 4, depthTexture: new THREE.DepthTexture(w, h) });   // anti-aliased, as on screen
@@ -238,7 +245,7 @@ function aoComposer(w, h, pr) {
 }
 function draw() {                     // a frame: through the composer with AO, or straight to the screen
   if (postLive()) { const sz = gl.getSize(new THREE.Vector2()); if (!AO.c || AO.w !== sz.x || AO.h !== sz.y || AO.pr !== gl.getPixelRatio()) { aoComposer(sz.x, sz.y, gl.getPixelRatio()); AO.w = sz.x; AO.h = sz.y; AO.pr = gl.getPixelRatio(); }
-    const glow = AO.b.enabled; if (dragLite() && lowRes) AO.b.enabled = false;   // V2.73 (N17): no glow on a phone while it moves (its 10 passes); back as it stops
+    const glow = AO.b.enabled; if ((dragLite() && lowRes) || moveLite) AO.b.enabled = false;   // V2.73 (N17): no glow on a phone while it moves (its 10 passes); back as it stops; V3.37: a PC's too (moveLite)
     AO.g.enabled = aoLive(); if (AO.g.depthTexture !== AO.c.readBuffer.depthTexture) AO.g.setGBuffer(AO.c.readBuffer.depthTexture);   // the target the scene draws into this frame
     gl.info.autoReset = false; gl.info.reset(); AO.c.render(); gl.info.autoReset = true; AO.b.enabled = glow; }   // the count covers every pass
   else gl.render(scene, camera);
