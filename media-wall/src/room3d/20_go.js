@@ -17,7 +17,7 @@ const HTEX = {}, HI_T = new Set(["tile_w", "tile_f", "door_wood", "chalk"]);
    metal; these keep their own colour over a white detail map (TINT) */
 const HTEX_AS = { frame_out: "upvc", door_out: "upvc", gutter: "upvc", sill_board: "upvc", skirting: "gloss", door_white: "gloss", door_cream: "gloss", newel: "gloss", rail_white: "gloss", steel: "brushed", steel_dark: "brushed" };
 const HTEX_TINT = new Set(["upvc", "gloss", "brushed"]);
-/* V3.33 (N84): the soft things still flat colour in their own colours over the cotton's white, each with a relief of its kind: the
+/* V3.35 (N86): the soft things still flat colour in their own colours over the cotton's white, each with a relief of its kind: the
    tapestry's dark border and the roller blinds woven as the chair-bed, the music room's felt panels knitted, the bath mats' pile as the
    carpet's (the rug, the fabric boxes and the tapestry keep their drawn weaves, T below) */
 const SOFT_REL = { tapestry_dark: "lycksele", blind_cloth: "lycksele", panel: "check", bathmat: "carpet_grey" };
@@ -99,7 +99,7 @@ function houseTex(k) {
   if (k === "paint") return (HTEX[k] = null);
   const rel = /^cloth\d$/.test(k) ? "check" : SOFT_REL[k];
   if (rel) { const J = houseTex(rel), W = houseTex("duvet");   // V3.32 (N82): the garments in their own colours over the poplin's white, with the knit's relief (they were flat card); a map and a relief, as the throw's: no shader of their own
-    return (HTEX[k] = J && J.normal && W && W.map ? { map: W.map, normal: J.normal, size: J.size, bump: 0, rough: null, roughMean: 0, tint: true } : null); }   // V3.33 (N84): the other soft things the same way, each its own relief   // V2.2, the client: "ensure walls are all smooth": flat emulsion, no plaster relief
+    return (HTEX[k] = J && J.normal && W && W.map ? { map: W.map, normal: J.normal, size: J.size, bump: 0, rough: null, roughMean: 0, tint: true } : null); }   // V3.35 (N86): the other soft things the same way, each its own relief   // V2.2, the client: "ensure walls are all smooth": flat emulsion, no plaster relief
   /* v70 (BUILD_SPEC phase 3): CC0 photo-textures (Poly Haven, house/SOURCES.md) and our own (build_textures.py) where we have them; the drawn
      ones below for the rest (V2.37: the ones a photo replaced gone) */
   const pkey = { party: "brick", soldier: "brick", pillow: "duvet", mattress: "duvet", ceiling: "artex", knob: "pine_dark", ...HTEX_AS }[k] || k, pm = PMETA[pkey];   // V1.21: the bedding's one cotton
