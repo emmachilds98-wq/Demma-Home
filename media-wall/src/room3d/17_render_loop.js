@@ -114,7 +114,7 @@ function frame(now) {
   const go = moving || (walked && dragLite());
   if (go && slowDev) { if (!dragT) dragT = now; still_t = now; if (!lowRes && now - dragT > 150) { lowRes = true; dragLite() ? dirty() : sizeRenderer(); } }
   else { dragT = 0; if (active) still_t = now; else if (lowRes && now - still_t > 250) { lowRes = false; if (capDue) { capDue = false; phoneCap = 1.5; sizeRenderer(); } else dragLite() ? dirty() : sizeRenderer(); } }
-  if (MOVE_LITE && BIG_GPU) { if (active || walking() && (WALK.v.lengthSq() > 1e-5 || WALK.keys.size)) { if (!moveLite) moveLite = true; } else if (moveLite && now - still_t > 250) { moveLite = false; need = Math.max(need, 1); } }   // V3.38 (N89)
+  if (MOVE_LITE && BIG_GPU) { if (active || walking() && (WALK.v.lengthSq() > 1e-5 || WALK.keys.size)) { if (!moveLite) moveLite = true; } else if (moveLite && now - still_t > 250) { moveLite = false; need = Math.max(need, 1); } }   // V3.39 (N91)
   if (updateCut()) need = 2;
   upStep(now, active || walking());                                // V2.64: the photos onto the graphics chip a few at a time
   if (probe > 0 && !lowRes) need = Math.max(need, 1);                 // v35: the speed check's three frames come first, at the start
