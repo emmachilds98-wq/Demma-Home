@@ -76,7 +76,7 @@ function declutter() {
     s_.material.visible = !hit; if (!hit) kept.push(r);
   }
 }
-/* V3.40 (N92), the client 10 Nov 2026: "GPU is becoming very fast when i boot the site". Measured on her RTX 5070 (2560 × 1440, 155 Hz):
+/* V3.41 (N93), the client 10 Nov 2026: "GPU is becoming very fast when i boot the site". Measured on her RTX 5070 (2560 × 1440, 155 Hz):
    once the house has opened and warmed (about 6 s) nothing is drawn while it's still; but with the welcome card up, the house's slow turn
    behind it drew every frame the screen offered, 156 a second through the shade's composer, for as long as the card stayed (the 3D engine
    at 28 % against 7 % at rest), and three's turn is a fixed step a frame, so it went 2.6 times as fast as on a 60 Hz screen. Now the turn
@@ -102,7 +102,7 @@ function frame(now) {
   /* V2.60, the client: "make it fluid and smooth": the glide after a drag eased a fifth of the way each frame, so it ran out twice as fast
      on a 120 Hz screen as on a 60 Hz one and jumped when a frame ran long; now the same fifth each 60th of a second, at any frame rate */
   controls.dampingFactor = 1 - Math.pow(1 - DAMP, Math.max(dt, 1 / 240) * 60);
-  const changed = controls.update(spin ? dt : null);   // V3.40: the turn by the time passed (three's own is a step a frame)
+  const changed = controls.update(spin ? dt : null);   // V3.41: the turn by the time passed (three's own is a step a frame)
   if (changed) { need = 2; lostCheck(); }
   if (cabTween(now)) need = 2;                                    // v30: the cabinet's doors swinging or sliding
   if (liftTick(now)) need = 2;                                    // v68: Lift the bed

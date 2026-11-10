@@ -362,7 +362,7 @@ const WEL_T = { in: ["Double-click in", "Double-tap in"], look: ["Drag round", "
 function welcome(on) {
   if (!WEL || WEL.hidden === !on) return;
   WEL.hidden = !on; root.classList.toggle("welcoming", on); BRAND?.setAttribute("aria-expanded", String(on));
-  controls.autoRotate = on && S.view === "house" && !REDUCE && !COARSE; controls.autoRotateSpeed = 0.45; SPIN.t0 = performance.now(); dirty();   // V3.40: SPIN, the turn's minute (17_render_loop)   // a phone keeps still (its photos loading)
+  controls.autoRotate = on && S.view === "house" && !REDUCE && !COARSE; controls.autoRotateSpeed = 0.45; SPIN.t0 = performance.now(); dirty();   // V3.41: SPIN, the turn's minute (17_render_loop)   // a phone keeps still (its photos loading)
   if (on) { WEL.querySelectorAll("[data-wk]").forEach(el => { el.textContent = WEL_T[el.dataset.wk][COARSE ? 1 : 0]; }); WEL.querySelector(".primary")?.focus({ preventScroll: true }); }
 }
 WEL?.addEventListener("click", e => { const b = e.target.closest("[data-wgo]"); if (!b) return; welcome(false); if (b.dataset.wgo === "in") goRoom("hall"); });
