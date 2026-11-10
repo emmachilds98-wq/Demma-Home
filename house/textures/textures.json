@@ -21,7 +21,8 @@
   "asset": "brushed_concrete",
   "size": 2.5,
   "url": "https://polyhaven.com/a/brushed_concrete",
-  "licence": "CC0"
+  "licence": "CC0",
+  "contrast": 0.55
  },
  "road": {
   "asset": "asphalt_02",
