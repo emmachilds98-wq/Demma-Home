@@ -141,8 +141,19 @@ function houseEnv() {
   if (!HENV) { const pm = new THREE.PMREMGenerator(gl), rs = new RoomEnvironment(); HENV = pm.fromScene(rs, 0.04).texture; pm.dispose(); rs.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
   return HENV;
 }
-const finishEnv = m => m.userData.hk === "glass" ? 0.3 : m.userData.hk === "screen" ? 0.18 : m.roughness <= 0.3 ? 0.9 : m.roughness <= 0.6 ? 0.6 : 0.45;   // v72 (B3): gloss, satin, matt; V3.32 (N82): a screen that's off dark glass, as the living room's TV (the bright stock room in it read as a whiteboard)
+const finishEnv = m => m.userData.hk === "glass" ? (S.tod === "day" ? 0.3 : 0.75) : m.userData.hk === "screen" ? 0.18 : m.roughness <= 0.3 ? 0.9 : m.roughness <= 0.6 ? 0.6 : 0.45;   // v72 (B3): gloss, satin, matt; V3.32 (N82): a screen that's off dark glass, as the living room's TV (the bright stock room in it read as a whiteboard)
 let HENVK = 1;
+/* V3.51 (N103): the windows' glass by the time of day. Frosted (the bathroom's, the WC's) glows with the daylight through it, as the
+   photo, instead of showing the garden misted; by evening it's dark frosted glass with the room's light on it (it was flat navy).
+   Clear glass by evening catches more of the room, as a real pane at night. Colours and strengths only: no shader built */
+function glassTod(m) {
+  const k = m.userData.hk, day = S.tod === "day";
+  if (k === "glass_frost") { m.opacity = 0.97; m.depthWrite = true;   // all but opaque: it hides the dusk veil behind it (the veil drew over it as flat navy)
+    m.color.set(day ? "#e8edef" : "#69717f"); m.emissive.set(day ? "#eef0e6" : "#1f2738"); m.emissiveIntensity = day ? (S.view === "house" ? 0.35 : 1.9) : 0.6; }   // from outside by day a pale pane, not a lamp
+  if (k === "glass") m.opacity = day ? 0.14 : 0.3;
+  if (m.envMap && (k === "glass" || k === "glass_frost")) m.envMapIntensity = finishEnv(m) * HENVK;
+}
+const glassAll = () => { if (HMATS) for (const k of ["glass", "glass_frost"]) if (HMATS[k]) glassTod(HMATS[k]); };
 function houseEnvK(k) {   // V2.21 (REAL_PLAN R1): the house's reflections scaled (an evening in a room: its own light leads)
   if (!HMATS || k === HENVK) return; HENVK = k;
   for (const m of Object.values(HMATS)) if (m && m.envMap && "envMapIntensity" in m) m.envMapIntensity = finishEnv(m) * k;
