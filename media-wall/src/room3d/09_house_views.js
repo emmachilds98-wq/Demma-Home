@@ -141,7 +141,7 @@ function houseEnv() {
   if (!HENV) { const pm = new THREE.PMREMGenerator(gl), rs = new RoomEnvironment(); HENV = pm.fromScene(rs, 0.04).texture; pm.dispose(); rs.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
   return HENV;
 }
-/* V3.51 (N103), the client: "continue further shader and detail improvements": the hall's and the bathroom's mirrors showed a painted
+/* V3.53 (N105), the client: "continue further shader and detail improvements": the hall's and the bathroom's mirrors showed a painted
    sheen (a grey-blue gradient), never the room. Standing in one of those rooms in HD (drawn through the shade's composer, so the frame's shaders are already the kind a reflection draws with), once you've paused, the room is drawn round the
    mirror, a face a frame (six frames, never while you move), and blurred as the house's own reflection is, so the mirror shows its room;
    no shader added (the same kind and size of reflection). Made again for the evening */
@@ -168,11 +168,22 @@ function mirrorUse(m, tex) {
   if (!MIR.white) MIR.white = canvasTex(4, 4, (g, w, h) => { g.fillStyle = "#ffffff"; g.fillRect(0, 0, w, h); }, true);
   m.userData.real = true; m.envMap = tex; m.envMapIntensity = 1; m.metalness = 1; m.roughness = 0.03; m.color.set("#f4f6f6"); m.map = MIR.white; dirty();
 }
-const finishEnv = m => m.userData.hk === "glass" ? 0.3 : m.userData.hk === "screen" ? 0.18 : m.roughness <= 0.3 ? 0.9 : m.roughness <= 0.6 ? 0.6 : 0.45;   // v72 (B3): gloss, satin, matt; V3.32 (N82): a screen that's off dark glass, as the living room's TV (the bright stock room in it read as a whiteboard)
+const finishEnv = m => m.userData.hk === "glass" ? (S.tod === "day" ? 0.3 : 0.75) : m.userData.hk === "screen" ? 0.18 : m.roughness <= 0.3 ? 0.9 : m.roughness <= 0.6 ? 0.6 : 0.45;   // v72 (B3): gloss, satin, matt; V3.32 (N82): a screen that's off dark glass, as the living room's TV (the bright stock room in it read as a whiteboard)
 let HENVK = 1;
+/* V3.52 (N104): the windows' glass by the time of day. Frosted (the bathroom's, the WC's) glows with the daylight through it, as the
+   photo, instead of showing the garden misted; by evening it's dark frosted glass with the room's light on it (it was flat navy).
+   Clear glass by evening catches more of the room, as a real pane at night. Colours and strengths only: no shader built */
+function glassTod(m) {
+  const k = m.userData.hk, day = S.tod === "day";
+  if (k === "glass_frost") { m.opacity = 0.97; m.depthWrite = true;   // all but opaque: it hides the dusk veil behind it (the veil drew over it as flat navy)
+    m.color.set(day ? "#e8edef" : "#69717f"); m.emissive.set(day ? "#eef0e6" : "#1f2738"); m.emissiveIntensity = day ? (S.view === "house" ? 0.35 : 1.9) : 0.6; }   // from outside by day a pale pane, not a lamp
+  if (k === "glass") m.opacity = day ? 0.14 : 0.3;
+  if (m.envMap && (k === "glass" || k === "glass_frost")) m.envMapIntensity = finishEnv(m) * HENVK;
+}
+const glassAll = () => { if (HMATS) for (const k of ["glass", "glass_frost"]) if (HMATS[k]) glassTod(HMATS[k]); };
 function houseEnvK(k) {   // V2.21 (REAL_PLAN R1): the house's reflections scaled (an evening in a room: its own light leads)
   if (!HMATS || k === HENVK) return; HENVK = k;
-  for (const m of Object.values(HMATS)) if (m && m.envMap && "envMapIntensity" in m) m.envMapIntensity = m.userData.real ? 1 : finishEnv(m) * k;   // V3.51: a mirror shows its room as it is
+  for (const m of Object.values(HMATS)) if (m && m.envMap && "envMapIntensity" in m) m.envMapIntensity = m.userData.real ? 1 : finishEnv(m) * k;   // V3.53: a mirror shows its room as it is
   for (const m of paintMats.values()) if (m && m.envMap && m.userData.hk) m.envMapIntensity = finishEnv(m) * k;
 }
 let RMODE = "in", hidMode = [], RPLANES = [];   // v71: how a room of the house is seen (in it, above, on its own) and what that put away
