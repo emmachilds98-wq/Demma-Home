@@ -48,6 +48,7 @@ function outdoor() {
     quad(-E, A0, zb, yb, zf, yt, false, true); quad(A0, A1, zb, yb, zf, yt, true, true); quad(482, E, zb, yb, zf, yt, false, true);   // the slope the terrace is built into (by it, the alley's own steps with Gardens on); V1.47, the client: "the garden green floor can be seen through the window of the kitchen": not across the house (A1 to its party wall, 482), where it ran through the lower floor's rooms
     quad(-E, E, zf, yt, E, yt);                                                                     // the street's side, out to the horizon
     buildBeyond(null, g);                                                                           // V1.4: the hill opposite
+    buildStreet(g);                                                                                 // V3.41 (N81): the street out front
     scene.add(g);
   }
   if (house && !OUT.skyEnv) {   // V1.13 (QUALITY_PLAN Q3): outside, the house reflects its own sky: an environment made from a sky like the
