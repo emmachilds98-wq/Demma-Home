@@ -102,7 +102,8 @@
   "asset": "granite_tile_03",
   "size": 0.6,
   "url": "https://polyhaven.com/a/granite_tile_03",
-  "licence": "CC0"
+  "licence": "CC0",
+  "polished": true
  },
  "artex": {
   "asset": "made by build_textures.stipple",
