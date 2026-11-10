@@ -39,7 +39,8 @@
   "asset": "laminate_floor_02",
   "size": 1.7,
   "url": "https://polyhaven.com/a/laminate_floor_02",
-  "licence": "CC0"
+  "licence": "CC0",
+  "seams": true
  },
  "carpet_grey": {
   "asset": "Carpet012",
