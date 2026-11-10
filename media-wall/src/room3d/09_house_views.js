@@ -86,8 +86,10 @@ function placeRoomLights() {
   ROOMLIGHTS.forEach((l, k) => { const L = list[k]; l.visible = !!L; if (!L) return; l.distance = L.reach ? L.reach * M : 7;
     if (L.reach) { l.position.copy(v3(L.x, L.y, L.z)); l.intensity = day ? 0 : L.k * fb.lux; l.color.set(L.col); return; }
     const drop = L.drop != null && !(typeof finGet === "function" && finGet(L.room, 8)) ? L.drop : typeof finFitDrop === "function" ? finFitDrop(L.room) : 40;   // the kitchen's battens are flush
-    l.position.copy(v3(L.x, L.y - drop, L.z)); l.intensity = (day ? 3 : 5.4) * ks * fb.lux * (L.drop != null ? 0.6 : 1);   // two battens share the room's light
+    l.position.copy(v3(L.x, L.y - drop, L.z)); l.intensity = (day ? 3 : S.quality === "hd" ? 8.6 : 5.4) * ks * fb.lux * (L.drop != null ? 0.6 : 1);   // two battens share the room's light
     if (fb.k) l.color.set(kelvinHex(+fb.k)); else l.color.copy(warmColour()); });   // V3.19: the living room's bulbs' colour (one Warmth for the house) unless the room's own
+  /* V3.34 (N86): by evening in HD the light 8.6, the even fill down (12_furniture_options.js): a warm pool under it, the corners and
+     the sides of things falling into shade, as the living room's lamps do */
   /* V2.39 (REAL_PLAN R1, each window's daylight): the room's two biggest windows light it as the sky does through them, an area light the
      opening's size on the wall's inside face, facing in and a little down; by day the living room window's daylight, by evening its dusk */
   const rid = b && rr && VIEW_ROOM[S.view], op = it => it.op && it.op.axis === "x" && it.op, sz = it => (it.op.b - it.op.a) * (it.op.y1 - it.op.y0);
