@@ -94,7 +94,7 @@ function finish(room, surface, hex) {   // R3D.finish: a room's walls (or one si
     if (c) { d[i] = Math.round(Math.min(1, c.r) * 255); d[i + 1] = Math.round(Math.min(1, c.g) * 255); d[i + 2] = Math.round(Math.min(1, c.b) * 255); d[i + 3] = 255; } else d[i + 3] = 0; }
   FIN.pal.needsUpdate = true; dirty(); return true;
 }
-/* V3.41: the black things (the desk chairs, the stools, the monitors' backs, the handles) drew near pure black in every room, their
+/* V3.44 (N96): the black things (the desk chairs, the stools, the monitors' backs, the handles) drew near pure black in every room, their
    shapes lost: a plain colour darker than #383838 is raised to it, its hue kept (black still black, its form now reads in the light). A
    screen, the glass and the shade where things meet stay as they are */
 const BLACK_MIN = 0x38 / 255, BLACK_KEEP = new Set(["contact", "screen", "glass_dark", "pc_glow", "led"]);
@@ -310,7 +310,7 @@ function buildBeyond(grp, land) {
       im.raycast = () => {}; land.add(im); }
   }
 }
-/* V3.41 (N81), the client: "improve the graphics quality of other rooms to match like the living room": out of the front rooms' windows
+/* V3.44 (N81), the client: "improve the graphics quality of other rooms to match like the living room": out of the front rooms' windows
    the land ran flat and green to the sky. Now a street: the road and its pavements both ways, and across it a row of brick terraces
    (front gardens, low walls, white windows, doors, tiled roofs, chimneys, lamp posts). A stand-in, not the real street (no address, no
    photo of it): it changes when the client says what's across the road. One draw a finish; every finish a photo and its relief on the
@@ -594,7 +594,7 @@ function buildHouse() {
       const NS = { paint: 0.3, ceiling: 0.3, brick: 0.7, party: 0.7, soldier: 0.7 }[k];   // V1.47, the client: "walls ... have a rugged non flat effect ... should be smooth or have less of that look": the relief turned down
       if (m.normalMap && NS) m.normalScale.set(NS, NS);
       if (!LOWD) { m.userData.hk = k; m.envMap = houseEnv(); m.envMapIntensity = finishEnv(m); }   // v73: one neutral room, made once (V1.13: the iPhones too)
-      if (!m.map && !gl3 && !BLACK_KEEP.has(k)) liftBlack(m.color);   // V3.41: a black piece shows its shape (it drew as a hole)
+      if (!m.map && !gl3 && !BLACK_KEEP.has(k)) liftBlack(m.color);   // V3.44 (N96): a black piece shows its shape (it drew as a hole)
       if (k === "mirror") { m.color.set("#ffffff"); m.map = MIRROR_SHEEN; }   // V1.17: the hall's and the bathroom's mirrors as the living room's (grey before; as metal, black)
       const rk = (H3.depth_rank || {})[k] ?? 3;   // V1.31 (U6): where faces lie in one plane the higher rank is drawn (house/model.py depth_rank); constant, so nothing shows through at a slant
       if (rk) { m.polygonOffset = true; m.polygonOffsetFactor = 0; m.polygonOffsetUnits = -2 * rk; }

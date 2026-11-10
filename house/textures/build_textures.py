@@ -196,7 +196,8 @@ def rough():
 TILED = {"marble": (1.2, 1024, (60, 60), "#141416", "#38383c", 2, 1, "veins", (0.1, 0.8), 0),
          "stone": (1.2, 1024, (60, 30), "#cbc6bd", "#9d978c", 2.5, 1, "stone", (0.4, 0.85), 0),
          "metro": (0.4, 512, (20, 10), "#131416", "#c9c5bd", 2, 5, "", (0.06, 0.85), 0.5),
-         "porcelain": (2.4, 1024, (120, 60), "#d6d0c4", "#b8b1a4", 2, 0.5, "lime", (0.5, 0.85), 0.5)}   # V3.14 (N56): an upgrade floor
+         "porcelain": (2.4, 1024, (120, 60), "#d6d0c4", "#b8b1a4", 2, 0.5, "lime", (0.5, 0.85), 0.5),   # V3.14 (N56): an upgrade floor
+         "tile_w": (0.6, 512, (15, 15), "#f2f2ef", "#c9c7c0", 2, 1.5, "", (0.08, 0.85), 0)}   # V3.43 (N95): the WC's white 15 × 15 splashback (the photo), was a drawn canvas
 
 
 def fbm(px, seed, base=4, octaves=5, stretch=1):
@@ -414,6 +415,58 @@ def seams():
     (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
 
 
+# V3.40 (N92): the kitchen's worktop is a polished black speckled laminate in the photos, not rough stone: the granite photo's relief
+# (steepened 1.4 for a room's distance, V1.13) broke every reflection into grit. Its relief kept at a quarter (a polished face's faint
+# ripple), and a roughness map from the speckle: the pale flecks glassier than the black between (the shine glints, as the photo's does).
+# Once: textures.json notes it ("polished"). key: (relief kept, roughness spread round its mean)
+POLISH = {"worktop": (0.25, 0.35)}
+
+
+def polish():
+    """python3 house/textures/build_textures.py --polish   flattens <key>_nor.jpg and writes <key>_rough.jpg from <key>_map.jpg"""
+    import numpy as np
+    meta = json.loads((HERE / "textures.json").read_text())
+    for key, (keep, spread) in POLISH.items():
+        if meta[key].get("polished"):
+            print("polish", key, "already done"); continue
+        n = np.asarray(Image.open(HERE / f"{key}_nor.jpg").convert("RGB"), np.float32) / 127.5 - 1
+        n[..., :2] *= keep; n[..., 2] = np.sqrt(np.clip(1 - (n[..., :2] ** 2).sum(-1), 0.05, 1))
+        n /= np.linalg.norm(n, axis=-1, keepdims=True)
+        Image.fromarray(((n + 1) * 127.5).clip(0, 255).astype("uint8")).save(HERE / f"{key}_nor.jpg", quality=86, optimize=True)
+        g = np.asarray(Image.open(HERE / f"{key}_map.jpg").convert("L").resize((512, 512), Image.LANCZOS), np.float32) / 255
+        z = (g - g.mean()) / (g.std() or 1)                                   # a fleck's paleness, in spreads
+        r = 0.85 * (1 - spread * np.tanh(z * 0.8))                            # pale: glassier; the dark between: a touch duller
+        Image.fromarray((np.clip(r, 0, 1) * 255).astype("uint8")).save(HERE / f"{key}_rough.jpg", quality=78, optimize=True)
+        meta[key]["polished"] = True
+        print("polish", key)
+    (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
+
+
+# V3.43 (N95): the birch pieces (the music room's desk, the shelves and trays) read as flat beige: the maple veneer's photo, tinted, kept a
+# 4-level spread round its mean (a real birch face shows its figure and its darker lines from across a room). Its light and shade steepened
+# round the mean, the darker lines a touch more amber (as lacquered birch yellows). Once: textures.json notes it ("contrast").
+# key: (steeper by, the darker lines' warmth)
+CONTRAST = {"birch": (3.0, 0.35)}
+
+
+def contrast():
+    """python3 house/textures/build_textures.py --contrast   steepens <key>_map.jpg's light and shade in place (no download)"""
+    import numpy as np
+    meta = json.loads((HERE / "textures.json").read_text())
+    for key, (k, warm) in CONTRAST.items():
+        if meta[key].get("contrast"):
+            print("contrast", key, "already done"); continue
+        a = np.asarray(Image.open(HERE / f"{key}_map.jpg").convert("RGB"), np.float32)
+        m = a.mean((0, 1)); L = a.mean(-1, keepdims=True); d = L - L.mean()
+        out = a + d * (k - 1)                                                 # the same hue, the shade k times as deep
+        out = out + np.clip(-d, 0, None) * warm * np.array([0.25, 0.0, -0.6])  # the darker lines warmer
+        out = out - (out.mean((0, 1)) - m)                                    # the mean kept: MATS's colour holds
+        Image.fromarray(np.clip(out, 0, 255).astype("uint8")).save(HERE / f"{key}_map.jpg", quality=84, optimize=True)
+        meta[key]["contrast"] = k
+        print("contrast", key, round(float(L.std()), 1), "->", round(float(out.mean(-1).std()), 1))
+    (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
+
+
 def share(meta):
     """V2.81 (N32): a picture an earlier key has already (the two carpets' pile, the pines' relief) goes once: the later key drops its copy
     and says like=<key> (export3d reads that key's file for any it lacks; only when it lacks nothing else that key has); then textures.json"""
@@ -441,4 +494,4 @@ def slim():
 
 
 if __name__ == "__main__":
-    {"--buff": buff, "--rough": rough, "--tiles": tiles, "--finishes": finishes, "--floors": floors, "--slim": slim, "--seams": seams}.get((sys.argv[1:] or [""])[0], lambda: main(sys.argv[1]))()
+    {"--buff": buff, "--rough": rough, "--tiles": tiles, "--finishes": finishes, "--floors": floors, "--slim": slim, "--seams": seams, "--polish": polish, "--contrast": contrast}.get((sys.argv[1:] or [""])[0], lambda: main(sys.argv[1]))()
