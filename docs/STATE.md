@@ -3,10 +3,10 @@
 Rewritten (not appended) at the end of every PR. Under 150 lines, short lines; what happened when goes in `docs/HISTORY.md`. The rules:
 `CLAUDE.md`.
 
-**Version:** V3.37 (10 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
-The version shows faintly by "Demma's Home" top left (V3.16; not on an iPhone SE, too narrow) and in Plan as a refresh button ("V3.37 ↻"): on the home-screen app, tap it to get the newest.
+**Version:** V3.38 (10 Nov 2026), live. A new team since 8 Nov: start with `docs/HANDOVER.md` (then `docs/NOTES.md`).
+The version shows faintly by "Demma's Home" top left (V3.16; not on an iPhone SE, too narrow) and in Plan as a refresh button ("V3.38 ↻"): on the home-screen app, tap it to get the newest.
 
-**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N46 done V3.04, N48 V3.05, N50 V3.06, N52 V3.07; section 13's N53 V3.08, N54 V3.09, N49 V3.10, N51 V3.11, N47 V3.12, N55 V3.13; section 14: N56 V3.14, N59 V3.15, N60 V3.16, N61 and N62 V3.17, N57 V3.18, N63 V3.19 (one light for the house), N58 V3.20, N64 V3.21 (the breast and window corner, a shorter Room menu); section 15 (9 Nov, the PC as fluid as the phone, the panels cleaned up): N67 V3.22, N65 V3.23 (no freeze stepping into a room), N68 V3.25 (the room cards), N66 V3.26 (the wheel eased), N69 V3.27 (the PC's framing), N70 V3.28 (moving on a PC as a person), N71 V3.29 (the last stepped moves glide; ?perf names the chip), N88 V3.37 (no shade or glow while moving on a PC); section 16 (9 Nov, every room as good as the living room): N80 V3.30 (the rooms' light), N82 V3.32 (the rooms' surfaces), N85 V3.33 (the front rooms' sun), N84 V3.34 (kitchen and bathroom finishes), N86 V3.35 (the laminate's planks); N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
+**Work from:** `docs/REAL_PLAN.md` section 13 (8 Nov, the new team: N46–N51 side by side, N46 done V3.04, N48 V3.05, N50 V3.06, N52 V3.07; section 13's N53 V3.08, N54 V3.09, N49 V3.10, N51 V3.11, N47 V3.12, N55 V3.13; section 14: N56 V3.14, N59 V3.15, N60 V3.16, N61 and N62 V3.17, N57 V3.18, N63 V3.19 (one light for the house), N58 V3.20, N64 V3.21 (the breast and window corner, a shorter Room menu); section 15 (9 Nov, the PC as fluid as the phone, the panels cleaned up): N67 V3.22, N65 V3.23 (no freeze stepping into a room), N68 V3.25 (the room cards), N66 V3.26 (the wheel eased), N69 V3.27 (the PC's framing), N70 V3.28 (moving on a PC as a person), N71 V3.29 (the last stepped moves glide; ?perf names the chip), N89 V3.38 (no shade or glow while moving on a PC); section 16 (9 Nov, every room as good as the living room): N80 V3.30 (the rooms' light), N82 V3.32 (the rooms' surfaces), N85 V3.33 (the front rooms' sun), N84 V3.34 (kitchen and bathroom finishes), N86 V3.35 (the laminate's planks); N31 KTX2 on Emma's yes, #133). Section 9: every earlier task's state.
 On a weak signal the page opens from the device after 2 s (V3.00, N43, `sw.js`): the new copy is saved for next time, and the version button shows it. The speed budget (N26, `tools/perf_budget.json`) is in the checks: a round over it fails. Section 5 and `docs/FINISHES_PLAN.md` section 6 are the phase boards.
 
 ## Where it lives
@@ -134,7 +134,7 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   35 ms ease; a finger stays 1:1); ← → turns ease (`WALK.tv`); the stick shows on a computer too (`syncStick`).
   V3.29 (N71): in a room a turn key stands you there and turns smoothly (it went 10° a key repeat until you'd walked); the
   on-screen arrows held walk every frame. `?perf` shows the chip, the sharpness and the worst stall while moving (the last 3 s).
-  V3.37 (N88): while you walk, look round or drag, a PC leaves out the soft shade and the glow as the phone does (`moveLite`), back 0.25 s
+  V3.38 (N89): while you walk, look round or drag, a PC leaves out the soft shade and the glow as the phone does (`moveLite`), back 0.25 s
   after you stop; `?fullmove` keeps them on.
 - **The stair curtain opens (V3.31, N72):** tap the curtain round the stairs' foot (an option: Room's suggestions) for Open it /
   Draw it across; walking up to it draws it back. Each panel gathers to its end (`07` `WORK.scurt`, `S.scopen`); drawn across, its two
@@ -155,6 +155,10 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   banister with no hole beside it; the living room's door 67 (x 305.5–372.5) between the breast and the stairs' low wall, the hall's
   stair box and the door down moved with them. Over the lower flight the living room's flight's plastered underside (`model.stair_soffit`):
   from the hall you see down the stairs, not into the living room's space and its brick; the lower flight runs between walls.
+  **Clear stairwells (V3.37, N88):** no shade bands over the openings (`model.stair_wells` → `houseShade`; they hung as dark squares
+  up the stairs), the lower flight's treads are the lower stairs' (`20_go` `roomOf`: inside the store's outline they were left out with
+  it, so the hall saw no steps down), the first floor's slabs stop at the stairwell with plastered edges, and the stair wall runs on
+  from the living room's ceiling to the landing's floor (the landing's carpet showed through the gap).
 - **The kitchen and the hall as their photos (V3.03, N44):** the door down 66 inside its frame by the box's corner (was the box's whole end);
   the mirror and the bench along the party wall from near the box to the rack (were by the front door); a radiator under the kitchen's bar,
   the boiler 28 out of the back corner; the kitchen's door frame empty (no leaf in any photo). The door down, the bench and the radiator are in Measure.

@@ -629,10 +629,20 @@ def floors_and_fittings(o, floor, rs):
         well = None
         if floor == "ground":                                          # v65: open over the lower flight (its top tread showed through the hall's carpet)
             st = stair(); well = (st["x0"], st["x1"], 38.0, st["z1"])
+        elif floor == "first":                                         # V3.35: the slabs stop at the stairwell (the landing's stood 5 into it, its grey edge seen up the stairs)
+            fs = next(q for q in rs if q["room"] in VOID); well = (fs["x0"], fs["x1"], fs["z0"], fs["z1"])
         for x0, x1, z0, z1 in _minus((r["x0"] - 5, r["x1"] + 5, r["z0"] - 5, r["z1"] + 5), well):
             o.box("slab", x0, bot, z0, x1, yy - 1.5, z1)
         for x0, x1, z0, z1 in _minus((r["x0"], r["x1"], r["z0"], r["z1"]), well):
             o.box(FLOOR_FINISH.get(r["id"], "carpet"), x0, yy - 1.5, z0, x1, yy, z1)
+    if floor == "first":                                               # V3.35: the stairwell's edges plastered, the slab's ends (living room ceiling to landing floor)
+        fs = next(q for q in rs if q["room"] in VOID)
+        o.box("paint", fs["x0"], y - SLAB + 1, fs["z0"], fs["x0"] + 0.6, y - 1.5, fs["z1"])          # under the landing's balustrade
+        o.box("paint", fs["x0"], y - SLAB + 1, fs["z0"], fs["x1"], y - 1.5, fs["z0"] + 0.6)          # over the flight's foot
+        o.box("paint", fs["x0"], y - SLAB + 1, fs["z1"] - 0.6, fs["x1"], y - 1.5, fs["z1"])          # under the top step's nosing
+        # over the living room, from its ceiling's opening (the door's side + 1.5) to the flight, the stair wall on up to the landing's floor
+        # (the landing's carpet showed from under it, up the stairs): its paint, which the living room's view doesn't cut away
+        o.box("stairpaint", Gm.DOOR_X[1] + 1.5, Gm.CEIL, fs["z0"], fs["x0"], y - 1.5, Gm.ALC_D + 3)
     if floor == "ground":                                              # the hall over the lower flight: a void, a low wall round it
         st = stair()
         # v66: the living room's flight runs on into the hall (its stand-in landing to z 319): boxed in from the hall, full height (the hall
@@ -2514,12 +2524,27 @@ def ceiling_shade():
     return out
 
 
+def stair_wells():
+    """V3.35, the client: "looking up the stairs from the living room it also has some obscure squares / lines" and "Stairs that go down to
+    the kitchen still can't be seen down from the front door": the viewer's soft shade bands (houseShade) ran along every room's floor and
+    ceiling, so round the stairwells they hung in mid-air, dark squares over the flights; and the lower flight's treads, inside the store's
+    outline, were left out with the store when standing in the hall. The openings, [x0, x1, z0, z1, y]: floor (no floor there),
+    ceil (no ceiling there), and flight (the lower flight's own space, its pieces the lower stairs')."""
+    st, fs = stair(), next(r for r in rooms("first") if r["id"] == "first_stairs")
+    lo = [r for r in rooms("lower") if r["id"] in ("lower_stairs", "lower_store_2")]
+    wf = lambda x0, x1, z0, z1, y: [round(v, 1) for v in (x0, x1, z0, z1, y)]
+    return dict(floor=[wf(st["x0"], st["x1"], 38.0, st["z1"], FLOOR_Y["ground"]), wf(fs["x0"], fs["x1"], fs["z0"], fs["z1"], FLOOR_Y["first"])],
+                ceil=[wf(fs["x0"], fs["x1"], fs["z0"], fs["z1"], FLOOR_Y["ground"] + CEIL), wf(st["x0"], st["x1"], st["z0"], st["z1"], FLOOR_Y["lower"] + CEIL)]
+                + [wf(r["x0"], r["x1"], r["z0"], r["z1"], FLOOR_Y["lower"] + CEIL) for r in lo],
+                flight=[wf(st["x0"], st["x1"], st["z0"], st["z1"], FLOOR_Y["lower"])])
+
+
 def export():
     out = {k: v.json() for k, v in build().items()}
     for f in FLOOR_Y:                                            # v69: the rooms' ceiling lights
         if f in out:
             out[f]["lights"] = room_lights(f); out[f]["lamps"] = room_lamps(f)
-    return dict(mats=MATS, floors=out, ridge=[round(RIDGE_Z, 1), round(RIDGE_Y, 1)], est=True, depth_rank=depth_rank(), shade_ceil=ceiling_shade(), living=living_shell())
+    return dict(mats=MATS, floors=out, ridge=[round(RIDGE_Z, 1), round(RIDGE_Y, 1)], est=True, depth_rank=depth_rank(), shade_ceil=ceiling_shade(), wells=stair_wells(), living=living_shell())
 
 
 # V1.31 (U6, docs/UPGRADE_REVIEW.md): where two materials' faces lie in one plane (a wall's paint on its blockwork, a frame flush with
