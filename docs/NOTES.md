@@ -87,6 +87,8 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   (the sun, `skyFill`, `hemi`) can change intensity or colour freely (no shader); `visible` or a new light rebuilds them. In Fast the living
   room has no window light, so `skyFill` (otherwise 0 there) fills it. After setting a light by hand, `dispatchEvent(new Event('resize'))` to redraw.
 
+- **The GPU at rest (N92, V3.40):** the loop draws only when `need` is set, so a busy card while still means something keeps setting it. Measured on the client's PC (headless Chrome `--use-angle=d3d11`, a temp profile, CDP; wrap `bindFramebuffer` and the draw calls to count frames drawn to the screen, and sum `\GPU Engine(*engtype_3D)\Utilization Percentage`): with no welcome the house warms in about 6 s and then draws 0 frames a second. The welcome's `controls.autoRotate` drew every frame (three's turn is a step a frame, so a 155 Hz screen spun 2.6× too fast); now `SPIN` in `17_render_loop.js`. Anything new that animates on its own should go through the same cap.
+
 ## 4. The house beside its photos
 - `tools/compare.py` pairs a photo with a view (`PAIRS`; a second photo of a room is `<view>_<what>`, e.g. `hall_front`);
   `tools/camfit.py` fits the camera. A sweep can't find the bathroom or the master: they need hand starts (`camfit.START`, solved from
