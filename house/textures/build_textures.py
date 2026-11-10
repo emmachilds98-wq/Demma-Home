@@ -364,6 +364,7 @@ def floors():
         gr = (src[sy, sx].mean(-1) / 255)                                               # the grain's relief (brushed): darker sinks
         h = (1 - (1 - e) ** 2) * 0.1 + gr * 0.02
         gy, gx = np.gradient(h, cm)
+        tl = rng.normal(0, 0.012, (nb, 2)); gx = gx + tl[idx, 0]; gy = gy + tl[idx, 1]   # V3.35 (N86): each board a hair off level, its sheen its own
         nrm = np.dstack([-gx, gy, np.ones_like(h)]); nrm /= np.linalg.norm(nrm, axis=-1, keepdims=True)
         r = np.where(e < 1, 0.8, 0.55 if kind == "herring" else 0.45) + (gr - 0.5) * 0.1
         Image.fromarray(np.clip(col, 0, 255).astype("uint8")).save(HERE / f"{key}_map.jpg", quality=84, optimize=True)
@@ -371,6 +372,45 @@ def floors():
         Image.fromarray((np.clip(r, 0, 1) * 255).astype("uint8")).resize((px // 2,) * 2, Image.BOX).save(HERE / f"{key}_rough.jpg", quality=86)
         meta[key] = dict(asset="made by build_textures.floors (from oak_veneer_01)", size=round(size, 4), url="", licence="ours")
         print("floors", key, nb, "pieces")
+    (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
+
+
+# V3.35 (N86): the laminate's planks read as planks: Poly Haven's normal map is all but flat, so the joints (its picture's dark 1-2 px lines:
+# a row every 128 px, each row's end joints) are cut into it as a micro-bevelled V (0.6 mm), and each plank laid a hair off level as real
+# boards are (the sheen breaks plank to plank, a step or two of the normal map's 8 bits). Once: textures.json notes it ("seams")
+SEAMS = {"laminate": (0.06, 0.012)}   # key: (groove cm, a plank's tilt)
+
+
+def seams():
+    """python3 house/textures/build_textures.py --seams   cuts the joints into <key>_nor.jpg from <key>_map.jpg (no download)"""
+    import numpy as np
+    from PIL import ImageFilter
+    meta = json.loads((HERE / "textures.json").read_text())
+    for key, (depth, tilt) in SEAMS.items():
+        if meta[key].get("seams"):
+            print("seams", key, "already cut"); continue
+        g = np.asarray(Image.open(HERE / f"{key}_map.jpg").convert("L"), np.float32); px = g.shape[0]; cm = meta[key]["size"] * 100 / px
+        rows = np.where(g.mean(1) < g.mean() - 20)[0]                         # the long joints: rows far darker than the rest
+        rows = [r for i, r in enumerate(rows) if not i or r - rows[i - 1] > 4]
+        seam = np.zeros_like(g); seam[rows] = 1; pid = np.zeros(g.shape, np.int64)
+        edges = rows + [rows[0] + px]
+        for i, (a, b) in enumerate(zip(edges, edges[1:])):                    # each row of planks, its end joints
+            ys = np.arange(a + 3, b - 2) % px; c = g[ys].mean(0)
+            ends = np.where(c < c.mean() - 25)[0]; ends = [e for j, e in enumerate(ends) if not j or e - ends[j - 1] > 4]
+            for e in ends: seam[ys, e] = 1
+            cut = [0] + list(ends) + [px]
+            for j, (u, v) in enumerate(zip(cut, cut[1:])): pid[np.ix_(ys, np.arange(u, v))] = i * 16 + j
+            if ends: pid[np.ix_(ys, np.arange(ends[-1], px))] = i * 16       # the last plank wraps round to the first
+        v = np.asarray(Image.fromarray((seam * 255).astype("uint8")).filter(ImageFilter.GaussianBlur(1.0)), np.float32) / 255
+        h = -depth * np.clip(v / (v.max() or 1) * 1.6, 0, 1)
+        rs = np.random.default_rng(9); t = rs.normal(0, tilt, (pid.max() + 1, 2)); y, x = np.mgrid[0:px, 0:px] * cm
+        gy, gx = np.gradient(h, cm); gx = gx + t[pid, 0]; gy = gy + t[pid, 1]
+        n0 = np.asarray(Image.open(HERE / f"{key}_nor.jpg").convert("RGB"), np.float32) / 127.5 - 1   # the photo's own relief kept
+        sx, sy = n0[..., 0] / np.maximum(n0[..., 2], 0.2), n0[..., 1] / np.maximum(n0[..., 2], 0.2)
+        nrm = np.dstack([sx - gx, sy + gy, np.ones_like(h)]); nrm /= np.linalg.norm(nrm, axis=-1, keepdims=True)
+        Image.fromarray(((nrm + 1) * 127.5).clip(0, 255).astype("uint8")).save(HERE / f"{key}_nor.jpg", quality=88, optimize=True)
+        meta[key]["seams"] = True
+        print("seams", key, len(rows), "rows,", int(seam.sum()), "px of joint")
     (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
 
 
@@ -401,4 +441,4 @@ def slim():
 
 
 if __name__ == "__main__":
-    {"--buff": buff, "--rough": rough, "--tiles": tiles, "--finishes": finishes, "--floors": floors, "--slim": slim}.get((sys.argv[1:] or [""])[0], lambda: main(sys.argv[1]))()
+    {"--buff": buff, "--rough": rough, "--tiles": tiles, "--finishes": finishes, "--floors": floors, "--slim": slim, "--seams": seams}.get((sys.argv[1:] or [""])[0], lambda: main(sys.argv[1]))()
