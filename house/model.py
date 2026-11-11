@@ -210,7 +210,7 @@ ITEMS = {}   # V1 (Phase 1): every named piece: {id: {name, room, kind, src, dat
 class Out:
     def __init__(self, floor=None):
         self.boxes, self.prisms, self.labels, self.parts, self.lathes = {}, [], [], {}, []
-        self.floor, self.tag, self.tags, self.bt, self.shade = floor, None, [], {}, []   # V1: the item each box belongs to (bt: per material, an index into tags)
+        self.floor, self.tag, self.tags, self.bt, self.shade, self.edge = floor, None, [], {}, [], []   # V1: the item each box belongs to (bt: per material, an index into tags)
 
     def item(self, iid, name, room, kind="furniture", src="E", data=None, axis=None, measure=None):
         """V1 (Phase 1): every box drawn from here on (until the next item, or end()) belongs to this piece, so the app can tap it, name it,
@@ -253,7 +253,7 @@ class Out:
         self.parts[name] = dict(pivot=[round(v, 1) for v in pivot], axis=axis, angle=round(angle, 1), t0=t0, label=label, out=p); return p
 
     def json(self):
-        return dict(boxes=self.boxes, prisms=self.prisms, labels=self.labels, lathes=self.lathes, tags=self.tags, bt=self.bt, parts=self._parts(), shade=self.shade)
+        return dict(boxes=self.boxes, prisms=self.prisms, labels=self.labels, lathes=self.lathes, tags=self.tags, bt=self.bt, parts=self._parts(), shade=self.shade, edge=self.edge)
 
     def _parts(self):   # V1.26b: a part can carry its own parts (a bifold's second panel), turning with it as it goes
         return {k: dict(pivot=v["pivot"], axis=v["axis"], angle=v["angle"], t0=v["t0"], label=v["label"], boxes=v["out"].boxes,
@@ -2062,6 +2062,85 @@ def piece_shade(o, floor):
     o.shade = out
 
 
+EDGE_FACE = {"paint", "stairpaint", "stone", "chipboard", "brick", "brick_buff", "party", "skirting"}   # what a room's walls show
+EDGE_SKIP = {"living", "first_stairs", "secret", "kitchen_cupboard"}   # the living room draws its own; the stairwell; the secret room
+
+
+def edge_shade(o, floor):
+    """V3.64 (REAL_PLAN N112): the shade where a room's surfaces meet, as GTAO gives the living room on a big card: on the walls a soft
+    band down from the ceiling, up from the floor (on the skirting where there is one) and out from each corner where two walls meet,
+    worked out once from the walls as built (doors, openings and the stairwells left clear), so phones pay nothing. Each band
+    [ax, ay, az, bx, by, bz, dx, dy, dz, k]: the crease a-b, the way and width the shade fades (d); k 1 the ceiling's (off with it)."""
+    fy, top_ = FLOOR_Y[floor], FLOOR_Y[floor] + CEIL
+    WL = stair_wells(); hf = [h for h in WL["floor"] if abs(h[4] - fy) < 2]; hc = [h for h in WL["ceil"] if abs(h[4] - top_) < 2]
+    inh = lambda hs, x, z: any(h[0] - 1 < x < h[1] + 1 and h[2] - 1 < z < h[3] + 1 for h in hs)
+    boxes = [(m == "skirting", b) for m, bs in o.boxes.items() if m in EDGE_FACE for b in bs]
+    out = []
+
+    def column(axis, line, n, a):
+        """The wall at a along this edge: its face, its top, the bottom of its top run, and the face at its foot (skirting or not)."""
+        A, F = (0, 2) if axis == "x" else (2, 0)
+        hit = [((b[F + 3] if n > 0 else b[F]), sk, b) for sk, b in boxes if b[A] - 0.3 <= a <= b[A + 3] + 0.3]
+        hit = [h for h in hit if -2 <= (h[0] - line) * n <= 12]
+        wall = [h for h in hit if not h[1]]
+        if not wall:
+            return None
+        face = max(wall, key=lambda h: h[0] * n)[0]
+        runs = []
+        for y0, y1 in sorted((b[1], b[4]) for f, _, b in wall if abs(f - face) < 1.5):
+            if runs and y0 <= runs[-1][1] + 0.6: runs[-1][1] = max(runs[-1][1], y1)
+            else: runs.append([y0, y1])
+        foot = [h for h in hit if h[2][1] <= fy + 1.5 and h[2][4] > fy + 3]
+        ff = max(foot, key=lambda h: h[0] * n) if foot else None
+        return dict(face=face, top=runs[-1][1], low=runs[-1][0], foot=(ff[0], ff[1]) if ff else None)
+
+    def runs(st, vals):
+        seg = None
+        for a, v in zip(st, vals):
+            if seg and (v is None or abs(v[0] - seg[2][0]) > 0.6 or abs(v[1] - seg[2][1]) > 0.6):
+                if seg[1] - seg[0] > 6: yield seg
+                seg = None
+            if v is not None:
+                seg = [seg[0], a, v] if seg else [a, a, v]
+        if seg and seg[1] - seg[0] > 6: yield seg
+
+    for r in rooms(floor):
+        if r["id"] in EDGE_SKIP or r["x1"] - r["x0"] < 40 or r["z1"] - r["z0"] < 40:
+            continue
+        cols = {}
+        for axis, line, n, a0, a1 in (("x", r["z0"], 1, r["x0"], r["x1"]), ("x", r["z1"], -1, r["x0"], r["x1"]),
+                                       ("z", r["x0"], 1, r["z0"], r["z1"]), ("z", r["x1"], -1, r["z0"], r["z1"])):
+            k = max(2, int((a1 - a0) // 2)); st = [a0 + (a1 - a0) * i / k for i in range(k + 1)]
+            cs = [column(axis, line, n, a) for a in st]
+            cols[(axis, line)] = (n, st, cs)
+            pt = (lambda a, y, f: [a, y, f]) if axis == "x" else (lambda a, y, f: [f, y, a])
+            xz = (lambda a, f: (a, f)) if axis == "x" else (lambda a, f: (f, a))
+            # down from the ceiling: a wall's full height whose top meets a ceiling (not a stairwell's opening)
+            hv = [(c["face"], c["top"]) if c and c["top"] - fy >= 150 and c["top"] <= top_ + 3 and c["top"] - c["low"] >= 22
+                  and not inh(hc, *xz(a, c["face"] + n * 8)) else None for a, c in zip(st, cs)]
+            for a, b, (f, y) in runs(st, hv):
+                out.append([*pt(a, y - 0.3, f + n * 0.3), *pt(b, y - 0.3, f + n * 0.3), 0, -28, 0, 1])
+            # up from the floor, on the skirting's face where there's one (to its top), else the wall's
+            fv = [c["foot"] if c and c["foot"] and not inh(hf, *xz(a, c["foot"][0] + n * 8)) else None for a, c in zip(st, cs)]
+            for a, b, (f, sk) in runs(st, fv):
+                out.append([*pt(a, fy + 0.3, f + n * 0.3), *pt(b, fy + 0.3, f + n * 0.3), 0, 9.5 if sk else 20, 0, 0])
+        # the corners: both walls whole from floor to ceiling for 10 cm out from where they meet; a band up each, out from the corner
+        for lz in (r["z0"], r["z1"]):
+            for lx in (r["x0"], r["x1"]):
+                nz_, sx, cx_ = cols[("x", lz)]; nx_, sz, cz_ = cols[("z", lx)]
+                A = [c for a, c in zip(sx, cx_) if abs(a - lx) <= 10]     # the wall along x, near this corner
+                B = [c for a, c in zip(sz, cz_) if abs(a - lz) <= 10]     # the wall along z, near it
+                if not A or not B or not all(c and c["low"] <= fy + 1.5 and c["top"] - fy >= 150 for c in A + B):
+                    continue
+                fz, fx = A[0]["face"], B[0]["face"]
+                if any(abs(c["face"] - fz) > 0.6 for c in A) or any(abs(c["face"] - fx) > 0.6 for c in B) or inh(hf, fx + nx_ * 8, fz + nz_ * 8):
+                    continue
+                ty = min(c["top"] for c in A + B) - 0.3
+                out.append([fx, fy + 0.3, fz + nz_ * 0.3, fx, ty, fz + nz_ * 0.3, nx_ * 24, 0, 0, 0])   # on the wall along x
+                out.append([fx + nx_ * 0.3, fy + 0.3, fz, fx + nx_ * 0.3, ty, fz, 0, 0, nz_ * 24, 0])   # on the wall along z
+    o.edge = [[round(v, 1) for v in q[:9]] + [q[9]] for q in out]
+
+
 def radiator(o, axis, wall, out, a0, a1, y0, y1):
     """v69 (B5): a white steel panel radiator as the photos: a double panel with its fins on top, on two brackets, a valve each end.
     axis: the wall runs along x (a front or back wall at z=wall) or z (a side wall at x=wall); out: +1/-1, the room's side."""
@@ -2409,7 +2488,7 @@ def build():
             steps.append(lambda: porch(o))
         for step in steps:                                   # V1: no piece's tag runs on into the next builder
             o.end(); step(); o.end()
-        piece_shade(o, floor)
+        piece_shade(o, floor); edge_shade(o, floor)
         sizes = room_sizes()
         for rid, r in sizes.items():
             if r["floor"] == floor and r["name"] and (r["x1"] - r["x0"]) * (r["z1"] - r["z0"]) >= 5000:   # say less: no labels on the tiny stores

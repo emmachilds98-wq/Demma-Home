@@ -507,16 +507,16 @@ function houseShade(H3, m3) {
    the wall beside a piece that stands against one (a wardrobe's sides, a fridge's), from the house file's outlines (model.piece_shade),
    so phones without ambient occlusion have it too; built with its floor, so it follows a piece the client moves. One mesh a floor, the
    shade's own material (houseShade's kind: no new shaders) */
-function pieceShadeMat() {   // houseShade's kind of material (the same shader), its shade eased out to nothing: no edge to see
+function pieceShadeMat(stops = [[0, 0.24], [0.15, 0.15], [0.35, 0.07], [0.6, 0.025], [1, 0]]) {   // houseShade's kind of material (the same shader), its shade eased out to nothing: no edge to see
   const tex = canvasTex(4, 64, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h);
-    for (const [t, a] of [[0, 0.24], [0.15, 0.15], [0.35, 0.07], [0.6, 0.025], [1, 0]]) gr.addColorStop(t, `rgba(0,0,0,${a})`);
+    for (const [t, a] of stops) gr.addColorStop(t, `rgba(0,0,0,${a})`);
     g.clearRect(0, 0, w, h); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, false);
   tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
   const m = reg(new THREE.MeshBasicMaterial({ color: "#000000", map: tex, transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 0, polygonOffsetUnits: -10 }));
   m.clippingPlanes = []; return m;
 }
-function pieceShade(F, mat) {
-  const rooms = Object.values(R.HOUSE3.rooms || {}), pos = [], uv = [], U = [[0, 1], [1, 1], [1, 0], [0, 0]];   // V3.34: v 1 (the canvas's dark top: CanvasTexture flips it, as houseShade's) at the piece; it was v 0, the shade dark at its far edge, a pale square with a dark rim round every piece
+function pieceShade(F, m3) {
+  const mat = m3.shade_piece || (m3.shade_piece = pieceShadeMat()), rooms = Object.values(R.HOUSE3.rooms || {}), pos = [], uv = [], U = [[0, 1], [1, 1], [1, 0], [0, 0]];   // V3.34: v 1 (the canvas's dark top: CanvasTexture flips it, as houseShade's) at the piece; it was v 0, the shade dark at its far edge, a pale square with a dark rim round every piece
   const quad = P => { for (const i of [0, 1, 2, 0, 2, 3]) { const q = v3(...P[i]); pos.push(q.x, q.y, q.z); uv.push(U[i][0], U[i][1]); } };
   for (const [, x0, z0, x1, z1, y0, h] of F.shade || []) {
     const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, g = Math.max(5, Math.min(11, Math.min(x1 - x0, z1 - z0) * 0.22)), y = y0 + 0.35, hb = Math.min(h, 210);
@@ -532,9 +532,21 @@ function pieceShade(F, mat) {
       if (!at[kb]) quad([W(ub, y0), W(ub, y0 + hb), W(ub + d * g * 0.35, y0 + hb), W(ub + d * g, y0)]);
     }
   }
-  if (!pos.length) return null;
-  const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); geo.computeVertexNormals();
-  const me = new THREE.Mesh(geo, mat); me.raycast = () => {}; me.renderOrder = 1; me.name = "pieceShade"; return me;
+  const mk = (P, U_, m) => { const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(U_, 2)); geo.computeVertexNormals();
+    const me = new THREE.Mesh(geo, m); me.raycast = () => {}; me.renderOrder = 1; return me; };
+  const me = pos.length ? mk(pos, uv, mat) : new THREE.Group(); me.name = "pieceShade";
+  /* V3.64 (N112): the shade where the walls meet the ceiling, the floor and each other (model.edge_shade), on every path without GTAO
+     (it gives its own where it runs, so these step aside then: no doubled shade); the ceiling's with the ceiling (off from above).
+     Two draws a floor at most, the pieces' kind of material (no new shader) */
+  const em = m3.shade_edge || (m3.shade_edge = pieceShadeMat([[0, 0.38], [0.15, 0.25], [0.4, 0.1], [0.7, 0.03], [1, 0]]));
+  const E = [[[], []], [[], []]];
+  for (const [ax, ay, az, bx, by, bz, dx, dy, dz, k] of F.edge || []) { const [P, U_] = E[k ? 1 : 0];
+    const Q = [[ax, ay, az], [bx, by, bz], [bx + dx, by + dy, bz + dz], [ax + dx, ay + dy, az + dz]];
+    for (const i of [0, 1, 2, 0, 2, 3]) { const q = v3(...Q[i]); P.push(q.x, q.y, q.z); U_.push(U[i][0], U[i][1]); } }
+  E.forEach(([P, U_], k) => { if (!P.length) return; const e = mk(P, U_, em); e.name = "edgeShade"; let on = true;
+    Object.defineProperty(e, "visible", { get: () => on && !(postLive() && aoLive()) && (!k || !HMATS || !HMATS.ceiling || HMATS.ceiling.visible), set: v => { on = v; } });
+    me.add(e); });
+  return me.children.length || pos.length ? me : null;
 }
 /* V2.98 (N37): the house from outside: a material's pieces on every floor one draw, not one a floor (each floor's span noted, and the
    floors shown are always a run, Lower, Lower and Ground, or all four, so one draw range); made when first wanted (09 houseJoin),
@@ -750,7 +762,7 @@ function buildHouse() {
       for (const L of F.lathes || []) { const g = new THREE.LatheGeometry(L.p.map(([r, h]) => new THREE.Vector2(r * M, h * M)), LOWD ? 12 : 28);   // v70: the suite's turned shapes (pans, seats, bowls); V2.15: a room's light's in its group
         g.scale(L.s[0], 1, L.s[1]); const c = v3(L.c[0], L.c[1], L.c[2]); g.translate(c.x, c.y, c.z); const r = lid(L.t); add(r ? lgOf(r) : cur, L.m, g); }
       for (const [g, o] of acc) for (const [mk, geos] of Object.entries(o)) { const me = put(g, geos, mat3(mk)); if (me && g === cur) me.userData.fm = fk; }
-      { const ps = pieceShade(F, m3.shade_piece || (m3.shade_piece = pieceShadeMat())); if (ps) cur.add(ps); }   // V2.52 (R2)
+      { const ps = pieceShade(F, m3); if (ps) cur.add(ps); }   // V2.52 (R2)
       if (fresh) for (const L of F.labels || []) { label([L.name, [L.use, `about ${L.w.toFixed(1)} × ${L.d.toFixed(1)} m`].filter(Boolean).join(" · ")], L.x, L.y, L.z);
         cur.children[cur.children.length - 1].userData.area = L.w * L.d; }   // V1.35: the bigger room's name wins where two overlap
       const partG = (P, into, at) => {                 // a part's group on its pivot, its own parts inside it (V1.26b: a bifold's second panel)
