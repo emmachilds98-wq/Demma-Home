@@ -171,3 +171,4 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Seeing a finish without tapping:** `R3D.setFinishes({room: {slot: value}})` then a screenshot (views: `bed3` is `office`, `bathroom` is `bath`).
 - **A catalogue piece's own price:** `UPC.piece[key]` beats its kind's (`upCat`).
 - Don't rebuild `_site` while `checks.py` runs: a local site check once failed Edit's ottoman drag mid-rebuild; CI passed.
+- **A glow that costs no first-picture shader** (V3.69, N116): an additive `MeshBasicMaterial` is a new program, so the bulbs' ceiling discs keep `material.visible` false until you're in a room as a person (`haloShow`); a hidden material is never compiled. Hang such pieces in the room's own group (`FIN_PEND`) so the room cull and the floors hide them too.

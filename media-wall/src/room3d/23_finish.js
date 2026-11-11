@@ -79,7 +79,7 @@ function finFitApply() {
       else if (k === "dome") { white.push(lathe([[0, 0], [16.5, 0], [16.5, 1.2], [0, 1.2]], x, y - 1.2, z)); glow.push(lathe([[0, 0], [8, 0.6], [13, 2.6], [15.8, 5.4], [16, 7.2], [0, 7.2]], x, y - 8.4, z)); }
       else if (k === "spots") for (const [dx, dz] of [[-45, -45], [45, -45], [-45, 45], [45, 45]]) { white.push(lathe([[0, 0], [4.3, 0], [4.3, 0.8], [0, 0.8]], x + dx, y - 0.8, z + dz));
         glow.push(lathe([[0, 0], [3.2, 0], [3.2, 0.9], [0, 0.9]], x + dx, y - 1.7, z + dz)); }
-      for (const [geos, mat] of [[white, FIN.mat3("upvc")], [glow, FIN.mat3("led")], [shade, FIT_SHADE]]) if (geos.length) {
+      for (const [geos, mat] of [[white, FIN.mat3("upvc")], [glow, FIN.mat3("bulb")], [shade, FIT_SHADE]]) if (geos.length) {
         const me = new THREE.Mesh(mergeGeometries(geos), mat); geos.forEach(q => q.dispose()); me.castShadow = false; me.userData.finFit = L.room; into.add(me); FIT_LAID.push(me); } } }
   dirty();
 }
