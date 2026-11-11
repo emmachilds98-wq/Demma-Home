@@ -26,6 +26,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Textures:** CC0 sites (Poly Haven, ambientCG) and GitHub release downloads are blocked; new textures are made in
   `house/textures/build_textures.py` (`--finishes`).
 - **Glaze and lippage (N84):** a normal map's step is 1/127.5: a tile's tilt under about 0.01 doesn't show; 0.012–0.02 a tile breaks the reflections as real lippage does.
+- **Background colours (N115):** `scene.background` as a colour is the clear colour: straight to the screen it shows as typed, but through
+  the HD composer it's tone mapped (AgX at the exposure, 0.4 in a room) and comes out much darker; pass the colour through AgX's inverse
+  (`19_view_controls.js` `agxIn`). A background texture in sRGB is never tone mapped on Fast (three r160 sets `toneMapped` off for it)
+  but is through the composer; a linear one is tone mapped on both. Test both paths: `?ao` forces the composer in the sandbox.
 - **Testing a link's `#share=` (N118):** going from the page to the same address with only a new `#...` doesn't reload it (Playwright's
   `goto` too), so nothing reads the link: go to `about:blank` first. Serving `_site` with `python3 -m http.server` for several browser
   contexts stalled on the photos; abort `tex/`, `photos.` and the fonts in a test that needs no picture, and wait for `domcontentloaded`.
@@ -124,6 +128,11 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   a piece with none. Soft edges come from the material (`20_go.js` `ROUND`/`CLOTH`).
 - **Lamps:** `survey_data.LAMPS` → `model.room_lamps`; the viewer reuses the room lights' uniforms (no rebuild). **Shade under pieces:**
   `model.piece_shade`, moved with edits (`08_house_edits.js editedFloor`).
+  **Shade where walls meet** (V3.63, N112): `model.edge_shade` finds each room's walls from the boxes as built (`EDGE_M` faces within
+  1.6 cm of the room's edge, `skirting` faces), so bands never cross a door, a stairwell (`stair_wells`) or two pieces of one room; drawn by
+  `20_go.js` `edgeShade` in its own material key `shade_edge` (HMATS), so Above and On its own cut it like the walls, and left out while
+  `aoLive()` (a `visible` getter on the mesh, so it costs no draw then). A band at a piece's shade strength
+  (0.24) didn't show at room distance: the walls' own gradient peaks at 0.42.
 - **The refresh button:** `.hello .ver` in Plan; the ↻ is CSS `::after` (`qa.py` reads the text); `version.txt`; handler at the end of
   `page.js`. To see a new round on the phone: open Plan, tap the version.
   The version also shows faintly in the brand pill (`.brand .bver`, V3.16): the client looks for it on the first screen, not in Plan.
