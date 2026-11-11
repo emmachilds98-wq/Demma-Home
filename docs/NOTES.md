@@ -161,3 +161,4 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Seeing a finish without tapping:** `R3D.setFinishes({room: {slot: value}})` then a screenshot (views: `bed3` is `office`, `bathroom` is `bath`).
 - **A catalogue piece's own price:** `UPC.piece[key]` beats its kind's (`upCat`).
 - Don't rebuild `_site` while `checks.py` runs: a local site check once failed Edit's ottoman drag mid-rebuild; CI passed.
+- **The artex** (V3.59, N110): `build_textures.STIPPLE_LOOK` sets the stipple (peaks a pixel, blur, gain, slope); run `python3 house/textures/build_textures.py <empty dir>` to remake it (the downloads are skipped when missing). The house's artex and the living room's ceiling (`ARTEX_NRM`, scale 0.8) share the one map, so soften it there, not with `NS`.
