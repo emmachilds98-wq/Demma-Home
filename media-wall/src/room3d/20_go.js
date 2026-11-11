@@ -215,8 +215,12 @@ function sprayTex(k) {
         for (let t = 0; t < 1; t += 0.06) { const x = x0 + Math.cos(a) * L * t, y = y0 + Math.sin(a) * L * t, n = 14 * (1 - t * 0.6);
           for (const sg of [-1, 1]) { g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a + sg * 0.9) * n, y + Math.sin(a + sg * 0.9) * n); g.stroke(); } } }
       return; }
-    for (let i = 0; i < 34; i++) {                             // leaves round the spray's middle, each a pointed oval with its midrib
-      const a = rnd() * Math.PI * 2, r = Math.sqrt(rnd()) * w * 0.36, x = w / 2 + Math.cos(a) * r, y = h / 2 + Math.sin(a) * r, L = w * (0.09 + rnd() * 0.05);
+    /* V3.56 (N114): a soft clump, not a scatter: a dense darker core of overlapping rounds (the shade inside a crown), then leaves
+       over it, more of them and nearer the middle, so a crown reads as masses of leaf, not salt and pepper */
+    const deep = { leaf: "#3d5a26", dark: "#22381c", red: "#4a2a1c" }[k];
+    g.fillStyle = deep; for (let i = 0; i < 14; i++) { const a = rnd() * Math.PI * 2, r = Math.sqrt(rnd()) * w * 0.17; g.beginPath(); g.arc(w / 2 + Math.cos(a) * r, h / 2 + Math.sin(a) * r, w * (0.1 + rnd() * 0.07), 0, 7); g.fill(); }
+    for (let i = 0; i < 70; i++) {                             // leaves round the spray's middle, each a pointed oval with its midrib
+      const a = rnd() * Math.PI * 2, r = Math.pow(rnd(), 0.7) * w * 0.34, x = w / 2 + Math.cos(a) * r, y = h / 2 + Math.sin(a) * r, L = w * (0.08 + rnd() * 0.05);
       g.save(); g.translate(x, y); g.rotate(rnd() * Math.PI * 2); g.fillStyle = cols[Math.floor(rnd() * cols.length)];
       g.beginPath(); g.moveTo(-L, 0); g.quadraticCurveTo(0, -L * 0.42, L, 0); g.quadraticCurveTo(0, L * 0.42, -L, 0); g.fill();
       g.strokeStyle = "rgba(20,35,10,0.35)"; g.lineWidth = 1.2; g.beginPath(); g.moveTo(-L, 0); g.lineTo(L, 0); g.stroke(); g.restore(); }
@@ -247,9 +251,9 @@ function buildTrees(grp, list) {
         const b = a + (rnd() - 0.5) * 2.6, L = S * (0.7 - j * 0.06) * (0.7 + rnd() * 0.4), e = s0.clone().add(new THREE.Vector3(Math.cos(b) * L, L * (0.45 + rnd() * 0.5), Math.sin(b) * L));
         seg(stems.pale, s0, e, r * 0.32 * (1 - t * 0.5), r * 0.07); ends.push(e); }
     }
-    const per = Math.round((P.cards || 1400) / ends.length), to = cards[P.tone || (P.dark ? "dark" : "leaf")];   // V2.89 (N30): the red-tipped shrubs
+    const per = Math.round((P.cards || 1400) * 0.45 / ends.length), to = cards[P.tone || (P.dark ? "dark" : "leaf")];   // V2.89 (N30): the red-tipped shrubs
     for (const e of ends) for (let i = 0; i < per; i++) { const u = rnd() * 2 - 1, a = rnd() * Math.PI * 2, rr = Math.cbrt(rnd()) * S * 0.4, q = Math.sqrt(1 - u * u);
-      to.push([e.x + Math.cos(a) * q * rr, e.y + u * rr * 0.65, e.z + Math.sin(a) * q * rr, card * (0.7 + rnd() * 0.6)]); }
+      to.push([e.x + Math.cos(a) * q * rr, e.y + u * rr * 0.65, e.z + Math.sin(a) * q * rr, card * 1.5 * (0.7 + rnd() * 0.6)]); }   // V3.56 (N114): fewer, larger clumps
   }
   for (const [k, list2] of Object.entries(stems)) if (list2.length) {
     const m = new THREE.Mesh(mergeGeometries(list2), reg(new THREE.MeshStandardMaterial({ color: k === "pale" ? "#a59f95" : "#5b4b3d", roughness: 0.95 })));
@@ -300,13 +304,13 @@ function buildBeyond(grp, land) {
     for (let i = 0; i < Tr.n; i++) {
       const a = (Tr.a[0] + (Tr.a[1] - Tr.a[0]) * rnd()) * Math.PI / 180, r = Tr.r[0] + (Tr.r[1] - Tr.r[0]) * rnd(), h = Tr.h[0] + (Tr.h[1] - Tr.h[0]) * rnd();
       const cx = C.cx + Math.sin(a) * r, cz = C.cz - Math.cos(a) * r, to = rnd() < 0.35 ? list.dark : list.leaf;
-      for (let k = 0; k < 26; k++) { const u = rnd() * 2 - 1, b = rnd() * Math.PI * 2, rr = Math.cbrt(rnd()) * h * 0.38, q = Math.sqrt(1 - u * u);
+      for (let k = 0; k < 12; k++) { const u = rnd() * 2 - 1, b = rnd() * Math.PI * 2, rr = Math.cbrt(rnd()) * h * 0.38, q = Math.sqrt(1 - u * u);   // V3.56 (N114): 12 larger clumps a tree (were 26 small)
         to.push(v3(cx + Math.cos(b) * q * rr, (B.hill ? B.hill.base : -262) + h * 0.62 + u * rr * 0.7, cz + Math.sin(b) * q * rr)); } }
     const plane = new THREE.PlaneGeometry(1, 1);
     for (const [k, pts] of Object.entries(list)) {
       const mt = reg(new THREE.MeshStandardMaterial({ map: sprayTex(k), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.85 })); mt.clippingPlanes = [];
       const im = new THREE.InstancedMesh(plane, mt, pts.length);
-      pts.forEach((p, i) => { o.position.copy(p); o.rotation.set((rnd() - 0.5) * 1.2, rnd() * Math.PI * 2, (rnd() - 0.5) * 1.2); o.scale.setScalar(2.4 + rnd() * 1.6); o.updateMatrix(); im.setMatrixAt(i, o.matrix); });
+      pts.forEach((p, i) => { o.position.copy(p); o.rotation.set((rnd() - 0.5) * 1.2, rnd() * Math.PI * 2, (rnd() - 0.5) * 1.2); o.scale.setScalar(3.6 + rnd() * 2.4); o.updateMatrix(); im.setMatrixAt(i, o.matrix); });
       im.raycast = () => {}; land.add(im); }
   }
 }
@@ -345,7 +349,7 @@ function buildStreet(land) {
       const a = b0 + i * 500, flip = i % 2 === 1, X = u => flip ? a + 500 - u : a + u;   // pairs mirrored: doors side by side
       if (i > 0 && i % 2 === 0) box(brick, a - 30, RIDGE - 40, zF + DEP / 2 - 45, a + 30, RIDGE + 110, zF + DEP / 2 + 45);   // a chimney on the party wall
       const win = (u0, u1, y0, y1) => { const x0 = Math.min(X(u0), X(u1)), x1 = Math.max(X(u0), X(u1));
-        box("frame", x0, y0, zF - 5, x1, y1, zF); box("pane", x0 + 7, y0 + 7, zF - 6, x1 - 7, y1 - 7, zF - 5);
+        box("frame", x0, y0, zF - 5, x1, y1, zF); box(Math.abs(Math.round(x0 * 7 + y0 * 13)) % 3 === 0 ? "panelit" : "pane", x0 + 7, y0 + 7, zF - 6, x1 - 7, y1 - 7, zF - 5);   // V3.56: a third lit by evening (by place, so rnd()'s doors and hedges stay as they were)
         const m = (x0 + x1) / 2; box("frame", m - 3, y0, zF - 8, m + 3, y1, zF - 5);
         box("kerb", x0 - 6, y0 - 7, zF - 10, x1 + 6, y0, zF); };
       win(60, 250, dr + 90, dr + 215); win(60, 250, dr + 330, dr + 450); win(320, 450, dr + 330, dr + 450);
@@ -361,16 +365,18 @@ function buildStreet(land) {
     box("post", x - 6, dr, zr1 + 45, x + 6, dr + 620, zr1 + 57); box("post", x - 5, dr + 608, zr1 - 60, x + 5, dr + 618, zr1 + 57); box("lamp", x - 14, dr + 596, zr1 - 75, x + 14, dr + 608, zr1 - 30); }
   /* each finish the house's own material (a copy, its colour tinted where said, uncut): its program already built, so the street adds
      none (the phone's first picture has no shader to spare) */
-  const FIN_ = { road: ["road"], paving: ["paving"], kerb: ["concrete"], brick: ["brick"], brick2: ["brick_buff"], roof: ["tile"], frame: ["upvc"], pane: ["pane"],
+  const FIN_ = { road: ["road"], paving: ["paving"], kerb: ["concrete"], brick: ["brick"], brick2: ["brick_buff"], roof: ["tile"], frame: ["upvc"], pane: ["pane"], panelit: ["pane"],
     door: ["door_out", "#3c4a5c"], door2: ["door_out", "#6b2a2a"], hedge: ["ivy"], post: ["steel_dark"], lamp: ["upvc", "#fff3dd"] };
   const g = new THREE.Group(); g.name = "street";
   for (const [k, L] of Object.entries(by)) {
     const [hk, col] = FIN_[k], src = FIN.mat3(hk), geo = mergeGeometries(L); L.forEach(q => q.dispose());
     worldUV(geo, hk);
     const mt = reg(src.clone()); mt.onBeforeCompile = src.onBeforeCompile; mt.customProgramCacheKey = src.customProgramCacheKey; mt.userData = { street: k };
-    if (col) mt.color.set(col); houseClip(mt, [], false); if (k === "road") { mt.polygonOffset = true; mt.polygonOffsetFactor = 2; mt.polygonOffsetUnits = 2; }
+    if (col) mt.color.set(col); houseClip(mt, [], false);
+    const glow = { lamp: [5, "#ffc77a"], panelit: [3, "#ffbf7a"] }[k];   // V3.56: lit by evening (09 streetTod): the lamps' sodium-warm heads, curtained rooms behind the panes
+    if (glow) { mt.userData.glow = glow[0]; mt.userData.glowCol = glow[1]; STREET_LIT.push(mt); } if (k === "road") { mt.polygonOffset = true; mt.polygonOffsetFactor = 2; mt.polygonOffsetUnits = 2; }
     const m = new THREE.Mesh(geo, mt); m.receiveShadow = true; m.raycast = () => {}; m.name = "street_" + k; g.add(m); }
-  land.add(g); return true;
+  land.add(g); streetTod(); return true;
 }
 /* V1.6: the things in the gardens (survey_data.GARDEN_THINGS, from the view photos): ours (the round table and its chairs, with Gardens)
    and next door's (the trampoline, the sheds, with Next door); and for the living room's window, next door's back lawns and fences */
@@ -427,7 +433,8 @@ function townTex() {    // the hill's face from across the valley: clusters of t
     for (let i = 0; i < 900; i++) { g.fillStyle = ["#475a33", "#617349", "#4f633a", "#6c7d52", "#3e5130"][i % 5]; g.globalAlpha = 0.55; g.beginPath(); g.arc(rnd() * w, rnd() * h, (5 + rnd() * 16) * sc, 0, 7); g.fill(); }
     g.globalAlpha = 1;
     const roofs = ["#6a4136", "#5c3a30", "#4f4d4e", "#704636", "#5e5a58"], walls = ["#a9a092", "#8e5c47", "#9d9484", "#82503d", "#b3ab9d"];
-    for (let c = 0; c < 22; c++) {                              // a cluster: a few short terraces stepping up the hill, not one long row
+    g.globalAlpha = 0.72;   // V3.56 (N114): the houses softer into the green at 5 km (on a phone their rows read as a striped band)
+    for (let c = 0; c < 16; c++) {                              // a cluster: a few short terraces stepping up the hill, not one long row
       const cx = rnd() * w, cy = rnd() * h, rows = 2 + Math.floor(rnd() * 4);
       for (let r = 0; r < rows; r++) { const y = cy + r * 26 * sc, n = 2 + Math.floor(rnd() * 4); let x = cx + (rnd() - 0.5) * 30 * sc;
         for (let k = 0; k < n; k++) { const run = (24 + rnd() * 50) * sc, rf = roofs[Math.floor(rnd() * roofs.length)], wl = walls[Math.floor(rnd() * walls.length)];
@@ -435,7 +442,7 @@ function townTex() {    // the hill's face from across the valley: clusters of t
             g.fillStyle = wl; g.fillRect(xx, yy + 7 * sc, run, 8 * sc); g.fillStyle = rf; g.fillRect(xx - 1.5 * sc, yy, run + 3 * sc, 8 * sc);
             g.fillStyle = "rgba(40,50,60,0.5)"; for (let q = xx + 4 * sc; q < xx + run - 3 * sc; q += 7 * sc) g.fillRect(q, yy + 9 * sc, 2.5 * sc, 3 * sc); }
           x += run + (4 + rnd() * 14) * sc; } } }
-    for (let i = 0; i < 700; i++) { g.fillStyle = ["#3b4f2d", "#4a6136", "#33462a", "#55693d"][i % 4]; g.beginPath(); g.arc(rnd() * w, rnd() * h, (4 + rnd() * 11) * sc, 0, 7); g.fill(); }   // trees in front of the houses
+    g.globalAlpha = 1; for (let i = 0; i < 1100; i++) { g.fillStyle = ["#3b4f2d", "#4a6136", "#33462a", "#55693d"][i % 4]; g.beginPath(); g.arc(rnd() * w, rnd() * h, (4 + rnd() * 13) * sc, 0, 7); g.fill(); }   // trees in front of the houses (V3.56: more, breaking up the rows)
   });
 }
 function worldUV(geo, k, off) {
