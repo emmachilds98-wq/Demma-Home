@@ -91,16 +91,16 @@ def money_html(track):
 
 
 def plan_home(ring, nbuy, nsteps):
-    """The top of the Plan home: three rings (one count), the lists beside them, and the house's changes (N23)."""
+    """The top of the Plan home: the next three (the house first, N119), the house's changes (N23), three rings, the lists beside them."""
     chk, nchk = checks_html()
     return f"""<div class="next3" id="next3" aria-label="Your next three things"></div>
+      <details class="fold" id="ups"><summary>The house's changes, room by room: <b id="ups-tot">none yet</b></summary><ul class="money" id="ups-l"></ul></details>
       <div class="rings rings3">{ring("build", 50, "tasks done", "build")}{ring("buy", 165, "things bought", "buy")}{ring("choice", 280, "choices made", "decide")}</div>
       <p class="caption" id="d-paid">£0 paid so far</p>
       <div class="home2">
         <section class="wait"><div class="sec-h"><h2>Waiting on you</h2><button type="button" class="btn" data-decide-open="0">Decide</button></div><ul class="waitl" id="waitl"></ul></section>
         <details class="fold mon"><summary>Where the money goes, by piece</summary>{{MONEY}}<p><a class="btn" href="#buy" data-go="buy">The buy list</a></p></details>
       </div>
-      <details class="fold" id="ups"><summary>The house's changes: <b id="ups-tot">none yet</b></summary><ul class="money" id="ups-l"></ul></details>
       <details class="fold"><summary>Checks on site ({nchk}): the fit proof's “check” rows</summary>{chk}</details>"""
 
 

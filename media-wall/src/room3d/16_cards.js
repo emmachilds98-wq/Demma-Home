@@ -140,7 +140,11 @@ function upsPlan() {   // Plan: the house's total, a row a room (tap: stand in i
   tot.textContent = T.n ? `${upRange(T.lo, T.hi) || "£0"} · ${T.d} of ${T.n} done` : "none yet";
   box.innerHTML = rows.length ? rows.map(([r, s]) => `<li data-upsroom="${r}" role="button" tabindex="0"><span class="mn">${r === "outside" ? "Outside" : roomName(r)} · ${s.d}/${s.n}</span><span class="mb"><i style="width:${(s.d / s.n * 100).toFixed(0)}%"></i></span><span class="mv">${upRange(s.lo, s.hi) || "£0"}</span></li>`).join("")
     : '<li><span class="mn">Tap a wall, a floor or a piece in a room to change it</span></li>';
+  window.dispatchEvent(new CustomEvent("demma-ups"));   // N119: Plan's hello, rings and next three follow
 }
+window.DemmaUps = () => { if (!R.HOUSE3) return null;   // N119: the house's changes for Plan's home (page.js), and the next room with some not done
+  const [rows, T] = upsAll(), nx = rows.find(([, s]) => s.d < s.n);
+  return { T, range: upRange(T.lo, T.hi), next: nx && { room: nx[0], name: nx[0] === "outside" ? "Outside" : roomName(nx[0]), d: nx[1].d, n: nx[1].n, range: upRange(nx[1].lo, nx[1].hi) } }; };
 { const sh = document.getElementById("sh-plan"); if (sh) new MutationObserver(() => { if (sh.classList.contains("open")) upsPlan(); }).observe(sh, { attributes: true, attributeFilter: ["class"] }); }
 { const mp = document.getElementById("r3d-dp-measure"); if (mp) new MutationObserver(() => { if (!mp.hidden) finTakes(); }).observe(mp, { attributes: true, attributeFilter: ["hidden"] }); }   // N40: Measure's total, fresh
 document.addEventListener("click", e => { const li = e.target.closest("[data-upsroom]"); if (li) upsGo(li.dataset.upsroom); });

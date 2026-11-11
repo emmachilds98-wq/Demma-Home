@@ -84,7 +84,8 @@ $("#fit-only").addEventListener("click", e => {
 function ring(id, n, t) { const a = document.getElementById(id), c = a && a.querySelector(".vl"); if (!c) return; const L = 2 * Math.PI * 34; c.style.strokeDasharray = L; c.style.strokeDashoffset = L * (1 - (t ? n / t : 0)); }
 function dash() {
   const st = $$(".step"), sd = $$(".step.done"), next = st.find(x => !x.classList.contains("done"));
-  const tk = window.PIECEP ? PIECEP.tasks : [sd.length, st.length];   // v46: tasks, not steps
+  const tk = (window.PIECEP ? PIECEP.tasks : [sd.length, st.length]).slice();   // v46: tasks, not steps
+  const U = window.DemmaUps && DemmaUps(); if (U) { tk[0] += U.T.d; tk[1] += U.T.n; }   // N119: and every room's changes
   $("#d-steps").textContent = tk[0] + "/" + tk[1]; ring("d-steps-bar", tk[0], tk[1]);
   $$("#segbar i").forEach(i => i.classList.toggle("on", !!document.querySelector("#step-" + i.dataset.s + ".done")));
   const nx = $("#d-next"), nb = $("#d-nextdone");
@@ -98,6 +99,7 @@ function dash() {
 }
 let dashQ = false;
 const dashSoon = () => { if (!dashQ) { dashQ = true; requestAnimationFrame(() => { dashQ = false; dash(); }); } };
+window.addEventListener("demma-ups", dashSoon); window.addEventListener("demma-progress", dashSoon);   // N119: the rooms' changes; N118: ticks from a link
 ["#steps-ol", "#tracker"].forEach(s => { const el = $(s); if (el) new MutationObserver(dashSoon).observe(el, { subtree: true, attributes: true, attributeFilter: ["class"] }); });
 document.addEventListener("input", dashSoon);
 $("#d-nextdone").addEventListener("click", e => { const cb = document.getElementById("sd-" + e.currentTarget.dataset.s); if (cb && !cb.checked && !cb.disabled) { cb.checked = true; cb.dispatchEvent(new Event("change", { bubbles: true })); } });
@@ -333,6 +335,8 @@ window.PICKS = (() => {
     const ad = added(), lo = ad.reduce((a, x) => a + x.lo, 0), hi = ad.reduce((a, x) => a + x.hi, 0), tot = rng(DATA.plan[0] + lo, DATA.plan[1] + hi);
     const ideas = ad.filter(x => x.idea), ilo = ideas.reduce((a, x) => a + x.lo, 0), ihi = ideas.reduce((a, x) => a + x.hi, 0);
     txt("#d-total", tot); txt("#t-plan", tot);
+    const U = window.DemmaUps && DemmaUps();   // N119: Plan leads with the whole house
+    txt("#d-house", U && U.T.n ? `about ${U.range || "£0"}, ${U.T.d} of ${U.T.n} done` : "none yet");
     txt("#sb-count", ideas.length ? `${ideas.length} ${ideas.length === 1 ? "idea" : "ideas"} moved into the plan: +${rng(ilo, ihi)}` : "Nothing added to the plan yet");
     txt("#sb-total", "The plan: " + tot);
     $$("[data-short]").forEach(b => { const on = !!st.short[b.dataset.short]; b.setAttribute("aria-pressed", String(on));
@@ -358,19 +362,22 @@ window.PICKS = (() => {
       const need = step ? DATA.track.filter(r => r.kind === "buy" && step.buy.includes(r.phase) && !(tget(r.id) ? tget(r.id).done : r.done)) : [];
       const lo = need.reduce((a, r) => a + (r.lo || 0), 0), hi = need.reduce((a, r) => a + (r.hi || 0), 0);
       const card = (h, ic, k, t, sub, btn, attrs) => `<div class="n3" style="--h:${h}"><span class="ms" aria-hidden="true">${ic}</span><div><span class="label">${k}</span><b>${esc(t)}</b><span>${esc(sub)}</span></div><button type="button" class="btn" ${attrs}>${btn}</button></div>`;
-      n3.innerHTML = '<h2>Your next three</h2><div class="n3s">'
-        + (di0 >= 0 ? card(280, "how_to_vote", "Decide", D[di0].title, `${D.length - made} of ${D.length} choices still open`, "Choose", `data-decide-open="${di0}"`)
-                    : card(280, "how_to_vote", "Decide", "Every choice made", "Change any of them from Waiting on you", "Review", 'data-decide-open="0"'))
-        + (cur ? card(50, "construction", "Carry on", cur.title, `${cur.done} of ${cur.total} done`, "Open", `data-mk="${cur.id}"`)
-               : allDone ? card(50, "construction", "Build", "Every piece done", "Enjoy the room", "Your room", 'data-go="build"')
-               : card(50, "construction", "Build", "Start with any piece", "Tap a place in the room, or pick a piece", "Your room", 'data-go="build"'))
-        + (() => {   // v46: what's still to buy for the piece you're on, else everything left
+      const nx = U && U.next, open = di0 >= 0;   // N119: the next room with changes not done leads; the media wall is one project of the house
+      const cards = [
+        nx && card(20, "home", "The house", nx.name, `${nx.d} of ${nx.n} done${nx.range ? " · " + nx.range : ""}`, "Its changes", `data-upsroom="${esc(nx.room)}"`),
+        open && card(280, "how_to_vote", "Decide", D[di0].title, `${D.length - made} of ${D.length} choices still open`, "Choose", `data-decide-open="${di0}"`),
+        cur ? card(50, "construction", "Media wall", cur.title, `${cur.done} of ${cur.total} done`, "Open", `data-mk="${cur.id}"`)
+            : allDone ? card(50, "construction", "Media wall", "Every piece done", "Enjoy the room", "Your room", 'data-go="build"')
+            : card(50, "construction", "Media wall", "Start with any piece", "Tap a place in the room, or pick a piece", "Your room", 'data-go="build"'),
+        (() => {   // v46: what's still to buy for the piece you're on, else everything left
           const left = DATA.track.filter(r => r.kind === "buy" && !(tget(r.id) ? tget(r.id).done : r.done));
           const pl = cur ? $$(`#${cur.id} input[data-buyproxy]`).filter(i => !i.checked).length : 0;
           return pl ? card(165, "shopping_bag", "Buy for " + cur.title, `${pl} ${pl === 1 ? "thing" : "things"} still to buy`, "Ticks match the buy list", "Its list", `data-mk="${cur.id}" data-tab="buy"`)
                : card(165, "shopping_bag", "Buy", left.length ? `${left.length} things still to buy` : "Everything bought", `${DATA.track.filter(r => r.kind === "buy").length} on the list`, "The list", 'data-go="buy"');
-        })()
-        + "</div>";
+        })(),
+        !open && card(280, "how_to_vote", "Decide", "Every choice made", "Change any of them from Waiting on you", "Review", 'data-decide-open="0"'),
+      ].filter(Boolean).slice(0, 3);
+      n3.innerHTML = '<h2>Your next three</h2><div class="n3s">' + cards.join("") + "</div>";
     }
     txt("#d-choice", made + "/" + D.length); ring("d-choice-bar", made, D.length);
     $$("[data-decide=\"cabw\"]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === (st.decide.cabw || ""))));

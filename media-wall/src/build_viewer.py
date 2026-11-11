@@ -1083,7 +1083,7 @@ def _page(site=False):
               else f'<p class="caption">Also on <a href="{PAGES}" target="_blank" rel="noopener">GitHub Pages</a>.</p>')
 
     plan_home = f"""<div class="plan-home" id="plan-home"><div class="panel" id="overview">
-      <div><p class="hello"><span id="hello">Evening, Emma &amp; Dave</span><button class="ver" type="button" title="Get the latest version">{LABEL}</button></p><p>The artisan oak media wall in your pale mint, the compact dining cabinet, the network and power: about <b id="d-total">£{money(lo_tot, hi_tot)}</b> in all.</p>
+      <div><p class="hello"><span id="hello">Evening, Emma &amp; Dave</span><button class="ver" type="button" title="Get the latest version">{LABEL}</button></p><p>The house's changes: <b id="d-house">none yet</b>. The media wall: about <b id="d-total">£{money(lo_tot, hi_tot)}</b>.</p>
         <p class="row"><a class="btn" href="{base}Demmas_Home_{LABEL}_Plan.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">download</span> The plan (PDF)</a><a class="btn" href="{base}Demmas_Home_{LABEL}_Plan_phone.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">smartphone</span> Phone edition</a></p></div>
       {PU.plan_home(ring, sum(1 for r in rows if r["kind"] == "buy"), len(steps())).replace("{MONEY}", PU.money_html(TRACK))}
       <div class="upnext" hidden><span class="n" id="d-nextn">1</span><div><span class="label">Up next</span><h3 id="d-next">Measure and count</h3></div>
