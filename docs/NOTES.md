@@ -87,8 +87,9 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Lean code (N28, N41):** method: join the parts (`room3d_src.js()`), run ESLint 9 `no-unused-vars` on the one file (install ESLint
   in a scratch folder, not the repo), read each part, grep every name across `media-wall/src`, `tools`, `house`, `projects` (`R3D.*`
   hooks are called by `shot3d.py` and `check_site.py`), prove with the gallery. N48 (V3.05) cut 12, 13, 14, 16 and 20's;
-  `movable`'s `_flat` stays by place (04 and 07 pass it). Left: the `S.cab === "sliding"` paths in 05, 15 (`LOOK_STR`) and 19 (`d.cab`),
-  `export3d.py`'s `A_*` `BAR2` keys, 04's `aboveAll`, `recP` (N47).
+  `movable`'s `_flat` stays by place (04 and 07 pass it). N120 (V3.63): `optC`, 19's `d.cab`, bar 2's six copies (`BAR2` is one bar now),
+  page.js's `user`/`need`, fit.py's four functions defined twice (pyflakes: "redefinition of unused"). ESLint finds nothing more in the
+  joined room3d file. Left: 15's `LOOK_STR` `cab`; pyflakes' unused locals in fit.py, build_viewer.py, room3d_page.py, plan_ui.py, model.py.
 
 - **A room's light (N80):** `applyLight` zeroes every light but the fill in a room of the house; it must leave the house's own (`userData.houseLight`) and the sun alone, as `placeRoomLights` runs before it, not after (a second change of a light left rooms lit by the fill alone). To compare a room with the living room, shoot both and take the mean grey (about 150 is the living room's by day).
 - **A material that's lost (N82):** a key with no row in `model.MATS` draws as `mat3`'s grey `#cccccc`, matt, with no error. A `# note` mid-line in that dict once dropped three (V3.14 to V3.32). To check: every quoted first argument of `o.box`/`o.prism`/... in `model.py` against `model.MATS`; a raycast in the page shows `material.color` `cccccc`.

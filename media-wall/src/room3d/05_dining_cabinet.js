@@ -143,7 +143,6 @@ function cabKit() {      // the parts both cabinets share: materials, the table 
   return K;
 }
 
-let optC = null;                                     // v39: the sliding cabinet isn't built any more (16_cards still reads the name)
 /* v32: each cabinet's moving parts (cabP() the one on show): its table door and chair door, the chairs in the chair box (stand) and in
    the base (base), the pads on the table door, the table (rig), the chairs at the table (seats) */
 const CABP = {};

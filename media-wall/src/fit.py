@@ -372,25 +372,6 @@ def status_class(s):
     return {PASS: "ok", TIGHT: "tight", CHECK: "check", NO: "no"}[s]
 
 
-def tables_html():
-    out = []
-    for title, space, rows in zones():
-        out.append(f"<div class='zonebox'><h4>{title}</h4><p class='zone'>{space}</p>")
-        out.append("<table class='fit'><tr><th>Item</th><th>Size (cm)</th><th>Space</th><th>Spare (cm)</th><th>Result</th></tr>")
-        for item, size, src, sp, spare, st in rows:
-            out.append(f"<tr><td>{item}</td><td>{size}{src}</td><td>{sp}</td><td>{spare}</td><td class='res {status_class(st)}'>{st}</td></tr>")
-        out.append("</table></div>")
-    return "\n".join(out)
-
-
-def counts():
-    c = {PASS: 0, TIGHT: 0, CHECK: 0, NO: 0}
-    for _, _, rows in zones():
-        for r in rows:
-            c[r[-1]] += 1
-    return c
-
-
 def sources_html(extra=()):
     items = [SOURCES[k] for k in ORDER] + list(extra)
     return "<ol class='sources'>" + "".join(f"<li>{s}</li>" for s in items) + "</ol>"
@@ -642,23 +623,6 @@ def optc_zone():
     ])
 
 
-def max_seats_zone():
-    """v26: "assess the max number of seatings you can fit"; v27: the dining cabinet, made for six; v30: the compact cabinet is the plan."""
-    g, C = G, G.CAB
-    st, sl = optc_seats(C), optc_seats()
-    seat = lambda t: (f"{t['stair'][1]:.1f} and {t['window'][1]:.1f} of edge each; a seventh at the far end with a spare chair" if t["end"]
-                      else f"{t['stair'][1]:.1f} and {t['window'][1]:.1f} each")
-    return ("How many can sit down", "every table we've drawn, in this room, with chairs a person wide and backs 41 behind the edge", [
-        ("The compact dining cabinet (the plan)", f"{st['comfort']} in comfort", ref("dining", "padded", "costwaychair"), f"{st['stair'][0]} on the stair side, {st['window'][0]} on the window side", seat(st), PASS),
-        ("The sliding dining cabinet (the alternative)", f"{sl['comfort']} in comfort", ref("dining", "padded", "costwaychair"), f"{sl['stair'][0]} on the stair side, {sl['window'][0]} on the window side", seat(sl), PASS),
-        ("B: the flip-top by the stairs (the alternative)", "seven at a squeeze", ref("dining", "sofa"), "three a side (53 each) and one at the end", "five in comfort: two a side and the end", TIGHT),
-        ("A: the flip-top on the chimney breast", "six at a squeeze", ref("dining", "sofa"), "three a side, 53 each", "four in comfort; no end seat: the sofa's in the way", TIGHT),
-        ("A fourth chair a side at the cabinet", "eight round it", ref("dining", "sofa", "room"), f"{r1(st['stair'][2])} and {r1(st['window'][2])} of edge",
-         f"{st['stair'][2] / 4:.1f} each: under the 55 squeeze; a 225 table did it, but only with the coffee table moved and all eight chairs in a bigger bay", NO),
-        ("A longer table in the cabinet", f"halves over {r1(C['h'] - C['t_top'] - C['pivot'][1])}", ref("photo20"), "they must stand up under your shelf",
-         f"{r1(C['h'] - C['t_top'] - C['pivot'][1])} is the most that folds away; {r1(C['top'][1])} leaves the linen shelf's space and keeps each half to about {C['top'][0] * C['top'][1] * C['top'][2] * 0.72 / 1000:.0f} kg", PASS),
-    ])
-
 _zones_v25 = zones
 
 
@@ -703,17 +667,6 @@ def rears_zone():
 
 def zones():
     return _zones_v26() + [rears_zone()]
-
-
-def counts():
-    """v26: the seat count's "a ninth seat" rows are the room's limits, not things that don't fit, so they stay out of the totals."""
-    c = {PASS: 0, TIGHT: 0, CHECK: 0, NO: 0}
-    for title, _, rows in zones():
-        if title == "How many can sit down":
-            continue
-        for r in rows:
-            c[r[-1]] += 1
-    return c
 
 
 # ---------------------------------------------------------------- v30: the compact dining cabinet (the plan)
