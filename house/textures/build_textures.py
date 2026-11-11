@@ -32,6 +32,10 @@ CROP = {"granite_tile_03": (0.02, 0.02, 0.31, 0.31)}   # V1.13: a part of the ph
 # V1.13 (Q2): made here, not photographed: artex (stipple), the kitchen's and the lower landing's ceilings in the client's photos of 30 Oct:
 # key: (real size m, colour); a height field of soft random peaks, its normal map and a faint shade in the hollows
 STIPPLE = {"artex": (0.5, "#f3f2ee")}
+# V3.70 (REAL_PLAN N110): the peaks finer and softer, nearer the kitchen's and the lower landing's photos of 30 Oct (a fine, low stipple):
+# 3x the peaks, a third smaller, rounded (no flat clipped tops), a little under half the slope; 768 px (0.65 mm, a 4K screen's pixel a
+# metre off): (px, peaks a pixel, blur as a share of px, gain, slope)
+STIPPLE_LOOK = dict(px=768, dens=1 / 10, blur=1 / 480, gain=2.0, k=2.5)
 SRC = {"Carpet012": "https://ambientcg.com/view?id=Carpet012"}
 PX = {}                                                          # sizes other than 1024 px (V1.11, the client: "i dont want these low res versions, best textures"; was 512)
 # V2.81 (REAL_PLAN N32): no finer than a pixel can show at the nearest a view comes, on a 4K screen (80° across 2160 px: 0.65 mm a metre
@@ -99,22 +103,21 @@ def load(src, aid, kind):
     return im
 
 
-def stipple(px, col, seed=7):
+def stipple(px, col, seed=7, dens=1 / 30, blur=1 / 340, gain=3.0, k=6.0):
     """artex: soft peaks (blurred random dots, clipped, so the tops stay rounded), the normal map from its slopes, the colour shaded
     3 % in the hollows; tiles seamlessly (the dots wrap)"""
     import numpy as np
     from PIL import ImageFilter
     rng = np.random.default_rng(seed)
     a = np.zeros((px, px), np.float32)
-    n = px * px // 30
+    n = int(px * px * dens)
     ys, xs = rng.integers(0, px, n), rng.integers(0, px, n)
     a[ys, xs] = rng.uniform(0.4, 1.0, n)
     big = np.tile(a, (3, 3))                                       # blur across the seams, then take the middle
-    im = Image.fromarray((big * 255).astype("uint8")).filter(ImageFilter.GaussianBlur(px / 340))
+    im = Image.fromarray((big * 255).astype("uint8")).filter(ImageFilter.GaussianBlur(px * blur))
     h = np.asarray(im, np.float32)[px:2 * px, px:2 * px] / 255
-    h = np.clip(h / (h.max() or 1) * 3, 0, 1)
+    h = np.clip(h / (h.max() or 1) * gain, 0, 1)
     gy, gx = np.gradient(h)
-    k = 6.0
     nrm = np.dstack([-gx * k, gy * k, np.ones_like(h)]); nrm /= np.linalg.norm(nrm, axis=-1, keepdims=True)
     c = np.array([int(col[i:i + 2], 16) for i in (1, 3, 5)], np.float32)
     shade = 0.97 + 0.03 * h
@@ -146,7 +149,7 @@ def main(src):
             (turn(im, kind == "nor") if tq else im).save(HERE / f"{key}_{kind}.jpg", quality=76 if kind == "map" else 80, optimize=True)
         meta[key] = dict(asset=aid, size=size, url=SRC.get(aid, f"https://polyhaven.com/a/{aid}"), licence="CC0")
     for key, (size, col) in STIPPLE.items():
-        m, n = stipple(1024, col)
+        m, n = stipple(col=col, **STIPPLE_LOOK)
         m.save(HERE / f"{key}_map.jpg", quality=82, optimize=True); n.save(HERE / f"{key}_nor.jpg", quality=84, optimize=True)
         meta[key] = dict(asset="made by build_textures.stipple", size=size, url="", licence="ours")
     share(meta)
