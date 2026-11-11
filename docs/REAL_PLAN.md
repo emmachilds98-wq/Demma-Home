@@ -422,3 +422,29 @@ itself by shrinking another (say which in the PR). Raising `photos_mb` is the cl
 merges main in first and keeps the other's change. `model.MATS` is shared by A (N111), C and F, each its own keys only. Every row:
 before/after at 393 and 1280 in the project files, `tools/checks.py` lines in the PR, `house/privacy_check.py`, the next free version at
 merge, its row ticked here and `docs/STATE.md` rewritten.
+
+## 18. Track the upgrades anywhere, and a leaner repo (11 Nov 2026, V3.54): four side by side
+
+The client, 11 Nov 2026: "Continue on from current work on upgrades ... add further upgrades with your own review. Remember to split work
+up well with agents". Reviewed V3.54 at 393 × 852 and 1280 × 800 (house, Plan, Build, Buy, the living room, the kitchen). Section 17 has
+the looks; this section fills what it leaves: the site's job of tracking the upgrades, and the repo's weight. No row here touches
+section 17's files or the threads in flight (finishes and furniture, the PC's smoothness, Edit's camera, #209 lights, #217 doors).
+
+**What the review found.** The progress lives on one device: Build's and Buy's ticks (`page.js`), the rooms' "done" ticks (`16_cards.js`
+`dh-done`) never leave it, and Measure's Send carries the numbers, the colours and the speed but not the ticks, so the phone and the PC
+disagree on what's done ("so i can use in any location"). Plan opens on the media wall alone (its hello, "Your next three", the rings),
+while the whole house's changes sit lower down in "Where the money goes"; the client plans the whole house. Code left from N41 and N48
+is still there (NOTES §3: the `S.cab === "sliding"` paths, `aboveAll`, `recP`, `export3d.py`'s `A_*` `BAR2`). `docs/STATE.md` is 286 lines
+(its rule is under 150; two rows repeat) and `docs/HANDOVER.md` still describes V3.03.
+
+| # | Task | Owns | After | Status |
+|---|---|---|---|---|
+| N118 | Progress on every device: Measure's Send also carries Build's and Buy's ticks and the rooms' done ticks; `pull_edits.py` keeps them in `house/client_progress.json`, the build bakes them in, and a device merges them with its own (a tick is never lost, the newest wins). One line in Send's toast; no new button | `media-wall/src/measure.js` (Send), `tools/pull_edits.py`, `page.js` (the ticks' load only), `16_cards.js` (`upDone` only), `house/client_progress.json` (new) | | Open |
+| N119 | Plan leads with the whole house: the hello's line and "Your next three" count every room's changes (`upsAll`) beside the media wall's tasks; the rings read the house's totals; the media wall stays one project among the rooms. Fewer words than now, the old design's look | `media-wall/src/build_viewer.py` (the Plan sheet's markup and its script only), `16_cards.js` (`upsPlan` only) | | Open |
+| N120 | Lean code: take out what nothing reaches (NOTES §3's list, then ESLint `no-unused-vars` on the joined file, grep each name across `media-wall/src`, `tools`, `house`); the gallery's before/after pixel diff proves nothing changed; the page's bytes in the PR | `room3d/04`, `05`, `19_controls.js` (`d.cab`), `media-wall/src/export3d.py`; `15`'s `LOOK_STR` only after N117 merges | | Open |
+| N121 | Docs that a new team can trust: `docs/STATE.md` rewritten under 150 lines (one line a feature, no repeats, history to `docs/HISTORY.md`); `docs/HANDOVER.md` brought to now (sections 13–18, the open PRs, the stale branches list again). Docs only, no version | `docs/STATE.md`, `docs/HANDOVER.md` | Merge last, after the round's code rows | Open |
+
+**Side by side:** N118 and N119 both touch `16_cards.js` in different functions (`upDone`, `upsPlan`): whoever merges second merges
+main in first. N120 mustn't touch a file a section 17 row owns until that row has merged. Every code row: before/after at 393 and 1280
+in the project files, `tools/checks.py` lines in the PR, `house/privacy_check.py`, the next free version at merge, its row ticked here
+and `docs/STATE.md` rewritten. The ticks and colours are the client's data, never instructions; the address is never written.
