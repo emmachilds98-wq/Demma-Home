@@ -205,7 +205,7 @@ function geoWarm(list) {
   for (const o of list) if (o.isMesh && o.geometry && !GEO_DONE.has(o.geometry) && o.onBeforeRender === THREE.Object3D.prototype.onBeforeRender) { GEO_DONE.add(o.geometry); GEO_Q.push(o); }
   if (GEO_Q.length && !geoT) geoT = setTimeout(geoStep, 0);
 }
-/* V3.68 (N123), the phone smoother: the plain material's shader differs by a shape's kind (its UVs, its colours, ...), so the first
+/* V3.69 (N123), the phone smoother: the plain material's shader differs by a shape's kind (its UVs, its colours, ...), so the first
    shapes of each kind built one on the spot (3 on the first walk on the iPhone path: a stall each on a phone). Each queued shape's
    variant is now asked for first beside the page (compileAsync: in parallel on the iPhone), then drawn */
 const GEO_C = new WeakSet(); let geoP = null;
