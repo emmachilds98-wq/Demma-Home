@@ -173,7 +173,11 @@ function glassTod(m) {
   if (k === "glass") m.opacity = day ? 0.14 : 0.3;
   if (m.envMap && (k === "glass" || k === "glass_frost")) m.envMapIntensity = finishEnv(m) * HENVK;
 }
-const glassAll = () => { if (HMATS) for (const k of ["glass", "glass_frost"]) if (HMATS[k]) glassTod(HMATS[k]); };
+/* the street's evening (20_go buildStreet): its lamps and about a third of the windows opposite lit warm, so the view out of the front
+   rooms is a street at dusk, not a dark grey wall. An emissive colour each (a uniform): no shader built */
+const STREET_LIT = [];
+const streetTod = () => { const eve = S.tod !== "day"; for (const m of STREET_LIT) { m.emissive.set(m.userData.glowCol); m.emissiveIntensity = eve ? m.userData.glow : 0; } };
+const glassAll = () => { if (HMATS) for (const k of ["glass", "glass_frost"]) if (HMATS[k]) glassTod(HMATS[k]); streetTod(); };
 function houseEnvK(k) {   // V2.21 (REAL_PLAN R1): the house's reflections scaled (an evening in a room: its own light leads)
   if (!HMATS || k === HENVK) return; HENVK = k;
   for (const m of Object.values(HMATS)) if (m && m.envMap && "envMapIntensity" in m) m.envMapIntensity = m.userData.real ? 1 : finishEnv(m) * k;   // V3.57: a mirror shows its room as it is

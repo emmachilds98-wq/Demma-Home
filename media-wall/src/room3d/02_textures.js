@@ -187,14 +187,14 @@ function loadPhotos() {
       Object.assign(PHOTO, P); photosDone = true;
       /* V2.47 (speed, REAL_PLAN N2): each photo is a file of its own; the ones on what you can see now are fetched first, the rest
          a moment later, so the view you're on looks finished sooner on a phone's connection */
-      const seen = onScreen(), now = w => texSeen(w.tex, seen), all = PWAIT.splice(0), later = all.filter(w => !now(w));
-      all.filter(now).forEach(w => w.go());
+      const seen = onScreen(), now = w => w.k === "tile" || texSeen(w.tex, seen), all = PWAIT.splice(0), later = all.filter(w => !now(w));   // V3.59 (N114): the roof's tiles always first (the house opened under a flat beige roof)
+      all.filter(now).sort((a, b) => (b.k === "tile") - (a.k === "tile")).forEach(w => w.go());
       setTimeout(() => (window.requestIdleCallback || (f => f()))(() => later.forEach(w => w.go()), { timeout: 2000 }), 1200);
     }));
 }
 function onScreen() { const seen = new Set(); scene.traverseVisible(o => { for (const m of [].concat(o.material || [])) for (const t of [m.map, m.normalMap, m.roughnessMap]) if (t) seen.add(t); }); return seen; }
 const texSeen = (tex, seen) => !tex || [tex, ...(TEX_CLONES.get(tex) || [])].some(t => seen.has(t));
-const whenPhoto = (k, f, fn, tex) => { if (!(PMETA[k] && PMETA[k][f])) return false; const go = () => PHOTO[k] && PHOTO[k][f] && fn(PHOTO[k][f]); photosDone ? go() : PWAIT.push({ go, tex }); return true; };
+const whenPhoto = (k, f, fn, tex) => { if (!(PMETA[k] && PMETA[k][f])) return false; const go = () => PHOTO[k] && PHOTO[k][f] && fn(PHOTO[k][f]); photosDone ? go() : PWAIT.push({ go, tex, k }); return true; };
 const TEX_CLONES = new WeakMap();   // a clone shares the picture but needs telling it changed (not in userData: three copies that as JSON)
 const texClone = t => { const c = t.clone(); TEX_CLONES.has(t) ? TEX_CLONES.get(t).push(c) : TEX_CLONES.set(t, [c]); return c; };
 TEX_CLONES.set(OAK_TEX, [OAK_TEX_V]);   // V1.12: the doors' upright oak, cloned before this list (it kept the drawn oak's texture: the site check's WebGL error)
