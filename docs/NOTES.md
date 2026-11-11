@@ -71,6 +71,8 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `LOWD` phones; esbuild minifies the page; icon font subset; sheets in their own file; fonts don't block; no texel finer than a 4K
   screen shows (`build_textures.PX`, `--slim`). Tried and dropped: lower JPEG quality (3–8 dB lost for 5–10%), progressive JPEGs.
   `sw.js` waits 2 s for the page (`WAIT`), then serves the kept copy (tested with a local server whose delay is set by a `.txt` file).
+  N109 (V3.56): `PX` takes one picture of a key too (`road_nor`); `--slim` re-saves in place, then the gallery pixel-diff proves it (mean
+  difference under 0.1 of 255). A view's nearest distance decides: a floor 1.6 m, the outside's relief 2–4 m, the road the drive's width.
 - **KTX2 (N22/N31, PR #133, WIP):** basisu 1.16.4 pinned at commit 900e40fb5d25, built in CI (no encoder can be fetched here); three's
   `KTX2Loader` and its basis transcoder (0.5 MB wasm) copied into `_site`; the compressed data put into the same texture objects so no
   shader changes; JPEG fallback. The tint must stay at build (compressed textures can't be tinted on the page). Waits on Emma's OK.
@@ -148,3 +150,13 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Glass by evening** (V3.52, N104): the dusk veil (`11` `duskVeil`, renderOrder 5, no depth write) draws over anything see-through that writes no depth, so a nearly opaque pane must write depth (`glassTod`: frosted) or it turns the veil's navy. A material's colour, emissive, opacity and depthWrite change without a shader; a map it didn't have would build one.
 - **Outside pieces without new shaders** (V3.44): the phone's first picture has no shader to spare (21 of 21), and a plain map-and-relief material outside is new (the ground's lawn is its own "grass" program). So the street copies the house's own materials (`FIN.mat3(k).clone()`, its `onBeforeCompile` and cache key carried over, `houseClip(m, [], false)` for six uncut planes): no new program. Check with the programs' ids (`gl.properties.get(m).currentProgram.id`).
 - **The photos budget is full** (V3.53, `tools/perf_budget.json` `photos_mb` 9.5): a new texture needs room made. V3.53 re-saved `artex_nor` (402 to 352 KB), `board_map` and `chipboard_map` at quality 78; `--floors` saves at 84, so re-save `board_map` at 78 after running it again.
+
+## 6. Finishes and furniture (section 14, N56–N58; section 17 stream A)
+- **New floors** are made, not downloaded: `build_textures.py --floors` cuts the oak veneer's own grain into blocks or planks (a block's
+  look keyed by its place in the repeat so the picture wraps: herringbone repeats every 2 × n × √2 × width); tiles by `tiles` (`TILED`,
+  looks `veins`, `stone`, `lime`). A floor key needs a `model.MATS` row, `FIN_FLOORS`, `UPC.floor` and a `fit.SOURCES` row.
+- **On a wall** (`23_finish.js`): `finWallRun(room, side)` gives the wall's face, ends, doors and windows and the ceiling over it; the
+  wallpaper and the panelling (`finPanelApply`: real boxes, one draw a kind a room) both build on it. Look's rows 24–27.
+- **Seeing a finish without tapping:** `R3D.setFinishes({room: {slot: value}})` then a screenshot (views: `bed3` is `office`, `bathroom` is `bath`).
+- **A catalogue piece's own price:** `UPC.piece[key]` beats its kind's (`upCat`).
+- Don't rebuild `_site` while `checks.py` runs: a local site check once failed Edit's ottoman drag mid-rebuild; CI passed.
