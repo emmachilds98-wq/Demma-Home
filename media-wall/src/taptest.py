@@ -62,8 +62,8 @@ def run(w, h):
         pg.evaluate("() => R3D.set({cab: 'compact', view: 'wall', drawers: false})"); pg.wait_for_timeout(600)
         tap([60, 30, 12], "the media wall's base"); press("Pull the drawers out"); print("   drawers:", S("drawers"))
         pg.evaluate("() => R3D.set({view: 'room'})"); pg.wait_for_timeout(600)
-        # V3.73: the graduation cap on the pole's top, 24 across (the box's centre is air beside the thin pole: the tap fell through to the rug)
-        lampxy = pg.evaluate("() => { const { MOV, THREE } = R3D._dbg; let pole = null; MOV.lamp.pivot.traverse(o => { if (!pole && o.isMesh && o.geometry.parameters && o.geometry.parameters.radiusTop === 0.011) pole = o; }); const p = pole ? pole.getWorldPosition(new THREE.Vector3()) : new THREE.Box3().setFromObject(MOV.lamp.pivot).getCenter(new THREE.Vector3()); return [-p.x * 100, pole ? 164 : p.y * 100, p.z * 100]; }")
+        # V3.73: the lamp's top shade (the box's centre was air beside its thin pole once V3.73 moved it: the tap fell through to the rug)
+        lampxy = pg.evaluate("() => { const { lights, THREE } = R3D._dbg; const l = lights.lamp[0], p = l.position.clone().addScaledVector(l.target.position.clone().sub(l.position).normalize(), -0.1); return [-p.x * 100, p.y * 100, p.z * 100]; }")
         tap(lampxy, "the lamp"); press("Turn it")
         print("   lamp level:", pg.evaluate("() => R3D._dbg.S.lv.lamp"))
         # v38: a spot bar turns as a whole, and each head has its own switch, dimmer, aim and colour
