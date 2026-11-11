@@ -255,7 +255,7 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id === "mov:sofa") return ["Your sofa", "Blue corduroy, as now", [   // V3.71: the swap is on its card
       btn("Try the green sofa bed", { sofa: "bed" }), btn("Move it", { actedit: "sofa" }), btn("From above", { view: "plan" })]];
   if (id === "mov:sofa2" || id === "mov:chaise2") { const B = R.SOFABED;
-    return [B.name + " (to try)", S.sbed ? "Bed pulled out" : `${B.w} × ${B.d}, chaise and two stools`, [
+    return [B.name, S.sbed ? "Bed pulled out" : `${B.w} × ${B.d} with its chaise, two stools`, [
       btn("Back to my sofa", { sofa: "mine" }), btn(S.sbed ? "Push the bed in" : "Pull the bed out", { sbed: S.sbed ? "in" : "out" }), btn("Watch it open", { showopen: "bed" }),
       btn(S.lid ? "Shut the chaise" : "Open the chaise", { lid: S.lid ? "on" : "off" }),
       btn(id === "mov:sofa2" ? "Move it" : "Move the chaise", { actedit: id.slice(4) }), btn("From above", { view: "plan" })]]; }

@@ -176,8 +176,8 @@ function buildStorage() {
   // cotton lining turned over the rim and the five throws, folded long, stacked flat inside (a floor piece: it moves in Edit room)
   if (R.BLANKET_BASKET) { const B = R.BLANKET_BASKET, weave = reg(new THREE.MeshStandardMaterial({ color: "#9a7a50", roughness: 1, bumpMap: HESSIAN, bumpScale: 2.6 }));
     const lining = own("#e9e2d2"); SVAR_MATS.blanketbasket = [weave];
-    const g = new THREE.Group(), cx = (B.x[0] + B.x[1]) / 2, cz = (B.z[0] + B.z[1]) / 2;
-    SUGG_G.blanketbasket = movable("sg_blanketbasket", "Blanket basket", g, () => ({ x: cx, z: cz, rot: 0 }), B.w, B.d, [weave], false, { when: () => !!S.sugg.blanketbasket });
+    const g = new THREE.Group(), cx = (B.x[0] + B.x[1]) / 2, bz_ = () => (S.sofa !== "bed" && B.z_old ? B.z_old : B.z), cz = () => (bz_()[0] + bz_()[1]) / 2;   // V3.73: past the sofa bed's chaise, or by your sofa's end
+    SUGG_G.blanketbasket = movable("sg_blanketbasket", "Blanket basket", g, () => ({ x: cx, z: cz(), rot: 0 }), B.w, B.d, [weave], false, { when: () => !!S.sugg.blanketbasket });
     lazyVis(SUGG_G.blanketbasket.pivot, () => { const w = B.w, d = B.d, h = B.h, t = 1.2;
     lb(g, 0, 0, 0, w, 1.5, d, weave);                                                                     // its floor
     for (const [x, z, ww, dd] of [[-w / 2 + t / 2, 0, t, d], [w / 2 - t / 2, 0, t, d], [0, -d / 2 + t / 2, w - 2 * t, t], [0, d / 2 - t / 2, w - 2 * t, t]]) {

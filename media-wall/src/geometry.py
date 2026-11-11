@@ -547,10 +547,16 @@ SOFA_POUF = dict(SOFA_POUF, w=OTTOMAN["w"], d=OTTOMAN["d"], h=OTTOMAN["h"],
 # rows): Lovesofas Amelia, right hand (the chaise in your sofa's corner), 264 × 165 × 95 with the headrests up, seat 43 high and 53 deep
 # (fit.SOURCES "amelia"). The run's 100 depth is the listing's arm arrow; the arm, corner, chaise and stools are scaled off its photos.
 # The listing's drawing also says 230 along the chaise side, against 165 in its table and text: drawn 165, to confirm with the seller.
+# V3.73, client: "I want it to be an exact replica of the item I shared with you in look and size ... the motion of opening the sofa bed
+# looks right": from the listing's 14 photos. The 264 × 165 is the sofa's two main sections: the run (arm, two seats over the bed) and the
+# corner section, whose back runs 165 along the side with a seat facing in, in front of the corner seat; the loose storage chaise stands on
+# the end of that, 230 in all (the drawing's 230: both numbers hold). The bed: a 75-deep platform that pulls up and out on castors, lifts on
+# its black frame and clips back against the seats, level with them (the drawing's 43).
 SOFABED = dict(name="Green corner sofa bed", pick="Lovesofas Amelia, Blade Green chenille, right hand", col="#4f5d33",
-               w=264.0, d=165.0, h=95.0, seat_h=43.0, seat_d=53.0, run_d=100.0, back_h=78.0, back_t=20.0, arm=40.0, arm_h=62.0,
-               corner=100.0, foot=10.0, bed_out=70.0, heads=3,
-               chaise=dict(w=100.0, d=65.0, h=43.0, lid=12.0), stool=dict(w=40.0, d=42.0, h=40.0), cost=(700, 950), default=True)
+               w=264.0, d=230.0, sec_d=165.0, h=95.0, seat_h=43.0, seat_d=53.0, run_d=100.0, back_h=78.0, back_t=20.0, arm=36.0, arm_h=62.0,
+               corner=100.0, foot=8.0, bed_out=75.0, bed_over=8.0, heads=3,
+               chaise=dict(w=100.0, d=65.0, h=43.0, lid=11.0), stool=dict(w=38.0, d=42.0, h=40.0), cost=(700, 950), default=True)
+SOFABED["end_z"] = SOFA_BACK_Z + SOFABED["d"]                       # -66: the chaise's end
 # V3.73, client (11 Nov 2026): "make the new green version the main version showing in the room but keep ability to switch between designs.
 # Adjust the tables in front of the sofa however needed to make it fit with the new sofa as well as the lamp". The room opens on the sofa
 # bed (SOFABED["default"]); Room → The sofa still swaps your own back in. Around it, by the usual living-room rules (a coffee table 35–45
@@ -564,7 +570,7 @@ _open = (SOFABED_X[0] + SOFABED["corner"], SOFABED_X[1] - SOFABED["arm"])   # 10
 COFFEE = dict(COFFEE, x=(_open[0] + 30.0, _open[0] + 30.0 + (COFFEE["x"][1] - COFFEE["x"][0])),
               z=(SOFABED_FRONT_Z + 40.0, SOFABED_FRONT_Z + 40.0 + (COFFEE["z"][1] - COFFEE["z"][0])))   # x 132–222, z -156..-106
 # with its bed pulled out (70 from the seats) the table steps towards the media wall, just clear of it
-SOFABED["cof_out"] = max(0.0, SOFABED_FRONT_Z + SOFABED["bed_out"] + 4.0 - COFFEE["z"][0])   # 34
+SOFABED["cof_out"] = max(0.0, SOFABED_FRONT_Z + SOFABED["bed_out"] + SOFABED["bed_over"] + 2.0 - COFFEE["z"][0])   # 45: clear of it as it clips back
 # your sofa's ottoman (when your sofa is shown) steps along to stay beside the table: 4 clear of it, as before
 SOFA_POUF = dict(SOFA_POUF, x=(COFFEE["x"][1] + 4.0, COFFEE["x"][1] + 4.0 + SOFA_POUF["w"]))
 # the red lamp beside the arm, behind the seat line: 12 clear of the stools' ends (they slide out of the arm towards it) and over the shoulder
@@ -830,6 +836,10 @@ BLANKETS = 5
 THROW_LONG = (47.0, 25.0, 8.5)
 BLANKET_BASKET = dict(w=29.0, d=51.0, h=59.0, wall=1.0, x=(2.0, 31.0),
                       z=(round(SOFA_BACK_Z + SOFA_D + 3.0 + 51.0, 1), round(SOFA_BACK_Z + SOFA_D + 3.0, 1)))   # -74 .. -125: 3 off the sofa's end
+# V3.73: the sofa bed's chaise reaches z -66, over the basket's place: it stands 4 past the chaise's end instead (with your sofa, where it was)
+BLANKET_BASKET["z_old"] = BLANKET_BASKET["z"]
+if SOFABED.get("default"):
+    BLANKET_BASKET["z"] = (round(SOFABED["end_z"] + 4.0 + BLANKET_BASKET["d"], 1), round(SOFABED["end_z"] + 4.0, 1))   # -11 .. -62
 BLANKET_BASKET["inner"] = (BLANKET_BASKET["d"] - 2 * BLANKET_BASKET["wall"], BLANKET_BASKET["w"] - 2 * BLANKET_BASKET["wall"],
                            BLANKET_BASKET["h"] - 2.0)                                   # 49 × 27 × 57 inside its lining
 BLANKET_BASKET["holds"] = int(BLANKET_BASKET["inner"][2] // THROW_LONG[2])              # six folded long; five stand 42.5 of 57

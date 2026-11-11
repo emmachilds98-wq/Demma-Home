@@ -101,8 +101,8 @@ Five from before V2.0 hold commits not in `main`, work since redone or dropped: 
 4. **`?perf` screenshots** (the corner box after opening the house once) from the iPhone 15 Pro and the RTX 5070 PC (N10).
 5. **Dark panels** on a dark device, or keep the cream (the old design) (N9's rest).
 6. **A photo of the microwave**, if there is one (N6 found none).
-7. **The green sofa bed (V3.71):** its Amazon drawing says 230 cm on the chaise side, its size table and text 165 (drawn 165); ask the
-   seller. The price showed in US dollars from the sandbox (about £700–950 is a guess). The arm, stools and chaise are scaled off its photos.
+7. **The green sofa bed:** V3.73 settled 230 vs 165 from the listing's photos (the sections are 165, the loose chaise makes 230). Still
+   open: the price (it showed in US dollars from the sandbox; about £700–950 is a guess); the arm, stools and chaise are scaled off photos.
 The older list (measurements still guessed, smaller confirmations) is in `docs/STATE.md`, "Open with the client", and in Measure on the site.
 
 ## Suggested next work for the new team

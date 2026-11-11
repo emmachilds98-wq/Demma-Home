@@ -159,7 +159,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   normals recomputed; `cush()` places one, `tufts()` merges buttons into one mesh; `mergeStatic` keeps each part one draw a material. A
   lid that opens past upright clips the cushion behind it (`-1.5` rad). To look at it in the sandbox: `R3D.set({sofa: "bed", sbed: true,
   lid: true, view: "room"})`, then the free camera (section 1) and `R3D.still(w, h)`.
-  V3.73: it's the default (`SOFABED["default"]` → `DEF.sofa`, a saved room moved once by `S.v373`). Placed round it in `geometry.py` just
+  V3.73: true to the item: `sec_d` 165 (the corner section's side back), `d` 230 with the chaise (`end_z` -66); the bed's anim runs
+  three stages on one `WORK.sbed` (0–0.5 out past its rest by `bed_over`, 0.5–0.8 the top lifts, 0.8–1 back against the seats), so its
+  tween and the show's acts are linear. The C-table follows the shown sofa's end (`setState`), the blanket basket's spot is `z` or `z_old`.
+  It's the default (`SOFABED["default"]` → `DEF.sofa`, a saved room moved once by `S.v373`). Placed round it in `geometry.py` just
   after `SOFABED`: `COFFEE` (40 off the seats), `SOFA_POUF` (beside the table, for your sofa), the lamp's "sofa" spot, `LAMP_READ` (the
   lamp's purple head, `11_lights.js`), `SOFABED["cof_out"]` (how far the table steps for the open bed, read by `04`). `clash.py` knows the
   sofa bed's parts (`SOFABED_PARTS`, one piece with your sofa) and the open bed; the site check drags `chaise2`, the tap test opens it.
