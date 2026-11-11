@@ -56,6 +56,9 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   A cube camera's pass with `localClippingEnabled = false` builds a whole set of 0-plane shaders: move the planes aside instead
   (`roomEnv`). Find such shaders by diffing `gl.info.programs` cacheKeys before/after a step: index 48 + 2 per define is
   `numClippingPlanes`. `check_site` `SPOT` counts programs first used on the frame they were linked (rAF and WebGL2 wrapped).
+- **A hidden card name (N118):** some browsers give no renderer name ("WebKit WebGL", "Mozilla"): `BIG_GPU` was false and the PC took the
+  unknown-computer path (lowRes resize on every drag, no composer). `MASKED` treats a computer with no maker in the name as a card. Test by
+  spoofing `getParameter` for 0x9245, 0x9246 and 0x1F01. Send's `gpu` reads `hidden` then.
 - **Moving (N11, N17):** the page draws only when something changes (`17_render_loop` `need`). Damping is frame-rate free (`DAMP`).
   A slow phone walks without the shade and glow, then draws at 1.5× (`phoneCap`).
 - **Draws (N16, N37):** `20_go.js` `put()` sorts a floor's merged meshes by room (`userData.rooms` spans); `09` `roomCull` cuts rooms by
