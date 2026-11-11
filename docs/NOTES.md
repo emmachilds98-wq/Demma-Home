@@ -26,6 +26,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Textures:** CC0 sites (Poly Haven, ambientCG) and GitHub release downloads are blocked; new textures are made in
   `house/textures/build_textures.py` (`--finishes`).
 - **Glaze and lippage (N84):** a normal map's step is 1/127.5: a tile's tilt under about 0.01 doesn't show; 0.012–0.02 a tile breaks the reflections as real lippage does.
+- **Background colours (N115):** `scene.background` as a colour is the clear colour: straight to the screen it shows as typed, but through
+  the HD composer it's tone mapped (AgX at the exposure, 0.4 in a room) and comes out much darker; pass the colour through AgX's inverse
+  (`19_view_controls.js` `agxIn`). A background texture in sRGB is never tone mapped on Fast (three r160 sets `toneMapped` off for it)
+  but is through the composer; a linear one is tone mapped on both. Test both paths: `?ao` forces the composer in the sandbox.
 - **Testing a link's `#share=` (N118):** going from the page to the same address with only a new `#...` doesn't reload it (Playwright's
   `goto` too), so nothing reads the link: go to `about:blank` first. Serving `_site` with `python3 -m http.server` for several browser
   contexts stalled on the photos; abort `tex/`, `photos.` and the fonts in a test that needs no picture, and wait for `domcontentloaded`.
