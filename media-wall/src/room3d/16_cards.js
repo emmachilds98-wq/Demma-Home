@@ -67,7 +67,7 @@ function hcatCard(id) {
     `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Kinds">${Object.entries(HCAT_KINDS).map(([q, t]) => `<button type="button" data-hcatk="${k}:${q}" aria-pressed="${C.k === q}">${t}</button>`).join("")}</div></div>`];
 }
 /* N23 (REAL_PLAN section 7), the client: "helps me keep track and plan those upgrades": a room's card of its changes (Look's and Edit's),
-   each a tap to tick done, with a rough cost; Plan has the house's total, room by room. Ticks on this device (dh-done), a tick's key
+   each a tap to tick done, with a rough cost; Plan has the house's total, room by room. Ticks in dh-done (Measure's Send carries them, N118), a tick's key
    carries the choice, so a new choice starts unticked. Costs E: typical UK retail and trade prices, Nov 2026, a room's floor by its area */
 const UPC = { walls: [40, 80], wall: [15, 35], ceil: [20, 40], skirt: [15, 35], bulbs: [10, 30], rug: [40, 160], curt: [30, 100], bed: [25, 70], pic: [15, 60],
   frames: [150, 600], door_out: [30, 150], door: [150, 500], window: [400, 1500],
