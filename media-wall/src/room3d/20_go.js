@@ -536,6 +536,26 @@ function pieceShade(F, mat) {
   const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); geo.computeVertexNormals();
   const me = new THREE.Mesh(geo, mat); me.raycast = () => {}; me.renderOrder = 1; me.name = "pieceShade"; return me;
 }
+/* V3.63 (N112): the shade where a room's walls meet its floor, its ceiling and each other, on the walls (model.edge_shade): one mesh a
+   floor, pieceShadeMat's kind of material (the same shader), its own key in the house's materials so the cuts (Above, On its own) cut it
+   as the walls. Where the live shade (GTAO) draws this frame it's faded out, not doubled */
+function edgeShadeMat() {
+  const tex = canvasTex(4, 64, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h);   // deeper than a piece's: a corner's shade reads across a room
+    for (const [t, a] of [[0, 0.42], [0.2, 0.25], [0.45, 0.11], [0.75, 0.035], [1, 0]]) gr.addColorStop(t, `rgba(0,0,0,${a})`);
+    g.clearRect(0, 0, w, h); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, false);
+  tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+  const m = pieceShadeMat(); m.map.dispose(); m.map = tex; m.onBeforeRender = () => { const o = typeof aoLive === "function" && aoLive() ? 0 : 1; if (m.opacity !== o) m.opacity = o; }; return m;
+}
+function edgeShade(F, mat) {
+  const pos = [], uv = [], U = [[0, 1], [1, 1], [1, 0], [0, 0]];   // v 1 (the canvas's dark top) along the line
+  for (const [ax, ay, az, bx, by, bz, vx, vy, vz, w] of F.edge || []) {
+    const P = [[ax, ay, az], [bx, by, bz], [bx + vx * w, by + vy * w, bz + vz * w], [ax + vx * w, ay + vy * w, az + vz * w]];
+    for (const i of [0, 1, 2, 0, 2, 3]) { const q = v3(...P[i]); pos.push(q.x, q.y, q.z); uv.push(U[i][0], U[i][1]); }
+  }
+  if (!pos.length) return null;
+  const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); geo.computeVertexNormals();
+  const me = new THREE.Mesh(geo, mat); me.raycast = () => {}; me.renderOrder = 1; me.name = "edgeShade"; return me;
+}
 /* V2.98 (N37): the house from outside: a material's pieces on every floor one draw, not one a floor (each floor's span noted, and the
    floors shown are always a run, Lower, Lower and Ground, or all four, so one draw range); made when first wanted (09 houseJoin),
    dropped when a floor is built again */
@@ -751,6 +771,7 @@ function buildHouse() {
         g.scale(L.s[0], 1, L.s[1]); const c = v3(L.c[0], L.c[1], L.c[2]); g.translate(c.x, c.y, c.z); const r = lid(L.t); add(r ? lgOf(r) : cur, L.m, g); }
       for (const [g, o] of acc) for (const [mk, geos] of Object.entries(o)) { const me = put(g, geos, mat3(mk)); if (me && g === cur) me.userData.fm = fk; }
       { const ps = pieceShade(F, m3.shade_piece || (m3.shade_piece = pieceShadeMat())); if (ps) cur.add(ps); }   // V2.52 (R2)
+      { const es = edgeShade(F, m3.shade_edge || (m3.shade_edge = edgeShadeMat())); if (es) cur.add(es); }   // V3.63 (N112)
       if (fresh) for (const L of F.labels || []) { label([L.name, [L.use, `about ${L.w.toFixed(1)} × ${L.d.toFixed(1)} m`].filter(Boolean).join(" · ")], L.x, L.y, L.z);
         cur.children[cur.children.length - 1].userData.area = L.w * L.d; }   // V1.35: the bigger room's name wins where two overlap
       const partG = (P, into, at) => {                 // a part's group on its pivot, its own parts inside it (V1.26b: a bifold's second panel)
