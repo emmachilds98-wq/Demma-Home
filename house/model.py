@@ -210,7 +210,7 @@ ITEMS = {}   # V1 (Phase 1): every named piece: {id: {name, room, kind, src, dat
 class Out:
     def __init__(self, floor=None):
         self.boxes, self.prisms, self.labels, self.parts, self.lathes = {}, [], [], {}, []
-        self.floor, self.tag, self.tags, self.bt, self.shade = floor, None, [], {}, []   # V1: the item each box belongs to (bt: per material, an index into tags)
+        self.floor, self.tag, self.tags, self.bt, self.shade, self.edge = floor, None, [], {}, [], []   # V1: the item each box belongs to (bt: per material, an index into tags)
 
     def item(self, iid, name, room, kind="furniture", src="E", data=None, axis=None, measure=None):
         """V1 (Phase 1): every box drawn from here on (until the next item, or end()) belongs to this piece, so the app can tap it, name it,
@@ -253,7 +253,7 @@ class Out:
         self.parts[name] = dict(pivot=[round(v, 1) for v in pivot], axis=axis, angle=round(angle, 1), t0=t0, label=label, out=p); return p
 
     def json(self):
-        return dict(boxes=self.boxes, prisms=self.prisms, labels=self.labels, lathes=self.lathes, tags=self.tags, bt=self.bt, parts=self._parts(), shade=self.shade)
+        return dict(boxes=self.boxes, prisms=self.prisms, labels=self.labels, lathes=self.lathes, tags=self.tags, bt=self.bt, parts=self._parts(), shade=self.shade, edge=self.edge)
 
     def _parts(self):   # V1.26b: a part can carry its own parts (a bifold's second panel), turning with it as it goes
         return {k: dict(pivot=v["pivot"], axis=v["axis"], angle=v["angle"], t0=v["t0"], label=v["label"], boxes=v["out"].boxes,
@@ -2062,6 +2062,78 @@ def piece_shade(o, floor):
     o.shade = out
 
 
+EDGE_M = {"paint", "brick", "party", "metro"}                       # the room's side of a wall
+EDGE_W = dict(floor=22.0, ceil=20.0, corner=18.0)                   # how far each band fades (cm): up the wall, down it, out of a corner
+
+
+def edge_shade(o, floor):
+    """V3.63 (N112): the shade where a room's surfaces meet, on its walls: a band up each wall from the floor (on the skirting's face where
+    there is one), down it from a flat ceiling, and up each corner where two walls meet, from the walls as built (so not across a door,
+    a stairwell or a piece of the same room). The floor's and ceiling's own bands are houseShade's. [ax, ay, az, bx, by, bz, vx, vy, vz,
+    w]: the dark line a to b, fading w cm along v (20_go.js edgeShade). The measured living room draws its own walls: none here."""
+    fy, top, wl = FLOOR_Y[floor], FLOOR_Y[floor] + CEIL, stair_wells()
+    kind = lambda t: ITEMS.get(o.tags[t], {}).get("kind") if t >= 0 else None
+    walls = [b for m in EDGE_M for b, t in zip(o.boxes.get(m, []), o.bt.get(m, [])) if kind(t) in (None, "door", "window")]
+    skirts = [b for b, t in zip(o.boxes.get("skirting", []), o.bt.get("skirting", [])) if b[4] - b[1] > 5]
+    def union(iv):
+        out = []
+        for a, b, f in sorted(iv):
+            if out and a <= out[-1][1] + 0.5: out[-1][1] = max(out[-1][1], b)
+            else: out.append([a, b, f])
+        return out
+    def minus(iv, holes):
+        for h0, h1 in holes:
+            iv = [s for a, b, f in iv for s in ([a, min(b, h0), f], [max(a, h1), b, f]) if s[1] - s[0] > 2]
+        return iv
+    res = []
+    for r in rooms(floor):
+        if r["id"] in VOID or r["room"] == "living":
+            continue
+        x0, x1, z0, z1 = r["x0"], r["x1"], r["z0"], r["z1"]
+        side = {}
+        # (name, the face's index in a box, the room's edge, inward, the along indices, the room's span along it)
+        for nm, fi, e, n, (ai, bi), (s0, s1) in (("x0", 3, x0, 1, (2, 5), (z0, z1)), ("x1", 0, x1, -1, (2, 5), (z0, z1)),
+                                                  ("z0", 5, z0, 1, (0, 3), (x0, x1)), ("z1", 2, z1, -1, (0, 3), (x0, x1))):
+            on = lambda b, lo=-1.6, hi=0.8: lo < (b[fi] - e) * n < hi and b[bi] > s0 + 0.5 and b[ai] < s1 - 0.5
+            span = lambda b: [max(b[ai], s0), min(b[bi], s1), b[fi]]
+            W = [b for b in walls if on(b)]
+            low = union([span(b) for b in W if b[1] <= fy + 1 and b[4] >= fy + 20])
+            hi_ = union([span(b) for b in W if b[4] >= top - 1 and b[1] <= top - 20])
+            sk = union([span(b) for b in skirts if on(b, -1.6, 4) and b[1] <= fy + 1])
+            wf = [h for h in wl["floor"] if abs(h[4] - fy) < 2]; wc = [h for h in wl["ceil"] if abs(h[4] - top) < 2]
+            cut = lambda hs: [((h[2], h[3]) if fi in (0, 3) else (h[0], h[1])) for h in hs
+                              if ((h[0] - 2 <= e <= h[1] + 2) if fi in (0, 3) else (h[2] - 2 <= e <= h[3] + 2))]
+            low, hi_ = minus(low, cut(wf)), minus(hi_, cut(wc))
+            side[nm] = dict(fi=fi, n=n, low=low, sk=sk, W=W, ai=ai, bi=bi)
+            P = lambda u, y, f: [f + n * 0.3, y, u] if fi in (0, 3) else [u, y, f + n * 0.3]
+            v = [n, 0, 0] if fi in (0, 3) else [0, 0, n]
+            for a, b, f in minus(low, [(a, b) for a, b, _ in sk]):
+                res.append(P(a, fy, f) + P(b, fy, f) + [0, 1, 0, EDGE_W["floor"]])
+            for a, b, f in sk:                                        # on the skirting's face, over its height
+                if any(a < q1 and q0 < b for q0, q1, _ in low):
+                    res.append(P(a, fy, f) + P(b, fy, f) + [0, 1, 0, SKIRT_H - 2.5])
+            for a, b, f in hi_:
+                res.append(P(a, top, f) + P(b, top, f) + [0, -1, 0, EDGE_W["ceil"]])
+        def reach(s, at):                                              # how high a side's wall stands unbroken at `at` along it
+            y = fy
+            for b in sorted((b for b in s["W"] if b[s["ai"]] <= at + 2 and b[s["bi"]] >= at - 2), key=lambda b: b[1]):
+                if b[1] <= y + 1: y = max(y, b[4])
+            return min(y, top)
+        for xs, zs in (("x0", "z0"), ("x0", "z1"), ("x1", "z0"), ("x1", "z1")):
+            A, B = side[xs], side[zs]                                  # A: the wall along z (x = const), B: along x
+            cz, cx = (z0 if zs == "z0" else z1), (x0 if xs == "x0" else x1)
+            ia, ib = [q for q in A["low"] if q[0] - 2 <= cz <= q[1] + 2], [q for q in B["low"] if q[0] - 2 <= cx <= q[1] + 2]
+            if not ia or not ib:
+                continue
+            fa, fb = ia[0][2], ib[0][2]
+            h = min(reach(A, cz), reach(B, cx))
+            if h - fy < 60:
+                continue
+            res.append([fa + A["n"] * 0.3, fy, fb, fa + A["n"] * 0.3, h, fb, 0, 0, B["n"], EDGE_W["corner"]])   # on A, out from B
+            res.append([fa, fy, fb + B["n"] * 0.3, fa, h, fb + B["n"] * 0.3, A["n"], 0, 0, EDGE_W["corner"]])   # on B, out from A
+    o.edge = [[round(v, 1) for v in q] for q in res]
+
+
 def radiator(o, axis, wall, out, a0, a1, y0, y1):
     """v69 (B5): a white steel panel radiator as the photos: a double panel with its fins on top, on two brackets, a valve each end.
     axis: the wall runs along x (a front or back wall at z=wall) or z (a side wall at x=wall); out: +1/-1, the room's side."""
@@ -2409,7 +2481,7 @@ def build():
             steps.append(lambda: porch(o))
         for step in steps:                                   # V1: no piece's tag runs on into the next builder
             o.end(); step(); o.end()
-        piece_shade(o, floor)
+        piece_shade(o, floor); edge_shade(o, floor)
         sizes = room_sizes()
         for rid, r in sizes.items():
             if r["floor"] == floor and r["name"] and (r["x1"] - r["x0"]) * (r["z1"] - r["z0"]) >= 5000:   # say less: no labels on the tiny stores
@@ -2439,7 +2511,7 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "carpet_grey": ("#6f6f73", 1.0), "red_gloss": ("#c8201e", 0.15), "red_back": ("#9d1714", 0.4), "cat": ("#bdbcb8", 1.0), "sisal": ("#cdb88f", 0.9),
     "pink": ("#e8607a", 0.8), "bathmat": ("#1c1c1e", 0.97), "pine": ("#c99a55", 0.55), "pine_dark": ("#7a5a30", 0.6), "knob": ("#7a5a30", 0.45), "shoe_black": ("#1b1b1d", 0.45), "shoe_white": ("#ecebe6", 0.5), "shoe_tan": ("#8a5a34", 0.55), "shoe_grey": ("#6b6e73", 0.75), "newel": ("#f4f3ef", 0.35), "rail_white": ("#f4f3ef", 0.35), "handle_black": ("#151517", 0.4), "bin_white": ("#f1f1ef", 0.3), "paper": ("#f7f6f2", 0.9), "monitor_back": ("#202124", 0.45), "mouse": ("#1a1a1c", 0.35), "key_dark": ("#2b2c30", 0.55), "key_pink": ("#f6cddb", 0.5),
     "book0": ("#7a2f2f", 0.8), "book1": ("#2f4a6b", 0.8), "book2": ("#d9cfb8", 0.85), "book3": ("#3c5a3a", 0.8), "book4": ("#1f1f22", 0.7), "book5": ("#b8873d", 0.8), "wardrobe": ("#f2f1ec", 0.35), "duvet": ("#efede8", 0.95), "leather": ("#1f1d1d", 0.45), "check": ("#7d7e86", 0.95),
-    # V3.63 (N113): the whites a hair below white (gloss, sanitary, the porcelain `fitting`; the bedding's colour now tints its cotton photo) so a phone shows their folds and edges
+    # V3.65 (N113): the whites a hair below white (gloss, sanitary, the porcelain `fitting`; the bedding's colour now tints its cotton photo) so a phone shows their folds and edges
     "lawn": ("#5f7043", 1.0), "paving": ("#bdb8ae", 0.95), "road": ("#59595c", 0.95), "fence": ("#6b5644", 0.9),
 }
 
