@@ -324,7 +324,7 @@ root.addEventListener("click", e => {
   else if (d.seat) S.seat = d.seat, applyState();
   else if (d.cam) S.cam = d.cam, applyCam(), store.set(KEY, S);
   else if (d.moment) { playMoment(d.moment); return; }                                              // v31
-  else if (d.showopen) { showOpen(); return; }
+  else if (d.showopen) { showOpen(d.showopen); return; }                                           // V3.71: "bed", the sofa bed's
   else if (d.blind) { S.blind = d.blind; applyState(); }
   else if (d.barflap) { S.barflap = d.barflap === "open"; applyState(); }                          // v34: the drinks cabinet's front
   else if (d.lid) { S.lid = d.lid === "off"; applyState(); }                                       // v34: the storage ottoman's lid                                          // v34

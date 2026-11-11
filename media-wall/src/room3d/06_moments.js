@@ -53,14 +53,29 @@ function showSteps(P) {
   add("Six sit down", "The padded chairs unfold round it.", 4.6, each(P.seats.six, 0, 0.35, 1.2));
   return st;
 }
-function showOpen() {
+/* V3.71, client: "move coffee table so the bed fits and i can view the animation of it opening and closing like the dining table": the
+   green sofa bed's own show, on the same clock and card: the coffee table steps aside, the bed pulls out and rises, then it all goes back */
+const BED_AIM = [[300, 150, -60], [150, 30, -200], 58];
+function bedSteps() {
+  const B = R.SOFABED, w = B.w - B.corner - B.arm, l = B.seat_d + B.bed_out;
+  return [
+    { title: "The sofa", text: "Seats up, the coffee table where it stands.", dur: 2.4, acts: [], aim: BED_AIM },
+    { title: "Move the coffee table", text: "It goes 78 towards the media wall, clear of the bed.", dur: 3, acts: [[WORK.cof, 1, 0, 2.4]] },
+    { title: "Pull the bed out", text: "By the two loops under the middle seats; it rolls out on its frame.", dur: 3.4, acts: [[WORK.sbed, 0.7, 0, 2.8]] },
+    { title: "It rises level", text: `The mattress lifts level with the seats: about ${Math.round(w)} × ${Math.round(l)} to sleep on.`, dur: 2.6, acts: [[WORK.sbed, 1, 0, 1.8]] },
+    { title: "Open", text: "", dur: 2.4, acts: [] },
+    { title: "Push it back in", text: "It drops and rolls back under the seats.", dur: 3.6, acts: [[WORK.sbed, 0, 0, 3]] },
+    { title: "The coffee table back", text: "", dur: 3, acts: [[WORK.cof, 0, 0, 2.4]] }];
+}
+function showOpen(kind) {
   showStop(false); if (tourSt) tourEnd(); closeAct();
-  Object.assign(S, { site: "C", dining: "folded", tdoor: false, chairs: "cupboard" });
+  const bed = kind === "bed";
+  if (bed) Object.assign(S, { sofa: "bed", sbed: false }); else Object.assign(S, { site: "C", dining: "folded", tdoor: false, chairs: "cupboard" });
   cabSnap = true; applyState(); cabSnap = false; syncButtons();
-  const P = cabP(); if (!P) return;
+  const P = bed ? {} : cabP(); if (!P) return;
   CAB_TW.clear();
   // each part's keyframes: [time s, p, linear], held between its moves
-  const steps = showSteps(P), tracks = new Map();
+  const steps = bed ? bedSteps() : showSteps(P), tracks = new Map();
   let T = 0;
   for (const s of steps) {
     s.t0 = T;
@@ -71,7 +86,7 @@ function showOpen() {
     }
     T += s.dur;
   }
-  SH = { P, steps, tracks, T, t: 0, i: -1, paused: false, last: performance.now(), own: false };
+  SH = { P, steps, tracks, T, t: 0, i: -1, paused: false, last: performance.now(), own: false, kind: bed ? "bed" : "cab" };
   root.classList.add("touring"); qs("#r3d-show").hidden = false;
   showCard(); dirty();
 }
@@ -94,6 +109,7 @@ function showCard() {
   qs("#r3d-shown").textContent = `Step ${i + 1} of ${SH.steps.length}`;
   qs("#r3d-showh").textContent = s.title; qs("#r3d-showp").textContent = s.text; qs("#r3d-showp").hidden = !s.text;
   if (s.view && !SH.own) setView(s.view, false, 1600);
+  if (s.aim && !SH.own) flyTo(...s.aim);                                                         // V3.71: the sofa bed's show
 }
 function showTick(now) {         // from the frame loop
   if (!SH) return false;
@@ -118,9 +134,11 @@ function showCtl(c) {
 }
 function showStop(finish = true) {
   if (!SH) return;
+  const bed = SH.kind === "bed";
   SH = null; root.classList.remove("touring"); qs("#r3d-show").hidden = true;
   const b = qs('[data-show="pause"]'); if (b) { b.setAttribute("aria-label", "Pause"); b.querySelector(".ms").textContent = "pause"; }
-  if (finish) { Object.assign(S, { site: "C", dining: "six", tdoor: false, chairs: "cupboard" }); applyState(); syncButtons(); }
+  if (finish && bed) { S.sbed = false; applyState(); syncButtons(); }                              // V3.71: the bed goes back in
+  else if (finish) { Object.assign(S, { site: "C", dining: "six", tdoor: false, chairs: "cupboard" }); applyState(); syncButtons(); }
 }
 /* v17: the ideas (ideas.py), each its own group, all hidden until its button is on */
 const IDEA_G = {};
