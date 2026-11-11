@@ -37,7 +37,7 @@ html body .r3d .r3d-stage canvas:focus-visible { outline: 3px solid var(--oak, o
 .r3d-stickers { position: absolute; inset: 0; pointer-events: none; }
 .stk { position: absolute; left: 0; top: 0; transform: translate(-50%, -50%) rotate(var(--tilt, -2deg)); pointer-events: auto; display: inline-flex; align-items: center; gap: 8px;
   border: 0; border-radius: 999px; padding: 6px 14px 6px 6px; background: oklch(0.92 0.06 var(--h)); color: var(--ink); font: 600 14px Fredoka, system-ui, sans-serif;
-  box-shadow: var(--shade); cursor: pointer; transition: opacity .25s, transform .3s var(--spring); min-height: 44px; }
+  box-shadow: var(--shade); cursor: pointer; transition: opacity .25s, transform .3s var(--spring); min-height: 44px; white-space: nowrap; }   /* V3.65: one line, near an edge too */
 .stk b { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: oklch(0.8 0.11 var(--h)); font-weight: 600; }
 .stk:hover, .stk[aria-expanded=true] { transform: translate(-50%, -50%) rotate(0deg) scale(1.06); }
 .stk.behind { opacity: .35; }
@@ -394,12 +394,19 @@ body.bare .r3d .r3d-mini .r3d-minib.r3d-bare { background: var(--ink, #1d2a22); 
 .r3d.mlook::after { content: ""; position: fixed; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 1.5px rgba(0,0,0,.55); pointer-events: none; z-index: 40; }
 @media (max-width: 899px) { .r3d-peg { right: 12px; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 84px); width: 48px; height: 48px; } .r3d.tools-open .r3d-peg { display: none; } }
 body.bare .r3d-peg, .r3d.editing .r3d-peg { display: none; }
+/* V3.65 (N117): a thin ring, not a grey disc over the picture; the knob shows only while held, a small dot marks the middle */
 .r3d-stick { position: fixed; left: 16px; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 96px); z-index: 31; width: 112px; height: 112px; border-radius: 50%;
-  background: color-mix(in oklab, var(--cream, #fbf7ef) 55%, transparent); box-shadow: 0 4px 18px rgba(0,0,0,.18); touch-action: none; }
+  border: 2px solid color-mix(in oklab, var(--cream, #fbf7ef) 85%, transparent); box-sizing: border-box; box-shadow: 0 0 0 1px rgba(0,0,0,.14), inset 0 0 0 1px rgba(0,0,0,.10);
+  background: rgba(0,0,0,.04); touch-action: none; transition: background .15s; }
+.r3d-stick::after { content: ""; position: absolute; left: 50%; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%;
+  background: color-mix(in oklab, var(--cream, #fbf7ef) 85%, transparent); box-shadow: 0 0 0 1px rgba(0,0,0,.18); }
+.r3d-stick.held { background: color-mix(in oklab, var(--cream, #fbf7ef) 22%, transparent); }
+.r3d-stick.held::after { display: none; }
 .r3d-stick[hidden], body.bare .r3d-stick, .r3d.tools-open .r3d-stick, .r3d.editing .r3d-stick, .r3d.welcoming .r3d-stick, .r3d.touring .r3d-stick { display: none; }
 .r3d.walking .r3d-toast { top: auto !important; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 222px) !important; }   /* the tip clear of the stick (V1.54: its top let go, or a tablet's 132 stretched it down the screen) */
-.r3d-stick i { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%; background: var(--ink, #1d2a22);
-  transform: translate(var(--x, 0px), var(--y, 0px)); }
+.r3d-stick i { position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: color-mix(in oklab, var(--ink, #1d2a22) 80%, transparent);
+  box-shadow: 0 2px 8px rgba(0,0,0,.25); transform: translate(var(--x, 0px), var(--y, 0px)); display: none; }
+.r3d-stick.held i { display: block; }
 /* V1.30 (U3): only the tools that work where you are (room3d.js brandPlace) */
 body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-editbtn, body.hv #r3d-dp-look > :not(h2):not(#r3d-finsch), body.hroom .hnav { display: none !important; }
 @media (max-width: 899px) { body.hv .r3d-bubbles { justify-content: center; gap: 28px; } body.hv .r3d-bub { flex: 0 0 auto; } }

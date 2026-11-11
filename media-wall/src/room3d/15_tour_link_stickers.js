@@ -195,27 +195,46 @@ function setLabels(on) {
 // moving the labels made the browser lay the page out again for each label, each frame
 const stickSz = el => el._sz || (el.offsetWidth ? (el._sz = [el.offsetWidth, el.offsetHeight]) : [140, 40]);
 const stickReset = () => { for (const k in stickEls) if (stickEls[k]) stickEls[k]._sz = null; };
-addEventListener("resize", stickReset); if (document.fonts) document.fonts.ready.then(() => { stickReset(); dirty(); });
+addEventListener("resize", () => { stickReset(); keepOut = null; }); if (document.fonts) document.fonts.ready.then(() => { stickReset(); dirty(); });
+/* V3.65 (N117, the phone's Above: "Window corner" cut off, the labels on top of each other): the biggest are placed first, each at the
+   first clear spot near its pin (down, up, then aside), 8 px from the others, off the bars, the stick and the figure; one with no room
+   is dropped (so the smallest go first). From above (Above, On its own) none is faded as "behind": every wall is seen from above */
+let keepOut = null, keepT = 0;
+function keepOuts() {   // the overlays' boxes on the stage, read at most twice a second (not every frame: no layout per label)
+  const now = performance.now(); if (keepOut && now - keepT < 500) return keepOut;
+  const r = stage.getBoundingClientRect(); keepT = now; keepOut = [];
+  qsa(".brand, .hnav, .r3d-mini, .r3d-dock, .r3d-stick, .r3d-peg").forEach(e => { const q = e.getBoundingClientRect(); if (q.width && q.height) keepOut.push([q.left - r.left, q.top - r.top, q.right - r.left, q.bottom - r.top]); });
+  return keepOut;
+}
 function placeStickers() {
   if (!HOTS.length || !started || !labelsOn) return;
-  const w = stage.clientWidth, h = stage.clientHeight, cx = -camera.position.x / M, cz = camera.position.z / M;
-  const placed = [];   // v26: labels never sit on top of each other (each one moves down clear of those already placed)
+  const w = stage.clientWidth, h = stage.clientHeight, cx = -camera.position.x / M, cz = camera.position.z / M, ko = keepOuts(), G = 8;
+  const placed = [], want = [];
+  const fromAbove = RMODE === "above" || RMODE === "alone" || ((VIEWS[S.view] || {}).above && !walked);
   for (const H of HOTS) {
     const el = stickEls[H.id]; if (!el) continue;
     _p.copy(v3(...H.at)).project(camera);
     const off = HOUSEV(S.view) || _p.z > 1 || _p.z < -1 || Math.abs(_p.x) > 1.02 || Math.abs(_p.y) > 1.02;   // v54: the house's own labels in The whole house
-    if (el.hidden !== off) el.hidden = off;
-    if (off) { if (popId === H.id) closePop(); continue; }
-    const [ew, eh] = stickSz(el), hw = ew / 2 + 6, x = Math.max(hw + railR, Math.min(w - hw, (_p.x + 1) / 2 * w)); let y = Math.max(28, Math.min(h - 28, (1 - _p.y) / 2 * h));   // kept whole on screen
-    if (cover && x + hw > cover.left && x - hw < cover.right && y + 20 > cover.top && y - 20 < cover.bottom) { el.hidden = true; if (popId === H.id) closePop(); continue; }   // v26: not under the Tools panel
-    for (let k = 0; k < 8; k++) {
-      const hit = placed.find(q => Math.abs(x - q.x) < (ew + q.w) / 2 + 4 && Math.abs(y - q.y) < (eh + q.h) / 2 + 4);
-      if (!hit) break;
-      y = hit.y + (eh + hit.h) / 2 + 4;
+    if (off) { if (!el.hidden) el.hidden = true; if (popId === H.id) closePop(); continue; }
+    const [ew, eh] = stickSz(el); want.push({ H, el, ew, eh, x: (_p.x + 1) / 2 * w, y: (1 - _p.y) / 2 * h });
+  }
+  want.sort((a, b) => b.ew * b.eh - a.ew * a.eh);
+  const clear = (x, y, ew, eh) => x - ew / 2 >= 4 + railR && x + ew / 2 <= w - 4 && y - eh / 2 >= 4 && y + eh / 2 <= h - 4
+    && !(cover && x + ew / 2 > cover.left && x - ew / 2 < cover.right && y + eh / 2 > cover.top && y - eh / 2 < cover.bottom)   // v26: not under the Tools panel
+    && !ko.some(([l, t, r, b]) => x + ew / 2 + G > l && x - ew / 2 - G < r && y + eh / 2 + G > t && y - eh / 2 - G < b)
+    && !placed.some(q => Math.abs(x - q.x) < (ew + q.w) / 2 + G && Math.abs(y - q.y) < (eh + q.h) / 2 + G);
+  for (const { H, el, ew, eh, x: px, y: py } of want) {
+    const x0 = Math.max(ew / 2 + 4 + railR, Math.min(w - ew / 2 - 4, px)), step = 12, side = (ew + G) / 2;
+    let at = null;   // the nearest clear spot: 12 px at a time down and up (as far as three labels' height), then half a label aside
+    for (let k = 0; k <= 3 * (eh + G) / step && !at; k++) for (const [dx, dy] of k ? [[0, k * step], [0, -k * step], [side, k * step], [-side, k * step], [side, -k * step], [-side, -k * step]] : [[0, 0], [side, 0], [-side, 0]]) {
+      const x = Math.max(ew / 2 + 4 + railR, Math.min(w - ew / 2 - 4, x0 + dx)), y = py + dy;
+      if (clear(x, y, ew, eh)) { at = [x, y]; break; }
     }
-    placed.push({ x, y, w: ew, h: eh });
-    el.style.left = x + "px"; el.style.top = y + "px";
-    const behind = H.nrm && !(H.cut && H.cut === cutSide) && ((cx - H.at[0]) * H.nrm[0] + (cz - H.at[2]) * H.nrm[1]) < 0;
+    if (!at) { if (!el.hidden) el.hidden = true; if (popId === H.id) closePop(); continue; }   // no room: dropped
+    if (el.hidden) el.hidden = false;
+    placed.push({ x: at[0], y: at[1], w: ew, h: eh });
+    el.style.left = at[0] + "px"; el.style.top = at[1] + "px";
+    const behind = !fromAbove && H.nrm && !(H.cut && H.cut === cutSide) && ((cx - H.at[0]) * H.nrm[0] + (cz - H.at[2]) * H.nrm[1]) < 0;
     el.classList.toggle("behind", !!behind);
     if (popId === H.id) placePop(el);
   }
