@@ -1413,6 +1413,11 @@ SOURCES["hcmore2"] = ("IKEA UK (Nov 2026), assembled W × D × H cm: KIVIK three
                       "(ikea.com/gb, 794.828.35; shopbam.co.uk review, 3 Oct 2026); HEMNES dressing table with mirror, white, 100 × 50 × 159, £155 "
                       "(303.744.13); BESTÅ TV bench with doors, 180 × 42 × 38, £120–185 (ikea.com/gb)")
 ORDER.append("hcmore2")
+SOURCES["amelia"] = ("Amazon UK (Nov 2026, B0HDC8WYBT): Lovesofas Amelia L-shaped corner sofa bed, Blade Green woven chenille, right hand: "
+                     "264 W × 165 D × 95 H, seat 43 high and 53 deep, 100 deep at the arm (the listing's drawing), a pull-out bed in the middle, "
+                     "a freestanding storage chaise, two footstools under the arm, three adjustable headrests; the drawing's 230 on the chaise "
+                     "side is not in its table (165). About £700–950, to check on the day")
+ORDER.append("amelia")
 _zones_v42 = zones
 
 

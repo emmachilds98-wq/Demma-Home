@@ -531,6 +531,16 @@ SOFA_POUF = dict(SOFA_POUF, w=OTTOMAN["w"], d=OTTOMAN["d"], h=OTTOMAN["h"],
                  x=((SOFA_POUF["x"][0] + SOFA_POUF["x"][1] - OTTOMAN["w"]) / 2, (SOFA_POUF["x"][0] + SOFA_POUF["x"][1] + OTTOMAN["w"]) / 2),
                  z=((SOFA_POUF["z"][0] + SOFA_POUF["z"][1] - OTTOMAN["d"]) / 2, (SOFA_POUF["z"][0] + SOFA_POUF["z"][1] + OTTOMAN["d"]) / 2))
 
+# V3.71, client (11 Nov 2026): "i want to be able to interchange my current sofa and ottoman with this sofabed and ottoman combination im
+# thinking of buying, this will allow me to test sizing and fit"; "ill also have the blade green version". An option to look at (no buy
+# rows): Lovesofas Amelia, right hand (the chaise in your sofa's corner), 264 × 165 × 95 with the headrests up, seat 43 high and 53 deep
+# (fit.SOURCES "amelia"). The run's 100 depth is the listing's arm arrow; the arm, corner, chaise and stools are scaled off its photos.
+# The listing's drawing also says 230 along the chaise side, against 165 in its table and text: drawn 165, to confirm with the seller.
+SOFABED = dict(name="Green corner sofa bed", pick="Lovesofas Amelia, Blade Green chenille, right hand", col="#4f5d33",
+               w=264.0, d=165.0, h=95.0, seat_h=43.0, seat_d=53.0, run_d=100.0, back_h=78.0, back_t=20.0, arm=40.0, arm_h=62.0,
+               corner=100.0, foot=10.0, bed_out=70.0, heads=3,
+               chaise=dict(w=100.0, d=65.0, h=43.0, lid=12.0), stool=dict(w=40.0, d=42.0, h=40.0), cost=(700, 950))
+
 
 # ---------------------------------------------------------------- v26 (20 Oct): option C, the dining cabinet; v27: the plan, for six
 # client (v26): "exploire other table config that looks more tidy and includes the chairs", "assess the max number of seatings you can fit".

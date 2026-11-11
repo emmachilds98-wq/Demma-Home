@@ -759,6 +759,8 @@ def controls(gallery=""):
             '<button type="button" data-moment="games">Games night</button><button type="button" data-moment="drinks">Drinks</button>'
             '<button type="button" data-moment="four">Lunch for four</button><button type="button" data-moment="morning">Morning</button></div></div>',
             '<div class="r3d-roomsegs">',
+            # V3.71, client: "interchange my current sofa and ottoman with this sofabed ... make the ui to switch between the sofa designs easy to find"
+            seg("sofa", [("mine", "Yours"), ("bed", "Green sofa bed")], "The sofa"),
             seg("dining", [("folded", "Folded"), ("four", "Four"), ("six", "Six")], "The table"),
             seg("drawers", [("in", "In"), ("out", "Out")], "Media wall drawers"),
             seg("ctop", [("down", "Down"), ("up", "Up")], "Record table lid"),

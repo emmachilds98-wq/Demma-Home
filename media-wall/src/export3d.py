@@ -239,6 +239,7 @@ def scene():
     room_spec.update(REAR_SPK=G.REAR_SPK, REAR_STAND=G.REAR_STAND, REAR_SPOTS=G.REAR_SPOTS)   # v27: your rear speakers on their stands
     room_spec["CHAIR"] = G.CHAIR; room_spec["SOFA_POUF"] = G.SOFA_POUF
     room_spec["OTTOMAN"] = G.OTTOMAN; room_spec["DRINKS"] = G.DRINKS   # v34: the storage ottoman; the drinks cabinet under the case
+    room_spec["SOFABED"] = G.SOFABED           # V3.71: the green corner sofa bed, to swap in for the sofa and ottoman
     # v36: a third bar, the ottoman's games and cards, the blankets' basket, more storage, the plant shelf
     for k in ("BAR_SIDE", "OTTO_GAMES", "GAME_BOX", "CARD_DECK", "THROW_FOLDED", "BLANKET_BASKET", "LIFT_COFFEE", "KUGGIS", "DOOR_SHELF", "SHELF_BOXES", "ARCHITRAVE",
               "THROW_LONG", "BLANKET_COTSWOLD", "RECORD_TABLE", "KALLAX", "CEIL_DESIGNS"):   # v38: the better basket, the record table, the ceiling designs
