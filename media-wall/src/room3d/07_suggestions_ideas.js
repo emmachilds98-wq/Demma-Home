@@ -434,7 +434,7 @@ function buildSeatAndPouf() {
   WORK.lid = anim(v => { lidG.position.set(0.18 * Math.max(0, v - 0.4) / 0.6, 0.22 * Math.min(1, v / 0.4), 0); lidG.rotation.z = -0.28 * Math.max(0, v - 0.4) / 0.6; });   // up, then over to lean on its side
   movable("pouf", "Your storage ottoman", g, () => { const D_ = P_.dinner, d = D_ && tableOpen();   // v38: while the table's out it moves clear (its dinner spot)
       return d ? { x: (D_.x[0] + D_.x[1]) / 2, z: (D_.z[0] + D_.z[1]) / 2, rot: 0 } : { x: (P_.x[0] + P_.x[1]) / 2, z: (P_.z[0] + P_.z[1]) / 2, rot: 0 }; }, P_.w, P_.d, [velvet], false,
-          { when: () => !(S.site === "C" && S.dining !== "folded") });   // v26: it moves aside while the cabinet's table is out
+          { when: () => !(S.site === "C" && S.dining !== "folded") && S.sofa !== "bed" });   // V3.71: the green sofa bed's chaise stands in for it   // v26: it moves aside while the cabinet's table is out
   // v27, client: "add my surround speakers to the build that exist standing behind the sofa": the soundbar's two rears on slim stands
   // behind the sofa's long side, movable in Edit room (drawn to the AX5100G's published size until your photo)
   if (R.REAR_SPK) {

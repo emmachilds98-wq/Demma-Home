@@ -252,6 +252,13 @@ function actItems(id) {     // [title, how it is now, buttons]
       btn("Remove", sg ? { sugg: k } : { idea: k }), btn("Read about it", { actideas: (sg ? "sugg-" : "idea-") + k })]]; }
   if (id === "mov:pouf") return ["Storage ottoman", S.lid ? "Lid off: games in three layers, cards along one side" : "Navy velvet: games and cards inside", [   // v34
       btn(S.lid ? "Put the lid back" : "Lift the lid", { lid: S.lid ? "on" : "off" }), btn("Move it", { actedit: "pouf" }), btn("Read about it", { actgo: "c-room" })]];
+  if (id === "mov:sofa") return ["Your sofa", "Blue corduroy, as now", [   // V3.71: the swap is on its card
+      btn("Try the green sofa bed", { sofa: "bed" }), btn("Move it", { actedit: "sofa" }), btn("From above", { view: "plan" })]];
+  if (id === "mov:sofa2" || id === "mov:chaise2") { const B = R.SOFABED;
+    return [B.name + " (to try)", S.sbed ? "Bed pulled out" : `${B.w} × ${B.d}, chaise and two stools`, [
+      btn("Back to my sofa", { sofa: "mine" }), btn(S.sbed ? "Push the bed in" : "Pull the bed out", { sbed: S.sbed ? "in" : "out" }), btn("Watch it open", { showopen: "bed" }),
+      btn(S.lid ? "Shut the chaise" : "Open the chaise", { lid: S.lid ? "on" : "off" }),
+      btn(id === "mov:sofa2" ? "Move it" : "Move the chaise", { actedit: id.slice(4) }), btn("From above", { view: "plan" })]]; }
   if (id.startsWith("mov:")) { const it = MOV[id.slice(4)]; if (!it) return null;
     return [it.label, it.fixed ? "Built in: it comes off, but doesn't move" : "Drag it in Edit, or change its colour", [btn(it.fixed ? "Take off or put back" : "Move it", { actedit: it.id })]]; }
   return null;

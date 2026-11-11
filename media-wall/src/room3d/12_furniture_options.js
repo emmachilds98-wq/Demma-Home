@@ -11,8 +11,62 @@ function buildFurniture() {
     const so = R.SOFA, cx = (so.x[0] + so.x[1]) / 2, cz = (so.back + so.end) / 2, g = G.sofa;
     buildCushions(g);                                                                // v20: cushions to try (Decor), off by default
     scene.remove(g); g.position.set(cx * M, 0, -cz * M); g.visible = true; delete G.sofa;
-    movable("sofa", "Your sofa", g, () => ({ x: cx, z: cz, rot: 0 }), so.x[1] - so.x[0], so.end - so.back, []);
+    movable("sofa", "Your sofa", g, () => ({ x: cx, z: cz, rot: 0 }), so.x[1] - so.x[0], so.end - so.back, [], false, { when: () => S.sofa !== "bed" });
   }
+  buildSofaBed();
+}
+/* V3.71, client (11 Nov 2026): "interchange my current sofa and ottoman with this sofabed and ottoman combination im thinking of buying ...
+   to test sizing and fit"; "the blade green version". The room's sofa (S.sofa): yours, or the green corner sofa bed with its loose storage
+   chaise, which stand in for your sofa and the navy ottoman. Its corner goes in your sofa's corner, its back on the same line; each part
+   moves, turns and takes a colour in Edit as the others do. Sizes: geometry.SOFABED (fit.SOURCES "amelia"). */
+function buildSofaBed() {
+  const B = R.SOFABED, so = R.SOFA; if (!B || !so) return;
+  const fab = fabricMat(B.col), feet = reg(new THREE.MeshStandardMaterial({ color: "#1b1b1c", roughness: 0.6 }));
+  const lining = reg(new THREE.MeshStandardMaterial({ color: "#1d2236", roughness: 0.95 }));
+  const W = B.w, D = B.run_d, hw = W / 2, hd = D / 2, F = B.foot, t = B.back_t, sh = B.seat_h, cu = 14, base = sh - cu;
+  const xc = -hw + B.corner, xa = hw - B.arm, mid = (xc + xa) / 2;            // the corner's edge, the arm's inside face, between the two seats
+  const g = new THREE.Group();
+  for (const x of [-hw + 4, xc, mid, xa - 2, hw - 4]) for (const z of [-hd + 4, hd - 4]) lb(g, x, 0, z, 6, F, 6, feet);   // black block feet
+  rlb(g, 0, F, -hd + t / 2, W, B.back_h - F, t, fab, 4);                     // the back, the whole run
+  rlb(g, -hw + t / 2, F, t / 2, t, B.back_h - F, D - t, fab, 4);             // the corner's side back
+  rlb(g, (-hw + t + xc) / 2, F, t / 2, B.corner - t, base - F, D - t, fab, 2);   // the corner's base
+  lb(g, mid, base - 3, t / 2, xa - xc, 3, D - t, fab);                        // the bed's deck under the two seats
+  // the arm: a bridge, the two stools tucked under it (they stand out a little at its end, as in the photos)
+  rlb(g, (xa + hw) / 2, B.arm_h - 18, 0, B.arm, 18, D, fab, 5);
+  for (const z of [-hd + 3, hd - 3]) rlb(g, (xa + hw) / 2, F, z, B.arm, B.arm_h - 18 - F, 6, fab, 2);
+  lb(g, xa + 2, F, 0, 4, B.arm_h - 18 - F, D - 20, fab);
+  const T_ = B.stool; for (const z of [-T_.d / 2 - 1, T_.d / 2 + 1]) { rlb(g, hw - T_.w / 2 + 4, 4, z, T_.w, T_.h - 4, T_.d, fab, 4);
+    for (const dx of [-1, 1]) for (const dz of [-1, 1]) lb(g, hw - T_.w / 2 + 4 + dx * (T_.w / 2 - 4), 0, z + dz * (T_.d / 2 - 4), 4, 4, 4, feet); }
+  // the cushions: seats (53 deep), backs, the corner's two backs, three headrests on top
+  const sz = [hd - B.seat_d - 1, hd - 1], bz = (-hd + t + sz[0]) / 2, bd = sz[0] - (-hd + t);
+  rlb(g, (xc + mid) / 2, base, (sz[0] + sz[1]) / 2, mid - xc - 1, cu, B.seat_d, fab, 6);
+  rlb(g, (mid + xa) / 2, base, (sz[0] + sz[1]) / 2, xa - mid - 1, cu, B.seat_d, fab, 6);
+  rlb(g, (-hw + t + bd + xc) / 2, base, (sz[0] + sz[1]) / 2, xc - (-hw + t + bd) - 1, cu, B.seat_d, fab, 6);
+  for (const [x0, x1] of [[xc, mid], [mid, xa], [-hw + t, xc]]) { const c = rlb(g, (x0 + x1) / 2, sh, bz, x1 - x0 - 1, B.back_h - sh - 4, bd, fab, 7); c.rotation.x = -0.1; }
+  { const c = rlb(g, -hw + t + bd / 2, sh, (bz + bd / 2 + sz[1]) / 2, bd, B.back_h - sh - 4, sz[1] - bz - bd / 2, fab, 7); c.rotation.z = -0.1; }
+  const hx = [(-hw + t + xc) / 2, (xc + mid) / 2, (mid + xa) / 2].slice(0, B.heads);
+  for (const x of hx) { const h = rlb(g, x, B.back_h - 2, -hd + t / 2 + 2, 52, B.h - B.back_h + 2, 22, fab, 7); h.rotation.x = 0.12; }
+  for (const [x, z, ry] of [[-hw + t + 30, bz + 22, 0.7], [xa - 24, bz + 10, -0.15]]) {   // the two accent cushions
+    const m = rlb(g, x, sh - 2, z, 42, 40, 14, fab, 6); m.rotation.order = "YXZ"; m.rotation.y = ry; m.rotation.x = -0.3; }
+  // the pull-out bed: its fabric front flush with the seats, it slides out (bed_out) and its mattress rises to the seats' height
+  const bed = new THREE.Group(), mat_ = new THREE.Group(); bed.add(mat_); g.add(bed);
+  lb(bed, mid, 4, hd - 2, xa - xc - 2, base - 7, 4, fab);
+  rlb(mat_, mid, F, hd / 2 - 2, xa - xc - 4, base - F - 4, hd - 4, fab, 3);
+  for (const dx of [-0.25, 0.25]) lb(bed, mid + dx * (xa - xc), 10, hd + 0.2, 3, 8, 0.6, feet, false);   // the two pull loops
+  WORK.sbed = anim(v => { bed.position.z = B.bed_out * Math.min(1, v / 0.7) * M; mat_.position.y = (sh - 4 - (base - 4)) * Math.max(0, (v - 0.7) / 0.3) * M; });
+  const cx = so.x[0] + hw, cz = so.back + hd;
+  movable("sofa2", B.name, g, () => ({ x: cx, z: cz, rot: 0 }), W, D, [fab], false, { when: () => S.sofa === "bed" });
+  // the loose storage chaise in front of the corner seat; its padded lid lifts on its back edge (the ottoman's Lift the lid)
+  const C = B.chaise, c = new THREE.Group(), lidH = C.lid, bodyH = C.h - lidH;
+  for (const dx of [-1, 1]) for (const dz of [-1, 1]) lb(c, dx * (C.w / 2 - 6), 0, dz * (C.d / 2 - 5), 7, 6, 5, feet);
+  rlb(c, 0, 6, 0, C.w, 4, C.d, fab, 1.5);
+  for (const [x, z, w_, d_] of [[0, -(C.d - 3) / 2, C.w, 3], [0, (C.d - 3) / 2, C.w, 3], [-(C.w - 3) / 2, 0, 3, C.d - 6], [(C.w - 3) / 2, 0, 3, C.d - 6]]) rlb(c, x, 6, z, w_, bodyH - 6, d_, fab, 1.2);
+  lb(c, 0, 10, 0, C.w - 6.2, 0.3, C.d - 6.2, lining, false);
+  const hinge = new THREE.Group(); hinge.position.copy(v3(0, bodyH, -C.d / 2)); c.add(hinge);
+  rlb(hinge, 0, 0, C.d / 2, C.w, lidH, C.d, fab, 4);
+  lb(hinge, 0, -0.2, C.d / 2, C.w - 6, 0.3, C.d - 6, lining, false);
+  WORK.lid2 = anim(v => { hinge.rotation.x = -1.75 * v; });
+  movable("chaise2", "Its storage chaise", c, () => ({ x: so.x[0] + C.w / 2, z: so.back + D + C.d / 2, rot: 0 }), C.w, C.d, [fab], false, { when: () => S.sofa === "bed" });
 }
 let bar1, bar2;
 

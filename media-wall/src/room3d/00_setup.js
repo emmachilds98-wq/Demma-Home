@@ -64,7 +64,7 @@ const DEF = { site: "C", dining: "folded",   // v27: the dining cabinet is the p
               sugg: {},     // v21: the suggested furniture and decor, all off
               seat: "off",
               cab: "compact", cabw: "90", tdoor: false,   // v33: cabw, the compact cabinet's table: 90 wide (the plan) or 80 (10 shorter)
-              cam: "orbit", pad: false, foot: false, beside: "clear",
+              cam: "orbit", pad: false, foot: false, beside: "clear", sofa: "mine", sbed: false,   // V3.71: your sofa or the green sofa bed; its bed out
               blind: "down", lp: false, trolley: "park", lid: false, barflap: false, ctop: false, sdraw: false, scopen: false };   // v37: the step drawers out   // v34: the blind (a suggestion) down or rolled up; a record lifted out of the vinyl stand; the trolley parked or at the table   // v31: what's beside the compact cabinet   // v31: a drag circles round a spot or looks round from where you stand; the move buttons on the room   // v30: the compact cabinet (the plan) or the sliding one; the table door open with the table folded   // v23: the fold-down seat at the stair end (an option): "off", "up" (folded) or "down"   // v20: the chair cupboard beside the table (doors shut); "open", "hooks" or "away" (the garage)
 DEF.lamp = R.LAMP_DEFAULT || "sofa";
 /* v38: the room opens on the client's plan (geometry.FIRM: their saved picks, the bar beside the cabinet, the sage-stripe rug); every

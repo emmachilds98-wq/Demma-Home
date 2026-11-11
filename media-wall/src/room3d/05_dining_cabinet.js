@@ -464,6 +464,8 @@ function placeWork() {      // v34
   twTo(WORK.sdraw, S.sdraw ? 1 : 0, 1500);
   twTo(WORK.scurt, S.scopen ? 1 : 0, 1300);                                                        // V3.31: the stair curtain drawn back or across                                                          // v37: the drawers in the bottom steps
   twTo(WORK.lid, S.lid ? 1 : 0, 1500);
+  twTo(WORK.lid2, S.lid ? 1 : 0, 1500); twTo(WORK.sbed, S.sbed ? 1 : 0, 1600, S.sbed ? 500 : 0);
+  twTo(WORK.cof, S.sbed && S.sofa === "bed" ? 1 : 0, 1200, S.sbed ? 0 : 1300);                     // the coffee table clear of it, back once it's in                  // V3.71: the sofa bed's chaise lid and its bed
   twTo(WORK.lp, S.lp ? 1 : 0, 1300);
   // the trolley parks behind the table door's line: back it goes once the door has shut (the open door lies over its spot)
   if (WORK.trolley) {

@@ -240,7 +240,7 @@ function syncButtons() {
   const wm = qs("[data-wallmatch]"); if (wm) { wm.hidden = lookWall === "all"; wm.disabled = !S.walls[lookWall]; }
   press("drawers", S.drawers ? "out" : "in"); press("quality", S.quality); press("view", S.view);
   press("ceil", S.ceil); press("skirt", S.skirt); press("hceil", S.hceil && S.hceil !== "white" ? "" : "white"); press("plants", S.plants); press("chairs", S.chairs); press("seat", S.seat);
-  press("cabw", S.cabw); press("tdoor", S.tdoor ? "open" : "shut");                                   // v30
+  press("cabw", S.cabw); press("tdoor", S.tdoor ? "open" : "shut"); press("sofa", S.sofa); press("sbed", S.sbed ? "out" : "in");   // V3.71                                   // v30
   press("cam", S.cam); press("pad", S.pad ? "on" : "off"); press("foot", S.foot ? "on" : "off"); press("beside", S.beside); syncEye();   // v31
   qsa("[data-tog]").forEach(b => b.setAttribute("aria-pressed", String(!!S[b.dataset.tog])));
   qsa("[data-idea]").forEach(b => b.setAttribute("aria-pressed", String(!!S.ideas[b.dataset.idea])));
@@ -276,6 +276,8 @@ root.addEventListener("click", e => {
   if (d.level) { levelView(); return; }
   if (d.site) { S.site = d.site; applyState(); if (S.view === "dining") setView("dining"); }
   else if (d.dining) { S.dining = d.dining; S.tdoor = false; applyState(); if (S.view === "dining") setView("dining"); }   // v30: folding it shuts the door too
+  else if (d.sofa) { S.sofa = d.sofa; if (S.sofa !== "bed") S.sbed = false; applyState(); }       // V3.71: your sofa or the green sofa bed
+  else if (d.sbed) { S.sbed = d.sbed === "out"; if (S.sbed) S.sofa = "bed"; applyState(); }          // V3.71: its bed pulled out
   else if (d.cabw) { S.cabw = d.cabw; applyState(); if (S.view === "dining" || S.view === "chairs") setView(S.view); }              // v33: the table 90 or 80 wide
   else if (d.tdoor) { S.tdoor = d.tdoor === "open"; if (S.tdoor && S.chairs === "open") S.chairs = "cupboard"; applyState(); }
   else if (d.scene) S.scene = d.scene, S.lv = Object.assign({}, SCENES[d.scene].levels), S.master = 100, applyLight(), updateCaption(), store.set(KEY, S);   // tapping the tile again resets it
@@ -322,7 +324,7 @@ root.addEventListener("click", e => {
   else if (d.seat) S.seat = d.seat, applyState();
   else if (d.cam) S.cam = d.cam, applyCam(), store.set(KEY, S);
   else if (d.moment) { playMoment(d.moment); return; }                                              // v31
-  else if (d.showopen) { showOpen(); return; }
+  else if (d.showopen) { showOpen(d.showopen); return; }                                           // V3.71: "bed", the sofa bed's
   else if (d.blind) { S.blind = d.blind; applyState(); }
   else if (d.barflap) { S.barflap = d.barflap === "open"; applyState(); }                          // v34: the drinks cabinet's front
   else if (d.lid) { S.lid = d.lid === "off"; applyState(); }                                       // v34: the storage ottoman's lid                                          // v34
