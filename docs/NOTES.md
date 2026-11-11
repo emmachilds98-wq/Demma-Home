@@ -179,3 +179,11 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **A made finish's grain runs up the picture's v** (`MADE` `joinery`, N111): on a house box that's up a door's leaf, but across a skirting or a rail, so those stay on `gloss` (strokes along u). `HTEX_AS` picks a key's map; `HTEX_TINT` keeps its own colour.
 - **A catalogue piece's own price:** `UPC.piece[key]` beats its kind's (`upCat`).
 - Don't rebuild `_site` while `checks.py` runs: a local site check once failed Edit's ottoman drag mid-rebuild; CI passed.
+- **Whites (N113):** a textured piece draws its map at full white and ignores its `model.MATS` colour unless its key is tinted (`HTEX_TINT`,
+  or `BED_TINT` for the bedding): change the colour of the duvet, pillows or anything else with a photo map there, or nothing moves. To
+  measure a material on screen, swap every mesh whose `material.userData.hk` is that key for a flat red `MeshBasicMaterial`, nudge the
+  controls (`dispatchEvent({type: 'change'})`), screenshot, swap back: the red pixels are its mask. In software graphics nothing reached
+  250 even before N113 (the master's bedding top 5% at 226–233): the glare the review saw was the near-white shoulder, not true clipping.
+- **A queue of stacked PRs** (each PR's head merging the one before, to land as V3.63, V3.64, ...): the last one carries all of them, so
+  merging it lands them all and a failure in an earlier one (#228's `draws_house 211`) holds every later one. When taking over one of
+  them, cherry-pick its own commit onto `main` instead.
