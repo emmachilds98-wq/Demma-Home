@@ -50,7 +50,7 @@ function lightIn(l) {                 // in the renderer's set for this quality
   /* v73, the client: "still extremely slow" on a PC: in the house's views the living room's 36 lights (spot heads, area lights, LEDs),
      turned down to nothing, were still in every pixel's sums, two of them drawing shadows. There, only the sky, the sun and the room's
      own two ceiling lights are in the set (the shaders change once, going between the living room and the house) */
-  if (LIVE && R.HOUSE3 && HOUSEV(S.view)) return !!(l.isHemisphereLight || l.userData.sun || (l.userData.houseLight && (!(l.userData.win || l.userData.hdOnly) || S.quality === "hd")));   // V3.56: and the last two ceiling lights   // V2.39: a window's daylight in HD
+  if (LIVE && R.HOUSE3 && HOUSEV(S.view)) return !!(l.isHemisphereLight || l.userData.sun || (l.userData.houseLight && (!(l.userData.win || l.userData.hdOnly) || S.quality === "hd")));   // V3.57: and the last two ceiling lights   // V2.39: a window's daylight in HD
   if (l.userData.win) return false;
   const hd = S.quality === "hd";
   if (l.userData.owner) return hd;     // an idea's or a suggestion's light: always in HD's set (at nothing while it's hidden), never in Fast's

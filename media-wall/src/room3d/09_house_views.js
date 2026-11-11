@@ -63,14 +63,14 @@ function syncRmode() {
 }
 const HFLOOR = {};     // v55: its floors (lower, ground, first) and the outside (gardens, the alley), for the floor picker
 let hfloor = "all", hidReal = [], hidLay = [], hfview = "angle";   // v74: a floor seen from an angle or from straight above
-const ROOMLIGHTS = [], WINLIGHTS = [];   // v69 (B3): warm ceiling lights round the room you're in (a fixed set: no shader rebuilds); V2.39: and windows'. V3.56: six and three (Fast four and none)
+const ROOMLIGHTS = [], WINLIGHTS = [];   // v69 (B3): warm ceiling lights round the room you're in (a fixed set: no shader rebuilds); V2.39: and windows'. V3.57: six and three (Fast four and none)
 let roomKey = "";
-/* V3.56 (N108), the client: "From room to room the lights shouldn't turn off and on. Keep all lights on and keep the warm lighting in all
+/* V3.57 (N108), the client: "From room to room the lights shouldn't turn off and on. Keep all lights on and keep the warm lighting in all
    rooms so things aren't overly bright." Every room's lights are on, each at its own room's level (its size, its bulbs), whichever room
    you're in: the set holds the room's own and its nearest neighbours' (on its floor first), so walking through a door nothing dims or
    brightens, the room behind you as lit as when you stood in it. Each light reaches about its own room (less spill through the walls).
    V3.40's half-second fade between the rooms' levels is gone: there is nothing left to fade */
-const LK = 0.65, WK = 40;   // V3.56: the ceiling lights and the windows with the neighbours on: about as bright as before, one room lit alone
+const LK = 0.65, WK = 40;   // V3.57: the ceiling lights and the windows with the neighbours on: about as bright as before, one room lit alone
 function roomArea(id) { const r = R.HOUSE3.rooms && R.HOUSE3.rooms[id]; return r ? (r[1] - r[0]) * (r[3] - r[2]) / 1e4 : 10; }
 function roomReach(id) { const r = R.HOUSE3.rooms && R.HOUSE3.rooms[id]; return r ? Math.min(7, Math.max(3.6, Math.hypot(r[1] - r[0], r[3] - r[2]) * M * 1.1 + 1.2)) : 7; }
 function lightAt(l, L, day, hd) {   // one light, as its own room has it
@@ -98,7 +98,7 @@ function placeRoomLights() {
   const n = hd ? ROOMLIGHTS.length : Math.min(4, ROOMLIGHTS.length);   // Fast: four (20_go.js: the last two are HD's)
   ROOMLIGHTS.forEach((l, k) => { const L = k < n && list[k] && list[k][1]; l.visible = !!L; if (L) lightAt(l, L, day, hd); });
   /* V2.39 (REAL_PLAN R1, each window's daylight): a window lights the room as the sky does through it, an area light the opening's size
-     on the wall's inside face, facing in and a little down; by day the living room window's daylight, by evening its dusk. V3.56: the
+     on the wall's inside face, facing in and a little down; by day the living room window's daylight, by evening its dusk. V3.57: the
      room's own two biggest, then the nearest room's biggest (it stays lit as you go through its door) */
   const op = it => it.op && it.op.axis === "x" && it.op, sz = it => (it.op.b - it.op.a) * (it.op.y1 - it.op.y0);
   let ws = [];
@@ -110,7 +110,7 @@ function placeRoomLights() {
   WINLIGHTS.forEach((l, k) => { const it = ws[k], o = it && it.op; l.visible = !!o; if (!o) return; const r = R.HOUSE3.rooms[it.r];
     const cx = (o.a + o.b) / 2, cy = (o.y0 + o.y1) / 2, d = Math.sign((r[2] + r[3]) / 2 - o.line) || 1;
     l.width = (o.b - o.a) * M; l.height = (o.y1 - o.y0) * M; l.position.copy(v3(cx, cy, o.line + d * 3)); l.lookAt(v3(cx, cy - 40, o.line + d * 100));
-    l.intensity = day ? WK : 3; l.color.set(day ? "#eef0f2" : "#7d89b8"); });   // V3.56: WK, the neighbours' windows on too
+    l.intensity = day ? WK : 3; l.color.set(day ? "#eef0f2" : "#7d89b8"); });   // V3.57: WK, the neighbours' windows on too
   const key = b ? b.join() : "";
   if (key === roomKey) return; roomKey = key;
   const d = b ? v3((b[0] + b[1]) / 2, 0, (b[4] + b[5]) / 2).sub(sun.userData.t0).setY(0) : new THREE.Vector3();
@@ -134,7 +134,7 @@ function houseEnv() {
   if (!HENV) { const pm = new THREE.PMREMGenerator(gl), rs = new RoomEnvironment(); HENV = pm.fromScene(rs, 0.04).texture; pm.dispose(); rs.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
   return HENV;
 }
-/* V3.56 (N107), the client: "continue further shader and detail improvements": the hall's and the bathroom's mirrors showed a painted
+/* V3.57 (N107), the client: "continue further shader and detail improvements": the hall's and the bathroom's mirrors showed a painted
    sheen (a grey-blue gradient), never the room. Standing in one of those rooms in HD (drawn through the shade's composer, so the frame's shaders are already the kind a reflection draws with), once you've paused, the room is drawn round the
    mirror, a face a frame (six frames, never while you move), and blurred as the house's own reflection is, so the mirror shows its room;
    no shader added (the same kind and size of reflection). Made again for the evening */
@@ -176,7 +176,7 @@ function glassTod(m) {
 const glassAll = () => { if (HMATS) for (const k of ["glass", "glass_frost"]) if (HMATS[k]) glassTod(HMATS[k]); };
 function houseEnvK(k) {   // V2.21 (REAL_PLAN R1): the house's reflections scaled (an evening in a room: its own light leads)
   if (!HMATS || k === HENVK) return; HENVK = k;
-  for (const m of Object.values(HMATS)) if (m && m.envMap && "envMapIntensity" in m) m.envMapIntensity = m.userData.real ? 1 : finishEnv(m) * k;   // V3.56: a mirror shows its room as it is
+  for (const m of Object.values(HMATS)) if (m && m.envMap && "envMapIntensity" in m) m.envMapIntensity = m.userData.real ? 1 : finishEnv(m) * k;   // V3.57: a mirror shows its room as it is
   for (const m of paintMats.values()) if (m && m.envMap && m.userData.hk) m.envMapIntensity = finishEnv(m) * k;
 }
 let RMODE = "in", hidMode = [], RPLANES = [];   // v71: how a room of the house is seen (in it, above, on its own) and what that put away
