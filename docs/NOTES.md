@@ -141,7 +141,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `19_view_controls.js` `mapKeys` (with the held keys), a view from the eyes calls `startWalk` (`eyeView`). A mouse drag on it in Playwright
   is enough to test it (it never reads `pointerType`); check `stick_all`. Note: `pip install -r media-wall/requirements.txt` can lift
   Playwright past 1.63.0 and its browser; put 1.63.0 back.
-- **The labels on the room** (VNEXT N117): `15` `placeStickers` gives each label the free spot nearest its own (`SPOTS`, up and down
+- **The labels on the room** (V3.63 N117): `15` `placeStickers` gives each label the free spot nearest its own (`SPOTS`, up and down
   before sideways), the open one then the widest first, so a crowded phone leaves the smallest off; it keeps clear of the page's pills,
   the stick and the figure (`KEEP_OFF`, read at the start of a placement before any label is written, so no extra layout). The stick's
   knob shows only while held (`.r3d-stick.held`); the walk's hint is once a device (`demma-walkhint`). Screenshots of the phone page in
