@@ -15,8 +15,8 @@ const SUNCFG = { lux: 80, out: 0.5 };   // tuned on stills: the bars' shadows re
 const HTEX = {}, HI_T = new Set(["tile_w", "tile_f", "door_wood", "chalk"]);
 /* V2.56 (REAL_PLAN R3): the finishes without a photo take one of ours (build_textures.finishes): uPVC's peel, gloss paint's strokes, brushed
    metal; these keep their own colour over a white detail map (TINT) */
-const HTEX_AS = { frame_out: "upvc", door_out: "upvc", gutter: "upvc", sill_board: "upvc", skirting: "gloss", door_white: "gloss", door_cream: "gloss", newel: "gloss", rail_white: "gloss", steel: "brushed", steel_dark: "brushed" };
-const HTEX_TINT = new Set(["upvc", "gloss", "brushed"]);
+const HTEX_AS = { frame_out: "upvc", door_out: "upvc", gutter: "upvc", sill_board: "upvc", skirting: "gloss", door_white: "joinery", door_cream: "joinery", door_wood: "joinery", newel: "joinery", rail_white: "gloss", steel: "brushed", steel_dark: "brushed" };
+const HTEX_TINT = new Set(["upvc", "gloss", "brushed", "joinery"]);   // N111: the doors' painted timber, its grain up the leaf (the skirting's strokes along it, gloss)
 const BED_TINT = new Set(["duvet", "pillow"]);   // V3.66 (N113): the bedding's own colour over its cotton photo, a hair below white (it drew the photo at full white: clipped on a phone)
 /* V3.36 (N87): the soft things still flat colour in their own colours over the cotton's white, each with a relief of its kind: the
    tapestry's dark border and the roller blinds woven as the chair-bed, the music room's felt panels knitted, the bath mats' pile as the
@@ -508,16 +508,16 @@ function houseShade(H3, m3) {
    the wall beside a piece that stands against one (a wardrobe's sides, a fridge's), from the house file's outlines (model.piece_shade),
    so phones without ambient occlusion have it too; built with its floor, so it follows a piece the client moves. One mesh a floor, the
    shade's own material (houseShade's kind: no new shaders) */
-function pieceShadeMat(stops = [[0, 0.24], [0.15, 0.15], [0.35, 0.07], [0.6, 0.025], [1, 0]]) {   // houseShade's kind of material (the same shader), its shade eased out to nothing: no edge to see
+function pieceShadeMat() {   // houseShade's kind of material (the same shader), its shade eased out to nothing: no edge to see
   const tex = canvasTex(4, 64, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h);
-    for (const [t, a] of stops) gr.addColorStop(t, `rgba(0,0,0,${a})`);
+    for (const [t, a] of [[0, 0.24], [0.15, 0.15], [0.35, 0.07], [0.6, 0.025], [1, 0]]) gr.addColorStop(t, `rgba(0,0,0,${a})`);
     g.clearRect(0, 0, w, h); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, false);
   tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
   const m = reg(new THREE.MeshBasicMaterial({ color: "#000000", map: tex, transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 0, polygonOffsetUnits: -10 }));
   m.clippingPlanes = []; return m;
 }
-function pieceShade(F, m3) {
-  const mat = m3.shade_piece || (m3.shade_piece = pieceShadeMat()), rooms = Object.values(R.HOUSE3.rooms || {}), pos = [], uv = [], U = [[0, 1], [1, 1], [1, 0], [0, 0]];   // V3.34: v 1 (the canvas's dark top: CanvasTexture flips it, as houseShade's) at the piece; it was v 0, the shade dark at its far edge, a pale square with a dark rim round every piece
+function pieceShade(F, mat) {
+  const rooms = Object.values(R.HOUSE3.rooms || {}), pos = [], uv = [], U = [[0, 1], [1, 1], [1, 0], [0, 0]];   // V3.34: v 1 (the canvas's dark top: CanvasTexture flips it, as houseShade's) at the piece; it was v 0, the shade dark at its far edge, a pale square with a dark rim round every piece
   const quad = P => { for (const i of [0, 1, 2, 0, 2, 3]) { const q = v3(...P[i]); pos.push(q.x, q.y, q.z); uv.push(U[i][0], U[i][1]); } };
   for (const [, x0, z0, x1, z1, y0, h] of F.shade || []) {
     const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, g = Math.max(5, Math.min(11, Math.min(x1 - x0, z1 - z0) * 0.22)), y = y0 + 0.35, hb = Math.min(h, 210);
@@ -533,21 +533,31 @@ function pieceShade(F, m3) {
       if (!at[kb]) quad([W(ub, y0), W(ub, y0 + hb), W(ub + d * g * 0.35, y0 + hb), W(ub + d * g, y0)]);
     }
   }
-  const mk = (P, U_, m) => { const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(U_, 2)); geo.computeVertexNormals();
-    const me = new THREE.Mesh(geo, m); me.raycast = () => {}; me.renderOrder = 1; return me; };
-  const me = pos.length ? mk(pos, uv, mat) : new THREE.Group(); me.name = "pieceShade";
-  /* V3.64 (N112): the shade where the walls meet the ceiling, the floor and each other (model.edge_shade), on every path without GTAO
-     (it gives its own where it runs, so these step aside then: no doubled shade); the ceiling's with the ceiling (off from above).
-     Two draws a floor at most, the pieces' kind of material (no new shader) */
-  const em = m3.shade_edge || (m3.shade_edge = pieceShadeMat([[0, 0.38], [0.15, 0.25], [0.4, 0.1], [0.7, 0.03], [1, 0]]));
-  const E = [[[], []], [[], []]];
-  for (const [ax, ay, az, bx, by, bz, dx, dy, dz, k] of F.edge || []) { const [P, U_] = E[k ? 1 : 0];
-    const Q = [[ax, ay, az], [bx, by, bz], [bx + dx, by + dy, bz + dz], [ax + dx, ay + dy, az + dz]];
-    for (const i of [0, 1, 2, 0, 2, 3]) { const q = v3(...Q[i]); P.push(q.x, q.y, q.z); U_.push(U[i][0], U[i][1]); } }
-  E.forEach(([P, U_], k) => { if (!P.length) return; const e = mk(P, U_, em); e.name = "edgeShade"; let on = true;
-    Object.defineProperty(e, "visible", { get: () => on && !(postLive() && aoLive()) && (!k || !HMATS || !HMATS.ceiling || HMATS.ceiling.visible), set: v => { on = v; } });
-    me.add(e); });
-  return me.children.length || pos.length ? me : null;
+  if (!pos.length) return null;
+  const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); geo.computeVertexNormals();
+  const me = new THREE.Mesh(geo, mat); me.raycast = () => {}; me.renderOrder = 1; me.name = "pieceShade"; return me;
+}
+/* V3.63 (N112): the shade where a room's walls meet its floor, its ceiling and each other, on the walls (model.edge_shade): one mesh a
+   floor, pieceShadeMat's kind of material (the same shader), its own key in the house's materials so the cuts (Above, On its own) cut it
+   as the walls. Where the live shade (GTAO) draws this frame it isn't drawn: no doubled shade */
+function edgeShadeMat() {
+  const tex = canvasTex(4, 64, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h);   // deeper than a piece's: a corner's shade reads across a room
+    for (const [t, a] of [[0, 0.42], [0.2, 0.25], [0.45, 0.11], [0.75, 0.035], [1, 0]]) gr.addColorStop(t, `rgba(0,0,0,${a})`);
+    g.clearRect(0, 0, w, h); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, false);
+  tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+  const m = pieceShadeMat(); m.map.dispose(); m.map = tex; return m;
+}
+function edgeShade(F, mat) {
+  const pos = [], uv = [], U = [[0, 1], [1, 1], [1, 0], [0, 0]];   // v 1 (the canvas's dark top) along the line
+  for (const [ax, ay, az, bx, by, bz, vx, vy, vz, w] of F.edge || []) {
+    const P = [[ax, ay, az], [bx, by, bz], [bx + vx * w, by + vy * w, bz + vz * w], [ax + vx * w, ay + vy * w, az + vz * w]];
+    for (const i of [0, 1, 2, 0, 2, 3]) { const q = v3(...P[i]); pos.push(q.x, q.y, q.z); uv.push(U[i][0], U[i][1]); }
+  }
+  if (!pos.length) return null;
+  const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); geo.computeVertexNormals();
+  const me = new THREE.Mesh(geo, mat); me.raycast = () => {}; me.renderOrder = 1; me.name = "edgeShade"; let on = true;
+  Object.defineProperty(me, "visible", { get: () => on && !(postLive() && aoLive()), set: v => { on = v; } });   // not drawn at all while GTAO draws
+  return me;
 }
 /* V2.98 (N37): the house from outside: a material's pieces on every floor one draw, not one a floor (each floor's span noted, and the
    floors shown are always a run, Lower, Lower and Ground, or all four, so one draw range); made when first wanted (09 houseJoin),
@@ -763,7 +773,8 @@ function buildHouse() {
       for (const L of F.lathes || []) { const g = new THREE.LatheGeometry(L.p.map(([r, h]) => new THREE.Vector2(r * M, h * M)), LOWD ? 12 : 28);   // v70: the suite's turned shapes (pans, seats, bowls); V2.15: a room's light's in its group
         g.scale(L.s[0], 1, L.s[1]); const c = v3(L.c[0], L.c[1], L.c[2]); g.translate(c.x, c.y, c.z); const r = lid(L.t); add(r ? lgOf(r) : cur, L.m, g); }
       for (const [g, o] of acc) for (const [mk, geos] of Object.entries(o)) { const me = put(g, geos, mat3(mk)); if (me && g === cur) me.userData.fm = fk; }
-      { const ps = pieceShade(F, m3); if (ps) cur.add(ps); }   // V2.52 (R2)
+      { const ps = pieceShade(F, m3.shade_piece || (m3.shade_piece = pieceShadeMat())); if (ps) cur.add(ps); }   // V2.52 (R2)
+      { const es = edgeShade(F, m3.shade_edge || (m3.shade_edge = edgeShadeMat())); if (es) cur.add(es); }   // V3.63 (N112)
       if (fresh) for (const L of F.labels || []) { label([L.name, [L.use, `about ${L.w.toFixed(1)} × ${L.d.toFixed(1)} m`].filter(Boolean).join(" · ")], L.x, L.y, L.z);
         cur.children[cur.children.length - 1].userData.area = L.w * L.d; }   // V1.35: the bigger room's name wins where two overlap
       const partG = (P, into, at) => {                 // a part's group on its pivot, its own parts inside it (V1.26b: a bifold's second panel)
