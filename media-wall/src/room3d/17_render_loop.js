@@ -132,15 +132,36 @@ function frame(now) {
   upStep(now, active || walking());                                // V2.64: the photos onto the graphics chip a few at a time
   if (probe > 0 && !lowRes) need = Math.max(need, 1);                 // v35: the speed check's three frames come first, at the start
   if (need === 0 && !active && !SH && probe === 0 && now - preT > 120 && now - PRE.idleT > 400) {   // v35: hidden parts' shaders, off screen
-    if (PARALLEL()) { if (!WARMB && now - PRE.idleT > 400 && !warmSwitch()) precompileBatch(); }   // V3.23: rooms first, then the hidden parts, built beside the page
+    if (mirrorStep()) need = Math.max(need, 1);   // V3.57 (N107): a mirror's room, a face a still frame
+    else if (PARALLEL()) { if (!WARMB && now - PRE.idleT > 400 && !warmSwitch()) precompileBatch(); }   // V3.23: rooms first, then the hidden parts, built beside the page
     else { const t0 = performance.now(); while (precompileStep() && performance.now() - t0 < 10) {} if (!PRE.queue.length && now - PRE.idleT > 1500) warmSwitch(); }
     preT = now; }   // V2.42: a room's visit only after a real pause   // v39: as many as fit in 10 ms, sooner
   if (glLost || (document.body.classList.contains("sheet-open") && !SH && !tween)) return;   // v35: nothing drawn behind the Plan's sheets (the last picture stays)
   if (need > 0) {
     const t = probe > 0 && !lowRes ? performance.now() : 0;
-    const f0 = performance.now(); syncRig(); declutter(); draw(); if (!START_MS.firstAt) { START_MS.firstAt = Math.round(performance.now()); START_MS.firstMs = Math.round(performance.now() - f0); dispatchEvent(new Event("r3d-first")); } FT.calls = gl.info.render.calls; FT.tris = gl.info.render.triangles; need--; placeStickers(); FT[FT.n++ % 60] = performance.now() - f0;   // V2.66 (N13): r3d-first, the first picture (the landing's first screen goes)
+    const f0 = performance.now(); syncRig(); declutter(); const shq = shStag(active || walking() && (WALK.v.lengthSq() > 1e-5 || WALK.keys.size > 0)); try { draw(); } finally { shStagEnd(shq); } if (!START_MS.firstAt) { START_MS.firstAt = Math.round(performance.now()); START_MS.firstMs = Math.round(performance.now() - f0); dispatchEvent(new Event("r3d-first")); } FT.calls = gl.info.render.calls; FT.tris = gl.info.render.triangles; need--; placeStickers(); FT[FT.n++ % 60] = performance.now() - f0;   // V2.66 (N13): r3d-first, the first picture (the landing's first screen goes)
     if (t) { const c = gl.getContext(); c.readPixels(0, 0, 1, 1, c.RGBA, c.UNSIGNED_BYTE, PX); probeT.push(performance.now() - t); probe--; if (!probe) autoQuality(); }
   }
+}
+/* V3.56 (N122), the phone smoother: walking through a door moves the room's lights, so every shadow is drawn again in that one frame:
+   3 lights' 2048 maps, 784 draws against a frame's 241 on the iPhone path, a step at each doorway. On a phone, while you move, the
+   shadows are redrawn a light a frame instead (the others keep last frame's for a 60th of a second); still, all at once as before. The sun's
+   own pass is most of it (about 390 draws), so the doorway's frame goes 876 draws to 626 and the next two about 360 */
+const SH_STAG = SMALL && !BIG_GPU && !/[?&]fullmove\b/.test(location.search);
+function shStag(moving_) {   // the lights left out this frame (their autoUpdate off for the one draw), or null
+  const sm = gl.shadowMap, req = sm.needsUpdate; if (!SH_STAG || !sm.enabled) return null;
+  if (!moving_ || !(req || shStag.left)) { if (shStag.left) { shStag.left = null; sm.needsUpdate = true; } return null; }   // still: the rest at once
+  const ls = []; scene.traverseVisible(o => { if (o.isLight && o.castShadow && o.shadow && o.shadow.autoUpdate) ls.push(o); });
+  if (ls.length < 2) { shStag.left = null; return null; }
+  if (req || !shStag.left) shStag.left = new Set(ls);   // a new redraw asked (a door, a light): every light again
+  const pick = ls.find(l => shStag.left.has(l)) || ls[0]; shStag.left.delete(pick); if (!shStag.left.size) shStag.left = null;
+  for (const l of ls) if (l !== pick) l.shadow.autoUpdate = false;
+  sm.needsUpdate = true; return ls;
+}
+function shStagEnd(ls) {
+  if (!ls) return;
+  for (const l of ls) l.shadow.autoUpdate = true;
+  if (shStag.left) need = Math.max(need, 2);   // the next light next frame (2: this frame's own need-- follows)
 }
 // v14.1: if this device takes too long over a full HD frame, drop to Fast (unless you picked a quality yourself)
 let probe = 3; const probeT = [], PX = new Uint8Array(4);
