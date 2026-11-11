@@ -177,7 +177,7 @@ function setRmode(m, quiet) {
   if (rr && (RMODE === "alone" || rr[4] < 0)) scene.children.forEach(o => { if (o !== houseG && o !== lightRig && !o.isLight && o !== (sun && sun.target) && o.visible) { o.visible = false; hidMode.push(o); } });
   if (rr && RMODE === "alone") { const fk = { "-260": "lower", "0": "ground", "260": "first" }[String(rr[4])];   // only the room's own floor
     for (const [k, g] of Object.entries(HFLOOR)) if (k !== fk && !(fk === "first" && k === "roof") && g.visible) { g.visible = false; hidMode.push(g); } }   // V2.10, the client: "walls are clipping out when not necessary": a first-floor room's walls under the roof (its gable, dormer cheeks, slopes) are in the roof's group: kept, the planes trim it
-  rmodeDress(rr, rid); if (typeof haloShow === "function") haloShow();   // V3.58 (N116): the bulbs' glow only seen from in the room
+  rmodeDress(rr, rid); if (typeof haloShow === "function") haloShow();   // V3.64 (N116): the bulbs' glow only seen from in the room
   if (rr) { const [x0, x1, z0, z1, fy] = rr, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0;
     // far enough that the room fills the screen, whatever its shape (a phone stands it up the screen's long side)
     const fit = (fov, sx, sy) => { const v = fitFov(fov) * Math.PI / 360, h = Math.atan(Math.tan(v) * camera.aspect); return 1.35 * Math.max(sx / 2 / Math.tan(h), sy / 2 / Math.tan(v)); };   // V1.53: a margin, the room clear of the buttons

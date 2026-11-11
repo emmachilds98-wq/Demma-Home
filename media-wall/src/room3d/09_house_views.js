@@ -82,7 +82,7 @@ function lightAt(l, L, day, hd) {   // one light, as its own room has it
   l.position.copy(v3(L.x, L.y - drop, L.z)); l.intensity = (day ? 3 : hd ? 8.6 : 5.4) * LK * ks * fb.lux * (L.drop != null ? 0.6 : 1);   // two battens share the room's light; LK: the neighbours on too, each a little less (as bright as one room lit alone)
   if (fb.k) l.color.set(kelvinHex(+fb.k)); else l.color.copy(warmColour());   // V3.19: the living room's bulbs' colour (one Warmth for the house) unless the room's own
 }
-/* V3.58 (N116): a ceiling bulb reads lit, and the ceiling round it a faint warm glow, as a real bulb throws (the point light alone left
+/* V3.64 (N116): a ceiling bulb reads lit, and the ceiling round it a faint warm glow, as a real bulb throws (the point light alone left
    a flat ceiling on the paths without the glow pass). One shared additive disc a pendant, in the room's own pendant group (so it's culled
    and hidden with it); shown in a room as a person, never from outside or above (the first picture builds no shader for it) */
 let HALO = null;
@@ -108,7 +108,7 @@ function haloShow() {
    ceiling lights on, and the sun's shadow box moved over that room (it covered the living room only) */
 function placeRoomLights() {
   if (!ROOMLIGHTS.length || !sun) return;
-  haloShow();   // V3.58 (N116)
+  haloShow();   // V3.64 (N116)
   const v = VIEWS[S.view] || {}, b = R.HOUSE3 && v.box, day = S.tod === "day", hd = S.quality === "hd";
   const rid = b && VIEW_ROOM[S.view], rr = rid && R.HOUSE3.rooms && R.HOUSE3.rooms[rid];
   const list = [];
