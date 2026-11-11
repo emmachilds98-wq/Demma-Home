@@ -119,10 +119,6 @@ function buildSofaBed() {
   lb(hinge, 0, -0.2, C.d / 2, C.w - 6, 0.3, C.d - 6, lining, false);
   lb(hinge, 0, -5, C.d + 0.4, 8, 5, 0.8, fab);                                          // the pull tab
   tufts(hinge, [-0.3, 0, 0.3].map(f => [f * C.w, lidH + 1.2 - 0.25, C.d / 2]), seam);
-  // V3.73: an ochre knit throw folded on the chaise's end, a fold hanging over its front (the rug's ochre); it lifts with the lid
-  const knit = fabricMat("#c98f3a"), tw = 40, tx0 = C.w / 2 - 5 - tw / 2;   // on the table side, clear of the tab
-  cush(hinge, tx0, lidH + 0.8, C.d / 2 + 4, tw, 3.2, C.d - 18, knit, 0.6, 0.4, 1.2);
-  cush(hinge, tx0, lidH - 16, C.d + 1.6, tw, 18, 1.6, knit, 0, 0.3, 0.7);
   const struts = new THREE.Group(); c.add(struts);
   for (const x of [-(C.w / 2 - 8), C.w / 2 - 8]) { const st = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.3, 8), steel);
     st.position.copy(v3(x, bodyH + 2, -C.d / 2 + 14)); st.rotation.x = -0.7; struts.add(st); }
