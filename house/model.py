@@ -2067,7 +2067,7 @@ EDGE_SKIP = {"living", "first_stairs", "secret", "kitchen_cupboard"}   # the liv
 
 
 def edge_shade(o, floor):
-    """V3.56 (REAL_PLAN N112): the shade where a room's surfaces meet, as GTAO gives the living room on a big card: on the walls a soft
+    """V3.58 (REAL_PLAN N112): the shade where a room's surfaces meet, as GTAO gives the living room on a big card: on the walls a soft
     band down from the ceiling, up from the floor (on the skirting where there is one) and out from each corner where two walls meet,
     worked out once from the walls as built (doors, openings and the stairwells left clear), so phones pay nothing. Each band
     [ax, ay, az, bx, by, bz, dx, dy, dz, k]: the crease a-b, the way and width the shade fades (d); k 1 the ceiling's (off with it)."""

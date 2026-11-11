@@ -528,7 +528,7 @@ function pieceShade(F, m3) {
   const mk = (P, U_, m) => { const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(U_, 2)); geo.computeVertexNormals();
     const me = new THREE.Mesh(geo, m); me.raycast = () => {}; me.renderOrder = 1; return me; };
   const me = pos.length ? mk(pos, uv, mat) : new THREE.Group(); me.name = "pieceShade";
-  /* V3.56 (N112): the shade where the walls meet the ceiling, the floor and each other (model.edge_shade), on every path without GTAO
+  /* V3.58 (N112): the shade where the walls meet the ceiling, the floor and each other (model.edge_shade), on every path without GTAO
      (it gives its own where it runs, so these step aside then: no doubled shade); the ceiling's with the ceiling (off from above).
      Two draws a floor at most, the pieces' kind of material (no new shader) */
   const em = m3.shade_edge || (m3.shade_edge = pieceShadeMat([[0, 0.38], [0.15, 0.25], [0.4, 0.1], [0.7, 0.03], [1, 0]]));
