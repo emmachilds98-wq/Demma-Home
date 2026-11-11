@@ -387,9 +387,9 @@ let stickId = null, stickC = [0, 0];
 function stickMove(e) { let dx = e.clientX - stickC[0], dy = e.clientY - stickC[1]; const RR = 44, l = Math.hypot(dx, dy); if (l > RR) { dx *= RR / l; dy *= RR / l; }
   STICK.style.setProperty("--x", dx + "px"); STICK.style.setProperty("--y", dy + "px"); WALK.stick = [dx / RR, -dy / RR];
   if (!walking() && Math.hypot(dx, dy) > RR * 0.35) startWalk(); dirty(); }
-STICK.addEventListener("pointerdown", e => { stickId = e.pointerId; try { STICK.setPointerCapture(e.pointerId); } catch (err) {} const r = STICK.getBoundingClientRect(); stickC = [r.left + r.width / 2, r.top + r.height / 2]; stickMove(e); e.preventDefault(); });
+STICK.addEventListener("pointerdown", e => { stickId = e.pointerId; STICK.classList.add("held"); try { STICK.setPointerCapture(e.pointerId); } catch (err) {} const r = STICK.getBoundingClientRect(); stickC = [r.left + r.width / 2, r.top + r.height / 2]; stickMove(e); e.preventDefault(); });
 STICK.addEventListener("pointermove", e => { if (e.pointerId === stickId) stickMove(e); });
-const stickEnd = e => { if (e.pointerId !== stickId) return; stickId = null; WALK.stick = [0, 0]; STICK.style.setProperty("--x", "0px"); STICK.style.setProperty("--y", "0px"); };
+const stickEnd = e => { if (e.pointerId !== stickId) return; stickId = null; STICK.classList.remove("held"); WALK.stick = [0, 0]; STICK.style.setProperty("--x", "0px"); STICK.style.setProperty("--y", "0px"); };
 STICK.addEventListener("pointerup", stickEnd); STICK.addEventListener("pointercancel", stickEnd);
 /* V2.31, the client: "fluid motion ... almost like im in a first person pov in a game": on a computer, while walking, Mouse look (or M)
    holds the pointer: the mouse turns you with no button held, W A S D walk, a click opens what's under the dot in the middle (a card lets
@@ -406,8 +406,9 @@ addEventListener("mousemove", e => { if (mlookOn() && (e.movementX || e.movement
 function syncStick() {
   const on = RMODE === "stand" && !!ROOMV() || S.view === "livstand"; STICK.hidden = false; root.classList.toggle("walking", on && COARSE);   // V3.15: the stick in every view; V3.28: on a computer too (the mouse drags it), as on the phone
   if (MLOOK) MLOOK.hidden = COARSE || !on; if (!on && mlookOn()) document.exitPointerLock();
-  if (on && !WALK.hinted) { WALK.hinted = true;   // V2.42: each visit (it was once ever), the keys as they are
-    setTimeout(() => toast(COARSE ? "Walk with the stick, drag to look" : "W S walk · ← → turn · A D step aside · drag or M to look · double-click a floor to go there"), 700); }
+  if (on && !WALK.hinted) { WALK.hinted = true;   // V3.55 (N117): once on a device (it was each visit), and short
+    let seen = false; try { seen = localStorage.getItem("demma-walkhint") === "1"; localStorage.setItem("demma-walkhint", "1"); } catch (e) {}
+    if (!seen) setTimeout(() => toast(COARSE ? "Stick to walk, drag to look" : "W A S D walk · drag or M to look"), 700); }
 }
 function collide(p = camera.position) {    // true if it moved the eye
   let moved = false;

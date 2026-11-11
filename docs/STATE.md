@@ -84,6 +84,8 @@ Chromium: Playwright's own, else `$CHROMIUM`, else `/opt/pw-browsers/chromium` (
   over the house, a floor and a room's Above it moves the map as far as it's pushed (`19_view_controls.js` `mapKeys`, a thumb on it and a finger on
   the map together); in a view from your eyes (a room's In it, From the sofa ...) it stands you there and walks on (`eyeView`, `startWalk`), as W
   does on a PC; in On its own, Bird's eye and Dolls' house it glides (`freeMode`). On a PC the held keys glide smoothly there too (they stepped a repeat at a time).
+- **The phone's overlays (VNEXT, N117):** the stick is a thin ring, its knob shows only while held; the walk's hint shows once a device;
+  the room's labels never overlap, sit under the pills or run off screen (the smallest is left off when there's no room).
 - **Moving:** the glide after a drag eases the same each 60th of a second at any frame rate (`DAMP`, V2.60); a walk key held over
   half a second eases up to half as quick again (1.4 to 2.1 m/s, `WALK.pace`); Shift still hurries.
 - **The living room** is the media wall project: stickers, Plan · Build · Buy and their sheets, Room, Look, Edit, the item cards.

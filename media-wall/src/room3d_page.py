@@ -395,11 +395,12 @@ body.bare .r3d .r3d-mini .r3d-minib.r3d-bare { background: var(--ink, #1d2a22); 
 @media (max-width: 899px) { .r3d-peg { right: 12px; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 84px); width: 48px; height: 48px; } .r3d.tools-open .r3d-peg { display: none; } }
 body.bare .r3d-peg, .r3d.editing .r3d-peg { display: none; }
 .r3d-stick { position: fixed; left: 16px; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 96px); z-index: 31; width: 112px; height: 112px; border-radius: 50%;
-  background: color-mix(in oklab, var(--cream, #fbf7ef) 55%, transparent); box-shadow: 0 4px 18px rgba(0,0,0,.18); touch-action: none; }
+  border: 2px solid color-mix(in oklab, var(--cream, #fbf7ef) 85%, transparent); box-shadow: 0 0 0 1px rgba(0,0,0,.16), inset 0 0 0 1px rgba(0,0,0,.16); touch-action: none; }   /* V3.55 (N117): a thin ring, the grey disc gone */
 .r3d-stick[hidden], body.bare .r3d-stick, .r3d.tools-open .r3d-stick, .r3d.editing .r3d-stick, .r3d.welcoming .r3d-stick, .r3d.touring .r3d-stick { display: none; }
 .r3d.walking .r3d-toast { top: auto !important; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 222px) !important; }   /* the tip clear of the stick (V1.54: its top let go, or a tablet's 132 stretched it down the screen) */
-.r3d-stick i { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%; background: var(--ink, #1d2a22);
-  transform: translate(var(--x, 0px), var(--y, 0px)); }
+.r3d-stick i { position: absolute; left: 50%; top: 50%; width: 48px; height: 48px; margin: -24px 0 0 -24px; border-radius: 50%; background: color-mix(in oklab, var(--ink, #1d2a22) 80%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--cream, #fbf7ef) 85%, transparent); transform: translate(var(--x, 0px), var(--y, 0px)) scale(.2); opacity: .7; transition: transform .15s, opacity .15s; }
+.r3d-stick.held i { transform: translate(var(--x, 0px), var(--y, 0px)); opacity: 1; transition: opacity .15s; }   /* the knob only while held (a dot in the middle till then) */
 /* V1.30 (U3): only the tools that work where you are (room3d.js brandPlace) */
 body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-editbtn, body.hv #r3d-dp-look > :not(h2):not(#r3d-finsch), body.hroom .hnav { display: none !important; }
 @media (max-width: 899px) { body.hv .r3d-bubbles { justify-content: center; gap: 28px; } body.hv .r3d-bub { flex: 0 0 auto; } }
