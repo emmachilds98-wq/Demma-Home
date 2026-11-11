@@ -200,7 +200,8 @@ function applyFloors() {
     if (roofWalls && m.visible) { m.visible = false; m.userData.offForFloor = true; } else if (!roofWalls && m.userData.offForFloor) { m.visible = true; m.userData.offForFloor = false; } }
   if (HMATS && !livClipOn) {   // and cut at its ceiling's height (the party wall's plaster runs on up the gable to the ridge)
     if (!FLCLIP) FLCLIP = [new THREE.Plane(new THREE.Vector3(0, -1, 0), ((R.HOUSE3 && R.HOUSE3.rooms.landing) ? R.HOUSE3.rooms.landing[4] + (R.HOUSE3.ceil || 235) + 3 : 498) * M)];
-    for (const m of Object.values(HMATS)) { const was = CLIPSRC.get(m) || [], want = roofWalls ? FLCLIP : (was === FLCLIP ? RPLANES : was);
+    floorCut(true);   // V3.63: every floor on its own is cut (at its ceiling, lower as the eye comes down)
+    for (const m of Object.values(HMATS)) { const was = CLIPSRC.get(m) || [], want = sel !== "all" ? FLCLIP : (was === FLCLIP ? RPLANES : was);
       if (want !== was) houseClip(m, want, false); } }
   if (HFLOOR.first) { HFLOOR.first.position.y = ex * M; HFLOOR.first.visible = sel === "all" || sel === "first"; }
   if (HFLOOR.lower) HFLOOR.lower.position.y = -ex * M;
@@ -346,6 +347,15 @@ function roomCull(again) {   // again: a door swung (only this part of applyFloo
   const key = [...see].sort().join() + CULLG.length;
   if (again) dirty();
   if (key !== cullKey) { cullKey = key; reshadow(); }
+}
+/* V3.63 (N125), the client: "its hard to look into floors easily": a floor seen from low down showed its front wall. A floor on its own
+   is now cut at its ceiling, and as the eye comes down below that, a metre under the eye (not under 90 cm over the floor), in 20 cm
+   steps, so you always look in over its walls; from higher up nothing changes. One plane, its number moved: no shader built */
+function floorCut(now) {
+  const fy = { first: 260, ground: 0, lower: -260 }[hfloor]; if (!FLCLIP || fy == null || S.view !== "house") return false;
+  const top = fy + (R.HOUSE3.ceil || 235) + 3, c = Math.min(top, Math.max(fy + 90, Math.round((camera.position.y / M - 100) / 20) * 20)) * M;
+  if (Math.abs(FLCLIP[0].constant - c) < 1e-4) return false;
+  FLCLIP[0].constant = c; if (!now) reshadow(); return true;
 }
 let LIVCLIP = null, livClipOn = false, FLCLIP = null;   // V2.0: in the living room's own view the house only above the landing's floor over the room
 /* V2.64, the client's iPhone froze on the first tap on a floor: three builds a shader for each number of cutting planes, so the first
