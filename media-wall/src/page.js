@@ -119,7 +119,7 @@ $$(".g3d").forEach(b => b.addEventListener("click", () => {
 }));
 
 /* ---------- shared state: tracker, build steps (v30: the questions and their answers are gone) */
-let db = null, user = null, myId = null, readOnly = false;
+let db = null, myId = null, readOnly = false;
 const tstate = {};            // tracker/<id> bodies as saved
 const sstate = {};            // steps/<n> bodies as saved
 const chains = {};            // one write at a time per document
@@ -224,7 +224,6 @@ paintSteps();
 /* light up what this view can do */
 (async () => {
   const [d, u] = await Promise.all([use("db"), use("user")]);
-  user = u;
   if (!d) {
     $("#t-note").textContent = "Each phase names the step it's for. Measure's Send takes the ticks to your other devices.";
     const sn = $("#s-note"); if (sn) sn.textContent = "Measure's Send takes the ticks to your other devices.";
@@ -359,8 +358,6 @@ window.PICKS = (() => {
     if (n3) {
       const di0 = D.findIndex(d => !st.decide[d.key]), step = BD.find(s => !$("#step-" + s.n + ".done"));
       const PP = window.PIECEP, cur = PP ? PP.current() : null, allDone = PP ? PP.tasks[1] > 0 && PP.tasks[0] === PP.tasks[1] : !step;   // v46: a piece, not a step
-      const need = step ? DATA.track.filter(r => r.kind === "buy" && step.buy.includes(r.phase) && !(tget(r.id) ? tget(r.id).done : r.done)) : [];
-      const lo = need.reduce((a, r) => a + (r.lo || 0), 0), hi = need.reduce((a, r) => a + (r.hi || 0), 0);
       const card = (h, ic, k, t, sub, btn, attrs) => `<div class="n3" style="--h:${h}"><span class="ms" aria-hidden="true">${ic}</span><div><span class="label">${k}</span><b>${esc(t)}</b><span>${esc(sub)}</span></div><button type="button" class="btn" ${attrs}>${btn}</button></div>`;
       const nx = U && U.next, open = di0 >= 0;   // N119: the next room with changes not done leads; the media wall is one project of the house
       const cards = [
