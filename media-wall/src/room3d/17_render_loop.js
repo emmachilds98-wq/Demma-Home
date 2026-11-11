@@ -132,7 +132,7 @@ function frame(now) {
   upStep(now, active || walking());                                // V2.64: the photos onto the graphics chip a few at a time
   if (probe > 0 && !lowRes) need = Math.max(need, 1);                 // v35: the speed check's three frames come first, at the start
   if (need === 0 && !active && !SH && probe === 0 && now - preT > 120 && now - PRE.idleT > 400) {   // v35: hidden parts' shaders, off screen
-    if (mirrorStep()) need = Math.max(need, 1);   // V3.55 (N107): a mirror's room, a face a still frame
+    if (mirrorStep()) need = Math.max(need, 1);   // V3.56 (N107): a mirror's room, a face a still frame
     else if (PARALLEL()) { if (!WARMB && now - PRE.idleT > 400 && !warmSwitch()) precompileBatch(); }   // V3.23: rooms first, then the hidden parts, built beside the page
     else { const t0 = performance.now(); while (precompileStep() && performance.now() - t0 < 10) {} if (!PRE.queue.length && now - PRE.idleT > 1500) warmSwitch(); }
     preT = now; }   // V2.42: a room's visit only after a real pause   // v39: as many as fit in 10 ms, sooner

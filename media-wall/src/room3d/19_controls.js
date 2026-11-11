@@ -128,7 +128,7 @@ function swingDoor(k, on) {
   const onLanding = R.HOUSE3 && R.HOUSE3.rooms && roomDoors().list.some(([pk, a, b]) => pk === k && (a === "landing" || b === "landing"));   // V3.49 (N101): the stairwell seen through it
   if (k === "door.living_door" || onLanding) setTimeout(() => { applyFloors(); reshadow(); }, on ? 0 : 950);   // V1.38: what's seen through it (once it's shut)
   else setTimeout(() => roomCull(true), on ? 0 : 950);   // V2.71 (N16): the room behind it drawn (left out once it's shut)
-  if (typeof placeRoomLights === "function") setTimeout(() => { placeRoomLights(); dirty(); }, on ? 0 : 950);   // V3.55 (N108): the room behind it lit (its lights already on at their level)
+  if (typeof placeRoomLights === "function") setTimeout(() => { placeRoomLights(); dirty(); }, on ? 0 : 950);   // V3.56 (N108): the room behind it lit (its lights already on at their level)
 }
 function swingAll(on) { for (const k of Object.keys(HPARTS)) if (k.startsWith("door.") && !(on && BINS.includes(k))) swingDoor(k, on); if (actId) renderAct(); }
 /* v71, the client: "three ways to view the room": in it (wide), from above (the ceiling and the floors over it cut away), and the room on
