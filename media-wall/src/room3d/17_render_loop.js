@@ -112,7 +112,7 @@ function frame(now) {
   const active = moving || changed || !!tween || walked;   // V2.73 (N17): a walk too
   if (active && mvLast && now - mvLast < 1000) { const g_ = now - mvLast; if (now - (FT.worstT || 0) > 3000 || g_ >= (FT.worst || 0)) { FT.worst = g_; FT.worstT = now; } }   // V3.29: the longest gap while moving (the last 3 s), for ?perf
   if (active && mvLast && now - mvLast < 250) { MV.push(now - mvLast); if (MV.length >= 24) { const m = MV.sort((a, b) => a - b)[12]; MV.length = 0; FT.mv = m;
-    if (m > 28 && !BIG_GPU) slowDev = true; else if (m < 14 && !lowRes && HI) slowDev = false;
+    if (m > 28 && (!BIG_GPU || MASKED)) slowDev = true; else if (m < 14 && !lowRes && HI) slowDev = false;
     if (PHONE_HD && lowRes && m > 24 && phoneCap > 1.5) capDue = true;   // V2.73 (N17): still slow with the lighter drawing
     if (m > 40 && !BIG_GPU && !houseLite && S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view)) { houseLite = true; sizeRenderer(); toast("A lighter drawing for the house on this computer"); } } }
   mvLast = active ? now : 0;
@@ -169,7 +169,7 @@ let preT = 0;
 const FT = []; FT.n = 0;   // v35: the last 60 frames' times, for R3D.perf()
 const med = a => { const s = a.slice().sort((x, y) => x - y); return s.length ? +s[s.length >> 1].toFixed(1) : null; };
 // V3.04 (N50): the graphics chip's family only ("RTX 5070", "Apple GPU"), never the driver's whole string
-const gpuClass = () => (GPU.match(/[rg]tx\s?\d{3,4}\w*|radeon[^,()]*?\d{3,4}\w*|apple (gpu|m\d\w*)|adreno\D{0,4}\d{3}|mali-\w+|immortalis-\w+|xclipse \d+|intel[^,()]*?(arc|iris|uhd)\s?\w*|swiftshader|llvmpipe/i) || ["other"])[0];
+const gpuClass = () => MASKED ? "hidden" : (GPU.match(/[rg]tx\s?\d{3,4}\w*|radeon[^,()]*?\d{3,4}\w*|apple (gpu|m\d\w*)|adreno\D{0,4}\d{3}|mali-\w+|immortalis-\w+|xclipse \d+|intel[^,()]*?(arc|iris|uhd)\s?\w*|swiftshader|llvmpipe/i) || ["other"])[0];
 function perfInfo() {   // v35: the counts to watch each round (R3D.perf())
   const i = gl.info, ls = [];
   scene.traverseVisible(o => { if (o.isLight) ls.push(o); });
