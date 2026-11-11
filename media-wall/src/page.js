@@ -224,8 +224,8 @@ paintSteps();
   const [d, u] = await Promise.all([use("db"), use("user")]);
   user = u;
   if (!d) {
-    $("#t-note").textContent = "Each phase names the step it's for. Ticks and amounts stay on this device only.";
-    const sn = $("#s-note"); if (sn) sn.textContent = "Ticks are kept on this device only.";
+    $("#t-note").textContent = "Each phase names the step it's for. Measure's Send takes the ticks to your other devices.";
+    const sn = $("#s-note"); if (sn) sn.textContent = "Measure's Send takes the ticks to your other devices.";
     return;
   }
   db = d;

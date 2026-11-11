@@ -878,6 +878,14 @@ def hotspots():
     return out
 
 
+def progress_json():
+    """V3.60 (N118): the ticks the last round kept (tools/pull_edits.py, house/client_progress.json), merged on every device by measure.js"""
+    f = HERE.parents[1] / "house" / "client_progress.json"
+    d = json.loads(f.read_text()) if f.exists() else {}
+    d.pop("from", None)
+    return json.dumps(d, separators=(",", ":"), ensure_ascii=False).replace("</", "<\\/")
+
+
 def section(gallery=""):
     """v25: the room as the home screen. The stage fills the screen; the stickers sit on it; the Tools pill (laptop) or the bottom
     bar's Tools button (phone, in build_viewer) opens the five panels; Edit room is a bubble beside them."""
@@ -945,6 +953,7 @@ def section(gallery=""):
 <script type="application/json" id="tour-data">{json.dumps(dict(stops=tour(), pages=PAGES_URL), separators=(",", ":"))}</script>
 <script type="application/json" id="hotspots-data">{json.dumps(hotspots(), separators=(",", ":"))}</script>
 <script type="module">{room3d_src.js()}</script>
+<script type="application/json" id="progress-data">{progress_json()}</script>
 <script type="module">{(HERE / "measure.js").read_text()}</script>
 <script type="application/json" id="photo-data">{photos}</script>
 <script>{DRAWER_JS}</script>
