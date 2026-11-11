@@ -176,5 +176,6 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **On a wall** (`23_finish.js`): `finWallRun(room, side)` gives the wall's face, ends, doors and windows and the ceiling over it; the
   wallpaper and the panelling (`finPanelApply`: real boxes, one draw a kind a room) both build on it. Look's rows 24–27.
 - **Seeing a finish without tapping:** `R3D.setFinishes({room: {slot: value}})` then a screenshot (views: `bed3` is `office`, `bathroom` is `bath`).
+- **A made finish's grain runs up the picture's v** (`MADE` `joinery`, N111): on a house box that's up a door's leaf, but across a skirting or a rail, so those stay on `gloss` (strokes along u). `HTEX_AS` picks a key's map; `HTEX_TINT` keeps its own colour.
 - **A catalogue piece's own price:** `UPC.piece[key]` beats its kind's (`upCat`).
 - Don't rebuild `_site` while `checks.py` runs: a local site check once failed Edit's ottoman drag mid-rebuild; CI passed.
