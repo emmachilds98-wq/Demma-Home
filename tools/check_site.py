@@ -198,22 +198,34 @@ def over_budget(path, got):
 
 # V3.07: Edit room on a phone, "Look round from here" on: a finger dragging the ottoman moves it, not the view (it turned the view too)
 EDITPT = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)); if (window.DemmaTools && DemmaTools.isOpen()) DemmaTools.close();
-  R3D.set({ view: 'room' }); await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(200);
-  D.S.edit || document.getElementById('r3d-editbtn').click(); document.querySelector('[data-cam=look]').click(); await sl(2500);   // V3.23: CI's slow frames took Edit's switch past 0.5 s (main red twice)
+  const fr = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));   // V3.55: frames, not fixed waits (CI's take seconds)
+  R3D.set({ view: 'room' }); await fr(); for (let i = 0; i < 150 && (D.flying || D.S.view !== 'room'); i++) await sl(200);
+  D.S.edit || document.getElementById('r3d-editbtn').click(); document.querySelector('[data-cam=look]').click(); await fr();
+  D.camera.updateMatrixWorld();   // Look round turns the eye; until a frame draws, project() used the old turn (25 px off: the touch missed the ottoman)
   const b = new D.THREE.Box3().setFromObject(D.MOV.pouf.pivot), v = b.getCenter(new D.THREE.Vector3()).setY(b.max.y * 0.6).project(D.camera), r = document.querySelector('.r3d canvas').getBoundingClientRect();
   return [r.left + (v.x + 1) / 2 * r.width, r.top + (1 - v.y) / 2 * r.height]; }"""
 EDITAT = "() => { const D = R3D._dbg, c = D.camera.position, t = D.controls.target; return [c.x, c.y, c.z, t.x, t.y, t.z, D.MOV.pouf.pivot.position.x, D.MOV.pouf.pivot.position.z]; }"
 
 
-def edit_drag(pg, w):
-    x, y = pg.evaluate(EDITPT); a = pg.evaluate(EDITAT); cdp = pg.context.new_cdp_session(pg)
+def edit_drag(pg, w):   # V3.55: each step waits for the page to take it (the press, then the drop saved), three tries
+    cdp, got = pg.context.new_cdp_session(pg), None
     T = lambda t, X=0, Y=0: cdp.send("Input.dispatchTouchEvent", {"type": t, "touchPoints": [] if t == "touchEnd" else [{"x": X, "y": Y, "id": 1}]})
-    T("touchStart", x, y); pg.wait_for_timeout(400)
-    for i in range(1, 7): T("touchMove", x + 8 * i, y - 4 * i); pg.wait_for_timeout(100)
-    T("touchEnd"); pg.wait_for_timeout(2500); z = pg.evaluate(EDITAT)
-    cam, moved = max(abs(p - q) for p, q in zip(a[:6], z[:6])), max(abs(a[6] - z[6]), abs(a[7] - z[7]))
+    sel = "() => document.getElementById('r3d-selname').textContent"
+    for _ in range(3):
+        x, y = pg.evaluate(EDITPT); a = pg.evaluate(EDITAT)
+        T("touchStart", x, y)
+        try: pg.wait_for_function(sel + " === 'Your storage ottoman'", timeout=30000)
+        except Exception: T("touchEnd"); got = f"the touch at {x:.0f}, {y:.0f} picked {pg.evaluate(sel)!r}"; pg.wait_for_timeout(1000); continue
+        for i in range(1, 7): T("touchMove", x + 8 * i, y - 4 * i); pg.wait_for_timeout(100)
+        T("touchEnd")
+        try: pg.wait_for_function("() => !!(R3D._dbg.S.layout.pouf || {}).x", timeout=60000)
+        except Exception: pass
+        z = pg.evaluate(EDITAT)
+        cam, moved = max(abs(p - q) for p, q in zip(a[:6], z[:6])), max(abs(a[6] - z[6]), abs(a[7] - z[7]))
+        got = None if cam < 1e-4 and moved > 0.05 else f"the view moved {cam:.3f} m, the ottoman {moved:.3f} m"
+        break
     pg.evaluate("() => { document.getElementById('r3d-undo').click(); document.querySelector('[data-cam=orbit]').click(); document.getElementById('r3d-editbtn').click(); R3D.set({ view: 'house' }); }"); pg.wait_for_timeout(1500)
-    return [] if cam < 1e-4 and moved > 0.05 else [f"{w}: dragging the ottoman in Edit (Look round on): the view moved {cam:.3f} m, the ottoman {moved:.3f} m (want the view still, the ottoman moved)"]
+    return [f"{w}: dragging the ottoman in Edit (Look round on): {got} (want the view still, the ottoman moved)"] if got else []
 
 
 def stick_all(pg, w):
