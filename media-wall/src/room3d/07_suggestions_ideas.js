@@ -52,7 +52,7 @@ function buildSuggest() {
   const leaf = reg(new THREE.MeshStandardMaterial({ color: "#3f7a3a", roughness: 0.6, side: THREE.DoubleSide }));   // the vase's grass stems (the plants bring their own leaves)
   const mat = c => reg(new THREE.MeshStandardMaterial({ color: c, roughness: 0.7 }));
   // the floor pieces: movable, shown only while switched on
-  const floor = (k, label, w, d, x, z, build, mats = []) => { const g = new THREE.Group(); SUGG_G[k] = movable("sg_" + k, label, g, () => ({ x, z, rot: 0 }), w, d, mats, false, { when: () => !!S.sugg[k] && !(k === "floorplant" && (S.sugg.blanketbasket || S.sugg.cotswoldbasket)) }); lazyVis(SUGG_G[k].pivot, () => { build(g); mergeStatic(g); }); };   // v36: the blanket basket takes the floor plant's corner
+  const floor = (k, label, w, d, x, z, build, mats = []) => { const g = new THREE.Group(); SUGG_G[k] = movable("sg_" + k, label, g, () => ({ x, z: z + (k === "floorplant" ? openEndShift() : 0), rot: 0 }), w, d, mats, false, { when: () => !!S.sugg[k] && !(k === "floorplant" && (S.sugg.blanketbasket || S.sugg.cotswoldbasket)) }); lazyVis(SUGG_G[k].pivot, () => { build(g); mergeStatic(g); }); };   // v36: the blanket basket takes the floor plant's corner
   const ownOak = () => reg(new THREE.MeshStandardMaterial({ color: "#c48c57", map: OAK_TEX, roughness: 0.55 }));   // v28: each piece's own, for its versions
   const ownGlow = c => new THREE.MeshBasicMaterial({ color: c, toneMapped: false });
   { const pot = mat("#d8cfc0"); SVAR_MATS.floorplant = [pot];
@@ -70,7 +70,7 @@ function buildSuggest() {
     const col = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.035, 0.475, 16), oak); col.position.y = 0.2375; g.add(shadow(col));
     const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.16, 0.02, 32), oak); foot.position.y = 0.01; g.add(shadow(foot)); }, [oak]); }
   { const knit = mat("#d9a441"); SVAR_MATS.pouffe = [knit];
-    floor("pouffe", "Pouffe (suggested)", 50, 50, 175, -95, g => {
+    floor("pouffe", "Pouffe (suggested)", 50, 50, 175, -78, g => {   // V3.73: 3 past the moved record table
       const b = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.4, 32), knit); b.position.y = 0.2; g.add(shadow(b));
       const t = new THREE.Mesh(new THREE.TorusGeometry(0.235, 0.02, 8, 32), knit); t.rotation.x = Math.PI / 2; t.position.y = 0.39; g.add(t); }, [knit]); }
   // on the walls and the coffee table: fixed, shown only while switched on
@@ -176,8 +176,8 @@ function buildStorage() {
   // cotton lining turned over the rim and the five throws, folded long, stacked flat inside (a floor piece: it moves in Edit room)
   if (R.BLANKET_BASKET) { const B = R.BLANKET_BASKET, weave = reg(new THREE.MeshStandardMaterial({ color: "#9a7a50", roughness: 1, bumpMap: HESSIAN, bumpScale: 2.6 }));
     const lining = own("#e9e2d2"); SVAR_MATS.blanketbasket = [weave];
-    const g = new THREE.Group(), cx = (B.x[0] + B.x[1]) / 2, cz = (B.z[0] + B.z[1]) / 2;
-    SUGG_G.blanketbasket = movable("sg_blanketbasket", "Blanket basket", g, () => ({ x: cx, z: cz, rot: 0 }), B.w, B.d, [weave], false, { when: () => !!S.sugg.blanketbasket });
+    const g = new THREE.Group(), cx = (B.x[0] + B.x[1]) / 2, bz_ = () => (S.sofa !== "bed" && B.z_old ? B.z_old : B.z), cz = () => (bz_()[0] + bz_()[1]) / 2;   // V3.73: past the sofa bed's chaise, or by your sofa's end
+    SUGG_G.blanketbasket = movable("sg_blanketbasket", "Blanket basket", g, () => ({ x: cx, z: cz(), rot: 0 }), B.w, B.d, [weave], false, { when: () => !!S.sugg.blanketbasket });
     lazyVis(SUGG_G.blanketbasket.pivot, () => { const w = B.w, d = B.d, h = B.h, t = 1.2;
     lb(g, 0, 0, 0, w, 1.5, d, weave);                                                                     // its floor
     for (const [x, z, ww, dd] of [[-w / 2 + t / 2, 0, t, d], [w / 2 - t / 2, 0, t, d], [0, -d / 2 + t / 2, w - 2 * t, t], [0, d / 2 - t / 2, w - 2 * t, t]]) {
@@ -191,7 +191,7 @@ function buildStorage() {
   if (R.BLANKET_COTSWOLD) { const B = R.BLANKET_COTSWOLD, weave = reg(new THREE.MeshStandardMaterial({ color: "#b89a6c", roughness: 1, bumpMap: HESSIAN, bumpScale: 2.2 }));
     SVAR_MATS.cotswoldbasket = [weave];
     const g = new THREE.Group(), cx = (B.x[0] + B.x[1]) / 2, cz = (B.z[0] + B.z[1]) / 2;
-    SUGG_G.cotswoldbasket = movable("sg_cotswoldbasket", "Lidded seagrass basket (an option)", g, () => ({ x: cx, z: cz, rot: 0 }), B.w, B.d, [weave], false, { when: () => !!S.sugg.cotswoldbasket });
+    SUGG_G.cotswoldbasket = movable("sg_cotswoldbasket", "Lidded seagrass basket (an option)", g, () => ({ x: cx, z: cz + openEndShift(), rot: 0 }), B.w, B.d, [weave], false, { when: () => !!S.sugg.cotswoldbasket });
     lazyVis(SUGG_G.cotswoldbasket.pivot, () => { const body = new THREE.Mesh(new RoundedBoxGeometry(B.w * M, (B.h - 6) * M, B.d * M, 3, 0.03), weave);
     body.position.y = (B.h - 6) / 2 * M; g.add(shadow(body));
     const lid = new THREE.Mesh(new RoundedBoxGeometry((B.w + 1.5) * M, 6 * M, (B.d + 1.5) * M, 3, 0.025), weave); lid.position.y = (B.h - 3) * M; g.add(shadow(lid));

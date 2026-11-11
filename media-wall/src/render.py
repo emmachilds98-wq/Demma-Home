@@ -1729,7 +1729,9 @@ def spot_heads2():
     """The second bar, on the existing pendant point by the stairs, running TV to window (v15): pink down onto the way in at its door
     end, sage on the framed LPs, blue and mustard on the table."""
     # v17: straight down, spread a little along the bar, whatever the table is doing
-    return [(off, *col, (G.BAR2_X, 0.0, G.BAR2_Z + off * G.HEAD_SPREAD)) for off, col in ((31.5, G.PINK), (10.5, G.SAGE), (-10.5, G.BLUE), (-31.5, G.MUSTARD))]
+    # V3.73: the layered aims (geometry.LIGHT_AIMS); a head with none stays straight down
+    return [(off, *col, getattr(G, "LIGHT_AIMS", {}).get("bar2", [None] * 4)[i] or (G.BAR2_X, 0.0, G.BAR2_Z + off * G.HEAD_SPREAD))
+            for i, (off, col) in enumerate(((31.5, G.PINK), (10.5, G.SAGE), (-10.5, G.BLUE), (-31.5, G.MUSTARD)))]
 
 
 def spot_bar(cx, cz, spots):

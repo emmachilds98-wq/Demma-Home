@@ -316,6 +316,11 @@ wall as I put in the plans." Photo: `media-wall/inputs/photo_bedroom2_25oct.jpg`
   V2.24 (the client: "bedroom 2 has a floating plugsocket and things should be moved back towards the real wall between it and the master
   bedroom"): the chair-bed, the amp, the guitars and the socket by the chair-bed back against that wall (z 79.5 since V1.20; they'd stayed
   25 out on its old line).
+  V3.73 (the client: "review the bedroom 2 also for the music room and make the design better"): the monitors and the chair in an
+  equilateral triangle 110 cm a side, centred on the desk (the mixing rule), the monitors on foam pads; acoustic panels 5 deep at the
+  right wall's first reflection point (over the return), beside the chair, at the alcove end and two behind the chair over the chair-bed,
+  in the records' colours; a 140 × 200 rust rug with a cream border under the chair; headphones on a hook at the return's end; a vocal mic
+  on a boom arm at the desk's corner. All E (standard sizes), no new measurement.
 
 ## The master bedroom (the client's photo, 25 Oct 2026: `media-wall/inputs/photo_master_bed_25oct.jpg`)
 

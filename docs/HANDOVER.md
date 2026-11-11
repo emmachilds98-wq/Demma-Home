@@ -2,9 +2,11 @@
 
 **Now (11 Nov 2026, V3.60):** what's open and who has it is `docs/REAL_PLAN.md` section 19; this page is brought to now by N121.
 
-**Latest (11 Nov 2026, V3.72, for the next agent):** the client is testing a sofa she may buy. V3.71 (#242, N126) added Room → The sofa:
+**Latest (11 Nov 2026, V3.73, for the next agent):** the client is testing a sofa she may buy. V3.71 (#242, N126) added Room → The sofa:
 Yours · Green sofa bed (the Lovesofas Amelia, Blade Green, 264 × 165, `geometry.SOFABED`, `fit.SOURCES["amelia"]`), its bed pulling
-out with the coffee table stepping aside, and Watch the bed open. V3.72 (#243, N127) gave it its upholstery detail. Where it all lives:
+out with the coffee table stepping aside, and Watch the bed open. V3.72 (#243, N127) gave it its upholstery detail. V3.73 (N128–N130)
+made it the room's sofa (yours one tap away), moved the record table, ottoman and red lamp to suit it, layered the living room's lights
+(`geometry.LIGHT_AIMS`, now a decision in `docs/DECISIONS.md`) and reworked the music room (`house/HOUSE.md`, bedroom 2). Where it all lives:
 `docs/NOTES.md` section 5, "The green sofa bed". It's an option to look at (no buy rows) until she says she's buying it. Her open
 question on it is in "Waiting on Emma" below (7). GitHub had a major Actions and Pages outage 20:48–21:07 UTC on 11 Nov: if `main`'s
 "Build, check and publish" run for a merge still sits queued or failed on an artifact upload (not a test), re-run it from the Actions
@@ -99,8 +101,8 @@ Five from before V2.0 hold commits not in `main`, work since redone or dropped: 
 4. **`?perf` screenshots** (the corner box after opening the house once) from the iPhone 15 Pro and the RTX 5070 PC (N10).
 5. **Dark panels** on a dark device, or keep the cream (the old design) (N9's rest).
 6. **A photo of the microwave**, if there is one (N6 found none).
-7. **The green sofa bed (V3.71):** its Amazon drawing says 230 cm on the chaise side, its size table and text 165 (drawn 165); ask the
-   seller. The price showed in US dollars from the sandbox (about £700–950 is a guess). The arm, stools and chaise are scaled off its photos.
+7. **The green sofa bed:** V3.73 settled 230 vs 165 from the listing's photos (the sections are 165, the loose chaise makes 230). Still
+   open: the price (it showed in US dollars from the sandbox; about £700–950 is a guess); the arm, stools and chaise are scaled off photos.
 The older list (measurements still guessed, smaller confirmations) is in `docs/STATE.md`, "Open with the client", and in Measure on the site.
 
 ## Suggested next work for the new team

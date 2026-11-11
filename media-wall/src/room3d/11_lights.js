@@ -179,6 +179,8 @@ function buildLamp() {   // three adjustable heads on a red pole, with colour bu
   // point on the stairs wall 30 below its own height, along the shelf (it was aimed 110 up, at the ceiling)
   const sbz = R.SHELF_B.z, wz = Math.min(Math.max(spot.z + 30, Math.min(sbz[0], sbz[1])), Math.max(sbz[0], sbz[1]));
   const aims = [[R.LAMP.h - 8, [R.W - spot.x, -22, wz - spot.z]], [R.LAMP.h - 45, [toward.x * 160, -40, toward.z * 160]], [R.LAMP.h - 80, [toward.x * 90, -110, toward.z * 90]]];
+  // V3.73: by the sofa, the bottom (purple) head reads over the shoulder onto the arm-end seat (geometry.LAMP_READ)
+  const rd = R.LAMP_READ; if (rd && Math.hypot(rd[0] - spot.x, rd[2] - spot.z) < 160) aims[2] = [R.LAMP.h - 80, [rd[0] - spot.x, rd[1] - (R.LAMP.h - 80), rd[2] - spot.z]];
   aims.forEach(([y, off], i) => {
     const apex = v3(spot.x + toward.x * 9, y, spot.z + toward.z * 9);
     const tgt = v3(spot.x + off[0], y + off[1], spot.z + off[2]);

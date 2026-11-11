@@ -196,15 +196,17 @@ def over_budget(path, got):
     return [f"{path}: {k} {got.get(k)} over {v}" for k, v in want.items() if not k.startswith("_") and not 0 <= (got.get(k) or 0) <= v]
 
 
-# V3.07: Edit room on a phone, "Look round from here" on: a finger dragging the ottoman moves it, not the view (it turned the view too)
+# V3.07: Edit room on a phone, "Look round from here" on: a finger dragging the ottoman moves it, not the view (it turned the view too).
+# V3.73: the room's sofa is the green sofa bed, so the piece dragged is its storage chaise (the navy ottoman goes with your own sofa); the
+# finger lands on the chaise's open end, clear of the C-table that reaches over its other end
 EDITPT = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)); if (window.DemmaTools && DemmaTools.isOpen()) DemmaTools.close();
   const fr = () => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));   // V3.55: frames, not fixed waits (CI's take seconds)
   R3D.set({ view: 'room' }); await fr(); for (let i = 0; i < 150 && (D.flying || D.S.view !== 'room'); i++) await sl(200);
   D.S.edit || document.getElementById('r3d-editbtn').click(); document.querySelector('[data-cam=look]').click(); await fr();
   D.camera.updateMatrixWorld();   // Look round turns the eye; until a frame draws, project() used the old turn (25 px off: the touch missed the ottoman)
-  const b = new D.THREE.Box3().setFromObject(D.MOV.pouf.pivot), v = b.getCenter(new D.THREE.Vector3()).setY(b.max.y * 0.6).project(D.camera), r = document.querySelector('.r3d canvas').getBoundingClientRect();
+  const b = new D.THREE.Box3().setFromObject(D.MOV.chaise2.pivot), v = new D.THREE.Vector3(b.min.x + (b.max.x - b.min.x) * 0.1, b.max.y * 0.6, b.min.z + (b.max.z - b.min.z) * 0.25).project(D.camera), r = document.querySelector('.r3d canvas').getBoundingClientRect();
   return [r.left + (v.x + 1) / 2 * r.width, r.top + (1 - v.y) / 2 * r.height]; }"""
-EDITAT = "() => { const D = R3D._dbg, c = D.camera.position, t = D.controls.target; return [c.x, c.y, c.z, t.x, t.y, t.z, D.MOV.pouf.pivot.position.x, D.MOV.pouf.pivot.position.z]; }"
+EDITAT = "() => { const D = R3D._dbg, c = D.camera.position, t = D.controls.target; return [c.x, c.y, c.z, t.x, t.y, t.z, D.MOV.chaise2.pivot.position.x, D.MOV.chaise2.pivot.position.z]; }"
 
 
 def edit_drag(pg, w):   # V3.55: each step waits for the page to take it (the press, then the drop saved), three tries
@@ -214,18 +216,18 @@ def edit_drag(pg, w):   # V3.55: each step waits for the page to take it (the pr
     for _ in range(3):
         x, y = pg.evaluate(EDITPT); a = pg.evaluate(EDITAT)
         T("touchStart", x, y)
-        try: pg.wait_for_function(sel + " === 'Your storage ottoman'", timeout=30000)
+        try: pg.wait_for_function(sel + " === 'Its storage chaise'", timeout=30000)
         except Exception: T("touchEnd"); got = f"the touch at {x:.0f}, {y:.0f} picked {pg.evaluate(sel)!r}"; pg.wait_for_timeout(1000); continue
         for i in range(1, 7): T("touchMove", x + 8 * i, y - 4 * i); pg.wait_for_timeout(100)
         T("touchEnd")
-        try: pg.wait_for_function("() => !!(R3D._dbg.S.layout.pouf || {}).x", timeout=60000)
+        try: pg.wait_for_function("() => !!(R3D._dbg.S.layout.chaise2 || {}).x", timeout=60000)
         except Exception: pass
         z = pg.evaluate(EDITAT)
         cam, moved = max(abs(p - q) for p, q in zip(a[:6], z[:6])), max(abs(a[6] - z[6]), abs(a[7] - z[7]))
-        got = None if cam < 1e-4 and moved > 0.05 else f"the view moved {cam:.3f} m, the ottoman {moved:.3f} m"
+        got = None if cam < 1e-4 and moved > 0.05 else f"the view moved {cam:.3f} m, the chaise {moved:.3f} m"
         break
     pg.evaluate("() => { document.getElementById('r3d-undo').click(); document.querySelector('[data-cam=orbit]').click(); document.getElementById('r3d-editbtn').click(); R3D.set({ view: 'house' }); }"); pg.wait_for_timeout(1500)
-    return [f"{w}: dragging the ottoman in Edit (Look round on): {got} (want the view still, the ottoman moved)"] if got else []
+    return [f"{w}: dragging the sofa bed's chaise in Edit (Look round on): {got} (want the view still, the chaise moved)"] if got else []
 
 
 def stick_all(pg, w):
