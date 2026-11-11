@@ -2511,7 +2511,7 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "carpet_grey": ("#6f6f73", 1.0), "red_gloss": ("#c8201e", 0.15), "red_back": ("#9d1714", 0.4), "cat": ("#bdbcb8", 1.0), "sisal": ("#cdb88f", 0.9),
     "pink": ("#e8607a", 0.8), "bathmat": ("#1c1c1e", 0.97), "pine": ("#c99a55", 0.55), "pine_dark": ("#7a5a30", 0.6), "knob": ("#7a5a30", 0.45), "shoe_black": ("#1b1b1d", 0.45), "shoe_white": ("#ecebe6", 0.5), "shoe_tan": ("#8a5a34", 0.55), "shoe_grey": ("#6b6e73", 0.75), "newel": ("#f4f3ef", 0.35), "rail_white": ("#f4f3ef", 0.35), "handle_black": ("#151517", 0.4), "bin_white": ("#f1f1ef", 0.3), "paper": ("#f7f6f2", 0.9), "monitor_back": ("#202124", 0.45), "mouse": ("#1a1a1c", 0.35), "key_dark": ("#2b2c30", 0.55), "key_pink": ("#f6cddb", 0.5),
     "book0": ("#7a2f2f", 0.8), "book1": ("#2f4a6b", 0.8), "book2": ("#d9cfb8", 0.85), "book3": ("#3c5a3a", 0.8), "book4": ("#1f1f22", 0.7), "book5": ("#b8873d", 0.8), "wardrobe": ("#f2f1ec", 0.35), "duvet": ("#efede8", 0.95), "leather": ("#1f1d1d", 0.45), "check": ("#7d7e86", 0.95),
-    # V3.65 (N113): the whites a hair below white (gloss, sanitary, the porcelain `fitting`; the bedding's colour now tints its cotton photo) so a phone shows their folds and edges
+    # V3.66 (N113): the whites a hair below white (gloss, sanitary, the porcelain `fitting`; the bedding's colour now tints its cotton photo) so a phone shows their folds and edges
     "lawn": ("#5f7043", 1.0), "paving": ("#bdb8ae", 0.95), "road": ("#59595c", 0.95), "fence": ("#6b5644", 0.9),
 }
 

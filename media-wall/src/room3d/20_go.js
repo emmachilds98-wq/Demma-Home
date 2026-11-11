@@ -15,9 +15,9 @@ const SUNCFG = { lux: 80, out: 0.5 };   // tuned on stills: the bars' shadows re
 const HTEX = {}, HI_T = new Set(["tile_w", "tile_f", "door_wood", "chalk"]);
 /* V2.56 (REAL_PLAN R3): the finishes without a photo take one of ours (build_textures.finishes): uPVC's peel, gloss paint's strokes, brushed
    metal; these keep their own colour over a white detail map (TINT) */
-const HTEX_AS = { frame_out: "upvc", door_out: "upvc", gutter: "upvc", sill_board: "upvc", skirting: "gloss", door_white: "gloss", door_cream: "gloss", newel: "gloss", rail_white: "gloss", steel: "brushed", steel_dark: "brushed" };
-const HTEX_TINT = new Set(["upvc", "gloss", "brushed"]);
-const BED_TINT = new Set(["duvet", "pillow"]);   // V3.65 (N113): the bedding's own colour over its cotton photo, a hair below white (it drew the photo at full white: clipped on a phone)
+const HTEX_AS = { frame_out: "upvc", door_out: "upvc", gutter: "upvc", sill_board: "upvc", skirting: "gloss", door_white: "joinery", door_cream: "joinery", door_wood: "joinery", newel: "joinery", rail_white: "gloss", steel: "brushed", steel_dark: "brushed" };
+const HTEX_TINT = new Set(["upvc", "gloss", "brushed", "joinery"]);   // N111: the doors' painted timber, its grain up the leaf (the skirting's strokes along it, gloss)
+const BED_TINT = new Set(["duvet", "pillow"]);   // V3.66 (N113): the bedding's own colour over its cotton photo, a hair below white (it drew the photo at full white: clipped on a phone)
 /* V3.36 (N87): the soft things still flat colour in their own colours over the cotton's white, each with a relief of its kind: the
    tapestry's dark border and the roller blinds woven as the chair-bed, the music room's felt panels knitted, the bath mats' pile as the
    carpet's (the rug, the fabric boxes and the tapestry keep their drawn weaves, T below) */
