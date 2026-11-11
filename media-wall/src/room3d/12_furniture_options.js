@@ -30,9 +30,8 @@ function setState() {
   S.site = "C"; S.cab = "compact"; if (S.cabw !== "80") S.cabw = "90";   // v33, client: "the compact cabinet is our only choice for the table now"
   if (cab && cab.userData.w !== cabC().top[0]) rebuildCab();
   G.unit_in.visible = !S.drawers; G.unit_out.visible = S.drawers;
-  const b2 = `B_${S.dining === "folded" ? "folded" : "six"}`;   // v26: C lights like B
-  const b2k = b2 + fixKey("bar2"), b1k = fixKey("bar1");
-  if (built.bar2 !== b2k) { if (bar2) drop(bar2, lights.bar2); bar2 = buildBar(R.BAR2[b2], lights.bar2, "bar2"); built.bar2 = b2k; }
+  const b2k = fixKey("bar2"), b1k = fixKey("bar1");   // N120: bar 2's heads are the same whatever the table does (v17)
+  if (built.bar2 !== b2k) { if (bar2) drop(bar2, lights.bar2); bar2 = buildBar(R.BAR2, lights.bar2, "bar2"); built.bar2 = b2k; }
   if (bar1 && built.bar1 !== b1k) { drop(bar1, lights.bar1); bar1 = buildBar(R.BAR1, lights.bar1, "bar1"); }   // v38: turned or aimed
   built.bar1 = b1k;
   const lk = S.lamp + JSON.stringify(S.layout.lamp || {}) + fixKey("lamp");

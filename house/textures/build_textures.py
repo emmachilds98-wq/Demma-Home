@@ -285,7 +285,8 @@ def tiles():
 # orange peel; gloss paint's (the skirting, the doors, the newel and rail) orange peel with the brush's strokes along it; brushed metal's
 # grain (the steel); these three are white detail maps (the viewer keeps each material's own colour over them, 20_go.js TINT). The
 # dormer's cheeks, as the back photo: dark-stained timber weatherboards 15 high, each lapped over the one below, the grain along them.
-MADE = {"upvc": (0.5, 512, "peel"), "gloss": (0.5, 512, "paint"), "brushed": (0.3, 512, "brushed"), "hung": (0.6, 1024, "boards")}
+MADE = {"upvc": (0.5, 512, "peel"), "gloss": (0.5, 512, "paint"), "brushed": (0.3, 512, "brushed"), "hung": (0.6, 1024, "boards"),
+        "joinery": (0.6, 512, "timber")}   # N111: the doors and their frames: painted timber, the grain's lines under the satin
 
 
 def finishes():
@@ -300,6 +301,13 @@ def finishes():
         elif kind == "paint":
             st = fbm(px, 53, 2, 6, 40)                                         # the brush's strokes, long along the board
             h = peel * 0.01 + st * 0.02; tone = 1 - 0.015 * st; r = 0.85 + (st - 0.5) * 0.1
+        elif kind == "timber":                                                 # growth lines up the board (a leaf's v), wavering, filled by the paint
+            import numpy as np
+            x = np.mgrid[0:px, 0:px][1].astype(np.float32) / px
+            w = fbm(px, 56, 1, 4, 3).T                                         # the lines' slow wander (wraps: whole cycles a picture)
+            ln = (0.5 + 0.5 * np.cos(2 * np.pi * (14 * x + 1.5 * w))) ** 6     # 14 thin ridges a picture, ~4 cm apart, wide flats
+            st = fbm(px, 57, 2, 6, 40).T                                       # the brush, along them
+            h = peel * 0.008 + st * 0.012 + ln * 0.035; tone = 1 - 0.012 * st - 0.01 * ln; r = 0.8 + (st - 0.5) * 0.08 - 0.04 * ln
         elif kind == "brushed":
             st = fbm(px, 54, 1, 7, 160)                                        # fine grain one way, a hair deep
             h = st * 0.006; tone = 0.97 + 0.05 * st; r = 0.85 + (st - 0.5) * 0.25
