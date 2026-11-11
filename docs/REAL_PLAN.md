@@ -469,7 +469,7 @@ it again; review it, or finish it if its PR has gone quiet (merge `main` in, tak
 | N117 | The phone's labels and stick | 17 G | PR #228 |
 | N119 | Plan leads with the whole house | 18 | Done V3.61 |
 | N120 | Lean code | 18 | PR #223 (draft) |
-| N121 | STATE under 150 lines, HANDOVER brought to now | 18 | **Free**, docs only: take it last, after the rows above merge |
+| N121 | STATE under 150 lines, HANDOVER brought to now | 18 | HANDOVER done (thread "Review site and plan next upgrades"); STATE last, after the rows above merge |
 | N123 | No shader built mid-step on the first walk | the phone's thread | PR #230 |
 | (PC) | A PC that hides its card's name drawn as a card | the PC's thread | PR #220. Its title says "N118" too: a clash with section 18's N118 (done V3.60). Call it N124 when it merges |
 | N31 | KTX2 photos | 13 | PR #133: paused, **do not merge** till Emma says yes |

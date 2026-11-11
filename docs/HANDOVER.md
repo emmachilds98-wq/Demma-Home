@@ -1,4 +1,4 @@
-# Handover (8 Nov 2026, V3.03)
+# Handover (11 Nov 2026, V3.62)
 
 **Now (11 Nov 2026, V3.60):** what's open and who has it is `docs/REAL_PLAN.md` section 19; this page is brought to now by N121.
 
@@ -6,14 +6,14 @@ Emma stopped work on 8 Nov 2026 ("stop and handover for a new set of agents and 
 did once on 7 Nov at V2.74. Everything a new team needs is in this repo; nothing lives only outside GitHub. Read in this order:
 1. `CLAUDE.md`: the client's rules. **Privacy first: the address is never written anywhere** (files, commits, PRs, pictures).
 2. This page: how it runs, what's open, what waits on Emma.
-3. `docs/STATE.md`: what's true now. `docs/REAL_PLAN.md` section 9: every task's state.
+3. `docs/REAL_PLAN.md` section 19: every open row and who has it (start there). `docs/STATE.md`: what's true now.
 4. `docs/NOTES.md`: what the threads learned (the sandbox, merging, speed, photo fits, where each feature lives).
 5. As needed: `docs/DECISIONS.md` (the client's choices in force), `house/HOUSE.md` (house facts), `docs/HISTORY.md` (every version).
 
 ## What it is
 Emma and Dave's whole house in 3D, in its upgraded state, to plan and track the upgrades. The 3D fills the screen and is the site;
 everything floats over it as pills and panels (the old design: no dashboards, side menus or lists of rooms). It must run well on an
-iPhone 15 Pro and an RTX 5070 PC (and Dave's iPhone 16 and RTX 3060). Live: https://emmachilds98-wq.github.io/Demma-Home/ (V3.03).
+iPhone 15 Pro and an RTX 5070 PC (and Dave's iPhone 16 and RTX 3060). Live: https://emmachilds98-wq.github.io/Demma-Home/ (V3.62).
 
 ## Architecture (one line a part)
 - `house/survey_data.py` (every size, with its source) → `house/model.py` (geometry, each piece an `o.item`) → `house/export_house.py`
@@ -49,53 +49,32 @@ CI takes about 20 minutes.
 - Draft PRs; the client's words quoted at the top; the template's sections (`.github/pull_request_template.md`); `checks.py`'s lines pasted.
 - New guesses get a Measure row (`house/measure.py`); new pieces an `o.item(...)`; every size a cited source (`fit.SOURCES`).
 
-## What was done since the last handover (sections 10–12 of `docs/REAL_PLAN.md`)
-| Version | PR | Task |
+## What was done since 8 Nov (sections 13–18 of `docs/REAL_PLAN.md`; every line in `docs/HISTORY.md`)
+| Versions | Section | What |
 |---|---|---|
-| V2.75–V2.79 | #121, #122, #128–#130 | The outside (N21), fewer buttons (N20), wallpaper (N29), the plan's code trimmed (N28), fewer shaders (N27); #131 the speed budget (N26) |
-| V2.80, V2.92 | #141, #142 | A lighter start (N25): icon subset, sheets on first need, fonts that don't block |
-| V2.82 | #139 | Lighter photo files (N32) |
-| V2.83 | #136 | The version in Plan is a refresh button |
-| V2.87 | #144 | Room to room with no shader built (N35) |
-| V2.88 | #143 | Phone and PC look-over (N33): 44 px taps |
-| V2.89, V2.93 | #138, #147 | The back garden as its photos (N30), four garden ideas to look at |
-| V2.90, V2.91 | #145, #146 | The bathroom and the master beside their photos (N34), soft bedding (N36) |
-| V2.94 | #148 | The stairwells: both flights 85, the living room door 67 (N38) |
-| V2.95 | #153 | Lean 3D code (N41) |
-| V2.96 | #151 | Back goes back (N39) |
-| V2.97 | #152 | Keys and names on a PC (N42) |
-| V2.98 | #155 | Fewer draws for the house, 287 to 188 (N37) |
-| V2.99 | #149 | No second front door (the bin cupboards' doors) |
-| V3.00 | #156 | Opens fast on a weak signal (N43) |
-| V3.01 | #157 | The changes' costs whole (N40) |
-| V3.02 | #158 | Add a piece made real: 28 catalogue pieces, each cited (N45) |
-| V3.03 | #159 | The kitchen and the hall beside their photos (N44); the kitchen's door leaf removed |
-Docs: #134 (the last handover), #135 (the flaky site check), #137, #140, #150, #154 (plan sections). Skipped numbers: V2.81, V2.84–V2.86.
+| V3.04–V3.13 | 13, the new team | One shade pass (N46), lean code (N48), speed in Send (N50), Edit drags only the piece (N52), map moves over the house and a room's Above (N53, N55), the PC warmed into a room (N54), office, landing, WC beside their photos (N49), look-over 2 (N51), fewer living room draws (N47) |
+| V3.14–V3.21 | 14, finishes | Upgrade floors (N56), the stick in every view (N59), the version on the first screen (N60), one front door and the hall's view down (N61, N62), panelling (N57), one light (N63), three more pieces (N58), the breast and window corner swapped (N64) |
+| V3.22–V3.29 | 15, PC fluid, panels | Plan · Build · Buy tidied (N67), no freeze into a room (N65), room cards (N68), the wheel eased (N66), PC framing (N69), moving as a person (N70), smooth turns (N71) |
+| V3.30–V3.54 | 16, every room as good | Rooms' light, surfaces, sun, evening (N80, N82, N85, N89), finishes and fabrics (N84, N86, N87, N94, N95, N98, N102, N104, N105), clear stairwells (N88, N101), the stair curtain (N72, N99), smooth PC walking (N91, N97, N103), one light through the house (N92), a quiet GPU at rest (N93), the stand-in street (N81), walk over furniture (N100), the phone smoother (N106) |
+| V3.55–V3.62 | 17–18 | Edit check steady, no step at doors on a phone (N122), mirrors and always-on lights (N107, N108), room in the photo budget (N109, 9.5 to 7.9 MB), the outside (N114), progress on every device (N118), Plan leads with the whole house (N119), a PC hiding its card's name drawn with a card (N124) |
 
-## Open at this handover
-| PR / branch | What | To finish |
-|---|---|---|
-| #133 `claude/project-thread-tmpz6b` | N31 KTX2 photos, build side only. WIP, **do not merge** | Emma's OK; then the workflow step that builds basisu 1.16.4 (commit 900e40fb5d25), the page's `KTX2Loader` with JPEG fallback (`docs/NOTES.md` section 3), merge main in, a version |
-No other PR is open and no issue is open.
-**Stale branches** (left in place: deleting them needs the owner's say). 38 `claude/*` branches have every commit in `main`
-(`git branch -r --merged origin/main` lists them): safe to delete. Two belong to closed PRs whose work landed another way:
-`claude/project-thread-m2wdin` (#127, the duplicate of #122) and `claude/project-thread-1fxdc5` (#132, folded into the last handover).
-Five from before V2.0 hold commits not in `main`, work since redone or dropped: `claude/cool-darwin-jq4pu4` (V1.27),
-`claude/sweet-noether-y2q5qh` (V1.25), `claude/upgrade-review` (V1.37), `claude/cool-hypatia-lbng98` (the finishes plan at V2.2),
-`claude/eloquent-ritchie-pkuk5w` (WIP V2.24, taking a piece out: since done as R6). Look, then delete. Keep `claude/project-thread-tmpz6b` (#133).
+## Open now (11 Nov 2026)
+`docs/REAL_PLAN.md` section 19 is the live list. At this writing: #223 lean code (N120), #226 shade where walls meet (N112), #227 no black
+void behind Above (N115), #228 the phone's labels and stick (N117), #229 whites (N113), #230 no shader mid-step on the first walk (N123),
+#231 lit bulbs (N116), #232 quieter artex (N110); N111 (joinery) starts after N110; N121 (this file and `STATE.md`) goes last.
+#133 (KTX2, N31) stays paused: **do not merge** till Emma says yes.
+**Stale branches:** `git branch -r --merged origin/main` lists the `claude/*` branches with every commit in `main` (40 at this writing):
+safe to delete. Others whose PR merged through another branch or closed show as unmerged; check the PR before deleting. Deleting needs
+Emma's say. Keep `claude/project-thread-tmpz6b` (#133).
 
 ## Waiting on Emma
-1. **The kitchen's door:** V3.03 took the leaf out (no door in any photo). Is there a door? If so, its width and which way it opens.
-2. **KTX2 (#133):** she picked "let CI build it" on 7 Nov; confirm before the workflow builds the encoder.
-3. **The living room door's width:** drawn 67 cm since V2.94 to fit beside the 85 cm stairs. A tape measure decides.
-4. **`?perf` screenshots** (the corner box after opening the house once) from the iPhone 15 Pro and the RTX 5070 PC (N10).
-5. **Dark panels** on a dark device, or keep the cream (the old design) (N9's rest).
-6. **A photo of the microwave**, if there is one (N6 found none).
-The older list (measurements still guessed, smaller confirmations) is in `docs/STATE.md`, "Open with the client", and in Measure on the site.
+1. **KTX2 (#133):** confirm before the workflow builds the encoder (it would free most of the photo budget).
+2. **Speed from her devices:** on the iPhone 15 Pro and the RTX 5070 PC, open the house, move a moment, then Measure → Send.
+3. **Measurements:** the living room door's width (drawn 67), the bathroom door (drawn 68, the photo reads about 61), and the rest in Measure.
+4. **Confirm:** the kitchen has no door (V3.03); what's across the road (the street is a stand-in, N81); a microwave photo; dark panels or the cream.
+The full list: `docs/STATE.md` "Open with the client".
 
-## Suggested next work for the new team
-**Taken up 8 Nov 2026:** the new team's round is `docs/REAL_PLAN.md` section 13 (N46–N51 side by side, N31 on Emma's yes).
-1. Ask Emma the six questions above; act on her answers (each one small PR).
-2. N31 (KTX2) on her OK, from #133.
-3. With her `?perf` numbers: the living room's own draws and the GTAO pass (`docs/NOTES.md` section 3), then the code trims listed there.
-4. The older photo fits (office, landing, WC) again with the photo's own lens (`compare.TRUE_FOV`), as N44 did for the kitchen and hall.
+## Suggested next work
+1. Merge section 17's open PRs in turn (each merges `main` in and takes the next free version), then N111, then N121.
+2. KTX2 on Emma's yes, from #133. 3. With her Send numbers: the living room's own draws or the GTAO pass (`docs/NOTES.md` section 3).
+4. New rounds: a numbered section in `docs/REAL_PLAN.md`, rows that each own their files, and section 19's table kept current.
