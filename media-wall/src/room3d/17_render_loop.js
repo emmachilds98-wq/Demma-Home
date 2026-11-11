@@ -142,7 +142,7 @@ function frame(now) {
     if (t) { const c = gl.getContext(); c.readPixels(0, 0, 1, 1, c.RGBA, c.UNSIGNED_BYTE, PX); probeT.push(performance.now() - t); probe--; if (!probe) autoQuality(); }
   }
 }
-/* V3.55 (N107), the phone smoother: walking through a door moves the room's lights, so every shadow is drawn again in that one frame:
+/* V3.56 (N122), the phone smoother: walking through a door moves the room's lights, so every shadow is drawn again in that one frame:
    3 lights' 2048 maps, 784 draws against a frame's 241 on the iPhone path, a step at each doorway. On a phone, while you move, the
    shadows are redrawn a light a frame instead (the others keep last frame's for a 60th of a second); still, all at once as before. The sun's
    own pass is most of it (about 390 draws), so the doorway's frame goes 876 draws to 626 and the next two about 360 */
