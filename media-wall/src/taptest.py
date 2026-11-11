@@ -61,10 +61,13 @@ def run(w, h):
         tap([444, 45, -150], "the cabinet"); press("Show the 90-wide"); print("   cabw:", S("cabw"))
         pg.evaluate("() => R3D.set({cab: 'compact', view: 'wall', drawers: false})"); pg.wait_for_timeout(600)
         tap([60, 30, 12], "the media wall's base"); press("Pull the drawers out"); print("   drawers:", S("drawers"))
+        # V3.73: close to the lamp (by the sofa bed's arm now: from the whole room's view its shades are a few pixels, and CI's slow frames missed them)
         pg.evaluate("() => R3D.set({view: 'room'})"); pg.wait_for_timeout(600)
+        pg.evaluate("() => R3D.set({aim: {eye: [215, 150, -170], at: [296, 120, -282], fov: 55}})"); pg.wait_for_timeout(800)
         # V3.73: the lamp's top shade (the box's centre was air beside its thin pole once V3.73 moved it: the tap fell through to the rug)
         lampxy = pg.evaluate("() => { const { lights, THREE } = R3D._dbg; const l = lights.lamp[0], p = l.position.clone().addScaledVector(l.target.position.clone().sub(l.position).normalize(), -0.1); return [-p.x * 100, p.y * 100, p.z * 100]; }")
         tap(lampxy, "the lamp"); press("Turn it")
+        pg.evaluate("() => R3D.set({view: 'room'})"); pg.wait_for_timeout(600)
         print("   lamp level:", pg.evaluate("() => R3D._dbg.S.lv.lamp"))
         # v38: a spot bar turns as a whole, and each head has its own switch, dimmer, aim and colour
         pos = lambda: pg.evaluate("() => R3D._dbg.lights.bar1.map(l => [Math.round(-l.position.x * 100), Math.round(l.position.z * 100)])")

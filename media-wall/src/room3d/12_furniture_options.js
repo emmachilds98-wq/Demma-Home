@@ -23,6 +23,9 @@ function buildFurniture() {
    in the middle and pinches at its seams (cushGeo), a soft chenille sheen, piping along the seats' fronts, button tufts as in the listing's
    photo, the headrests on their brackets, fabric pull loops, the bed's black steel frame once it's out, the chaise's tab and gas struts.
    Every part of a group is one draw per material (mergeStatic); the tufts are one shape a group */
+/* V3.73: how far the shown sofa's open end is from your sofa's (the sofa bed's chaise reaches 62 further): what stands at the open end
+   (the C-table, the floor plant, the seagrass basket) moves with it */
+function openEndShift() { return S.sofa === "bed" && R.SOFABED ? R.SOFABED.end_z - R.SOFA.end : 0; }
 function cushGeo(w, h, d, crown = 1.2, bulge = 0.8, r = 3) {     // cm: the top's crown, the sides' swell, the edges' radius
   const n = 10, m = 3, g = new THREE.BoxGeometry(1, 1, 1, n, n, n), p = g.attributes.position, H = [w / 2 * M, h / 2 * M, d / 2 * M];
   const rr = Math.min(r * M, ...H.map(v => v * 0.45)), I = H.map(v => v - rr), cl = v => Math.max(-1, Math.min(1, v));
@@ -163,7 +166,7 @@ function setState() {
   const lk = S.lamp + JSON.stringify(S.layout.lamp || {}) + fixKey("lamp");
   if (built.lamp !== lk) { buildLamp(); built.lamp = lk; }
   if (G.now_ledge) G.now_ledge.visible = !(S.plants === "breast" && S.sugg.alcoveshelves) && !(S.sugg.barcase && caseBreast());   // V3.14: it moves with the records; v34: the drinks cabinet takes its place
-  if (IDEA_G.ctable && R.SOFABED) IDEA_G.ctable.position.z = (S.sofa === "bed" ? R.SOFABED.end_z - R.SOFA.end : 0) * M;   // V3.73: the C-table at the shown sofa's open end
+  if (IDEA_G.ctable) IDEA_G.ctable.position.z = openEndShift() * M;              // V3.73: the C-table at the shown sofa's open end
   placeChairs();                                                                   // v20: the chair cupboard, its doors, the chairs in it
   placeWork();                                                                     // v34: the blind, the records, the trolley
   applyDecor();                                                                    // v20: the rug, cushions, curtains, the case's fill and frame

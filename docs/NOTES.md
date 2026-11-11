@@ -161,7 +161,8 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   lid: true, view: "room"})`, then the free camera (section 1) and `R3D.still(w, h)`.
   V3.73: true to the item: `sec_d` 165 (the corner section's side back), `d` 230 with the chaise (`end_z` -66); the bed's anim runs
   three stages on one `WORK.sbed` (0–0.5 out past its rest by `bed_over`, 0.5–0.8 the top lifts, 0.8–1 back against the seats), so its
-  tween and the show's acts are linear. The C-table follows the shown sofa's end (`setState`), the blanket basket's spot is `z` or `z_old`.
+  tween and the show's acts are linear. What stands at the open end follows the shown sofa (`12` `openEndShift()`: the C-table, the floor
+  plant, the seagrass basket; the blanket basket's spot is `z` or `z_old`). The tap test taps the red lamp close up, by its top shade.
   It's the default (`SOFABED["default"]` → `DEF.sofa`, a saved room moved once by `S.v373`). Placed round it in `geometry.py` just
   after `SOFABED`: `COFFEE` (40 off the seats), `SOFA_POUF` (beside the table, for your sofa), the lamp's "sofa" spot, `LAMP_READ` (the
   lamp's purple head, `11_lights.js`), `SOFABED["cof_out"]` (how far the table steps for the open bed, read by `04`). `clash.py` knows the
