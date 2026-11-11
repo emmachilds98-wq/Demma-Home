@@ -38,7 +38,7 @@ PX = {}                                                          # sizes other t
 # away): a floor is 1.6 m under the eye (1 mm), the soft things a metre off (0.65 mm). These were twice as fine (0.25-0.5 mm a pixel); the
 # rest stay, and the living room's oak keeps its 2048 (the client asked for it, V1.11)
 PX.update(carpet=512, carpet_grey=512, check=512, lycksele=512, duvet=512)
-# V3.56 (REAL_PLAN N109): room in the photo budget: one picture of a key at a size of its own, where no view comes near enough to need
+# V3.57 (REAL_PLAN N109): room in the photo budget: one picture of a key at a size of its own, where no view comes near enough to need
 # more (the road, never closer than the drive: 5.9 mm a pixel; the lawn's and the brick's relief, which a standing eye reads at 2-4 m;
 # the living room's curtain and sofa weave relief, a hair at a metre): key_kind: px
 PX.update(road_map=512, road_nor=512, lawn_nor=512, brick_nor=512, lr_hessian_nor=512, lr_cord_nor=512)
