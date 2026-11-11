@@ -2062,83 +2062,76 @@ def piece_shade(o, floor):
     o.shade = out
 
 
-EDGE_FACE = {"paint", "stairpaint", "stone", "chipboard", "brick", "brick_buff", "party", "skirting"}   # what a room's walls show
-EDGE_SKIP = {"living", "first_stairs", "secret", "kitchen_cupboard"}   # the living room draws its own; the stairwell; the secret room
+EDGE_M = {"paint", "brick", "party", "metro"}                       # the room's side of a wall
+EDGE_W = dict(floor=22.0, ceil=20.0, corner=18.0)                   # how far each band fades (cm): up the wall, down it, out of a corner
 
 
 def edge_shade(o, floor):
-    """V3.64 (REAL_PLAN N112): the shade where a room's surfaces meet, as GTAO gives the living room on a big card: on the walls a soft
-    band down from the ceiling, up from the floor (on the skirting where there is one) and out from each corner where two walls meet,
-    worked out once from the walls as built (doors, openings and the stairwells left clear), so phones pay nothing. Each band
-    [ax, ay, az, bx, by, bz, dx, dy, dz, k]: the crease a-b, the way and width the shade fades (d); k 1 the ceiling's (off with it)."""
-    fy, top_ = FLOOR_Y[floor], FLOOR_Y[floor] + CEIL
-    WL = stair_wells(); hf = [h for h in WL["floor"] if abs(h[4] - fy) < 2]; hc = [h for h in WL["ceil"] if abs(h[4] - top_) < 2]
-    inh = lambda hs, x, z: any(h[0] - 1 < x < h[1] + 1 and h[2] - 1 < z < h[3] + 1 for h in hs)
-    boxes = [(m == "skirting", b) for m, bs in o.boxes.items() if m in EDGE_FACE for b in bs]
-    out = []
-
-    def column(axis, line, n, a):
-        """The wall at a along this edge: its face, its top, the bottom of its top run, and the face at its foot (skirting or not)."""
-        A, F = (0, 2) if axis == "x" else (2, 0)
-        hit = [((b[F + 3] if n > 0 else b[F]), sk, b) for sk, b in boxes if b[A] - 0.3 <= a <= b[A + 3] + 0.3]
-        hit = [h for h in hit if -2 <= (h[0] - line) * n <= 12]
-        wall = [h for h in hit if not h[1]]
-        if not wall:
-            return None
-        face = max(wall, key=lambda h: h[0] * n)[0]
-        runs = []
-        for y0, y1 in sorted((b[1], b[4]) for f, _, b in wall if abs(f - face) < 1.5):
-            if runs and y0 <= runs[-1][1] + 0.6: runs[-1][1] = max(runs[-1][1], y1)
-            else: runs.append([y0, y1])
-        foot = [h for h in hit if h[2][1] <= fy + 1.5 and h[2][4] > fy + 3]
-        ff = max(foot, key=lambda h: h[0] * n) if foot else None
-        return dict(face=face, top=runs[-1][1], low=runs[-1][0], foot=(ff[0], ff[1]) if ff else None)
-
-    def runs(st, vals):
-        seg = None
-        for a, v in zip(st, vals):
-            if seg and (v is None or abs(v[0] - seg[2][0]) > 0.6 or abs(v[1] - seg[2][1]) > 0.6):
-                if seg[1] - seg[0] > 6: yield seg
-                seg = None
-            if v is not None:
-                seg = [seg[0], a, v] if seg else [a, a, v]
-        if seg and seg[1] - seg[0] > 6: yield seg
-
+    """V3.63 (N112): the shade where a room's surfaces meet, on its walls: a band up each wall from the floor (on the skirting's face where
+    there is one), down it from a flat ceiling, and up each corner where two walls meet, from the walls as built (so not across a door,
+    a stairwell or a piece of the same room). The floor's and ceiling's own bands are houseShade's. [ax, ay, az, bx, by, bz, vx, vy, vz,
+    w]: the dark line a to b, fading w cm along v (20_go.js edgeShade). The measured living room draws its own walls: none here."""
+    fy, top, wl = FLOOR_Y[floor], FLOOR_Y[floor] + CEIL, stair_wells()
+    kind = lambda t: ITEMS.get(o.tags[t], {}).get("kind") if t >= 0 else None
+    walls = [b for m in EDGE_M for b, t in zip(o.boxes.get(m, []), o.bt.get(m, [])) if kind(t) in (None, "door", "window")]
+    skirts = [b for b, t in zip(o.boxes.get("skirting", []), o.bt.get("skirting", [])) if b[4] - b[1] > 5]
+    def union(iv):
+        out = []
+        for a, b, f in sorted(iv):
+            if out and a <= out[-1][1] + 0.5: out[-1][1] = max(out[-1][1], b)
+            else: out.append([a, b, f])
+        return out
+    def minus(iv, holes):
+        for h0, h1 in holes:
+            iv = [s for a, b, f in iv for s in ([a, min(b, h0), f], [max(a, h1), b, f]) if s[1] - s[0] > 2]
+        return iv
+    res = []
     for r in rooms(floor):
-        if r["id"] in EDGE_SKIP or r["x1"] - r["x0"] < 40 or r["z1"] - r["z0"] < 40:
+        if r["id"] in VOID or r["room"] == "living":
             continue
-        cols = {}
-        for axis, line, n, a0, a1 in (("x", r["z0"], 1, r["x0"], r["x1"]), ("x", r["z1"], -1, r["x0"], r["x1"]),
-                                       ("z", r["x0"], 1, r["z0"], r["z1"]), ("z", r["x1"], -1, r["z0"], r["z1"])):
-            k = max(2, int((a1 - a0) // 2)); st = [a0 + (a1 - a0) * i / k for i in range(k + 1)]
-            cs = [column(axis, line, n, a) for a in st]
-            cols[(axis, line)] = (n, st, cs)
-            pt = (lambda a, y, f: [a, y, f]) if axis == "x" else (lambda a, y, f: [f, y, a])
-            xz = (lambda a, f: (a, f)) if axis == "x" else (lambda a, f: (f, a))
-            # down from the ceiling: a wall's full height whose top meets a ceiling (not a stairwell's opening)
-            hv = [(c["face"], c["top"]) if c and c["top"] - fy >= 150 and c["top"] <= top_ + 3 and c["top"] - c["low"] >= 22
-                  and not inh(hc, *xz(a, c["face"] + n * 8)) else None for a, c in zip(st, cs)]
-            for a, b, (f, y) in runs(st, hv):
-                out.append([*pt(a, y - 0.3, f + n * 0.3), *pt(b, y - 0.3, f + n * 0.3), 0, -28, 0, 1])
-            # up from the floor, on the skirting's face where there's one (to its top), else the wall's
-            fv = [c["foot"] if c and c["foot"] and not inh(hf, *xz(a, c["foot"][0] + n * 8)) else None for a, c in zip(st, cs)]
-            for a, b, (f, sk) in runs(st, fv):
-                out.append([*pt(a, fy + 0.3, f + n * 0.3), *pt(b, fy + 0.3, f + n * 0.3), 0, 9.5 if sk else 20, 0, 0])
-        # the corners: both walls whole from floor to ceiling for 10 cm out from where they meet; a band up each, out from the corner
-        for lz in (r["z0"], r["z1"]):
-            for lx in (r["x0"], r["x1"]):
-                nz_, sx, cx_ = cols[("x", lz)]; nx_, sz, cz_ = cols[("z", lx)]
-                A = [c for a, c in zip(sx, cx_) if abs(a - lx) <= 10]     # the wall along x, near this corner
-                B = [c for a, c in zip(sz, cz_) if abs(a - lz) <= 10]     # the wall along z, near it
-                if not A or not B or not all(c and c["low"] <= fy + 1.5 and c["top"] - fy >= 150 for c in A + B):
-                    continue
-                fz, fx = A[0]["face"], B[0]["face"]
-                if any(abs(c["face"] - fz) > 0.6 for c in A) or any(abs(c["face"] - fx) > 0.6 for c in B) or inh(hf, fx + nx_ * 8, fz + nz_ * 8):
-                    continue
-                ty = min(c["top"] for c in A + B) - 0.3
-                out.append([fx, fy + 0.3, fz + nz_ * 0.3, fx, ty, fz + nz_ * 0.3, nx_ * 24, 0, 0, 0])   # on the wall along x
-                out.append([fx + nx_ * 0.3, fy + 0.3, fz, fx + nx_ * 0.3, ty, fz, 0, 0, nz_ * 24, 0])   # on the wall along z
-    o.edge = [[round(v, 1) for v in q[:9]] + [q[9]] for q in out]
+        x0, x1, z0, z1 = r["x0"], r["x1"], r["z0"], r["z1"]
+        side = {}
+        # (name, the face's index in a box, the room's edge, inward, the along indices, the room's span along it)
+        for nm, fi, e, n, (ai, bi), (s0, s1) in (("x0", 3, x0, 1, (2, 5), (z0, z1)), ("x1", 0, x1, -1, (2, 5), (z0, z1)),
+                                                  ("z0", 5, z0, 1, (0, 3), (x0, x1)), ("z1", 2, z1, -1, (0, 3), (x0, x1))):
+            on = lambda b, lo=-1.6, hi=0.8: lo < (b[fi] - e) * n < hi and b[bi] > s0 + 0.5 and b[ai] < s1 - 0.5
+            span = lambda b: [max(b[ai], s0), min(b[bi], s1), b[fi]]
+            W = [b for b in walls if on(b)]
+            low = union([span(b) for b in W if b[1] <= fy + 1 and b[4] >= fy + 20])
+            hi_ = union([span(b) for b in W if b[4] >= top - 1 and b[1] <= top - 20])
+            sk = union([span(b) for b in skirts if on(b, -1.6, 4) and b[1] <= fy + 1])
+            wf = [h for h in wl["floor"] if abs(h[4] - fy) < 2]; wc = [h for h in wl["ceil"] if abs(h[4] - top) < 2]
+            cut = lambda hs: [((h[2], h[3]) if fi in (0, 3) else (h[0], h[1])) for h in hs
+                              if ((h[0] - 2 <= e <= h[1] + 2) if fi in (0, 3) else (h[2] - 2 <= e <= h[3] + 2))]
+            low, hi_ = minus(low, cut(wf)), minus(hi_, cut(wc))
+            side[nm] = dict(fi=fi, n=n, low=low, sk=sk, W=W, ai=ai, bi=bi)
+            P = lambda u, y, f: [f + n * 0.3, y, u] if fi in (0, 3) else [u, y, f + n * 0.3]
+            v = [n, 0, 0] if fi in (0, 3) else [0, 0, n]
+            for a, b, f in minus(low, [(a, b) for a, b, _ in sk]):
+                res.append(P(a, fy, f) + P(b, fy, f) + [0, 1, 0, EDGE_W["floor"]])
+            for a, b, f in sk:                                        # on the skirting's face, over its height
+                if any(a < q1 and q0 < b for q0, q1, _ in low):
+                    res.append(P(a, fy, f) + P(b, fy, f) + [0, 1, 0, SKIRT_H - 2.5])
+            for a, b, f in hi_:
+                res.append(P(a, top, f) + P(b, top, f) + [0, -1, 0, EDGE_W["ceil"]])
+        def reach(s, at):                                              # how high a side's wall stands unbroken at `at` along it
+            y = fy
+            for b in sorted((b for b in s["W"] if b[s["ai"]] <= at + 2 and b[s["bi"]] >= at - 2), key=lambda b: b[1]):
+                if b[1] <= y + 1: y = max(y, b[4])
+            return min(y, top)
+        for xs, zs in (("x0", "z0"), ("x0", "z1"), ("x1", "z0"), ("x1", "z1")):
+            A, B = side[xs], side[zs]                                  # A: the wall along z (x = const), B: along x
+            cz, cx = (z0 if zs == "z0" else z1), (x0 if xs == "x0" else x1)
+            ia, ib = [q for q in A["low"] if q[0] - 2 <= cz <= q[1] + 2], [q for q in B["low"] if q[0] - 2 <= cx <= q[1] + 2]
+            if not ia or not ib:
+                continue
+            fa, fb = ia[0][2], ib[0][2]
+            h = min(reach(A, cz), reach(B, cx))
+            if h - fy < 60:
+                continue
+            res.append([fa + A["n"] * 0.3, fy, fb, fa + A["n"] * 0.3, h, fb, 0, 0, B["n"], EDGE_W["corner"]])   # on A, out from B
+            res.append([fa, fy, fb + B["n"] * 0.3, fa, h, fb + B["n"] * 0.3, A["n"], 0, 0, EDGE_W["corner"]])   # on B, out from A
+    o.edge = [[round(v, 1) for v in q] for q in res]
 
 
 def radiator(o, axis, wall, out, a0, a1, y0, y1):

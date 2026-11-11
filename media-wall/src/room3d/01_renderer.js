@@ -205,7 +205,7 @@ function geoWarm(list) {
   for (const o of list) if (o.isMesh && o.geometry && !GEO_DONE.has(o.geometry) && o.onBeforeRender === THREE.Object3D.prototype.onBeforeRender) { GEO_DONE.add(o.geometry); GEO_Q.push(o); }
   if (GEO_Q.length && !geoT) geoT = setTimeout(geoStep, 0);
 }
-/* V3.67 (N123), the phone smoother: the plain material's shader differs by a shape's kind (its UVs, its colours, ...), so the first
+/* V3.69 (N123), the phone smoother: the plain material's shader differs by a shape's kind (its UVs, its colours, ...), so the first
    shapes of each kind built one on the spot (3 on the first walk on the iPhone path: a stall each on a phone). Each queued shape's
    variant is now asked for first beside the page (compileAsync: in parallel on the iPhone), then drawn */
 const GEO_C = new WeakSet(); let geoP = null;
@@ -279,7 +279,7 @@ function aoComposer(w, h, pr) {
   return AO.c;
 }
 function draw() {                     // a frame: through the composer with AO, or straight to the screen
-  backdrop();   // V3.68 (N115): Above and On its own over the cream, not black (19_view_controls.js)
+  backdrop();   // V3.64 (N115): Above and On its own over the cream, not black (19_view_controls.js)
   if (postLive()) { const sz = gl.getSize(new THREE.Vector2()); if (!AO.c || AO.w !== sz.x || AO.h !== sz.y || AO.pr !== gl.getPixelRatio()) { aoComposer(sz.x, sz.y, gl.getPixelRatio()); AO.w = sz.x; AO.h = sz.y; AO.pr = gl.getPixelRatio(); }
     const glow = AO.b.enabled; if ((dragLite() && lowRes) || moveLite) AO.b.enabled = false;   // V2.73 (N17): no glow on a phone while it moves (its 10 passes); back as it stops; V3.39: a PC's too (moveLite)
     AO.g.enabled = aoLive(); if (AO.g.depthTexture !== AO.c.readBuffer.depthTexture) AO.g.setGBuffer(AO.c.readBuffer.depthTexture);   // the target the scene draws into this frame

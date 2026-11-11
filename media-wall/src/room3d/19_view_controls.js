@@ -12,6 +12,7 @@ const mapMode = () => walking() ? null : S.view === "house" ? (hfview === "top" 
    there too (they stepped a key's repeat at a time); the orbit keeps its drags */
 const freeMode = () => !walking() && !mapMode() && !eyeView() && !!VIEWS[S.view] ? "free" : null;
 const MAP_POLAR = { top: [0.003, 0.003], angle: [5 * Math.PI / 180, 80 * Math.PI / 180] };   // from straight up: Angled 85° to 10° above the ground
+const mapPolar = m => m === "angle" && S.view === "house" && hfloor === "all" ? [5 * Math.PI / 180, 87 * Math.PI / 180] : MAP_POLAR[m];   // V3.68: Outside down to 3°, eye to eye with the house (a floor's walls would hide it lower)
 function mapConf(m) {   // the orbit's own drags off over the house (ours below), on again in the rooms
   controls.enablePan = !m; controls.enableZoom = !m && S.cam !== "look"; controls.enableRotate = !m && !inPlace();
   controls.minDistance = m ? 2 : 0.3;
@@ -80,16 +81,43 @@ function mapRound(p, a, s) {   // turn by a round the upright through p, then zo
   camera.lookAt(t);
 }
 function mapTilt(da, db) {   // round the middle: turn by da, lean by db (towards the horizon), inside the view's limits
-  const m = mapMode(), t = controls.target, off = camera.position.clone().sub(t), [lo, hi] = MAP_POLAR[m];
+  const m = mapMode(), t = controls.target, off = camera.position.clone().sub(t), [lo, hi] = mapPolar(m);
   off.applyAxisAngle(MAPY, da);
   if (db && m === "angle") { const sp = new THREE.Spherical().setFromVector3(off); sp.phi = Math.min(hi, Math.max(lo, sp.phi + db)); off.setFromSpherical(sp); }
   camera.position.copy(t).add(off); camera.lookAt(t);
 }
+/* V3.68 (N125), the client 11 Nov 2026: "the pc navigation doesnt feel right still. when looking at the house from the outside, its hard to
+   look into floors easily and swing camera where i want it". On a PC from an angle a left-drag now swings the view round the spot grabbed
+   (the wall, window or floor under the mouse, not the middle of the ground), a right-drag (or Shift + drag) moves the ground; the wheel and a
+   pinch go towards what's under them (they went to the ground behind a wall); Outside goes down to 3° above the ground */
+let MAPPK = null;   // the last pick: [x, y, time, point]: the eased wheel asks each frame, one ray a turn of it
+function mapPick(x, y) {   // what's drawn under a point on the screen (within 60 m), else the ground looked at
+  if (MAPPK && Math.abs(MAPPK[0] - x) + Math.abs(MAPPK[1] - y) < 3 && performance.now() - MAPPK[2] < 400) return MAPPK[3].clone();
+  const r = canvas.getBoundingClientRect(); camera.updateMatrixWorld();
+  ray.setFromCamera(new THREE.Vector2((x - r.left) / r.width * 2 - 1, -(y - r.top) / r.height * 2 + 1), camera);
+  const h = ray.intersectObjects(scene.children, true).find(q => q.distance < 60 && q.object.isMesh && shown(q.object) && q.object.material && q.object.material.visible !== false && !clippedAt(q));
+  const p = h ? h.point : mapGround(x, y); if (p) MAPPK = [x, y, performance.now(), p.clone()]; return p;
+}
+function mapSwing(da, db, p) {   // turn by da round the upright through p and lean by db round the level line through it, inside Angled's limits
+  const t = controls.target, cam = camera.position, [lo, hi] = mapPolar("angle");
+  t.sub(p).applyAxisAngle(MAPY, da).add(p); cam.sub(p).applyAxisAngle(MAPY, da).add(p);
+  const off = cam.clone().sub(t), phi = Math.acos(Math.max(-1, Math.min(1, off.y / off.length()))), b = Math.min(hi, Math.max(lo, phi + db)) - phi;
+  if (b) { const ax = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion).setY(0).normalize();
+    t.sub(p).applyAxisAngle(ax, b).add(p); cam.sub(p).applyAxisAngle(ax, b).add(p); }
+  camera.lookAt(t);
+}
 const mapTwo = () => { const [a, b] = [...MAPPT.values()]; return { x: (a[0] + b[0]) / 2, y: (a[1] + b[1]) / 2, d: Math.hypot(b[0] - a[0], b[1] - a[1]), a: Math.atan2(b[1] - a[1], b[0] - a[0]), p: [a, b] }; };
 function mapStart(e) {
   MVEL.set(0, 0, 0); MTRK.length = 0;
-  if (MAPPT.size === 2) { MAPD = Object.assign(mapTwo(), { k: "two", how: null, mv: new Set() }); MAPD.p0 = MAPD.p; return; }
-  const turn = e.pointerType === "mouse" && (e.button === 2 || e.button === 1 || e.shiftKey);
+  if (MAPPT.size === 2) { MAPD = Object.assign(mapTwo(), { k: "two", how: null, mv: new Set() }); MAPD.p0 = MAPD.p; MAPD.zp = mapPick(MAPD.x, MAPD.y); return; }
+  const alt = e.button === 2 || e.button === 1 || e.shiftKey, mouse = e.pointerType === "mouse";
+  if (mouse && mapMode() === "angle" && !alt) {   // V3.68: a PC's left-drag from an angle swings round the spot grabbed
+    const p = mapPick(e.clientX, e.clientY);
+    if (p) { const t = controls.target, d = t.clone().sub(camera.position).normalize(), l = p.clone().sub(camera.position).dot(d);   // the middle brought to the spot's depth: nothing moves on screen
+      if (l > controls.minDistance) t.copy(camera.position).addScaledVector(d, l);
+      MAPD = { k: "swing", x: e.clientX, y: e.clientY, p }; return; }
+  }
+  const turn = mouse && alt && mapMode() !== "angle";
   const g = turn ? null : mapGround(e.clientX, e.clientY);
   MAPD = turn ? { k: "turn", x: e.clientX, y: e.clientY } : g ? { k: "pan", g } : null;
 }
@@ -111,6 +139,9 @@ addEventListener("pointermove", e => {
     const g = mapGround(e.clientX, e.clientY); if (!g) return;
     const d = MAPD.g.clone().sub(g).setY(0); mapShift(d);
     MTRK.push([e.timeStamp, d]); while (MTRK.length > 6 || (MTRK.length && e.timeStamp - MTRK[0][0] > 100)) MTRK.shift();
+  } else if (MAPD.k === "swing") {
+    mapSwing(-(e.clientX - MAPD.x) * k, -(e.clientY - MAPD.y) * k, MAPD.p); MAPD.x = e.clientX; MAPD.y = e.clientY;
+    if (!mapSwing.hint && S.view === "house") { mapSwing.hint = 1; toast("Drag swings round · right-drag moves · First, Ground or Lower to look in"); }
   } else if (MAPD.k === "turn") {
     mapTilt(-(e.clientX - MAPD.x) * k, -(e.clientY - MAPD.y) * k); MAPD.x = e.clientX; MAPD.y = e.clientY;
   } else if (MAPPT.size === 2) {
@@ -124,7 +155,7 @@ addEventListener("pointermove", e => {
     if (MAPD.how === "lean") mapTilt(0, -(n.y - MAPD.y) * k);
     else { const g0 = mapGround(MAPD.x, MAPD.y), g1 = g0 && mapGround(n.x, n.y);
       if (g1) { mapShift(g0.clone().sub(g1).setY(0)); camera.updateMatrixWorld(); const da = Math.atan2(Math.sin(n.a - MAPD.a), Math.cos(n.a - MAPD.a));
-        mapRound(g0, Math.abs(da) < 0.5 ? da : 0, n.d > 10 ? MAPD.d / n.d : 1); } }
+        mapRound(g0, Math.abs(da) < 0.5 ? da : 0, 1); if (n.d > 10) mapRound(MAPD.zp || g0, 0, MAPD.d / n.d); } }   // V3.68: the pinch towards what was under the fingers
     Object.assign(MAPD, { x: n.x, y: n.y, d: n.d, a: n.a });
   } else return;
   if (typeof PRE !== "undefined") PRE.idleT = performance.now(); dirty();
@@ -140,7 +171,7 @@ for (const ev of ["pointerup", "pointercancel"]) addEventListener(ev, e => {
 });
 canvas.addEventListener("wheel", e => {   // towards the spot under the pointer; a trackpad's pinch (Ctrl + wheel) the same, finer steps
   if (!mapMode() || tween) return; e.preventDefault(); MVEL.set(0, 0, 0);
-  const dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1), g = mapGround(e.clientX, e.clientY) || controls.target.clone();
+  const dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1), g = mapPick(e.clientX, e.clientY) || controls.target.clone();
   mapRound(g, 0, Math.exp(Math.max(-1, Math.min(1, dy * (e.ctrlKey ? 0.01 : 0.0015))))); dirty();
 }, { passive: false });
 let glT = 0;
@@ -163,12 +194,13 @@ function mapCentre(e) {
     const m = mapMode(); mapConf(m);
     if (m && !tween && S.view === "house" && hfview === "top" && camera.position.clone().sub(controls.target).normalize().y < 0.95) {   // the whole house's own view (H, Whole house): Angled again
       hfview = "angle"; qsa("[data-hfview]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.hfview === "angle"))); return this.update(dt); }
-    const keyed = mapKeys(m || freeMode()), glid = m && mapGlide(), [lo, hi] = m && !tween ? MAP_POLAR[m] : [0, Math.PI];
+    const keyed = mapKeys(m || freeMode()), glid = m && mapGlide(), [lo, hi] = m && !tween ? mapPolar(m) : [0, Math.PI];
     controls.minPolarAngle = lo; controls.maxPolarAngle = hi;
     const ch = upd.call(this, dt);
-    return (m && !tween && mapHold()) || ch || keyed || glid;
+    const cut = floorCut();   // V3.68: a floor cut under the eye as it comes down (09)
+    return (m && !tween && mapHold()) || ch || keyed || glid || cut;
   }; }
-{ const T = { angle: "From an angle: drag to move, right-drag or two fingers to turn and tilt, scroll or pinch to zoom",
+{ const T = { angle: "From an angle: drag to swing round (a finger moves), right-drag to move, two fingers turn and tilt, scroll or pinch to zoom",
               top: "From straight above: drag to move, right-drag or two fingers to turn, scroll or pinch to zoom" };
   qsa("[data-hfview]").forEach(b => { if (T[b.dataset.hfview]) b.title = T[b.dataset.hfview]; }); }
 /* V3.26, the client 9 Nov 2026: "i want pc to be better ... it is still clunky i want fluid like the mobile version". A phone's pinch
@@ -188,7 +220,7 @@ function mapCentre(e) {
     pend += dy; at = [e.clientX, e.clientY, e.shiftKey];
     if (!raf) { tw = performance.now() - 16; raf = requestAnimationFrame(step); }
   }, { capture: true, passive: false }); }
-/* V3.68 (REAL_PLAN N115): no black void. A room's Above and On its own (the living room's too) sit on the page's cream by day and a warm
+/* V3.64 (REAL_PLAN N115): no black void. A room's Above and On its own (the living room's too) sit on the page's cream by day and a warm
    grey by evening, not the black or the sky. The colour only (no picture, no shader); through the HD composer the cream is passed in
    so that after its AgX and exposure it comes out the same cream as on Fast. The whole house and the rooms from inside keep theirs */
 const BACKDROP = { day: "#f1e9da", evening: "#6b645a" };

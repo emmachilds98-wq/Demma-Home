@@ -227,5 +227,11 @@
   "size": 1.2,
   "url": "",
   "licence": "ours"
+ },
+ "joinery": {
+  "asset": "made by build_textures.finishes",
+  "size": 0.6,
+  "url": "",
+  "licence": "ours"
  }
 }
