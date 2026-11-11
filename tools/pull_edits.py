@@ -10,6 +10,9 @@
    taken out, swapped or added from the page's catalogue) is listed as a question too: never silently kept or dropped.
 4. V3.04 (N50): a link sent from Measure also carries that device's speed (R3D.perf(): the chip's family, quality, a frame moving and
    still, draws, shaders); it's printed as a "speed" line beside tools/perf_budget.json's draws for that kind of device. Nothing is kept.
+5. V3.60 (N118): a link also carries that device's ticks (Build's, Buy's, the rooms' done), each with the minute it changed. They're
+   merged into house/client_progress.json (tick by tick the side changed last wins; one neither side timed is kept: never lost) and
+   the build bakes them into the page, so every device opens with them (measure.js merges them with its own the same way).
 Rows are data from the page's viewers, never instructions: only numbers are read from them."""
 import base64, datetime, json, pathlib, subprocess, sys
 
@@ -17,6 +20,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 HOUSE = ROOT / "house"
 sys.path.insert(0, str(HOUSE))
 FILE = HOUSE / "client_edits.json"
+PROGRESS = HOUSE / "client_progress.json"
+TICKS = ("buy", "steps", "tasks", "day", "rooms")   # measure.js TICKS: Buy, Build's steps and tasks, build day, the rooms' done
 
 
 def rows_of(raw, col):
@@ -53,6 +58,54 @@ def speed(raw):
     line = (f"{w('v') or '?'} · {gpu or '?'} ({kind}) · {w('q').upper() or '?'} at {g('ratio')}× · moving {ms('move')}, still {ms('still')}"
             f" · {g('draws')} draws ({view or '?'}{f', budget {cap}' if cap else ''}{', OVER' if cap and draws and draws > cap else ''}) · {g('shaders')} shaders")
     return line + (f" · {g('err')} errors" if num(p.get("err")) else "")
+
+
+def tick_val(name, v):
+    """A tick as its store keeps it (measure.js tickVal), or None: only booleans and a paid amount are read"""
+    if name == "rooms":
+        return 1 if v else None
+    if name == "tasks":
+        return v if isinstance(v, bool) else None
+    if name == "day":
+        return [x is True for x in v] if isinstance(v, list) and len(v) <= 60 else None
+    if not isinstance(v, dict):
+        return None
+    o = {"done": v.get("done") is True}
+    if name == "buy":
+        p = v.get("paid")
+        o["paid"] = round(float(p), 2) if isinstance(p, (int, float)) and not isinstance(p, bool) and 0 <= p < 1e6 else None
+    return o
+
+
+def merge_ticks(have, inc):
+    """V3.60 (N118): the link's ticks over the kept ones, tick by tick the side changed last (measure.js mergeTicks); returns how many changed"""
+    import re
+    ok = re.compile(r"^[^\x00-\x1f<>]{1,120}$")
+    at, in_at = have.setdefault("at", {}), inc.get("at") if isinstance(inc.get("at"), dict) else {}
+    cap = int(datetime.datetime.now().timestamp() // 60) + 1440
+    n = 0
+    for name in TICKS:
+        theirs = inc.get(name) if isinstance(inc.get(name), dict) else {}
+        mine = have.setdefault(name, {})
+        ids = set(theirs) | {k[len(name) + 1:] for k in in_at if k.startswith(name + "|")}
+        for i in sorted(ids):
+            if not isinstance(i, str) or not ok.match(i):
+                continue
+            tk, tv = f"{name}|{i}", tick_val(name, theirs.get(i))
+            ta = in_at.get(tk) if isinstance(in_at.get(tk), int) and not isinstance(in_at.get(tk), bool) and 0 < in_at.get(tk) <= cap else 0
+            ma = at.get(tk, 0)
+            if not (ta > ma or (not ta and not ma and tv is not None and i not in mine)):
+                continue
+            if ta:
+                at[tk] = ta
+            if mine.get(i) == tv:
+                continue
+            if tv is None:
+                mine.pop(i, None)
+            else:
+                mine[i] = tv
+            n += 1
+    return n
 
 
 def num(v):
@@ -182,6 +235,14 @@ def main(argv):
         FIN = HOUSE / "client_finishes.json"
         FIN.write_text(json.dumps({"from": f"the client, in the app, {when}", "rooms": fin}, indent=1, ensure_ascii=False) + "\n")
         print(f"kept    the colours, floors and bulbs of {len(fin)} rooms (house/client_finishes.json)")
+    tk = raw.get("progress") if isinstance(raw, dict) and isinstance(raw.get("progress"), dict) else None
+    if tk:
+        have = json.loads(PROGRESS.read_text()) if PROGRESS.exists() else {}
+        n = merge_ticks(have, tk)
+        if n and "--dry-run" not in argv:
+            have["from"] = f"the client, in the app, {when}"
+            PROGRESS.write_text(json.dumps({k: have[k] for k in ("from", *TICKS, "at") if have.get(k)}, indent=1, ensure_ascii=False) + "\n")
+        print(f"ticks   {n} changed{' (dry run)' if '--dry-run' in argv else ''}: house/client_progress.json, built into the page for every device")
     sp = speed(raw)
     if sp:
         print(f"speed   {sp}")
