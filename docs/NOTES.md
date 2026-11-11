@@ -126,8 +126,8 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `model.piece_shade`, moved with edits (`08_house_edits.js editedFloor`).
   **Shade where walls meet** (V3.63, N112): `model.edge_shade` finds each room's walls from the boxes as built (`EDGE_M` faces within
   1.6 cm of the room's edge, `skirting` faces), so bands never cross a door, a stairwell (`stair_wells`) or two pieces of one room; drawn by
-  `20_go.js` `edgeShade` in its own material key `shade_edge` (HMATS), so Above and On its own cut it like the walls, and faded to 0 by
-  its `material.onBeforeRender` when `aoLive()` (three 0.160 calls it before the uniforms go up). A band at a piece's shade strength
+  `20_go.js` `edgeShade` in its own material key `shade_edge` (HMATS), so Above and On its own cut it like the walls, and left out while
+  `aoLive()` (a `visible` getter on the mesh, so it costs no draw then). A band at a piece's shade strength
   (0.24) didn't show at room distance: the walls' own gradient peaks at 0.42.
 - **The refresh button:** `.hello .ver` in Plan; the ↻ is CSS `::after` (`qa.py` reads the text); `version.txt`; handler at the end of
   `page.js`. To see a new round on the phone: open Plan, tap the version.

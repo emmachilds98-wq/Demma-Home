@@ -538,13 +538,13 @@ function pieceShade(F, mat) {
 }
 /* V3.63 (N112): the shade where a room's walls meet its floor, its ceiling and each other, on the walls (model.edge_shade): one mesh a
    floor, pieceShadeMat's kind of material (the same shader), its own key in the house's materials so the cuts (Above, On its own) cut it
-   as the walls. Where the live shade (GTAO) draws this frame it's faded out, not doubled */
+   as the walls. Where the live shade (GTAO) draws this frame it isn't drawn: no doubled shade */
 function edgeShadeMat() {
   const tex = canvasTex(4, 64, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h);   // deeper than a piece's: a corner's shade reads across a room
     for (const [t, a] of [[0, 0.42], [0.2, 0.25], [0.45, 0.11], [0.75, 0.035], [1, 0]]) gr.addColorStop(t, `rgba(0,0,0,${a})`);
     g.clearRect(0, 0, w, h); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, false);
   tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
-  const m = pieceShadeMat(); m.map.dispose(); m.map = tex; m.onBeforeRender = () => { const o = typeof aoLive === "function" && aoLive() ? 0 : 1; if (m.opacity !== o) m.opacity = o; }; return m;
+  const m = pieceShadeMat(); m.map.dispose(); m.map = tex; return m;
 }
 function edgeShade(F, mat) {
   const pos = [], uv = [], U = [[0, 1], [1, 1], [1, 0], [0, 0]];   // v 1 (the canvas's dark top) along the line
@@ -554,7 +554,9 @@ function edgeShade(F, mat) {
   }
   if (!pos.length) return null;
   const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); geo.computeVertexNormals();
-  const me = new THREE.Mesh(geo, mat); me.raycast = () => {}; me.renderOrder = 1; me.name = "edgeShade"; return me;
+  const me = new THREE.Mesh(geo, mat); me.raycast = () => {}; me.renderOrder = 1; me.name = "edgeShade"; let on = true;
+  Object.defineProperty(me, "visible", { get: () => on && !(postLive() && aoLive()), set: v => { on = v; } });   // not drawn at all while GTAO draws
+  return me;
 }
 /* V2.98 (N37): the house from outside: a material's pieces on every floor one draw, not one a floor (each floor's span noted, and the
    floors shown are always a run, Lower, Lower and Ground, or all four, so one draw range); made when first wanted (09 houseJoin),
