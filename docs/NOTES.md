@@ -26,6 +26,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Textures:** CC0 sites (Poly Haven, ambientCG) and GitHub release downloads are blocked; new textures are made in
   `house/textures/build_textures.py` (`--finishes`).
 - **Glaze and lippage (N84):** a normal map's step is 1/127.5: a tile's tilt under about 0.01 doesn't show; 0.012–0.02 a tile breaks the reflections as real lippage does.
+- **Background colours (N115):** `scene.background` as a colour is the clear colour: straight to the screen it shows as typed, but through
+  the HD composer it's tone mapped (AgX at the exposure, 0.4 in a room) and comes out much darker; pass the colour through AgX's inverse
+  (`19_view_controls.js` `agxIn`). A background texture in sRGB is never tone mapped on Fast (three r160 sets `toneMapped` off for it)
+  but is through the composer; a linear one is tone mapped on both. Test both paths: `?ao` forces the composer in the sandbox.
 - **Testing a link's `#share=` (N118):** going from the page to the same address with only a new `#...` doesn't reload it (Playwright's
   `goto` too), so nothing reads the link: go to `about:blank` first. Serving `_site` with `python3 -m http.server` for several browser
   contexts stalled on the photos; abort `tex/`, `photos.` and the fonts in a test that needs no picture, and wait for `domcontentloaded`.
@@ -87,7 +91,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Lean code (N28, N41):** method: join the parts (`room3d_src.js()`), run ESLint 9 `no-unused-vars` on the one file (install ESLint
   in a scratch folder, not the repo), read each part, grep every name across `media-wall/src`, `tools`, `house`, `projects` (`R3D.*`
   hooks are called by `shot3d.py` and `check_site.py`), prove with the gallery. N48 (V3.05) cut 12, 13, 14, 16 and 20's;
-  `movable`'s `_flat` stays by place (04 and 07 pass it). N120 (V3.63): `optC`, 19's `d.cab`, bar 2's six copies (`BAR2` is one bar now),
+  `movable`'s `_flat` stays by place (04 and 07 pass it). N120 (V3.67): `optC`, 19's `d.cab`, bar 2's six copies (`BAR2` is one bar now),
   page.js's `user`/`need`, fit.py's four functions defined twice (pyflakes: "redefinition of unused"). ESLint finds nothing more in the
   joined room3d file. Left: 15's `LOOK_STR` `cab`; pyflakes' unused locals in fit.py, build_viewer.py, room3d_page.py, plan_ui.py, model.py.
 
@@ -125,6 +129,11 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   a piece with none. Soft edges come from the material (`20_go.js` `ROUND`/`CLOTH`).
 - **Lamps:** `survey_data.LAMPS` → `model.room_lamps`; the viewer reuses the room lights' uniforms (no rebuild). **Shade under pieces:**
   `model.piece_shade`, moved with edits (`08_house_edits.js editedFloor`).
+  **Shade where walls meet** (V3.63, N112): `model.edge_shade` finds each room's walls from the boxes as built (`EDGE_M` faces within
+  1.6 cm of the room's edge, `skirting` faces), so bands never cross a door, a stairwell (`stair_wells`) or two pieces of one room; drawn by
+  `20_go.js` `edgeShade` in its own material key `shade_edge` (HMATS), so Above and On its own cut it like the walls, and left out while
+  `aoLive()` (a `visible` getter on the mesh, so it costs no draw then). A band at a piece's shade strength
+  (0.24) didn't show at room distance: the walls' own gradient peaks at 0.42.
 - **The refresh button:** `.hello .ver` in Plan; the ↻ is CSS `::after` (`qa.py` reads the text); `version.txt`; handler at the end of
   `page.js`. To see a new round on the phone: open Plan, tap the version.
   The version also shows faintly in the brand pill (`.brand .bver`, V3.16): the client looks for it on the first screen, not in Plan.
@@ -168,5 +177,14 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **On a wall** (`23_finish.js`): `finWallRun(room, side)` gives the wall's face, ends, doors and windows and the ceiling over it; the
   wallpaper and the panelling (`finPanelApply`: real boxes, one draw a kind a room) both build on it. Look's rows 24–27.
 - **Seeing a finish without tapping:** `R3D.setFinishes({room: {slot: value}})` then a screenshot (views: `bed3` is `office`, `bathroom` is `bath`).
+- **A made finish's grain runs up the picture's v** (`MADE` `joinery`, N111): on a house box that's up a door's leaf, but across a skirting or a rail, so those stay on `gloss` (strokes along u). `HTEX_AS` picks a key's map; `HTEX_TINT` keeps its own colour.
 - **A catalogue piece's own price:** `UPC.piece[key]` beats its kind's (`upCat`).
 - Don't rebuild `_site` while `checks.py` runs: a local site check once failed Edit's ottoman drag mid-rebuild; CI passed.
+- **Whites (N113):** a textured piece draws its map at full white and ignores its `model.MATS` colour unless its key is tinted (`HTEX_TINT`,
+  or `BED_TINT` for the bedding): change the colour of the duvet, pillows or anything else with a photo map there, or nothing moves. To
+  measure a material on screen, swap every mesh whose `material.userData.hk` is that key for a flat red `MeshBasicMaterial`, nudge the
+  controls (`dispatchEvent({type: 'change'})`), screenshot, swap back: the red pixels are its mask. In software graphics nothing reached
+  250 even before N113 (the master's bedding top 5% at 226–233): the glare the review saw was the near-white shoulder, not true clipping.
+- **A queue of stacked PRs** (each PR's head merging the one before, to land as V3.63, V3.64, ...): the last one carries all of them, so
+  merging it lands them all and a failure in an earlier one (#228's `draws_house 211`) holds every later one. When taking over one of
+  them, cherry-pick its own commit onto `main` instead.

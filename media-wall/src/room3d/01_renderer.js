@@ -270,6 +270,7 @@ function aoComposer(w, h, pr) {
   return AO.c;
 }
 function draw() {                     // a frame: through the composer with AO, or straight to the screen
+  backdrop();   // V3.64 (N115): Above and On its own over the cream, not black (19_view_controls.js)
   if (postLive()) { const sz = gl.getSize(new THREE.Vector2()); if (!AO.c || AO.w !== sz.x || AO.h !== sz.y || AO.pr !== gl.getPixelRatio()) { aoComposer(sz.x, sz.y, gl.getPixelRatio()); AO.w = sz.x; AO.h = sz.y; AO.pr = gl.getPixelRatio(); }
     const glow = AO.b.enabled; if ((dragLite() && lowRes) || moveLite) AO.b.enabled = false;   // V2.73 (N17): no glow on a phone while it moves (its 10 passes); back as it stops; V3.39: a PC's too (moveLite)
     AO.g.enabled = aoLive(); if (AO.g.depthTexture !== AO.c.readBuffer.depthTexture) AO.g.setGBuffer(AO.c.readBuffer.depthTexture);   // the target the scene draws into this frame
