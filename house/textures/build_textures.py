@@ -38,6 +38,10 @@ PX = {}                                                          # sizes other t
 # away): a floor is 1.6 m under the eye (1 mm), the soft things a metre off (0.65 mm). These were twice as fine (0.25-0.5 mm a pixel); the
 # rest stay, and the living room's oak keeps its 2048 (the client asked for it, V1.11)
 PX.update(carpet=512, carpet_grey=512, check=512, lycksele=512, duvet=512)
+# V3.55 (REAL_PLAN N109): room in the photo budget: one picture of a key at a size of its own, where no view comes near enough to need
+# more (the road, never closer than the drive: 5.9 mm a pixel; the lawn's and the brick's relief, which a standing eye reads at 2-4 m;
+# the living room's curtain and sofa weave relief, a hair at a metre): key_kind: px
+PX.update(road_map=512, road_nor=512, lawn_nor=512, brick_nor=512, lr_hessian_nor=512, lr_cord_nor=512)
 # V1.1: the living room's own surfaces, the photo as it is (room3d.js matches each to its drawn texture's average colour as it loads,
 # so the parts keep their colours and only the grain, weave and relief are real): key: (asset, real size m, map px, normal px, turn,
 # relief). The oak is turned a quarter so its grain runs along the boards, as the drawn oak's does; 0 px leaves that picture out. Veneer
@@ -527,7 +531,8 @@ def slim():
     meta = json.loads((HERE / "textures.json").read_text())
     for k, px in PX.items():
         for kind, q in (("map", 78), ("nor", 82), ("rough", 82)):
-            f = HERE / f"{k}_{kind}.jpg"
+            if k.endswith(("_map", "_nor", "_rough")) and not k.endswith("_" + kind): continue   # N109: one picture of a key
+            f = HERE / (f"{k}.jpg" if k.endswith(("_map", "_nor", "_rough")) else f"{k}_{kind}.jpg")
             if f.exists() and Image.open(f).width > px:
                 im = Image.open(f); im.convert(im.mode).resize((px, px), Image.LANCZOS).save(f, quality=q, optimize=True); print("slim", f.name, px)
     share(meta)
