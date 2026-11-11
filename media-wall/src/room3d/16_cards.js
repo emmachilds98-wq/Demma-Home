@@ -23,7 +23,7 @@ function pickItem(e) {
   { const ud = (o.material && !Array.isArray(o.material) && o.material.userData) || {};   // N5 (REAL_PLAN R7): the living room's walls, ceiling and skirting: the house's colours card
     if (ud.hk === "stairpaint" || (ud.ratio !== undefined && (under(o, shell) || under(o, fixtures)))) { const ch = ud.hk ? "w:stairs" : ud.ch;
       return "fin:living:" + (ch === "ceil" ? 4 : ch === "trim" ? 17 : ch.startsWith("w:") ? 11 + Math.max(0, LIV_W.indexOf(ch.slice(2))) : 0); } }
-  if (S.site === "C" && (under(o, cab) || under(o, optC))) return "cab";
+  if (S.site === "C" && under(o, cab)) return "cab";
   if (under(o, lamp)) return "lamp";
   if (under(o, bar1)) return "bar1";
   if (under(o, bar2)) return "bar2";

@@ -203,16 +203,6 @@ def scene():
     state()
     frames = encode(rec(R.breast_frames))
     groups["frames"] = frames
-    bar2 = {}
-    for st in ("folded", "four", "six"):
-        state(dining=st)
-        # v39: the flip-top table's groups (A_ and B_) are gone: since v33 the room always opens on the compact cabinet, so they were
-        # sent and never shown. bar 2's spots below still use their keys.
-        bar2[f"A_{st}"] = R.spot_heads2()
-        bx = (G.TABLE_B_OPEN_X[0] + G.TABLE_B_OPEN_X[1]) / 2 if st != "folded" else G.ROOM_W - 2.0   # v15: over the open flip-top
-        by = G.TABLE_TOP if st != "folded" else G.FOLDED_TOP - 30.0
-        bar2[f"B_{st}"] = bar2[f"A_{st}"]   # v17: every head straight down, whichever wall the table is on
-    state()
     groups["now_ledge"] = encode(rec(R.now_playing))   # v16: with the table by the stairs, the breast's "now playing" ledge (v18: its own group)
 
     def bar(cx, cz, heads):
@@ -230,7 +220,7 @@ def scene():
         "LAMP_SPOTS": {k: {"label": v[0], "x": v[1][0], "z": v[1][1]} for k, v in G.FLOOR_LAMP_SPOTS.items()},
         "SITES": G.DINING_SITES, "PAINT_OLD": R.PAINT_OLD, "PAINT_BASE": "#2d5a46",
         "PAINTS": {k: {"hex": v[0], "name": v[1]} for k, v in R.PAINTS.items()},
-        "BAR1": bar(G.PEND_X, G.PEND_Z, R.SPOT_HEADS), "BAR2": {k: bar(G.BAR2_X, G.BAR2_Z, v) for k, v in bar2.items()},
+        "BAR1": bar(G.PEND_X, G.PEND_Z, R.SPOT_HEADS), "BAR2": bar(G.BAR2_X, G.BAR2_Z, R.spot_heads2()),
         "LED_Y": G.CEIL - 0.6, "RZ": G.RZ, "HIGH_UNDER": G.HIGH_UNDER, "WORKTOP": G.WORKTOP,
         # v15: the side run's front edge (for its LED strip), the soft furnishings and the stairs wall's things
         "SIDE_RUN": {"under": G.LEDGE_TOP - G.SIDE_RUN_T,
