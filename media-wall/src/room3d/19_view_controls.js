@@ -188,3 +188,28 @@ function mapCentre(e) {
     pend += dy; at = [e.clientX, e.clientY, e.shiftKey];
     if (!raf) { tw = performance.now() - 16; raf = requestAnimationFrame(step); }
   }, { capture: true, passive: false }); }
+/* V3.68 (REAL_PLAN N115): no black void. A room's Above and On its own (the living room's too) sit on the page's cream by day and a warm
+   grey by evening, not the black or the sky. The colour only (no picture, no shader); through the HD composer the cream is passed in
+   so that after its AgX and exposure it comes out the same cream as on Fast. The whole house and the rooms from inside keep theirs */
+const BACKDROP = { day: "#f1e9da", evening: "#6b645a" };
+const BD = { on: false, key: "", saved: new THREE.Color(), want: new THREE.Color(), set: new THREE.Color() };
+const backdropView = () => !walking() && (LIVV() ? S.view === "room" || S.view === "livalone" : !!ROOMV() && (RMODE === "above" || RMODE === "alone"));
+function agxIn(c, e) {   // the colour that three's AgX (r160) at exposure e turns into c (linear), by a few steps of Newton's kind
+  const mv = (m, v) => [0, 1, 2].map(i => m[i] * v[0] + m[3 + i] * v[1] + m[6 + i] * v[2]);   // GLSL mat3 (by columns) times v
+  const R = [0.6274, 0.0691, 0.0164, 0.3293, 0.9195, 0.0880, 0.0433, 0.0113, 0.8956], S2 = [1.6605, -0.1246, -0.0182, -0.5876, 1.1329, -0.1006, -0.0728, -0.0083, 1.1187];
+  const I = [0.856627, 0.137319, 0.111898, 0.095121, 0.761242, 0.076799, 0.048252, 0.101439, 0.811302], O = [1.127101, -0.14133, -0.14133, -0.110607, 1.157824, -0.110607, -0.016494, -0.016494, 1.251936];
+  const agx = x => mv(S2, mv(O, mv(I, mv(R, x).map(v => v * e)).map(v => { v = Math.min(1, Math.max(0, (Math.log2(Math.max(v, 1e-10)) + 12.47393) / 16.5)); const v2 = v * v, v4 = v2 * v2;
+    return 15.5 * v4 * v2 - 40.14 * v4 * v + 31.96 * v4 - 6.868 * v2 * v + 0.4298 * v2 + 0.1191 * v - 0.00232; })).map(v => Math.pow(Math.max(0, v), 2.2)));
+  const t = [c.r, c.g, c.b], x = t.slice();
+  for (let n = 0; n < 40; n++) { const y = agx(x); for (let k = 0; k < 3; k++) x[k] = Math.min(1e3, Math.max(1e-5, x[k] * Math.pow(Math.max(t[k], 1e-5) / Math.max(y[k], 1e-5), 1.5))); }
+  return c.setRGB(x[0], x[1], x[2], THREE.LinearSRGBColorSpace);
+}
+function backdrop() {   // each frame, before it's drawn (01_renderer.js draw): the lights' own background kept aside and given back after
+  const bg = scene.background; if (!bg || !bg.isColor) return;
+  if (!backdropView()) { if (BD.on) { if (bg.equals(BD.set)) bg.copy(BD.saved); BD.on = false; } return; }
+  const post = postLive(), key = S.tod + post + gl.toneMappingExposure;
+  if (key !== BD.key) { BD.key = key; BD.want.set(BACKDROP[S.tod === "day" ? "day" : "evening"]); if (post && gl.toneMapping === THREE.AgXToneMapping) agxIn(BD.want, gl.toneMappingExposure); }
+  if (BD.on && bg.equals(BD.want)) return;
+  if (!BD.on || !bg.equals(BD.set)) BD.saved.copy(bg);   // the light's own (it set it again since)
+  bg.copy(BD.want); BD.set.copy(BD.want); BD.on = true;
+}
