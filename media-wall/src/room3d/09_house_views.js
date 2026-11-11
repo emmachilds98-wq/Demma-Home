@@ -63,72 +63,65 @@ function syncRmode() {
 }
 const HFLOOR = {};     // v55: its floors (lower, ground, first) and the outside (gardens, the alley), for the floor picker
 let hfloor = "all", hidReal = [], hidLay = [], hfview = "angle";   // v74: a floor seen from an angle or from straight above
-const ROOMLIGHTS = [], WINLIGHTS = [];   // v69 (B3): two warm ceiling lights that go to the room you're in (a fixed set: no shader rebuilds); V2.39: and two windows'
+const ROOMLIGHTS = [], WINLIGHTS = [];   // v69 (B3): warm ceiling lights round the room you're in (a fixed set: no shader rebuilds); V2.39: and windows'. V3.57: six and three (Fast four and none)
 let roomKey = "";
+/* V3.57 (N108), the client: "From room to room the lights shouldn't turn off and on. Keep all lights on and keep the warm lighting in all
+   rooms so things aren't overly bright." Every room's lights are on, each at its own room's level (its size, its bulbs), whichever room
+   you're in: the set holds the room's own and its nearest neighbours' (on its floor first), so walking through a door nothing dims or
+   brightens, the room behind you as lit as when you stood in it. Each light reaches about its own room (less spill through the walls).
+   V3.40's half-second fade between the rooms' levels is gone: there is nothing left to fade */
+const LK = 0.65, WK = 40;   // V3.57: the ceiling lights and the windows with the neighbours on: about as bright as before, one room lit alone
+function roomArea(id) { const r = R.HOUSE3.rooms && R.HOUSE3.rooms[id]; return r ? (r[1] - r[0]) * (r[3] - r[2]) / 1e4 : 10; }
+function roomReach(id) { const r = R.HOUSE3.rooms && R.HOUSE3.rooms[id]; return r ? Math.min(7, Math.max(3.6, Math.hypot(r[1] - r[0], r[3] - r[2]) * M * 1.1 + 1.2)) : 7; }
+function lightAt(l, L, day, hd) {   // one light, as its own room has it
+  const fb = typeof finBulb === "function" && L.room ? finBulb(L.room) : { k: null, lux: 1 };   // V2.9: the room's bulbs (23_finish.js)
+  if (L.reach) { l.distance = L.reach * M; l.position.copy(v3(L.x, L.y, L.z)); l.intensity = day ? 0 : L.k * fb.lux; l.color.set(L.col); return; }   // V2.48: a lamp, by evening
+  const ks = Math.min(1.3, Math.max(0.75, Math.sqrt(roomArea(L.room) / 10)));   // v72 (B2): a big room's light reaches its corners, a small one doesn't glare
+  const drop = L.drop != null && !(typeof finGet === "function" && finGet(L.room, 8)) ? L.drop : typeof finFitDrop === "function" ? finFitDrop(L.room) : 40;   // the kitchen's battens are flush
+  l.distance = roomReach(L.room);
+  l.position.copy(v3(L.x, L.y - drop, L.z)); l.intensity = (day ? 3 : hd ? 8.6 : 5.4) * LK * ks * fb.lux * (L.drop != null ? 0.6 : 1);   // two battens share the room's light; LK: the neighbours on too, each a little less (as bright as one room lit alone)
+  if (fb.k) l.color.set(kelvinHex(+fb.k)); else l.color.copy(warmColour());   // V3.19: the living room's bulbs' colour (one Warmth for the house) unless the room's own
+}
 /* v69, the client: "increasing the render quality to be more realistic like our living room version": in a room of the house, its
-   ceiling lights on (the nearest two to the view), and the sun's shadow box moved over that room (it covered the living room only) */
+   ceiling lights on, and the sun's shadow box moved over that room (it covered the living room only) */
 function placeRoomLights() {
   if (!ROOMLIGHTS.length || !sun) return;
-  const v = VIEWS[S.view] || {}, b = R.HOUSE3 && v.box, list = [];
-  if (b) { const cx = (b[0] + b[1]) / 2, cz = (b[4] + b[5]) / 2;
-    for (const F of Object.values(R.HOUSE3.floors)) for (const L of F.lights || [])
-      if (L.x >= b[0] - 30 && L.x <= b[1] + 30 && L.z >= b[4] - 30 && L.z <= b[5] + 30 && L.y > b[2] && L.y < b[3] + 60) list.push(L);
-    list.sort((p, q) => Math.hypot(p.x - cx, p.z - cz) - Math.hypot(q.x - cx, q.z - cz)); }
-  const day = S.tod === "day";
-  const rr = b && R.HOUSE3.rooms && R.HOUSE3.rooms[VIEW_ROOM[S.view]], area = rr ? (rr[1] - rr[0]) * (rr[3] - rr[2]) / 1e4 : 10;
-  const ks = Math.min(1.3, Math.max(0.75, Math.sqrt(area / 10)));   // v72 (B2): a big room's light reaches its corners, a small one doesn't glare
-  const fb = typeof finBulb === "function" && VIEW_ROOM[S.view] ? finBulb(VIEW_ROOM[S.view]) : { k: null, lux: 1 };   // V2.9: the room's bulbs (23_finish.js)
-  const was = ROOMLIGHTS[0] ? ROOMLIGHTS[0].position.clone() : null;
-  /* V2.48 (R1, N8): a lamp the client has (house/survey_data.LAMPS: the office's purple one, the bathroom mirror's light bar) takes the
-     second light where the room has one ceiling light, lit by evening, at its own colour and reach (the set of lights never changes) */
-  const lamp = b && list.length < 2 && Object.values(R.HOUSE3.floors).flatMap(F => F.lamps || []).find(L => L.room === VIEW_ROOM[S.view]);
-  if (lamp) list[1] = lamp;
-  ROOMLIGHTS.forEach((l, k) => { const L = list[k]; l.visible = !!L; if (!L) return; l.distance = L.reach ? L.reach * M : 7;
-    if (L.reach) { l.position.copy(v3(L.x, L.y, L.z)); l.intensity = day ? 0 : L.k * fb.lux; l.color.set(L.col); return; }
-    const drop = L.drop != null && !(typeof finGet === "function" && finGet(L.room, 8)) ? L.drop : typeof finFitDrop === "function" ? finFitDrop(L.room) : 40;   // the kitchen's battens are flush
-    l.position.copy(v3(L.x, L.y - drop, L.z)); l.intensity = (day ? 3 : S.quality === "hd" ? 8.6 : 5.4) * ks * fb.lux * (L.drop != null ? 0.6 : 1);   // two battens share the room's light
-    if (fb.k) l.color.set(kelvinHex(+fb.k)); else l.color.copy(warmColour()); });   // V3.19: the living room's bulbs' colour (one Warmth for the house) unless the room's own
-  /* V3.34 (N86): by evening in HD the light 8.6, the even fill down (12_furniture_options.js): a warm pool under it, the corners and
-     the sides of things falling into shade, as the living room's lamps do */
-  /* V2.39 (REAL_PLAN R1, each window's daylight): the room's two biggest windows light it as the sky does through them, an area light the
-     opening's size on the wall's inside face, facing in and a little down; by day the living room window's daylight, by evening its dusk */
-  const rid = b && rr && VIEW_ROOM[S.view], op = it => it.op && it.op.axis === "x" && it.op, sz = it => (it.op.b - it.op.a) * (it.op.y1 - it.op.y0);
-  const ws = rid ? Object.values(R.HOUSE3.items || {}).filter(it => it.k === "window" && it.r === rid && op(it)).sort((p, q) => sz(q) - sz(p)) : [];
+  const v = VIEWS[S.view] || {}, b = R.HOUSE3 && v.box, day = S.tod === "day", hd = S.quality === "hd";
+  const rid = b && VIEW_ROOM[S.view], rr = rid && R.HOUSE3.rooms && R.HOUSE3.rooms[rid];
+  const list = [];
+  if (b) { const cx = (b[0] + b[1]) / 2, cy = (b[2] + b[3]) / 2, cz = (b[4] + b[5]) / 2;
+    const seen = typeof roomSees === "function" ? roomSees([rid]) : new Set();   // the rooms seen from it (open doors, a flight's top or foot: the hall's lower flight and landing, the client's "Lit stairs and landing below") before the rest
+    const near = L => (L.room === rid ? -1e6 : seen.has(L.room) ? -5e5 : 0) + Math.hypot(L.x - cx, L.z - cz) + Math.abs(L.y - cy) * 3;
+    for (const F of Object.values(R.HOUSE3.floors)) { for (const L of F.lights || []) list.push([near(L), L]);
+      if (!day) for (const L of F.lamps || []) list.push([near(L) + (L.room === rid ? 1000 : 400), L]); }   // a room's lamp after its ceiling light
+    list.sort((p, q) => p[0] - q[0]); }
+  const n = hd ? ROOMLIGHTS.length : Math.min(4, ROOMLIGHTS.length);   // Fast: four (20_go.js: the last two are HD's)
+  ROOMLIGHTS.forEach((l, k) => { const L = k < n && list[k] && list[k][1]; l.visible = !!L; if (L) lightAt(l, L, day, hd); });
+  /* V2.39 (REAL_PLAN R1, each window's daylight): a window lights the room as the sky does through it, an area light the opening's size
+     on the wall's inside face, facing in and a little down; by day the living room window's daylight, by evening its dusk. V3.57: the
+     room's own two biggest, then the nearest room's biggest (it stays lit as you go through its door) */
+  const op = it => it.op && it.op.axis === "x" && it.op, sz = it => (it.op.b - it.op.a) * (it.op.y1 - it.op.y0);
+  let ws = [];
+  if (rr) { const cx = (b[0] + b[1]) / 2, cz = (b[4] + b[5]) / 2, all = Object.values(R.HOUSE3.items || {}).filter(it => it.k === "window" && op(it) && R.HOUSE3.rooms[it.r]);
+    const own = all.filter(it => it.r === rid).sort((p, q) => sz(q) - sz(p)).slice(0, 2);
+    const dist = it => { const r = R.HOUSE3.rooms[it.r]; return Math.hypot((r[0] + r[1]) / 2 - cx, (r[2] + r[3]) / 2 - cz) + Math.abs(r[4] - rr[4]) * 3 - sz(it) / 1e3; };
+    ws = own.concat(all.filter(it => it.r !== rid).sort((p, q) => dist(p) - dist(q))).slice(0, WINLIGHTS.length); }
   /* V3.30 (living room quality): by day 60, the living room's window's 70 for its size (10 left the rooms flat, lit by the even fill) */
-  WINLIGHTS.forEach((l, k) => { const o = ws[k] && ws[k].op; l.visible = !!o; if (!o) return;
-    const cx = (o.a + o.b) / 2, cy = (o.y0 + o.y1) / 2, d = Math.sign((rr[2] + rr[3]) / 2 - o.line) || 1;
+  WINLIGHTS.forEach((l, k) => { const it = ws[k], o = it && it.op; l.visible = !!o; if (!o) return; const r = R.HOUSE3.rooms[it.r];
+    const cx = (o.a + o.b) / 2, cy = (o.y0 + o.y1) / 2, d = Math.sign((r[2] + r[3]) / 2 - o.line) || 1;
     l.width = (o.b - o.a) * M; l.height = (o.y1 - o.y0) * M; l.position.copy(v3(cx, cy, o.line + d * 3)); l.lookAt(v3(cx, cy - 40, o.line + d * 100));
-    l.intensity = day ? 60 : 3; l.color.set(day ? "#eef0f2" : "#7d89b8"); });
-  if (was && ROOMLIGHTS[0].position.distanceToSquared(was) > 1e-6) reshadow();   // V2.17: its shadows follow it (a fitting's height, the next room)
+    l.intensity = day ? WK : 3; l.color.set(day ? "#eef0f2" : "#7d89b8"); });   // V3.57: WK, the neighbours' windows on too
   const key = b ? b.join() : "";
   if (key === roomKey) return; roomKey = key;
   const d = b ? v3((b[0] + b[1]) / 2, 0, (b[4] + b[5]) / 2).sub(sun.userData.t0).setY(0) : new THREE.Vector3();
   sun.position.copy(sun.userData.p0).add(d); sun.target.position.copy(sun.userData.t0).add(d);
   /* V3.33 (N85): a room whose biggest window looks out of the front has the front's sun (from the south-south-west, as outside), not the
      living room's morning sun from the back, which the room's back wall stopped: its window's patch on the floor, as the living room's */
-  if (ws[0] && rr && ws[0].op.line > (rr[2] + rr[3]) / 2) { const t = v3((b[0] + b[1]) / 2, b[2], (b[4] + b[5]) / 2);
+  if (ws[0] && ws[0].r === rid && ws[0].op.line > (rr[2] + rr[3]) / 2) { const t = v3((b[0] + b[1]) / 2, b[2], (b[4] + b[5]) / 2);
     sun.target.position.copy(t); sun.position.copy(t).addScaledVector(dayLight.position.clone().sub(dayLight.target.position).normalize(), sun.userData.p0.distanceTo(sun.userData.t0)); }
   sun.target.updateMatrixWorld();
   reshadow();
 }
-/* V3.40 (N92), the client: "lighting should stay the same in every room to stop transition changes": walking through a door, the lights
-   the room sets (its ceiling light, its windows', the fills, the sun) ease to the next room's over half a second instead of jumping. Any
-   new value set while you walk or fly is taken as the target, the light shown going there; still pictures and the controls set at once */
-const LEASE = new Map();
-function lightEase() {
-  const now = performance.now(), go = LIVE && ((typeof walking === "function" && walking()) || !!tween);
-  let busy = false;
-  for (const l of [...ROOMLIGHTS, ...WINLIGHTS, hemi, skyFill, sun]) { if (!l) continue;
-    let e = LEASE.get(l); if (!e) LEASE.set(l, e = { shown: l.intensity, from: l.intensity, to: l.intensity, t0: 0 });
-    const v0 = l.intensity;
-    if (v0 !== e.shown) {   // a new value was set: a real change eases (while walking or flying); a small one, or the same set again, is taken as it is
-      if (go && Math.abs(v0 - e.to) > 0.05 * Math.max(Math.abs(v0), Math.abs(e.to), 0.05)) { e.from = e.shown; e.t0 = now; } else if (!go) e.t0 = 0;
-      e.to = v0; }
-    const k = go ? Math.min(1, (now - e.t0) / 450) : 1, v = k >= 1 ? e.to : e.from + (e.to - e.from) * k * k * (3 - 2 * k);
-    l.intensity = e.shown = v; if (k < 1) busy = true; }
-  if (busy) dirty();   // only while an ease runs (under half a second): the pauses stay free for the warm-up
-}
-scene.onBeforeRender = lightEase;
 /* v69 (B3) had each room's own reflections caught when you entered it (a cube camera round the whole scene, then every house material
    recompiled). v73, the client: "consistent crashing on PC when accessing rooms": that froze the page for seconds each time (and leaked
    a texture a visit), long enough for a PC's graphics driver to give up; phones never ran it. Now one neutral room reflection, made once,
@@ -140,6 +133,33 @@ const HOUSE_SIDE = /[?&]double\b/.test(location.search) ? THREE.DoubleSide : THR
 function houseEnv() {
   if (!HENV) { const pm = new THREE.PMREMGenerator(gl), rs = new RoomEnvironment(); HENV = pm.fromScene(rs, 0.04).texture; pm.dispose(); rs.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
   return HENV;
+}
+/* V3.57 (N107), the client: "continue further shader and detail improvements": the hall's and the bathroom's mirrors showed a painted
+   sheen (a grey-blue gradient), never the room. Standing in one of those rooms in HD (drawn through the shade's composer, so the frame's shaders are already the kind a reflection draws with), once you've paused, the room is drawn round the
+   mirror, a face a frame (six frames, never while you move), and blurred as the house's own reflection is, so the mirror shows its room;
+   no shader added (the same kind and size of reflection). Made again for the evening */
+const MIR = { done: {}, face: 0, key: null, cc: null, rt: null, white: null };
+const NOMIR = /[?&]nomirror\b/.test(location.search);   // ?nomirror: the painted sheen, as before
+const MIRROR_AT = { hall: "hall.mirror", bathroom: "bath.mirror" };
+function mirrorStep() {
+  const here = RMODE === "stand" ? hereRoom : VIEW_ROOM[S.view], m = HMATS && HMATS.mirror, it = MIRROR_AT[here], b = it && R.HOUSE3 && R.HOUSE3.items && R.HOUSE3.items[it] && R.HOUSE3.items[it].b;
+  if (!m || !b || !postLive() || NOMIR || !ROOMV() || !(RMODE === "in" || RMODE === "stand") || !m.envMap) return false;
+  const key = here + S.tod;
+  if (MIR.done[here] && MIR.done[here].key === key) { if (m.envMap === MIR.done[here].tex) return false; mirrorUse(m, MIR.done[here].tex); return true; }
+  if (MIR.key !== key) { MIR.key = key; MIR.face = 0; }
+  if (!MIR.rt) { MIR.rt = new THREE.WebGLCubeRenderTarget(256, { type: THREE.HalfFloatType }); MIR.cc = new THREE.CubeCamera(0.03, 40, MIR.rt); }
+  const cc = MIR.cc; if (cc.coordinateSystem !== gl.coordinateSystem) { cc.coordinateSystem = gl.coordinateSystem; cc.updateCoordinateSystem(); }
+  cc.position.copy(v3(b[0] - 4, (b[1] + b[4]) / 2, (b[2] + b[5]) / 2)); cc.updateMatrixWorld(true);   // just in front of the glass (both face into their rooms, -x)
+  const prev = gl.getRenderTarget(), vis = m.visible; m.visible = false;
+  gl.setRenderTarget(MIR.rt, MIR.face); gl.render(scene, cc.children[MIR.face]); gl.setRenderTarget(prev); m.visible = vis;
+  if (++MIR.face < 6) return true;
+  MIR.face = 0; const pm = new THREE.PMREMGenerator(gl), tex = pm.fromCubemap(MIR.rt.texture).texture; pm.dispose();
+  const old = MIR.done[here]; MIR.done[here] = { key, tex }; mirrorUse(m, tex); if (old && old.tex !== tex) old.tex.dispose();
+  return true;
+}
+function mirrorUse(m, tex) {
+  if (!MIR.white) MIR.white = canvasTex(4, 4, (g, w, h) => { g.fillStyle = "#ffffff"; g.fillRect(0, 0, w, h); }, true);
+  m.userData.real = true; m.envMap = tex; m.envMapIntensity = 1; m.metalness = 1; m.roughness = 0.03; m.color.set("#f4f6f6"); m.map = MIR.white; dirty();
 }
 const finishEnv = m => m.userData.hk === "glass" ? (S.tod === "day" ? 0.3 : 0.75) : m.userData.hk === "screen" ? 0.18 : m.roughness <= 0.3 ? 0.9 : m.roughness <= 0.6 ? 0.6 : 0.45;   // v72 (B3): gloss, satin, matt; V3.32 (N82): a screen that's off dark glass, as the living room's TV (the bright stock room in it read as a whiteboard)
 let HENVK = 1;
@@ -160,7 +180,7 @@ const streetTod = () => { const eve = S.tod !== "day"; for (const m of STREET_LI
 const glassAll = () => { if (HMATS) for (const k of ["glass", "glass_frost"]) if (HMATS[k]) glassTod(HMATS[k]); streetTod(); };
 function houseEnvK(k) {   // V2.21 (REAL_PLAN R1): the house's reflections scaled (an evening in a room: its own light leads)
   if (!HMATS || k === HENVK) return; HENVK = k;
-  for (const m of Object.values(HMATS)) if (m && m.envMap && "envMapIntensity" in m) m.envMapIntensity = finishEnv(m) * k;
+  for (const m of Object.values(HMATS)) if (m && m.envMap && "envMapIntensity" in m) m.envMapIntensity = m.userData.real ? 1 : finishEnv(m) * k;   // V3.57: a mirror shows its room as it is
   for (const m of paintMats.values()) if (m && m.envMap && m.userData.hk) m.envMapIntensity = finishEnv(m) * k;
 }
 let RMODE = "in", hidMode = [], RPLANES = [];   // v71: how a room of the house is seen (in it, above, on its own) and what that put away

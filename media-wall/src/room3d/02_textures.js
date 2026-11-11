@@ -187,7 +187,7 @@ function loadPhotos() {
       Object.assign(PHOTO, P); photosDone = true;
       /* V2.47 (speed, REAL_PLAN N2): each photo is a file of its own; the ones on what you can see now are fetched first, the rest
          a moment later, so the view you're on looks finished sooner on a phone's connection */
-      const seen = onScreen(), now = w => w.k === "tile" || texSeen(w.tex, seen), all = PWAIT.splice(0), later = all.filter(w => !now(w));   // V3.57 (N114): the roof's tiles always first (the house opened under a flat beige roof)
+      const seen = onScreen(), now = w => w.k === "tile" || texSeen(w.tex, seen), all = PWAIT.splice(0), later = all.filter(w => !now(w));   // V3.59 (N114): the roof's tiles always first (the house opened under a flat beige roof)
       all.filter(now).sort((a, b) => (b.k === "tile") - (a.k === "tile")).forEach(w => w.go());
       setTimeout(() => (window.requestIdleCallback || (f => f()))(() => later.forEach(w => w.go()), { timeout: 2000 }), 1200);
     }));
