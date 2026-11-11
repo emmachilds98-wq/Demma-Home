@@ -205,9 +205,18 @@ function geoWarm(list) {
   for (const o of list) if (o.isMesh && o.geometry && !GEO_DONE.has(o.geometry) && o.onBeforeRender === THREE.Object3D.prototype.onBeforeRender) { GEO_DONE.add(o.geometry); GEO_Q.push(o); }
   if (GEO_Q.length && !geoT) geoT = setTimeout(geoStep, 0);
 }
+/* V3.69 (N123), the phone smoother: the plain material's shader differs by a shape's kind (its UVs, its colours, ...), so the first
+   shapes of each kind built one on the spot (3 on the first walk on the iPhone path: a stall each on a phone). Each queued shape's
+   variant is now asked for first beside the page (compileAsync: in parallel on the iPhone), then drawn */
+const GEO_C = new WeakSet(); let geoP = null;
 function geoStep() {
   geoT = 0; if (!PRE.rt) return;
-  if (!geoH) { geoH = new THREE.Scene(); geoH.overrideMaterial = new THREE.MeshBasicMaterial(); geoH.matrixWorldAutoUpdate = false; }
+  if (!geoH) { geoH = new THREE.Scene(); geoH.overrideMaterial = new THREE.MeshBasicMaterial(); geoH.matrixWorldAutoUpdate = false; geoP = new THREE.Scene(); geoP.matrixWorldAutoUpdate = false; }
+  const fresh = GEO_Q.filter(o => !GEO_C.has(o));
+  if (fresh.length) { fresh.forEach(o => GEO_C.add(o)); geoP.children = fresh.filter(o => !o.isSkinnedMesh && !o.isBatchedMesh).map(o => { const m = o.isInstancedMesh ? new THREE.InstancedMesh(o.geometry, geoH.overrideMaterial, 1) : new THREE.Mesh(o.geometry, geoH.overrideMaterial); if (o.instanceColor) m.instanceColor = o.instanceColor; m.matrixAutoUpdate = false; m.matrixWorldAutoUpdate = false; m.matrixWorld.copy(o.matrixWorld); m.receiveShadow = o.receiveShadow; m.layers.mask = o.layers.mask; return m; });   // as it's drawn: a mirrored shape's own variant
+    const was = gl.getRenderTarget(); let job = Promise.resolve();
+    try { gl.setRenderTarget(PRE.rt); job = gl.compileAsync(geoP, camera); } catch (e) {} finally { gl.setRenderTarget(was); geoP.children = []; }
+    geoT = -1; job.catch(() => {}).then(() => { geoT = setTimeout(geoStep, 0); }); return; }
   const was = gl.getRenderTarget(), su = gl.shadowMap.needsUpdate, au = gl.shadowMap.autoUpdate, ar = gl.info.autoReset, t0 = performance.now();
   try { gl.shadowMap.autoUpdate = false; gl.info.autoReset = false; gl.setRenderTarget(PRE.rt);
     while (GEO_Q.length && performance.now() - t0 < 3) {
