@@ -108,8 +108,13 @@ def run(w, h):
         # v34: the drinks cabinet's front, the storage ottoman's lid
         pg.evaluate("() => R3D.set({sugg: {barcase: true}, plants: 'corner', barflap: false, view: 'breast'})"); pg.wait_for_timeout(800)
         if tap((lambda c: [c[0], 120, -20.5])(pg.evaluate(CEN, "SUGG_G.barcase")), "the drinks cabinet's front"): press("Open the bar"); print("   barflap:", S("barflap"))
-        pg.evaluate("() => R3D.set({sugg: {}, lid: false, aim: {eye: [300, 150, -60], at: [238, 30, -157], fov: 50}})"); pg.wait_for_timeout(800)
+        pg.evaluate("() => R3D.set({sugg: {}, lid: false, sofa: 'mine', aim: {eye: [300, 150, -60], at: [264, 30, -157], fov: 50}})"); pg.wait_for_timeout(800)
         if tap((lambda c: [c[0], 44, c[2]])(pg.evaluate(CEN, "MOV.pouf.pivot")), "the ottoman's lid"): press("Lift the lid"); print("   lid:", S("lid"))
+        # V3.73: the room's sofa is the sofa bed: its chaise's lid, and its bed from its card
+        pg.evaluate("() => R3D.set({lid: false, sbed: false, sofa: 'bed', aim: {eye: [230, 150, -60], at: [80, 30, -170], fov: 50}})"); pg.wait_for_timeout(800)
+        ch = lambda: (lambda c: [c[0] + 30, 44, c[2]])(pg.evaluate(CEN, "MOV.chaise2.pivot"))   # its open end, clear of the C-table
+        if (tap(ch(), "the sofa bed's chaise") or "").startswith("Green corner sofa bed"): press("Open the chaise"); print("   lid:", S("lid"))
+        if (tap(ch(), "the sofa bed's chaise") or "").startswith("Green corner sofa bed"): press("Pull the bed out"); print("   sbed:", S("sbed"), "table out:", pg.evaluate("() => R3D._dbg.WORK.cof.out"))
         # v36: the bar by the sofa's front, the lift-top coffee table's top
         pg.evaluate("() => R3D.set({sugg: {barside: true}, barflap: false, aim: {eye: [170, 140, -150], at: [0, 112, -44], fov: 50}})"); pg.wait_for_timeout(800)
         if tap((lambda c: [20.5, 120, c[2]])(pg.evaluate(CEN, "SUGG_G.barside")), "the bar by the sofa's front"): press("Open the bar"); print("   barflap:", S("barflap"))

@@ -157,7 +157,7 @@ function houseTex(k) {
   T.door_wood = [0.8, 1.0, (g, w, h) => grain(g, w, h, "#b0713f", "rgba(110,60,25,", 70, 12)];
   T.door_white = [0.8, 0.8, (g, w, h) => { g.fillStyle = "#efece5"; g.fillRect(0, 0, w, h); noise(g, w, h, 6000, 0.05, ["#d8d4cb"]); }];
   T.wardrobe = [0.8, 0.8, (g, w, h) => { g.fillStyle = "#f2f1ec"; g.fillRect(0, 0, w, h); noise(g, w, h, 5000, 0.04, ["#dcdad3"]); }];
-  T.rug = [0.25, 0.25, (g, w, h) => weave(g, w, h, "#5b5e66", ["#4b4e56", "#6a6d75", "#545760"], 8, 0.5)];
+  T.rug = [0.25, 0.25, (g, w, h) => weave(g, w, h, "#8e4a32", ["#7a3d28", "#a35a3e", "#86452e"], 8, 0.5)];   // V3.73: the music room's rug, rust
   T.storebox = [0.3, 0.3, (g, w, h) => weave(g, w, h, "#c9c1b2", ["#b9b1a2", "#d6cfc1"], 8, 0.4)];
   T.tapestry = [0.4, 0.4, (g, w, h) => weave(g, w, h, "#d9892a", ["#c97a20", "#e39a3c", "#d08327"], 6, 0.35)];
   T.tile_w = [0.3, 0.3, (g, w, h) => { g.fillStyle = "#c9c7c0"; g.fillRect(0, 0, w, h);   // the WC's 15 × 15 white tiles, grey grout

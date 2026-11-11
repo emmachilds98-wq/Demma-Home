@@ -466,13 +466,23 @@ BIFOLD = {"bed3_door"}   # v69, the client: "we have a bifold white door on the 
 #   the guitars on a double stand and the amp in the front corner; acoustic panels (60 × 60 × 5: E); a rug (105 × 130: E).
 MUSIC = dict(desk=dict(x=(102.0, 270.0), z=(-288.0, -218.0), h=80.0, t=3.0, riser=12.0, ret=dict(x=(205.0, 270.0), z=(-218.0, -120.0)),
                        tray=dict(y=58.0, d=40.0)),
-             keyboard=dict(x=(118.0, 250.0), d=30.0, h=15.0, key_y=72.0), chair=(170.0, -185.0),
-             monitors=[(106.0, -286.0), (247.0, -286.0)],
+             keyboard=dict(x=(118.0, 250.0), d=30.0, h=15.0, key_y=72.0), chair=(186.0, -180.0),
+             # V3.73, client: "review the bedroom 2 also for the music room and make the design better": the monitors and the chair make
+             # an equilateral triangle (the usual mixing rule: 110 apart, the chair 110 from each, its back to the room's length), centred
+             # on the desk; each monitor on a foam wedge that tilts it up to the ear (pads, 4 high)
+             monitors=[(122.5, -286.0), (232.5, -286.0)], pads=4.0,
              chairbed=dict(x=(100.0, 180.0), z1=79.5, d=100.0, h=87.0, bed_l=188.0),
              kallax=dict(x=(6.0, 83.0), z0=-219.5, d=39.0, h=147.0, cols=2, rows=4, drawers=4, drawer_d=33.0),
              amp=dict(x=(2.0, 26.0), z=(31.5, 78.5), h=43.0), guitars=[(60.0, -5.0), (60.0, 23.0)],
-             panels=[("x", 269.0, -205.0, 125.0), ("x", 269.0, -140.0, 125.0), ("c", 103.0, -262.0, 135.0)],
-             rug=dict(x=(95.0, 200.0), z=(-205.0, -75.0)), double_bed=dict(w=135.0, l=190.0),
+             # V3.73: the panels where the sound first bounces: the side wall's first reflection point for the far monitor (z -251, over the
+             # desk's return), one further back beside the chair, the alcove end's, and two behind the chair over the chair-bed (the back
+             # wall's echo); fabric-faced in the room's colours (the records' burgundy, blue, green and ochre), not one grey
+             panels=[("x", 269.0, -281.0, 125.0, "book1"), ("x", 269.0, -150.0, 125.0, "book3"), ("c", 103.0, -262.0, 135.0, "book0"),
+                     ("z", 92.0, 79.5, 112.0, "book5"), ("z", 158.0, 79.5, 112.0, "book1")],
+             # V3.73: a bigger, warmer rug (140 × 200, rust with a cream border) under the chair and out to the chair-bed: it softens the floor's
+             # bounce and warms the white room
+             rug=dict(x=(116.0, 256.0), z=(-215.0, -15.0), border=6.0), double_bed=dict(w=135.0, l=190.0),
+             headphones=dict(x=237.0, z=-120.0, y=66.0), mic=dict(x=262.0, z=-224.0, reach=26.0, y=125.0),   # V3.73: on a hook at the return's end; a boom arm at the corner
              src="client (the music room, the guitars, the amp, the keyboard) + ikea.com (LYCKSELE, KALLAX) + standard sizes (E)")
 # V2.24, the client: "bedroom 2 has a floating plugsocket and things should be moved back towards the real wall between it and the master
 # bedroom": that wall stands at z 79.5 since V1.20 (FIT bed2), but the chair-bed, the amp, the guitars and the socket by the chair-bed were

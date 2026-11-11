@@ -188,7 +188,8 @@ function buildShell() {
     lb(pl, 0, 38, 0, cw, 4, cd, cofM);
     for (const [x, z] of [[-cw / 2 + 5, -cd / 2 + 5], [cw / 2 - 5, -cd / 2 + 5], [-cw / 2 + 5, cd / 2 - 5], [cw / 2 - 5, cd / 2 - 5]]) lb(pl, x, 0, z, 4, 38, 4, cofM);
     movable("coffee", "Coffee table", g, () => ({ x: (cof.x[0] + cof.x[1]) / 2, z: (cof.z[0] + cof.z[1]) / 2, rot: 0 }), cw, cd, [cofM]);
-    WORK.cof = anim(v => { g.position.z = 78 * v * M; }); }   // V3.71: 78 towards the media wall while the sofa bed is out   // v27: it stays put (v26 moved it for an eighth seat)
+    const B_ = R.SOFABED, cofOut = B_ ? B_.cof_out ?? Math.max(0, R.SOFA.back + B_.run_d + B_.bed_out + 4 - cof.z[0]) : 0;   // V3.73: just clear of the open bed (geometry: 34)
+    WORK.cof = anim(v => { g.position.z = cofOut * v * M; }); WORK.cof.out = cofOut; }   // V3.71: towards the media wall while the sofa bed is out   // v27: it stays put (v26 moved it for an eighth seat)
   // v15: the rug, 230 × 160 in front of the sofa (geometry.RUG), with its design and a little thickness
   const RG = R.RUG, rugW = RG.x[1] - RG.x[0], rugD = RG.z[1] - RG.z[0];
   const rug = new THREE.Mesh(new THREE.BoxGeometry(rugW * M, 0.008, rugD * M),

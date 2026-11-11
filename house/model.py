@@ -1511,6 +1511,11 @@ def music(o):
     o.item("music.rug", "The rug", "bed2", kind="decor", src="E", data=("MUSIC", "rug"), axis="x")
     r = Mu["rug"]
     o.box("rug", r["x"][0], y, r["z"][0], r["x"][1], y + 1, r["z"][1])
+    bw = r.get("border", 0)                                            # V3.73: its cream border, inset a little (the records' cream)
+    if bw:
+        x0_, x1_, z0_, z1_ = r["x"][0] + 4, r["x"][1] - 4, r["z"][0] + 4, r["z"][1] - 4
+        for (a, b_, c_, d_) in ((x0_, x1_, z0_, z0_ + bw), (x0_, x1_, z1_ - bw, z1_), (x0_, x0_ + bw, z0_ + bw, z1_ - bw), (x1_ - bw, x1_, z0_ + bw, z1_ - bw)):
+            o.box("book2", a, y + 1, c_, b_, y + 1.4, d_)
     o.item("music.chairbed", "The LYCKSELE chair-bed", "bed2", src="IKEA LYCKSELE (E placed)", data=("MUSIC", "chairbed"), axis="x")
     cb = Mu["chairbed"]; x0, x1 = cb["x"]; z1 = cb["z1"]; z0 = z1 - cb["d"]; h = cb["h"]
     # V2.46 (REAL_PLAN N6): LYCKSELE as it is (ikea.com, 80 × 100 × 87): a black steel tube frame, each side a front leg, a back leg, the
@@ -1556,6 +1561,10 @@ def music(o):
     for lx in (dx0 + 4, (dx0 + dx1) / 2 - 2, dx1 - 8):
         o.box("black", lx, dy, dz0 + 3, lx + 4, dy + dk["riser"] - 2, dz0 + 24)
     my = dy + dk["riser"]
+    pd = Mu.get("pads", 0)                                         # V3.73: each monitor on a foam pad, tweeter up towards the ear
+    for mx, mz in Mu["monitors"]:
+        if pd: o.box("amp_grille", mx, my, mz, mx + 17, my + pd, mz + 22)
+    my += pd
     for mx, mz in Mu["monitors"]:
         o.box("black", mx, my, mz, mx + 17, my + 25, mz + 22)
         o.box("ring", mx + 3, my + 4, mz + 22, mx + 14, my + 15, mz + 22.4)
@@ -1564,6 +1573,21 @@ def music(o):
     o.box("screen", cx_ - 28, my + 6, dz0 + 4, cx_ + 28, my + 38, dz0 + 6)
     o.box("black", cx_ - 22, dy, dz1 - 20, cx_ + 22, dy + 2.5, dz1 - 6)              # a computer keyboard
     o.box("red_gloss", rt["x"][0] + 20, dy, rt["z"][0] + 30, rt["x"][0] + 42, dy + 4.5, rt["z"][0] + 50)   # the interface on the return
+    if "headphones" in Mu:                                         # V3.73: headphones on a hook at the return's end
+        o.item("music.headphones", "Headphones on a hook", "bed2", kind="decor", src="E (closed-back studio headphones)", measure=False)
+        hp = Mu["headphones"]; hx_, hz_, hy_ = hp["x"], hp["z"], y + hp["y"]
+        o.box("steel", hx_ - 1, hy_ + 6, hz_, hx_ + 1, hy_ + 8, hz_ + 4)                 # the hook
+        o.box("black", hx_ - 9, hy_ + 5, hz_ + 2, hx_ + 9, hy_ + 7.5, hz_ + 5)           # the band over it
+        for sx in (-1, 1):
+            o.box("black", hx_ + sx * 9 - 1.5, hy_ - 4, hz_ + 1.5, hx_ + sx * 9 + 1.5, hy_ + 6, hz_ + 5.5)   # the band's sides
+            o.box("amp_grille", hx_ + sx * 9 - 4.5 * (sx > 0) - 0.5 * (sx < 0), hy_ - 11, hz_ + 1, hx_ + sx * 9 + 0.5 * (sx > 0) + 4.5 * (sx < 0), hy_ - 1, hz_ + 9)   # the ear cups
+    if "mic" in Mu:                                                # V3.73: a vocal mic on a boom arm clamped at the desk's corner, swung aside
+        o.item("music.mic", "A mic on a boom arm", "bed2", kind="decor", src="E (a desk boom arm, about 80 reach)", measure=False)
+        mc = Mu["mic"]; mx_, mz_, my_ = mc["x"], mc["z"], y + mc["y"]
+        o.box("black", mx_ - 3, dy - 6, mz_ - 3, mx_ + 3, dy + 3, mz_ + 3)              # the clamp
+        o.box("steel", mx_ - 1, dy + 3, mz_ - 1, mx_ + 1, my_, mz_ + 1)                 # the post
+        o.box("steel", mx_ - mc["reach"], my_ - 1, mz_ - 1, mx_, my_ + 1, mz_ + 1)      # the arm, swung out along the desk
+        o.box("black", mx_ - mc["reach"] - 3, my_ - 18, mz_ - 3, mx_ - mc["reach"] + 3, my_ - 1, mz_ + 3)   # the mic in its shock mount
     o.item("music.chair", "The desk chair", "bed2", src="E", measure=False)
     hx, hz = Mu["chair"]                                           # the chair, facing the desk
     desk_chair(o, hx, hz, y, "-z")                                 # V1.14: a real swivel chair
@@ -1626,11 +1650,14 @@ def music(o):
             o.prism("black", "x", gx + t, gx + t + 0.3, hole)
         o.box("black", gx - 6, y + 4, gz - 1, gx - 2, y + 60, gz + 1)                 # the stand's upright
     o.item("music.panels", "The acoustic panels", "bed2", kind="decor", src="E", data=("MUSIC", "panels"), measure=False)
-    for kind, a1, a2, py in Mu["panels"]:                          # acoustic panels at the desk's side reflection points
+    for kind, a1, a2, py, *mk in Mu["panels"]:                     # acoustic panels at the desk's side reflection points
+        m_ = mk[0] if mk else "panel"                              # V3.73: each its own fabric (one already in the room: no new draw)
         if kind == "x":
-            o.box("panel", a1 - 0.5, y + py, a2, a1 + 1.0, y + py + 60, a2 + 60)
+            o.box(m_, a1 - 4, y + py, a2, a1 + 1, y + py + 60, a2 + 60)   # 5 deep on the wall (was 1.5: a panel that thin does nothing)
+        elif kind == "z":                                          # V3.73: on the back wall, behind the chair
+            o.box(m_, a1, y + py, a2 - 5, a1 + 60, y + py + 60, a2)
         else:
-            o.box("panel", a1, y + py, a2, a1 + 5, y + py + 60, a2 + 60)
+            o.box(m_, a1, y + py, a2, a1 + 5, y + py + 60, a2 + 60)
 
 
 def bathroom(o):
@@ -2503,7 +2530,7 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "eaves": ("#e7e1d6", 0.9), "garage_blue": ("#2c3b63", 0.45), "garage_white": ("#ecebe7", 0.4), "garage_black": ("#26282a", 0.45), "timber": ("#8a5a35", 0.8), "pane": ("#3a4550", 0.08),
     "gloss": ("#ebeae6", 0.16), "gap": ("#9b9a95", 0.6), "black": ("#1d1d1f", 0.5), "black_app": ("#1f2023", 0.35), "glass_dark": ("#17191c", 0.1),
     "ring": ("#2b2c2e", 0.6), "steel": ("#c8cacc", 0.25), "steel_dark": ("#8e9195", 0.35), "worktop": ("#26282a", 0.22), "metro": ("#111214", 0.1),
-    "chrome": ("#e4e6e9", 0.06), "sanitary": ("#e7e8e6", 0.16), "primrose": ("#e3cf5c", 0.25), "tile_w": ("#f2f2ef", 0.12), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "rug": ("#5b5e66", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
+    "chrome": ("#e4e6e9", 0.06), "sanitary": ("#e7e8e6", 0.16), "primrose": ("#e3cf5c", 0.25), "tile_w": ("#f2f2ef", 0.12), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "rug": ("#8e4a32", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
     "cloth0": ("#3d4a5c", 0.95), "cloth1": ("#b9b2a6", 0.95), "cloth2": ("#7a2f2f", 0.95), "cloth3": ("#2f3b2f", 0.95), "cloth4": ("#d8d2c4", 0.95), "cloth5": ("#555555", 0.95), "cloth6": ("#9b8b6e", 0.95), "curtain": ("#f4f3ef", 0.9), "stone": ("#cbc6bd", 0.35), "marble": ("#141416", 0.1), "led": ("#ffffff", 0.3), "lamp_purple": ("#c9a6ff", 0.3), "chalk": ("#222423", 0.85), "storebox": ("#c9c1b2", 0.95), "contact": ("#000000", 1.0), "mattress": ("#f0eee8", 0.9), "pillow": ("#f1efea", 0.95), "trim": ("#5a5d60", 0.5), "gutter": ("#f2f2ef", 0.4), "lead": ("#6c7072", 0.55), "birch": ("#dcc8a2", 0.7), "lycksele": ("#5b6b78", 0.95), "grille": ("#e8dcc4", 0.6), "ceiling": ("#f3f2ee", 0.95),
     "laminate": ("#a9a39a", 0.5), "oak": ("#b8844f", 0.55), "herring": ("#b48a5c", 0.6), "lvt_grey": ("#8e8b87", 0.5), "porcelain": ("#d6d0c4", 0.5),   # V3.14 (N56): the upgrade floors
     "screen": ("#0d0f12", 0.15), "pc_white": ("#eeeeec", 0.3), "pc_glow": ("#dfe6ff", 0.2),   # V3.32 (N82): a note mid-line (V3.14) had left these three out of the list: grey and matt since

@@ -50,7 +50,7 @@ function buildSofaBed() {
   const B = R.SOFABED, so = R.SOFA; if (!B || !so) return;
   const chen = (c, k) => reg(new THREE.MeshPhysicalMaterial({ color: c, roughness: 0.9, sheen: k, sheenRoughness: 0.5, sheenColor: new THREE.Color("#c9d6a4"), bumpMap: HESSIAN, bumpScale: 0.45 }));
   const fab = chen(B.col, 0.9), seam = chen(new THREE.Color(B.col).multiplyScalar(0.62), 0.5);   // the chenille; its seams and buttons, a shade down
-  const feet = reg(new THREE.MeshStandardMaterial({ color: "#1b1b1c", roughness: 0.6 })), steel = reg(new THREE.MeshStandardMaterial({ color: "#232325", roughness: 0.35, metalness: 0.7 }));
+  const steel = reg(new THREE.MeshStandardMaterial({ color: "#232325", roughness: 0.35, metalness: 0.7 })), feet = steel;   // V3.73: the listing's "Black Metal Feet"
   const lining = reg(new THREE.MeshStandardMaterial({ color: "#16181c", roughness: 0.95 }));
   const W = B.w, D = B.run_d, hw = W / 2, hd = D / 2, F = B.foot, t = B.back_t, sh = B.seat_h, cu = 14, base = sh - cu;
   const xc = -hw + B.corner, xa = hw - B.arm, mid = (xc + xa) / 2;            // the corner's edge, the arm's inside face, between the two seats
@@ -58,10 +58,13 @@ function buildSofaBed() {
   for (const x of [-hw + 4, xc, mid, xa - 2, hw - 4]) for (const z of [-hd + 4, hd - 4]) lb(g, x, 0, z, 6, F, 6, feet);   // black block feet
   cush(g, 0, F, -hd + t / 2, W, B.back_h - F, t, fab, 1, 0.8, 4);                     // the back, the whole run
   cush(g, -hw + t / 2, F, t / 2, t, B.back_h - F, D - t, fab, 1, 0.8, 4);             // the corner's side back
+  pipe(g, 0, B.back_h - 1.2, -hd + t - 1.2, W - 6, seam, true); pipe(g, -hw + t - 1.2, B.back_h - 1.2, t / 2 + 1, D - t - 4, seam);   // V3.73: piping along the backs' top edges
   cush(g, (-hw + t + xc) / 2, F, t / 2, B.corner - t, base - F, D - t, fab, 0, 0.6, 1.2);   // the corner's base
   lb(g, mid, base - 3, t / 2, xa - xc, 3, D - t, fab);                                  // the bed's deck under the two seats
   // the arm: a bridge, the two stools tucked under it (they stand out a little at its end, as in the photos)
   cush(g, (xa + hw) / 2, B.arm_h - 18, 0, B.arm, 18, D, fab, 1.4, 0.8, 5);
+  for (const x of [xa + 1.5, hw - 1.5]) pipe(g, x, B.arm_h - 1.6, 0, D - 8, seam);           // V3.73: the arm's top edges piped
+  pipe(g, (xa + hw) / 2, B.arm_h - 1.6, hd - 1.5, B.arm - 6, seam, true);
   for (const z of [-hd + 3, hd - 3]) cush(g, (xa + hw) / 2, F, z, B.arm, B.arm_h - 18 - F, 6, fab, 0, 0.5, 1.2);
   lb(g, xa + 2, F, 0, 4, B.arm_h - 18 - F, D - 20, fab);
   const T_ = B.stool, tx = hw - T_.w / 2 + 4;
@@ -116,6 +119,10 @@ function buildSofaBed() {
   lb(hinge, 0, -0.2, C.d / 2, C.w - 6, 0.3, C.d - 6, lining, false);
   lb(hinge, 0, -5, C.d + 0.4, 8, 5, 0.8, fab);                                          // the pull tab
   tufts(hinge, [-0.3, 0, 0.3].map(f => [f * C.w, lidH + 1.2 - 0.25, C.d / 2]), seam);
+  // V3.73: an ochre knit throw folded on the chaise's end, a fold hanging over its front (the rug's ochre); it lifts with the lid
+  const knit = fabricMat("#c98f3a"), tw = 40, tx0 = C.w / 2 - 5 - tw / 2;   // on the table side, clear of the tab
+  cush(hinge, tx0, lidH + 0.8, C.d / 2 + 4, tw, 3.2, C.d - 18, knit, 0.6, 0.4, 1.2);
+  cush(hinge, tx0, lidH - 16, C.d + 1.6, tw, 18, 1.6, knit, 0, 0.3, 0.7);
   const struts = new THREE.Group(); c.add(struts);
   for (const x of [-(C.w / 2 - 8), C.w / 2 - 8]) { const st = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.3, 8), steel);
     st.position.copy(v3(x, bodyH + 2, -C.d / 2 + 14)); st.rotation.x = -0.7; struts.add(st); }

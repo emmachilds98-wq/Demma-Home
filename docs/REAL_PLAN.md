@@ -476,6 +476,9 @@ it again; review it, or finish it if its PR has gone quiet (merge `main` in, tak
 | N125 | Steering round the house on a PC; looking into a floor (the client, 11 Nov) | navigation's thread | Done V3.68 |
 | N126 | Swap the sofa and ottoman for the green corner sofa bed, to test its fit (the client, 11 Nov) | the sofa's thread | Done V3.71 |
 | N127 | The green sofa bed in more detail: upholstery, piping, buttons, its frame (the client, 11 Nov) | the sofa's thread | Done V3.72 |
+| N128 | The sofa bed the room's sofa; the record table, ottoman and red lamp moved to suit it (the client, 11 Nov) | the sofa's thread | Done V3.73 |
+| N129 | The living room's lights layered: where each head points (the client, 11 Nov) | the sofa's thread | Done V3.73 |
+| N130 | The music room made better: listening triangle, panels, rug, headphones, mic (the client, 11 Nov) | the sofa's thread | Done V3.73 |
 | N31 | KTX2 photos | 13 | PR #133: paused, **do not merge** till Emma says yes |
 
 Done since section 18 was written: N109 V3.58, N114 V3.59, N118 V3.60, N119 V3.61. Waiting on Emma: `docs/HANDOVER.md` "Waiting on Emma" and

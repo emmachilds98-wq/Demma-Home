@@ -7,7 +7,9 @@ import geometry as G
 import ideas
 
 EPS = 0.05          # an overlap smaller than half a millimetre is a touch, not a clash
-ONE_PIECE = (("sofa seat", "sofa back", "chaise"),)                    # parts of one thing: never a clash with each other
+# parts of one thing: never a clash with each other (V3.73: your sofa and the sofa bed are one or the other in the same place)
+SOFABED_PARTS = ("sofa bed", "sofa bed's chaise", "sofa bed's stools")
+ONE_PIECE = (("sofa seat", "sofa back", "chaise") + SOFABED_PARTS,)
 MEANT = {frozenset(("dining cabinet", "bar")): "a 3 mm shadow gap, scribed",
          frozenset(("chaise", "C-table's foot and upright")): "its foot slips 3 under the sofa's edge, on purpose"}   # gaps under 1 cm on purpose
 # v39: the rear speakers' poles stand in the 3 cm between the radiator and the sofa; their flat bases slide under the radiator
@@ -18,8 +20,15 @@ for _i in (1, 2):
 MEANT[frozenset(("radiator", "curtains, drawn"))] = "the curtains hang just clear of the radiator"
 for _i in (1, 2):
     MEANT[frozenset((f"rear speaker {_i}", "curtains, drawn"))] = "the speaker sits just in front of the curtains"
-for _o in ("sofa seat", "sofa back", "chaise"):
+for _o in ("sofa seat", "sofa back", "chaise") + SOFABED_PARTS:
     MEANT[frozenset((_o, "curtains, drawn"))] = "the curtains hang just behind the sofa"
+for _i in (1, 2):                                                       # V3.73: the sofa bed stands on the same line
+    for _p in ("base", "pole"):
+        for _o in SOFABED_PARTS:
+            MEANT[frozenset((f"rear speaker {_i}'s {_p}", _o))] = "the gap behind the sofa"
+for _o in SOFABED_PARTS:
+    MEANT[frozenset(("ottoman", _o))] = "never shown together: your ottoman goes with your sofa"
+MEANT[frozenset(("sofa bed's chaise", "C-table's foot and upright"))] = "its foot slips under the chaise's end, on purpose"
 
 
 def box(name, x, y, z):
@@ -58,6 +67,12 @@ def pieces():
     b.append(box("sofa seat", (sx0, sx1), (0, 45), (g.SOFA_BACK_Z, g.SOFA_FRONT_Z)))
     b.append(box("sofa back", (sx0, sx1), (0, g.SOFA_H), (g.SOFA_BACK_Z, g.SOFA_BACK_Z + 20)))
     b.append(box("chaise", g.CHAISE_X, (0, 45), (g.SOFA_BACK_Z, g.CHAISE_END_Z)))
+    if getattr(g, "SOFABED", None):                               # V3.73: the green sofa bed (the room's sofa now), in the same corner
+        SB, fz = g.SOFABED, g.SOFABED_FRONT_Z
+        b.append(box("sofa bed", g.SOFABED_X, (0, SB["h"]), (g.SOFA_BACK_Z, fz)))
+        b.append(box("sofa bed's chaise", (g.SOFABED_X[0], g.SOFABED_X[0] + SB["chaise"]["w"]), (0, SB["chaise"]["h"] + 2), (fz, fz + SB["chaise"]["d"])))
+        st = SB["stool"]; zc = g.SOFA_BACK_Z + SB["run_d"] / 2
+        b.append(box("sofa bed's stools", (g.SOFABED_X[1] - st["w"] + 4 - 0.1, g.SOFABED_X[1] + 4), (0, st["h"]), (zc - st["d"] - 1, zc + st["d"] + 1)))
     b.append(box("record table", g.COFFEE["x"], (0, g.RECORD_TABLE["h"]), g.COFFEE["z"]))      # v38: the plan's coffee table
     import ideas as _I                                                                              # v43: the C-table, in the plan
     T, ze = _I.CTABLE, g.CHAISE_END_Z
@@ -175,6 +190,10 @@ def moving_pieces():
     Rt, cf = G.RECORD_TABLE, G.COFFEE
     # v38: the record table's lid, open on its piano hinge along the TV side (stood up about 80°, the stays' stop)
     out.append(box("record table's lid, open", cf["x"], (Rt["h"], Rt["h"] + Rt["d"]), (cf["z"][1] - Rt["lid"] - 9.0, cf["z"][1])))
+    if getattr(G, "SOFABED", None):                               # V3.73: the sofa bed's bed out, and the record table stepped aside for it
+        SB, fz, x0 = G.SOFABED, G.SOFABED_FRONT_Z, G.SOFABED_X[0] + G.SOFABED["corner"]
+        out.append(box("sofa bed, pulled out", (x0 + 1, G.SOFABED_X[1] - SB["arm"] - 1), (0, SB["seat_h"]), (fz, fz + SB["bed_out"])))
+        out.append(box("record table, moved for the bed", cf["x"], (0, Rt["h"]), (cf["z"][0] + SB["cof_out"], cf["z"][1] + SB["cof_out"])))
     return out
 
 
@@ -266,8 +285,10 @@ def report():
                 out.append(("clash", d[0] + " (dining for six)", p[0], f"overlap {o[0]:.1f} × {o[1]:.1f} × {o[2]:.1f}"))
     for m in moving_pieces():
         for p in P:
-            if p[0] == "record table" and m[0].startswith("record table"):
-                continue
+            if p[0] == "record table" and (m[0].startswith("record table") or m[0] == "sofa bed, pulled out"):
+                continue                                           # it steps aside for the bed (the moved box is checked instead)
+            if m[0] == "sofa bed, pulled out" and any(p[0] in grp for grp in ONE_PIECE):
+                continue                                           # it comes out of the sofa
             o = overlap(m, p)
             if all(v > EPS for v in o):
                 out.append(("clash", m[0], p[0], f"overlap {o[0]:.1f} × {o[1]:.1f} × {o[2]:.1f}"))

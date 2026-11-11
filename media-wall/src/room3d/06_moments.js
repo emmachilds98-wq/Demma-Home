@@ -60,7 +60,7 @@ function bedSteps() {
   const B = R.SOFABED, w = B.w - B.corner - B.arm, l = B.seat_d + B.bed_out;
   return [
     { title: "The sofa", text: "Seats up, the coffee table where it stands.", dur: 2.4, acts: [], aim: BED_AIM },
-    { title: "Move the coffee table", text: "It goes 78 towards the media wall, clear of the bed.", dur: 3, acts: [[WORK.cof, 1, 0, 2.4]] },
+    { title: "Move the coffee table", text: `It goes ${Math.round(WORK.cof.out || 0)} towards the media wall, clear of the bed.`, dur: 3, acts: [[WORK.cof, 1, 0, 2.4]] },
     { title: "Pull the bed out", text: "By the two loops under the middle seats; it rolls out on its frame.", dur: 3.4, acts: [[WORK.sbed, 0.7, 0, 2.8]] },
     { title: "It rises level", text: `The mattress lifts level with the seats: about ${Math.round(w)} × ${Math.round(l)} to sleep on.`, dur: 2.6, acts: [[WORK.sbed, 1, 0, 1.8]] },
     { title: "Open", text: "", dur: 2.4, acts: [] },

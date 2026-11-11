@@ -455,6 +455,17 @@ BAR1_HEADS = [(31.5, *SAGE, (40.0, 212.0, 30.0)),                 # (v15 aims, k
 # every head straight down, spread a little along the bar, so the pools overlap into an even light
 HEAD_SPREAD = 1.6
 BAR1_HEADS = [(off, col, stem, (PEND_X, 0.0, PEND_Z + off * HEAD_SPREAD)) for off, col, stem, _ in BAR1_HEADS]
+# V3.73, client (11 Nov 2026): "What would you suggest on direction of the living room lights, put this suggestion into the main design".
+# Layered light (ambient, task, accent) rather than four pools on the floor: light the walls and the surfaces you use, never the screen or
+# a seated face. Bar 1 (between the TV and the sofa): sage washes the LPs and shelves left of the TV (beside the screen, not on it: no
+# reflection), blue is the record table's task light, pink washes the side wall over the chaise (above head height, so it lights the
+# corner seat without glare), mustard grazes the curtains behind the sofa over the heads of whoever sits there (the window wall glows, the
+# room reads deeper). The ceiling strip, the media wall's strips and the lamp stay the even light under it. Each head still turns on its card.
+LIGHT_AIMS = {"bar1": [(28.0, 150.0, -10.0), (177.0, 45.0, -131.0), (0.0, 150.0, -170.0), (130.0, 150.0, -305.0)],
+              # bar 2 (by the stairs): pink straight down onto the way in, sage on the stairs wall's shelf and what stands on it, blue and
+              # mustard crossing onto the open dining table from either side of its middle
+              "bar2": [None, (467.0, 205.0, -150.0), (330.0, 76.0, -120.0), (395.0, 76.0, -150.0)]}
+BAR1_HEADS = [(off, col, stem, LIGHT_AIMS["bar1"][i] or tgt) for i, (off, col, stem, tgt) in enumerate(BAR1_HEADS)]
 
 
 def bar_head_xz(bx, bz, off):
@@ -539,7 +550,28 @@ SOFA_POUF = dict(SOFA_POUF, w=OTTOMAN["w"], d=OTTOMAN["d"], h=OTTOMAN["h"],
 SOFABED = dict(name="Green corner sofa bed", pick="Lovesofas Amelia, Blade Green chenille, right hand", col="#4f5d33",
                w=264.0, d=165.0, h=95.0, seat_h=43.0, seat_d=53.0, run_d=100.0, back_h=78.0, back_t=20.0, arm=40.0, arm_h=62.0,
                corner=100.0, foot=10.0, bed_out=70.0, heads=3,
-               chaise=dict(w=100.0, d=65.0, h=43.0, lid=12.0), stool=dict(w=40.0, d=42.0, h=40.0), cost=(700, 950))
+               chaise=dict(w=100.0, d=65.0, h=43.0, lid=12.0), stool=dict(w=40.0, d=42.0, h=40.0), cost=(700, 950), default=True)
+# V3.73, client (11 Nov 2026): "make the new green version the main version showing in the room but keep ability to switch between designs.
+# Adjust the tables in front of the sofa however needed to make it fit with the new sofa as well as the lamp". The room opens on the sofa
+# bed (SOFABED["default"]); Room → The sofa still swaps your own back in. Around it, by the usual living-room rules (a coffee table 35–45
+# from the seats, two thirds of the seating's length, centred on the open seats; a reading lamp beside the arm, its light over the
+# shoulder; 30 or more to walk past):
+SOFABED_FRONT_Z = SOFA_BACK_Z + SOFABED["run_d"]                     # -196: the run's front (your sofa's: -201)
+SOFABED_X = (SOFA_X[0], SOFA_X[0] + SOFABED["w"])                     # 2 .. 266
+_open = (SOFABED_X[0] + SOFABED["corner"], SOFABED_X[1] - SOFABED["arm"])   # 102 .. 226: the two seats with the bed under them
+# the coffee table (the plan's record table stands on it): 40 in front of the seats (it was 10 from your sofa, 5 from this one), 30 clear of
+# the chaise's side so legs go up on the chaise and a hand reaches the table
+COFFEE = dict(COFFEE, x=(_open[0] + 30.0, _open[0] + 30.0 + (COFFEE["x"][1] - COFFEE["x"][0])),
+              z=(SOFABED_FRONT_Z + 40.0, SOFABED_FRONT_Z + 40.0 + (COFFEE["z"][1] - COFFEE["z"][0])))   # x 132–222, z -156..-106
+# with its bed pulled out (70 from the seats) the table steps towards the media wall, just clear of it
+SOFABED["cof_out"] = max(0.0, SOFABED_FRONT_Z + SOFABED["bed_out"] + 4.0 - COFFEE["z"][0])   # 34
+# your sofa's ottoman (when your sofa is shown) steps along to stay beside the table: 4 clear of it, as before
+SOFA_POUF = dict(SOFA_POUF, x=(COFFEE["x"][1] + 4.0, COFFEE["x"][1] + 4.0 + SOFA_POUF["w"]))
+# the red lamp beside the arm, behind the seat line: 12 clear of the stools' ends (they slide out of the arm towards it) and over the shoulder
+# of whoever sits at the arm end
+# its bottom (purple) head is the reading light: over the shoulder onto the seat at the arm end (the room's middle got it before)
+LAMP_READ = (_open[1] - (_open[1] - _open[0]) / 4, 50.0, SOFABED_FRONT_Z - SOFABED["seat_d"] / 2)   # 195, 50, -222.5
+FLOOR_LAMP_SPOTS["sofa"] = ("At the sofa's arm end", (SOFABED_X[1] + 4.0 + 12.0 + FLOOR_LAMP["base"] / 2, SOFA_BACK_Z + 16.0))   # 296, -280: clear of the drawn curtains
 
 
 # ---------------------------------------------------------------- v26 (20 Oct): option C, the dining cabinet; v27: the plan, for six
@@ -949,7 +981,7 @@ FIRM = dict(
 # v38 (the clash check): with the table out for six, the ottoman can't stay by the coffee table (the table's end reaches 7 into it, and
 # pushing it to the sofa doesn't clear that); its dinner spot is in front of the media wall, clear of the table, the chairs and the
 # vinyl stand. The 3D room moves it there while the table is out (unless you've placed it yourself).
-SOFA_POUF["dinner"] = dict(x=(190.0, 266.0), z=(-115.0, -39.0))
+SOFA_POUF["dinner"] = dict(x=(106.0, 182.0), z=(COFFEE["z"][1] + 4.0, COFFEE["z"][1] + 80.0))   # V3.73: past the moved record table, in front of the TV (clear of the plant stand)
 
 
 # ---------------------------------------------------------------- v38: the door and the plant, and the bar to suit
