@@ -3,11 +3,11 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.4 (12 Nov 2026). V4.4 (N165, N164): a steadier speed check; the phone's top row checked. V4.3 (N167):
+**Version:** V4.5 (12 Nov 2026). V4.5 (N152): will the sofa bed go in, a line on its card and in the plan's options. V4.4 (N165, N164): a steadier speed check; the phone's top row checked. V4.3 (N167):
 bedroom 3's two artisan oak cube shelves and the oak flip-up table. V4.2 (N159, N166): the house framed to the screen; the
 budgets lowered. V4.1 (N157, N158): the house on its own unless Gardens or Next door is on; a PC's drag swings the view the way
 you drag. V4.0 (N162): Home Plan V4.
-The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.4 ↻"): on the
+The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.5 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 21 (12 Nov: Home Plan V4, the house on its own, its real surroundings, the views; open: N160, N161 on the client's screenshots,
@@ -82,7 +82,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 
 **The living room (the media wall project):**
 - The sofa bed (Lovesofas Amelia, Blade Green; an option, no buy rows) is the room's sofa; Room → The sofa swaps yours back,
-  upholstered the same way (V3.86).
+  upholstered the same way (V3.86). Its card says if its biggest box goes in the doors (`fit.sofabed_fit_line`, Measure's rows; V4.5).
 - Its bed pulls out and lifts on a scissor frame; its five headrests flip up on hinges; its stools slide out; its chaise lifts.
   Its cushions carry their own shade where they meet (V3.81), piping in their edges and buttons in dimples (V3.85). Pulled out,
   Make up the bed lays a duvet and pillows on it; the chaise's storage holds the bedding (V3.82).
@@ -140,7 +140,7 @@ Quality is under View → More (HD or Fast). `?perf` shows the speed in a box ab
    keep it by day, or follow the time (evening by default: the house would open at dusk)?
 2. The speed from the iPhone 15 Pro and the RTX 5070: open the house, move a moment, then Measure → Send.
 3. KTX2 (N31, #133; section 20's N141): confirm before the workflow builds the encoder. Dark panels on a dark device, or cream.
-4. The living room door's real width (drawn 67, a guess): the sofa bed's largest box is 166 × 101 × 68 and needs 70 clear (N152).
+4. The living room door's width (drawn 67, a guess; the sofa bed's biggest box needs 70: "3 short") and the front door's (82) (N152).
 5. The sofa bed's price (about £700–950; the sandbox shows dollars). A microwave photo, if there is one.
 6. Still to measure (all in Measure): the bathroom door (about 61 in the photo, drawn 68), the boiler cupboard, the bathroom's ceiling
    over the toilet and its slope, the vanity, the bath (184), the hall's door down (66) and bench, the kitchen's radiator, the WC window

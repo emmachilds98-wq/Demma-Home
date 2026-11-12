@@ -355,12 +355,14 @@ def other_options_html():
         ("Easy-care plants (Look: Plants)", "The stand and the sill", "snake plants and pothos in 12 cm pots", "9–15 each", sup("snakeplant")),
         ("One pot finish for all (Look: Pots)", "The stand, the sill, the shelf", "about 23 pots, 12–24 cm", "3–8 each", sup("persillade")),
         ("Self-watering inserts", "The stand's bigger pots", "15 across, 1.2 litres, in a 16–17 pot", "7 each", sup("elhoinsert")),
+        ("The green corner sofa bed (Room, The sofa)", "The sofa's corner", f"{n(g.SOFABED['w'])} × {n(g.SOFABED['sec_d'])} × {n(g.SOFABED['h'])}", "700–950", sup("amelia")),   # V4 (N152)
         (f"Decor to try ({len(deco)} pieces)", "Round the room", "typical shop sizes", f"{dlo:,}–{dhi:,} together", ""),
         (f"Small ideas ({len(ideas.idea_options())})", "Round the room", "drawn to the room", f"{ilo:,}–{ihi:,} together", ""),
     ]
     tr = "".join(f"<tr><td>{a}{s}</td><td>{b}</td><td>{c}</td><td class='num'>{d}</td></tr>" for a, b, c, d, s in rows)
     return ("<p>Not in the plan or the costs. Each one is a switch in the 3D room (Room, Try options); ask for a build by name.</p>"
-            f"<table class='tight'><tr><th>Option</th><th>Where</th><th>Size (cm)</th><th class='num'>About £</th></tr>{tr}</table>")
+            f"<table class='tight'><tr><th>Option</th><th>Where</th><th>Size (cm)</th><th class='num'>About £</th></tr>{tr}</table>"
+            f"<p class='note'>Will the sofa bed go in? {fit.sofabed_fit_line()}.</p>")   # V4 (N152)
 
 
 OPT_OWN = {"barcase", "bartrolley", "barside", "cotswoldbasket", "liftcoffee", "windowseat", "hallbench", "wardrobe", "overdoor",
