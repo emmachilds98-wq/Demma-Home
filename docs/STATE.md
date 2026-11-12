@@ -3,11 +3,11 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.3 (12 Nov 2026). V4.3 (N167): bedroom 3's two artisan oak cube shelves and the oak flip-up table under them.
-V4.2 (N159, N166): the house framed to the screen; the budgets lowered. V4.1 (N157, N158): the house on its own unless Gardens or
-Next door is on; a PC's drag swings the view the way you drag. V4.0 (N162): Home Plan V4. V3.93 (N147): Decide's choices show the
-place. V3.92 (N143): soft cloud in the sky. V3.91 (N150): drag a piece in any room.
-The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.3 ↻"): on the
+**Version:** V4.4 (12 Nov 2026). V4.4 (N165, N164): a steadier speed check; the phone's top row checked. V4.3 (N167):
+bedroom 3's two artisan oak cube shelves and the oak flip-up table. V4.2 (N159, N166): the house framed to the screen; the
+budgets lowered. V4.1 (N157, N158): the house on its own unless Gardens or Next door is on; a PC's drag swings the view the way
+you drag. V4.0 (N162): Home Plan V4.
+The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.4 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 21 (12 Nov: Home Plan V4, the house on its own, its real surroundings, the views; open: N160, N161 on the client's screenshots,
