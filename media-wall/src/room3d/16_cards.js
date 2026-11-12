@@ -354,7 +354,7 @@ function renderAct() {
   if (fields) { const w = document.createElement("div"); w.className = "r3d-actfields";   // V1.50: a piece's sizes, a stepper each
     w.innerHTML = fields.map(([f, t, v]) => `<div class="fld"><span>${t}</span><span class="stp"><button type="button" data-hstep="${f}" data-by="-1" aria-label="${t}: 1 cm less">−</button>`
       + `<input type="number" inputmode="decimal" step="1" value="${v}" data-hfield="${f}" aria-label="${t} in cm"><button type="button" data-hstep="${f}" data-by="1" aria-label="${t}: 1 cm more">+</button></span></div>`).join("")
-      + `<p class="note">${DS() && DS().mode === "shared" ? "Saved for you both" : "Saved on this device"}</p>`;
+      + `<p class="note">${/^hsize:/.test(actId) ? "Drag it on the floor to move it. " : ""}${DS() && DS().mode === "shared" ? "Saved for you both" : "Saved on this device"}</p>`;   // V3.91 (N150)
     box.before(w); }
   if (/^(hitem|hsize|hswap|hadd):/.test(actId)) selOf(actId.split(":")[1]); else clearSel();
   // v39 (the approved redesign): a card shows its first three buttons; everything else sits under More
