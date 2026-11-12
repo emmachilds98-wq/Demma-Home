@@ -171,7 +171,7 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id.startsWith("hitem:")) { const k = id.slice(6), it = HIT(k); if (!it) return null;   // V1.50: a piece in the house, its size
     const sw = pieceNow(k).swap;
     return [sw ? HCAT[sw].n : it.n, pieceLine(k), [btn(it.op ? "Change its size" : "Move or resize", { actopen: "hsize:" + k }), ...(it.add ? [btn(it.look ? "Change plant" : "Change piece", { actopen: "hadd:" + k })] : swapKind(k) ? [btn("Swap it", { actopen: "hswap:" + k })] : []),
-      ...(pieceDelta(k).some(Boolean) && !it.add ? [btn("As planned", { hreset: k })] : []), ...(it.op ? [] : [btn("Remove", { hremove: k })]),
+      ...(pieceDelta(k).some(Boolean) && !it.add ? [btn("As planned", { hreset: k })] : []), ...(it.op ? [] : [btn("Take it out", { hremove: k })]),
       ...(it.k === "window" || /^(back|garage)_door$/.test(k) ? [btn("Colour outside", { actopen: "fin:outside:9" })] : []), ...upsBtn(it.r)], null,   // V2.38 (F12): its frame's outside
       it.k === "light" && it.r ? `<div class="r3d-fin"><span class="r3d-finlab">The bulbs</span>${finBulbTray(it.r)}${finFitTray(it.r)}</div>` : /\.bed$/.test(k) && it.r ? finBedTray(it.r) : null]; }   // N5d: a bed's bedding   // V2.9: a light's bulbs; V2.15: its fitting
   if (id.startsWith("hsize:")) { const k = id.slice(6), it = HIT(k); if (!it) return null; const c = pieceNow(k), door = it.k === "door";
@@ -234,7 +234,7 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id === "records") return ["Vinyl stand", S.lp ? "Front records lifted out" : "Two face-out bays, LPs filed below", [
       btn(S.lp ? "Put the records back" : "Lift out the front records", { lp: S.lp ? "in" : "out" }),
       btn(S.ideas.clean ? "Remove the record caddy" : "Add a record caddy", { idea: "clean" }, !!S.ideas.clean),
-      btn("Move it", { actedit: "records" })]];
+      btn("Move it", { actedit: "records" }), btn("Take it out", { takeout: "mov:records" })]];
   if (id.startsWith("sg:") || id.startsWith("id:")) {
     const sg = id.startsWith("sg:"), k = id.slice(3), nm = ((sg ? PD.sugg : PD.ideas)[k] || [k])[0], it = sg && MOV["sg_" + k];
     if (!(sg ? S.sugg : S.ideas)[k]) return null;                        // taken away: the card closes
@@ -248,23 +248,32 @@ function actItems(id) {     // [title, how it is now, buttons]
       ...(k === "stairscurtain" ? [btn(S.scopen ? "Draw it across" : "Open it", { scopen: S.scopen ? "shut" : "open" })] : []),   // V3.31
       ...(k === "stairdrawers" ? [btn(S.sdraw ? "Push the drawers in" : "Pull the drawers out", { sdraw: S.sdraw ? "in" : "out" })] : []),   // v37
       ...(sg ? (SVAR[k] || []).map(([v, n]) => btn(n, { svar: `${k}:${v}` }, svarOf(k) === v)) : []),
-      ...(it && !it.fixed ? [btn("Move it", { actedit: it.id })] : []),
-      btn("Remove", sg ? { sugg: k } : { idea: k }), btn("Read about it", { actideas: (sg ? "sugg-" : "idea-") + k })]]; }
+      ...(it && !it.fixed ? [btn("Move it", { actedit: it.id })] : []), ...(k === "liftcoffee" || k === "recordtable" ? [btn("Move it", { actedit: "coffee" })] : []),
+      btn("Take it out", { takeout: k === "liftcoffee" || k === "recordtable" ? "mov:coffee" : (sg ? "sugg:" : "idea:") + k }),   // V3.75: the table goes, not just its top (Room → Taken out)
+      btn("Read about it", { actideas: (sg ? "sugg-" : "idea-") + k })]]; }
   if (id === "mov:pouf") return ["Storage ottoman", S.lid ? "Lid off: games in three layers, cards along one side" : "Navy velvet: games and cards inside", [   // v34
-      btn(S.lid ? "Put the lid back" : "Lift the lid", { lid: S.lid ? "on" : "off" }), btn("Move it", { actedit: "pouf" }), btn("Read about it", { actgo: "c-room" })]];
+      btn(S.lid ? "Put the lid back" : "Lift the lid", { lid: S.lid ? "on" : "off" }), btn("Move it", { actedit: "pouf" }), btn("Take it out", { takeout: "mov:pouf" }), btn("Read about it", { actgo: "c-room" })]];
   if (id === "mov:sofa") return ["Your sofa", "Blue corduroy, as now", [   // V3.71: the swap is on its card
-      btn("Try the green sofa bed", { sofa: "bed" }), btn("Move it", { actedit: "sofa" }), btn("From above", { view: "plan" })]];
-  if (id === "mov:sofa2" || id === "mov:chaise2") { const B = R.SOFABED;
-    return [B.name, S.sbed ? "Bed pulled out" : `${B.w} × ${B.d} with its chaise, two stools`, [
-      btn("Back to my sofa", { sofa: "mine" }), btn(S.sbed ? "Push the bed in" : "Pull the bed out", { sbed: S.sbed ? "in" : "out" }), btn("Watch it open", { showopen: "bed" }),
-      btn(S.lid ? "Shut the chaise" : "Open the chaise", { lid: S.lid ? "on" : "off" }),
+      btn("Try the green sofa bed", { sofa: "bed" }), btn("Move it", { actedit: "sofa" }), btn("Take it out", { takeout: "mov:sofa" }), btn("From above", { view: "plan" })]];
+  if (id === "mov:sofa2" || id === "mov:chaise2") { const B = R.SOFABED, ch = id === "mov:chaise2", up = Object.values(S.hr || {}).some(Boolean);
+    /* V3.75, client: "the sofa matches the listing ... with all its features ... Upgrade and improve ui cards": what it does first (the bed,
+       the headrests, the stools), the five headrests a row of their own, each flipping up on its hinge; then the chaise, the show, moving
+       it, taking it out, yours back and the listing itself */
+    const heads = `<div class="r3d-fin"><span class="r3d-finlab">Headrests: tap one to flip it up or down</span><div class="r3d-finsc" role="group" aria-label="Headrests">${
+      ["Arm seat", "Middle", "Corner", "Corner side", "Side end"].map((nm, i) => `<button type="button" data-hr="${i}" aria-pressed="${!!(S.hr && S.hr[i])}">${nm}</button>`).join("")}</div></div>`;
+    if (ch) return ["Its storage chaise", `${B.chaise.w} × ${B.chaise.d}, ${B.chaise.h} high · the lid lifts on gas struts`, [
+      btn(S.lid ? "Shut the chaise" : "Open the chaise", { lid: S.lid ? "on" : "off" }), btn("Move the chaise", { actedit: "chaise2" }), btn("Take the chaise out", { takeout: id }),
+      btn("The sofa bed", { actopen: "mov:sofa2" })]];
+    return [B.name, S.sbed ? "Bed pulled out, level with the seats" : `${B.w} × ${B.d}, ${B.h} high · seat ${B.seat_h} high, ${B.seat_d} deep · Blade Green`, [
+      btn(S.sbed ? "Push the bed in" : "Pull the bed out", { sbed: S.sbed ? "in" : "out" }),
+      btn(up ? "Headrests down" : "Headrests up", { hrall: up ? "down" : "up" }),
       btn(S.stools ? "Push the stools in" : "Pull the stools out", { stools: S.stools ? "in" : "out" }),   // V3.74
-      { sep: "Raise the headrests" },
-      ...["Arm seat", "Middle seat", "Corner", "Corner side", "Side end"].map((nm, i) => btn(nm, { hr: String(i) }, !!(S.hr && S.hr[i]))),
-      btn(Object.values(S.hr || {}).some(Boolean) ? "All down" : "All up", { hrall: Object.values(S.hr || {}).some(Boolean) ? "down" : "up" }),
-      btn(id === "mov:sofa2" ? "Move it" : "Move the chaise", { actedit: id.slice(4) }), btn("From above", { view: "plan" })]]; }
+      btn(S.lid ? "Shut the chaise" : "Open the chaise", { lid: S.lid ? "on" : "off" }), btn("Watch the bed open", { showopen: "bed" }),
+      btn("Move it", { actedit: "sofa2" }), btn("Take it out", { takeout: id }), btn("Back to my sofa", { sofa: "mine" }),
+      btn("The listing", { actlink: "https://www.amazon.co.uk/dp/B0HDC8WYBT" }), btn("From above", { view: "plan" })], null, heads]; }
   if (id.startsWith("mov:")) { const it = MOV[id.slice(4)]; if (!it) return null;
-    return [it.label, it.fixed ? "Built in: it comes off, but doesn't move" : "Drag it in Edit, or change its colour", [btn(it.fixed ? "Take off or put back" : "Move it", { actedit: it.id })]]; }
+    return [it.label.replace(/ \(suggested\)$/, ""), it.fixed ? "Built in: it comes off, but doesn't move" : `${Math.round(it.w)} × ${Math.round(it.d)} cm`, [   // V3.75: its size; turn or take it out from here
+      btn(it.fixed ? "Take off or put back" : "Move it", { actedit: it.id }), ...(it.fixed || it.lamp ? [] : [btn("Turn it", { turnit: it.id })]), btn("Take it out", { takeout: "mov:" + it.id })]]; }
   return null;
 }
 /* v38: a fixture's card: on or off, turn it as a whole (15° a tap, 5° with Shift held), then one head at a time */
@@ -308,7 +317,7 @@ function fixCard(id, on) {
     btn("←", { headaim: `${k}:yaw:-10` }, undefined, "q", "Aim it left"), btn("→", { headaim: `${k}:yaw:10` }, undefined, "q", "Aim it right"),
     btn("↑", { headaim: `${k}:tilt:10` }, undefined, "q", "Aim it up"), btn("↓", { headaim: `${k}:tilt:-10` }, undefined, "q", "Aim it down"),
     btn(`Colour: ${HEAD_COLS[Math.max(0, ci)][1]}`, { headcol: k }),
-    ...(id === "lamp" ? [btn("Move it", { actedit: "lamp" })] : [])]];
+    ...(id === "lamp" ? [btn("Move it", { actedit: "lamp" }), btn("Take it out", { takeout: "mov:lamp" })] : [])]];
 }
 function fixAct(d, fine) {             // the card's fixture and head buttons; true if one was handled
   const keyOf = v => v.split(":").slice(0, 2).join(":"), edit = (k, f) => { const h = Object.assign({}, headOf(k)); f(h); if (Object.keys(h).length) S.head[k] = h; else delete S.head[k]; };
@@ -402,6 +411,7 @@ if (act) {
     if (d.actmk) { closeAct(); window.dispatchEvent(new CustomEvent("demma-open", { detail: { sheet: "build", mk: d.actmk } })); return; }   // v44
     if (d.actideas) { closeAct(); window.dispatchEvent(new CustomEvent("demma-open", { detail: { sheet: "ideas", item: d.actideas } })); return; }   // v34
     if (d.actedit) { const id = d.actedit; closeAct(); setEdit(true); select(id); return; }
+    if (d.actlink) { window.open(d.actlink, "_blank", "noopener"); return; }                              // V3.75: the listing
     if (fixAct(d, e.shiftKey)) return;                                   // v38: a fixture's turn, its heads
     if (d.optcyc) { const [pl, ix] = d.optcyc.split(":"), L = placeOpts(pl), i = ((+ix % L.length) + L.length) % L.length, [g, it] = L[i];   // v39
       if (!optOn(it)) optPick(g.k, it.v); actId = `opt:${pl}:${i}`; renderAct(); return; }
@@ -424,7 +434,7 @@ if (act) {
     if (d.hremove && HIT(d.hremove) && HIT(d.hremove).look) { const r = HIT(d.hremove).look; closeAct(); plantSet(r, null); return; }
     if (d.hremove && HIT(d.hremove) && HIT(d.hremove).add) { const k = d.hremove, ds = DS(); closeAct();   // an added piece: its rows go
       Promise.all(Object.entries(ds.rows("edits")).filter(([, v]) => v && v.item === k).map(([rid]) => ds.del("edits", rid))).then(() => toast("Removed")); return; }
-    if (d.hremove) { const k = d.hremove; closeAct(); setPiece(k, "removed", true).then(() => toast(`${HIT(k).n} removed · Measure puts it back`)); return; }   // V2.34
+    if (d.hremove) { const k = d.hremove; closeAct(); setPiece(k, "removed", true).then(() => toast(`${HIT(k).n} taken out`, { hputback: k })); return; }   // V2.34; V3.75: Put back on the toast (Measure's Changed list too)
     if (d.hturn) { setPiece(d.hturn, "turn", (pieceNow(d.hturn).turn + 1) % 4); return; }   // V2.33: a quarter turn each press
     if (d.hreset) { const k = d.hreset, ds = DS(); if (!ds) return;
       Promise.all(Object.entries(ds.rows("edits")).filter(([, v]) => v && v.item === k && v.field !== "add").map(([rid]) => ds.del("edits", rid))).then(() => { if (actId) renderAct(); }); return; }

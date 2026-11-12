@@ -117,8 +117,14 @@ def run(w, h):
         # V3.73: the room's sofa is the sofa bed: its chaise's lid, and its bed from its card
         pg.evaluate("() => R3D.set({lid: false, sbed: false, sofa: 'bed', aim: {eye: [230, 150, -60], at: [80, 30, -170], fov: 50}})"); pg.wait_for_timeout(800)
         ch = lambda: (lambda c: [c[0] + 30, 44, c[2]])(pg.evaluate(CEN, "MOV.chaise2.pivot"))   # its open end, clear of the C-table
-        if (tap(ch(), "the sofa bed's chaise") or "").startswith("Green corner sofa bed"): press("Open the chaise"); print("   lid:", S("lid"))
-        if (tap(ch(), "the sofa bed's chaise") or "").startswith("Green corner sofa bed"): press("Pull the bed out"); print("   sbed:", S("sbed"), "table out:", pg.evaluate("() => R3D._dbg.WORK.cof.out"))
+        if (tap(ch(), "the sofa bed's chaise") or "").startswith("Its storage chaise"): press("Open the chaise"); print("   lid:", S("lid"))
+        if (tap(ch(), "the sofa bed's chaise") or "").startswith("Its storage chaise"):   # V3.75: the chaise has its own card; the sofa bed's a tap on
+            press("The sofa bed"); pg.locator("#r3d-act [data-hr='1']").click(); pg.wait_for_timeout(900); print("   headrest:", S("hr"))
+            press("Pull the bed out"); print("   sbed:", S("sbed"), "table out:", pg.evaluate("() => R3D._dbg.WORK.cof.out"))
+        # V3.75: taken out from its card, put back from the toast
+        if (tap(ch(), "the sofa bed's chaise") or "").startswith("Its storage chaise"):
+            press("Take the chaise out"); out_ = S("layout.chaise2.off"); pg.locator("#r3d-toast button").click(); pg.wait_for_timeout(900)
+            print("   chaise out:", out_, "back:", not S("layout.chaise2.off"))
         # v36: the bar by the sofa's front, the lift-top coffee table's top
         pg.evaluate("() => R3D.set({sugg: {barside: true}, barflap: false, aim: {eye: [170, 140, -150], at: [0, 112, -44], fov: 50}})"); pg.wait_for_timeout(800)
         if tap((lambda c: [20.5, 120, c[2]])(pg.evaluate(CEN, "SUGG_G.barside")), "the bar by the sofa's front"): press("Open the bar"); print("   barflap:", S("barflap"))

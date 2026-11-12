@@ -56,7 +56,7 @@ function cush(g, x, y, z, w, h, d, mat, crown, bulge, r) {      // a cushion in 
   const m = new THREE.Mesh(cushGeo(w, h, d, crown, bulge, r), mat); m.position.copy(v3(x, y + h / 2, z)); g.add(shadow(m)); return m;
 }
 function tufts(g, pts, mat) {                                       // [x, y, z] in a movable's coordinates: one mesh of sunk buttons
-  const geos = pts.map(([x, y, z]) => { const b = new THREE.SphereGeometry(0.011, 8, 5); b.scale(1, 0.45, 1); const p = v3(x, y, z); b.translate(p.x, p.y, p.z); return b; });
+  const geos = pts.map(([x, y, z]) => { const b = new THREE.SphereGeometry(0.01, 8, 5); b.scale(1, 0.35, 1); const p = v3(x, y, z); b.translate(p.x, p.y, p.z); return b; });
   if (!geos.length) return null; const m = new THREE.Mesh(mergeGeometries(geos), mat); g.add(m); return m;
 }
 function buildSofaBed() {
@@ -67,7 +67,8 @@ function buildSofaBed() {
   const B = R.SOFABED, so = R.SOFA; if (!B || !so) return;
   // V3.74: the chenille's own weave and heather (02 CHENILLE), a soft sheen at the edges as the pile catches the light
   const chen = (c, k) => reg(new THREE.MeshPhysicalMaterial({ color: c, roughness: 0.92, sheen: k, sheenRoughness: 0.45, sheenColor: new THREE.Color("#d4e0b0"), map: CHENILLE, bumpMap: CHENILLE_B, bumpScale: 0.7 }));
-  const fab = chen(B.col, 0.9), seam = chen(new THREE.Color(B.col).multiplyScalar(0.62), 0.5);   // the chenille; its seams and buttons, a shade down
+  const fab = chen(B.col, 0.9), seam = chen(new THREE.Color(B.col).multiplyScalar(0.62), 0.5);   // the chenille; its seams, a shade down
+  const dimp = chen(new THREE.Color(B.col).multiplyScalar(0.8), 0.4);   // V3.75: the tufts are dimples in the cloth, as the photos (dark buttons read as dots)
   const steel = reg(new THREE.MeshStandardMaterial({ color: "#1e1e20", roughness: 0.4, metalness: 0.6 }));   // the feet and the bed's frame
   const lining = reg(new THREE.MeshStandardMaterial({ color: "#16181c", roughness: 0.95 }));
   const W = B.w, D = B.run_d, hw = W / 2, hd = D / 2, F = B.foot, t = B.back_t, sh = B.seat_h, cu = 14, base = sh - cu, L = -hd + B.sec_d;
@@ -96,7 +97,7 @@ function buildSofaBed() {
   for (const z of [-T_.d / 2 - 1, T_.d / 2 + 1]) { cush(stG, tx, 4, z, T_.w, T_.h - 4, T_.d, fab, 1.5, 0.7, 4);
     pipe(stG, tx, T_.h - 0.6, z + T_.d / 2 - 0.8, T_.w - 4, seam, true); for (const dx of [-0.22, 0.22]) stTf.push([tx + dx * T_.w, T_.h + 1.3, z]);
     for (const dx of [-1, 1]) for (const dz of [-1, 1]) lb(stG, tx + dx * (T_.w / 2 - 4), 0, z + dz * (T_.d / 2 - 4), 4, 4, 4, steel); }
-  tufts(stG, stTf, seam); mergeStatic(stG);
+  tufts(stG, stTf, dimp); mergeStatic(stG);
   WORK.stools = anim(v => { stG.position.x = -B.stool_out * v * M; });
   // the seats: two over the bed, the corner seat, the return's seat facing in; piped fronts, two buttons each
   const sz0 = hd - B.seat_d - 1, bz = (-hd + t + sz0) / 2, bd = sz0 + hd - t, crown = 1.6, sx = xi + bd;
@@ -105,23 +106,24 @@ function buildSofaBed() {
     if (pipeFront) { pipe(g, cx, base + cu - 0.8, z1 + 0.2, w_ - 5, seam, true); pipe(g, cx, base + 0.8, z1 + 0.2, w_ - 5, seam, true); }
     for (const f of [-0.25, 0.25]) for (const k of [-0.22, 0.22]) tf.push([cx + f * w_, base + cu + crown * 0.8 - 0.25, cz + k * d_]); };   // V3.74: four buttons a seat, as the photos
   seat(xc, mid, sz0, hd - 1, true); seat(mid, xa, sz0, hd - 1, true); seat(sx, xc, sz0, hd - 0.5, false); seat(sx, xc, hd + 0.5, L - 1, true);
-  // the backs: three along the run (the corner's in its corner), two down the side, leaning back; the headrests on their brackets
+  // the backs: three along the run (the corner's in its corner), two down the side, leaning back, up to the headrests (V3.75: 81, the frame's top)
   for (const [x0, x1] of [[xc, mid], [mid, xa], [xi, xc]]) { const c = cush(g, (x0 + x1) / 2, sh, bz, x1 - x0 - 1, B.back_h - sh - 3, bd, fab, 2.2, 1.4, 6); c.rotation.x = -0.1; }
   for (const [z0, z1] of [[bz + bd / 2, hd - 0.5], [hd + 0.5, L - 1]]) { const c = cush(g, xi + bd / 2, sh, (z0 + z1) / 2, bd, B.back_h - sh - 3, z1 - z0, fab, 2.2, 1.4, 6); c.rotation.z = -0.1; }
-  /* V3.74, client: "raise each head rest ... accurate number of headrests": the five of the photos, three along the back (the arm's seat,
-     the middle, the corner) and two down the side (the corner, the end); each lifts 12 on its two stems and tips forward (Raise on its
-     card), one group each (its stems hidden in the back while it's down) */
-  const hz = -hd + t / 2 + 2, hh = B.h - B.back_h - 1.5; WORK.hr = [];
-  const headrest = (x, z, side) => { const hg = new THREE.Group(); hg.position.copy(v3(x, B.back_h + 1.5, z)); g.add(hg);
-    if (side) { cush(hg, 0, 0, 0, 20, hh, 54, fab, 1.5, 1.2, 5); for (const dz of [-14, 14]) lb(hg, -3, -14, dz, 1.2, 15, 1.6, fab); }
-    else { cush(hg, 0, 0, 0, 54, hh, 20, fab, 1.5, 1.2, 5); for (const dx of [-14, 14]) lb(hg, dx, -14, -3, 1.6, 15, 1.2, fab); }
+  /* V3.75, client: "The headrests look like they just flip upwards but current render has armed lifts on making the headrest lift with a
+     gap in between it and the sofa": the listing's Clic-Clac headrests. Each is a pad lying on the back frame (B.head: 30 deep, 14 thick, 8
+     over the frame's front onto the back cushion's top), hinged at the frame's front top edge; Raise flips it up 74° on that hinge, its foot
+     tucked behind the back cushion, as the photos' raised one: no stems, no gap. The five of the photos (three along the back: the arm's
+     seat, the middle, the corner; two down the side: the corner, the end), one group each */
+  const HD = B.head, hup = HD.up * Math.PI / 180; WORK.hr = [];
+  const headrest = (x, z, span, side) => { const hg = new THREE.Group(), w_ = Math.min(HD.w, span - 2); hg.position.copy(v3(x, B.back_h, z)); g.add(hg);
+    if (side) cush(hg, HD.over - HD.d / 2, 0, 0, HD.d, HD.t, w_, fab, 1.3, 1.1, 5.5); else cush(hg, 0, 0, HD.over - HD.d / 2, w_, HD.t, HD.d, fab, 1.3, 1.1, 5.5);
     mergeStatic(hg);
-    WORK.hr.push(anim(v => { hg.position.y = (B.back_h + 1.5 + B.head_lift * v) * M; if (side) hg.rotation.z = -(0.12 + 0.3 * v); else hg.rotation.x = 0.12 + 0.3 * v; })); };
-  for (const x of [(mid + xa) / 2, (xc + mid) / 2, (xi + xc) / 2]) headrest(x, hz, false);
-  for (const zc of [(bz + hd) / 2 + 6, (hd + L) / 2]) headrest(-hw + t / 2 + 2, zc, true);
+    WORK.hr.push(anim(v => { if (side) hg.rotation.z = hup * v; else hg.rotation.x = hup * v; })); };
+  for (const [x0, x1] of [[mid, xa + 12], [xc, mid], [xi, xc]]) headrest((x0 + x1) / 2, -hd + t, x1 - x0, false);   // the arm seat's over the arm's back too
+  for (const [z0, z1] of [[bz + bd / 2, hd - 0.5], [hd + 0.5, L - 1]]) headrest(xi, (z0 + z1) / 2, z1 - z0, true);
   for (const [x, z, ry] of [[xi + 32, bz + 26, -0.7], [xa - 26, bz + 22, 0.15]]) {   // the two scatter cushions, plump, sat back against the backs (V3.74)
     const m = new THREE.Mesh(cushGeo(44, 44, 15, 0, 4.5, 9, 0.4), fab); m.position.copy(v3(x, sh + 20, z)); m.rotation.order = "YXZ"; m.rotation.y = ry; m.rotation.x = -0.26; g.add(shadow(m)); }
-  tufts(g, tf, seam);
+  tufts(g, tf, dimp);
   /* the pull-out bed. Stowed under the deck, its fabric front (two loops to pull by, castors under it) is the sofa's face under the seats.
      It pulls up and out on its castors, past where it rests (bed_over); its padded top lifts on the black frame to the seats' height; it
      clips back against the seats, level with them, and settles on its castors. Backwards to put it away */
@@ -133,13 +135,21 @@ function buildSofaBed() {
     lp.position.copy(v3(mid + dx * bw, top0 - 3, hd + 0.6)); lp.rotation.z = Math.PI; lp.scale.y = 2.6; bed.add(shadow(lp)); }
   for (const dx of [-1, 1]) { lb(bed, mid + dx * (bw / 2 - 6), 0, hd - 6, 3.2, 4, 3.2, steel); lb(bed, mid + dx * (bw / 2 - 3), 6, (uz0 + hd - 4) / 2, 2, 2, ud - 6, steel, false); }
   cush(top, mid, 14, (uz0 + hd - 4) / 2, bw - 2, top0 - 14, ud - 4, fab, 1.2, 0.6, 3);
-  tufts(top, [-0.3, 0, 0.3].flatMap(f => [-0.25, 0.25].map(k => [mid + f * bw, top0 + 1.0 - 0.25, (uz0 + hd - 4) / 2 + k * (ud - 4)])), seam);
-  for (const dx of [-1, 1]) for (const z of [uz0 + 6, hd - 12]) lb(top, mid + dx * (bw / 2 - 8), -rise, z, 2.2, 14 + rise, 2.2, steel);   // the frame's legs
+  tufts(top, [-0.3, 0, 0.3].flatMap(f => [-0.25, 0.25].map(k => [mid + f * bw, top0 + 1.0 - 0.25, (uz0 + hd - 4) / 2 + k * (ud - 4)])), dimp);
   for (const z of [uz0 + 6, hd - 12]) lb(top, mid, 12, z, bw - 14, 2, 2, steel, false);
+  for (const dx of [-1, 1]) lb(top, mid + dx * (bw / 2 - 8), 12, (uz0 + hd - 4) / 2, 2, 2, ud - 10, steel, false);   // the platform's black frame
   mergeStatic(bed); mergeStatic(top);
+  /* V3.75: the lift as the photos show it: on each side two black links crossed in an X (a scissor) between the rail on the floor and the
+     platform's frame, opening as the top rises (they were four posts hanging under the top). Their own group, hidden while it's stowed */
+  const lk = new THREE.Group(), za = uz0 + 8, zb = hd - 14, links = []; bed.add(lk);
+  for (const dx of [-1, 1]) for (const k of [0, 1]) { const m = new THREE.Mesh(new THREE.CylinderGeometry(0.009, 0.009, 1, 8), steel);
+    m.position.x = v3(mid + dx * (bw / 2 - 5), 0, 0).x; lk.add(shadow(m)); links.push([m, k]); }
+  const linkAt = b => { const yT = 12 + rise * b;
+    for (const [m, k] of links) { const z0 = k ? zb : za, z1 = k ? za : zb, dy = yT - 7, dz = z1 - z0;
+      m.position.y = (7 + dy / 2) * M; m.position.z = (z0 + dz / 2) * M; m.rotation.x = Math.atan2(dz, dy); m.scale.y = Math.hypot(dy, dz) * M; } };
   const sm = k => k <= 0 ? 0 : k >= 1 ? 1 : k * k * (3 - 2 * k);
   WORK.sbed = anim(v => { const a = sm(v / 0.5), b = sm((v - 0.5) / 0.3), c = sm((v - 0.8) / 0.2);
-    bed.position.z = ((ud + over) * a - over * c) * M; bed.position.y = 3 * (a - c) * M; top.position.y = rise * b * M; });
+    bed.position.z = ((ud + over) * a - over * c) * M; bed.position.y = 3 * (a - c) * M; top.position.y = rise * b * M; lk.visible = a > 0.3; linkAt(b); });
   const cx = so.x[0] + hw, cz = so.back + hd;
   movable("sofa2", B.name, g, () => ({ x: cx, z: cz, rot: 0 }), W, D, [fab], false, { when: () => S.sofa === "bed" });
   // the loose storage chaise on the corner section's end: a buttoned lid lifting on its back edge on two gas struts (the ottoman's Lift
@@ -156,7 +166,7 @@ function buildSofaBed() {
   cush(hinge, 0, 0, C.d / 2, C.w, lidH, C.d, fab, 1.4, 0.8, 3.5);
   pipe(hinge, 0, 0.6, C.d + 0.2, C.w - 6, seam, true);
   lb(hinge, 0, -0.2, C.d / 2, C.w - 6, 0.3, C.d - 6, lining, false);
-  tufts(hinge, [-0.3, 0, 0.3].flatMap(f => [-0.22, 0.22].map(k => [f * C.w, lidH + 1.2 - 0.25, C.d / 2 + k * C.d])), seam);
+  tufts(hinge, [-0.3, 0, 0.3].flatMap(f => [-0.22, 0.22].map(k => [f * C.w, lidH + 1.2 - 0.25, C.d / 2 + k * C.d])), dimp);
   const struts = new THREE.Group(); c.add(struts);
   for (const x of [-(C.w / 2 - 8), C.w / 2 - 8]) { const st = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.3, 8), steel);
     st.position.copy(v3(x, bodyH + 2, -C.d / 2 + 14)); st.rotation.x = -0.7; struts.add(st); }

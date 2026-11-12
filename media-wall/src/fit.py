@@ -1418,7 +1418,9 @@ SOURCES["amelia"] = ("Amazon UK (Nov 2026, B0HDC8WYBT): Lovesofas Amelia L-shape
                      "264 W × 165 D × 95 H, seat 43 high and 53 deep, 100 deep at the arm (the listing's drawing), a pull-out bed in the middle, "
                      "a freestanding storage chaise, two footstools under the arm, three adjustable headrests. The 264 × 165 is its two main "
                      "sections (the corner section's back runs 165 down the side); the loose chaise on its end makes the drawing's 230 (V3.73, "
-                     "from the listing's 14 photos). About £700–950, to check on the day")
+                     "from the listing's 14 photos). V3.75, its details: back 50 above the seat, seat 65 wide, \"Clic-Clac\" adjustable headrests "
+                     "(the text says three, the photos show five pads that flip up on a hinge: drawn five), the 95 to the headrests lying down (the "
+                     "drawing's arrow), black metal feet, a solid wood frame, 172 kg, four boxes (the largest 166 × 101 × 68). About £700–950, to check on the day")
 ORDER.append("amelia")
 _zones_v42 = zones
 

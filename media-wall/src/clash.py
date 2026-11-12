@@ -203,6 +203,8 @@ def moving_pieces():
         st, so_, zc = SB["stool"], SB["stool_out"], G.SOFA_BACK_Z + SB["run_d"] / 2   # V3.74: the stools slid out of the arm's side
         out.append(box("sofa bed's stools, out", (G.SOFABED_X[1] - st["w"] + 4 + so_, G.SOFABED_X[1] + 4 + so_), (0, st["h"]), (zc - st["d"] - 1, zc + st["d"] + 1)))
         out.append(box("record table, moved for the bed", cf["x"], (0, Rt["h"]), (cf["z"][0] + SB["cof_out"], cf["z"][1] + SB["cof_out"])))
+        H = SB["head"]; fr = G.SOFA_BACK_Z + SB["back_t"]                   # V3.75: the headrests flipped up on their hinge, over the back frame's front
+        out.append(box("sofa bed's headrests, up", G.SOFABED_X, (SB["back_h"] - 8.0, SB["head_up_h"]), (fr - H["t"] * 0.3, fr + H["t"])))
     return out
 
 
