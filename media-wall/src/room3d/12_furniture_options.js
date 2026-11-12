@@ -90,25 +90,35 @@ function buildSofaBed() {
   cush(g, xa + 2, F, 0, 4, B.arm_h - 20 - F + 2, D - 10, fab, 0, 0.3, 1);
   for (const x of [xa + 1.5, hw - 1.5]) pipe(g, x, B.arm_h - 1.8, 0, D - 10, seam);
   pipe(g, ax, B.arm_h - 1.8, hd - 1.6, B.arm - 8, seam, true);
-  const T_ = B.stool, tx = hw - T_.w / 2 + 3;
-  for (const z of [-T_.d / 2 - 1, T_.d / 2 + 1]) { cush(g, tx, 4, z, T_.w, T_.h - 4, T_.d, fab, 1.5, 0.7, 4);
-    pipe(g, tx, T_.h - 0.6, z + T_.d / 2 - 0.8, T_.w - 4, seam, true); tf.push([tx, T_.h + 1.3, z]);
-    for (const dx of [-1, 1]) for (const dz of [-1, 1]) lb(g, tx + dx * (T_.w / 2 - 4), 0, z + dz * (T_.d / 2 - 4), 4, 4, 4, steel); }
+  // V3.74, client: "Give function to move its built in side seats": the two stools slide out of the arm's side together (Pull the stools
+  // out), to sit on or put your feet up; one group, so one draw a material
+  const T_ = B.stool, tx = hw - T_.w / 2 + 3, stG = new THREE.Group(), stTf = []; g.add(stG);
+  for (const z of [-T_.d / 2 - 1, T_.d / 2 + 1]) { cush(stG, tx, 4, z, T_.w, T_.h - 4, T_.d, fab, 1.5, 0.7, 4);
+    pipe(stG, tx, T_.h - 0.6, z + T_.d / 2 - 0.8, T_.w - 4, seam, true); for (const dx of [-0.22, 0.22]) stTf.push([tx + dx * T_.w, T_.h + 1.3, z]);
+    for (const dx of [-1, 1]) for (const dz of [-1, 1]) lb(stG, tx + dx * (T_.w / 2 - 4), 0, z + dz * (T_.d / 2 - 4), 4, 4, 4, steel); }
+  tufts(stG, stTf, seam); mergeStatic(stG);
+  WORK.stools = anim(v => { stG.position.x = -B.stool_out * v * M; });
   // the seats: two over the bed, the corner seat, the return's seat facing in; piped fronts, two buttons each
   const sz0 = hd - B.seat_d - 1, bz = (-hd + t + sz0) / 2, bd = sz0 + hd - t, crown = 1.6, sx = xi + bd;
   const seat = (x0, x1, z0, z1, pipeFront) => { const w_ = x1 - x0 - 1, d_ = z1 - z0, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
     cush(g, cx, base, cz, w_, cu, d_, fab, crown, 0.9, 3.5);
     if (pipeFront) { pipe(g, cx, base + cu - 0.8, z1 + 0.2, w_ - 5, seam, true); pipe(g, cx, base + 0.8, z1 + 0.2, w_ - 5, seam, true); }
-    for (const f of [-0.27, 0.27]) tf.push(w_ >= d_ ? [cx + f * w_, base + cu + crown * 0.85 - 0.25, cz] : [cx, base + cu + crown * 0.85 - 0.25, cz + f * d_]); };
+    for (const f of [-0.25, 0.25]) for (const k of [-0.22, 0.22]) tf.push([cx + f * w_, base + cu + crown * 0.8 - 0.25, cz + k * d_]); };   // V3.74: four buttons a seat, as the photos
   seat(xc, mid, sz0, hd - 1, true); seat(mid, xa, sz0, hd - 1, true); seat(sx, xc, sz0, hd - 0.5, false); seat(sx, xc, hd + 0.5, L - 1, true);
   // the backs: three along the run (the corner's in its corner), two down the side, leaning back; the headrests on their brackets
   for (const [x0, x1] of [[xc, mid], [mid, xa], [xi, xc]]) { const c = cush(g, (x0 + x1) / 2, sh, bz, x1 - x0 - 1, B.back_h - sh - 3, bd, fab, 2.2, 1.4, 6); c.rotation.x = -0.1; }
   for (const [z0, z1] of [[bz + bd / 2, hd - 0.5], [hd + 0.5, L - 1]]) { const c = cush(g, xi + bd / 2, sh, (z0 + z1) / 2, bd, B.back_h - sh - 3, z1 - z0, fab, 2.2, 1.4, 6); c.rotation.z = -0.1; }
-  const hz = -hd + t / 2 + 2, hy = B.back_h + 1.5, hh = B.h - B.back_h - 1.5;
-  for (const x of [(mid + xa) / 2, (xc + mid) / 2, (xi + xc) / 2]) { const h = cush(g, x, hy, hz, 54, hh, 20, fab, 1.5, 1.2, 5); h.rotation.x = 0.12;
-    for (const dx of [-14, 14]) lb(g, x + dx, B.back_h - 3, hz - 3, 1.6, 6, 1.2, steel, false); }
-  for (const zc of [(bz + hd) / 2 + 6, (hd + L) / 2]) { const h = cush(g, -hw + t / 2 + 2, hy, zc, 20, hh, 54, fab, 1.5, 1.2, 5); h.rotation.z = -0.12;
-    for (const dz of [-14, 14]) lb(g, -hw + t / 2 - 1, B.back_h - 3, zc + dz, 1.2, 6, 1.6, steel, false); }
+  /* V3.74, client: "raise each head rest ... accurate number of headrests": the five of the photos, three along the back (the arm's seat,
+     the middle, the corner) and two down the side (the corner, the end); each lifts 12 on its two stems and tips forward (Raise on its
+     card), one group each (its stems hidden in the back while it's down) */
+  const hz = -hd + t / 2 + 2, hh = B.h - B.back_h - 1.5; WORK.hr = [];
+  const headrest = (x, z, side) => { const hg = new THREE.Group(); hg.position.copy(v3(x, B.back_h + 1.5, z)); g.add(hg);
+    if (side) { cush(hg, 0, 0, 0, 20, hh, 54, fab, 1.5, 1.2, 5); for (const dz of [-14, 14]) lb(hg, -3, -14, dz, 1.2, 15, 1.6, fab); }
+    else { cush(hg, 0, 0, 0, 54, hh, 20, fab, 1.5, 1.2, 5); for (const dx of [-14, 14]) lb(hg, dx, -14, -3, 1.6, 15, 1.2, fab); }
+    mergeStatic(hg);
+    WORK.hr.push(anim(v => { hg.position.y = (B.back_h + 1.5 + B.head_lift * v) * M; if (side) hg.rotation.z = -(0.12 + 0.3 * v); else hg.rotation.x = 0.12 + 0.3 * v; })); };
+  for (const x of [(mid + xa) / 2, (xc + mid) / 2, (xi + xc) / 2]) headrest(x, hz, false);
+  for (const zc of [(bz + hd) / 2 + 6, (hd + L) / 2]) headrest(-hw + t / 2 + 2, zc, true);
   for (const [x, z, ry] of [[xi + 32, bz + 26, -0.7], [xa - 26, bz + 22, 0.15]]) {   // the two scatter cushions, plump, sat back against the backs (V3.74)
     const m = new THREE.Mesh(cushGeo(44, 44, 15, 0, 4.5, 9, 0.4), fab); m.position.copy(v3(x, sh + 20, z)); m.rotation.order = "YXZ"; m.rotation.y = ry; m.rotation.x = -0.26; g.add(shadow(m)); }
   tufts(g, tf, seam);

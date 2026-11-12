@@ -996,7 +996,7 @@ def ring(key, hue, label, go):
 def before_after(prefix=""):
     """v39, UPGRADE_PLAN_v38 item 13 ("before and after: your own photos beside the 3D room from the same spot, with a slider")."""
     pairs = (("stairs", "The stairs wall, from the sofa", "The dining cabinet and the bar"),
-             ("window", "The window and the sofa, from the stairs", "The media wall and the record table"))
+             ("window", "The window and the sofa, from the stairs", "The media wall and the coffee table"))
     out = ""
     for k, t, cap in pairs:
         out += (f'<figure class="ba" style="--ba:50%"><div class="ba-box"><img src="{prefix}art/ba_{k}_after.webp" alt="{html.escape(t)}: the plan in 3D" loading="lazy" width="1200" height="900">'

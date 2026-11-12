@@ -554,7 +554,7 @@ SOFA_POUF = dict(SOFA_POUF, w=OTTOMAN["w"], d=OTTOMAN["d"], h=OTTOMAN["h"],
 # its black frame and clips back against the seats, level with them (the drawing's 43).
 SOFABED = dict(name="Green corner sofa bed", pick="Lovesofas Amelia, Blade Green chenille, right hand", col="#4f5d33",
                w=264.0, d=230.0, sec_d=165.0, h=95.0, seat_h=43.0, seat_d=53.0, run_d=100.0, back_h=78.0, back_t=20.0, arm=36.0, arm_h=62.0,
-               corner=100.0, foot=8.0, bed_out=75.0, bed_over=8.0, heads=3,
+               corner=100.0, foot=8.0, bed_out=75.0, bed_over=8.0, heads=5, head_lift=12.0, stool_out=42.0,
                chaise=dict(w=100.0, d=65.0, h=43.0, lid=11.0), stool=dict(w=38.0, d=42.0, h=40.0), cost=(700, 950), default=True)
 SOFABED["end_z"] = SOFA_BACK_Z + SOFABED["d"]                       # -66: the chaise's end
 # V3.73, client (11 Nov 2026): "make the new green version the main version showing in the room but keep ability to switch between designs.
@@ -577,7 +577,9 @@ SOFA_POUF = dict(SOFA_POUF, x=(COFFEE["x"][1] + 4.0, COFFEE["x"][1] + 4.0 + SOFA
 # of whoever sits at the arm end
 # its bottom (purple) head is the reading light: over the shoulder onto the seat at the arm end (the room's middle got it before)
 LAMP_READ = (_open[1] - (_open[1] - _open[0]) / 4, 50.0, SOFABED_FRONT_Z - SOFABED["seat_d"] / 2)   # 195, 50, -222.5
-FLOOR_LAMP_SPOTS["sofa"] = ("At the sofa's arm end", (SOFABED_X[1] + 4.0 + 12.0 + FLOOR_LAMP["base"] / 2, SOFA_BACK_Z + 16.0))   # 296, -280: clear of the drawn curtains
+# V3.74: the stools slide out of the arm's side (stool_out), so the lamp stands 4 past where they come to: 330, -280 (still the reading light:
+# 147 from the arm seat, and clear of the vinyl stand in the window corner)
+FLOOR_LAMP_SPOTS["sofa"] = ("At the sofa's arm end", (SOFABED_X[1] + 4.0 + SOFABED["stool_out"] + 4.0 + FLOOR_LAMP["base"] / 2, SOFA_BACK_Z + 16.0))
 
 
 # ---------------------------------------------------------------- v26 (20 Oct): option C, the dining cabinet; v27: the plan, for six
@@ -982,9 +984,11 @@ STAIR_CURTAIN["side_len"] = round(STAIR_CURTAIN["side"][1] - STAIR_CURTAIN["side
 # beside it". These are in the buy list, the build and the HD stills; every other choice is an option, only to look at (CLAUDE.md).
 FIRM = dict(
     # V3.14: the alcove shelves came out: the glass case hangs in their place, over the vinyl stand
-    sugg=["blanketbasket", "stairdrawers", "wallcabs", "shelfboxes", "doorshelf", "recordtable"],
+    # V3.74, client (12 Nov 2026): "I want the storage coffee table fit into the room by default" (the lift-top, picked over the record
+    # table, which is an option again): its top lifts to 53.5, storage inside
+    sugg=["blanketbasket", "stairdrawers", "wallcabs", "shelfboxes", "doorshelf", "liftcoffee"],
     svar={"blanketbasket": "natural", "stairdrawers": "oak", "wallcabs": "walnut", "shelfboxes": "white",
-          "doorshelf": "white", "recordtable": "oak"},
+          "doorshelf": "white", "liftcoffee": "oak"},
     beside="bar", cabw="90", decor={"rug": "stripes", "ceiling": "stipple"},   # v45: the Artex stipple ceiling
     # v43, client: "I want the c table in the current main plan"; V3.74, client (12 Nov 2026): "remove the c table over the end": out of
     # the plan, an option to look at again (ideas.IDEAS), off in the room

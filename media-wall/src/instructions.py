@@ -502,11 +502,11 @@ def full():
                     f"Fix the oak counter on top, {n(g.BAR_BUILT['top_t'])} thick, its front edge flush; hang the doors on soft-close hinges with a push catch (no handle to catch the table door).",
                     f"Over it: the ENHET frame on the wall, its bottom at {n(g.BAR_BUILT['enhet_y0'])}, plugged into the solid wall; the mirror behind it; the glasses on its shelves.",
                 ]),
-                ("The record table", [
+                *([("The record table", [
                     "Assemble the two KALLAX as IKEA shows, then lay them on their backs side by side and screw them together through the sides (4 × 30).",
                     f"Screw the 12 mm ply base to their open backs and the four castors to the base, 3 cm in from each corner.",
                     f"Hinge the oak lid ({n(g.RECORD_TABLE['w'])} × {n(g.RECORD_TABLE['d'])}) along one long side; fit both lid stays so it can't drop. Full of LPs it's about {n(g.RECORD_TABLE['kg'])} kg: roll it, don't lift it.",
-                ]),
+                ])] if "recordtable" in G.FIRM["sugg"] else []),   # V3.74: the lift-top is the plan's now (bought)
                 ("The wall cabinets", [
                     f"Mark the rail's line over the sofa's corner, the cabinets' bottoms at {n(g.WALL_CABS['y0'])}; detector first.",
                     "Screw IKEA's rail to the wall with 5 × 60 screws in brown plugs, level; hang the two EKET on it and tighten their fittings.",

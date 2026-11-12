@@ -258,6 +258,10 @@ function actItems(id) {     // [title, how it is now, buttons]
     return [B.name, S.sbed ? "Bed pulled out" : `${B.w} × ${B.d} with its chaise, two stools`, [
       btn("Back to my sofa", { sofa: "mine" }), btn(S.sbed ? "Push the bed in" : "Pull the bed out", { sbed: S.sbed ? "in" : "out" }), btn("Watch it open", { showopen: "bed" }),
       btn(S.lid ? "Shut the chaise" : "Open the chaise", { lid: S.lid ? "on" : "off" }),
+      btn(S.stools ? "Push the stools in" : "Pull the stools out", { stools: S.stools ? "in" : "out" }),   // V3.74
+      { sep: "Raise the headrests" },
+      ...["Arm seat", "Middle seat", "Corner", "Corner side", "Side end"].map((nm, i) => btn(nm, { hr: String(i) }, !!(S.hr && S.hr[i]))),
+      btn(Object.values(S.hr || {}).some(Boolean) ? "All down" : "All up", { hrall: Object.values(S.hr || {}).some(Boolean) ? "down" : "up" }),
       btn(id === "mov:sofa2" ? "Move it" : "Move the chaise", { actedit: id.slice(4) }), btn("From above", { view: "plan" })]]; }
   if (id.startsWith("mov:")) { const it = MOV[id.slice(4)]; if (!it) return null;
     return [it.label, it.fixed ? "Built in: it comes off, but doesn't move" : "Drag it in Edit, or change its colour", [btn(it.fixed ? "Take off or put back" : "Move it", { actedit: it.id })]]; }

@@ -64,7 +64,7 @@ const DEF = { site: "C", dining: "folded",   // v27: the dining cabinet is the p
               sugg: {},     // v21: the suggested furniture and decor, all off
               seat: "off",
               cab: "compact", cabw: "90", tdoor: false,   // v33: cabw, the compact cabinet's table: 90 wide (the plan) or 80 (10 shorter)
-              cam: "orbit", pad: false, foot: false, beside: "clear", sofa: R.SOFABED && R.SOFABED.default ? "bed" : "mine", sbed: false,   // V3.71: your sofa or the green sofa bed; its bed out (V3.73: the sofa bed by default)
+              cam: "orbit", pad: false, foot: false, beside: "clear", sofa: R.SOFABED && R.SOFABED.default ? "bed" : "mine", sbed: false, stools: false, hr: {},   // V3.71: your sofa or the green sofa bed; its bed out (V3.73: the sofa bed by default)
               blind: "down", lp: false, trolley: "park", lid: false, barflap: false, ctop: false, sdraw: false, scopen: false };   // v37: the step drawers out   // v34: the blind (a suggestion) down or rolled up; a record lifted out of the vinyl stand; the trolley parked or at the table   // v31: what's beside the compact cabinet   // v31: a drag circles round a spot or looks round from where you stand; the move buttons on the room   // v30: the compact cabinet (the plan) or the sliding one; the table door open with the table folded   // v23: the fold-down seat at the stair end (an option): "off", "up" (folded) or "down"   // v20: the chair cupboard beside the table (doors shut); "open", "hooks" or "away" (the garage)
 DEF.lamp = R.LAMP_DEFAULT || "sofa";
 /* v38: the room opens on the client's plan (geometry.FIRM: their saved picks, the bar beside the cabinet, the sage-stripe rug); every
@@ -90,7 +90,9 @@ if (!S.v314) {  // V3.14, client: "It's now definite I also want the plant shelf
 if (!S.v373 && R.SOFABED && R.SOFABED.default) {   // V3.73, client: "make the new green version the main version showing in the room": once, a saved room moves to it
   S.v373 = 1; S.sofa = "bed"; S.sbed = false; }
 if (!S.v374) {   // V3.74, client: "remove the c table over the end": once, a saved room takes it away (it's an idea to switch on again)
-  S.v374 = 1; S.ideas = Object.assign({}, S.ideas, { ctable: false }); if (S.layout && S.layout.ctable) delete S.layout.ctable; }
+  S.v374 = 1; S.ideas = Object.assign({}, S.ideas, { ctable: false }); if (S.layout && S.layout.ctable) delete S.layout.ctable;
+  // and "I want the storage coffee table fit into the room by default": the lift-top in the record table's place
+  S.sugg = Object.assign({}, S.sugg, { recordtable: false, liftcoffee: true }); S.svar = Object.assign({}, S.svar, { liftcoffee: "oak" }); }
 if (!S.scback && R.STAIR_CURTAIN) {   // N99: once, a saved room gets the stair curtain back, drawn open
   S.scback = 1; S.sugg = Object.assign({}, S.sugg, { stairscurtain: true }); S.scopen = true; }
 if (!S.v50) {   // v50, client: "make the natural default light a bit cosier and less overly light washed": once, a saved room moves to the new Evening

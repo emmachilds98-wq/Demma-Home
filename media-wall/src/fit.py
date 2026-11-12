@@ -1076,7 +1076,7 @@ def storage_zone():
          f"an LP {r1(Rt['lp'])} square in its sleeve", f"{r1(g.KALLAX['inner'] - Rt['lp'])} to spare across, {r1(Rt['over_lp'])} under the lid; about {Rt['per_bin']} a bin, {Rt['lps']} in all", TIGHT),
         ("The record table: castors", f"four 50 mm, {r1(4 * 50.0)} kg together", ref("castor50"), f"loaded about {Rt['kg']} kg",
          "the ply base carries the records, not the KALLAX's shelves", PASS),
-        ("The lift-top coffee table (an option)", f"{r1(g.LIFT_COFFEE['w'])} × {r1(g.LIFT_COFFEE['d'])} × {r1(g.LIFT_COFFEE['h'])}", ref("homelife"),
+        ("The lift-top coffee table" + ("" if "liftcoffee" in g.FIRM["sugg"] else " (an option)"), f"{r1(g.LIFT_COFFEE['w'])} × {r1(g.LIFT_COFFEE['d'])} × {r1(g.LIFT_COFFEE['h'])}", ref("homelife"),
          "your coffee table's 90 × 50", "the same footprint; 6 taller, and the top lifts to 53.5", PASS),
         ("The shelf over the door", f"{r1(Ds['x'][1] - Ds['x'][0])} × {r1(Ds['d'])}, from {r1(Ds['y'])}", ref("kuggis", "room"),
          f"the door's 198 and a {r1(g.ARCHITRAVE)} architrave", f"{r1(Ds['head'])} over two {r1(g.KUGGIS[2])}-high boxes; check your architrave", CHECK),
@@ -1242,7 +1242,7 @@ def counts():
 
 
 # ---------------------------------------------------------------- v38: the client's picks (geometry.FIRM) are the plan: their rows counted
-FIRM_ROWS = ("Blankets: the tall basket", "Blankets: the basket's corner", "The record table", "The shelf over the door",
+FIRM_ROWS = ("Blankets: the tall basket", "Blankets: the basket's corner", "The record table" if "recordtable" in G.FIRM["sugg"] else "The lift-top coffee table", "The shelf over the door",
              "Boxes on your black shelf", "D", "The wall cabinets", "The step drawers")
 _zones_v37 = zones
 
@@ -1259,7 +1259,7 @@ def zones():
         else:
             out.append((title, space, rows))
     i = next(i for i, z in enumerate(out) if z[0].startswith("Your black shelf")) + 1
-    out.insert(i, ("Your picks (in the plan)", "the bar beside the cabinet, the wall storage, the step drawers, the basket, the record table", firm))
+    out.insert(i, ("Your picks (in the plan)", "the bar beside the cabinet, the wall storage, the step drawers, the basket, " + ("the record table" if "recordtable" in G.FIRM["sugg"] else "the lift-top coffee table"), firm))
     return out
 
 
@@ -1281,7 +1281,8 @@ SAFETY = [
     ("An old textured (Artex) ceiling", "if it's older than about 2000, have it tested for asbestos before sanding, drilling or skimming it"),
     ("Mains electrics", "the sockets and the light fittings: done to Part P, or by an electrician"),
     ("The dining table", "never swing it up or down with anything on it; check all four legs have clicked before you load it"),
-    ("The record table", "about 65 kg with its LPs: roll it, don't lift it, and fit both lid stays so the lid can't drop"),
+    *([("The record table", "about 65 kg with its LPs: roll it, don't lift it, and fit both lid stays so the lid can't drop")] if "recordtable" in G.FIRM["sugg"] else
+      [("The lift-top coffee table", "keep fingers clear of its hinges as the top comes down; nothing heavy on the top as it lifts")]),   # V3.74
 ]
 
 
