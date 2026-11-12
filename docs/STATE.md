@@ -3,10 +3,11 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V3.93 (12 Nov 2026). V3.93 (N147): Decide's choices show the place they're about. V3.92 (N143): soft cloud
+**Version:** V4.0 (12 Nov 2026), Home Plan V4 (the client: "we then go from 4 going forward"): the name pill reads Home
+Plan V4.0, versions V4.0, V4.1 ... from here. V3.93 (N147): Decide's choices show the place they're about. V3.92 (N143): soft cloud
 in the sky. V3.91 (N150): drag a piece in any room. V3.90 (N151): As it is. V3.89 (N148): Room's panel shorter. V3.88 (N146): a
-card beside its piece. V3.87 (N145): Edit light on the room. V3.86, V3.85: the sofas upholstered. V3.84, V3.83: materials.
-The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.93 ↻"): on the
+card beside its piece. V3.87 (N145): Edit light on the room.
+The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.0 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 21 (12 Nov: Home Plan V4, the house on its own, its real surroundings, the views). A new team starts with

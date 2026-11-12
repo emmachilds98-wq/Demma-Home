@@ -57,7 +57,7 @@ def main(argv):
     t0 = time.time()
     SITE.mkdir(parents=True, exist_ok=True)
     (SRC.parent / "out").mkdir(exist_ok=True)
-    have_pdfs = any((SRC.parent / "out").glob(f"Demmas_Home_{LABEL}_Plan.pdf"))
+    have_pdfs = any((SRC.parent / "out").glob(f"Home_Plan_{LABEL}_Plan.pdf"))
     keep = fast or "--keep-renders" in argv                               # V1.35 (U10): the workflow's cached renders (tools/render_key.py)
     if not (keep and (SRC / "art/art_join_mint.webp").exists()):
         run(["make_images.py"])                                           # the drawn renders, the diagrams, art/

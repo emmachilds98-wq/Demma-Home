@@ -73,7 +73,7 @@ def fit_html():
 def downloads_list():
     """Files offered for download: the plan, the build guide and the HD renders, from ../out."""
     items = []
-    for p in sorted(OUT.glob(f"Demmas_Home_{LABEL}_Plan.pdf")) + sorted(OUT.glob(f"Demmas_Home_{LABEL}_Build_Guide.pdf")):
+    for p in sorted(OUT.glob(f"Home_Plan_{LABEL}_Plan.pdf")) + sorted(OUT.glob(f"Home_Plan_{LABEL}_Build_Guide.pdf")):
         label = "The full plan" if p.name.startswith("Home") else "The build guide"
         items.append((p, f"{label}, {LABEL}", "PDF"))
     for p in sorted(OUT.glob(f"Media wall {LABEL} - *.png"), key=lambda p: (" - 3D - " not in p.name, p.name)):
@@ -1084,7 +1084,7 @@ def _page(site=False):
 
     plan_home = f"""<div class="plan-home" id="plan-home"><div class="panel" id="overview">
       <div><p class="hello"><span id="hello">Evening, Emma &amp; Dave</span><button class="ver" type="button" title="Get the latest version">{LABEL}</button></p><p>The house's changes: <b id="d-house">none yet</b>. The media wall: about <b id="d-total">£{money(lo_tot, hi_tot)}</b>.</p>
-        <p class="row"><a class="btn" href="{base}Demmas_Home_{LABEL}_Plan.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">download</span> The plan (PDF)</a><a class="btn" href="{base}Demmas_Home_{LABEL}_Plan_phone.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">smartphone</span> Phone edition</a></p></div>
+        <p class="row"><a class="btn" href="{base}Home_Plan_{LABEL}_Plan.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">download</span> The plan (PDF)</a><a class="btn" href="{base}Home_Plan_{LABEL}_Plan_phone.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">smartphone</span> Phone edition</a></p></div>
       {PU.plan_home(ring, sum(1 for r in rows if r["kind"] == "buy"), len(steps())).replace("{MONEY}", PU.money_html(TRACK))}
       <div class="upnext" hidden><span class="n" id="d-nextn">1</span><div><span class="label">Up next</span><h3 id="d-next">Measure and count</h3></div>
         <button type="button" class="done-btn" id="d-nextdone" data-s="1"><span class="ms" aria-hidden="true">check_circle</span>Done</button>
@@ -1159,14 +1159,14 @@ def _page(site=False):
     <div id="fit-zones">{fit_body}</div>
     <div class="doc">{sec["12"]}</div></div>"""),
         chapter("downloads", f'<div class="block"><p class="caption">The plan and the guide as PDFs, and the drawings. For a 3D picture: View, Save as HD picture.</p>'
-                             f'<p><a class="btn primary" href="{base}Demmas_Home_{LABEL}_Plan.pdf" target="_blank" rel="noopener">The plan (PDF)</a> '
-                             f'<a class="btn" href="{base}Demmas_Home_{LABEL}_Build_Guide.pdf" target="_blank" rel="noopener">Build guide (PDF)</a></p>'
-                             f'<p class="caption">For a phone: <a href="{base}Demmas_Home_{LABEL}_Plan_phone.pdf" target="_blank" rel="noopener">the plan</a> · <a href="{base}Demmas_Home_{LABEL}_Build_Guide_phone.pdf" target="_blank" rel="noopener">the build guide</a> (a narrow page, bigger type).</p>{downloads_html(site)}{notice}'
-                             f'<p class="caption">Demma\'s Home · living room · {LABEL}</p></div>'),
+                             f'<p><a class="btn primary" href="{base}Home_Plan_{LABEL}_Plan.pdf" target="_blank" rel="noopener">The plan (PDF)</a> '
+                             f'<a class="btn" href="{base}Home_Plan_{LABEL}_Build_Guide.pdf" target="_blank" rel="noopener">Build guide (PDF)</a></p>'
+                             f'<p class="caption">For a phone: <a href="{base}Home_Plan_{LABEL}_Plan_phone.pdf" target="_blank" rel="noopener">the plan</a> · <a href="{base}Home_Plan_{LABEL}_Build_Guide_phone.pdf" target="_blank" rel="noopener">the build guide</a> (a narrow page, bigger type).</p>{downloads_html(site)}{notice}'
+                             f'<p class="caption">Home Plan · living room · {LABEL}</p></div>'),
     ])
     build_body = f"""<section class="panel" id="build">
     <div class="qhead"><div class="meter"><span class="bar"><i id="k-bar"></i></span><span id="k-count">0 tasks done</span></div>
-      <span class="row"><a class="btn" href="{base}Demmas_Home_{LABEL}_Build_Guide.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">download</span> Build guide (PDF)</a><a class="btn" href="{base}Demmas_Home_{LABEL}_Build_Guide_phone.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">smartphone</span> Phone</a></span></div>
+      <span class="row"><a class="btn" href="{base}Home_Plan_{LABEL}_Build_Guide.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">download</span> Build guide (PDF)</a><a class="btn" href="{base}Home_Plan_{LABEL}_Build_Guide_phone.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">smartphone</span> Phone</a></span></div>
     <p class="caption">Open a piece: Check, Buy, Cut, Build, in any order.</p>
     {places_html}
     <details class="fold" id="cuts"><summary>Cutting list (for the timber merchant)</summary>
@@ -1207,7 +1207,7 @@ def _page(site=False):
   </section>"""
     # V2.92: the fonts' stylesheets don't hold up the first screen: media="print" until they land (a script after a pending stylesheet
     # waits for it: the landing's and the rest's start about 0.26 s later here); the landing covers the page meanwhile
-    page = f"""<title>Demma's Home</title>
+    page = f"""<title>Home Plan</title>
 {room3d_page.IMPORTMAP}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1218,7 +1218,7 @@ def _page(site=False):
 <div class="landing" id="landing" aria-hidden="true">{LANDING_SVG}<i><b></b></i></div>
 <script>{LANDING_JS}</script>
 <div class="brand" role="button" tabindex="0" title="Welcome" aria-controls="r3d-welcome"><span class="mark" aria-hidden="true"><i style="background:var(--peach)"></i><i style="background:var(--mint)"></i><i style="background:var(--lilac)"></i><i style="background:var(--butter)"></i></span>
-  <span><b>Demma's Home <span class="bver">{LABEL}</span></b><small id="brand-place" aria-live="polite">The whole house</small></span></div>
+  <span><b>Home Plan <span class="bver">{LABEL}</span></b><small id="brand-place" aria-live="polite">The whole house</small></span></div>
 <nav class="hnav" aria-label="The plan">{"".join(f'<button type="button" data-nav="{k}" aria-current="false">{n}</button>' for k, n in (("plan", "Plan"), ("build", "Build"), ("buy", "Buy")))}</nav>
 <div class="scrim" data-close aria-hidden="true"></div>
 <main id="room" aria-label="Your room in 3D">{room3d_page.section(gallery3d())}</main>
@@ -1381,7 +1381,7 @@ def site():
             '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">\n'
             # v39, item 13 ("quicker on phones: the room as an installable page, works offline, opens fast"): a manifest, an icon and a service worker
             '<link rel="manifest" href="manifest.webmanifest">\n<meta name="theme-color" content="#2f4a3c">\n<link rel="apple-touch-icon" href="media-wall/src/art/icon-180.png">\n'
-            '<meta name="apple-mobile-web-app-capable" content="yes">\n<meta name="mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-title" content="Demma\'s Home">\n'
+            '<meta name="apple-mobile-web-app-capable" content="yes">\n<meta name="mobile-web-app-capable" content="yes">\n<meta name="apple-mobile-web-app-title" content="Home Plan">\n'
             '<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 rx=%223%22 fill=%22%239a6634%22/%3E%3C/svg%3E">\n'
             + head + "</style>\n</head>\n<body>" + rest
             + "<script>if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});</script>\n"
@@ -1402,7 +1402,7 @@ def pwa_files():
             d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=col)
         im.save(HERE / "art" / f"icon-{size}.png")
     (root / "manifest.webmanifest").write_text(json.dumps({
-        "name": "Demma's Home", "short_name": "Demma", "start_url": "./", "scope": "./", "display": "standalone",
+        "name": "Home Plan", "short_name": "Home Plan", "start_url": "./", "scope": "./", "display": "standalone",
         "background_color": "#fbf6ec", "theme_color": "#2f4a3c",
         "icons": [{"src": f"media-wall/src/art/icon-{n}.png", "sizes": f"{n}x{n}", "type": "image/png", "purpose": "any maskable"} for n in (192, 512)]}, indent=1))
     (root / "version.txt").write_text(LABEL)   # V2.83: the version button compares the page with this
@@ -1480,10 +1480,10 @@ def split_sheets(html_):
 
 # N25: plan.html was a second 2 MB copy of the page; now a step to it, the link's view (its query and hash) kept
 PLAN_REDIRECT = """<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>Demma's Home</title><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="en"><head><meta charset="utf-8"><title>Home Plan</title><meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="canonical" href="./"><script>location.replace("./" + location.search + location.hash);</script>
 <noscript><meta http-equiv="refresh" content="0; url=./"></noscript></head>
-<body><p><a href="./">Demma's Home</a></p></body></html>
+<body><p><a href="./">Home Plan</a></p></body></html>
 """
 
 

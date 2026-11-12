@@ -160,8 +160,8 @@ def run(p, w, h):
 
 def links():
     bad = []
-    for f in (f"media-wall/out/Demmas_Home_{LABEL}_Plan.pdf", f"media-wall/out/Demmas_Home_{LABEL}_Build_Guide.pdf",
-              f"media-wall/out/Demmas_Home_{LABEL}_Plan_phone.pdf", f"media-wall/out/Demmas_Home_{LABEL}_Build_Guide_phone.pdf"):   # v46: the phone editions
+    for f in (f"media-wall/out/Home_Plan_{LABEL}_Plan.pdf", f"media-wall/out/Home_Plan_{LABEL}_Build_Guide.pdf",
+              f"media-wall/out/Home_Plan_{LABEL}_Plan_phone.pdf", f"media-wall/out/Home_Plan_{LABEL}_Build_Guide_phone.pdf"):   # v46: the phone editions
         try:
             with urllib.request.urlopen(urllib.request.Request(BASE + f, method="HEAD")) as r:
                 if r.status != 200:
@@ -176,8 +176,8 @@ def no_assistant_names():
     from pypdf import PdfReader
     word = "cl" + "aude"
     hits = []
-    for f in ("index.html", *(p.name for p in ROOT.glob("sheets.*.json")), f"media-wall/out/Demmas_Home_{LABEL}_Plan.pdf", f"media-wall/out/Demmas_Home_{LABEL}_Build_Guide.pdf",
-              f"media-wall/out/Demmas_Home_{LABEL}_Plan_phone.pdf", f"media-wall/out/Demmas_Home_{LABEL}_Build_Guide_phone.pdf"):
+    for f in ("index.html", *(p.name for p in ROOT.glob("sheets.*.json")), f"media-wall/out/Home_Plan_{LABEL}_Plan.pdf", f"media-wall/out/Home_Plan_{LABEL}_Build_Guide.pdf",
+              f"media-wall/out/Home_Plan_{LABEL}_Plan_phone.pdf", f"media-wall/out/Home_Plan_{LABEL}_Build_Guide_phone.pdf"):
         path = ROOT / f
         if not path.exists():
             hits.append(f"{f} missing"); continue
