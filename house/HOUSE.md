@@ -281,6 +281,9 @@ another setup will stay. As well as the overhead shelf." Photos: `media-wall/inp
 - **V3.10 (N49, the wide photo on a camera with its own lens):** the ceiling light hangs toward the window, about 65 from the front
   wall (it was drawn in the room's middle); the corners, the shelf's height and the window line up (the blind hides its edges).
 
+- **V4.3, the client (12 Nov 2026):** two vidaXL wall cube shelves in artisan oak (12 compartments, 100 × 18 × 100) on the wall behind
+  the seats (the master bedroom's wall), side by side, 9 apart, hung 112 to 212; under them, between, an 80 oak flip-up table (a cut of
+  the desk's oak) on two large lift-up arms, folded down (hinged at the desk's height, 74; 40 deep).
 - **v69, the client:** the tall cupboard goes ("we will not be keeping it": out of the model); the office's door is a white bifold.
 
 ## Bedroom 2 (the client's photo, 25 Oct 2026)

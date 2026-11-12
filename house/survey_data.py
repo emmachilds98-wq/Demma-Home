@@ -194,6 +194,15 @@ OFFICE = dict(desk=dict(x=(397.0, 467.0), z=(275.5, 498.4), h=74.0, t=3.0),
               shelf=dict(z=(300.0, 488.0), d=25.0, y=205.0, t=4.0), pegboard=dict(z=(406.0, 482.0), y=(118.0, 174.0)),
               monitors=dict(z=(290.0, 352.0), y0=96.0, h=37.0, gap=3.0), pc=dict(x=(414.0, 460.0), z=(288.0, 311.0), h=45.0),
               chair=(370.0, 321.0), radiator=dict(x=(352.0, 437.0), y=(15.0, 65.0)),   # v69: the tall cupboard out (the client: "we will not be keeping it")
+              # V4.3, the client (12 Nov 2026): "add 2 of these shelves in bedroom 3 on the wall behind the seats in artisan oak": the
+              # vidaXL wall cube shelf, 12 compartments, artisan oak (its listing: 100 × 18 × 100, compartments 24.5 / 31 / 38.5 × 18 × 23, so
+              # four rows of three, boards 1.5), side by side on the wall behind the chairs (its face x 264), 9 apart and 8 in from each end,
+              # hung 112 to 212 (clear of a seated head, 23 under the ceiling); "a fold up 80cm oak shelf ... folded down beneath the shelf on
+              # 2 large lift up arms": 80 long (the client), a cut of the desk's oak, hinged at the desk's height under the gap, 40 deep and its
+              # two folding arms (E)
+              cubes=dict(x=264.0, z=((282.0, 382.0), (391.0, 491.0)), y=112.0, w=100.0, h=100.0, d=18.0, t=1.5, cols=(24.5, 31.0, 38.5),
+                         src="client's listing: vidaXL wall cube shelf, 12 compartments, artisan oak, 100 × 18 × 100 (Amazon B0DKF3DMN7)"),
+              flip=dict(z=(346.5, 426.5), y=74.0, d=40.0, t=3.0, src="client (80 long, the desk's oak) + E (40 deep, the arms)"),
               src="client's photos (what goes where) + standard sizes (E)")
 
 # v62: bedroom 2 as it is (inputs/photo_bedroom2_25oct.jpg, from its door looking towards the alley side): the block (the closed-off

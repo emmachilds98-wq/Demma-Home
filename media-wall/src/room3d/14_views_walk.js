@@ -696,6 +696,7 @@ document.addEventListener("keyup", e => { WALK.fast = e.shiftKey; const k = WALK
 window.addEventListener("blur", () => { WALK.keys.clear(); WALK.stick = [0, 0]; });
 canvas.addEventListener("pointerdown", () => { canvas.focus({ preventScroll: true }); if (tourSt) tourEnd(); if (SH) SH.own = true; });   // v28: touching the room ends the tour; v32: "Watch it open" carries on, the camera yours
 function setView(name, instant, dur) {
+  if (name === "house" && typeof fitHouseView === "function") fitHouseView();   // V4.2 (N159): the house framed to the screen
   const v = VIEWS[name] || VIEWS.window, wasHouse = HOUSEV(S.view);
   if (name !== "house" && typeof welcome === "function") try { welcome(false); } catch (e) {}   // V2.43: going in puts the welcome away
   if (name !== S.view && actId && typeof closeAct === "function") closeAct();   // V1.28: a piece's card doesn't follow you to another room
