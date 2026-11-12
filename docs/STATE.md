@@ -3,11 +3,11 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V3.80 (12 Nov 2026). V3.80 (N149): every room's floor card lists what's been taken out of it, a tap each to put back.
-V3.79 (N144): the phone's top rows fade at whichever end has more; a floor on its own on the page's backdrop. V3.78 (N135): the sofa
-bed's green as the listing in HD; Edit's colour reaches its seams and chaise. V3.77 (N153): the living room 181 draws on a phone.
-V3.76 (N154): lit ceiling bulbs, finer artex. V3.75 (N132–N134): the sofa bed true to its listing; take out and put back; cards.
-The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.80 ↻"): on the
+**Version:** V3.81 (12 Nov 2026). V3.81 (N137): the sofa bed's cushions shaded where they meet, on every path (a shade in their own
+vertices). V3.80 (N149): every room's floor card lists what's taken out, a tap each to put back. V3.79 (N144): the phone's top rows
+fade at whichever end has more. V3.78 (N135): the sofa bed's green as the listing in HD. V3.77 (N153): the living room 181 draws on a
+phone. V3.76 (N154): lit ceiling bulbs, finer artex. V3.75 (N132–N134): the sofa bed true to its listing; take out and put back.
+The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.81 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 20 (12 Nov: the upgrade review, N135–N156 in streams A–G). A new team starts with
@@ -79,6 +79,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 **The living room (the media wall project):**
 - The sofa bed (Lovesofas Amelia, Blade Green; an option, no buy rows) is the room's sofa; Room → The sofa swaps yours back.
 - Its bed pulls out and lifts on a scissor frame; its five headrests flip up on hinges; its stools slide out; its chaise lifts.
+  Its cushions carry their own shade where they meet (V3.81), so they sit right on a phone too.
 - The lift-top coffee table is the plan's, in oak; the record table is an option.
 - Edit: drag, turn, nudge (5 cm, Shift 1 cm), recolour, Take it out, + Add (the catalogue, and what's out at its head).
 - Any piece standing in the room has Take it out on its card. Room → Taken out lists what's out, a tap each to put it back.

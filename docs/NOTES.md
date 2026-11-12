@@ -189,6 +189,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   the seat tops' median beside the listing's photos (hue, saturation, lightness). A movable's `tints` ([material, share]) follow its
   colour; `follow: id` takes another's colour unless it has its own (the chaise, the sofa bed's). Two movables must never share a
   material that Edit colours: `placeAll` sets each in turn, so the last one placed wins.
+  V3.81 (N137): `cushGeo` gives each cushion a `color` attribute, its shade (underside 0.55, the sides' foot 0.68, the top 1); the cloth
+  takes `vertexColors`, so every shape it's on needs a colour: `vcol(geo, mat)` (13) adds white to boxes, pipes, tufts and loops; `cush`
+  drops it for materials without (the feet's steel must still merge with plain boxes); `restMerge` keeps `color`. A shape with the cloth and
+  no colour draws black.
   The sofa bed's stools (`WORK.stools`, `S.stools`, one group) slide `stool_out` out of the arm's side; its five headrests (`WORK.hr[i]`,
   `S.hr[i]`, a group each) flip up on their hinge (V3.75, below).
   V3.75 (N132–N134): the listing is Amazon UK B0HDC8WYBT; its 14 photos come down from the page's `"hiRes"` URLs (m.media-amazon.com, reachable
