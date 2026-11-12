@@ -3,11 +3,11 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.0 (12 Nov 2026), Home Plan V4 (the client: "we then go from 4 going forward"): the name pill reads Home
-Plan V4.0, versions V4.0, V4.1 ... from here. V3.93 (N147): Decide's choices show the place they're about. V3.92 (N143): soft cloud
-in the sky. V3.91 (N150): drag a piece in any room. V3.90 (N151): As it is. V3.89 (N148): Room's panel shorter. V3.88 (N146): a
-card beside its piece. V3.87 (N145): Edit light on the room.
-The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.0 ↻"): on the
+**Version:** V4.1 (12 Nov 2026). V4.1 (N157, N158): the house on its own unless Gardens or Next door is on; a PC's drag
+swings the view the way you drag. V4.0 (N162): Home Plan V4, versions from 4. V3.93 (N147): Decide's choices show the place.
+V3.92 (N143): soft cloud in the sky. V3.91 (N150): drag a piece in any room. V3.90 (N151): As it is. V3.89 (N148): Room's panel
+shorter. V3.88 (N146): a card beside its piece. V3.87 (N145): Edit light on the room.
+The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.1 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 21 (12 Nov: Home Plan V4, the house on its own, its real surroundings, the views). A new team starts with
@@ -55,8 +55,9 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 - A room: Be there · In it · Above · On its own.
 - Walking: WASD, the arrows, the wheel, a double-tap walks you to a spot, Mouse look (M). You pass over low furniture, not wardrobes,
   and doors open as you reach them.
-- The house from outside: a PC's left-drag swings round the spot grabbed and a right-drag pans; a phone drags, pinches and twists. A
-  floor on its own is cut a metre under the eye.
+- The house from outside, on its own (Gardens and Next door bring the rest, V4.1): a PC's left-drag swings the view round the
+  spot grabbed, the way you drag (V4.1), and a right-drag pans; a phone drags, pinches and twists. A floor on its own is cut a
+  metre under the eye.
 - Glides ease the same at any frame rate; the wheel eases each notch.
 
 **Light and looks:**

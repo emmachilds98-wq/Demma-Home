@@ -140,7 +140,7 @@ addEventListener("pointermove", e => {
     const d = MAPD.g.clone().sub(g).setY(0); mapShift(d);
     MTRK.push([e.timeStamp, d]); while (MTRK.length > 6 || (MTRK.length && e.timeStamp - MTRK[0][0] > 100)) MTRK.shift();
   } else if (MAPD.k === "swing") {
-    mapSwing(-(e.clientX - MAPD.x) * k, -(e.clientY - MAPD.y) * k, MAPD.p); MAPD.x = e.clientX; MAPD.y = e.clientY;
+    mapSwing((e.clientX - MAPD.x) * k, (e.clientY - MAPD.y) * k, MAPD.p); MAPD.x = e.clientX; MAPD.y = e.clientY;   // V4.1 (N158), the client: "it moves backwards to what i would have thought": the view goes the way you drag
     if (!mapSwing.hint && S.view === "house") { mapSwing.hint = 1; toast("Drag swings round · right-drag moves · First, Ground or Lower to look in"); }
   } else if (MAPD.k === "turn") {
     mapTilt(-(e.clientX - MAPD.x) * k, -(e.clientY - MAPD.y) * k); MAPD.x = e.clientX; MAPD.y = e.clientY;
