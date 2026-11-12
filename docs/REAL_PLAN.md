@@ -465,16 +465,16 @@ it again; review it, or finish it if its PR has gone quiet (merge `main` in, tak
 
 | Row | What | Section | Where it is |
 |---|---|---|---|
-| N110 | Quieter artex ceilings | 17 A | PR #232 (draft) |
+| N110 | Quieter artex ceilings | 17 A | Done V3.76 (from #232, N154) |
 | N111 | Doors and white joinery with shape | 17 A | Done V3.65 |
 | N112 | The shade where walls meet | 17 B | PR #226 (draft) |
 | N113 | Whites that don't clip on a phone | 17 C | Done V3.66 |
 | N115 | No black void behind Above | 17 E | Done V3.64 |
-| N116 | Ceiling bulbs that look lit | 17 F | PR #231 |
+| N116 | Ceiling bulbs that look lit | 17 F | Done V3.76 (from #231, N154) |
 | N117 | The phone's labels and stick | 17 G | Done V3.70 (#228's change, landed alone) |
 | N119 | Plan leads with the whole house | 18 | Done V3.61 |
 | N120 | Lean code | 18 | Done V3.67 |
-| N121 | STATE under 150 lines, HANDOVER brought to now | 18 | **Free**, docs only: take it last, after the rows above merge |
+| N121 | STATE under 150 lines, HANDOVER brought to now | 18 | Done V3.76 (STATE, in N154; HANDOVER kept current by each round since V3.71) |
 | N123 | No shader built mid-step on the first walk | the phone's thread | Done V3.69 |
 | (PC) | A PC that hides its card's name drawn as a card | the PC's thread | PR #220. Its title says "N118" too: a clash with section 18's N118 (done V3.60). Call it N124 when it merges |
 | N125 | Steering round the house on a PC; looking into a floor (the client, 11 Nov) | navigation's thread | Done V3.68 |
@@ -562,7 +562,7 @@ The rules stay:
 | N151 | F Features | Now or the plan: one switch (a pill in a room's row) shows the room as it is, without Look's colours and Edit's moves, then as planned, with a short fade; works in every room and the whole house | `19_view_controls.js` (the pill), `23_finish.js` (finishes on or off), `08_house_edits.js` (edits on or off), `13_edit_room.js` (the living room's layout) | — | Open |
 | N152 | F Features | Will it go in: the sofa bed's boxes (largest 166 × 101 × 68, 70 clear, `fit.SOURCES["amelia"]`) through the front door, the hall and the living room door, a fit row in the option's one line and on its card; the living room door's width is a Measure row already; `fit.SOURCES["amelia"]` says the client confirmed five headrests (12 Nov) | `media-wall/src/fit.py` (the option's line), `16_cards.js` (the sofa bed's card line) | Emma (the door's width) | Open |
 | N153 | G Speed | Room for the realness: the living room's draws back under 200 on a phone before stream A and B add to them (the nested groups `mergeStatic` skips merged when they don't animate: the record table, the pouf, the shell's suggestion groups, NOTES §3), and the phone's first picture one shader under its 21 | `13_edit_room.js` (`mergeStatic`), `07_suggestions_ideas.js` (`lazyVis` merge), `01_renderer.js` (the first picture's list) | — | Open |
-| N154 | G Housekeeping | The open PRs landed or closed: #231 (bulbs) and #232 (artex) brought to main, renumbered, checked and merged (or closed with why); #236 (N121) folded into a rewrite of `docs/STATE.md` under 150 lines; the stale branches listed again in `docs/HANDOVER.md` | those PRs' own files; `docs/STATE.md`, `docs/HANDOVER.md` | — | Open |
+| N154 | G Housekeeping | The open PRs landed or closed: #231 (bulbs) and #232 (artex) brought to main, renumbered, checked and merged (or closed with why); #236 (N121) folded into a rewrite of `docs/STATE.md` under 150 lines; the stale branches listed again in `docs/HANDOVER.md` | those PRs' own files; `docs/STATE.md`, `docs/HANDOVER.md` | — | Done V3.76 (#231's and #232's own commits; STATE 148 lines) |
 
 **How to run it.**
 - The streams run side by side; inside a stream one row follows the other (they share files). A and B both touch
