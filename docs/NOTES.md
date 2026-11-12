@@ -210,6 +210,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   frame from the top's rise (`linkAt`). The chenille (`02` `CHENILLE`, `CHENILLE_B`) is per-pixel ImageData: 4 px loops (1.6 mm), a twill
   `sin((x + y)π/4)`, sines for the mottle so it tiles (any random block or row reads at room distance). The colour is drawn greener and
   greyer than the photos (`#586b4c`): the room's warm light turns a green about 25° yellower. Tufts take `dimp` (the cloth × 0.8), not `seam`.
+- **Edit's handle and sheet** (V3.87 N145, `13_edit_room.js` after `select`): `selOverlay()` places `#r3d-turnh` and `#r3d-selmeas`
+  from the piece's box projected, a frame at a time while a piece is picked; the handle's drag turns round the box's middle on screen,
+  its sign found by projecting the piece's front at two angles (so it follows the finger from any side), 15° a step, and on letting go
+  keeps to the walls as `turnItem`. `.r3d-edit` has no transform so `.r3d-sel` (fixed) sits over the dock. The hint's flag: `mw-edithint`.
 - **Taking a piece out and putting it back** (V3.75 N133, `13_edit_room.js`): `outList()` is what's out (`mov:<id>` by
   `S.layout[id].off`; `sugg:<k>` / `idea:<k>` off while in `R.FIRM` or in `S.gone`); `takeOut(key)` and `putBack(key | "all")` do it
   (an undo step each; an added catalogue piece goes for good); `outRow()` fills Room → Taken out (`#r3d-outrow`, from `syncButtons`), and

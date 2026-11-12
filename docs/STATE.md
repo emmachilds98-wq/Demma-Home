@@ -3,11 +3,11 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V3.86 (12 Nov 2026). V3.86 (N139): your corduroy sofa and the ottoman's lid upholstered as the sofa bed is
-(piped, plump, shaded). V3.85 (N136): the sofa bed's piping in its cushions' edges, its buttons in dimples. V3.84 (N140): the
-living room's options in what they're made of. V3.83 (N140): the lift-top coffee table on its legs, + Add's materials. V3.82
-(N138): make up the sofa bed; its chaise a real storage box. V3.81 (N137): the sofa bed's cushions shaded where they meet.
-The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.86 ↻"): on the
+**Version:** V3.87 (12 Nov 2026). V3.87 (N145): Edit light on the room: one bar, the piece's tools over the dock, a turn
+handle and its size on the piece. V3.86 (N139): your sofa and the ottoman upholstered as the sofa bed is. V3.85 (N136): the sofa
+bed's piping in its cushions, its buttons in dimples. V3.84, V3.83 (N140): the options' and + Add's materials, the lift-top on
+its legs. V3.82 (N138): make up the sofa bed. V3.81 (N137): the sofa bed's cushions shaded where they meet.
+The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.87 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 20 (12 Nov: the upgrade review, N135–N156 in streams A–G). A new team starts with
@@ -83,7 +83,8 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
   Its cushions carry their own shade where they meet (V3.81), piping in their edges and buttons in dimples (V3.85). Pulled out,
   Make up the bed lays a duvet and pillows on it; the chaise's storage holds the bedding (V3.82).
 - The lift-top coffee table is the plan's, in oak, on four legs, its top's shadow line (V3.83); the record table is an option.
-- Edit: drag, turn, nudge (5 cm, Shift 1 cm), recolour, Take it out, + Add (the catalogue, and what's out at its head).
+- Edit: one bar (Done · + Add · Undo, ⋯); drag a piece, turn it by its ⟳ handle (its size shows over it), nudge, recolour,
+  Take it out from its sheet over the dock (V3.87); + Add has the catalogue and what's out at its head.
 - Any piece standing in the room has Take it out on its card. Room → Taken out lists what's out, a tap each to put it back.
 - Room's set-ups, Try options, Save my plan, Watch it open (the dining cabinet, the sofa bed).
 - Its lights are layered (`geometry.LIGHT_AIMS`); each spot bar turns and each head aims, dims and colours from its card.
