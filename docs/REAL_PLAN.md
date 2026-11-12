@@ -89,6 +89,9 @@ The client, 6 Nov 2026: "look at the plan we currently have in the repo and look
 needed via your own review. then split the plan up into tasks and perform those upgrades". From the boards above, the repo review
 (texture loading, phone textures, script size) and a look at the built site on a computer and an iPhone 15 Pro.
 
+| N155 | C Textures | Walls that read as paint: a fine plaster and emulsion relief (matt, barely there, true size) on every painted wall and ceiling in the house and the living room, the artex left as it is; one map shared by `paint` and `ceiling`, its shader warmed with the rest | `house/textures/build_textures.py` (a plaster relief), `house/model.py` (`MATS` paint, ceiling), `20_go.js` (`HTEX`), `03_materials.js` (the living room's wall paint) | N141 | Open |
+| N156 | E UI | Each room's In it view framed well: from its doorway or best corner, looking at what the room is for (the hall's faced a door's edge and the glass); checked in every room's gallery shot at 393 and 1280 | `09_house_views.js` (the rooms' eyes and aims) | — | Open |
+
 **How to run it.** Each workstream is its own thread, one task a PR, so they run side by side. Workstreams touch different files; where
 two share one, the order is given. The Speed workstream (N2–N4) goes with the mobile audit, which starts with the offline
 cache's fix. Every PR: rebase on `main` just before merging, take the next free version then (`VERSION`), rewrite
@@ -456,6 +459,7 @@ and `docs/STATE.md` rewritten. The ticks and colours are the client's data, neve
 
 ## 19. Where to start (11 Nov 2026, V3.60): every open row and who has it
 
+**Since 12 Nov the next round is section 20** (the upgrade review, N135–N156); this table is as of 11 Nov (N112 has since landed, V3.63).
 Read this first, then the row's own section. The PR numbers are `emmachilds98-wq/Demma-Home`'s. A row with a PR is someone's: don't start
 it again; review it, or finish it if its PR has gone quiet (merge `main` in, take the next free version, keep its work).
 
@@ -487,3 +491,91 @@ it again; review it, or finish it if its PR has gone quiet (merge `main` in, tak
 
 Done since section 18 was written: N109 V3.58, N114 V3.59, N118 V3.60, N119 V3.61. Waiting on Emma: `docs/HANDOVER.md` "Waiting on Emma" and
 `docs/STATE.md` "Open with the client".
+
+## 20. The upgrade review (12 Nov 2026, V3.75): the sofa, every feature, the textures and the UI
+
+The client, 12 Nov 2026: "review the repo and make an upgrade plan to improve not only the sofa's HD and realness but all other
+features and functions, textures and ui of the repo". Reviewed on V3.75:
+- every room by day in HD at 1280 × 800 (`tools/gallery.py`);
+- the phone screens at 393 × 852 and the PC's at 1280 and 1920 (`check_site.py`'s and `qa.py`'s shots);
+- the measured speed (`_shots/perf.json` against `tools/perf_budget.json`), the photo budget, the open PRs;
+- the sofa bed beside its Amazon listing's 14 photos (`fit.SOURCES["amelia"]`).
+
+The rules stay:
+- the old design (the 3D is the site; pills and panels, no dashboards or lists of rooms); say less;
+- the iPhone 15 Pro and the RTX 5070 first;
+- every size cited; the address never written.
+
+### What the review found
+
+- **The sofa bed** reads as the listing in Fast, but **in HD by day it washes out to a pale mint**: the window's sun and the sheen lift
+  it, while Fast shows the photos' olive. Edit's colour only reaches its main cloth: the seams, piping and dimples stay green. Its
+  cushions meet with no shade on every path without GTAO (all but a big card), so they float a little. Its seams are separate
+  cylinders. The listing's welts, the boxing seams and the soft creases at the corners aren't there.
+- **The rest of the furniture is mostly flat colour.** Of the living room's 120 drawn materials, 31 carry a texture. The
+  options, + Add's 17 pieces, the ottoman, the rear speakers and the plain coffee table are smooth boxes in one colour. Your blue
+  sofa is the scene's rounded boxes, not the sofa bed's upholstery (`cushGeo`).
+- **The rooms** (HD by day): the bathroom, master and music room read well. Every painted wall and ceiling is flat colour with no
+  plaster or emulsion texture, so up close the rooms read as computer-made. The hall's In it view opens face-on to a door's edge and
+  the glass. The garage is a bare grey box.
+- **Textures:** the photo budget is nearly full (8.0 of 8.7 MB), so no new photo fits without freeing room. KTX2 (#133) would free
+  most of it but waits on Emma. The chenille is drawn in the page at every load; the other fabrics are photos.
+- **Outside:** the house stands alone on a lawn that runs to the horizon, with no plot or boundary, so it reads as a model. The roof's
+  tiles are a flat picture with no rows of shadow, and there are no gutters' shadow lines.
+- **The UI:**
+  - On a phone the view row is cut off ("Ground" clipped at 393), and the floor's Above sits on dark navy (the rooms' Above are cream).
+  - In Edit, the Edit bar and the selection bar cover the top third of the room on a PC and more on a phone.
+  - The choice sheets (Build's "decide" steps) show flat yellow tiles with an icon where a picture should be.
+  - Room's panel is long: Set it for, the sofa, the table, the drawers, the coffee table, Taken out, then two folds.
+  - Cards fold everything past three buttons into More.
+- **Features:** Take it out and Put back exist in the living room (V3.75). In every other room a piece taken out comes back only
+  from its toast or Measure's list, and pieces move only by typed numbers, not by dragging. There is no "now or the plan" switch to
+  compare a room as it is with the upgraded room.
+- **A real-world check:** the listing says its largest box is 166 × 101 × 68 and needs 70 cm clear for delivery. The living room
+  door is drawn 67 (V2.94, a guess, "a tape measure decides"). Nothing checks this yet.
+- **Speed and housekeeping:**
+  - The phone's first picture uses 21 of its 21 shaders (no room), and the living room draws 216 of 258 on a phone and 349 of 410
+    on the RTX. Every looks row must stay inside these, so a new kind of material is a new shader to warm before it's seen.
+  - Three PRs from 11 Nov are open and behind main by five versions: #231 (bulbs), #232 (artex), #236 (docs, N121).
+  - `docs/STATE.md` is over 300 lines (its rule is under 150).
+
+### The tasks
+
+| # | Stream | Task | Owns | After | Status |
+|---|---|---|---|---|---|
+| N135 | A Sofa | The sofa bed's green the same on every path: in HD by day it reads as the photos' olive, not mint (the sheen and the sun's share measured on the cushion tops, the HD and Fast shots matched within a few levels of grey); Edit's colour reaches its seams, piping and dimples (each a share of the cloth's colour, `placeAll`) | `12_furniture_options.js` (`chen`, the materials), `13_edit_room.js` (`movable` / `placeAll`: a piece's other materials follow its colour) | — | Open |
+| N136 | A Sofa | The cloth made as upholstery is: welts along every top edge and the backs' tops in the geometry (no separate cylinders), boxing seams down the sides, soft creases at the corners and where the seat meets the back, the dimples sunk into the cushion (the vertices pulled in, not a dark dot) | `12_furniture_options.js` (`cushGeo`, `cush`, `tufts`, `buildSofaBed`) | N135 | Open |
+| N137 | A Sofa | Shade where the cushions meet, on every path: the gaps between cushions, under the seat fronts, where backs meet seats and under the headrests darkened in the cushions' own geometry (an AO term baked per vertex at build, from their neighbours), so the sofa sits as GTAO makes it sit on a big card; no new draw; a new shader variant warmed with the living room's (`shaders_spot` stays 0) | `12_furniture_options.js` (`cushGeo` gets the AO), `01_renderer.js` (the warm-up list only) | N136 | Open |
+| N138 | A Sofa | The sofa bed's features to try: Make up the bed (a duvet and two pillows on the open bed, the house's bedding materials), the chaise's storage with folded bedding inside when it's open, a person-sized pillow for scale | `12_furniture_options.js`, `16_cards.js` (its card's row) | N136 | Open |
+| N139 | B Furniture | Upholstery for every soft piece in the living room: your blue sofa in corduroy on `cushGeo` (its cushions and back as the sofa bed's), the navy ottoman's velvet with piping and its feet, the scatter cushions, the floor cushions and the pouffe; one draw a material each as now | `13_edit_room.js` (`buildCushions`, the CATALOGUE soft pieces), `12_furniture_options.js` (your sofa's group), `02_textures.js` (velvet and cord detail, drawn) | N136 | Open |
+| N140 | B Furniture | The hard pieces with their materials: the lift-top and the plain coffee table (oak edges, the shadow line under the top, the lift's gap), the rear speakers (grille cloth, a wood cabinet), the plant stand's slats, + Add's tables, shelves and mirror (oak, metal, glass from the textures there are), every option that's a box of one colour (07's 45 plain materials) | `07_suggestions_ideas.js` (the builders' materials), `13_edit_room.js` (CATALOGUE), `04_living_shell.js` (the coffee table, the rug's fringe) | — | Open |
+| N141 | C Textures | Room for better pictures: on Emma's yes, KTX2 (#133: basisu in CI, `KTX2Loader`, JPEG fallback) frees most of the photo budget; until then, re-save what no view shows at full size (as N109) and make the chenille, velvet and cord maps at build (`build_textures.py`) so the page doesn't draw them at every load | `house/textures/build_textures.py`, `02_textures.js` (CHENILLE moves to a file), `tools/perf_budget.json` (only with Emma's yes) | Emma (KTX2) | Open |
+| N142 | C Textures | A detail map for every flat finish a room shows close up: the media wall's painted boards, the dining cabinet's oak edges, the kitchen's cabinet doors, the bathroom's vanity, the wardrobes' fronts: the grain or the satin's fine strokes, at true size, tinted by the piece's colour (as N111 did for the doors) | `house/textures/build_textures.py`, `house/model.py` (`MATS` keys' maps), `20_go.js` (`HTEX_AS`, `HTEX_TINT`) | N141 | Open |
+| N143 | D Outside | The house in its plot: a bounded garden (the fences and hedges the photos show, the rear garden's drop), the plot's edge softened into a hazy field, a sky with soft cloud by day and dusk colour by evening, the roof's concrete tiles in rows with their shadow lines, gutters' and the eaves' shade; no real street (privacy: a stand-in, as N81) | `20_go.js` (`buildStreet`, the ground, the sky), `house/model.py` (the roof's rows, fences), `house/textures/build_textures.py` (roof relief) | — | Open |
+| N144 | E UI | The top rows on a phone: no word cut off at 393 or 375 (the view row icons with the chosen one named, the floors as a row that scrolls with a fade at its edge); a floor's Above on the page's cream, as a room's (V3.64) | `room3d_page.py` (the rows' markup and CSS), `19_view_controls.js` (`backdrop` for a floor) | — | Open |
+| N145 | E UI | Edit, light on the room: one bar (Done · + Add · Undo) and the selected piece's tools in a sheet over the dock, not two bars at the top; the hint once a device; on the piece itself a turn handle and its size, so a finger moves and turns it without the buttons | `13_edit_room.js` (`editPanel`, `setEdit`, the drag), `room3d_page.py` (`#r3d-editbar`, `#r3d-sel`) | — | Open |
+| N146 | E UI | Cards that lead with what you do: the most used two or three buttons, then the piece's own rows (as the headrests' row) instead of More; never over the piece it's for (placed beside it on a PC, a sheet on a phone that a swipe down closes); the same card shape in every room | `16_cards.js` (`renderAct`, `placeAct`, `actItems`), `room3d_page.py` (the card's CSS) | — | Open |
+| N147 | E UI | Pictures for every choice: Build's "decide" sheets show the room as each choice makes it (a small still from the 3D drawn when the sheet opens, not at build: no HD stills), not a yellow tile | `build_viewer.py` (the decide sheets' markup), `16_cards.js` or a new helper calling `R3D.still` | — | Open |
+| N148 | E UI | Room's panel shorter: Set it for, The sofa and Taken out first; the table, drawers and coffee table in one row of switches; the rest under one fold; the panel opens where you left it | `room3d_page.py` (the "room" drawer), `19_controls.js` (`syncButtons` for any new row) | N145 | Open |
+| N149 | F Features | Take it out and put it back in every room, as the living room: a room's floor card lists what's out of it ("Taken out (2)", a tap each to put back), the hitem card's Take it out names where it comes back; Measure's list stays | `16_cards.js` (`actItems` `fin:` and `hitem:`), `08_house_edits.js` (`setPiece` only) | — | Open |
+| N150 | F Features | Drag a piece in any room: Move or resize's card gets a drag on the floor (snap to a wall within 15 cm, a turn handle, as Edit in the living room), writing the same Measure rows the steppers write | `08_house_edits.js` (a drag beside `setPiece`), `16_cards.js` (`hsize:`) | N149 | Open |
+| N151 | F Features | Now or the plan: one switch (a pill in a room's row) shows the room as it is, without Look's colours and Edit's moves, then as planned, with a short fade; works in every room and the whole house | `19_view_controls.js` (the pill), `23_finish.js` (finishes on or off), `08_house_edits.js` (edits on or off), `13_edit_room.js` (the living room's layout) | — | Open |
+| N152 | F Features | Will it go in: the sofa bed's boxes (largest 166 × 101 × 68, 70 clear, `fit.SOURCES["amelia"]`) through the front door, the hall and the living room door, a fit row in the option's one line and on its card; the living room door's width is a Measure row already; `fit.SOURCES["amelia"]` says the client confirmed five headrests (12 Nov) | `media-wall/src/fit.py` (the option's line), `16_cards.js` (the sofa bed's card line) | Emma (the door's width) | Open |
+| N153 | G Speed | Room for the realness: the living room's draws back under 200 on a phone before stream A and B add to them (the nested groups `mergeStatic` skips merged when they don't animate: the record table, the pouf, the shell's suggestion groups, NOTES §3), and the phone's first picture one shader under its 21 | `13_edit_room.js` (`mergeStatic`), `07_suggestions_ideas.js` (`lazyVis` merge), `01_renderer.js` (the first picture's list) | — | Open |
+| N154 | G Housekeeping | The open PRs landed or closed: #231 (bulbs) and #232 (artex) brought to main, renumbered, checked and merged (or closed with why); #236 (N121) folded into a rewrite of `docs/STATE.md` under 150 lines; the stale branches listed again in `docs/HANDOVER.md` | those PRs' own files; `docs/STATE.md`, `docs/HANDOVER.md` | — | Open |
+
+**How to run it.**
+- The streams run side by side; inside a stream one row follows the other (they share files). A and B both touch
+  `12_furniture_options.js` (A the sofa bed, B your sofa's group), and B and E both touch `13_edit_room.js` (B the CATALOGUE builders,
+  E `editPanel` and the drag). Whoever merges second merges main in first and keeps the other's change.
+- **Start with N153 and N154:** they make room and clear the open PRs, so the looks rows land on a clean main within budget.
+- Then N135, N144 and N149 (small, seen at once).
+- Then the rest by stream.
+- Every code row: before/after at 393 and 1280 in its PR, `tools/checks.py` lines pasted, `house/privacy_check.py`, the next free
+  version at merge, its row ticked here and `docs/STATE.md` rewritten.
+- Options stay options (no buy rows) until Emma says she's buying.
+
+**Waiting on Emma for this section:**
+- the living room door's real width (N152);
+- KTX2 (N141);
+- the sofa bed's price.

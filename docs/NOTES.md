@@ -180,7 +180,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `S.hr[i]`, a group each) flip up on their hinge (V3.75, below).
   V3.75 (N132–N134): the listing is Amazon UK B0HDC8WYBT; its 14 photos come down from the page's `"hiRes"` URLs (m.media-amazon.com, reachable
   here; the page's prices show in US dollars from the sandbox). Its text: 95 high, seat 43 × 53, 65 wide, back 50 above the seat,
-  "Clic-Clac" headrests ("3x" in the text, five pads in the photos: drawn five). `SOFABED["head"]` (w, d, t, over, up): each headrest's
+  "Clic-Clac" headrests ("3x" in the text; five pads in the photos, and the client confirmed five, 12 Nov). `SOFABED["head"]` (w, d, t, over, up): each headrest's
   group sits at the back frame's front top edge (`back_h` 81, the run's `-hd + t`, the side's `xi`); the pad hangs back from it with `over`
   in front; `rotation.x` (the run) or `rotation.z` (the side) by `up` lifts the back of the pad, so its foot dips behind the back cushion.
   `head_up_h` (106) is the raised top; `clash.py` checks it. The scissor links are their own group in the bed (`lk`, not merged), set each

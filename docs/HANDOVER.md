@@ -2,6 +2,8 @@
 
 **Now (11 Nov 2026, V3.60):** what's open and who has it is `docs/REAL_PLAN.md` section 19; this page is brought to now by N121.
 
+**Next (12 Nov 2026):** the upgrade plan is `docs/REAL_PLAN.md` section 20 (the client: "review the repo and make an upgrade plan ..."):
+N135–N156 in streams A–G, start with N153 (room in the speed budget) and N154 (the open PRs #231, #232, #236).
 **Latest (12 Nov 2026, V3.75):** the sofa bed true to its Amazon listing (headrests that flip up on a hinge, its green, its weave), and any
 living-room piece taken out and put back (Room → Taken out, Edit's + Add, the toast): `docs/NOTES.md` section 5, "Taking a piece out".
 **Before it (V3.74 took the C-table out of the plan and gave the sofa bed its own chenille):** the client is testing a sofa she may buy. V3.71 (#242, N126) added Room → The sofa:
@@ -104,8 +106,8 @@ Five from before V2.0 hold commits not in `main`, work since redone or dropped: 
 5. **Dark panels** on a dark device, or keep the cream (the old design) (N9's rest).
 6. **A photo of the microwave**, if there is one (N6 found none).
 7. **The green sofa bed:** V3.73 settled 230 vs 165 from the listing's photos (the sections are 165, the loose chaise makes 230). Still
-   open: the price (it showed in US dollars from the sandbox; about £700–950 is a guess); the arm, stools and chaise are scaled off photos;
-   the headrests (V3.75: the listing's text says three, its photos show five pads: drawn five, each flips up).
+   open: the price (it showed in US dollars from the sandbox; about £700–950 is a guess); the arm, stools and chaise are scaled off photos.
+   Answered 12 Nov: five headrests ("there are 5 from what i can see"), as drawn since V3.74.
 The older list (measurements still guessed, smaller confirmations) is in `docs/STATE.md`, "Open with the client", and in Measure on the site.
 
 ## Suggested next work for the new team
