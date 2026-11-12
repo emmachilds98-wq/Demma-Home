@@ -3,11 +3,11 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V3.83 (12 Nov 2026). V3.83 (N140, part 1): the lift-top coffee table on its legs (its box floated), a shadow line
-under its top; + Add's pieces in what they're made of. V3.82 (N138): make up the sofa bed; its chaise a real storage box with the
-bedding inside. V3.81 (N137): the sofa bed's cushions shaded where they meet. V3.80 (N149): every room's floor card lists what's
-taken out. V3.79 (N144): the phone's top rows. V3.78 (N135): the sofa bed's green in HD. V3.77 (N153): 181 draws on a phone.
-The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.83 ↻"): on the
+**Version:** V3.84 (12 Nov 2026). V3.84 (N140): the living room's options in what they're made of (knit, cloth, rattan,
+seagrass, glaze, oak and walnut grain). V3.83 (N140): the lift-top coffee table on its legs (its box floated), + Add's pieces'
+materials. V3.82 (N138): make up the sofa bed; its chaise a real storage box. V3.81 (N137): the sofa bed's cushions shaded where
+they meet. V3.80 (N149): every room's floor card lists what's taken out. V3.79 (N144): the phone's top rows.
+The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.84 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 20 (12 Nov: the upgrade review, N135–N156 in streams A–G). A new team starts with
