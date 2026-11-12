@@ -448,6 +448,28 @@ function fromAbove(cx, y, cz, dist, fov) {  // straight down on (cx, y, cz) from
   const [k, sh] = freeFrame(), D = dist / k, oz = house ? 0 : -sh * 2 * D * Math.tan(fitFov(fov) * Math.PI / 360) / Math.max(1, stage ? stage.clientHeight : 1);   // the screen's up is -z
   flyTo([cx, y + D, cz + 1 + oz], [cx, y, cz + oz], fov, true, REDUCE);
 }
+/* V4.2 (N159), the client: "improve views where needed": the whole house from outside framed to the screen, the house (on its own since
+   V4.1) filling it on a phone's tall screen as on a PC's wide one, from the same side as before (VIEWS.house's first eye and point) */
+function fitHouseView() {
+  if (!R.HOUSE3 || hfloor !== "all") return;
+  const H = VIEWS.house; if (!fitHouseView.e0) { fitHouseView.e0 = H.eye.slice(); fitHouseView.a0 = H.at.slice(); }
+  const rs = [...Object.values(R.HOUSE3.rooms || {}), [0, R.W, R.WINDOW_Z, R.RECESS_Z, 0]];
+  const x0 = Math.min(...rs.map(r => r[0])), x1 = Math.max(...rs.map(r => r[1])), z0 = Math.min(...rs.map(r => r[2])), z1 = Math.max(...rs.map(r => r[3]));
+  const c = [(x0 + x1) / 2, 380, (z0 + z1) / 2], e0 = fitHouseView.e0, a0 = fitHouseView.a0;
+  const dir = new THREE.Vector3(e0[0] - a0[0], e0[1] - a0[1], e0[2] - a0[2]).normalize();
+  // the house's box on screen: as near as its height fits between the top row and the dock and its width in 80% of the screen (a binary
+  // search on the distance), then moved so it sits in the middle of that space
+  const cam = camera.clone(), cw = v3(c[0], c[1], c[2]), pts = [];
+  for (let k = 0; k < 8; k++) pts.push(v3(k & 1 ? x1 : x0, k & 2 ? 860 : 0, k & 4 ? z1 : z0));
+  const span = D => { cam.position.copy(v3(c[0] + dir.x * D, c[1] + dir.y * D, c[2] + dir.z * D)); cam.lookAt(cw); cam.updateMatrixWorld(); cam.updateProjectionMatrix();
+    let a = 9, b = -9, e = 9, f = -9; for (const q of pts) { const n = q.clone().project(cam); a = Math.min(a, n.x); b = Math.max(b, n.x); e = Math.min(e, n.y); f = Math.max(f, n.y); } return [a, b, e, f]; };
+  const ok = D => { const [a, b, e, f] = span(D); return b - a < 1.75 && f - e < 1.45; };   // the box is bigger than the house it holds (its roof, its corners), so it may reach past the space a little
+  let lo = 600, hi = 20000; for (let k = 0; k < 24; k++) { const m = (lo + hi) / 2; if (ok(m)) hi = m; else lo = m; }
+  const [a, b, e, f] = span(hi), hh = hi * M * Math.tan(cam.fov * Math.PI / 360), right = new THREE.Vector3(1, 0, 0).applyQuaternion(cam.quaternion), up = new THREE.Vector3(0, 1, 0).applyQuaternion(cam.quaternion);
+  const sh = right.multiplyScalar((a + b) / 2 * hh * cam.aspect).add(up.multiplyScalar(((e + f) / 2 - 0.03) * hh));   // the box's middle to the space's
+  const room = w => [-w.x / M, w.y / M, w.z / M], eye = cam.position.clone().add(sh), at = cw.clone().add(sh);
+  H.at = room(at); H.eye = room(eye);
+}
 function floorCam() {
   if (S.view !== "house" || !R.HOUSE3) return;
   if (hfloor === "all" && hfview === "angle") { setView("house"); return; }
