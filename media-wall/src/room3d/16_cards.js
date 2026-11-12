@@ -387,12 +387,43 @@ function placeAct() {
   if (sheet) { fit(act.getBoundingClientRect().bottom - sr.top - top0); return; }
   fit(sh - 90 - top0);
   const pw = act.offsetWidth || 300, ph = act.offsetHeight || 200;
+  act.classList.remove("beside", "onright");
+  /* V3.88 (N146): never over the piece it's for: beside it (its right, else its left), its arrow at the piece; under or over the tap
+     only when the piece fills the width */
+  const tg = actTarget();
+  if (tg) { const b = new THREE.Box3().setFromObject(tg);
+    if (!b.isEmpty()) { let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9, behind = false;
+      for (let i = 0; i < 8; i++) { const v = new THREE.Vector3(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z).project(camera);
+        if (v.z > 1) behind = true; const x = (v.x + 1) / 2 * sw, y = (1 - v.y) / 2 * sh; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+      x0 = Math.max(0, x0); x1 = Math.min(sw, x1);
+      const gap = 20, onR = x1 + gap + pw <= sw - 12, onL = x0 - gap - pw >= 12;
+      if (!behind && (onR || onL)) {
+        const lft = onR ? x1 + gap : x0 - gap - pw, cy = Math.max(Math.max(y0, top0), Math.min(Math.min(y1, sh - 90), actXY[1]));
+        const tp = Math.max(top0, Math.min(sh - 90 - ph, cy - ph / 2));
+        act.style.left = lft + "px"; act.style.top = tp + "px"; act.style.setProperty("--ay", Math.max(22, Math.min(ph - 22, cy - tp)) + "px");
+        act.classList.add("beside"); act.classList.toggle("onright", onR); act.classList.remove("above"); return; } } }
   const left = Math.max(12, Math.min(sw - pw - 12, actXY[0] - pw / 2));
   const below = actXY[1] + 22 + ph < sh - 90, top = Math.max(top0, Math.min(sh - 90 - ph, below ? actXY[1] + 22 : actXY[1] - ph - 22));
   act.style.left = left + "px"; act.style.top = top + "px"; act.style.setProperty("--ax", (actXY[0] - left) + "px");
   act.classList.toggle("above", !below);
 }
 addEventListener("resize", () => { if (actId) placeAct(); });
+function actTarget() {   // what the open card is for, as drawn (null: a wall, a room, the house)
+  const [k, id] = String(actId || "").split(":"), G_ = k === "sugg" ? SUGG_G[id] : k === "idea" ? IDEA_G[id] : null;
+  if (k === "mov" && MOV[id]) return MOV[id].pivot;
+  if (G_) return G_.pivot || (G_.isObject3D ? G_ : null);
+  if (/^(hitem|hsize|hswap|hadd)$/.test(k) && SEL.g) return SEL.g;
+  return null;
+}
+/* V3.88 (N146): on a phone the card is a sheet over the dock; a swipe down closes it (from its top, or anywhere while it isn't
+   scrolled), as a sheet does */
+{ let sw0 = null;
+  act.addEventListener("touchstart", e => { if (!matchMedia("(max-width: 899px)").matches || e.touches.length !== 1) { sw0 = null; return; }
+    sw0 = act.scrollTop <= 0 || e.touches[0].clientY - act.getBoundingClientRect().top < 48 ? { y: e.touches[0].clientY, dy: 0 } : null; }, { passive: true });
+  act.addEventListener("touchmove", e => { if (!sw0) return; sw0.dy = e.touches[0].clientY - sw0.y;
+    if (sw0.dy > 8) { act.style.transform = `translateY(${sw0.dy}px)`; act.style.transition = "none"; } }, { passive: true });
+  const end = () => { if (!sw0) return; const dy = sw0.dy; sw0 = null; act.style.transition = ""; act.style.transform = ""; if (dy > 70) closeAct(); };
+  act.addEventListener("touchend", end); act.addEventListener("touchcancel", end); }
 let actMoreOpen = false;
 function openAct(id, xy) {
   if (popId) closePop(); clearAim();

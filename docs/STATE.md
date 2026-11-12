@@ -3,11 +3,11 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V3.87 (12 Nov 2026). V3.87 (N145): Edit light on the room: one bar, the piece's tools over the dock, a turn
-handle and its size on the piece. V3.86 (N139): your sofa and the ottoman upholstered as the sofa bed is. V3.85 (N136): the sofa
-bed's piping in its cushions, its buttons in dimples. V3.84, V3.83 (N140): the options' and + Add's materials, the lift-top on
-its legs. V3.82 (N138): make up the sofa bed. V3.81 (N137): the sofa bed's cushions shaded where they meet.
-The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.87 ↻"): on the
+**Version:** V3.88 (12 Nov 2026). V3.88 (N146): a card beside its piece on a PC; a phone's card swipes down to close.
+V3.87 (N145): Edit light on the room: one bar, the piece's tools over the dock, a turn handle and its size on the piece. V3.86
+(N139), V3.85 (N136): your sofa, the ottoman and the sofa bed upholstered (piping, dimples). V3.84, V3.83 (N140): the options'
+and + Add's materials, the lift-top on its legs. V3.82 (N138): make up the sofa bed.
+The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.88 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 20 (12 Nov: the upgrade review, N135–N156 in streams A–G). A new team starts with
@@ -48,6 +48,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
   A row with more to slide to fades at that end; the chosen floor slides into view (V3.79).
 - The dock: View · Look · Measure (in the living room also Room and Edit); the figure drops you in where you let go.
 - On a phone the stick, bottom left, walks, moves the map or glides, by view; a card or panel puts it away.
+- A tap's card stands beside its piece on a PC; on a phone it's a sheet over the dock, a swipe down closes it (V3.88).
 - Back, Esc and Tab each go one layer at a time; every tap is 44 px on a touch screen; the panels are cream.
 
 **Moving round:**
