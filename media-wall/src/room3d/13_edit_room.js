@@ -435,7 +435,53 @@ function select(id) {
   selId = id; selSurf = null;
   if (selBox) { scene.remove(selBox); selBox = null; }
   if (id && MOV[id] && MOV[id].pivot) { selBox = new THREE.BoxHelper(MOV[id].pivot, 0xffc46b); scene.add(selBox); }
-  editPanel(); dirty();
+  if (id) { const h = qs("#r3d-edithint"); if (h) h.hidden = true; }
+  editPanel(); dirty(); if (!ovRaf) selOverlay();
+}
+/* V3.87 (N145): on the piece itself, its size over it and a turn handle beside it: drag the handle round and it turns, 15° a step, the
+   way the finger goes whichever side you look from (it stays against the walls it was against when let go) */
+const TH = qs("#r3d-turnh"), SM = qs("#r3d-selmeas"); let ovRaf = 0, turnDrag = null;
+function scrOf(v, r) { const q = v.clone().project(camera); return [r.left + (q.x + 1) / 2 * r.width, r.top + (1 - q.y) / 2 * r.height, q.z]; }
+function selOverlay() {
+  ovRaf = 0; if (!TH || !SM) return;
+  const it = selId && MOV[selId];
+  if (!S.edit || !it || !shown(it.pivot)) { TH.hidden = SM.hidden = true; return; }
+  const b = boxOf(selId), r = canvas.getBoundingClientRect(), cl = (v, a, c) => Math.min(Math.max(v, a), c);
+  let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9, behind = false;
+  for (let i = 0; i < 8; i++) { const [sx, sy, sz] = scrOf(new THREE.Vector3(i & 1 ? b.max.x : b.min.x, i & 2 ? b.max.y : b.min.y, i & 4 ? b.max.z : b.min.z), r);
+    if (sz > 1) behind = true; x0 = Math.min(x0, sx); x1 = Math.max(x1, sx); y0 = Math.min(y0, sy); y1 = Math.max(y1, sy); }
+  SM.hidden = behind || !it.w;
+  if (!SM.hidden) { SM.textContent = `${Math.round(it.w)} × ${Math.round(it.d)} cm`; SM.style.left = cl((x0 + x1) / 2, r.left + 70, r.right - 70) + "px"; SM.style.top = cl(y0, r.top + 130, r.bottom - 60) + "px"; }
+  TH.hidden = behind || !!it.fixed || !!it.lamp;
+  if (!TH.hidden && !turnDrag) { TH.style.left = cl(x1 + 30, r.left + 30, r.right - 30) + "px"; TH.style.top = cl((y0 + y1) / 2, r.top + 130, r.bottom - 160) + "px"; }
+  ovRaf = requestAnimationFrame(selOverlay);
+}
+if (TH) {
+  const angAt = (e, c) => Math.atan2(e.clientY - c[1], e.clientX - c[0]);
+  TH.addEventListener("pointerdown", e => {
+    if (!selId || !MOV[selId] || MOV[selId].fixed) return; e.preventDefault(); e.stopPropagation();
+    const id = selId, r = canvas.getBoundingClientRect(), w = boxOf(id).getCenter(new THREE.Vector3());   // round the middle you see
+    const c = scrOf(w, r), p = spotOf(id), th = p.rot * Math.PI / 180;
+    const at = t => { const q = scrOf(w.clone().add(new THREE.Vector3(Math.sin(t), 0, Math.cos(t)).multiplyScalar(0.5)), r); return Math.atan2(q[1] - c[1], q[0] - c[0]); };
+    const dA = Math.atan2(Math.sin(at(th + 0.1) - at(th)), Math.cos(at(th + 0.1) - at(th)));   // which way it turns on screen as its angle grows
+    turnDrag = { id, c, last: angAt(e, c), sum: 0, rot0: p.rot, rot: p.rot, sg: dA >= 0 ? 1 : -1, before: snapshot() };
+    TH.setPointerCapture(e.pointerId); TH.style.cursor = "grabbing";
+  });
+  TH.addEventListener("pointermove", e => {
+    const T = turnDrag; if (!T) return;
+    const a = angAt(e, T.c); T.sum += Math.atan2(Math.sin(a - T.last), Math.cos(a - T.last)); T.last = a;
+    const rot = ((T.rot0 + Math.round(T.sg * T.sum * 180 / Math.PI / 15) * 15) % 360 + 360) % 360;
+    if (rot !== T.rot) { T.rot = rot; MOV[T.id].pivot.rotation.y = rot * Math.PI / 180; if (selBox) selBox.update(); dirty(); }
+  });
+  const endTurn = () => {
+    const T = turnDrag; if (!T) return; turnDrag = null; TH.style.cursor = "";
+    if (T.rot === T.rot0) return;
+    UNDO.push(T.before); if (UNDO.length > 10) UNDO.shift(); undoBtn();
+    const it = MOV[T.id], p = spotOf(T.id), on = wallsTouched(it, p), { hx, hz } = halfOf(it, T.rot);   // as turnItem: it keeps to the walls it was against
+    let x = p.x, z = p.z; if (on.x0) x = hx; if (on.xW) x = R.W - hx; if (on.zmin) z = R.WINDOW_Z + hz; if (on.zmax) z = zmaxAt(x, hx) - hz;
+    const c = clampItem(it, x, z, T.rot); setLayout(T.id, { rot: T.rot, x: c.x, z: c.z }); placeAll(); store.set(KEY, S);
+  };
+  TH.addEventListener("pointerup", endTurn); TH.addEventListener("pointercancel", endTurn);
 }
 function editPanel() {
   const P = qs("#r3d-sel"); if (!P) return;
@@ -469,6 +515,7 @@ function setEdit(on) {
   S.edit = on; root.classList.toggle("editing", on);
   qs("#r3d-editbtn").setAttribute("aria-pressed", String(on));
   qs("#r3d-editbar").hidden = !on;
+  if (on) { const h = qs("#r3d-edithint"); if (h && !store.get("mw-edithint", false)) { h.hidden = false; store.set("mw-edithint", true); } }   // V3.87 (N145): the hint once a device
   if (on) { preEditView = S.view; if (!(VIEWS[S.view] || {}).above) setView("room"); const pn = document.getElementById("r3d-panel"); if (pn) pn.hidden = true; closePop(); }   // v21: edit from the whole room, cut away (v25: the Tools panel steps aside)
   else { select(null); qs("#r3d-addlist").hidden = true; if (preEditView && preEditView !== S.view) setView(preEditView); }
   dirty();

@@ -195,7 +195,15 @@ details.r3d-more[open] > summary::before { content: "– "; }
 .r3d-cost { font-size: 13px; color: var(--mut); font-variant-numeric: tabular-nums; }
 .r3d.nogl .r3d-dock, .r3d.nogl .r3d-panel { display: none; }
 /* Edit room: the bar, the add list and the selection panel over the canvas, as cream pills */
-.r3d-edit { position: absolute; top: 84px; left: 50%; transform: translateX(-50%); width: min(760px, calc(100% - 24px)); display: grid; gap: 8px; justify-items: center; pointer-events: none; z-index: 5; }
+.r3d-edit { position: absolute; top: 84px; left: 0; right: 0; margin: 0 auto; width: min(760px, calc(100% - 24px)); display: grid; gap: 8px; justify-items: center; pointer-events: none; z-index: 5; }   /* V3.87: no transform, so its sheet sits over the dock */
+/* V3.87 (N145): Edit light on the room: one bar (Done · + Add · Undo, the rest under ⋯), the piece's tools a sheet over the dock, its turn handle and size on it */
+.r3d-editmore { position: relative; } .r3d-editmore > summary { list-style: none; min-height: 40px; min-width: 44px; display: grid; place-items: center; border-radius: 999px; background: var(--soft); cursor: pointer; font: 600 18px Figtree, system-ui, sans-serif; }
+.r3d-editmore > summary::-webkit-details-marker { display: none; }
+.r3d-editmore[open] > div { position: absolute; top: calc(100% + 8px); right: 0; display: grid; gap: 6px; background: var(--cream); padding: 8px; border-radius: 22px; box-shadow: var(--shade); white-space: nowrap; z-index: 6; }
+.r3d-edit .r3d-sel { position: fixed; left: 0; right: 0; margin: 0 auto; bottom: 96px; width: max-content; max-width: min(760px, calc(100% - 24px)); z-index: 31; }
+.r3d-turnh { position: fixed; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50% !important; padding: 0 !important; display: grid; place-items: center; background: var(--ink) !important; color: var(--cream) !important; box-shadow: var(--shade); touch-action: none; cursor: grab; z-index: 7; }
+.r3d-turnh[hidden], .r3d-selmeas[hidden] { display: none; }
+.r3d-selmeas { position: fixed; transform: translate(-50%, -100%); margin-top: -8px; padding: 3px 10px; border-radius: 999px; background: var(--cream); color: var(--ink); font: 600 13px Figtree, system-ui, sans-serif; font-variant-numeric: tabular-nums; box-shadow: var(--shade); pointer-events: none !important; white-space: nowrap; z-index: 7; }
 .r3d-edit > * { pointer-events: auto; }
 .r3d-edit button, .r3d-edit .chip { min-height: 40px; border: 0; border-radius: 999px; padding: 8px 14px; background: var(--soft); color: var(--ink); font: 500 14px Figtree, system-ui, sans-serif; cursor: pointer; }
 .r3d-edit button[aria-pressed=true] { background: var(--ink); color: var(--cream); }
@@ -219,7 +227,8 @@ details.r3d-more[open] > summary::before { content: "– "; }
   .r3d-bub i { width: 42px; height: 42px; }
   .r3d-panel { left: 12px; right: 12px; transform: none; width: auto; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 78px); max-height: calc(50dvh - 20px); border-radius: 26px; }
   .r3d-edit { top: 74px; }
-  .r3d-hint { display: none; }
+  .r3d-hint { display: none; } .r3d-hint1:not([hidden]) { display: block; text-align: center; }
+  .r3d-edit .r3d-sel { left: 12px; right: 12px; width: auto; max-width: none; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 82px); }
   .r3d-addlist, .r3d-sel { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; justify-content: flex-start; } .r3d-addlist > *, .r3d-sel > * { flex: none; }
   .r3d-pop { left: 12px !important; right: 12px; top: auto !important; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 82px); width: auto; }
   .r3d-pop::before { display: none; }
@@ -466,7 +475,7 @@ body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-ed
   .r3d-rmode button { min-width: 44px; justify-content: center; }
   .r3d-px, .r3d-pop .x { width: 44px; height: 44px; top: 8px; right: 8px; }
   .ms-go { min-width: 44px; }
-  .stk, .ms-go, .r3d-wallsel, .r3d-ui .seg button, .r3d-ui .chip, .r3d-ui .btn, .r3d-edit button, .r3d-edit .chip, .r3d-actmore > summary { min-height: 44px; }
+  .stk, .ms-go, .r3d-wallsel, .r3d-ui .seg button, .r3d-ui .chip, .r3d-ui .btn, .r3d-edit button, .r3d-edit .chip, .r3d-actmore > summary, .r3d-editmore > summary { min-height: 44px; }
   .r3d-actfields .stp button, .r3d-actfields input { width: 44px; height: 44px; } .r3d-actfields input { width: 68px; }
 }
 @media (pointer: coarse) and (max-width: 899px) {
@@ -952,9 +961,10 @@ def section(gallery=""):
     <div class="r3d-pop r3d-act" id="r3d-act" role="dialog" aria-modal="false" aria-labelledby="r3d-act-h" hidden><button type="button" class="x" aria-label="Close"><span class="ms" aria-hidden="true">close</span></button>
       <h3 id="r3d-act-h"></h3><p class="st" id="r3d-act-st" aria-live="polite"></p><div class="acts" id="r3d-acts"></div></div>
     <div class="r3d-edit">
-      <div class="r3d-editbar" id="r3d-editbar" hidden><button type="button" id="r3d-editdone" class="primary">✓ Done</button><button type="button" id="r3d-add">+ Add</button><button type="button" id="r3d-undo" disabled title="Undo (Ctrl+Z)">↶ Undo</button><button type="button" id="r3d-layreset">Reset layout</button>
-        <button type="button" class="r3d-share" id="r3d-share" hidden title="Save this layout so Emma and Dave both see it">Save for both of you</button><button type="button" class="r3d-share" id="r3d-useshared" hidden>Use the shared layout</button><span class="r3d-hint" id="r3d-sharest" aria-live="polite"></span>
-        <span class="r3d-hint">Drag a thing to move it (it snaps to a wall within 15 cm); tap it to turn, nudge, recolour or take it out (+ Add puts it back). Tap a wall to paint it.</span></div>
+      <div class="r3d-editbar" id="r3d-editbar" hidden><button type="button" id="r3d-editdone" class="primary">✓ Done</button><button type="button" id="r3d-add">+ Add</button><button type="button" id="r3d-undo" disabled title="Undo (Ctrl+Z)">↶ Undo</button>
+        <details class="r3d-editmore"><summary aria-label="More">⋯</summary><div><button type="button" id="r3d-layreset">Reset layout</button><button type="button" class="r3d-share" id="r3d-share" hidden title="Save this layout so Emma and Dave both see it">Save for both of you</button><button type="button" class="r3d-share" id="r3d-useshared" hidden>Use the shared layout</button></div></details><span class="r3d-hint" id="r3d-sharest" aria-live="polite"></span>
+        <span class="r3d-hint r3d-hint1" id="r3d-edithint" hidden>Drag a thing to move it, its ⟳ to turn it. Tap a wall to paint it.</span></div>
+      <button type="button" class="r3d-turnh" id="r3d-turnh" hidden aria-label="Turn it: drag round" title="Drag round to turn it (15° steps)"><span class="ms" aria-hidden="true">rotate_right</span></button><span class="r3d-selmeas" id="r3d-selmeas" hidden></span>
       <div class="r3d-addlist" id="r3d-addlist" hidden></div>
       <div class="r3d-sel" id="r3d-sel" hidden><b id="r3d-selname"></b><span class="r3d-size" id="r3d-selsize"></span><button type="button" data-sel="turn" title="A quarter turn; against a wall it stays against it">⟳ Turn</button><button type="button" data-sel="turn45" title="An eighth of a turn">45°</button><button type="button" data-sel="turn15" title="15°; hold Shift for 5°">15°</button><button type="button" data-sel="wall" title="Push it to the nearest wall, its back to the wall">⇥ Back to the wall</button><span class="r3d-nudge" role="group" aria-label="Nudge it 5 cm (Shift: 1 cm)"><button type="button" data-sel="nl" aria-label="Nudge it left">←</button><button type="button" data-sel="nu" aria-label="Nudge it away">↑</button><button type="button" data-sel="nd" aria-label="Nudge it nearer">↓</button><button type="button" data-sel="nr" aria-label="Nudge it right">→</button></span>
         <label>Colour <input type="color" id="r3d-selcol" value="#888888"></label><span id="r3d-swatches" hidden></span>
