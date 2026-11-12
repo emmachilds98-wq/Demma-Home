@@ -24,6 +24,7 @@ photo or plan (to confirm) · **E** our estimate.
 | 5 Nov | "the bannister on the top hallway of floor 1 should have square bannister posts not circle tops" | `model.landing`: square, flat-topped posts (V2.20's turned caps gone) |
 | 5 Nov | "the bedroom 2 has a floating plugsocket and things should be moved back towards the real wall between it and the master bedroom" | `SOCKETS`, `MUSIC` chair-bed, amp, guitars on the wall at z 79.5; check_model: every socket on a wall |
 | 5 Nov | "wall d moved back in line with the wall on its upper left" (our plan of the lower floor), "i am able to fit a washer dryer in this corner and still open the store door" | The store's back wall in line with the one past the stairs' top step (`survey_data.STORE_TO_STAIRS`) |
+| 12 Nov | "add 2 of these shelves in bedroom 3 on the wall behind the seats in artisan oak ... a fold up 80cm oak shelf ... folded down beneath the shelf on 2 large lift up arms" (a listing: vidaXL wall cube shelf, 12 compartments, artisan oak, 100 × 18 × 100, compartments 24.5 / 31 / 38.5 × 18 × 23, Amazon B0DKF3DMN7) | `survey_data.OFFICE` cubes and flip, `model.office` (V4.3); the table 80 long (the client), a cut of the desk's oak, 40 deep and its arms E |
 
 ## 2. Floor plans
 

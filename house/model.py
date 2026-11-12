@@ -1287,6 +1287,34 @@ def office(o):
     o.box("black", W - 6, y0 + d["h"], mz - 3, W - 2, y0 + d["h"] + 40, mz + 3)
     o.box("black", W - 30, y0 + d["h"] + 38, mz - 1.5, W - 4, y0 + d["h"] + 41, mz + 1.5)
     o.box("steel", W - 34, y0 + d["h"] + 22, mz - 3, W - 28, y0 + d["h"] + 38, mz + 3)
+    # V4.3, the client: two of the artisan oak wall cube shelves on the wall behind the seats, and under them the 80 oak flip-up table on
+    # its two lift-up arms, folded down (survey_data.OFFICE cubes, flip)
+    C = O["cubes"]; xa, xb, t = C["x"], C["x"] + C["d"], C["t"]
+    rows = (C["cols"], (C["cols"][2], C["cols"][0], C["cols"][1]), (C["cols"][1], C["cols"][2], C["cols"][0]), (C["cols"][0], C["cols"][2], C["cols"][1]))
+    rh = (C["h"] - 5 * t) / 4
+    for n, (za, zb) in enumerate(C["z"]):
+        o.item("office.cubes%d" % (n + 1), "Wall cube shelf %d (artisan oak)" % (n + 1), "bed3", src=C["src"], axis="z")
+        yb, yt = y0 + C["y"], y0 + C["y"] + C["h"]
+        o.box("artisan", xa, yb, za, xb, yb + t, zb); o.box("artisan", xa, yt - t, za, xb, yt, zb)            # top and bottom
+        o.box("artisan", xa, yb + t, za, xb, yt - t, za + t); o.box("artisan", xa, yb + t, zb - t, xb, yt - t, zb)   # the sides
+        for r in range(4):
+            y = yb + t + r * (rh + t)
+            if r: o.box("artisan", xa, y - t, za + t, xb, y, zb - t)                                     # the shelf under this row
+            ws = rows[r] if n == 0 else tuple(reversed(rows[r]))                                       # the second mirrors the first
+            z = za + t
+            for k, w in enumerate(ws):
+                if k: o.box("artisan", xa, y, z - t, xb, y + rh, z)                                     # a divider
+                if (r + k + n) % 3 == 0:                                                               # books in every third
+                    zz = z + 2
+                    for i, (wb, hb) in enumerate(((2.6, 19), (3.4, 21), (2.2, 18), (3.0, 20))[: int(w // 9)]):
+                        o.box("book%d" % ((i + r + n) % 6), xb - 16, y, zz, xb - 2, y + hb, zz + wb - 0.2); zz += wb
+                z += w + t
+    F = O["flip"]; za, zb = F["z"]
+    o.item("office.flip", "The flip-up oak table (folded down)", "bed3", src=F["src"], axis="z")
+    o.box("oak", xa, y0 + F["y"] - 1, za + 4, xa + 2.5, y0 + F["y"] + 4, zb - 4)                          # the oak batten it hinges from
+    o.box("oak", xa + 2.5, y0 + F["y"] - F["d"], za, xa + 2.5 + F["t"], y0 + F["y"], zb)                  # the table, folded down, its top to the room
+    for z in (za + 10, zb - 13):                                                                          # its two lift-up arms, folded flat
+        o.box("black", xa, y0 + F["y"] - F["d"] + 4, z, xa + 2.5, y0 + F["y"] - 2, z + 3)
     L = D.LAMPS["bed3"]                                                                                        # V2.48 (R1): the purple lamp
     o.item("office.lamp", L["name"], "bed3", kind="light", src=L["src"], measure=False)
     o.lathe("black", L["x"], y0 + d["h"], L["z"], [(0, 0), (4.5, 0), (4.5, 1.2), (2, 2.4), (0, 2.4)])                 # its foot
@@ -2532,7 +2560,8 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "ring": ("#2b2c2e", 0.6), "steel": ("#c8cacc", 0.25), "steel_dark": ("#8e9195", 0.35), "worktop": ("#26282a", 0.22), "metro": ("#111214", 0.1),
     "chrome": ("#e4e6e9", 0.06), "sanitary": ("#e7e8e6", 0.16), "primrose": ("#e3cf5c", 0.25), "tile_w": ("#f2f2ef", 0.12), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "rug": ("#8e4a32", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
     "cloth0": ("#3d4a5c", 0.95), "cloth1": ("#b9b2a6", 0.95), "cloth2": ("#7a2f2f", 0.95), "cloth3": ("#2f3b2f", 0.95), "cloth4": ("#d8d2c4", 0.95), "cloth5": ("#555555", 0.95), "cloth6": ("#9b8b6e", 0.95), "curtain": ("#f4f3ef", 0.9), "stone": ("#cbc6bd", 0.35), "marble": ("#141416", 0.1), "led": ("#ffffff", 0.3), "bulb": ("#fff3e2", 0.25), "lamp_purple": ("#c9a6ff", 0.3), "chalk": ("#222423", 0.85), "storebox": ("#c9c1b2", 0.95), "contact": ("#000000", 1.0), "mattress": ("#f0eee8", 0.9), "pillow": ("#f1efea", 0.95), "trim": ("#5a5d60", 0.5), "gutter": ("#f2f2ef", 0.4), "lead": ("#6c7072", 0.55), "birch": ("#dcc8a2", 0.7), "lycksele": ("#5b6b78", 0.95), "grille": ("#e8dcc4", 0.6), "ceiling": ("#f3f2ee", 0.95),
-    "laminate": ("#a9a39a", 0.5), "oak": ("#b8844f", 0.55), "herring": ("#b48a5c", 0.6), "lvt_grey": ("#8e8b87", 0.5), "porcelain": ("#d6d0c4", 0.5),   # V3.14 (N56): the upgrade floors
+    "laminate": ("#a9a39a", 0.5), "oak": ("#b8844f", 0.55), "artisan": ("#fff1df", 0.55),   # V4.3: artisan oak (bedroom 3's cube shelves): the oak's grain, a hair warmer
+    "herring": ("#b48a5c", 0.6), "lvt_grey": ("#8e8b87", 0.5), "porcelain": ("#d6d0c4", 0.5),   # V3.14 (N56): the upgrade floors
     "screen": ("#0d0f12", 0.15), "pc_white": ("#eeeeec", 0.3), "pc_glow": ("#dfe6ff", 0.2),   # V3.32 (N82): a note mid-line (V3.14) had left these three out of the list: grey and matt since
     "pegboard": ("#f4f4f2", 0.6), "ivy": ("#2f5a2b", 0.8), "blind": ("#4a4d52", 0.9), "blind_cloth": ("#4a4d52", 0.9), "books": ("#8a3b2e", 0.8), "jar": ("#d9a441", 0.4), "pot": ("#e8e3d8", 0.5),
     "carpet_grey": ("#6f6f73", 1.0), "red_gloss": ("#c8201e", 0.15), "red_back": ("#9d1714", 0.4), "cat": ("#bdbcb8", 1.0), "sisal": ("#cdb88f", 0.9),
