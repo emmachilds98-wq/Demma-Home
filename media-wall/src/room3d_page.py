@@ -83,6 +83,9 @@ html body .r3d .r3d-stage canvas:focus-visible { outline: 3px solid var(--oak, o
 .r3d-act .acts button.q { flex: 1 1 calc(25% - 6px); padding: 0; font-size: 18px; }
 .r3d-actsep { flex: 1 1 100%; margin: 6px 0 -2px; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--mut); }
 .r3d-act.above::before { top: auto; bottom: -7px; }
+.r3d-act.beside::before { top: var(--ay, 50%); left: auto; right: -7px; transform: translateY(-50%) rotate(45deg); }   /* V3.88 (N146): beside the piece, its arrow at it */
+.r3d-act.beside.onright::before { right: auto; left: -7px; }
+.r3d-act .grab { display: none; }
 .r3d.editing .r3d-act { display: none; }
 /* V1.50: a piece's sizes on its card, a stepper each (tap a piece in the house, Change its size) */
 .r3d-actfields { display: grid; gap: 6px; margin: 0 0 10px; }
@@ -232,6 +235,7 @@ details.r3d-more[open] > summary::before { content: "– "; }
   .r3d-addlist, .r3d-sel { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; justify-content: flex-start; } .r3d-addlist > *, .r3d-sel > * { flex: none; }
   .r3d-pop { left: 12px !important; right: 12px; top: auto !important; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 82px); width: auto; }
   .r3d-pop::before { display: none; }
+  .r3d-act .grab { display: block; width: 40px; height: 5px; border-radius: 3px; background: #0002; margin: -8px auto 8px; }   /* V3.88: a sheet: swipe down to close */
   body.sheet-open .r3d-stickers, body.tools-open .r3d-stickers { display: none; }
 }
 /* v33, the phone home ("On a phone the room is small and buried"): named pins, Menu in the dock */
@@ -958,7 +962,7 @@ def section(gallery=""):
     <div class="r3d-pad" id="r3d-pad" role="group" aria-label="Move the camera (hold a button to keep moving)" hidden><button type="button" data-walk="tl" aria-label="Turn left" title="Turn left"><span class="ms" aria-hidden="true">rotate_left</span></button><button type="button" data-walk="f" aria-label="Walk forward" title="Walk forward"><span class="ms" aria-hidden="true">arrow_upward</span></button><button type="button" data-walk="tr" aria-label="Turn right" title="Turn right"><span class="ms" aria-hidden="true">rotate_right</span></button><button type="button" data-walk="u" aria-label="Up" title="Up"><span class="ms" aria-hidden="true">keyboard_arrow_up</span></button><button type="button" data-walk="l" aria-label="Step left" title="Step left"><span class="ms" aria-hidden="true">arrow_back</span></button><button type="button" data-walk="b" aria-label="Walk back" title="Walk back"><span class="ms" aria-hidden="true">arrow_downward</span></button><button type="button" data-walk="r" aria-label="Step right" title="Step right"><span class="ms" aria-hidden="true">arrow_forward</span></button><button type="button" data-walk="dn" aria-label="Down" title="Down"><span class="ms" aria-hidden="true">keyboard_arrow_down</span></button></div>
     <div class="r3d-pop" id="r3d-pop" role="dialog" aria-modal="false" aria-labelledby="r3d-pop-h" hidden><button type="button" class="x" aria-label="Close"><span class="ms" aria-hidden="true">close</span></button>
       <h3 id="r3d-pop-h"></h3><ul class="facts"></ul><ul class="r3d-pcs" aria-label="Its pieces"></ul><div class="acts"><button type="button" data-popgo="fly">Fly here</button><button type="button" data-popgo="plan">Read about it</button></div></div>
-    <div class="r3d-pop r3d-act" id="r3d-act" role="dialog" aria-modal="false" aria-labelledby="r3d-act-h" hidden><button type="button" class="x" aria-label="Close"><span class="ms" aria-hidden="true">close</span></button>
+    <div class="r3d-pop r3d-act" id="r3d-act" role="dialog" aria-modal="false" aria-labelledby="r3d-act-h" hidden><span class="grab" aria-hidden="true"></span><button type="button" class="x" aria-label="Close"><span class="ms" aria-hidden="true">close</span></button>
       <h3 id="r3d-act-h"></h3><p class="st" id="r3d-act-st" aria-live="polite"></p><div class="acts" id="r3d-acts"></div></div>
     <div class="r3d-edit">
       <div class="r3d-editbar" id="r3d-editbar" hidden><button type="button" id="r3d-editdone" class="primary">✓ Done</button><button type="button" id="r3d-add">+ Add</button><button type="button" id="r3d-undo" disabled title="Undo (Ctrl+Z)">↶ Undo</button>
