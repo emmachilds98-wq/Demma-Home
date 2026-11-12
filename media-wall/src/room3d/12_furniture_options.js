@@ -154,22 +154,24 @@ function buildSofaBed() {
     bed.position.z = ((ud + over) * a - over * c) * M; bed.position.y = 3 * (a - c) * M; top.position.y = rise * b * M; lk.visible = a > 0.3; linkAt(b); RS.bed = v; sync(); });
   const cx = so.x[0] + hw, cz = so.back + hd, live = new THREE.Group();
   while (g.children.length) live.add(g.children[0]); g.add(live); mergeStatic(live); setRest = restMerge(g, live, [lk]); sync();
-  movable("sofa2", B.name, g, () => ({ x: cx, z: cz, rot: 0 }), W, D, [fab], false, { when: () => S.sofa === "bed" });
+  movable("sofa2", B.name, g, () => ({ x: cx, z: cz, rot: 0 }), W, D, [fab], false, { when: () => S.sofa === "bed", tints: [[seam, 0.62], [dimp, 0.8]] });   // V3.78 (N135): Edit's colour reaches its seams and dimples
   // the loose storage chaise on the corner section's end: a buttoned lid lifting on its back edge on two gas struts (the ottoman's Lift
   // the lid), a fabric loop on its front to lift it by, black lining, square black feet
   const C = B.chaise, c = new THREE.Group(), lidH = C.lid, bodyH = C.h - lidH;
+  // V3.78 (N135): its own cloth (it shared the sofa's, so recolouring the sofa in Edit was undone as the chaise was placed), following the sofa's colour unless it has its own
+  const fabC = chen(B.col, 0.9), seamC = chen(new THREE.Color(B.col).multiplyScalar(0.62), 0.5), dimpC = chen(new THREE.Color(B.col).multiplyScalar(0.8), 0.4);
   for (const dx of [-1, 1]) for (const dz of [-1, 1]) cush(c, dx * (C.w / 2 - 6), 0, dz * (C.d / 2 - 6), 7, F + 1, 7, steel, 0, 0, 1);
-  cush(c, 0, F, 0, C.w, bodyH - F, C.d, fab, 0, 0.6, 2.5);
+  cush(c, 0, F, 0, C.w, bodyH - F, C.d, fabC, 0, 0.6, 2.5);
   lb(c, 0, bodyH - 0.4, 0, C.w - 6.2, 0.5, C.d - 6.2, lining, false);               // the storage's black floor and walls, seen with the lid up
   for (const [x, z, w_, d_] of [[0, -(C.d - 6.5) / 2, C.w - 6.4, 0.3], [0, (C.d - 6.5) / 2, C.w - 6.4, 0.3], [-(C.w - 6.5) / 2, 0, 0.3, C.d - 6.4], [(C.w - 6.5) / 2, 0, 0.3, C.d - 6.4]])
     lb(c, x, bodyH - 22, z, w_, 22, d_, lining, false);
   lb(c, 0, bodyH - 22, 0, C.w - 6.2, 0.3, C.d - 6.2, lining, false);
-  { const lp = new THREE.Mesh(new THREE.TorusGeometry(0.03, 0.006, 6, 14, Math.PI), fab); lp.position.copy(v3(-C.w / 2 + 22, bodyH - 4, C.d / 2 + 0.7)); lp.rotation.z = Math.PI; lp.scale.y = 1.8; c.add(shadow(lp)); }
+  { const lp = new THREE.Mesh(new THREE.TorusGeometry(0.03, 0.006, 6, 14, Math.PI), fabC); lp.position.copy(v3(-C.w / 2 + 22, bodyH - 4, C.d / 2 + 0.7)); lp.rotation.z = Math.PI; lp.scale.y = 1.8; c.add(shadow(lp)); }
   const hinge = new THREE.Group(); hinge.position.copy(v3(0, bodyH, -C.d / 2)); c.add(hinge);
-  cush(hinge, 0, 0, C.d / 2, C.w, lidH, C.d, fab, 1.4, 0.8, 3.5);
-  pipe(hinge, 0, 0.6, C.d + 0.2, C.w - 6, seam, true);
+  cush(hinge, 0, 0, C.d / 2, C.w, lidH, C.d, fabC, 1.4, 0.8, 3.5);
+  pipe(hinge, 0, 0.6, C.d + 0.2, C.w - 6, seamC, true);
   lb(hinge, 0, -0.2, C.d / 2, C.w - 6, 0.3, C.d - 6, lining, false);
-  tufts(hinge, [-0.3, 0, 0.3].flatMap(f => [-0.22, 0.22].map(k => [f * C.w, lidH + 1.2 - 0.25, C.d / 2 + k * C.d])), dimp);
+  tufts(hinge, [-0.3, 0, 0.3].flatMap(f => [-0.22, 0.22].map(k => [f * C.w, lidH + 1.2 - 0.25, C.d / 2 + k * C.d])), dimpC);
   const struts = new THREE.Group(); c.add(struts);
   for (const x of [-(C.w / 2 - 8), C.w / 2 - 8]) { const st = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.3, 8), steel);
     st.position.copy(v3(x, bodyH + 2, -C.d / 2 + 14)); st.rotation.x = -0.7; struts.add(st); }
@@ -177,7 +179,7 @@ function buildSofaBed() {
   const live2 = new THREE.Group(); while (c.children.length) live2.add(c.children[0]); c.add(live2); mergeStatic(live2);
   const setRest2 = restMerge(c, live2, [struts]);   // V3.77 (N153): the chaise one draw a material with its lid shut
   WORK.lid2 = anim(v => { hinge.rotation.x = -1.5 * v; struts.visible = v > 0.85; setRest2(!v); });
-  movable("chaise2", "Its storage chaise", c, () => ({ x: so.x[0] + C.w / 2, z: so.back + B.sec_d + C.d / 2, rot: 0 }), C.w, C.d, [fab], false, { when: () => S.sofa === "bed" });
+  movable("chaise2", "Its storage chaise", c, () => ({ x: so.x[0] + C.w / 2, z: so.back + B.sec_d + C.d / 2, rot: 0 }), C.w, C.d, [fabC], false, { when: () => S.sofa === "bed", follow: "sofa2", tints: [[seamC, 0.62], [dimpC, 0.8]] });
 }
 let bar1, bar2;
 

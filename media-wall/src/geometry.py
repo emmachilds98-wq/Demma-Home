@@ -564,8 +564,10 @@ SOFABED = dict(name="Green corner sofa bed", pick="Lovesofas Amelia, Blade Green
 # on the frame (8 over its front, onto the back cushion's top); up, it flips 74° on its ratchet hinge, its foot tucked behind the back
 # cushion's top, standing about 106 (the photos' raised middle one). No stems, no gap. The listing's text says three; its photos show five
 # (three along the back, two down the side), drawn five. Blade Green: the studio photos' muted olive (lit #5e6343, shade #4b4d30, hue
-# 69°); the room's warm light turns a green about 25° yellower, so it's drawn greener and greyer (#586b4c renders as the photos)
-SOFABED.update(back_h=81.0, col="#586b4c", seat_w=65.0, back_in=50.0,
+# 69°). V3.78 (N135): set for HD, the path every one of the client's devices takes: #697b32 renders by day as the listing's sunlit room
+# photo (the seat tops hue 67, 0.16 saturated, 0.50 light against the photo's 68, 0.12, 0.49); V3.75's #586b4c, set for Fast's warm light,
+# read pale mint in HD (hue 97, 0.05)
+SOFABED.update(back_h=81.0, col="#697b32", seat_w=65.0, back_in=50.0,
                head=dict(w=66.0, d=30.0, t=14.0, over=8.0, up=74.0))
 import math as _m
 SOFABED["head_up_h"] = round(SOFABED["back_h"] + (SOFABED["head"]["d"] - SOFABED["head"]["over"]) * _m.sin(_m.radians(SOFABED["head"]["up"]))

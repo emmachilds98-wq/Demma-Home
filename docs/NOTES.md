@@ -185,6 +185,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   clash); put it back in `FIRM.ideas` and every row returns. A `//` comment mid-line in a call comments out the rest of it: the 3D then
   doesn't start ("missing ) after argument list"); `node --check` each part. The plan's coffee table is the lift-top
   (`FIRM.sugg` "liftcoffee"); the record table's rows are gated on `"recordtable" in FIRM["sugg"]` as the C-table's (`build_doc.RT_IN`).
+  V3.78 (N135): its colour is set for HD (all the client's devices): measure a change with `R3D.set({quality: 'hd'})` from a fixed eye,
+  the seat tops' median beside the listing's photos (hue, saturation, lightness). A movable's `tints` ([material, share]) follow its
+  colour; `follow: id` takes another's colour unless it has its own (the chaise, the sofa bed's). Two movables must never share a
+  material that Edit colours: `placeAll` sets each in turn, so the last one placed wins.
   The sofa bed's stools (`WORK.stools`, `S.stools`, one group) slide `stool_out` out of the arm's side; its five headrests (`WORK.hr[i]`,
   `S.hr[i]`, a group each) flip up on their hinge (V3.75, below).
   V3.75 (N132–N134): the listing is Amazon UK B0HDC8WYBT; its 14 photos come down from the page's `"hiRes"` URLs (m.media-amazon.com, reachable
