@@ -3,7 +3,7 @@
 **Now (11 Nov 2026, V3.60):** what's open and who has it is `docs/REAL_PLAN.md` section 19; this page is brought to now by N121.
 
 **Next (12 Nov 2026):** the upgrade plan is `docs/REAL_PLAN.md` section 20 (the client: "review the repo and make an upgrade plan ..."):
-N135–N156 in streams A–G. Done: N154 (V3.76: #231's lit bulbs and #232's artex landed, STATE under 150 lines) and N153 (V3.77: the living room 216 to 181 draws on a phone; V3.76's extra shader put right). N135 (V3.78: the sofa's green in HD, Edit's colour on all of it). Next: N144, N149, then N136.
+N135–N156 in streams A–G. Done: N154 (V3.76: #231's lit bulbs and #232's artex landed, STATE under 150 lines) and N153 (V3.77: the living room 216 to 181 draws on a phone; V3.76's extra shader put right). N135 (V3.78: the sofa's green in HD, Edit's colour on all of it). N144 (V3.79: the phone's rows). Next: N149, then N136.
 **Latest (12 Nov 2026, V3.75):** the sofa bed true to its Amazon listing (headrests that flip up on a hinge, its green, its weave), and any
 living-room piece taken out and put back (Room → Taken out, Edit's + Add, the toast): `docs/NOTES.md` section 5, "Taking a piece out".
 **Before it (V3.74 took the C-table out of the plan and gave the sofa bed its own chenille):** the client is testing a sofa she may buy. V3.71 (#242, N126) added Room → The sofa:
