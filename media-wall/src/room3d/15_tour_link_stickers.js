@@ -55,7 +55,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && tourSt) { 
    router leaves alone. The link is always the GitHub Pages page, so anyone can open it. */
 const LOOK_STR = { site: ["A", "B", "C"], dining: ["folded", "four", "six"], chairs: null, plants: null, seat: ["off", "up", "down"], scene: null, tod: ["evening", "day"], paint: null, lamp: null, cab: ["compact", "sliding"], cabw: ["90", "80"], beside: null,
                    blind: ["down", "up"], trolley: ["park", "out"], sofa: ["mine", "bed"] };   // V3.71: the sofa   // v30: which cabinet; v31: beside it; v34: the blind, the trolley
-const LOOK_BOOL = ["drawers", "curtains", "lbox", "laser", "pc", "grow", "tdoor", "foot", "lp", "lid", "barflap", "ctop", "sdraw", "scopen", "sbed", "stools"];   // v37: the step drawers   // v31: the open table's floor; v34: a record lifted out
+const LOOK_BOOL = ["drawers", "curtains", "lbox", "laser", "pc", "grow", "tdoor", "foot", "lp", "lid", "barflap", "ctop", "sdraw", "scopen", "sbed", "stools", "made"];   // v37: the step drawers   // v31: the open table's floor; v34: a record lifted out
 const HEX = /^#[0-9a-f]{6}$/i;
 const cm = v => [-v.x / M, v.y / M, v.z / M].map(n => Math.round(n));
 function lookOf() {
