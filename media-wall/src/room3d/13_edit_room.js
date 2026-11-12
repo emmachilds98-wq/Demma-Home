@@ -343,9 +343,16 @@ Object.assign(CATALOGUE, {
     const wax = reg(new THREE.MeshStandardMaterial({ color: "#f3ecdc", roughness: 0.8, emissive: "#ffb35a", emissiveIntensity: 0.15 }));
     const c = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.2, 16), wax); c.position.y = 0.115; g.add(c); } },
 });
+/* V3.83 (N140): each piece in what it's made of (they were one flat colour each, the oak ones too): oak's grain, a woven cloth's
+   relief, rattan's and seagrass's coarser weave, metal's sheen, glazed ceramic; the colour still the piece's (and Edit's). Each a
+   material the room already draws, so no new shader */
+const SURF = { armchair: "cloth", sidetable: "oak", plant: "ceramic", bookcase: "oak", beanbag: "cloth", footstool: "cloth", cushion: "cloth", crate: "oak",
+  rattan: "weave", ladder: "oak", bench: "oak", arclamp: "metal", vase: "ceramic", pouffe: "knit", basket: "weave", mirror: "oak", lantern: "metal" };
+const SURF_P = { oak: { map: OAK_TEX, roughness: 0.55 }, cloth: { roughness: 0.95, bumpMap: HESSIAN, bumpScale: 0.6 }, knit: { roughness: 0.95, bumpMap: HESSIAN, bumpScale: 1.2 },
+  weave: { roughness: 0.85, bumpMap: HESSIAN, bumpScale: 1.6 }, metal: { roughness: 0.35, metalness: 0.6 }, ceramic: { roughness: 0.3 } };
 function addThing(a, fresh = true) {
   const C = CATALOGUE[a.type]; if (!C) return;
-  const m = reg(new THREE.MeshStandardMaterial({ color: C.col, roughness: 0.7 })), oak = reg(new THREE.MeshStandardMaterial({ color: "#c48c57", map: OAK_TEX, roughness: 0.55 }));
+  const m = reg(new THREE.MeshStandardMaterial(Object.assign({ color: C.col, roughness: 0.7 }, SURF_P[SURF[a.type]] || {}))), oak = reg(new THREE.MeshStandardMaterial({ color: "#c48c57", map: OAK_TEX, roughness: 0.55 }));
   const g = new THREE.Group(); C.build(g, m, oak);
   movable(a.id, C.label, g, () => ({ x: a.x, z: a.z, rot: 0 }), C.w, C.d, [m], false, { added: true });
   if (fresh) { S.added.push(a); placeAll(); store.set(KEY, S); }

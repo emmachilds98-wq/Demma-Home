@@ -222,16 +222,17 @@ function buildStorage() {
     }); }
   // the lift-top coffee table, in the coffee table's place (it goes where the coffee table goes); the top lifts and comes towards the sofa
   if (R.LIFT_COFFEE && coffeeG) { const g = SUGG_G.liftcoffee = new THREE.Group(); coffeeG.add(g); lazyVis(g, () => { const L = R.LIFT_COFFEE, body = reg(new THREE.MeshStandardMaterial({ color: "#b07d4f", map: OAK_TEX, roughness: 0.55 })); SVAR_MATS.liftcoffee = [body];   // V3.75: its oak effect's grain (it read as flat pink)
-    const dark = own("#2a2724"), w = L.w, d = L.d, legH = 6, top = 2.2, sh = L.h - legH - top;
-    for (const [x, z] of [[-w / 2 + 4, -d / 2 + 4], [w / 2 - 4, -d / 2 + 4], [-w / 2 + 4, d / 2 - 4], [w / 2 - 4, d / 2 - 4]]) lb(g, x, 0, z, 4, legH, 4, body);
-    lb(g, 0, legH, 0, w, 2, d, body);                                                                    // the shelf under the box
+    const dark = own("#2a2724"), w = L.w, d = L.d, legH = 6, top = 2.2, sh = L.h - legH - top, gap = 0.5;
+    // V3.83 (N140): its four legs run up to the box (the box floated 25 cm over the shelf on 6 cm feet)
+    for (const [x, z] of [[-w / 2 + 2, -d / 2 + 2], [w / 2 - 2, -d / 2 + 2], [-w / 2 + 2, d / 2 - 2], [w / 2 - 2, d / 2 - 2]]) lb(g, x, 0, z, 4, legH + sh - L.inside - 1, 4, body);
+    lb(g, 0, legH, 0, w - 1, 2, d - 1, body);                                                            // the shelf under the box
     lb(g, 0, legH + sh - L.inside, 0, w - 4, 1.2, d - 4, dark);                                           // the compartment's floor
-    for (const [x, z, ww, dd] of [[0, -d / 2 + 1, w, 2], [0, d / 2 - 1, w, 2], [-w / 2 + 1, 0, 2, d - 4], [w / 2 - 1, 0, 2, d - 4]]) lb(g, x, legH + sh - L.inside - 1, z, ww, L.inside + 1, dd, body);
+    for (const [x, z, ww, dd] of [[0, -d / 2 + 1, w, 2], [0, d / 2 - 1, w, 2], [-w / 2 + 1, 0, 2, d - 4], [w / 2 - 1, 0, 2, d - 4]]) lb(g, x, legH + sh - L.inside - 1, z, ww, L.inside + 1 - gap, dd, body);
     const inG = new THREE.Group(), cols = {}; g.add(inG);   // V3.77 (N153): what's inside, its own group, drawn only with the top up (6 draws a frame for nothing)
     for (const [x, y, z, ww, hh, dd, c] of [[-28, 0, -8, 4, 2, 15, "#1f1f21"], [-20, 0, -6, 4, 2, 17, "#1f1f21"], [-6, 0, -9, 15, 5, 10, "#e9e4da"], [14, 0, -10, 6.5, 1.8, 9.2, "#b3262b"], [22, 0, -10, 6.5, 1.8, 9.2, "#2f4e6e"], [30, 0, 6, 9, 3, 13, "#ece8e0"]])
       lb(inG, x, legH + sh - L.inside + 1.2 + y, z, ww, hh, dd, cols[c] || (cols[c] = own(c)));          // remotes, a controller, decks of cards
     mergeStatic(inG);
-    const tg = new THREE.Group(); g.add(tg); lb(tg, 0, L.h - top, 0, w, top, d, body);
+    const tg = new THREE.Group(); g.add(tg); lb(tg, 0, L.h - top, 0, w, top, d, body); lb(tg, 0, L.h - top - gap, 0, w - 0.5, gap, d - 0.5, dark);   // the top, and the lift's shadow line under it
     WORK.ctop = anim(v => { tg.position.set(0, (L.lift - L.h) * v * M, -16 * v * M); inG.visible = v > 0.01; });   // up 5.5 and 16 towards the sofa
     }, true); }
   // the oak shelf over the hall door, two lidded boxes on it

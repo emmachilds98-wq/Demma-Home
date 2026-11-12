@@ -3,11 +3,11 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V3.82 (12 Nov 2026). V3.82 (N138): make up the sofa bed (a duvet and two pillows on it, pulled out); its chaise a real
-storage box with the bedding folded inside. V3.81 (N137): the sofa bed's cushions shaded where they meet, on every path. V3.80 (N149):
-every room's floor card lists what's taken out. V3.79 (N144): the phone's top rows fade at whichever end has more. V3.78 (N135): the
-sofa bed's green as the listing in HD. V3.77 (N153): 181 draws on a phone. V3.76 (N154): lit bulbs, finer artex.
-The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.82 ↻"): on the
+**Version:** V3.83 (12 Nov 2026). V3.83 (N140, part 1): the lift-top coffee table on its legs (its box floated), a shadow line
+under its top; + Add's pieces in what they're made of. V3.82 (N138): make up the sofa bed; its chaise a real storage box with the
+bedding inside. V3.81 (N137): the sofa bed's cushions shaded where they meet. V3.80 (N149): every room's floor card lists what's
+taken out. V3.79 (N144): the phone's top rows. V3.78 (N135): the sofa bed's green in HD. V3.77 (N153): 181 draws on a phone.
+The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.83 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 20 (12 Nov: the upgrade review, N135–N156 in streams A–G). A new team starts with
@@ -73,7 +73,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
   wallpaper, panelling. Look saves schemes. The living room is on the same rows.
 - Tap a piece: its size, Move or resize (typed), Turn, Swap it, Take it out (its toast puts it back; the room's floor card lists
   what's out, a tap each to put back, V3.80; Measure's list too).
-- Tap a floor: Add a piece here (31 catalogue pieces, each a real product's size, cited).
+- Tap a floor: Add a piece here (31 catalogue pieces, each a real product's size, cited, in its oak, cloth, weave or metal, V3.83).
 - A room's Changes card ticks each change done with a rough cost; Plan leads with the whole house's changes and their total.
 
 **The living room (the media wall project):**
@@ -81,7 +81,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 - Its bed pulls out and lifts on a scissor frame; its five headrests flip up on hinges; its stools slide out; its chaise lifts.
   Its cushions carry their own shade where they meet (V3.81). Pulled out, Make up the bed lays a duvet and pillows on it; the
   chaise's storage holds the bedding (V3.82).
-- The lift-top coffee table is the plan's, in oak; the record table is an option.
+- The lift-top coffee table is the plan's, in oak, on four legs, its top's shadow line (V3.83); the record table is an option.
 - Edit: drag, turn, nudge (5 cm, Shift 1 cm), recolour, Take it out, + Add (the catalogue, and what's out at its head).
 - Any piece standing in the room has Take it out on its card. Room → Taken out lists what's out, a tap each to put it back.
 - Room's set-ups, Try options, Save my plan, Watch it open (the dining cabinet, the sofa bed).

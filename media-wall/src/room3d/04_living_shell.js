@@ -182,7 +182,7 @@ function buildShell() {
   const [rx0, rx1] = R.HOUSE3.living.radiator.x, [ry0, ry1] = R.HOUSE3.living.radiator.y, radP = paintMat(lum("#3b6e56") / BASE_L, true, false, "trim");
   for (let x = rx0; x < rx1 - 2; x += 5) cube(x, ry0, WZ + 3, 3.4, ry1 - ry0, 7, radP);
   // the coffee table (its footprint from the plan; drawn as a plain low table)
-  const cof = R.COFFEE, cofM = reg(new THREE.MeshStandardMaterial({ color: "#2c2a28", roughness: 0.5 }));
+  const cof = R.COFFEE, cofM = reg(new THREE.MeshStandardMaterial({ color: "#2c2a28", map: OAK_TEX, roughness: 0.5 }));   // V3.83 (N140): dark oak, not flat
   { const cw = cof.x[1] - cof.x[0], cd = cof.z[1] - cof.z[0], g = coffeeG = new THREE.Group();     // v18: movable in edit mode
     const pl = coffeePlain = new THREE.Group(); g.add(pl);                                            // v36: hidden while the lift-top stands here
     lb(pl, 0, 38, 0, cw, 4, cd, cofM);
