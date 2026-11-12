@@ -3,11 +3,11 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V3.89 (12 Nov 2026). V3.89 (N148): Room's panel shorter: Set it for, The sofa, Taken out, one row of
-switches, one More. V3.88 (N146): a card beside its piece; a phone's card swipes down to close. V3.87 (N145): Edit light on the
-room (one bar, a turn handle and size on the piece). V3.86, V3.85 (N139, N136): the sofas and the ottoman upholstered. V3.84,
-V3.83 (N140): the options' and + Add's materials, the lift-top on its legs.
-The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.89 ↻"): on the
+**Version:** V3.90 (12 Nov 2026). V3.90 (N151): As it is, in the view's row: the house without your colours and changes,
+tap again for your plan. V3.89 (N148): Room's panel shorter. V3.88 (N146): a card beside its piece; a phone's card swipes down.
+V3.87 (N145): Edit light on the room. V3.86, V3.85 (N139, N136): the sofas and the ottoman upholstered. V3.84, V3.83 (N140): the
+options' and + Add's materials, the lift-top on its legs.
+The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.90 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 20 (12 Nov: the upgrade review, N135–N156 in streams A–G). A new team starts with
@@ -76,6 +76,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
   what's out, a tap each to put back, V3.80; Measure's list too).
 - Tap a floor: Add a piece here (31 catalogue pieces, each a real product's size, cited, in its oak, cloth, weave or metal, V3.83).
 - A room's Changes card ticks each change done with a rough cost; Plan leads with the whole house's changes and their total.
+- As it is (the view's row): the house without Look's colours and Edit's changes; tap again for your plan (V3.90).
 
 **The living room (the media wall project):**
 - The sofa bed (Lovesofas Amelia, Blade Green; an option, no buy rows) is the room's sofa; Room → The sofa swaps yours back,

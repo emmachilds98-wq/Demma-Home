@@ -28,7 +28,7 @@ function livFin(slot, hex, one) {   // one surface of the living room to a colou
 }
 const finAll = (all = true) => Object.assign({}, S.fin || {}, all || livChanged() ? { [LIVR]: livRow() } : {});   // every room's row, the living room's too
 function finRestore(o) { const c = finClean(o), L = c[LIVR]; delete c[LIVR]; S.fin = c; livSet(L); }
-const finPush = () => { FIN_UNDO.push(JSON.stringify(finAll())); if (FIN_UNDO.length > 20) FIN_UNDO.shift(); };
+const finPush = () => { if (NOWV) nowMode(false); FIN_UNDO.push(JSON.stringify(finAll())); if (FIN_UNDO.length > 20) FIN_UNDO.shift(); };   // V3.90: a colour picked works on your plan
 const finSlotName = (room, slot) => room === LIVR && slot >= 11 && slot <= 16 ? WALLS[slot - 11][1].toLowerCase() : room === LIVR && slot === 17 ? "skirting and door" : `${FIN_NAMES[slot]} wall`;
 const FIN_UNDO = [];
 const FIN_NAMES = ["back", "front", "east", "west", "ceiling", "floor"];
@@ -507,13 +507,32 @@ function finCard(id) {   // [title, now, buttons, -, the tray]
     finBtns(!drawn, { finc: "" }, room), null, tray, more && `<div class="r3d-fin">${more}</div>`];
 }
 function finHold(on) {   // Hold to compare: while held, the palette empty (the house as drawn); let go, your colours back
+  // V3.90: the living room's own colours, rug and curtains held apart from the house's palette (that waits for the house; As it is doesn't)
+  if (on && livHeld === null) { livHeld = JSON.stringify([S.paint, S.custom, S.walls, S.ceil, S.skirt, S.decor.rug, S.decor.curtains]); livSet({}); }
+  else if (!on && livHeld !== null) { [S.paint, S.custom, S.walls, S.ceil, S.skirt, S.decor.rug, S.decor.curtains] = JSON.parse(livHeld); livHeld = null; applyDecor(); repaint(); syncButtons(); updateCaption(); }
   if (!FIN.pal) return;
-  if (on && !finHeld) { livHeld = JSON.stringify([S.paint, S.custom, S.walls, S.ceil, S.skirt]); livSet({});   // N5: the living room as the plan has it too
-    finHeld = FIN.pal.image.data.slice(); for (let i = 3; i < finHeld.length; i += 4) FIN.pal.image.data[i] = 0; FIN_LAID.forEach(m => m.visible = false); RUG_LAID.forEach(m => m.visible = false); CURT_LAID.forEach(m => m.visible = false); PIC_LAID.forEach(m => m.visible = false); PAPER_LAID.forEach(m => m.visible = false); PANEL_LAID.forEach(m => m.visible = false); FIT_LAID.forEach(m => m.visible = false); Object.values(FIN_PEND).forEach(g => g.visible = true); }
-  else if (!on && finHeld) { [S.paint, S.custom, S.walls, S.ceil, S.skirt] = JSON.parse(livHeld); livHeld = null; repaint(); syncButtons(); updateCaption();
-    FIN.pal.image.data.set(finHeld); finHeld = null; FIN_LAID.forEach(m => m.visible = true); RUG_LAID.forEach(m => m.visible = true); CURT_LAID.forEach(m => m.visible = true); PIC_LAID.forEach(m => m.visible = true); PAPER_LAID.forEach(m => m.visible = true); PANEL_LAID.forEach(m => m.visible = true); FIT_LAID.forEach(m => m.visible = true); for (const [r, g] of Object.entries(FIN_PEND)) g.visible = !finGet(r, 8); }
+  if (on && !finHeld) {    finHeld = FIN.pal.image.data.slice(); for (let i = 3; i < finHeld.length; i += 4) FIN.pal.image.data[i] = 0; FIN_LAID.forEach(m => m.visible = false); RUG_LAID.forEach(m => m.visible = false); CURT_LAID.forEach(m => m.visible = false); PIC_LAID.forEach(m => m.visible = false); PAPER_LAID.forEach(m => m.visible = false); PANEL_LAID.forEach(m => m.visible = false); FIT_LAID.forEach(m => m.visible = false); Object.values(FIN_PEND).forEach(g => g.visible = true); }
+  else if (!on && finHeld) {    FIN.pal.image.data.set(finHeld); finHeld = null; FIN_LAID.forEach(m => m.visible = true); RUG_LAID.forEach(m => m.visible = true); CURT_LAID.forEach(m => m.visible = true); PIC_LAID.forEach(m => m.visible = true); PAPER_LAID.forEach(m => m.visible = true); PANEL_LAID.forEach(m => m.visible = true); FIT_LAID.forEach(m => m.visible = true); for (const [r, g] of Object.entries(FIN_PEND)) g.visible = !finGet(r, 8); }
   FIN.pal.needsUpdate = true; finOut();
 }
+/* V3.90 (N151), the plan's section 20: Now or the plan. One switch (As it is, in the view's row) shows the house as it is: without
+   Look's colours (finHold, as the cards' hold to compare), every piece Edit moved back where the plan has it, what was added gone and
+   what was taken out back (HEDITS and the living room's layout set aside, not changed); tap again for your plan, a short fade between.
+   Nothing is saved while it's on (store.set holds off), and Edit or a colour picked switches it off first, so the plan is never lost */
+function nowMode(on) {
+  on = !!on; if (on === NOWV) return;
+  root.classList.add("nowfade");
+  setTimeout(() => {
+    if (on) { NOWV = true; finHold(true); applyHEdits({}); }
+    else { finHold(false); NOWV = false; storeEdits(); }
+    placeAll(); syncButtons(); dirty();
+    const b = qs("#r3d-now"); if (b) b.setAttribute("aria-pressed", String(on));
+    toast(on ? "As it is now (tap again for your plan)" : "Your plan");
+    requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove("nowfade")));
+  }, 160);
+}
+{ const set0 = store.set.bind(store); store.set = (k, v) => { if (NOWV && k === KEY) return; set0(k, v); }; }
+qs("#r3d-now")?.addEventListener("click", () => nowMode(!NOWV));
 qs("#r3d-finschsave")?.addEventListener("click", finSchSave);
 qs("#r3d-finschname")?.addEventListener("keydown", e => { if (e.key === "Enter") finSchSave(); });
 qs("#r3d-finschl")?.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return;

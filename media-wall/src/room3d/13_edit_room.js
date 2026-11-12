@@ -82,11 +82,12 @@ function placeAll() {
   solidDirty();                                                                     // v41: the furniture's boxes again
   for (const it of Object.values(MOV)) {
     if (it.lamp) continue;                                  // the lamp is rebuilt where it stands (buildLamp)
-    if (it.fixed) { it.pivot.visible = !(S.layout[it.id] || {}).off && (!it.when || it.when()); continue; }   // v27: built in where it stands
-    const L = S.layout[it.id] || {}, p = spotOf(it.id);
-    it.pivot.position.copy(v3(p.x, 0, p.z)); it.pivot.rotation.y = p.rot * Math.PI / 180;
-    it.pivot.visible = !L.off && (!it.when || it.when());
-    const col = L.col || (it.follow && (S.layout[it.follow] || {}).col);   // V3.78 (N135): a piece can follow another's colour (the chaise, the sofa bed's)
+    const L = NOWV ? {} : S.layout[it.id] || {};   // V3.90 (N151): As it is: every piece where the plan has it, nothing added or taken out
+    if (it.fixed) { it.pivot.visible = !L.off && (!it.when || it.when()); continue; }   // v27: built in where it stands
+    const p = NOWV ? Object.assign({ rot: 0 }, it.def()) : spotOf(it.id);
+    it.pivot.position.copy(v3(p.x, 0, p.z)); it.pivot.rotation.y = (p.rot || 0) * Math.PI / 180;
+    it.pivot.visible = !(NOWV && it.added) && !L.off && (!it.when || it.when());
+    const col = L.col || (it.follow && !NOWV && (S.layout[it.follow] || {}).col);   // V3.78 (N135): a piece can follow another's colour (the chaise, the sofa bed's)
     it.mats.forEach((m, i) => m.color.set(col && i === 0 ? col : it.base[i]));
     for (const [m, k] of it.tints || []) m.color.copy(it.mats[0].color).multiplyScalar(k);   // its seams and dimples, a shade of its cloth
   }
@@ -515,6 +516,7 @@ function setEdit(on) {
   S.edit = on; root.classList.toggle("editing", on);
   qs("#r3d-editbtn").setAttribute("aria-pressed", String(on));
   qs("#r3d-editbar").hidden = !on;
+  if (on && NOWV) nowMode(false);   // V3.90: Edit works on your plan
   if (on) { const h = qs("#r3d-edithint"); if (h && !store.get("mw-edithint", false)) { h.hidden = false; store.set("mw-edithint", true); } }   // V3.87 (N145): the hint once a device
   if (on) { preEditView = S.view; if (!(VIEWS[S.view] || {}).above) setView("room"); const pn = document.getElementById("r3d-panel"); if (pn) pn.hidden = true; closePop(); }   // v21: edit from the whole room, cut away (v25: the Tools panel steps aside)
   else { select(null); qs("#r3d-addlist").hidden = true; if (preEditView && preEditView !== S.view) setView(preEditView); }
