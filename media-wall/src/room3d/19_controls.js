@@ -243,6 +243,7 @@ function syncButtons() {
   press("cabw", S.cabw); press("tdoor", S.tdoor ? "open" : "shut"); press("sofa", S.sofa); press("sbed", S.sbed ? "out" : "in");   // V3.71                                   // v30
   press("cam", S.cam); press("pad", S.pad ? "on" : "off"); press("foot", S.foot ? "on" : "off"); press("beside", S.beside); syncEye();   // v31
   qsa("[data-tog]").forEach(b => b.setAttribute("aria-pressed", String(!!S[b.dataset.tog])));
+  qsa("[data-flip]").forEach(b => b.setAttribute("aria-pressed", String(!!S[b.dataset.flip])));
   qsa("[data-idea]").forEach(b => b.setAttribute("aria-pressed", String(!!S.ideas[b.dataset.idea])));
   qsa("[data-sugg]").forEach(b => b.setAttribute("aria-pressed", String(!!S.sugg[b.dataset.sugg])));
   qsa("[data-svar]").forEach(b => { const [k, v] = b.dataset.svar.split(":"); b.setAttribute("aria-pressed", String(svarOf(k) === v)); });   // v28
@@ -296,6 +297,7 @@ root.addEventListener("click", e => {
   else if (d.hceil) S.hceil = d.hceil, hceilApply(), syncButtons(), store.set(KEY, S), dirty();   // V2.2: the house's ceilings white again
   else if (d.skirt) S.skirt = d.skirt, repaint(), store.set(KEY, S), dirty();
   else if (d.colreset) S.col[d.colreset] = WARM, applyLight(), store.set(KEY, S);
+  else if (d.flip === "drawers" || d.flip === "ctop") { S[d.flip] = !S[d.flip]; applyState(); }   // V3.89 (N148): Room's row of switches
   else if (d.tog) S[d.tog] = !S[d.tog], applyLight(), store.set(KEY, S);
   else if (d.layer) { const [k, v] = d.layer.split(":"); S.lv = Object.assign({}, S.lv, { [k]: v === "on" ? (SCENES[S.scene].levels[k] || 60) : 0 }); applyLight(); updateCaption(); store.set(KEY, S); }   // v30: a light on or off from a card
   else if (d.opt) { const [gk, v] = d.opt.split(":"); optPick(gk, v); }                            // v36: the option rows

@@ -195,6 +195,9 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   no colour draws black.
   V3.82 (N138): Make up the bed (`S.made`, `WORK.made.sync`, shown once `WORK.sbed.p` is 1; `restMerge` skips it and the chaise's `fold`).
   The chaise is hollow: a base and four 3.2-thick walls round the lining, the folded bedding on its floor.
+- **The iPhone path's `draws_living` once read 680** (#260, V3.87; budget 273): the same build gave 195 locally and main's run passed;
+  the measure takes the least of three frames, so a slow CI frame that caught extra passes (the AO back 0.25 s after a stop, or a
+  mirror's refresh) can read high. Nothing in that PR drew anything: if it repeats, read `R3D.perf()` frame by frame there.
 - **`shaders_spot` wobbles** (seen on #254, V3.81): on the RTX path, main and a branch alike build 0 or 5 shaders on the spot stepping
   into the living room after the warm-up (CI once 30, on a slow runner): shadow-depth programs with the living room's 2 clipping planes,
   which the warm-up's stand-ins (`01` `depthMat`) don't always reach first. Measure with `check_site.SPOT` after waiting for `WARMED`;
