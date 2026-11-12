@@ -42,7 +42,7 @@ function still(w, h) {
 }
 function stillName() {
   const site = `stairs wall (the compact cabinet${S.cabw === "80" ? ", 80 wide" : ""})`;
-  return `Demma's Home ${R.VERSION || ""} - ${(VIEWS[S.view] || VIEWS.window).label.replace(/[’']/g, "")} - table on the ${site}, ${S.dining} - ${SCENES[S.scene].name}.png`;
+  return `Home Plan ${R.VERSION || ""} - ${(VIEWS[S.view] || VIEWS.window).label.replace(/[’']/g, "")} - table on the ${site}, ${S.dining} - ${SCENES[S.scene].name}.png`;
 }
 qs("#r3d-save").addEventListener("click", async () => {
   const st = qs("#r3d-savest");

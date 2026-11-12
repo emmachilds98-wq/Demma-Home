@@ -1,4 +1,4 @@
-# Demma's Home
+# Home Plan
 
 Emma and Dave's whole house in 3D: every room from their photos and words, what's still to measure, the projects (the artisan oak media
 wall first; each room gets its own in time), and what to buy. It opens on the whole house; tap a floor, then a room, to go in.

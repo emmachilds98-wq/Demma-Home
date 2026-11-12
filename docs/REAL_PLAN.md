@@ -555,7 +555,7 @@ The rules stay:
 | N144 | E UI | The top rows on a phone: no word cut off at 393 or 375 (the view row icons with the chosen one named, the floors as a row that scrolls with a fade at its edge); a floor's Above on the page's cream, as a room's (V3.64) | `room3d_page.py` (the rows' markup and CSS), `19_view_controls.js` (`backdrop` for a floor) | — | Done V3.79 (fades at both ends, the chosen floor in view, the switches as icons; a floor on the backdrop) |
 | N145 | E UI | Edit, light on the room: one bar (Done · + Add · Undo) and the selected piece's tools in a sheet over the dock, not two bars at the top; the hint once a device; on the piece itself a turn handle and its size, so a finger moves and turns it without the buttons | `13_edit_room.js` (`editPanel`, `setEdit`, the drag), `room3d_page.py` (`#r3d-editbar`, `#r3d-sel`) | — | Done V3.87 (one bar, ⋯ for the rest; the tools a sheet over the dock; the hint once; the size and a turn handle on the piece) |
 | N146 | E UI | Cards that lead with what you do: the most used two or three buttons, then the piece's own rows (as the headrests' row) instead of More; never over the piece it's for (placed beside it on a PC, a sheet on a phone that a swipe down closes); the same card shape in every room | `16_cards.js` (`renderAct`, `placeAct`, `actItems`), `room3d_page.py` (the card's CSS) | — | Done V3.88 (beside the piece on a PC, its arrow at it; a phone's sheet closes with a swipe down; three buttons then More kept, v39's approved card) |
-| N147 | E UI | Pictures for every choice: Build's "decide" sheets show the room as each choice makes it (a small still from the 3D drawn when the sheet opens, not at build: no HD stills), not a yellow tile | `build_viewer.py` (the decide sheets' markup), `16_cards.js` or a new helper calling `R3D.still` | — | Open |
+| N147 | E UI | Pictures for every choice: Build's "decide" sheets show the room as each choice makes it (a small still from the 3D drawn when the sheet opens, not at build: no HD stills), not a yellow tile | `build_viewer.py` (the decide sheets' markup), `16_cards.js` or a new helper calling `R3D.still` | — | Done V3.93, light (a choice without its own picture shows the place's; no 3D still drawn on opening: the options look alike and it's heavy on a phone) |
 | N148 | E UI | Room's panel shorter: Set it for, The sofa and Taken out first; the table, drawers and coffee table in one row of switches; the rest under one fold; the panel opens where you left it | `room3d_page.py` (the "room" drawer), `19_controls.js` (`syncButtons` for any new row) | N145 | Done V3.89 (Set it for, The sofa, Taken out, then one row of switches; one More; each panel's place kept) |
 | N149 | F Features | Take it out and put it back in every room, as the living room: a room's floor card lists what's out of it ("Taken out (2)", a tap each to put back), the hitem card's Take it out names where it comes back; Measure's list stays | `16_cards.js` (`actItems` `fin:` and `hitem:`), `08_house_edits.js` (`setPiece` only) | — | Done V3.80 (a floor card's Taken out (n), its card puts each back) |
 | N150 | F Features | Drag a piece in any room: Move or resize's card gets a drag on the floor (snap to a wall within 15 cm, a turn handle, as Edit in the living room), writing the same Measure rows the steppers write | `08_house_edits.js` (a drag beside `setPiece`), `16_cards.js` (`hsize:`) | N149 | Done V3.91 (a drag from Move or resize's card: along and out, against a wall within 15 cm, Measure's rows; the turn stays the card's Turn) |
@@ -579,3 +579,45 @@ The rules stay:
 - the living room door's real width (N152);
 - KTX2 (N141);
 - the sofa bed's price.
+
+## 21. Home Plan V4: the house on its own, its real surroundings, the views (12 Nov 2026, V3.93)
+
+The client, 12 Nov 2026 (the next plan): the road is "shaped differently and has a small hill to the main road opposite my house
+slightly to the left when looking out the door"; "increase the accuracy of other surroundings"; "the page to open with just outside on
+the screen ... nothing surrounding the house when [Gardens and Next door] arent selected including the road and the trees etc. this
+should come in when i click the gardens and next door"; "improve views where needed including how we swing the camera with the mouse on
+the pc version, it moves backwards to what i would have thought"; and "change the pill name to Home Plan V4 and we then go from 4
+going forward. add to the plan and then keep reviewing for further improvements making sure you include my other requests".
+
+The rules stay:
+- **privacy first:** the client gave the road's name and number. They are never written, in any file, page, commit, PR or plan, and
+  they are never sent anywhere but a map the client asks us to read. The 3D draws the road's shape with no names, no house numbers and
+  no coordinates. A screenshot keeps its pixels, never its labels: names are cropped or painted out before it goes in
+  `media-wall/inputs/`.
+- the old design; say less; the iPhone 15 Pro and the RTX 5070 first; every size cited (a surroundings size cites the client's
+  screenshot or photo it's read from).
+
+### How the client can help (the process)
+
+Google Maps and Street View can't be read from the build's sandbox: they draw in the browser. The client's screenshots are the way
+in. Each one is read once for its shapes; names and numbers are painted out before it's kept.
+- **The map from above:** satellite view, zoomed so the house, the close's whole curve and the junction with the main road fill the
+  screen. A second one zoomed out a step.
+- **Street View from the front door:** looking left, ahead and right, and one up the hill towards the main road.
+- **Two or three phone photos:** the slope up to the main road, and the trees and fences round the gardens.
+- **A rough height:** how many steps, or about how much higher, the main road is than the front door.
+
+### The tasks
+
+| Task | Stream | What | Files | Waits for | State |
+|---|---|---|---|---|---|
+| N157 | A Outside | The house on its own: the page opens on the house from outside with nothing round it (no road, pavements, trees, hill, next door, gardens, the low building); a plain ground under it and its shadow. Gardens brings both gardens, their trees and the hill; Next door brings the street, the pavements and the neighbours | `09_house_views.js` (the switches), `11_lights.js` (`outdoor`, the ground's parts), `20_go.js` (what each part belongs to) | — | Done V4.1 (the hill and the trees with Gardens, the street with Next door; plain ground and sky otherwise) |
+| N158 | B Views | The PC's swing the way you'd expect: drag right and the view swings right, drag up and it looks from higher (it turned the house the way the mouse went, as if grabbing it); a phone's finger stays as it is | `19_view_controls.js` (`mapSwing`'s signs) | — | Done V4.1 (`mapSwing`'s signs: the view goes the way you drag; tell us if up and down should go back) |
+| N159 | B Views | The views where needed: the opening frames the house alone, filling the screen on a PC and a phone; the swing can't go under the ground or through the roof; a double-click centres on the spot clicked; the arrow keys swing on a PC | `19_view_controls.js`, `14_views_walk.js` (`VIEWS.house`) | N157 | Open |
+| N160 | A Outside | The real road's shape: the close's curve and width, the pavements, the small hill up to the main road (opposite the front door, a little to the left looking out), the main road along the top; the house's plot set on it at the right height; still drawn with no names | `20_go.js` (`buildStreet`), `house/survey_data.py` (a street block, each size citing the screenshot) | the client's screenshots | Open |
+| N161 | A Outside | The surroundings truer: the neighbours' houses (their shapes, heights and roofs), the trees where they stand and how tall, the fences and hedges, what the windows look out on | `20_go.js` (`buildBeyond`, the neighbours), `house/survey_data.py` (`BEYOND`), `house/EVIDENCE.md` | the client's screenshots and photos | Open |
+| N162 | C Name | Home Plan V4: the name pill top left reads "Home Plan V4.0" (it read "Demma's Home V3.93"), the version going V4.0, V4.1 ... from here; the page's title, the home-screen app's name, the PDFs' names and covers and the stills' names to match; the repo keeps its name | `build_viewer.py` (the pill, the title, the manifest), `build_doc.py` (the PDFs), `18_caption_hd.js` (the stills' names), `qa.py`, `tools/build.py`, `VERSION` | — | Done V4.0 |
+| N163 | D Review | Outside by evening: the house from outside lit by the time of day (a dusk sky, its windows warm, the street lamps on with Next door); it stays in daylight now whatever the time | `11_lights.js` (`outdoor`), `09_house_views.js` | N157 | Open |
+| N164 | D Review | The top row on a phone with As it is in it: at 375 nothing cut off; As it is and Hide labels one ⋯ if the row crowds | `room3d_page.py` (`.r3d-mini`) | N162 | Open |
+| N165 | D Review | The speed check steady: the living room's draws read once the shade and glow are back and settled, so one slow CI frame can't read 680 (#260) | `tools/check_site.py` (`PERF`) | — | Open |
+| N166 | D Review | The budgets lowered to what's drawn after N157 (the house alone draws less): the house's budget on each path cut to its new count plus a margin, so a later change can't add back what N157 took out unseen | `tools/perf_budget.json` | N157 | Open |

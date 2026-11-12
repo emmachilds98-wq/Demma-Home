@@ -80,7 +80,9 @@ function outdoor() {
   if (garden3d && !HOUSEV(S.view)) garden3d.visible = room;                     // the house's views set it by Gardens
   if (view) view.visible = !room && !(VIEWS[S.view] || {}).above;
   if (OUT.sky) { OUT.sky.visible = on; OUT.ground.visible = on; const low = INSIDE() && ((R.HOUSE3.rooms || {})[VIEW_ROOM[S.view]] || [])[4] < 0;   // V1.10: the slope runs through the lower floor's rooms
-    OUT.ground.children.forEach(m => { m.visible = !(low && m.userData.slope); if (m.userData.alley && m.visible) m.visible = room || !S.hgarden; });   // with Gardens on the alley steps down there
+    OUT.ground.children.forEach(m => { m.visible = !(low && m.userData.slope); if (m.userData.alley && m.visible) m.visible = room || !S.hgarden;   // with Gardens on the alley steps down there
+      if (house && !S.hgarden && (m.name === "hill" || m.isInstancedMesh)) m.visible = false; });   // V4.1 (N157): the house on its own: the hill and the trees come with Gardens
+    { const st = OUT.ground.getObjectByName("street"); if (st) st.visible = !house || !!S.hstreet; }   // and the street with Next door (from a room's window it's always there)
     const d = house || !liv || !sun ? dayLight.position.clone().sub(dayLight.target.position) : sun.position.clone().sub(sun.target.position);   // the sun the sky shows: the one lighting it
     OUT.sky.material.uniforms.sunPosition.value.copy(d.normalize());
     if (S.tod !== "day" && !house) OUT.sky.material.uniforms.sunPosition.value.set(-0.6, -0.04, -0.8).normalize(); }   // V1.47: by evening from inside, the sun just down: a dusk sky

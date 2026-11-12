@@ -183,7 +183,7 @@ document.addEventListener("click", async e => {
   const n = (k, w) => `${k} ${w}${k === 1 ? "" : "s"}`, what = [ids.length && n(ids.length, "measurement"), ne && n(ne, "change"), nf && `${nf} room${nf === 1 ? "'s" : "s'"} colours`, nt && n(nt, "tick"), sp && "the speed"].filter(Boolean).join(", ");   // V1.51: the 3D's changes go too
   if (mode === "shared") { say(`Sent: ${what}. The next round puts them in.`); return; }
   const url = store.shareLink();
-  try { if (navigator.share) { await navigator.share({ title: "Demma's Home: measurements", url }); say(`Shared: ${what}.`); return; } } catch (er) { if (er && er.name === "AbortError") return; }
+  try { if (navigator.share) { await navigator.share({ title: "Home Plan: measurements", url }); say(`Shared: ${what}.`); return; } } catch (er) { if (er && er.name === "AbortError") return; }
   try { await navigator.clipboard.writeText(url); say(`Link copied (${what}): send it, or open it on your other device.`); } catch (er) { say(url); }
 });
 store.on(paint);
