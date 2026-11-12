@@ -554,8 +554,23 @@ SOFA_POUF = dict(SOFA_POUF, w=OTTOMAN["w"], d=OTTOMAN["d"], h=OTTOMAN["h"],
 # its black frame and clips back against the seats, level with them (the drawing's 43).
 SOFABED = dict(name="Green corner sofa bed", pick="Lovesofas Amelia, Blade Green chenille, right hand", col="#4f5d33",
                w=264.0, d=230.0, sec_d=165.0, h=95.0, seat_h=43.0, seat_d=53.0, run_d=100.0, back_h=78.0, back_t=20.0, arm=36.0, arm_h=62.0,
-               corner=100.0, foot=8.0, bed_out=75.0, bed_over=8.0, heads=5, head_lift=12.0, stool_out=42.0,
+               corner=100.0, foot=8.0, bed_out=75.0, bed_over=8.0, heads=5, stool_out=42.0,
                chaise=dict(w=100.0, d=65.0, h=43.0, lid=11.0), stool=dict(w=38.0, d=42.0, h=40.0), cost=(700, 950), default=True)
+# V3.75, client (12 Nov 2026): "ensure sizings are accurate and the sofa matches the listing in the green with all its features. The
+# headrests look like they just flip upwards but current render has armed lifts on making the headrest lift with a gap in between it and
+# the sofa". From the listing's text (fit.SOURCES "amelia": 95 high, seat 43 high, 53 deep and 65 wide, back 50 above the seat, "Clic-Clac
+# Headrest") and its 14 photos: the 95 is to the headrests lying down (the drawing's arrow), on a back frame 81 high, 50 over the 43 seat with
+# a pad 14 thick lying on it. Each headrest is a pad 30 deep and as wide as its seat's back, hinged at the frame's front top edge: down, it lies
+# on the frame (8 over its front, onto the back cushion's top); up, it flips 74° on its ratchet hinge, its foot tucked behind the back
+# cushion's top, standing about 106 (the photos' raised middle one). No stems, no gap. The listing's text says three; its photos show five
+# (three along the back, two down the side), drawn five. Blade Green: the studio photos' muted olive (lit #5e6343, shade #4b4d30, hue
+# 69°); the room's warm light turns a green about 25° yellower, so it's drawn greener and greyer (#586b4c renders as the photos)
+SOFABED.update(back_h=81.0, col="#586b4c", seat_w=65.0, back_in=50.0,
+               head=dict(w=66.0, d=30.0, t=14.0, over=8.0, up=74.0))
+import math as _m
+SOFABED["head_up_h"] = round(SOFABED["back_h"] + (SOFABED["head"]["d"] - SOFABED["head"]["over"]) * _m.sin(_m.radians(SOFABED["head"]["up"]))
+                             + SOFABED["head"]["t"] * _m.cos(_m.radians(SOFABED["head"]["up"])), 1)   # 106: the raised pads' top
+assert SOFABED["back_h"] + SOFABED["head"]["t"] == SOFABED["h"]                        # the drawing's 95, headrests down
 SOFABED["end_z"] = SOFA_BACK_Z + SOFABED["d"]                       # -66: the chaise's end
 # V3.73, client (11 Nov 2026): "make the new green version the main version showing in the room but keep ability to switch between designs.
 # Adjust the tables in front of the sofa however needed to make it fit with the new sofa as well as the lamp". The room opens on the sofa

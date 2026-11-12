@@ -170,21 +170,29 @@ HESSIAN.repeat.set(3, 9);
 /* V3.74, client: "Do more upgrades to the new sofas render quality": the sofa bed's woven chenille, drawn for it (20 cm a tile; cushGeo maps
    every face in real cm, so the weave is one size on a headrest and on the chaise). The colour: near white, heathered (the yarn's light and
    dark plies in short slubs), so the piece keeps its colour and Edit's; the relief: the fine pile rows and the slubs standing proud */
+/* V3.75, client: "matches the listing in the green": the listing's close-ups show a fine speckled heather (light and dark plies in loops
+   about a millimetre and a half across, on a slight twill), no ribs: its rows read as corduroy. Each 4 px cell (1.6 mm at 20 cm a tile) is a
+   loop: mostly mid, some light and some dark plies; the twill a faint diagonal; a soft mottle over it. The relief: each loop a soft dome
+   of its own height, offset row to row as the weave is, the twill's ridge under it */
+function chenCells(seed) { const r = rnd(seed), n = 128, c = new Float32Array(n * n); for (let i = 0; i < c.length; i++) c[i] = r(); return c; }
 const CHENILLE = canvasTex(512, 512, (g, w, h) => {
-  const r = rnd(73);
-  g.fillStyle = "#ececea"; g.fillRect(0, 0, w, h);
-  for (let i = 0; i < 2600; i++) { const x = r() * w, y = r() * h, l = 6 + r() * 26, dark = r() < 0.55;   // the slubs: short streaks along the rows
-    g.fillStyle = dark ? `rgba(40,48,30,${0.05 + r() * 0.09})` : `rgba(255,255,250,${0.06 + r() * 0.1})`; g.fillRect(x, y, l, 1.2 + r() * 1.6); }
-  for (let j = 0; j < h; j += 6) { g.fillStyle = `rgba(30,36,24,${0.05 + r() * 0.04})`; g.fillRect(0, j, w, 1.4); }   // the rows' shadows
-  for (let i = 0; i < 90; i++) { const x = r() * w, y = r() * h, rr = 20 + r() * 60, gr = g.createRadialGradient(x, y, 0, x, y, rr);   // a soft mottle
-    gr.addColorStop(0, r() < 0.5 ? "rgba(255,255,255,0.07)" : "rgba(30,36,20,0.06)"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.fillStyle = gr; g.fillRect(x - rr, y - rr, 2 * rr, 2 * rr); }
+  const c = chenCells(73), d = g.createImageData(w, h), px = d.data, T = 2 * Math.PI / 512;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const cy = y >> 2, cx = ((x + (cy & 1) * 2) >> 2) & 127, v = c[cy * 128 + cx];
+    const ply = v < 0.22 ? -30 : v > 0.84 ? 22 : (v - 0.5) * 14, tw = 4 * Math.sin((x + y) * Math.PI / 4), mo = 4 * Math.sin(3 * x * T + 1) * Math.sin(2 * y * T) + 3 * Math.sin((5 * x + 7 * y) * T);
+    const k = Math.max(0, Math.min(255, 228 + ply + tw + mo)), i = (y * w + x) * 4;
+    px[i] = k; px[i + 1] = Math.min(255, k + 2); px[i + 2] = k - 3; px[i + 3] = 255;
+  }
+  g.putImageData(d, 0, 0);
 }, true);
 const CHENILLE_B = canvasTex(512, 512, (g, w, h) => {
-  const r = rnd(74);
-  g.fillStyle = "#808080"; g.fillRect(0, 0, w, h);
-  for (let j = 0; j < h; j += 6) { g.fillStyle = "rgba(255,255,255,0.35)"; g.fillRect(0, j + 2, w, 2.5); g.fillStyle = "rgba(0,0,0,0.3)"; g.fillRect(0, j, w, 1.2); }
-  for (let i = 0; i < 1800; i++) { const x = r() * w, y = Math.floor(r() * h / 6) * 6 + 2, l = 5 + r() * 22;
-    g.fillStyle = `rgba(255,255,255,${0.15 + r() * 0.3})`; g.fillRect(x, y, l, 2.6); }
+  const c = chenCells(74), d = g.createImageData(w, h), px = d.data;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const cy = y >> 2, sx = x + (cy & 1) * 2, cx = (sx >> 2) & 127, fx = (sx & 3) - 1.5, fy = (y & 3) - 1.5;
+    const dome = Math.max(0, 1 - (fx * fx + fy * fy) / 5), k = 128 + (dome * (0.55 + c[cy * 128 + cx] * 0.9) - 0.55) * 90 + 10 * Math.sin((x + y) * Math.PI / 4), i = (y * w + x) * 4;
+    px[i] = px[i + 1] = px[i + 2] = Math.max(0, Math.min(255, k)); px[i + 3] = 255;
+  }
+  g.putImageData(d, 0, 0);
 }, false);
 /* V1.1, the client: "i want better realism, quality and speed": CC0 photos (house/textures, house/SOURCES.md; inline in the data, as the
    house's) take over the drawn textures above as they arrive. The same texture objects, so no material changes and no new shaders. A

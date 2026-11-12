@@ -416,7 +416,7 @@ function editPanel() {
     const chips = Object.entries(R.PAINTS).map(([k, { hex: h, name: n }]) => `<button type="button" class="chip" data-swatch="${k}"><span class="dot" style="background:${h}"></span>${n.replace(/ No\..*/, "").replace("Farrow & Ball ", "").replace("Little Greene ", "")}</button>`).join("");
     qs("#r3d-swatches").innerHTML = (one ? `<button type="button" class="chip" data-swatch="match">Same as the others</button>` + chips : selSurf === "walls" ? chips
       : `<button type="button" class="chip" data-swatch="match">Same as the walls</button><button type="button" class="chip" data-swatch="${selSurf === "ceil" ? "#f2f0ea" : "#ece8dd"}">${selSurf === "ceil" ? "White" : "Off-white"}</button>`);
-    qsa("[data-sel=turn],[data-sel=turn45],[data-sel=turn15],[data-sel=wall],[data-sel=remove],[data-sel=copy]").forEach(b => b.hidden = true); qs("#r3d-selsize").textContent = "";
+    qsa("[data-sel=turn],[data-sel=turn45],[data-sel=turn15],[data-sel=wall],[data-sel=remove],[data-sel=copy],.r3d-nudge").forEach(b => b.hidden = true); qs("#r3d-selsize").textContent = "";
     return;
   }
   if (!selId) return;
@@ -426,6 +426,7 @@ function editPanel() {
   qsa("[data-sel=copy]").forEach(b => b.hidden = !it.added);
   qs("#r3d-swatches").hidden = true;
   qsa("[data-sel=turn],[data-sel=turn45],[data-sel=turn15],[data-sel=wall]").forEach(b => b.hidden = !!it.lamp || !!it.fixed);
+  qsa(".r3d-nudge").forEach(b => b.hidden = !!it.fixed);
   qsa("[data-sel=remove]").forEach(b => b.hidden = false);
   qs("#r3d-selcol").parentElement.hidden = !it.mats.length;
   if (it.mats.length) qs("#r3d-selcol").value = L.col || it.base[0];
@@ -439,9 +440,60 @@ function setEdit(on) {
   dirty();
 }
 function addList() {
-  const removed = Object.values(MOV).filter(it => !it.added && (S.layout[it.id] || {}).off);
-  qs("#r3d-addlist").innerHTML = removed.map(it => `<button type="button" class="chip" data-putback="${it.id}">↩ ${it.label}</button>`).join("")
+  qs("#r3d-addlist").innerHTML = outList().map(([k, n]) => `<button type="button" class="chip" data-outback="${k}">↩ ${n}</button>`).join("")
     + Object.entries(CATALOGUE).map(([k, c]) => `<button type="button" class="chip" data-add="${k}">${c.label}</button>`).join("");
+}
+/* V3.75, client (12 Nov 2026): "I also want ability to remove items from the room completely as well as move them. Make sure anything
+   that I can remove can be re added via the ui menu". Every piece that stands in the room takes Take it out on its card (and in Edit);
+   what's out is listed in Room → Taken out and at the head of Edit's + Add, a tap each to put it back, and the toast's Put back undoes
+   it at once. A piece is out by S.layout[id].off (as Edit's Remove always did); the plan's picks and an option you took out by S.sugg /
+   S.ideas off, kept in S.gone so they're listed till they're back. A piece you added from + Add goes for good (+ Add has it again) */
+function outList() {   // [["mov:id" | "sugg:k" | "idea:k", its name]]: what's out of the room now
+  const L = Object.values(MOV).filter(it => !it.added && (S.layout[it.id] || {}).off && (!it.when || it.when())).map(it => ["mov:" + it.id, it.label.replace(/ \(suggested\)$/, "")]);
+  const firm = R.FIRM || {}, gone = S.gone || {};
+  for (const [kind, on, P, F] of [["sugg", S.sugg, PD.sugg, firm.sugg || []], ["idea", S.ideas, PD.ideas, firm.ideas || []]])
+    for (const k of Object.keys(P || {})) if (!on[k] && (F.includes(k) || gone[kind + ":" + k]) && !L.some(([q]) => q === "mov:sg_" + k)) L.push([kind + ":" + k, P[k][0]]);
+  return L;
+}
+const outName = key => { const [kind, id] = key.split(":"); return kind === "mov" ? (MOV[id] || {}).label || id : ((kind === "sugg" ? PD.sugg : PD.ideas)[id] || [id])[0]; };
+function takeOut(key) {
+  const [kind, id] = key.split(":"), it = kind === "mov" && MOV[id], name = outName(key).replace(/ \(suggested\)$/, ""); if (kind === "mov" && !it) return;
+  pushUndo(); if (actId) closeAct();
+  if (it && it.added) { movers.remove(it.pivot); delete MOV[id]; S.added = S.added.filter(a => a.id !== id); delete S.layout[id]; }
+  else if (it) { setLayout(id, { off: true }); if (it.lamp) built.lamp = null; if (it.fixed) placeChairs(); }
+  else { S.gone = Object.assign({}, S.gone, { [key]: true }); if (kind === "sugg") S.sugg = Object.assign({}, S.sugg, { [id]: false }); else S.ideas = Object.assign({}, S.ideas, { [id]: false }); }
+  if (selId === id) select(null);
+  applyState(); if (kind === "idea") applyLight(); syncButtons();
+  toast(`${name} taken out`, it && it.added ? null : { outback: key });
+}
+function putBack(key) {
+  const keys = key === "all" ? outList().map(([k]) => k) : [key]; if (!keys.length) return;
+  pushUndo(); S.gone = Object.assign({}, S.gone);
+  for (const k of keys) { const [kind, id] = k.split(":"); delete S.gone[k];
+    if (kind === "mov" && MOV[id]) { setLayout(id, { off: false }); if (MOV[id].lamp) built.lamp = null; if (MOV[id].fixed) placeChairs(); }
+    else if (kind === "sugg") { S.sugg = Object.assign({}, S.sugg, { [id]: true }); if (S.layout["sg_" + id]) delete S.layout["sg_" + id].off; }
+    else if (kind === "idea") S.ideas = Object.assign({}, S.ideas, { [id]: true }); }
+  if (!qs("#r3d-addlist").hidden) addList();
+  applyState(); applyLight(); syncButtons();
+  toast(keys.length > 1 ? "Everything's back" : `${outName(keys[0]).replace(/ \(suggested\)$/, "")} is back`);
+}
+function outRow() {   // Room → Taken out: shown only while something is
+  const row = qs("#r3d-outrow"), l = qs("#r3d-outl"); if (!row || !l) return; const L = outList();
+  row.hidden = !L.length;
+  l.innerHTML = L.map(([k, n]) => `<button type="button" class="chip" data-outback="${k}">↩ ${n}</button>`).join("") + (L.length > 1 ? '<button type="button" class="chip" data-outback="all">Put all back</button>' : "");
+}
+/* V3.75: a nudge, 5 cm a tap (1 with Shift), along the room's wall nearest to the way the arrow points on screen, so ← is left as you
+   look; a finer move than a drag, on a phone above all */
+function nudge(id, dir, fine) {
+  const it = MOV[id]; if (!it || it.fixed) return;
+  const f = new THREE.Vector3(); camera.getWorldDirection(f); f.y = 0; if (f.lengthSq() < 1e-6) f.set(0, 0, -1); f.normalize();
+  const fx = -f.x, fz = f.z, rx = -fz, rz = fx;   // room cm: forward, and right of it (x mirrored)
+  const [vx, vz] = dir === "u" ? [fx, fz] : dir === "d" ? [-fx, -fz] : dir === "r" ? [rx, rz] : [-rx, -rz];
+  const step = fine ? 1 : 5, ax = Math.abs(vx) >= Math.abs(vz), p = spotOf(id);
+  const c = clampItem(it, p.x + (ax ? Math.sign(vx) * step : 0), p.z + (ax ? 0 : Math.sign(vz) * step), p.rot);
+  pushUndo(); setLayout(id, { x: c.x, z: c.z });
+  if (it.lamp) { built.lamp = null; applyState(); select(id); } else { placeAll(); store.set(KEY, S); }
+  dirty();
 }
 /* V3.07, the client: "in edit mode for moving things it still swings the camera round": a press on a piece is the piece's alone, caught
    on the way down (root, capture) before the orbit, Look round's turn and the pinch see it. Near the selected piece (its outline on screen
@@ -507,7 +559,7 @@ qs(".r3d-edit").addEventListener("click", e => {
     pushUndo();
     S.added.forEach(a => { const it = MOV[a.id]; if (it) { movers.remove(it.pivot); delete MOV[a.id]; } }); S.added = []; S.layout = {};
     select(null); built.lamp = null; applyState(); return; }
-  if (b.dataset.putback) { pushUndo(); setLayout(b.dataset.putback, { off: false }); qs("#r3d-addlist").hidden = true; if (MOV[b.dataset.putback].lamp) built.lamp = null; applyState(); select(b.dataset.putback); return; }
+  if (b.dataset.outback) { qs("#r3d-addlist").hidden = true; const [kind, id] = b.dataset.outback.split(":"); if (kind === "mov" && MOV[id]) setTimeout(() => select(id), 0); return; }   // V3.75: put back (root's click), then picked
   if (b.dataset.add) {
     const t = controls.target, c = clampItem(CATALOGUE[b.dataset.add], -t.x / M, Math.min(t.z / M, -40), 0);
     const a = { id: "a" + Date.now().toString(36), type: b.dataset.add, x: c.x, z: c.z };
@@ -526,7 +578,9 @@ qs("#r3d-sel").addEventListener("click", e => {
   if (k === "done") { select(null); return; }
   if (!selId) return;
   const it = MOV[selId];
-  if (k === "turn" || k === "turn45" || k === "turn15" || k === "wall" || k === "remove" || k === "copy") pushUndo();
+  if (k === "remove") { takeOut("mov:" + selId); return; }                                          // V3.75: listed in Room → Taken out, the toast puts it back
+  if (/^n[lrud]$/.test(k)) { nudge(selId, k[1], e.shiftKey); return; }                                 // V3.75: 5 cm a tap
+  if (k === "turn" || k === "turn45" || k === "turn15" || k === "wall" || k === "copy") pushUndo();
   if (k === "copy" && it.added) {     // v19: another of the same, a little way off, turned and coloured the same
     const src = S.added.find(a => a.id === selId), p = spotOf(selId), L = S.layout[selId] || {}, c = clampItem(it, p.x + 25, p.z + 25, p.rot);
     const a = { id: "a" + Date.now().toString(36), type: src.type, x: c.x, z: c.z };
@@ -535,11 +589,6 @@ qs("#r3d-sel").addEventListener("click", e => {
   if (k === "turn" || k === "turn45") { turnItem(selId, k === "turn" ? 90 : 45); placeAll(); store.set(KEY, S); }   // v27: a quarter turn, or an eighth
   if (k === "turn15") { turnItem(selId, e && e.shiftKey ? 5 : 15); placeAll(); store.set(KEY, S); }                  // v38: finer, 5° with Shift
   if (k === "wall") { backToWall(selId); placeAll(); store.set(KEY, S); }
-  if (k === "remove") {
-    if (it.added) { movers.remove(it.pivot); delete MOV[selId]; S.added = S.added.filter(a => a.id !== selId); delete S.layout[selId]; }
-    else { setLayout(selId, { off: true }); if (it.lamp) built.lamp = null; if (it.fixed) placeChairs(); }
-    select(null); applyState();
-  }
 });
 qs("#r3d-selcol").addEventListener("pointerdown", () => { if (selId) pushUndo(); });   // one undo step per colour pick
 qs("#r3d-selcol").addEventListener("input", e => {

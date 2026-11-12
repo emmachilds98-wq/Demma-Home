@@ -102,9 +102,11 @@ function setBare(on) {
   pickSync();
 }
 document.addEventListener("keydown", e => { if (e.key === "Escape" && document.body.classList.contains("bare")) { e.preventDefault(); setBare(false); } });
-function toast(t) {   // the clock starts once two frames have drawn (applying a look can recompile the room first)
+function toast(t, undo) {   // the clock starts once two frames have drawn (applying a look can recompile the room first)
   const el = qs("#r3d-toast"); if (!el) return; el.textContent = t; el.hidden = false; clearTimeout(toast.t);
-  requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 3200); }));
+  el.classList.toggle("act", !!undo);   // V3.75: a button on it (Put back), and longer to reach it
+  if (undo) { const b = document.createElement("button"); b.type = "button"; b.textContent = "Put back"; Object.assign(b.dataset, undo); b.addEventListener("click", () => { el.hidden = true; }); el.append(" ", b); }
+  requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, undo ? 6000 : 3200); }));
 }
 function copyLook() {
   const url = lookUrl(), st = qs("#r3d-linkst");

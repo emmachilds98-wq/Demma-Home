@@ -2,7 +2,9 @@
 
 **Now (11 Nov 2026, V3.60):** what's open and who has it is `docs/REAL_PLAN.md` section 19; this page is brought to now by N121.
 
-**Latest (12 Nov 2026, V3.74, for the next agent; V3.74 took the C-table out of the plan and gave the sofa bed its own chenille):** the client is testing a sofa she may buy. V3.71 (#242, N126) added Room → The sofa:
+**Latest (12 Nov 2026, V3.75):** the sofa bed true to its Amazon listing (headrests that flip up on a hinge, its green, its weave), and any
+living-room piece taken out and put back (Room → Taken out, Edit's + Add, the toast): `docs/NOTES.md` section 5, "Taking a piece out".
+**Before it (V3.74 took the C-table out of the plan and gave the sofa bed its own chenille):** the client is testing a sofa she may buy. V3.71 (#242, N126) added Room → The sofa:
 Yours · Green sofa bed (the Lovesofas Amelia, Blade Green, 264 × 165, `geometry.SOFABED`, `fit.SOURCES["amelia"]`), its bed pulling
 out with the coffee table stepping aside, and Watch the bed open. V3.72 (#243, N127) gave it its upholstery detail. V3.73 (N128–N130)
 made it the room's sofa (yours one tap away), moved the record table, ottoman and red lamp to suit it, layered the living room's lights
@@ -102,7 +104,8 @@ Five from before V2.0 hold commits not in `main`, work since redone or dropped: 
 5. **Dark panels** on a dark device, or keep the cream (the old design) (N9's rest).
 6. **A photo of the microwave**, if there is one (N6 found none).
 7. **The green sofa bed:** V3.73 settled 230 vs 165 from the listing's photos (the sections are 165, the loose chaise makes 230). Still
-   open: the price (it showed in US dollars from the sandbox; about £700–950 is a guess); the arm, stools and chaise are scaled off photos.
+   open: the price (it showed in US dollars from the sandbox; about £700–950 is a guess); the arm, stools and chaise are scaled off photos;
+   the headrests (V3.75: the listing's text says three, its photos show five pads: drawn five, each flips up).
 The older list (measurements still guessed, smaller confirmations) is in `docs/STATE.md`, "Open with the client", and in Measure on the site.
 
 ## Suggested next work for the new team

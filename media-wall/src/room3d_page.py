@@ -473,6 +473,11 @@ body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-ed
    and on a phone it sits up top while a card or a panel is open (it covered the card's last buttons). Details ▾ on one line */
 .r3d-finsc button { text-wrap: balance; }
 .r3d-toast { pointer-events: none; }
+.r3d-toast.act { pointer-events: auto; display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 18px; }   /* V3.75: Put back on it */
+.r3d-toast.act[hidden] { display: none; }
+.r3d-toast button { font: 600 14px Fredoka, system-ui, sans-serif; background: var(--cream); color: var(--ink); border: 0; border-radius: 999px; padding: 8px 14px; min-height: 36px; cursor: pointer; }
+.r3d-nudge { display: inline-flex; gap: 2px; } .r3d-nudge button { min-width: 36px; padding-left: 0; padding-right: 0; }
+.r3d-nudge[hidden] { display: none; }
 @media (pointer: coarse) {
   .r3d-finsc { row-gap: 0; }
   .r3d-finsc button { min-height: 44px; border: solid transparent; border-width: 6px 0; background-clip: padding-box; box-shadow: inset 0 0 0 1px #d9d4ca; }
@@ -764,8 +769,10 @@ def controls(gallery=""):
                 '<button type="button" class="chip" data-showopen="bed"><span class="ms" aria-hidden="true">play_arrow</span> Watch the bed open</button>'),
             seg("dining", [("folded", "Folded"), ("four", "Four"), ("six", "Six")], "The table"),
             seg("drawers", [("in", "In"), ("out", "Out")], "Media wall drawers"),
-            seg("ctop", [("down", "Down"), ("up", "Up")], "Record table lid"),
+            seg("ctop", [("down", "Down"), ("up", "Up")], "Coffee table top" if "liftcoffee" in G.FIRM["sugg"] else "Record table lid"),   # V3.75: the lift-top's the plan's
             '</div>',
+            # V3.75, client: "Make sure anything that I can remove can be re added via the ui menu": what's out of the room, a tap each to put back
+            '<div class="grp r3d-outrow" id="r3d-outrow" hidden><span class="label">Taken out</span><div class="seg r3d-outl" id="r3d-outl"></div></div>',
             '<details class="r3d-more r3d-fold"><summary>More: the table doors, the curtains</summary>',
             seg("cabw", [("90", f"{G.CAB['top'][0]:g} wide (the plan)"), ("80", f"{G.CAB80['top'][0]:g} wide, four chairs")], "The table's width"),
             seg("tdoor", [("shut", "Shut"), ("open", "Open")], "The table door"),
@@ -940,11 +947,11 @@ def section(gallery=""):
     <div class="r3d-edit">
       <div class="r3d-editbar" id="r3d-editbar" hidden><button type="button" id="r3d-editdone" class="primary">✓ Done</button><button type="button" id="r3d-add">+ Add</button><button type="button" id="r3d-undo" disabled title="Undo (Ctrl+Z)">↶ Undo</button><button type="button" id="r3d-layreset">Reset layout</button>
         <button type="button" class="r3d-share" id="r3d-share" hidden title="Save this layout so Emma and Dave both see it">Save for both of you</button><button type="button" class="r3d-share" id="r3d-useshared" hidden>Use the shared layout</button><span class="r3d-hint" id="r3d-sharest" aria-live="polite"></span>
-        <span class="r3d-hint">Drag a thing to move it (it snaps to a wall within 15 cm); tap it to turn, recolour, copy or remove it. Tap a wall, the ceiling or the skirting to paint it.</span></div>
+        <span class="r3d-hint">Drag a thing to move it (it snaps to a wall within 15 cm); tap it to turn, nudge, recolour or take it out (+ Add puts it back). Tap a wall to paint it.</span></div>
       <div class="r3d-addlist" id="r3d-addlist" hidden></div>
-      <div class="r3d-sel" id="r3d-sel" hidden><b id="r3d-selname"></b><span class="r3d-size" id="r3d-selsize"></span><button type="button" data-sel="turn" title="A quarter turn; against a wall it stays against it">⟳ Turn</button><button type="button" data-sel="turn45" title="An eighth of a turn">45°</button><button type="button" data-sel="turn15" title="15°; hold Shift for 5°">15°</button><button type="button" data-sel="wall" title="Push it to the nearest wall, its back to the wall">⇥ Back to the wall</button>
+      <div class="r3d-sel" id="r3d-sel" hidden><b id="r3d-selname"></b><span class="r3d-size" id="r3d-selsize"></span><button type="button" data-sel="turn" title="A quarter turn; against a wall it stays against it">⟳ Turn</button><button type="button" data-sel="turn45" title="An eighth of a turn">45°</button><button type="button" data-sel="turn15" title="15°; hold Shift for 5°">15°</button><button type="button" data-sel="wall" title="Push it to the nearest wall, its back to the wall">⇥ Back to the wall</button><span class="r3d-nudge" role="group" aria-label="Nudge it 5 cm (Shift: 1 cm)"><button type="button" data-sel="nl" aria-label="Nudge it left">←</button><button type="button" data-sel="nu" aria-label="Nudge it away">↑</button><button type="button" data-sel="nd" aria-label="Nudge it nearer">↓</button><button type="button" data-sel="nr" aria-label="Nudge it right">→</button></span>
         <label>Colour <input type="color" id="r3d-selcol" value="#888888"></label><span id="r3d-swatches" hidden></span>
-        <button type="button" data-sel="copy" hidden>Copy</button><button type="button" data-sel="remove">Remove</button><button type="button" data-sel="done">Done</button></div></div>
+        <button type="button" data-sel="copy" hidden>Copy</button><button type="button" data-sel="remove">Take it out</button><button type="button" data-sel="done">Done</button></div></div>
   </div>
   <div class="r3d-welcome" id="r3d-welcome" role="dialog" aria-labelledby="r3d-wh" hidden><h2 id="r3d-wh">Welcome home</h2><ol><li><span class="ms" aria-hidden="true">ads_click</span><span data-wk="in"></span></li><li><span class="ms" aria-hidden="true">360</span><span data-wk="look"></span></li><li><span class="ms" aria-hidden="true">touch_app</span><span data-wk="change"></span></li></ol><div class="r3d-wbtns"><button type="button" class="primary" data-wgo="in"><span class="ms" aria-hidden="true">door_front</span>Walk in</button><button type="button" data-wgo="look">Look round</button></div></div>
   <div class="r3d-dock"><button type="button" class="r3d-toolsbtn" data-tools-toggle aria-expanded="false" aria-controls="r3d-panel"><span class="ms" aria-hidden="true">tune</span>Tools</button>

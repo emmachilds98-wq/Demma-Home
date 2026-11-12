@@ -177,7 +177,25 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   doesn't start ("missing ) after argument list"); `node --check` each part. The plan's coffee table is the lift-top
   (`FIRM.sugg` "liftcoffee"); the record table's rows are gated on `"recordtable" in FIRM["sugg"]` as the C-table's (`build_doc.RT_IN`).
   The sofa bed's stools (`WORK.stools`, `S.stools`, one group) slide `stool_out` out of the arm's side; its five headrests (`WORK.hr[i]`,
-  `S.hr[i]`, a group each) rise `head_lift` and tip forward; the card's "Raise the headrests" row names them.
+  `S.hr[i]`, a group each) flip up on their hinge (V3.75, below).
+  V3.75 (N132–N134): the listing is Amazon UK B0HDC8WYBT; its 14 photos come down from the page's `"hiRes"` URLs (m.media-amazon.com, reachable
+  here; the page's prices show in US dollars from the sandbox). Its text: 95 high, seat 43 × 53, 65 wide, back 50 above the seat,
+  "Clic-Clac" headrests ("3x" in the text, five pads in the photos: drawn five). `SOFABED["head"]` (w, d, t, over, up): each headrest's
+  group sits at the back frame's front top edge (`back_h` 81, the run's `-hd + t`, the side's `xi`); the pad hangs back from it with `over`
+  in front; `rotation.x` (the run) or `rotation.z` (the side) by `up` lifts the back of the pad, so its foot dips behind the back cushion.
+  `head_up_h` (106) is the raised top; `clash.py` checks it. The scissor links are their own group in the bed (`lk`, not merged), set each
+  frame from the top's rise (`linkAt`). The chenille (`02` `CHENILLE`, `CHENILLE_B`) is per-pixel ImageData: 4 px loops (1.6 mm), a twill
+  `sin((x + y)π/4)`, sines for the mottle so it tiles (any random block or row reads at room distance). The colour is drawn greener and
+  greyer than the photos (`#586b4c`): the room's warm light turns a green about 25° yellower. Tufts take `dimp` (the cloth × 0.8), not `seam`.
+- **Taking a piece out and putting it back** (V3.75 N133, `13_edit_room.js`): `outList()` is what's out (`mov:<id>` by
+  `S.layout[id].off`; `sugg:<k>` / `idea:<k>` off while in `R.FIRM` or in `S.gone`); `takeOut(key)` and `putBack(key | "all")` do it
+  (an undo step each; an added catalogue piece goes for good); `outRow()` fills Room → Taken out (`#r3d-outrow`, from `syncButtons`), and
+  `addList()` puts the same at the head of Edit's + Add. Buttons anywhere in the 3D's root: `data-takeout`, `data-outback`, `data-turnit`
+  (`19_controls.js`); `toast(t, {outback})` shows Put back on the toast (`.r3d-toast.act` takes the pointer). A card that sits in a movable
+  (the lift-top, the record table) takes the movable out (`mov:coffee`). A house piece's toast has `hputback`. A new piece that stands in
+  the room needs no more than its movable: its card's generic row and Taken out come with it. Edit's nudges (`nudge`, `#r3d-sel` `nl nu nd
+  nr`) step 5 cm along the room's axis nearest the screen's direction. A card's 5th item (`tray`) sits above its buttons; its 6th (`extra`)
+  goes inside More.
 - **Back** (`09_house_views.js` `roomHist`), **Esc** (`19_controls.js` `ESC`, top layer only), **Overhead/Angled** and a room's **Above** (`19_view_controls.js` `mapMode`: its own drags, the orbit's off there, V3.08 N53, V3.13 N55; a touch on a living-room sticker joins the drag from the root's capture, and moves are read on `window`, as the sticker keeps its finger; it turns them off in a canvas capture listener after 14's, and Edit's root capture keeps a piece's press from it).
 - **Swinging round a spot and looking into a floor** (V3.68 N125): a rigid turn of the eye and the point looked at round the grabbed spot keeps that spot still on screen (`mapSwing`: the turn round the upright, then the lean round the level line, both through it; `lookAt` keeps no roll). Before the swing the point looked at is slid along the view to the spot's depth, so nothing jumps. `mapPick` raycasts the scene once a press (the eased wheel asks each frame: one ray kept for 400 ms). A floor's cut (`09` `floorCut`) moves one plane's number in `FLCLIP`, in 20 cm steps with `reshadow()` on a change: the house's materials always carry six planes, so no shader. The living room's own walls (`03` `CLIP`) aren't cut by it. Test with Playwright's mouse at 1280 × 800: project the picked point before and after the drag (it moved 5 px in 8 moves).
 - **The labels on the room** (V3.70 N117): `15` `placeStickers` places the biggest first, each at the nearest clear spot (12 px steps down and up, then half a label aside), 8 px from the others and off `keepOuts()` (the bars, dock, stick and figure, read twice a second); no room, it's hidden. From above (`RMODE` above/alone or a view with `above` before walking) none fades as `behind`. The stick's knob shows only while held (`.held`); the walk hint is once a device (`demma-walkhint`).

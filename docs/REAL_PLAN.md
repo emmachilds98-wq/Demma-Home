@@ -480,6 +480,9 @@ it again; review it, or finish it if its PR has gone quiet (merge `main` in, tak
 | N129 | The living room's lights layered: where each head points (the client, 11 Nov) | the sofa's thread | Done V3.73 |
 | N130 | The music room made better: listening triangle, panels, rug, headphones, mic (the client, 11 Nov) | the sofa's thread | Done V3.73 |
 | N131 | The sofa bed's render quality (its own chenille, true-scale weave), its stools out and headrests up; the lift-top coffee table the plan's; the C-table out (the client, 12 Nov) | the sofa's thread | Done V3.74 |
+| N132 | The sofa bed true to its listing: headrests that flip up on a hinge (no stems, no gap), the frame and pads to the drawing's 95, the photos' Blade Green, a chenille heather, dimpled tufts, the bed's scissor lift (the client, 12 Nov) | the sofa's thread | Done V3.75 |
+| N133 | Take any living-room piece out from its card or Edit, put it back from Room → Taken out, Edit's + Add or the toast (the client, 12 Nov) | the sofa's thread | Done V3.75 |
+| N134 | The living room's cards: the sofa bed's by what it does, the chaise its own, every piece's size, Turn it, Take it out; Edit's nudges; the lift-top's oak (the client, 12 Nov) | the sofa's thread | Done V3.75 |
 | N31 | KTX2 photos | 13 | PR #133: paused, **do not merge** till Emma says yes |
 
 Done since section 18 was written: N109 V3.58, N114 V3.59, N118 V3.60, N119 V3.61. Waiting on Emma: `docs/HANDOVER.md` "Waiting on Emma" and

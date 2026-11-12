@@ -221,7 +221,7 @@ function buildStorage() {
     WORK.rlid = anim(v => { pg.rotation.x = 1.4 * v; });                                                  // up about 80°, on its stays
     }); }
   // the lift-top coffee table, in the coffee table's place (it goes where the coffee table goes); the top lifts and comes towards the sofa
-  if (R.LIFT_COFFEE && coffeeG) { const g = SUGG_G.liftcoffee = new THREE.Group(); coffeeG.add(g); lazyVis(g, () => { const L = R.LIFT_COFFEE, body = own("#b07d4f"); SVAR_MATS.liftcoffee = [body];
+  if (R.LIFT_COFFEE && coffeeG) { const g = SUGG_G.liftcoffee = new THREE.Group(); coffeeG.add(g); lazyVis(g, () => { const L = R.LIFT_COFFEE, body = reg(new THREE.MeshStandardMaterial({ color: "#b07d4f", map: OAK_TEX, roughness: 0.55 })); SVAR_MATS.liftcoffee = [body];   // V3.75: its oak effect's grain (it read as flat pink)
     const dark = own("#2a2724"), w = L.w, d = L.d, legH = 6, top = 2.2, sh = L.h - legH - top;
     for (const [x, z] of [[-w / 2 + 4, -d / 2 + 4], [w / 2 - 4, -d / 2 + 4], [-w / 2 + 4, d / 2 - 4], [w / 2 - 4, d / 2 - 4]]) lb(g, x, 0, z, 4, legH, 4, body);
     lb(g, 0, legH, 0, w, 2, d, body);                                                                    // the shelf under the box

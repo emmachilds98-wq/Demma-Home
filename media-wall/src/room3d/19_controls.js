@@ -259,6 +259,7 @@ function syncButtons() {
     qs(`[data-lvout="${k}"]`).textContent = k === "warm" ? warmWord(v) : `${Math.round(v)}%`; });
   qsa("[data-col]").forEach(i => { i.value = S.col[i.dataset.col] || WARM; });
   syncOpts();                                                                                       // v36
+  outRow();                                                                                         // V3.75: Room → Taken out
   if (actId) renderAct();                                                                           // v30: the item's card follows
 }
 root.addEventListener("click", e => {
@@ -267,6 +268,10 @@ root.addEventListener("click", e => {
   if (d.show) { showCtl(d.show); return; }
   if (SH) { if (d.view || d.walk || d.eye || d.level || b.id === "r3d-reset" || b.id === "r3d-full") SH.own = true; else if (!d.showopen) showStop(true); }   // v32: the camera's buttons leave the show running
   if (d.view) { setView(d.view); return; }
+  if (d.takeout) { takeOut(d.takeout); return; }                             // V3.75: a piece out of the room (Room → Taken out puts it back)
+  if (d.outback) { putBack(d.outback); return; }
+  if (d.hputback) { const k = d.hputback; setPiece(k, "removed", null).then(() => toast(`${HIT(k).n} is back`)); return; }   // V3.75: a house piece back, from the toast
+  if (d.turnit) { const id = d.turnit; if (!MOV[id]) return; pushUndo(); turnItem(id, 90); placeAll(); store.set(KEY, S); dirty(); if (actId) renderAct(); return; }   // V3.75: a quarter turn from its card
   if (d.rmode) { if (LIVV()) setView(LIV_RMODE[d.rmode]); else setRmode(d.rmode); if (actId) closeAct(); return; }   // v71: in it, from above, on its own (v78b: the living room's views)
   if (d.hbed) { liftBed(d.hbed === "up"); return; }                          // v71: the bed's card
   if (d.hdoor) { swingDoor(d.hdoor, !doorOpen(HPARTS[d.hdoor])); if (actId) renderAct(); return; }   // V1.26: a door's card
