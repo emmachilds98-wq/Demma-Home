@@ -267,11 +267,12 @@ function actItems(id) {     // [title, how it is now, buttons]
        it, taking it out, yours back and the listing itself */
     const heads = `<div class="r3d-fin"><span class="r3d-finlab">Headrests: tap one to flip it up or down</span><div class="r3d-finsc" role="group" aria-label="Headrests">${
       ["Arm seat", "Middle", "Corner", "Corner side", "Side end"].map((nm, i) => `<button type="button" data-hr="${i}" aria-pressed="${!!(S.hr && S.hr[i])}">${nm}</button>`).join("")}</div></div>`;
-    if (ch) return ["Its storage chaise", `${B.chaise.w} × ${B.chaise.d}, ${B.chaise.h} high · the lid lifts on gas struts`, [
+    if (ch) return ["Its storage chaise", S.lid ? "Open: the bed's bedding folded inside" : `${B.chaise.w} × ${B.chaise.d}, ${B.chaise.h} high · the lid lifts on gas struts`, [
       btn(S.lid ? "Shut the chaise" : "Open the chaise", { lid: S.lid ? "on" : "off" }), btn("Move the chaise", { actedit: "chaise2" }), btn("Take the chaise out", { takeout: id }),
       btn("The sofa bed", { actopen: "mov:sofa2" })]];
-    return [B.name, S.sbed ? "Bed pulled out, level with the seats" : `${B.w} × ${B.d}, ${B.h} high · seat ${B.seat_h} high, ${B.seat_d} deep · Blade Green`, [
+    return [B.name, S.sbed ? (S.made ? "Made up for a guest" : "Bed pulled out, level with the seats") : `${B.w} × ${B.d}, ${B.h} high · seat ${B.seat_h} high, ${B.seat_d} deep · Blade Green`, [
       btn(S.sbed ? "Push the bed in" : "Pull the bed out", { sbed: S.sbed ? "in" : "out" }),
+      ...(S.sbed ? [btn(S.made ? "Strip the bed" : "Make up the bed", { made: S.made ? "off" : "on" })] : []),   // V3.82 (N138)
       btn(up ? "Headrests down" : "Headrests up", { hrall: up ? "down" : "up" }),
       btn(S.stools ? "Push the stools in" : "Pull the stools out", { stools: S.stools ? "in" : "out" }),   // V3.74
       btn(S.lid ? "Shut the chaise" : "Open the chaise", { lid: S.lid ? "on" : "off" }), btn("Watch the bed open", { showopen: "bed" }),

@@ -157,11 +157,21 @@ function buildSofaBed() {
   const linkAt = b => { const yT = 12 + rise * b;
     for (const [m, k] of links) { const z0 = k ? zb : za, z1 = k ? za : zb, dy = yT - 7, dz = z1 - z0;
       m.position.y = (7 + dy / 2) * M; m.position.z = (z0 + dz / 2) * M; m.rotation.x = Math.atan2(dz, dy); m.scale.y = Math.hypot(dy, dz) * M; } };
+  /* V3.82 (N138), the listing: "Extra sleeping area": made up, a duvet over the seats and the pulled-out platform (one sleeping
+     surface, level since the platform clips back at the seats' height) and two pillows against the backs; shown once the bed is all
+     the way out (S.made), one group of its own, one draw */
+  const cotton = reg(new THREE.MeshStandardMaterial({ color: "#f1eee7", roughness: 0.95, bumpMap: HESSIAN, bumpScale: 0.25 }));
+  const madeG = new THREE.Group(), dz0 = sz0 + 4, dz1 = hd + ud - 2; g.add(madeG);
+  cush(madeG, mid, sh - 0.5, (dz0 + dz1) / 2, bw + 4, 5, dz1 - dz0, cotton, 1.2, 1.2, 2.5);                  // the duvet, over the edges a little
+  for (const dx of [-0.25, 0.25]) { const pl = cush(madeG, mid + dx * bw, sh + 3, dz0 + 18, bw / 2 - 6, 11, 30, cotton, 2.5, 2.2, 5); pl.rotation.x = -0.25; }
+  mergeStatic(madeG); madeG.visible = false;
+  const madeSync = () => { madeG.visible = !!S.made && (WORK.sbed ? WORK.sbed.p >= 0.999 : false); };
+  WORK.made = { sync: madeSync };
   const sm = k => k <= 0 ? 0 : k >= 1 ? 1 : k * k * (3 - 2 * k);
   WORK.sbed = anim(v => { const a = sm(v / 0.5), b = sm((v - 0.5) / 0.3), c = sm((v - 0.8) / 0.2);
-    bed.position.z = ((ud + over) * a - over * c) * M; bed.position.y = 3 * (a - c) * M; top.position.y = rise * b * M; lk.visible = a > 0.3; linkAt(b); RS.bed = v; sync(); });
+    bed.position.z = ((ud + over) * a - over * c) * M; bed.position.y = 3 * (a - c) * M; top.position.y = rise * b * M; lk.visible = a > 0.3; linkAt(b); RS.bed = v; sync(); if (WORK.made) WORK.made.sync(); });
   const cx = so.x[0] + hw, cz = so.back + hd, live = new THREE.Group();
-  while (g.children.length) live.add(g.children[0]); g.add(live); mergeStatic(live); setRest = restMerge(g, live, [lk]); sync();
+  while (g.children.length) live.add(g.children[0]); g.add(live); mergeStatic(live); setRest = restMerge(g, live, [lk, madeG]); sync();
   movable("sofa2", B.name, g, () => ({ x: cx, z: cz, rot: 0 }), W, D, [fab], false, { when: () => S.sofa === "bed", tints: [[seam, 0.62], [dimp, 0.8]] });   // V3.78 (N135): Edit's colour reaches its seams and dimples
   // the loose storage chaise on the corner section's end: a buttoned lid lifting on its back edge on two gas struts (the ottoman's Lift
   // the lid), a fabric loop on its front to lift it by, black lining, square black feet
@@ -169,8 +179,12 @@ function buildSofaBed() {
   // V3.78 (N135): its own cloth (it shared the sofa's, so recolouring the sofa in Edit was undone as the chaise was placed), following the sofa's colour unless it has its own
   const fabC = chen(B.col, 0.9), seamC = chen(new THREE.Color(B.col).multiplyScalar(0.62), 0.5), dimpC = chen(new THREE.Color(B.col).multiplyScalar(0.8), 0.4);
   for (const dx of [-1, 1]) for (const dz of [-1, 1]) cush(c, dx * (C.w / 2 - 6), 0, dz * (C.d / 2 - 6), 7, F + 1, 7, steel, 0, 0, 1);
-  cush(c, 0, F, 0, C.w, bodyH - F, C.d, fabC, 0, 0.6, 2.5);
-  lb(c, 0, bodyH - 0.4, 0, C.w - 6.2, 0.5, C.d - 6.2, lining, false);               // the storage's black floor and walls, seen with the lid up
+  /* V3.82 (N138): the body a real box, 22 deep inside (it was solid, a black sheet on its top standing in for the storage): its base, and
+     four upholstered walls 3.2 thick round the black lining, so what's kept in it shows with the lid up */
+  const bw_ = 3.2, dep = 22;
+  cush(c, 0, F, 0, C.w, bodyH - dep - F + 1, C.d, fabC, 0, 0.6, 2.5);
+  for (const dz of [-1, 1]) cush(c, 0, bodyH - dep - 1, dz * (C.d / 2 - bw_ / 2), C.w, dep + 1, bw_, fabC, 0.5, 0.5, 1.5);
+  for (const dx of [-1, 1]) cush(c, dx * (C.w / 2 - bw_ / 2), bodyH - dep - 1, 0, bw_, dep + 1, C.d - 2 * bw_ + 0.6, fabC, 0.5, 0.5, 1.5);
   for (const [x, z, w_, d_] of [[0, -(C.d - 6.5) / 2, C.w - 6.4, 0.3], [0, (C.d - 6.5) / 2, C.w - 6.4, 0.3], [-(C.w - 6.5) / 2, 0, 0.3, C.d - 6.4], [(C.w - 6.5) / 2, 0, 0.3, C.d - 6.4]])
     lb(c, x, bodyH - 22, z, w_, 22, d_, lining, false);
   lb(c, 0, bodyH - 22, 0, C.w - 6.2, 0.3, C.d - 6.2, lining, false);
@@ -184,9 +198,14 @@ function buildSofaBed() {
   for (const x of [-(C.w / 2 - 8), C.w / 2 - 8]) { const st = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.3, 8), steel);
     st.position.copy(v3(x, bodyH + 2, -C.d / 2 + 14)); st.rotation.x = -0.7; struts.add(st); }
   mergeStatic(hinge); mergeStatic(struts);
+  // V3.82 (N138): the bed's bedding kept in the chaise, folded (the listing: "extra room for bedding"), seen only with its lid up
+  const fold = new THREE.Group(); c.add(fold); const cotC = reg(new THREE.MeshStandardMaterial({ color: "#efebe2", roughness: 0.95, bumpMap: HESSIAN, bumpScale: 0.25 }));
+  cush(fold, -C.w / 4 + 2, bodyH - 21.6, 0, C.w / 2 - 10, 8, C.d - 14, cotC, 0.8, 0.8, 2.5); cush(fold, -C.w / 4 + 2, bodyH - 13.6, 0, C.w / 2 - 14, 6, C.d - 18, cotC, 0.8, 0.8, 2.5);   // the duvet, folded twice
+  cush(fold, C.w / 4 - 2, bodyH - 21.6, 0, C.w / 2 - 12, 12, C.d - 20, cotC, 2, 1.6, 4);   // the two pillows
+  mergeStatic(fold); fold.visible = false;
   const live2 = new THREE.Group(); while (c.children.length) live2.add(c.children[0]); c.add(live2); mergeStatic(live2);
-  const setRest2 = restMerge(c, live2, [struts]);   // V3.77 (N153): the chaise one draw a material with its lid shut
-  WORK.lid2 = anim(v => { hinge.rotation.x = -1.5 * v; struts.visible = v > 0.85; setRest2(!v); });
+  const setRest2 = restMerge(c, live2, [struts, fold]);   // V3.77 (N153): the chaise one draw a material with its lid shut
+  WORK.lid2 = anim(v => { hinge.rotation.x = -1.5 * v; struts.visible = v > 0.85; fold.visible = v > 0.05; setRest2(!v); });
   movable("chaise2", "Its storage chaise", c, () => ({ x: so.x[0] + C.w / 2, z: so.back + B.sec_d + C.d / 2, rot: 0 }), C.w, C.d, [fabC], false, { when: () => S.sofa === "bed", follow: "sofa2", tints: [[seamC, 0.62], [dimpC, 0.8]] });
 }
 let bar1, bar2;
@@ -214,6 +233,7 @@ function setState() {
   if (G.now_ledge) G.now_ledge.visible = !(S.plants === "breast" && S.sugg.alcoveshelves) && !(S.sugg.barcase && caseBreast());   // V3.14: it moves with the records; v34: the drinks cabinet takes its place
   placeChairs();                                                                   // v20: the chair cupboard, its doors, the chairs in it
   placeWork();                                                                     // v34: the blind, the records, the trolley
+  if (WORK.made) WORK.made.sync();                                                 // V3.82 (N138): the sofa bed made up, once it's out
   applyDecor();                                                                    // v20: the rug, cushions, curtains, the case's fill and frame
   applySvar();                                                                     // v28: the suggestions' versions
   placeAll();

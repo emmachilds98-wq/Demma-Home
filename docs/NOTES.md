@@ -193,6 +193,12 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   takes `vertexColors`, so every shape it's on needs a colour: `vcol(geo, mat)` (13) adds white to boxes, pipes, tufts and loops; `cush`
   drops it for materials without (the feet's steel must still merge with plain boxes); `restMerge` keeps `color`. A shape with the cloth and
   no colour draws black.
+  V3.82 (N138): Make up the bed (`S.made`, `WORK.made.sync`, shown once `WORK.sbed.p` is 1; `restMerge` skips it and the chaise's `fold`).
+  The chaise is hollow: a base and four 3.2-thick walls round the lining, the folded bedding on its floor.
+- **`shaders_spot` wobbles** (seen on #254, V3.81): on the RTX path, main and a branch alike build 0 or 5 shaders on the spot stepping
+  into the living room after the warm-up (CI once 30, on a slow runner): shadow-depth programs with the living room's 2 clipping planes,
+  which the warm-up's stand-ins (`01` `depthMat`) don't always reach first. Measure with `check_site.SPOT` after waiting for `WARMED`;
+  compare a branch with main before blaming it. A row of its own: warm the living room's depth variants with its own planes.
   The sofa bed's stools (`WORK.stools`, `S.stools`, one group) slide `stool_out` out of the arm's side; its five headrests (`WORK.hr[i]`,
   `S.hr[i]`, a group each) flip up on their hinge (V3.75, below).
   V3.75 (N132–N134): the listing is Amazon UK B0HDC8WYBT; its 14 photos come down from the page's `"hiRes"` URLs (m.media-amazon.com, reachable

@@ -286,7 +286,8 @@ root.addEventListener("click", e => {
   else if (d.stools) { S.stools = d.stools === "out"; if (S.stools) S.sofa = "bed"; applyState(); }   // V3.74: the sofa bed's stools out or in
   else if (d.hr) { S.hr = Object.assign({}, S.hr, { [d.hr]: !(S.hr || {})[d.hr] }); applyState(); }   // V3.74: a headrest up or down
   else if (d.hrall) { S.hr = d.hrall === "up" ? { 0: true, 1: true, 2: true, 3: true, 4: true } : {}; applyState(); }
-  else if (d.sbed) { S.sbed = d.sbed === "out"; if (S.sbed) S.sofa = "bed"; applyState(); }          // V3.71: its bed pulled out
+  else if (d.sbed) { S.sbed = d.sbed === "out"; if (S.sbed) S.sofa = "bed"; else S.made = false; applyState(); }
+  else if (d.made) { S.made = d.made === "on"; if (S.made) { S.sofa = "bed"; S.sbed = true; } applyState(); }   // V3.82 (N138): made up once it's out          // V3.71: its bed pulled out
   else if (d.cabw) { S.cabw = d.cabw; applyState(); if (S.view === "dining" || S.view === "chairs") setView(S.view); }              // v33: the table 90 or 80 wide
   else if (d.tdoor) { S.tdoor = d.tdoor === "open"; if (S.tdoor && S.chairs === "open") S.chairs = "cupboard"; applyState(); }
   else if (d.scene) S.scene = d.scene, S.lv = Object.assign({}, SCENES[d.scene].levels), S.master = 100, applyLight(), updateCaption(), store.set(KEY, S);   // tapping the tile again resets it
