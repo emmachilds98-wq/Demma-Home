@@ -3,12 +3,11 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V3.77 (12 Nov 2026). V3.77 (N153): room in the living room's drawing budget: a phone standing in it draws 181 times a
-frame (was 216), the sofa bed, its chaise and the lift-top coffee table one draw a material while nothing on them moves; V3.76's bulb
-glow no longer adds a shader to the first picture (21 again). V3.76 (N154): the house's ceiling bulbs look lit with a faint warm glow
-round them (N116), the artex finer and softer (N110), this file under 150 lines (N121). V3.75 (N132–N134): the sofa bed true to its
-Amazon listing; any living-room piece taken out and put back; cards by what each piece does.
-The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.77 ↻"): on the
+**Version:** V3.78 (12 Nov 2026). V3.78 (N135): the sofa bed's green as the listing's photos in HD (all the client's devices; it read
+pale mint), and a colour picked in Edit reaches its seams, piping, dimples and chaise. V3.77 (N153): a phone draws the living room 181
+times a frame (was 216); V3.76's bulb glow no longer adds a shader to the first picture. V3.76 (N154): lit ceiling bulbs (N116), finer
+artex (N110), this file under 150 lines. V3.75 (N132–N134): the sofa bed true to its Amazon listing; take out and put back; cards.
+The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.78 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 20 (12 Nov: the upgrade review, N135–N156 in streams A–G). A new team starts with

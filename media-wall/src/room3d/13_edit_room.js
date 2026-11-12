@@ -82,7 +82,9 @@ function placeAll() {
     const L = S.layout[it.id] || {}, p = spotOf(it.id);
     it.pivot.position.copy(v3(p.x, 0, p.z)); it.pivot.rotation.y = p.rot * Math.PI / 180;
     it.pivot.visible = !L.off && (!it.when || it.when());
-    it.mats.forEach((m, i) => m.color.set(L.col && i === 0 ? L.col : it.base[i]));
+    const col = L.col || (it.follow && (S.layout[it.follow] || {}).col);   // V3.78 (N135): a piece can follow another's colour (the chaise, the sofa bed's)
+    it.mats.forEach((m, i) => m.color.set(col && i === 0 ? col : it.base[i]));
+    for (const [m, k] of it.tints || []) m.color.copy(it.mats[0].color).multiplyScalar(k);   // its seams and dimples, a shade of its cloth
   }
   if (selBox) selBox.update();
   reshadow();
@@ -450,7 +452,7 @@ function editPanel() {
   qsa(".r3d-nudge").forEach(b => b.hidden = !!it.fixed);
   qsa("[data-sel=remove]").forEach(b => b.hidden = false);
   qs("#r3d-selcol").parentElement.hidden = !it.mats.length;
-  if (it.mats.length) qs("#r3d-selcol").value = L.col || it.base[0];
+  if (it.mats.length) qs("#r3d-selcol").value = L.col || (it.follow && (S.layout[it.follow] || {}).col) || it.base[0];
 }
 function setEdit(on) {
   S.edit = on; root.classList.toggle("editing", on);
