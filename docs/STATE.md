@@ -3,11 +3,11 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V3.91 (12 Nov 2026). V3.91 (N150): drag a piece in any room from its Move or resize card. V3.90 (N151): As
-it is, the house without your colours and changes. V3.89 (N148): Room's panel shorter. V3.88 (N146): a card beside its piece.
-V3.87 (N145): Edit light on the room. V3.86, V3.85 (N139, N136): the sofas and the ottoman upholstered. V3.84, V3.83 (N140):
-the options' and + Add's materials, the lift-top on its legs.
-The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.91 ↻"): on the
+**Version:** V3.92 (12 Nov 2026). V3.92 (N143): soft cloud in the sky. V3.91 (N150): drag a piece in any room from its
+Move or resize card. V3.90 (N151): As it is. V3.89 (N148): Room's panel shorter. V3.88 (N146): a card beside its piece. V3.87
+(N145): Edit light on the room. V3.86, V3.85 (N139, N136): the sofas and the ottoman upholstered. V3.84, V3.83 (N140): the
+options' and + Add's materials, the lift-top on its legs.
+The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.92 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 20 (12 Nov: the upgrade review, N135–N156 in streams A–G). A new team starts with
@@ -67,7 +67,8 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 - The artex finer and softer (V3.76). Floors and tiles made here: laminate planks, marble, metro, herringbone, LVT, porcelain.
 - Doors' painted grain, gloss brush strokes, uPVC's peel. Frosted glass glows by day. Mirrors reflect the room in HD standing still.
 - Room views sit on the page's cream, not black.
-- Outside: a real sky, a patchwork lawn, the back garden as its photos, a stand-in street out front (not the real one).
+- Outside: a real sky with soft cloud (V3.92), a patchwork lawn, the back garden as its photos, a stand-in street out front
+  (not the real one).
 
 **Change the house** (`23_finish.js`, `docs/NOTES.md` section 5 for Look's rows):
 - Tap a wall, ceiling or floor for its colours card: paints, floors, bulbs and fittings, rug, curtains, bedding, a picture, a plant,
