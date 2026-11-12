@@ -50,14 +50,22 @@ function cushGeo(w, h, d, crown = 1.2, bulge = 0.8, r = 3, lie = 0.25) {   // cm
     const ax = Math.abs(nr.getX(i)), ay = Math.abs(nr.getY(i)), az = Math.abs(nr.getZ(i)), X = p.getX(i) / T, Y = p.getY(i) / T, Z = p.getZ(i) / T;
     if (ay >= ax && ay >= az) uv.setXY(i, X, Z); else if (ax >= az) uv.setXY(i, Z, Y); else uv.setXY(i, X, Y);
   }
+  /* V3.81 (N137): the shade where a cushion meets what it rests on and its neighbours, in its own vertices (a colour the cloth's is
+     multiplied by): its underside 0.55, its sides dark at the foot and clear by 60% up, its top untouched. On every path, so the cushions
+     sit as GTAO makes them sit on a big card (the gaps between them, under the seats' fronts, where the backs meet the seats); no draw */
+  const col = new Float32Array(p.count * 3);
+  for (let i = 0; i < p.count; i++) { const t = Math.min(1, Math.max(0, (p.getY(i) + H[1]) / (2 * H[1]) / 0.6)), k = nr.getY(i) < -0.6 ? 0.55 : 0.68 + 0.32 * t * t * (3 - 2 * t);
+    col[i * 3] = col[i * 3 + 1] = col[i * 3 + 2] = k; }
+  g.setAttribute("color", new THREE.BufferAttribute(col, 3));
   return g;
 }
 function cush(g, x, y, z, w, h, d, mat, crown, bulge, r) {      // a cushion in a movable's own coordinates: x, z its centre, y its bottom
-  const m = new THREE.Mesh(cushGeo(w, h, d, crown, bulge, r), mat); m.position.copy(v3(x, y + h / 2, z)); g.add(shadow(m)); return m;
+  const q = cushGeo(w, h, d, crown, bulge, r); if (!mat.vertexColors) q.deleteAttribute("color");   // V3.81 (N137): the shade only where the cloth takes it (the feet's steel merges with plain boxes)
+  const m = new THREE.Mesh(q, mat); m.position.copy(v3(x, y + h / 2, z)); g.add(shadow(m)); return m;
 }
 function tufts(g, pts, mat) {                                       // [x, y, z] in a movable's coordinates: one mesh of sunk buttons
   const geos = pts.map(([x, y, z]) => { const b = new THREE.SphereGeometry(0.01, 8, 5); b.scale(1, 0.35, 1); const p = v3(x, y, z); b.translate(p.x, p.y, p.z); return b; });
-  if (!geos.length) return null; const m = new THREE.Mesh(mergeGeometries(geos), mat); g.add(m); return m;
+  if (!geos.length) return null; const m = new THREE.Mesh(vcol(mergeGeometries(geos), mat), mat); g.add(m); return m;
 }
 function buildSofaBed() {
   /* V3.73, client: "an exact replica of the item I shared with you in look and size ... the lift up and out to get it out the storage then
@@ -66,7 +74,7 @@ function buildSofaBed() {
      seat and a seat facing in), the loose chaise on the end; rounded upholstery throughout, the backs piped, square black feet */
   const B = R.SOFABED, so = R.SOFA; if (!B || !so) return;
   // V3.74: the chenille's own weave and heather (02 CHENILLE), a soft sheen at the edges as the pile catches the light
-  const chen = (c, k) => reg(new THREE.MeshPhysicalMaterial({ color: c, roughness: 0.92, sheen: k, sheenRoughness: 0.45, sheenColor: new THREE.Color("#d4e0b0"), map: CHENILLE, bumpMap: CHENILLE_B, bumpScale: 0.7 }));
+  const chen = (c, k) => reg(new THREE.MeshPhysicalMaterial({ color: c, roughness: 0.92, sheen: k, sheenRoughness: 0.45, sheenColor: new THREE.Color("#d4e0b0"), map: CHENILLE, bumpMap: CHENILLE_B, bumpScale: 0.7, vertexColors: true }));   // V3.81 (N137): the cushions' own shade
   const fab = chen(B.col, 0.9), seam = chen(new THREE.Color(B.col).multiplyScalar(0.62), 0.5);   // the chenille; its seams, a shade down
   const dimp = chen(new THREE.Color(B.col).multiplyScalar(0.8), 0.4);   // V3.75: the tufts are dimples in the cloth, as the photos (dark buttons read as dots)
   const steel = reg(new THREE.MeshStandardMaterial({ color: "#1e1e20", roughness: 0.4, metalness: 0.6 }));   // the feet and the bed's frame
@@ -133,7 +141,7 @@ function buildSofaBed() {
   const bw = xa - xc - 2, ud = B.bed_out, uz0 = hd - ud, top0 = base - 1.5, rise = sh - top0, over = B.bed_over;
   cush(bed, mid, 4, hd - 2, bw, top0 - 4.5, 4, fab, 0, 0.3, 1.2);
   pipe(bed, mid, top0 - 1, hd + 0.1, bw - 6, seam, true);
-  for (const dx of [-0.25, 0.25]) { const lp = new THREE.Mesh(new THREE.TorusGeometry(0.035, 0.007, 6, 14, Math.PI), fab);
+  for (const dx of [-0.25, 0.25]) { const lp = new THREE.Mesh(vcol(new THREE.TorusGeometry(0.035, 0.007, 6, 14, Math.PI), fab), fab);
     lp.position.copy(v3(mid + dx * bw, top0 - 3, hd + 0.6)); lp.rotation.z = Math.PI; lp.scale.y = 2.6; bed.add(shadow(lp)); }
   for (const dx of [-1, 1]) { lb(bed, mid + dx * (bw / 2 - 6), 0, hd - 6, 3.2, 4, 3.2, steel); lb(bed, mid + dx * (bw / 2 - 3), 6, (uz0 + hd - 4) / 2, 2, 2, ud - 6, steel, false); }
   cush(top, mid, 14, (uz0 + hd - 4) / 2, bw - 2, top0 - 14, ud - 4, fab, 1.2, 0.6, 3);
@@ -166,7 +174,7 @@ function buildSofaBed() {
   for (const [x, z, w_, d_] of [[0, -(C.d - 6.5) / 2, C.w - 6.4, 0.3], [0, (C.d - 6.5) / 2, C.w - 6.4, 0.3], [-(C.w - 6.5) / 2, 0, 0.3, C.d - 6.4], [(C.w - 6.5) / 2, 0, 0.3, C.d - 6.4]])
     lb(c, x, bodyH - 22, z, w_, 22, d_, lining, false);
   lb(c, 0, bodyH - 22, 0, C.w - 6.2, 0.3, C.d - 6.2, lining, false);
-  { const lp = new THREE.Mesh(new THREE.TorusGeometry(0.03, 0.006, 6, 14, Math.PI), fabC); lp.position.copy(v3(-C.w / 2 + 22, bodyH - 4, C.d / 2 + 0.7)); lp.rotation.z = Math.PI; lp.scale.y = 1.8; c.add(shadow(lp)); }
+  { const lp = new THREE.Mesh(vcol(new THREE.TorusGeometry(0.03, 0.006, 6, 14, Math.PI), fabC), fabC); lp.position.copy(v3(-C.w / 2 + 22, bodyH - 4, C.d / 2 + 0.7)); lp.rotation.z = Math.PI; lp.scale.y = 1.8; c.add(shadow(lp)); }
   const hinge = new THREE.Group(); hinge.position.copy(v3(0, bodyH, -C.d / 2)); c.add(hinge);
   cush(hinge, 0, 0, C.d / 2, C.w, lidH, C.d, fabC, 1.4, 0.8, 3.5);
   pipe(hinge, 0, 0.6, C.d + 0.2, C.w - 6, seamC, true);

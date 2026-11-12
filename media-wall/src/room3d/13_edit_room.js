@@ -4,14 +4,17 @@
    the things you add live in S.added. The red lamp is rebuilt where you drop it, so its lights move with it. */
 const MOV = {};
 const movers = new THREE.Group(); scene.add(movers);
+/* V3.81 (N137): a material that takes its shade from its vertices (the sofa bed's cloth) needs a colour on every shape it's on (white:
+   none), or that shape draws black; and shapes merge only with the same attributes */
+function vcol(geo, mat) { if (mat && mat.vertexColors && !geo.attributes.color) geo.setAttribute("color", new THREE.Float32BufferAttribute(new Float32Array(geo.attributes.position.count * 3).fill(1), 3)); return geo; }
 function rlb(g, x, y, z, w, h, d, mat, r = 3) {           // v32: the same, its edges rounded (upholstery)
-  const m = new THREE.Mesh(new RoundedBoxGeometry(w * M, h * M, d * M, 3, Math.min(r, w / 2.2, h / 2.2, d / 2.2) * M), mat);
+  const m = new THREE.Mesh(vcol(new RoundedBoxGeometry(w * M, h * M, d * M, 3, Math.min(r, w / 2.2, h / 2.2, d / 2.2) * M), mat), mat);
   m.position.copy(v3(x, y + h / 2, z)); g.add(shadow(m)); return m;
 }
 function fabric(m, k = 0.6) { m.roughness = 0.95; m.bumpMap = HESSIAN; m.bumpScale = k; return m; }   // v34: a woven cover (its colour stays Edit room's)
 function fabricMat(c) { return fabric(reg(new THREE.MeshStandardMaterial({ color: c }))); }
 function pipe(g, x, y, z, len, mat, across = false) {      // v34: piping along an upholstered edge (along z, or across x)
-  const p = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, len * M, 8), mat); p.position.copy(v3(x, y, z));
+  const p = new THREE.Mesh(vcol(new THREE.CylinderGeometry(0.006, 0.006, len * M, 8), mat), mat); p.position.copy(v3(x, y, z));
   if (across) p.rotation.z = Math.PI / 2; else p.rotation.x = Math.PI / 2;
   g.add(p); return p;
 }
@@ -19,7 +22,7 @@ function taperLeg(g, x, z, h, mat) {                        // v32: a round tape
   const l = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.011, h * M, 12), mat); l.position.copy(v3(x, h / 2, z)); g.add(shadow(l)); return l;
 }
 function lb(g, x, y, z, w, h, d, mat, cast = true) {      // a box in a movable's own coordinates: x, z its centre, y its bottom
-  const m = new THREE.Mesh(new THREE.BoxGeometry(w * M, h * M, d * M), mat);
+  const m = new THREE.Mesh(vcol(new THREE.BoxGeometry(w * M, h * M, d * M), mat), mat);
   m.position.copy(v3(x, y + h / 2, z)); g.add(shadow(m, cast)); return m;
 }
 /* v22: fewer draws: a static group's direct child meshes become one mesh per material (your plant stand was 152 meshes, the vinyl stand 45).
@@ -52,7 +55,8 @@ function restMerge(g, live, skip = []) {
     const k = o.material.uuid + (o.castShadow ? "c" : "") + (o.receiveShadow ? "r" : ""); if (!by.has(k)) by.set(k, []); by.get(k).push(o); });
   const rest = new THREE.Group();
   for (const list of by.values()) {
-    const geos = list.map(o => { const q = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone(); for (const n of Object.keys(q.attributes)) if (!["position", "normal", "uv"].includes(n)) q.deleteAttribute(n);
+    const geos = list.map(o => { const q = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone(); for (const n of Object.keys(q.attributes)) if (!["position", "normal", "uv", "color"].includes(n) || (n === "color" && !o.material.vertexColors)) q.deleteAttribute(n);
+      vcol(q, o.material);
       if (!q.attributes.uv) q.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(q.attributes.position.count * 2), 2));
       if (!q.attributes.normal) q.computeVertexNormals();
       q.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, o.matrixWorld)); return q; });
