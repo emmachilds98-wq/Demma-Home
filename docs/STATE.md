@@ -3,11 +3,11 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V3.88 (12 Nov 2026). V3.88 (N146): a card beside its piece on a PC; a phone's card swipes down to close.
-V3.87 (N145): Edit light on the room: one bar, the piece's tools over the dock, a turn handle and its size on the piece. V3.86
-(N139), V3.85 (N136): your sofa, the ottoman and the sofa bed upholstered (piping, dimples). V3.84, V3.83 (N140): the options'
-and + Add's materials, the lift-top on its legs. V3.82 (N138): make up the sofa bed.
-The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.88 ↻"): on the
+**Version:** V3.89 (12 Nov 2026). V3.89 (N148): Room's panel shorter: Set it for, The sofa, Taken out, one row of
+switches, one More. V3.88 (N146): a card beside its piece; a phone's card swipes down to close. V3.87 (N145): Edit light on the
+room (one bar, a turn handle and size on the piece). V3.86, V3.85 (N139, N136): the sofas and the ottoman upholstered. V3.84,
+V3.83 (N140): the options' and + Add's materials, the lift-top on its legs.
+The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.89 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 20 (12 Nov: the upgrade review, N135–N156 in streams A–G). A new team starts with
@@ -87,7 +87,8 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 - Edit: one bar (Done · + Add · Undo, ⋯); drag a piece, turn it by its ⟳ handle (its size shows over it), nudge, recolour,
   Take it out from its sheet over the dock (V3.87); + Add has the catalogue and what's out at its head.
 - Any piece standing in the room has Take it out on its card. Room → Taken out lists what's out, a tap each to put it back.
-- Room's set-ups, Try options, Save my plan, Watch it open (the dining cabinet, the sofa bed).
+- Room: Set it for, The sofa, Taken out, then the table · Drawers out · Top up in one row; the rest under More (V3.89).
+  Try options, Save my plan, Watch it open (the dining cabinet, the sofa bed).
 - Its lights are layered (`geometry.LIGHT_AIMS`); each spot bar turns and each head aims, dims and colours from its card.
 - Plan · Build · Buy: the plan, the build guide and the buy list for the media wall, PDFs on the site.
 

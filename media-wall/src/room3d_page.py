@@ -568,7 +568,7 @@ def measure_panel():
 # opens the bubble row; a bubble opens its panel. The last tab is remembered (mw22-drawer); Esc and the pill close it.
 DRAWER_JS = """(() => { const r = document.getElementById("r3d"); if (!r) return;
   const K = "mw22-drawer", tabs = [...r.querySelectorAll("[data-drawer]")], panel = document.getElementById("r3d-panel"), btns = [...document.querySelectorAll("[data-tools-toggle]")];
-  let cur = "room", shown = ""; try { cur = localStorage.getItem(K) || "room"; } catch (e) {}
+  let cur = "room", shown = ""; const SCR = {}; try { cur = localStorage.getItem(K) || "room"; } catch (e) {}
   if (cur === "lights") cur = "views";                                   // v37: the lights moved into Views
   if (cur === "layout" || cur === "extras") cur = "room";                // v39: Layout and Extras are Room
   if (!tabs.some(t => t.dataset.drawer === cur)) cur = "room";
@@ -577,11 +577,11 @@ DRAWER_JS = """(() => { const r = document.getElementById("r3d"); if (!r) return
   const showing = () => !panel.hidden;
   const show = k => { cur = k; tabs.forEach(t => { const on = t.dataset.drawer === k; t.setAttribute("aria-selected", String(on)); t.tabIndex = on || panel.hidden ? 0 : -1;
       document.getElementById("r3d-dp-" + t.dataset.drawer).hidden = !on; });
-    const sc = panel.querySelector(".r3d-pscroll"); if (sc && k !== shown) sc.scrollTop = 0; shown = k;
+    const sc = panel.querySelector(".r3d-pscroll"); if (sc && shown && !panel.hidden) SCR[shown] = sc.scrollTop; shown = k;   // V3.89 (N148): each panel opens where you left it
     if (typeof arts === "function") arts(document.getElementById("r3d-dp-" + k));
-    panel.hidden = false; panel.setAttribute("aria-labelledby", "r3d-dt-" + k); try { localStorage.setItem(K, k); } catch (e) {} };
+    panel.hidden = false; if (sc) sc.scrollTop = SCR[k] || 0; panel.setAttribute("aria-labelledby", "r3d-dt-" + k); try { localStorage.setItem(K, k); } catch (e) {} };
   const open = k => { sync(true); show(k || cur); window.dispatchEvent(new CustomEvent("demma-tools", { detail: true })); };
-  const close = () => { sync(false); panel.hidden = true; tabs.forEach(t => { t.setAttribute("aria-selected", "false"); t.tabIndex = 0; }); window.dispatchEvent(new CustomEvent("demma-tools", { detail: false })); };
+  const close = () => { const sc = panel.querySelector(".r3d-pscroll"); if (sc && shown && !panel.hidden) SCR[shown] = sc.scrollTop; sync(false); panel.hidden = true; tabs.forEach(t => { t.setAttribute("aria-selected", "false"); t.tabIndex = 0; }); window.dispatchEvent(new CustomEvent("demma-tools", { detail: false })); };
   window.DemmaTools = { open, close, toggle() { r.classList.contains("tools-open") ? close() : open(); }, isOpen: () => r.classList.contains("tools-open") };
   document.addEventListener("click", e => { if (e.target.closest("[data-tools-toggle]")) window.DemmaTools.toggle(); });   // the phone's bottom bar comes later in the page
   // v32: the bubbles are always on the room: one opens its panel (and marks the tools open), the open one again closes it
@@ -783,17 +783,17 @@ def controls(gallery=""):
             '<button type="button" data-moment="dinner">Dinner for six</button><button type="button" data-moment="film">Film night</button>'
             '<button type="button" data-moment="games">Games night</button><button type="button" data-moment="drinks">Drinks</button>'
             '<button type="button" data-moment="four">Lunch for four</button><button type="button" data-moment="morning">Morning</button></div></div>',
-            '<div class="r3d-roomsegs">',
             # V3.71, client: "interchange my current sofa and ottoman with this sofabed ... make the ui to switch between the sofa designs easy to find"
             seg("sofa", [("mine", "Yours"), ("bed", "Green sofa bed")], "The sofa",
                 '<button type="button" class="chip" data-showopen="bed"><span class="ms" aria-hidden="true">play_arrow</span> Watch the bed open</button>'),
-            seg("dining", [("folded", "Folded"), ("four", "Four"), ("six", "Six")], "The table"),
-            seg("drawers", [("in", "In"), ("out", "Out")], "Media wall drawers"),
-            seg("ctop", [("down", "Down"), ("up", "Up")], "Coffee table top" if "liftcoffee" in G.FIRM["sugg"] else "Record table lid"),   # V3.75: the lift-top's the plan's
-            '</div>',
             # V3.75, client: "Make sure anything that I can remove can be re added via the ui menu": what's out of the room, a tap each to put back
             '<div class="grp r3d-outrow" id="r3d-outrow" hidden><span class="label">Taken out</span><div class="seg r3d-outl" id="r3d-outl"></div></div>',
-            '<details class="r3d-more r3d-fold"><summary>More: the table doors, the curtains</summary>',
+            # V3.89 (N148): the table, the media wall's drawers and the coffee table's top in one row of switches (V3.75: the lift-top's the plan's)
+            '<div class="grp"><span class="label">The table, drawers and top</span><div class="seg r3d-switchrow" role="group" aria-label="The table, the drawers and the coffee table">'
+            '<button type="button" data-dining="folded" aria-pressed="false">Folded</button><button type="button" data-dining="four" aria-pressed="false">Four</button>'
+            '<button type="button" data-dining="six" aria-pressed="false">Six</button><button type="button" data-flip="drawers" aria-pressed="false">Drawers out</button>'
+            f'<button type="button" data-flip="ctop" aria-pressed="false">{"Top up" if "liftcoffee" in G.FIRM["sugg"] else "Lid up"}</button></div></div>',
+            '<details class="r3d-more r3d-fold"><summary>More: doors, curtains, options and ideas</summary>',
             seg("cabw", [("90", f"{G.CAB['top'][0]:g} wide (the plan)"), ("80", f"{G.CAB80['top'][0]:g} wide, four chairs")], "The table's width"),
             seg("tdoor", [("shut", "Shut"), ("open", "Open")], "The table door"),
             seg("chairs", [("cupboard", "Shut"), ("open", "Open")], "The chair door"),
@@ -801,8 +801,6 @@ def controls(gallery=""):
             seg("foot", [("off", "Hide"), ("on", "Show")], "The floor it needs, open"),
             '<div class="grp"><div class="seg"><button type="button" data-tog="curtains" aria-pressed="false">Curtains drawn</button></div></div>',
             BESIDE_SEG,
-            '</details>',
-            '<details class="r3d-more r3d-fold" id="r3d-optfold"><summary>Options and ideas</summary>',
             opts_html(), picks, ideas_g, sugg_g,
             '<p class="caption"><button type="button" class="chip" data-nav="ideas">Every idea, with pictures</button></p></details>',
             # v39, item 13: "Save my plan"; v50, client: "Improve the save copy paste criteria and selection to get better info ... now
