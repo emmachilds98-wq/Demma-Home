@@ -202,6 +202,46 @@ window.addEventListener("demma-rows", e => { if (e.detail !== "edits") return; s
 const cmR = v => Math.round(v * 10) / 10;
 const clampF = (f, v) => Math.max(f === "along" || f === "up" || f === "out" ? -500 : 1, Math.min(1000, v));
 function selOf(id) { const it = HIT(id); if (!it) { clearSel(); return; } const c = pieceNow(id); selPiece({ box: pieceBox(id), label: `${Math.round(c.w)} × ${Math.round(c.h)}` }); }
+/* V3.91 (N150), the plan's section 20: drag a piece in any room. With its Move or resize card open, a press on the piece (its outline
+   on screen, a finger's width round it) drags it over the floor: along its wall and out from it, as the card's steppers do (a door or a
+   window along its wall only); within 15 cm of its room's wall it goes against it. The outline follows the finger; let go and Measure's
+   rows take it, as a typed size does (the card, Measure and Send stay in step) */
+let hdrag = null;
+function hdragOn(e, id) {
+  const bx = wbox(pieceBox(id)), r = canvas.getBoundingClientRect(), pad = e.pointerType === "touch" ? 28 : 10; let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;
+  for (let i = 0; i < 8; i++) { const v = new THREE.Vector3(i & 1 ? bx.max.x : bx.min.x, i & 2 ? bx.max.y : bx.min.y, i & 4 ? bx.max.z : bx.min.z).project(camera); if (v.z > 1) return false;
+    const x = r.left + (v.x + 1) / 2 * r.width, y = r.top + (1 - v.y) / 2 * r.height; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); }
+  return e.clientX > x0 - pad && e.clientX < x1 + pad && e.clientY > y0 - pad && e.clientY < y1 + pad;
+}
+function hfloorAt(e, y) { ray.setFromCamera(ndc(e), camera); const p = new THREE.Vector3(); return ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -y), p) ? { x: -p.x / M, z: p.z / M } : null; }
+root.addEventListener("pointerdown", e => {
+  if (S.edit || e.target !== canvas || e.button > 0 || !e.isPrimary || !actId || !String(actId).startsWith("hsize:")) return;
+  const id = actId.slice(6), it = HIT(id); if (!it || !DS() || !hdragOn(e, id)) return;
+  const b0 = pieceBox(id), f = hfloorAt(e, b0[1] * M); if (!f) return;
+  const c = pieceNow(id); hdrag = { id, f, b0, along: c.along, out: c.out, k: it.ax === "z" ? 2 : 0, x: e.clientX, y: e.clientY, moved: false, dA: 0, dO: 0 };
+  e.stopPropagation(); canvas.setPointerCapture(e.pointerId);
+}, true);
+canvas.addEventListener("pointermove", e => {
+  const D = hdrag; if (!D) return;
+  if (!D.moved && Math.hypot(e.clientX - D.x, e.clientY - D.y) < 4) return;
+  const f = hfloorAt(e, D.b0[1] * M); if (!f) return; D.moved = true;
+  const it = HIT(D.id), ko = 2 - D.k, d = [0, 0, 0]; d[D.k] = (D.k === 2 ? f.z - D.f.z : f.x - D.f.x); if (!it.op) d[ko] = (ko === 2 ? f.z - D.f.z : f.x - D.f.x);
+  const r = (R.HOUSE3.rooms || {})[it.r], b = D.b0.slice(); b[0] += d[0]; b[3] += d[0]; b[2] += d[2]; b[5] += d[2];
+  if (r && !it.op) { const snap = (lo, hi, r0, r1) => Math.abs(lo - r0) < 15 ? r0 - lo : Math.abs(r1 - hi) < 15 ? r1 - hi : 0;   // against its room's wall within 15 cm
+    const sx = snap(b[0], b[3], r[0], r[1]), sz = snap(b[2], b[5], r[2], r[3]); d[0] += sx; d[2] += sz; }
+  D.dA = Math.round(d[D.k]); D.dO = it.op ? 0 : Math.round(d[ko]);
+  if (SEL.g) { const q = [0, 0, 0]; q[D.k] = D.dA; q[ko] = D.dO; SEL.g.position.set(-q[0] * M, 0, q[2] * M); }   // the outline where it'll go
+  dirty();
+});
+async function hdragEnd() {
+  const D = hdrag; if (!D) return; hdrag = null;
+  if (!D.moved || (!D.dA && !D.dO)) { if (SEL.g) SEL.g.position.set(0, 0, 0); dirty(); return; }
+  if (D.dA) await setPiece(D.id, "along", clampF("along", cmR(D.along + D.dA)));
+  if (D.dO) await setPiece(D.id, "out", clampF("out", cmR(D.out + D.dO)));
+  if (actId === "hsize:" + D.id) renderAct();
+}
+canvas.addEventListener("pointerup", hdragEnd);
+canvas.addEventListener("pointercancel", () => { if (hdrag) { hdrag = null; if (SEL.g) SEL.g.position.set(0, 0, 0); dirty(); } });
 const pieceLine = id => { const it = HIT(id), c = pieceNow(id), ed = pieceDelta(id).some(Boolean);
   const cl = clashes(id);   // V2.46: the fit check, on the card
   return `${cmR(c.w)} wide, ${cmR(c.h)} high` + (it.look && !c.up ? "" : `, ${cmR(c.up)} up`) + (cl.length ? ` · in the way of ${cl.slice(0, 2).join(" and ").replace(/^The /, "the ").replace(/ and The /, " and the ")}` : it.look ? ` · ${roomName(it.look)}'s plant` : it.add ? " · added by you" : ed ? " · changed by you" : it.g ? " · a guess: measure it" : ""); };
