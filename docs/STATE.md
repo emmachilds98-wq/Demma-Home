@@ -3,11 +3,12 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.3 (12 Nov 2026). V4.3 (N167): bedroom 3's two artisan oak cube shelves and the oak flip-up table under them.
+**Version:** V4.4 (12 Nov 2026). V4.4 (N141, its half without KTX2): the sofa bed's chenille made at build, not drawn at
+every load; the curtains', leather's and living room's photos re-saved (photos 7.7 to 7.5 MB). V4.3 (N167): bedroom 3's two artisan oak cube shelves and the oak flip-up table under them.
 V4.2 (N159, N166): the house framed to the screen; the budgets lowered. V4.1 (N157, N158): the house on its own unless Gardens or
 Next door is on; a PC's drag swings the view the way you drag. V4.0 (N162): Home Plan V4. V3.93 (N147): Decide's choices show the
 place. V3.92 (N143): soft cloud in the sky. V3.91 (N150): drag a piece in any room.
-The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.3 ↻"): on the
+The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.4 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 21 (12 Nov: Home Plan V4, the house on its own, its real surroundings, the views). A new team starts with
@@ -107,7 +108,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 - A piece with moving parts draws as one mesh a material while they rest (`restMerge`, V3.77).
 
 ## Numbers (CI's software graphics: relative, not a real card's)
-- `sizes`: page 1.1 MB, photos 8.0 MB in 94 files (budget 8.7), three.js 0.86 MB.
+- `sizes`: page 1.1 MB, photos 7.5 MB in 96 files (budget 8.7), three.js 0.86 MB.
 - From `_shots/perf.json` (V3.75; the phone's living room 181 since V3.77), budget in brackets:
 
   | Path | Draws, house | Draws, living room | Shaders, first picture |

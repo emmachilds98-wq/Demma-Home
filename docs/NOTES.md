@@ -210,7 +210,8 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   group sits at the back frame's front top edge (`back_h` 81, the run's `-hd + t`, the side's `xi`); the pad hangs back from it with `over`
   in front; `rotation.x` (the run) or `rotation.z` (the side) by `up` lifts the back of the pad, so its foot dips behind the back cushion.
   `head_up_h` (106) is the raised top; `clash.py` checks it. The scissor links are their own group in the bed (`lk`, not merged), set each
-  frame from the top's rise (`linkAt`). The chenille (`02` `CHENILLE`, `CHENILLE_B`) is per-pixel ImageData: 4 px loops (1.6 mm), a twill
+  frame from the top's rise (`linkAt`). The chenille (`02` `CHENILLE`, `CHENILLE_B`; since V4.4 made by `build_textures.py --fabrics`
+  as `chenille_map` and `chenille_pile_map`, pixel for pixel the old drawing, loaded with the photos on every device): 4 px loops (1.6 mm), a twill
   `sin((x + y)π/4)`, sines for the mottle so it tiles (any random block or row reads at room distance). The colour is drawn greener and
   greyer than the photos (`#586b4c`): the room's warm light turns a green about 25° yellower. Tufts take `dimp` (the cloth × 0.8), not `seam`.
 - **As it is** (V3.90 N151, `23_finish.js` `nowMode`): `NOWV` (08) set aside, never changed: `finHold` holds the colours (the living
