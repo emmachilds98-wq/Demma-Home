@@ -225,7 +225,7 @@ function mapCentre(e) {
    so that after its AgX and exposure it comes out the same cream as on Fast. The whole house and the rooms from inside keep theirs */
 const BACKDROP = { day: "#f1e9da", evening: "#6b645a" };
 const BD = { on: false, key: "", saved: new THREE.Color(), want: new THREE.Color(), set: new THREE.Color() };
-const backdropView = () => !walking() && (LIVV() ? S.view === "room" || S.view === "livalone" : !!ROOMV() && (RMODE === "above" || RMODE === "alone"));
+const backdropView = () => !walking() && (LIVV() ? S.view === "room" || S.view === "livalone" : !!ROOMV() && (RMODE === "above" || RMODE === "alone") || S.view === "house" && hfloor !== "all");   // V3.79 (N144): a floor on its own too (it sat on the sky's blue)
 function agxIn(c, e) {   // the colour that three's AgX (r160) at exposure e turns into c (linear), by a few steps of Newton's kind
   const mv = (m, v) => [0, 1, 2].map(i => m[i] * v[0] + m[3 + i] * v[1] + m[6 + i] * v[2]);   // GLSL mat3 (by columns) times v
   const R = [0.6274, 0.0691, 0.0164, 0.3293, 0.9195, 0.0880, 0.0433, 0.0113, 0.8956], S2 = [1.6605, -0.1246, -0.0182, -0.5876, 1.1329, -0.1006, -0.0728, -0.0083, 1.1187];

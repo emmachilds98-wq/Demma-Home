@@ -3,11 +3,11 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V3.78 (12 Nov 2026). V3.78 (N135): the sofa bed's green as the listing's photos in HD (all the client's devices; it read
-pale mint), and a colour picked in Edit reaches its seams, piping, dimples and chaise. V3.77 (N153): a phone draws the living room 181
-times a frame (was 216); V3.76's bulb glow no longer adds a shader to the first picture. V3.76 (N154): lit ceiling bulbs (N116), finer
-artex (N110), this file under 150 lines. V3.75 (N132–N134): the sofa bed true to its Amazon listing; take out and put back; cards.
-The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.78 ↻"): on the
+**Version:** V3.79 (12 Nov 2026). V3.79 (N144): the phone's top rows fade at whichever end has more, the chosen floor slides into view,
+Gardens and Next door are icons on a phone; a floor on its own on the page's backdrop. V3.78 (N135): the sofa bed's green as the
+listing in HD; Edit's colour reaches its seams and chaise. V3.77 (N153): the living room 181 draws on a phone (was 216). V3.76 (N154):
+lit ceiling bulbs, finer artex. V3.75 (N132–N134): the sofa bed true to its listing; take out and put back; cards.
+The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.79 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 20 (12 Nov: the upgrade review, N135–N156 in streams A–G). A new team starts with
@@ -45,6 +45,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 **The frame (the old design):**
 - A cream first screen, then the whole house; a welcome card once a device (Walk in · Look round; the name brings it back).
 - Pills over the 3D: the brand, Plan · Build · Buy; two rows at most under them (views, floors, Whole house, Hide); a floor's rooms.
+  A row with more to slide to fades at that end; the chosen floor slides into view (V3.79).
 - The dock: View · Look · Measure (in the living room also Room and Edit); the figure drops you in where you let go.
 - On a phone the stick, bottom left, walks, moves the map or glides, by view; a card or panel puts it away.
 - Back, Esc and Tab each go one layer at a time; every tap is 44 px on a touch screen; the panels are cream.

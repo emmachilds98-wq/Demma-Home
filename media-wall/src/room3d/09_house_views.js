@@ -286,7 +286,7 @@ function applyFloors() {
   livClip(!!(houseG && houseG.visible && R.HOUSE3 && S.view === "livstand"));
   roomCull(false);
   drawRooms(); brandPlace(); outdoor();
-  requestAnimationFrame(() => { measureShift(!!(window.DemmaTools && window.DemmaTools.isOpen())); fadeRows(); });   // V1.30: the rows above may have changed
+  requestAnimationFrame(() => { measureShift(!!(window.DemmaTools && window.DemmaTools.isOpen())); fadeRows(true); });   // V1.30: the rows above may have changed
   dirty();
 }
 /* V2.71 (REAL_PLAN N16), the client: "minimise movement and view lag when moving in first person": standing in a room, of the floors
@@ -401,7 +401,12 @@ function livClip(on) {
     if (CLIPSRC.get(m) !== P || m.clipIntersection !== (P === LIVCLIP)) houseClip(m, P, P === LIVCLIP); }
 }
 /* V1.30 (U3): a row with more to slide to fades at its right edge */
-function fadeRows() { qsa(".r3d-floors:not(.r3d-rmode)").forEach(el => el.classList.toggle("more", el.scrollWidth - el.clientWidth - el.scrollLeft > 4)); }
+function fadeRows(show) {   // V3.79 (N144): a fade at either end with more; show: the chosen floor or room slid into view (never on a scroll: you're sliding)
+  qsa(".r3d-floors:not(.r3d-rmode)").forEach(el => {
+    if (show && el.scrollWidth > el.clientWidth) { const b = el.querySelector('button[aria-pressed="true"]:not(.tog)'); if (b) { const l = b.getBoundingClientRect().left - el.getBoundingClientRect().left + el.scrollLeft, r = l + b.offsetWidth;
+      if (l < el.scrollLeft + 8) el.scrollLeft = Math.max(0, l - 32); else if (r > el.scrollLeft + el.clientWidth - 8) el.scrollLeft = r - el.clientWidth + 40; } }
+    el.classList.toggle("more", el.scrollWidth - el.clientWidth - el.scrollLeft > 4); el.classList.toggle("less", el.scrollLeft > 4); });
+}
 document.addEventListener("scroll", e => { if (e.target.classList && e.target.classList.contains("r3d-floors")) fadeRows(); }, true);
 /* V1.2: the brand's second line says where you are: the whole house, a floor, a room */
 let hereRoom = null;                                   // V1.60: the room you stand in (walkRoom, goStand)
