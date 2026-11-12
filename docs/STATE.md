@@ -3,14 +3,13 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V3.92 (12 Nov 2026). V3.92 (N143): soft cloud in the sky. V3.91 (N150): drag a piece in any room from its
-Move or resize card. V3.90 (N151): As it is. V3.89 (N148): Room's panel shorter. V3.88 (N146): a card beside its piece. V3.87
-(N145): Edit light on the room. V3.86, V3.85 (N139, N136): the sofas and the ottoman upholstered. V3.84, V3.83 (N140): the
-options' and + Add's materials, the lift-top on its legs.
-The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.92 ↻"): on the
+**Version:** V3.93 (12 Nov 2026). V3.93 (N147): Decide's choices show the place they're about. V3.92 (N143): soft cloud
+in the sky. V3.91 (N150): drag a piece in any room. V3.90 (N151): As it is. V3.89 (N148): Room's panel shorter. V3.88 (N146): a
+card beside its piece. V3.87 (N145): Edit light on the room. V3.86, V3.85: the sofas upholstered. V3.84, V3.83: materials.
+The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.93 ↻"): on the
 home-screen app, tap it to get the newest.
 
-**Work from:** `docs/REAL_PLAN.md` section 20 (12 Nov: the upgrade review, N135–N156 in streams A–G). A new team starts with
+**Work from:** `docs/REAL_PLAN.md` section 20 (12 Nov: the upgrade review, N135–N156; done but for N141, N142, N152, on Emma). A new team starts with
 `docs/HANDOVER.md`. Section 9 has every earlier task's state.
 
 ## Where it lives

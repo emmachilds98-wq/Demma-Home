@@ -386,8 +386,9 @@ window.PICKS = (() => {
   function renderDecide() {
     const d = D[di], v = st.decide[d.key];
     txt("#dc-n", `${di + 1} of ${D.length}`); txt("#dc-h", d.title); txt("#dc-q", d.q); txt("#dc-buy", d.buy);
+    const place = d.options.find(x => x.art && DATA.img[x.art]);   // V3.93 (N147): a choice without its own picture shows the place it's about, not a yellow tile
     $("#dc-opts").innerHTML = d.options.map(o => {
-      const pic = o.art && DATA.img[o.art] ? `<img src="${DATA.img[o.art]}" alt="">` : o.swatch ? `<span class="sw" style="background:${o.swatch}"></span>` : `<span class="sw ic"><span class="ms" aria-hidden="true">toggle_on</span></span>`;
+      const pic = o.art && DATA.img[o.art] ? `<img src="${DATA.img[o.art]}" alt="">` : o.swatch ? `<span class="sw" style="background:${o.swatch}"></span>` : place ? `<img src="${DATA.img[place.art]}" alt="">` : `<span class="sw ic"><span class="ms" aria-hidden="true">toggle_on</span></span>`;
       return `<button type="button" role="radio" aria-checked="${o.v === v}" data-dv="${esc(o.v)}">${pic}<span class="dt"><b>${esc(o.label)}</b><span>${esc(o.note)}</span>${o.cost[1] > 0 ? `<em>+${rng(o.cost[0], o.cost[1])}</em>` : ""}</span></button>`; }).join("");
     $("#dc-prev").disabled = di === 0; txt("#dc-next", di === D.length - 1 ? "Done" : "Next");
   }
