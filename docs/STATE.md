@@ -3,12 +3,12 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V3.76 (12 Nov 2026). V3.76 (N154): the two PRs left from 11 Nov landed: the house's ceiling bulbs look lit with a faint
+**Version:** V3.77 (12 Nov 2026). V3.77: the bulbs' ceiling glow made the first time you stand in a room, so the first picture builds no shader for it (back inside the speed budget). V3.76 (N154): the two PRs left from 11 Nov landed: the house's ceiling bulbs look lit with a faint
 warm glow on the ceiling round them (N116, #231), and the artex ceilings finer and softer (N110, #232, its maps 384 to 182 KB); this
 file rewritten under 150 lines (N121, #236). V3.75 (N132–N134): the sofa bed true to its Amazon listing (five headrests that flip up on a
 hinge, its frame and pads to the drawing's 95, the photos' Blade Green, a chenille heather, a scissor lift); any living-room piece taken
 out and put back (Room → Taken out, Edit's + Add, the toast); cards by what each piece does.
-The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.76 ↻"): on the
+The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.77 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 20 (12 Nov: the upgrade review, N135–N156 in streams A–G). A new team starts with

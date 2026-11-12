@@ -98,10 +98,10 @@ function bulbHalos() {
     const me = new THREE.Mesh(geo, mat); me.position.copy(v3(L.x, L.y + 1.6, L.z)); me.renderOrder = 4; me.userData.halo = true; g.add(me); }
   return HALO;
 }
-function haloShow() {
-  const h = bulbHalos(); if (!h) return;
+function haloShow() {   // V3.77: the discs made only once first shown (made hidden at the start, the first picture's warm-up built their shader: one over the budget)
   const on = !!ROOMV() && (RMODE === "in" || RMODE === "stand") && !(HMATS && HMATS.ceiling && !HMATS.ceiling.visible), day = S.tod === "day";
-  h.mat.visible = on; if (!on) return;
+  if (!on) { if (HALO) HALO.mat.visible = false; return; }
+  const h = bulbHalos(); if (!h) return; h.mat.visible = true;
   h.mat.color.copy(warmColour()); h.mat.opacity = day ? 0.1 : 0.26;
 }
 /* v69, the client: "increasing the render quality to be more realistic like our living room version": in a room of the house, its
