@@ -213,6 +213,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   frame from the top's rise (`linkAt`). The chenille (`02` `CHENILLE`, `CHENILLE_B`) is per-pixel ImageData: 4 px loops (1.6 mm), a twill
   `sin((x + y)π/4)`, sines for the mottle so it tiles (any random block or row reads at room distance). The colour is drawn greener and
   greyer than the photos (`#586b4c`): the room's warm light turns a green about 25° yellower. Tufts take `dimp` (the cloth × 0.8), not `seam`.
+- **As it is** (V3.90 N151, `23_finish.js` `nowMode`): `NOWV` (08) set aside, never changed: `finHold` holds the colours (the living
+  room's own apart from the house's palette, which waits for the house), `applyHEdits({})` shows the house's pieces as drawn and
+  `storeEdits()` brings yours back, `placeAll` reads no layout while it's on. `store.set` skips the room's key while it's on;
+  `finPush` and `setEdit(true)` switch it off first.
 - **Edit's handle and sheet** (V3.87 N145, `13_edit_room.js` after `select`): `selOverlay()` places `#r3d-turnh` and `#r3d-selmeas`
   from the piece's box projected, a frame at a time while a piece is picked; the handle's drag turns round the box's middle on screen,
   its sign found by projecting the piece's front at two angles (so it follows the finger from any side), 15° a step, and on letting go

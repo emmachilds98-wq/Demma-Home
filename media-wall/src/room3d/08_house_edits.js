@@ -1,6 +1,7 @@
 let garden3d = null;   // v53: the back garden as ground, in the views from above
 let HBUILD = null;     // V1: builds (or rebuilds, with edits) one floor of the house
 const HEDITS = {};     // V1 (Phase 3): the client's edits, {item id: {from: box, to: box, op?: the opening's old and new edges}}
+let NOWV = false;      // V3.90 (N151): As it is: the house without your colours and changes, shown only (23_finish.js nowMode)
 const mapAx = (v, f0, f1, t0, t1) => (f1 - f0 < 0.01 ? v + (t0 - f0) : t0 + (v - f0) * (t1 - t0) / (f1 - f0));
 /* V2.33 (REAL_PLAN R6): a piece turned a quarter (E.turn, 1-3) about the centre of its new box, after its size and place: a box's x and z
    swap round that centre, a turned shape's centre goes round with it, a profile's extrusion changes axis (turnPrism) */
@@ -166,7 +167,7 @@ function turnFit(id, b, t) {
   return [sh(t[0], t[3], r[0], r[1]), sh(t[2], t[5], r[2], r[3])];
 }
 function storeEdits() {   // Measure's rows, as the engine's edits (HEDITS)
-  if (!DS() || !R.HOUSE3) return;
+  if (!DS() || !R.HOUSE3 || NOWV) return;
   syncAdds();
   const out = {};
   for (const [id, it] of Object.entries(R.HOUSE3.items || {})) {
