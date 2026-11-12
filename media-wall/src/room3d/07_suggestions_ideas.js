@@ -123,8 +123,9 @@ function buildSuggest() {
       const fl = new THREE.Mesh(new THREE.SphereGeometry(0.014, 8, 6), mat(["#efe7d8", "#d9a441", "#c7643a"][i % 3])); fl.position.copy(v3((i - 2) * 3.4, 36, (i % 2) * 1.5)); g.add(fl); } }); }
   { const a = weave("#d9a441", 0.8), b = weave("#c7643a", 0.8); SVAR_MATS.floorcush = [a, b];
     floor("floorcush", "Floor cushions (suggested)", 60, 60, 118, -98, g => {
-      const c1 = new THREE.Mesh(new RoundedBoxGeometry(0.6, 0.12, 0.6, 3, 0.04), a); c1.position.y = 0.06; g.add(shadow(c1));
-      const c2 = new THREE.Mesh(new RoundedBoxGeometry(0.58, 0.12, 0.58, 3, 0.04), b); c2.position.y = 0.18; c2.rotation.y = 0.2; g.add(shadow(c2)); }, [a, b]); }
+      const soft = (w, d) => { const q = cushGeo(w, 12, d, 1.6, 1, 4, 0.3, { welt: 0.45, bottom: true }); q.deleteAttribute("color"); return q; };   // V3.86 (N139): piped, plump
+      const c1 = new THREE.Mesh(soft(60, 60), a); c1.position.y = 0.06; g.add(shadow(c1));
+      const c2 = new THREE.Mesh(soft(58, 58), b); c2.position.y = 0.18; c2.rotation.y = 0.2; g.add(shadow(c2)); }, [a, b]); }
   { const rattan = weave("#b98f5c", 1.6), weave_ = reg(new THREE.MeshStandardMaterial({ color: "#b98f5c", roughness: 0.9, transparent: true, opacity: 0.82, side: THREE.DoubleSide }));
     SVAR_MATS.lantern = [rattan, weave_];
     floor("lantern", "Rattan lantern (suggested)", 30, 30, 325, -283, g => {
@@ -433,9 +434,10 @@ function buildSeatAndPouf() {
     for (let i = 0; i < 30; i++) lb(g, xs, y0, in0 + 1 + i * (CD[2] + 0.4) + CD[2] / 2, CD[0], CD[1], CD[2], deckC[i % deckC.length], false);   // a row of decks on edge
   }
   for (const [x, z] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) taperLeg(g, x * (O.w / 2 - 5), z * (O.d / 2 - 5), legH, leg);
-  const lidG = new THREE.Group(), lid = new THREE.Mesh(new RoundedBoxGeometry(O.w * M, O.lid * M, O.d * M, 4, 0.035), velvet);
+  // V3.86 (N139): the padded lid upholstered as the sofa bed's cushions, piped round its top and its foot (a flat plate stood in for the welt)
+  const lq = cushGeo(O.w, O.lid, O.d, 1.4, 0.8, 3.5, 0.3, { welt: 0.5, bottom: true }); lq.deleteAttribute("color");
+  const lidG = new THREE.Group(), lid = new THREE.Mesh(lq, velvet);
   lid.position.y = (legH + boxH + O.lid / 2) * M; lidG.add(shadow(lid));
-  const welt = new THREE.Mesh(new THREE.BoxGeometry((O.w - 1) * M, 0.006, (O.d - 1) * M), velvet); welt.position.y = (legH + boxH + 0.3) * M; lidG.add(welt);
   g.add(lidG);                                                                                    // a group: kept out of the merge, so it can lift
   WORK.lid = anim(v => { lidG.position.set(0.18 * Math.max(0, v - 0.4) / 0.6, 0.22 * Math.min(1, v / 0.4), 0); lidG.rotation.z = -0.28 * Math.max(0, v - 0.4) / 0.6; });   // up, then over to lean on its side
   movable("pouf", "Your storage ottoman", g, () => { const D_ = P_.dinner, d = D_ && tableOpen();   // v38: while the table's out it moves clear (its dinner spot)

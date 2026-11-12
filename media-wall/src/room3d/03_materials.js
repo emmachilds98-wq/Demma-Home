@@ -96,13 +96,17 @@ const GRAIN = 0.6;   // metres of oak per texture repeat
 const fillCol = f => new THREE.Color(f === "glass" || f === "art" || f === "brick" ? "#ffffff" : f);   // v35: kinds, not colours (the console's "Unknown color" warnings)
 function colAttr(geo, cols) { geo.setAttribute("color", new THREE.Float32BufferAttribute(cols, 3)); }
 const SOFT = new Set([R.SOFA_CORD[0]]);   // v15: the blue corduroy sofa, upholstered rather than boxy
+/* V3.86 (N139): your sofa's parts are upholstered as the sofa bed's (12's cushGeo): the seats swell and are piped top and foot, the
+   backs plump and lean on the frame, the frame and arms piped along their tops, each with its own shade where it meets the next (it
+   was rounded boxes). The cord's ribs at the size they were (cushGeo maps in 20 cm tiles; 0.3 of that is a copy every 65 cm) */
 function softGeo(b) {
-  const [, x, y, z, w, h, d, f] = b, r = Math.min(4, Math.min(w, h, d) / 2.6);
-  const g = new RoundedBoxGeometry(w * M, h * M, d * M, 3, r * M);
+  const [, x, y, z, w, h, d, f] = b, seat = h <= 14, back = Math.min(w, d) <= 16 && h <= 32 && !seat;
+  const g = seat ? cushGeo(w, h, d, 1.6, 0.9, 3.5, 0.25, { welt: 0.45, bottom: true }) : back ? cushGeo(w, h, d, 2.2, 1.4, 6, 0.25, { welt: 0.45 })
+    : cushGeo(w, h, d, 0.8, 0.6, 4, 0.2, { welt: 0.45 });
   g.translate(-(x + w / 2) * M, (y + h / 2) * M, (z + d / 2) * M);
-  const c = fillCol(f), cols = [];
-  for (let i = 0; i < g.attributes.position.count; i++) cols.push(c.r, c.g, c.b);
-  colAttr(g, cols);
+  const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 0.3, uv.getY(i) * 0.3);
+  const c = fillCol(f), col = g.attributes.color;
+  for (let i = 0; i < col.count; i++) { const k = col.getX(i); col.setXYZ(i, c.r * k, c.g * k, c.b * k); }
   return g;
 }
 /* V1.1: a box with its edges rounded off (EDGE cm, real joinery's arris): each face stops short of its edges, a strip joins each pair
