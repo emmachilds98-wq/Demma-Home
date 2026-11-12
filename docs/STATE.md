@@ -9,7 +9,7 @@ card beside its piece. V3.87 (N145): Edit light on the room. V3.86, V3.85: the s
 The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.93 ↻"): on the
 home-screen app, tap it to get the newest.
 
-**Work from:** `docs/REAL_PLAN.md` section 20 (12 Nov: the upgrade review, N135–N156; done but for N141, N142, N152, on Emma). A new team starts with
+**Work from:** `docs/REAL_PLAN.md` section 21 (12 Nov: Home Plan V4, the house on its own, its real surroundings, the views). A new team starts with
 `docs/HANDOVER.md`. Section 9 has every earlier task's state.
 
 ## Where it lives

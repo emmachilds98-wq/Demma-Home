@@ -579,3 +579,45 @@ The rules stay:
 - the living room door's real width (N152);
 - KTX2 (N141);
 - the sofa bed's price.
+
+## 21. Home Plan V4: the house on its own, its real surroundings, the views (12 Nov 2026, V3.93)
+
+The client, 12 Nov 2026 (the next plan): the road is "shaped differently and has a small hill to the main road opposite my house
+slightly to the left when looking out the door"; "increase the accuracy of other surroundings"; "the page to open with just outside on
+the screen ... nothing surrounding the house when [Gardens and Next door] arent selected including the road and the trees etc. this
+should come in when i click the gardens and next door"; "improve views where needed including how we swing the camera with the mouse on
+the pc version, it moves backwards to what i would have thought"; and "change the pill name to Home Plan V4 and we then go from 4
+going forward. add to the plan and then keep reviewing for further improvements making sure you include my other requests".
+
+The rules stay:
+- **privacy first:** the client gave the road's name and number. They are never written, in any file, page, commit, PR or plan, and
+  they are never sent anywhere but a map the client asks us to read. The 3D draws the road's shape with no names, no house numbers and
+  no coordinates. A screenshot keeps its pixels, never its labels: names are cropped or painted out before it goes in
+  `media-wall/inputs/`.
+- the old design; say less; the iPhone 15 Pro and the RTX 5070 first; every size cited (a surroundings size cites the client's
+  screenshot or photo it's read from).
+
+### How the client can help (the process)
+
+Google Maps and Street View can't be read from the build's sandbox: they draw in the browser. The client's screenshots are the way
+in. Each one is read once for its shapes; names and numbers are painted out before it's kept.
+- **The map from above:** satellite view, zoomed so the house, the close's whole curve and the junction with the main road fill the
+  screen. A second one zoomed out a step.
+- **Street View from the front door:** looking left, ahead and right, and one up the hill towards the main road.
+- **Two or three phone photos:** the slope up to the main road, and the trees and fences round the gardens.
+- **A rough height:** how many steps, or about how much higher, the main road is than the front door.
+
+### The tasks
+
+| Task | Stream | What | Files | Waits for | State |
+|---|---|---|---|---|---|
+| N157 | A Outside | The house on its own: the page opens on the house from outside with nothing round it (no road, pavements, trees, hill, next door, gardens, the low building); a plain ground under it and its shadow. Gardens brings both gardens, their trees and the hill; Next door brings the street, the pavements and the neighbours | `09_house_views.js` (the switches), `11_lights.js` (`outdoor`, the ground's parts), `20_go.js` (what each part belongs to) | — | Open |
+| N158 | B Views | The PC's swing the way you'd expect: drag right and the view swings right, drag up and it looks from higher (it turned the house the way the mouse went, as if grabbing it); a phone's finger stays as it is | `19_view_controls.js` (`mapSwing`'s signs) | — | Open |
+| N159 | B Views | The views where needed: the opening frames the house alone, filling the screen on a PC and a phone; the swing can't go under the ground or through the roof; a double-click centres on the spot clicked; the arrow keys swing on a PC | `19_view_controls.js`, `14_views_walk.js` (`VIEWS.house`) | N157 | Open |
+| N160 | A Outside | The real road's shape: the close's curve and width, the pavements, the small hill up to the main road (opposite the front door, a little to the left looking out), the main road along the top; the house's plot set on it at the right height; still drawn with no names | `20_go.js` (`buildStreet`), `house/survey_data.py` (a street block, each size citing the screenshot) | the client's screenshots | Open |
+| N161 | A Outside | The surroundings truer: the neighbours' houses (their shapes, heights and roofs), the trees where they stand and how tall, the fences and hedges, what the windows look out on | `20_go.js` (`buildBeyond`, the neighbours), `house/survey_data.py` (`BEYOND`), `house/EVIDENCE.md` | the client's screenshots and photos | Open |
+| N162 | C Name | Home Plan V4: the name pill top left reads "Home Plan V4.0" (it read "Demma's Home V3.93"), the version going V4.0, V4.1 ... from here; the page's title, the home-screen app's name, the PDFs' names and covers and the stills' names to match; the repo keeps its name | `build_viewer.py` (the pill, the title, the manifest), `build_doc.py` (the PDFs), `18_caption_hd.js` (the stills' names), `qa.py`, `tools/build.py`, `VERSION` | — | Open |
+| N163 | D Review | Outside by evening: the house from outside lit by the time of day (a dusk sky, its windows warm, the street lamps on with Next door); it stays in daylight now whatever the time | `11_lights.js` (`outdoor`), `09_house_views.js` | N157 | Open |
+| N164 | D Review | The top row on a phone with As it is in it: at 375 nothing cut off; As it is and Hide labels one ⋯ if the row crowds | `room3d_page.py` (`.r3d-mini`) | N162 | Open |
+| N165 | D Review | The speed check steady: the living room's draws read once the shade and glow are back and settled, so one slow CI frame can't read 680 (#260) | `tools/check_site.py` (`PERF`) | — | Open |
+| N166 | D Review | The budgets lowered to what's drawn after N157 (the house alone draws less): the house's budget on each path cut to its new count plus a margin, so a later change can't add back what N157 took out unseen | `tools/perf_budget.json` | N157 | Open |
