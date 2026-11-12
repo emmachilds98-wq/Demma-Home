@@ -79,6 +79,15 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   standing in it (phone 235): the house round it ~60 (`G#65`, `roomCull`), the record table under the coffee table 19 and the pouf 22
   (07, nested groups `mergeStatic` skips), the shell's suggestion groups ~33 (07, 10), the walls a draw each paint (each wall its own
   material, so Look can colour one). `check_site.py`'s `draws_living` sometimes reads the house's number (185) on the PC and iPhone paths: the view hadn't landed; count a frame yourself. V3.26: its `still()` now waits for a frame drawn since (CI's frames take seconds, so 600 ms read the fly's last frame, house and room both: 770–945).
+- **Pieces that move, at rest (V3.77, N153):** `13_edit_room.js` `restMerge(g, live, skip)` copies a piece's parts (its own meshes and
+  its moving groups at rest) into one mesh a material and shows it while every part is at rest; the moving groups show only while one
+  moves (the sofa bed's `RS`, the chaise's lid). A part's anim must call the switch (`sync()`), or it moves hidden. Nested groups that
+  never move are better merged at build (`lazyVis(g, build, true)`); a material made per item (`own(c)` in a loop) can't merge: share them.
+  What a phone draws standing in the living room, by piece: patch `gl.renderBufferDirect` for one frame and tally each mesh's movable,
+  option (`SUGG_G`) or house key: `python3 tools/draws.py`.
+- **A hidden material is still compiled (V3.77):** `material.visible = false` hides a mesh but the start's warm-up (`compileClipped`)
+  still builds its shader for the first picture (V3.76's bulb glow: 21 to 22). Hide the meshes (`mesh.visible = false`): the idle
+  warm-up (`precompile`) builds hidden meshes' shaders after the first picture.
 - **Bytes (N2–N4, N25, N32, N43):** photos a hashed JPEG each in `_site/tex`, kept across versions (`demma-keep`); half-size set for
   `LOWD` phones; esbuild minifies the page; icon font subset; sheets in their own file; fonts don't block; no texel finer than a 4K
   screen shows (`build_textures.PX`, `--slim`). Tried and dropped: lower JPEG quality (3–8 dB lost for 5–10%), progressive JPEGs.

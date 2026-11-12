@@ -227,11 +227,13 @@ function buildStorage() {
     lb(g, 0, legH, 0, w, 2, d, body);                                                                    // the shelf under the box
     lb(g, 0, legH + sh - L.inside, 0, w - 4, 1.2, d - 4, dark);                                           // the compartment's floor
     for (const [x, z, ww, dd] of [[0, -d / 2 + 1, w, 2], [0, d / 2 - 1, w, 2], [-w / 2 + 1, 0, 2, d - 4], [w / 2 - 1, 0, 2, d - 4]]) lb(g, x, legH + sh - L.inside - 1, z, ww, L.inside + 1, dd, body);
+    const inG = new THREE.Group(), cols = {}; g.add(inG);   // V3.77 (N153): what's inside, its own group, drawn only with the top up (6 draws a frame for nothing)
     for (const [x, y, z, ww, hh, dd, c] of [[-28, 0, -8, 4, 2, 15, "#1f1f21"], [-20, 0, -6, 4, 2, 17, "#1f1f21"], [-6, 0, -9, 15, 5, 10, "#e9e4da"], [14, 0, -10, 6.5, 1.8, 9.2, "#b3262b"], [22, 0, -10, 6.5, 1.8, 9.2, "#2f4e6e"], [30, 0, 6, 9, 3, 13, "#ece8e0"]])
-      lb(g, x, legH + sh - L.inside + 1.2 + y, z, ww, hh, dd, own(c));                                  // remotes, a controller, decks of cards
+      lb(inG, x, legH + sh - L.inside + 1.2 + y, z, ww, hh, dd, cols[c] || (cols[c] = own(c)));          // remotes, a controller, decks of cards
+    mergeStatic(inG);
     const tg = new THREE.Group(); g.add(tg); lb(tg, 0, L.h - top, 0, w, top, d, body);
-    WORK.ctop = anim(v => { tg.position.set(0, (L.lift - L.h) * v * M, -16 * v * M); });                 // up 5.5 and 16 towards the sofa
-    }); }
+    WORK.ctop = anim(v => { tg.position.set(0, (L.lift - L.h) * v * M, -16 * v * M); inG.visible = v > 0.01; });   // up 5.5 and 16 towards the sofa
+    }, true); }
   // the oak shelf over the hall door, two lidded boxes on it
   if (R.DOOR_SHELF) { const g = SUGG_G.doorshelf = new THREE.Group(); shell.add(g); lazyVis(g, () => { const D = R.DOOR_SHELF, K = R.KUGGIS, zf = R.RECESS_Z, box = own("#ece8e0"); SVAR_MATS.doorshelf = [box];
     const oakS = reg(new THREE.MeshStandardMaterial({ color: "#c48c57", map: OAK_TEX, roughness: 0.55 }));
@@ -315,11 +317,11 @@ function buildStorage37(own) {
     }, true); }
   // two EKET wall cabinets with glass doors over the sofa's corner, on the side wall
   if (R.WALL_CABS) { const g = SUGG_G.wallcabs = new THREE.Group(); shell.add(g); lazyVis(g, () => { const C = R.WALL_CABS, [ew, ed, eh] = R.EKET, body = own("#6e4a2e"); SVAR_MATS.wallcabs = [body];
-    const glass = reg(new THREE.MeshPhysicalMaterial({ color: "#dfeef0", roughness: 0.05, transparent: true, opacity: 0.25, depthWrite: false })), r = rnd(67);
+    const glass = reg(new THREE.MeshPhysicalMaterial({ color: "#dfeef0", roughness: 0.05, transparent: true, opacity: 0.25, depthWrite: false })), r = rnd(67), books = ["#efe7d8", "#2f4e6e", "#a65a38", "#d9a441"].map(own);
     for (let i = 0; i < C.n; i++) { const z0 = C.z[0] - (i + 1) * ew;
       ibox(g, 0, C.y0, z0, ed, 1.5, ew, body); ibox(g, 0, C.y0 + eh - 1.5, z0, ed, 1.5, ew, body);
       ibox(g, 0, C.y0, z0, ed, eh, 1.5, body); ibox(g, 0, C.y0, z0 + ew - 1.5, ed, eh, 1.5, body);
-      for (let k = 0; k < 4; k++) ibox(g, 4, C.y0 + 1.5, z0 + 3 + k * 7, 14 + r() * 8, 8 + r() * 14, 5, own(["#efe7d8", "#2f4e6e", "#a65a38", "#d9a441"][(k + i) % 4]));
+      for (let k = 0; k < 4; k++) ibox(g, 4, C.y0 + 1.5, z0 + 3 + k * 7, 14 + r() * 8, 8 + r() * 14, 5, books[(k + i) % 4]);   // V3.77 (N153): four shared colours, so they merge
       const gd = new THREE.Mesh(new THREE.PlaneGeometry((ew - 3) * M, (eh - 3) * M), glass); gd.rotation.y = -Math.PI / 2; gd.position.copy(v3(ed - 0.4, C.y0 + eh / 2, z0 + ew / 2)); g.add(gd); } }, true); }
   // the six-hook rail over the hall door's top, on its room side, with a bag and a scarf
   if (R.OVERDOOR) { const g = SUGG_G.overdoor = new THREE.Group(); shell.add(g); lazyVis(g, () => { const O = R.OVERDOOR, metal = reg(new THREE.MeshStandardMaterial({ color: "#2a2a2c", roughness: 0.35, metalness: 0.6 })); SVAR_MATS.overdoor = [metal];

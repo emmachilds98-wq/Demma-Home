@@ -42,6 +42,27 @@ function mergeStatic(g) {
   }
   return g;
 }
+/* V3.77 (N153): a piece whose parts move (the sofa bed's headrests, stools and bed; the chaise's lid) draws as one mesh a material while
+   they're all at rest, and as its moving groups only while one moves. live: a group of the piece's parts (its own meshes merged, its
+   moving groups inside); skip: groups never seen at rest (the bed's links, the struts). Returns the rest copy and a switch */
+function restMerge(g, live, skip = []) {
+  g.updateMatrixWorld(true);
+  const inv = new THREE.Matrix4().copy(g.matrixWorld).invert(), by = new Map(), under = o => { for (let p = o; p && p !== live; p = p.parent) if (skip.includes(p) || !p.visible) return true; return false; };
+  live.traverse(o => { if (!o.isMesh || Array.isArray(o.material) || under(o)) return;
+    const k = o.material.uuid + (o.castShadow ? "c" : "") + (o.receiveShadow ? "r" : ""); if (!by.has(k)) by.set(k, []); by.get(k).push(o); });
+  const rest = new THREE.Group();
+  for (const list of by.values()) {
+    const geos = list.map(o => { const q = o.geometry.index ? o.geometry.toNonIndexed() : o.geometry.clone(); for (const n of Object.keys(q.attributes)) if (!["position", "normal", "uv"].includes(n)) q.deleteAttribute(n);
+      if (!q.attributes.uv) q.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(q.attributes.position.count * 2), 2));
+      if (!q.attributes.normal) q.computeVertexNormals();
+      q.applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, o.matrixWorld)); return q; });
+    const merged = mergeGeometries(geos); if (!merged) continue;
+    const m = new THREE.Mesh(merged, list[0].material); m.castShadow = list[0].castShadow; m.receiveShadow = list[0].receiveShadow; rest.add(m);
+  }
+  g.add(rest); live.visible = false;
+  const set = atRest => { if (rest.visible === atRest) return; rest.visible = atRest; live.visible = !atRest; };
+  return set;
+}
 function movable(id, label, g, def, w, d, mats, _flat, extra = {}) {   // _flat: unread, kept by place for the callers
   if (!extra.added && id !== "lamp") mergeStatic(g);   // v22
   const pivot = new THREE.Group(); pivot.add(g); pivot.userData.movId = id;

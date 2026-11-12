@@ -74,6 +74,8 @@ function buildSofaBed() {
   const W = B.w, D = B.run_d, hw = W / 2, hd = D / 2, F = B.foot, t = B.back_t, sh = B.seat_h, cu = 14, base = sh - cu, L = -hd + B.sec_d;
   const xc = -hw + B.corner, xa = hw - B.arm, mid = (xc + xa) / 2, xi = -hw + t;   // the corner's edge, the arm's inside, between the seats, the side back's face
   const g = new THREE.Group(), tf = [], foot = (x, z) => cush(g, x, 0, z, 7, F + 1, 7, steel, 0, 0, 1);
+  // V3.77 (N153): at rest (headrests down, stools in, bed in) the whole sofa bed is one draw a material (restMerge); its moving groups only while one moves
+  const RS = { hr: [0, 0, 0, 0, 0], st: 0, bed: 0 }; let setRest = null; const sync = () => setRest && setRest(!RS.st && !RS.bed && RS.hr.every(v => !v));
   for (const x of [-hw + 5, xc, mid, xa + 2, hw - 5]) foot(x, -hd + 5);              // square black feet: the back, the run's front, the return's end
   for (const x of [xc + 4, mid, xa - 3]) foot(x, hd - 5);
   for (const x of [-hw + 5, xc - 5]) foot(x, L - 5);
@@ -98,7 +100,7 @@ function buildSofaBed() {
     pipe(stG, tx, T_.h - 0.6, z + T_.d / 2 - 0.8, T_.w - 4, seam, true); for (const dx of [-0.22, 0.22]) stTf.push([tx + dx * T_.w, T_.h + 1.3, z]);
     for (const dx of [-1, 1]) for (const dz of [-1, 1]) lb(stG, tx + dx * (T_.w / 2 - 4), 0, z + dz * (T_.d / 2 - 4), 4, 4, 4, steel); }
   tufts(stG, stTf, dimp); mergeStatic(stG);
-  WORK.stools = anim(v => { stG.position.x = -B.stool_out * v * M; });
+  WORK.stools = anim(v => { stG.position.x = -B.stool_out * v * M; RS.st = v; sync(); });
   // the seats: two over the bed, the corner seat, the return's seat facing in; piped fronts, two buttons each
   const sz0 = hd - B.seat_d - 1, bz = (-hd + t + sz0) / 2, bd = sz0 + hd - t, crown = 1.6, sx = xi + bd;
   const seat = (x0, x1, z0, z1, pipeFront) => { const w_ = x1 - x0 - 1, d_ = z1 - z0, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
@@ -118,7 +120,7 @@ function buildSofaBed() {
   const headrest = (x, z, span, side) => { const hg = new THREE.Group(), w_ = Math.min(HD.w, span - 2); hg.position.copy(v3(x, B.back_h, z)); g.add(hg);
     if (side) cush(hg, HD.over - HD.d / 2, 0, 0, HD.d, HD.t, w_, fab, 1.3, 1.1, 5.5); else cush(hg, 0, 0, HD.over - HD.d / 2, w_, HD.t, HD.d, fab, 1.3, 1.1, 5.5);
     mergeStatic(hg);
-    WORK.hr.push(anim(v => { if (side) hg.rotation.z = hup * v; else hg.rotation.x = hup * v; })); };
+    const i = WORK.hr.length; WORK.hr.push(anim(v => { if (side) hg.rotation.z = hup * v; else hg.rotation.x = hup * v; RS.hr[i] = v; sync(); })); };
   for (const [x0, x1] of [[mid, xa + 12], [xc, mid], [xi, xc]]) headrest((x0 + x1) / 2, -hd + t, x1 - x0, false);   // the arm seat's over the arm's back too
   for (const [z0, z1] of [[bz + bd / 2, hd - 0.5], [hd + 0.5, L - 1]]) headrest(xi, (z0 + z1) / 2, z1 - z0, true);
   for (const [x, z, ry] of [[xi + 32, bz + 26, -0.7], [xa - 26, bz + 22, 0.15]]) {   // the two scatter cushions, plump, sat back against the backs (V3.74)
@@ -149,8 +151,9 @@ function buildSofaBed() {
       m.position.y = (7 + dy / 2) * M; m.position.z = (z0 + dz / 2) * M; m.rotation.x = Math.atan2(dz, dy); m.scale.y = Math.hypot(dy, dz) * M; } };
   const sm = k => k <= 0 ? 0 : k >= 1 ? 1 : k * k * (3 - 2 * k);
   WORK.sbed = anim(v => { const a = sm(v / 0.5), b = sm((v - 0.5) / 0.3), c = sm((v - 0.8) / 0.2);
-    bed.position.z = ((ud + over) * a - over * c) * M; bed.position.y = 3 * (a - c) * M; top.position.y = rise * b * M; lk.visible = a > 0.3; linkAt(b); });
-  const cx = so.x[0] + hw, cz = so.back + hd;
+    bed.position.z = ((ud + over) * a - over * c) * M; bed.position.y = 3 * (a - c) * M; top.position.y = rise * b * M; lk.visible = a > 0.3; linkAt(b); RS.bed = v; sync(); });
+  const cx = so.x[0] + hw, cz = so.back + hd, live = new THREE.Group();
+  while (g.children.length) live.add(g.children[0]); g.add(live); mergeStatic(live); setRest = restMerge(g, live, [lk]); sync();
   movable("sofa2", B.name, g, () => ({ x: cx, z: cz, rot: 0 }), W, D, [fab], false, { when: () => S.sofa === "bed" });
   // the loose storage chaise on the corner section's end: a buttoned lid lifting on its back edge on two gas struts (the ottoman's Lift
   // the lid), a fabric loop on its front to lift it by, black lining, square black feet
@@ -171,7 +174,9 @@ function buildSofaBed() {
   for (const x of [-(C.w / 2 - 8), C.w / 2 - 8]) { const st = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.3, 8), steel);
     st.position.copy(v3(x, bodyH + 2, -C.d / 2 + 14)); st.rotation.x = -0.7; struts.add(st); }
   mergeStatic(hinge); mergeStatic(struts);
-  WORK.lid2 = anim(v => { hinge.rotation.x = -1.5 * v; struts.visible = v > 0.85; });
+  const live2 = new THREE.Group(); while (c.children.length) live2.add(c.children[0]); c.add(live2); mergeStatic(live2);
+  const setRest2 = restMerge(c, live2, [struts]);   // V3.77 (N153): the chaise one draw a material with its lid shut
+  WORK.lid2 = anim(v => { hinge.rotation.x = -1.5 * v; struts.visible = v > 0.85; setRest2(!v); });
   movable("chaise2", "Its storage chaise", c, () => ({ x: so.x[0] + C.w / 2, z: so.back + B.sec_d + C.d / 2, rot: 0 }), C.w, C.d, [fab], false, { when: () => S.sofa === "bed" });
 }
 let bar1, bar2;
