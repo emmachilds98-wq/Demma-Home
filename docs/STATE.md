@@ -3,11 +3,11 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V3.79 (12 Nov 2026). V3.79 (N144): the phone's top rows fade at whichever end has more, the chosen floor slides into view,
-Gardens and Next door are icons on a phone; a floor on its own on the page's backdrop. V3.78 (N135): the sofa bed's green as the
-listing in HD; Edit's colour reaches its seams and chaise. V3.77 (N153): the living room 181 draws on a phone (was 216). V3.76 (N154):
-lit ceiling bulbs, finer artex. V3.75 (N132–N134): the sofa bed true to its listing; take out and put back; cards.
-The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.79 ↻"): on the
+**Version:** V3.80 (12 Nov 2026). V3.80 (N149): every room's floor card lists what's been taken out of it, a tap each to put back.
+V3.79 (N144): the phone's top rows fade at whichever end has more; a floor on its own on the page's backdrop. V3.78 (N135): the sofa
+bed's green as the listing in HD; Edit's colour reaches its seams and chaise. V3.77 (N153): the living room 181 draws on a phone.
+V3.76 (N154): lit ceiling bulbs, finer artex. V3.75 (N132–N134): the sofa bed true to its listing; take out and put back; cards.
+The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.80 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 20 (12 Nov: the upgrade review, N135–N156 in streams A–G). A new team starts with
@@ -71,7 +71,8 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 **Change the house** (`23_finish.js`, `docs/NOTES.md` section 5 for Look's rows):
 - Tap a wall, ceiling or floor for its colours card: paints, floors, bulbs and fittings, rug, curtains, bedding, a picture, a plant,
   wallpaper, panelling. Look saves schemes. The living room is on the same rows.
-- Tap a piece: its size, Move or resize (typed), Turn, Swap it, Take it out (its toast puts it back; Measure's list too).
+- Tap a piece: its size, Move or resize (typed), Turn, Swap it, Take it out (its toast puts it back; the room's floor card lists
+  what's out, a tap each to put back, V3.80; Measure's list too).
 - Tap a floor: Add a piece here (31 catalogue pieces, each a real product's size, cited).
 - A room's Changes card ticks each change done with a rough cost; Plan leads with the whole house's changes and their total.
 

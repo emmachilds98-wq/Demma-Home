@@ -157,6 +157,9 @@ function upsGo(room) {
   card();
 }
 const MAKE_CARD = { recordtable: "mk-recordtable", ctable: "mk-ctable", wallcabs: "mk-wallcabs", alcoveshelves: "mk-alcove", doorshelf: "mk-doorshelf", shelfboxes: "mk-doorshelf" };   // v44
+/* V3.80 (N149), the client (12 Nov): "Make sure anything that I can remove can be re added via the ui menu": in every room, as the
+   living room's Room → Taken out: a room's floor card says what's out of it and puts each back (Measure's list and the toast still do) */
+const roomOuts = rm => DS() && R.HOUSE3 ? Object.keys(R.HOUSE3.items || {}).filter(k => { const it = HIT(k); return it && it.r === rm && !it.add && pieceNow(k).removed; }) : [];
 function actItems(id) {     // [title, how it is now, buttons]
   const folded = S.dining === "folded", lv = k => (S.lv[k] ?? 0) > 0;
   if (id === "hbed") { const P_ = HPARTS.bed_lift, up = !!(P_ && (P_.tw ? P_.tw.to === 1 : P_.t > 0.5));   // v71, the client: the bed as a card, like the living room's
@@ -164,8 +167,11 @@ function actItems(id) {     // [title, how it is now, buttons]
       btn(up ? "Lower the bed" : "Lift the bed", { hbed: up ? "down" : "up" }), ...(ROOMV() && RMODE !== "above" ? [btn("View from above", { rmode: "above" })] : [])], null, finBedTray("master")]; }   // N5d: its bedding
   if (id.startsWith("fin:")) { const c = finCard(id), [, rm, sl] = id.split(":");   // V2.6: a wall's or a ceiling's colours (23_finish.js)
     if (c && sl === "5" && DS() && TAPAT && R.HOUSE3 && (R.HOUSE3.rooms || {})[rm] && rm !== "living") c[2].unshift(btn("Add a piece here", { hadd: rm }));   // V2.46 (N7): from the catalogue
+    const outs = sl === "5" ? roomOuts(rm) : []; if (c && outs.length) c[2].splice(1, 0, btn(`Taken out (${outs.length})`, { actopen: "hout:" + rm }));   // V3.80 (N149): what's out of the room, to put back
     if (c) c[2].push(...upsBtn(rm));   // N23: the room's changes (N68: after the card's own buttons)
     return c; }
+  if (id.startsWith("hout:")) { const rm = id.slice(5), outs = roomOuts(rm); if (!outs.length) return null;   // V3.80 (N149): a room's taken-out pieces, a tap each to put back
+    return [`${roomName(rm)}: taken out`, outs.length === 1 ? "1 piece" : `${outs.length} pieces`, [...outs.map(k => btn("↩ " + HIT(k).n, { hputback: k })), ...(outs.length > 1 ? [btn("Put all back", { hputall: rm })] : [])]]; }
   if (id.startsWith("ups:")) return upsCard(id.slice(4));   // N23
   if (id.startsWith("hswap:") || id.startsWith("hadd:")) return hcatCard(id);   // V2.46 (N7): swap a piece, or which piece you've added
   if (id.startsWith("hitem:")) { const k = id.slice(6), it = HIT(k); if (!it) return null;   // V1.50: a piece in the house, its size

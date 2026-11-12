@@ -206,7 +206,9 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `addList()` puts the same at the head of Edit's + Add. Buttons anywhere in the 3D's root: `data-takeout`, `data-outback`, `data-turnit`
   (`19_controls.js`); `toast(t, {outback})` shows Put back on the toast (`.r3d-toast.act` takes the pointer). A card that sits in a movable
   (the lift-top, the record table) takes the movable out (`mov:coffee`). A house piece's toast has `hputback`. A new piece that stands in
-  the room needs no more than its movable: its card's generic row and Taken out come with it. Edit's nudges (`nudge`, `#r3d-sel` `nl nu nd
+  the room needs no more than its movable: its card's generic row and Taken out come with it. Every other room (V3.80, N149): `16_cards.js`
+  `roomOuts(room)` (a house item `pieceNow(k).removed`), its floor card's Taken out (n) opens `hout:<room>`; `data-hputback`, `data-hputall`
+  (`19_controls.js`) clear the Measure row and re-render the card. Edit's nudges (`nudge`, `#r3d-sel` `nl nu nd
   nr`) step 5 cm along the room's axis nearest the screen's direction. A card's 5th item (`tray`) sits above its buttons; its 6th (`extra`)
   goes inside More.
 - **Back** (`09_house_views.js` `roomHist`), **Esc** (`19_controls.js` `ESC`, top layer only), **Overhead/Angled** and a room's **Above** (`19_view_controls.js` `mapMode`: its own drags, the orbit's off there, V3.08 N53, V3.13 N55; a touch on a living-room sticker joins the drag from the root's capture, and moves are read on `window`, as the sticker keeps its finger; it turns them off in a canvas capture listener after 14's, and Edit's root capture keeps a piece's press from it).
