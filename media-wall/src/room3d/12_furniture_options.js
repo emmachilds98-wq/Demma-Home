@@ -26,15 +26,25 @@ function buildFurniture() {
 /* V3.73: how far the shown sofa's open end is from your sofa's (the sofa bed's chaise reaches 62 further): what stands at the open end
    (the C-table, an idea since V3.74; the floor plant, the seagrass basket) moves with it */
 function openEndShift() { return S.sofa === "bed" && R.SOFABED ? R.SOFABED.end_z - R.SOFA.end : 0; }
-function cushGeo(w, h, d, crown = 1.2, bulge = 0.8, r = 3, lie = 0.25) {   // cm: the top's crown, the sides' swell, the edges' radius, the cloth's lie
-  const n = 10, m = 3, g = new THREE.BoxGeometry(1, 1, 1, n, n, n), p = g.attributes.position, H = [w / 2 * M, h / 2 * M, d / 2 * M];
-  const rr = Math.min(r * M, ...H.map(v => v * 0.45)), I = H.map(v => v - rr), cl = v => Math.max(-1, Math.min(1, v));
-  const remap = (t, hh) => { const u = (t + 0.5) * n;               // a grid dense in the rounded edges, four spans across the flat
+/* V3.84 (N136): the cloth made as upholstery is, in the cushion's own shape (o): o.welt, the piping round its top (and o.bottom, its
+   foot) as a ridge where the top meets the boxing, its seam lines a shade down either side (no separate cylinders); o.dim, buttons'
+   dimples [x, z] (cm from its middle) pressed into the top, the cloth drawn in round each, on a grid fine enough to hold them. Where
+   each dimple's bottom lies goes back in g.userData.dimY, for its button */
+function cushGeo(w, h, d, crown = 1.2, bulge = 0.8, r = 3, lie = 0.25, o = {}) {   // cm: the top's crown, the sides' swell, the edges' radius, the cloth's lie
+  const H = [w / 2 * M, h / 2 * M, d / 2 * M], rr = Math.min(r * M, ...H.map(v => v * 0.45)), m = 3;
+  const spans = k => o.dim ? Math.max(4, Math.ceil((2 * H[k] - 2 * rr) / M / 1.8)) : 4, N = [spans(0) + 2 * m, 4 + 2 * m, spans(2) + 2 * m];
+  const g = new THREE.BoxGeometry(1, 1, 1, N[0], N[1], N[2]), p = g.attributes.position;
+  const I = H.map(v => v - rr), cl = v => Math.max(-1, Math.min(1, v)), ring = new Float32Array(p.count).fill(1);
+  const remap = (t, hh, n) => { const u = (t + 0.5) * n;            // a grid dense in the rounded edges, even spans across the flat
     return u <= m ? -hh + rr * u / m : u >= n - m ? hh - rr + rr * (u - n + m) / m : -hh + rr + (2 * hh - 2 * rr) * (u - m) / (n - 2 * m); };
   for (let i = 0; i < p.count; i++) {
-    let x = remap(p.getX(i), H[0]), y = remap(p.getY(i), H[1]), z = remap(p.getZ(i), H[2]);
+    let x = remap(p.getX(i), H[0], N[0]), y = remap(p.getY(i), H[1], N[1]), z = remap(p.getZ(i), H[2], N[2]);
     const qx = cl(x / I[0]) * I[0], qy = cl(y / I[1]) * I[1], qz = cl(z / I[2]) * I[2], dx = x - qx, dy = y - qy, dz = z - qz, l = Math.hypot(dx, dy, dz);
-    if (l > 1e-9) { x = qx + dx / l * rr; y = qy + dy / l * rr; z = qz + dz / l * rr; }   // onto the rounded edge
+    if (l > 1e-9) { let e = rr; const hz = Math.hypot(dx, dz) / l;   // onto the rounded edge
+      if (o.welt && (dy > 0 || o.bottom) && hz > 0.05 && hz < 0.999) {   // the piping: the faces meet at 45° round the edge; a vertex each 15° either side
+        const sw = Math.abs(Math.atan2(Math.abs(dy) / l, hz) - Math.PI / 4) / (Math.PI / 12);
+        if (sw < 0.5) { e += o.welt * M; ring[i] = 0.93; } else if (sw < 1.5) ring[i] = 0.74; }
+      x = qx + dx / l * e; y = qy + dy / l * e; z = qz + dz / l * e; }
     const u = cl(x / I[0]), v = cl(y / I[1]), s = cl(z / I[2]);
     if (y > 0) y += crown * M * (1 - u * u) * (1 - s * s) * (y / H[1]);                   // the top crowns; the bottom stays flat
     x += (x / H[0]) * bulge * M * (1 - v * v) * (1 - s * s); z += (z / H[2]) * bulge * M * (1 - u * u) * (1 - v * v);   // the sides swell
@@ -42,6 +52,14 @@ function cushGeo(w, h, d, crown = 1.2, bulge = 0.8, r = 3, lie = 0.25) {   // cm
     if (lie && z > 0) z += lie * M * 0.6 * Math.sin(x * 33 + h) * Math.sin(y * 29 + w) * (1 - u * u) * (1 - v * v) * (z / H[2]);
     p.setXYZ(i, x, y, z);
   }
+  const dimK = new Float32Array(p.count).fill(1);
+  if (o.dim) { const dd = (o.dimD || 1.8) * M, s1 = 2.1 * M, s2 = 6.5 * M, low = o.dim.map(() => [1e9, 0]);
+    for (let i = 0; i < p.count; i++) { if (p.getY(i) < H[1] * 0.5) continue; let y = p.getY(i), k = 1;
+      o.dim.forEach(([cx, cz], j) => { const r2 = (p.getX(i) - cx * M) ** 2 + (p.getZ(i) - cz * M) ** 2, a = Math.exp(-r2 / (s1 * s1)), b = Math.exp(-r2 / (s2 * s2));
+        y -= dd * (a + 0.35 * b); k *= 1 - 0.32 * a - 0.08 * b;               // the button's hollow, and the cloth drawn in round it
+        if (r2 < low[j][0]) low[j] = [r2, i]; });
+      p.setY(i, y); dimK[i] = k; }
+    g.userData.dimY = low.map(([, i]) => p.getY(i)); }
   g.computeVertexNormals();
   /* V3.74: each face mapped in real cm (a tile 20 cm), by the way it faces, so the chenille's weave is one size everywhere (a unit box's
      faces each took the whole tile, whatever their size: a headrest's weave was four times the chaise's) */
@@ -55,16 +73,19 @@ function cushGeo(w, h, d, crown = 1.2, bulge = 0.8, r = 3, lie = 0.25) {   // cm
      sit as GTAO makes them sit on a big card (the gaps between them, under the seats' fronts, where the backs meet the seats); no draw */
   const col = new Float32Array(p.count * 3);
   for (let i = 0; i < p.count; i++) { const t = Math.min(1, Math.max(0, (p.getY(i) + H[1]) / (2 * H[1]) / 0.6)), k = nr.getY(i) < -0.6 ? 0.55 : 0.68 + 0.32 * t * t * (3 - 2 * t);
-    col[i * 3] = col[i * 3 + 1] = col[i * 3 + 2] = k; }
+    col[i * 3] = col[i * 3 + 1] = col[i * 3 + 2] = k * ring[i] * dimK[i]; }
   g.setAttribute("color", new THREE.BufferAttribute(col, 3));
   return g;
 }
-function cush(g, x, y, z, w, h, d, mat, crown, bulge, r) {      // a cushion in a movable's own coordinates: x, z its centre, y its bottom
-  const q = cushGeo(w, h, d, crown, bulge, r); if (!mat.vertexColors) q.deleteAttribute("color");   // V3.81 (N137): the shade only where the cloth takes it (the feet's steel merges with plain boxes)
-  const m = new THREE.Mesh(q, mat); m.position.copy(v3(x, y + h / 2, z)); g.add(shadow(m)); return m;
+function cush(g, x, y, z, w, h, d, mat, crown, bulge, r, o) {   // a cushion in a movable's own coordinates: x, z its centre, y its bottom
+  const q = cushGeo(w, h, d, crown, bulge, r, undefined, o); if (!mat.vertexColors) q.deleteAttribute("color");   // V3.81 (N137): the shade only where the cloth takes it (the feet's steel merges with plain boxes)
+  const m = new THREE.Mesh(q, mat); m.position.copy(v3(x, y + h / 2, z)); g.add(shadow(m));
+  if (o && o.dim && o.tf) o.dim.forEach(([dx, dz], j) => o.tf.push([x + dx, y + h / 2 + q.userData.dimY[j] / M - 0.05, z + dz]));   // V3.84 (N136): each button in its dimple
+  return m;
 }
 function tufts(g, pts, mat) {                                       // [x, y, z] in a movable's coordinates: one mesh of sunk buttons
-  const geos = pts.map(([x, y, z]) => { const b = new THREE.SphereGeometry(0.01, 8, 5); b.scale(1, 0.35, 1); const p = v3(x, y, z); b.translate(p.x, p.y, p.z); return b; });
+  const geos = pts.map(([x, y, z]) => { const b = new THREE.SphereGeometry(0.0075, 8, 5); b.scale(1, 0.4, 1);   // V3.84 (N136): a smaller button, down in its dimple
+    const p = v3(x, y, z); b.translate(p.x, p.y, p.z); return b; });
   if (!geos.length) return null; const m = new THREE.Mesh(vcol(mergeGeometries(geos), mat), mat); g.add(m); return m;
 }
 function buildSofaBed() {
@@ -88,37 +109,32 @@ function buildSofaBed() {
   for (const x of [xc + 4, mid, xa - 3]) foot(x, hd - 5);
   for (const x of [-hw + 5, xc - 5]) foot(x, L - 5);
   // the frame, upholstered: the run's back, the side back down the corner section, the corner section's base, the bed bay's deck and back
-  cush(g, 0, F, -hd + t / 2, W, B.back_h - F, t, fab, 1, 0.8, 4);
-  cush(g, -hw + t / 2, F, (-hd + t + L) / 2, t, B.back_h - F, L + hd - t, fab, 1, 0.8, 4);
+  const WT = { welt: 0.5 };                                                          // V3.84 (N136): the piping in each part's own edge
+  cush(g, 0, F, -hd + t / 2, W, B.back_h - F, t, fab, 1, 0.8, 4, WT);
+  cush(g, -hw + t / 2, F, (-hd + t + L) / 2, t, B.back_h - F, L + hd - t, fab, 1, 0.8, 4, WT);
   cush(g, (xi + xc) / 2, F, (-hd + t + L) / 2, xc - xi, base - F, L + hd - t, fab, 0, 0.6, 2);
   lb(g, mid, base - 1, t / 2, xa - xc, 1, D - t, fab);                               // the deck the seats sit on, over the bed's bay
   lb(g, mid, F, -hd + t + 1, xa - xc, base - 1 - F, 2, lining, false);               // the bay's back, dark, seen with the bed out
-  pipe(g, 0, B.back_h - 1.2, -hd + t - 1.2, W - 6, seam, true); pipe(g, xi - 1.2, B.back_h - 1.2, (-hd + t + L) / 2 + 1, L + hd - t - 4, seam);
   // the arm: a deep bridge, the two stools tucked under it from the side (they stand a little proud of it, as in the photos)
   const ax = (xa + hw) / 2;
-  cush(g, ax, B.arm_h - 20, 0, B.arm, 20, D, fab, 1.4, 0.8, 6);
+  cush(g, ax, B.arm_h - 20, 0, B.arm, 20, D, fab, 1.4, 0.8, 6, WT);
   for (const z of [-hd + 3, hd - 3]) cush(g, ax, F, z, B.arm, B.arm_h - 20 - F + 2, 6, fab, 0, 0.5, 2);
   cush(g, xa + 2, F, 0, 4, B.arm_h - 20 - F + 2, D - 10, fab, 0, 0.3, 1);
-  for (const x of [xa + 1.5, hw - 1.5]) pipe(g, x, B.arm_h - 1.8, 0, D - 10, seam);
-  pipe(g, ax, B.arm_h - 1.8, hd - 1.6, B.arm - 8, seam, true);
   // V3.74, client: "Give function to move its built in side seats": the two stools slide out of the arm's side together (Pull the stools
   // out), to sit on or put your feet up; one group, so one draw a material
   const T_ = B.stool, tx = hw - T_.w / 2 + 3, stG = new THREE.Group(), stTf = []; g.add(stG);
-  for (const z of [-T_.d / 2 - 1, T_.d / 2 + 1]) { cush(stG, tx, 4, z, T_.w, T_.h - 4, T_.d, fab, 1.5, 0.7, 4);
-    pipe(stG, tx, T_.h - 0.6, z + T_.d / 2 - 0.8, T_.w - 4, seam, true); for (const dx of [-0.22, 0.22]) stTf.push([tx + dx * T_.w, T_.h + 1.3, z]);
+  for (const z of [-T_.d / 2 - 1, T_.d / 2 + 1]) { cush(stG, tx, 4, z, T_.w, T_.h - 4, T_.d, fab, 1.5, 0.7, 4, { welt: 0.45, bottom: true, dim: [[-0.22 * T_.w, 0], [0.22 * T_.w, 0]], tf: stTf });
     for (const dx of [-1, 1]) for (const dz of [-1, 1]) lb(stG, tx + dx * (T_.w / 2 - 4), 0, z + dz * (T_.d / 2 - 4), 4, 4, 4, steel); }
   tufts(stG, stTf, dimp); mergeStatic(stG);
   WORK.stools = anim(v => { stG.position.x = -B.stool_out * v * M; RS.st = v; sync(); });
   // the seats: two over the bed, the corner seat, the return's seat facing in; piped fronts, two buttons each
   const sz0 = hd - B.seat_d - 1, bz = (-hd + t + sz0) / 2, bd = sz0 + hd - t, crown = 1.6, sx = xi + bd;
-  const seat = (x0, x1, z0, z1, pipeFront) => { const w_ = x1 - x0 - 1, d_ = z1 - z0, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
-    cush(g, cx, base, cz, w_, cu, d_, fab, crown, 0.9, 3.5);
-    if (pipeFront) { pipe(g, cx, base + cu - 0.8, z1 + 0.2, w_ - 5, seam, true); pipe(g, cx, base + 0.8, z1 + 0.2, w_ - 5, seam, true); }
-    for (const f of [-0.25, 0.25]) for (const k of [-0.22, 0.22]) tf.push([cx + f * w_, base + cu + crown * 0.8 - 0.25, cz + k * d_]); };   // V3.74: four buttons a seat, as the photos
-  seat(xc, mid, sz0, hd - 1, true); seat(mid, xa, sz0, hd - 1, true); seat(sx, xc, sz0, hd - 0.5, false); seat(sx, xc, hd + 0.5, L - 1, true);
+  const seat = (x0, x1, z0, z1) => { const w_ = x1 - x0 - 1, d_ = z1 - z0, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;   // V3.74: four buttons a seat, as the photos; V3.84 (N136): pressed in
+    cush(g, cx, base, cz, w_, cu, d_, fab, crown, 0.9, 3.5, { welt: 0.5, bottom: true, dim: [-0.25, 0.25].flatMap(f => [-0.22, 0.22].map(k => [f * w_, k * d_])), tf }); };
+  seat(xc, mid, sz0, hd - 1); seat(mid, xa, sz0, hd - 1); seat(sx, xc, sz0, hd - 0.5); seat(sx, xc, hd + 0.5, L - 1);
   // the backs: three along the run (the corner's in its corner), two down the side, leaning back, up to the headrests (V3.75: 81, the frame's top)
-  for (const [x0, x1] of [[xc, mid], [mid, xa], [xi, xc]]) { const c = cush(g, (x0 + x1) / 2, sh, bz, x1 - x0 - 1, B.back_h - sh - 3, bd, fab, 2.2, 1.4, 6); c.rotation.x = -0.1; }
-  for (const [z0, z1] of [[bz + bd / 2, hd - 0.5], [hd + 0.5, L - 1]]) { const c = cush(g, xi + bd / 2, sh, (z0 + z1) / 2, bd, B.back_h - sh - 3, z1 - z0, fab, 2.2, 1.4, 6); c.rotation.z = -0.1; }
+  for (const [x0, x1] of [[xc, mid], [mid, xa], [xi, xc]]) { const c = cush(g, (x0 + x1) / 2, sh, bz, x1 - x0 - 1, B.back_h - sh - 3, bd, fab, 2.2, 1.4, 6, WT); c.rotation.x = -0.1; }
+  for (const [z0, z1] of [[bz + bd / 2, hd - 0.5], [hd + 0.5, L - 1]]) { const c = cush(g, xi + bd / 2, sh, (z0 + z1) / 2, bd, B.back_h - sh - 3, z1 - z0, fab, 2.2, 1.4, 6, WT); c.rotation.z = -0.1; }
   /* V3.75, client: "The headrests look like they just flip upwards but current render has armed lifts on making the headrest lift with a
      gap in between it and the sofa": the listing's Clic-Clac headrests. Each is a pad lying on the back frame (B.head: 30 deep, 14 thick, 8
      over the frame's front onto the back cushion's top), hinged at the frame's front top edge; Raise flips it up 74° on that hinge, its foot
@@ -126,7 +142,7 @@ function buildSofaBed() {
      seat, the middle, the corner; two down the side: the corner, the end), one group each */
   const HD = B.head, hup = HD.up * Math.PI / 180; WORK.hr = [];
   const headrest = (x, z, span, side) => { const hg = new THREE.Group(), w_ = Math.min(HD.w, span - 2); hg.position.copy(v3(x, B.back_h, z)); g.add(hg);
-    if (side) cush(hg, HD.over - HD.d / 2, 0, 0, HD.d, HD.t, w_, fab, 1.3, 1.1, 5.5); else cush(hg, 0, 0, HD.over - HD.d / 2, w_, HD.t, HD.d, fab, 1.3, 1.1, 5.5);
+    if (side) cush(hg, HD.over - HD.d / 2, 0, 0, HD.d, HD.t, w_, fab, 1.3, 1.1, 5.5, WT); else cush(hg, 0, 0, HD.over - HD.d / 2, w_, HD.t, HD.d, fab, 1.3, 1.1, 5.5, WT);
     mergeStatic(hg);
     const i = WORK.hr.length; WORK.hr.push(anim(v => { if (side) hg.rotation.z = hup * v; else hg.rotation.x = hup * v; RS.hr[i] = v; sync(); })); };
   for (const [x0, x1] of [[mid, xa + 12], [xc, mid], [xi, xc]]) headrest((x0 + x1) / 2, -hd + t, x1 - x0, false);   // the arm seat's over the arm's back too
@@ -144,8 +160,8 @@ function buildSofaBed() {
   for (const dx of [-0.25, 0.25]) { const lp = new THREE.Mesh(vcol(new THREE.TorusGeometry(0.035, 0.007, 6, 14, Math.PI), fab), fab);
     lp.position.copy(v3(mid + dx * bw, top0 - 3, hd + 0.6)); lp.rotation.z = Math.PI; lp.scale.y = 2.6; bed.add(shadow(lp)); }
   for (const dx of [-1, 1]) { lb(bed, mid + dx * (bw / 2 - 6), 0, hd - 6, 3.2, 4, 3.2, steel); lb(bed, mid + dx * (bw / 2 - 3), 6, (uz0 + hd - 4) / 2, 2, 2, ud - 6, steel, false); }
-  cush(top, mid, 14, (uz0 + hd - 4) / 2, bw - 2, top0 - 14, ud - 4, fab, 1.2, 0.6, 3);
-  tufts(top, [-0.3, 0, 0.3].flatMap(f => [-0.25, 0.25].map(k => [mid + f * bw, top0 + 1.0 - 0.25, (uz0 + hd - 4) / 2 + k * (ud - 4)])), dimp);
+  { const tt = []; cush(top, mid, 14, (uz0 + hd - 4) / 2, bw - 2, top0 - 14, ud - 4, fab, 1.2, 0.6, 3, { welt: 0.4, dim: [-0.3, 0, 0.3].flatMap(f => [-0.25, 0.25].map(k => [f * bw, k * (ud - 4)])), tf: tt });
+    tufts(top, tt, dimp); }
   for (const z of [uz0 + 6, hd - 12]) lb(top, mid, 12, z, bw - 14, 2, 2, steel, false);
   for (const dx of [-1, 1]) lb(top, mid + dx * (bw / 2 - 8), 12, (uz0 + hd - 4) / 2, 2, 2, ud - 10, steel, false);   // the platform's black frame
   mergeStatic(bed); mergeStatic(top);
@@ -190,10 +206,9 @@ function buildSofaBed() {
   lb(c, 0, bodyH - 22, 0, C.w - 6.2, 0.3, C.d - 6.2, lining, false);
   { const lp = new THREE.Mesh(vcol(new THREE.TorusGeometry(0.03, 0.006, 6, 14, Math.PI), fabC), fabC); lp.position.copy(v3(-C.w / 2 + 22, bodyH - 4, C.d / 2 + 0.7)); lp.rotation.z = Math.PI; lp.scale.y = 1.8; c.add(shadow(lp)); }
   const hinge = new THREE.Group(); hinge.position.copy(v3(0, bodyH, -C.d / 2)); c.add(hinge);
-  cush(hinge, 0, 0, C.d / 2, C.w, lidH, C.d, fabC, 1.4, 0.8, 3.5);
-  pipe(hinge, 0, 0.6, C.d + 0.2, C.w - 6, seamC, true);
+  const ltf = []; cush(hinge, 0, 0, C.d / 2, C.w, lidH, C.d, fabC, 1.4, 0.8, 3.5, { welt: 0.5, bottom: true, dim: [-0.3, 0, 0.3].flatMap(f => [-0.22, 0.22].map(k => [f * C.w, k * C.d])), tf: ltf });
   lb(hinge, 0, -0.2, C.d / 2, C.w - 6, 0.3, C.d - 6, lining, false);
-  tufts(hinge, [-0.3, 0, 0.3].flatMap(f => [-0.22, 0.22].map(k => [f * C.w, lidH + 1.2 - 0.25, C.d / 2 + k * C.d])), dimpC);
+  tufts(hinge, ltf, dimpC);
   const struts = new THREE.Group(); c.add(struts);
   for (const x of [-(C.w / 2 - 8), C.w / 2 - 8]) { const st = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.3, 8), steel);
     st.position.copy(v3(x, bodyH + 2, -C.d / 2 + 14)); st.rotation.x = -0.7; struts.add(st); }

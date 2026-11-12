@@ -3,11 +3,11 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V3.84 (12 Nov 2026). V3.84 (N140): the living room's options in what they're made of (knit, cloth, rattan,
-seagrass, glaze, oak and walnut grain). V3.83 (N140): the lift-top coffee table on its legs (its box floated), + Add's pieces'
-materials. V3.82 (N138): make up the sofa bed; its chaise a real storage box. V3.81 (N137): the sofa bed's cushions shaded where
-they meet. V3.80 (N149): every room's floor card lists what's taken out. V3.79 (N144): the phone's top rows.
-The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.84 ↻"): on the
+**Version:** V3.85 (12 Nov 2026). V3.85 (N136): the sofa bed's piping a ridge in each cushion's edge; its buttons in
+pressed-in dimples. V3.84 (N140): the living room's options in what they're made of. V3.83 (N140): the lift-top coffee table
+on its legs, + Add's pieces' materials. V3.82 (N138): make up the sofa bed; its chaise a real storage box. V3.81 (N137): the
+sofa bed's cushions shaded where they meet. V3.80 (N149): every room's floor card lists what's taken out.
+The version shows faintly by "Demma's Home" top left (not on an iPhone SE) and in Plan as a refresh button ("V3.85 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 20 (12 Nov: the upgrade review, N135–N156 in streams A–G). A new team starts with
@@ -79,8 +79,8 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 **The living room (the media wall project):**
 - The sofa bed (Lovesofas Amelia, Blade Green; an option, no buy rows) is the room's sofa; Room → The sofa swaps yours back.
 - Its bed pulls out and lifts on a scissor frame; its five headrests flip up on hinges; its stools slide out; its chaise lifts.
-  Its cushions carry their own shade where they meet (V3.81). Pulled out, Make up the bed lays a duvet and pillows on it; the
-  chaise's storage holds the bedding (V3.82).
+  Its cushions carry their own shade where they meet (V3.81), piping in their edges and buttons in dimples (V3.85). Pulled out,
+  Make up the bed lays a duvet and pillows on it; the chaise's storage holds the bedding (V3.82).
 - The lift-top coffee table is the plan's, in oak, on four legs, its top's shadow line (V3.83); the record table is an option.
 - Edit: drag, turn, nudge (5 cm, Shift 1 cm), recolour, Take it out, + Add (the catalogue, and what's out at its head).
 - Any piece standing in the room has Take it out on its card. Room → Taken out lists what's out, a tap each to put it back.
