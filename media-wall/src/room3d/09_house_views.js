@@ -92,16 +92,16 @@ function bulbHalos() {
     r.addColorStop(0, "rgba(255,255,255,1)"); r.addColorStop(0.3, "rgba(255,255,255,0.42)"); r.addColorStop(0.65, "rgba(255,255,255,0.1)"); r.addColorStop(1, "rgba(255,255,255,0)");
     g.fillStyle = r; g.fillRect(0, 0, w, h); });
   const mat = new THREE.MeshBasicMaterial({ map: tex, color: "#ffcf98", transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false });
-  mat.visible = false; HALO = { mat };
+  HALO = { mat, ms: [] };   // V3.77: the meshes hidden, not the material: a hidden material's shader was still built for the first picture (21 to 22); hidden meshes wait for the idle warm-up (precompile)
   const geo = new THREE.CircleGeometry(48 * M, 28); geo.rotateX(Math.PI / 2);   // facing down
   for (const F of Object.values(R.HOUSE3.floors)) for (const L of F.lights || []) { const g = FIN_PEND[L.room]; if (!g || L.drop != null) continue;
-    const me = new THREE.Mesh(geo, mat); me.position.copy(v3(L.x, L.y + 1.6, L.z)); me.renderOrder = 4; me.userData.halo = true; g.add(me); }
+    const me = new THREE.Mesh(geo, mat); me.position.copy(v3(L.x, L.y + 1.6, L.z)); me.renderOrder = 4; me.userData.halo = true; me.visible = false; g.add(me); HALO.ms.push(me); }
   return HALO;
 }
 function haloShow() {
   const h = bulbHalos(); if (!h) return;
   const on = !!ROOMV() && (RMODE === "in" || RMODE === "stand") && !(HMATS && HMATS.ceiling && !HMATS.ceiling.visible), day = S.tod === "day";
-  h.mat.visible = on; if (!on) return;
+  for (const me of h.ms) me.visible = on; if (!on) return;
   h.mat.color.copy(warmColour()); h.mat.opacity = day ? 0.1 : 0.26;
 }
 /* v69, the client: "increasing the render quality to be more realistic like our living room version": in a room of the house, its
