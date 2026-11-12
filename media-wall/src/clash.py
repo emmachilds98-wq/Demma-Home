@@ -75,11 +75,12 @@ def pieces():
         b.append(box("sofa bed's chaise", (g.SOFABED_X[0], g.SOFABED_X[0] + SB["chaise"]["w"]), (0, SB["chaise"]["h"] + 2), (zs, SB["end_z"])))
         st = SB["stool"]; zc = g.SOFA_BACK_Z + SB["run_d"] / 2
         b.append(box("sofa bed's stools", (g.SOFABED_X[1] - st["w"] + 4 - 0.1, g.SOFABED_X[1] + 4), (0, st["h"]), (zc - st["d"] - 1, zc + st["d"] + 1)))
-    b.append(box("record table", g.COFFEE["x"], (0, g.RECORD_TABLE["h"]), g.COFFEE["z"]))      # v38: the plan's coffee table
+    b.append(box("record table", g.COFFEE["x"], (0, g.RECORD_TABLE["h"] if "recordtable" in g.FIRM["sugg"] else g.LIFT_COFFEE["h"]), g.COFFEE["z"]))   # v38: the plan's coffee table (V3.74: the lift-top; the name kept for the rules below)
     import ideas as _I                                                                              # v43: the C-table, in the plan
     T, ze = _I.CTABLE, (g.SOFABED["end_z"] if getattr(g, "SOFABED", {}).get("default") else g.CHAISE_END_Z)   # V3.73: at the shown sofa's open end
-    b.append(box("C-table's top", T["x"], (T["top"] - T["t"], T["top"]), (ze - T["over"], ze - T["over"] + T["depth"])))
-    b.append(box("C-table's foot and upright", T["x"], (0, T["top"] - T["t"]), (ze - 3, ze - T["over"] + T["depth"])))
+    if "ctable" in g.FIRM.get("ideas", []):                                     # V3.74: only while it's in the plan
+        b.append(box("C-table's top", T["x"], (T["top"] - T["t"], T["top"]), (ze - T["over"], ze - T["over"] + T["depth"])))
+        b.append(box("C-table's foot and upright", T["x"], (0, T["top"] - T["t"]), (ze - 3, ze - T["over"] + T["depth"])))
     po = g.SOFA_POUF
     b.append(box("ottoman", po["x"], (0, po["h"]), po["z"]))
     bb = g.BLANKET_BASKET
@@ -191,10 +192,16 @@ def moving_pieces():
                        (zr - (D["depth"] - 8), zr)))
     Rt, cf = G.RECORD_TABLE, G.COFFEE
     # v38: the record table's lid, open on its piano hinge along the TV side (stood up about 80°, the stays' stop)
-    out.append(box("record table's lid, open", cf["x"], (Rt["h"], Rt["h"] + Rt["d"]), (cf["z"][1] - Rt["lid"] - 9.0, cf["z"][1])))
+    if "recordtable" in G.FIRM["sugg"]:
+        out.append(box("record table's lid, open", cf["x"], (Rt["h"], Rt["h"] + Rt["d"]), (cf["z"][1] - Rt["lid"] - 9.0, cf["z"][1])))
+    else:                                                          # V3.74: the lift-top's top up, its full size over the table
+        L = G.LIFT_COFFEE
+        out.append(box("record table's top, lifted", cf["x"], (L["h"], L["lift"] + 2.0), cf["z"]))
     if getattr(G, "SOFABED", None):                               # V3.73: the sofa bed's bed out, and the record table stepped aside for it
         SB, fz, x0 = G.SOFABED, G.SOFABED_FRONT_Z, G.SOFABED_X[0] + G.SOFABED["corner"]
         out.append(box("sofa bed, pulled out", (x0 + 1, G.SOFABED_X[1] - SB["arm"] - 1), (0, SB["seat_h"]), (fz, fz + SB["bed_out"] + SB["bed_over"])))   # as far as it goes
+        st, so_, zc = SB["stool"], SB["stool_out"], G.SOFA_BACK_Z + SB["run_d"] / 2   # V3.74: the stools slid out of the arm's side
+        out.append(box("sofa bed's stools, out", (G.SOFABED_X[1] - st["w"] + 4 + so_, G.SOFABED_X[1] + 4 + so_), (0, st["h"]), (zc - st["d"] - 1, zc + st["d"] + 1)))
         out.append(box("record table, moved for the bed", cf["x"], (0, Rt["h"]), (cf["z"][0] + SB["cof_out"], cf["z"][1] + SB["cof_out"])))
     return out
 
@@ -289,7 +296,7 @@ def report():
         for p in P:
             if p[0] == "record table" and (m[0].startswith("record table") or m[0] == "sofa bed, pulled out"):
                 continue                                           # it steps aside for the bed (the moved box is checked instead)
-            if m[0] == "sofa bed, pulled out" and (any(p[0] in grp for grp in ONE_PIECE) or p[0] == "ottoman"):
+            if m[0].startswith("sofa bed") and (any(p[0] in grp for grp in ONE_PIECE) or p[0] == "ottoman"):
                 continue                                           # it comes out of the sofa; your ottoman goes with your sofa
             o = overlap(m, p)
             if all(v > EPS for v in o):

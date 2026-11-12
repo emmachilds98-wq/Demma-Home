@@ -479,6 +479,7 @@ it again; review it, or finish it if its PR has gone quiet (merge `main` in, tak
 | N128 | The sofa bed the room's sofa; the record table, ottoman and red lamp moved to suit it (the client, 11 Nov) | the sofa's thread | Done V3.73 |
 | N129 | The living room's lights layered: where each head points (the client, 11 Nov) | the sofa's thread | Done V3.73 |
 | N130 | The music room made better: listening triangle, panels, rug, headphones, mic (the client, 11 Nov) | the sofa's thread | Done V3.73 |
+| N131 | The sofa bed's render quality (its own chenille, true-scale weave), its stools out and headrests up; the lift-top coffee table the plan's; the C-table out (the client, 12 Nov) | the sofa's thread | Done V3.74 |
 | N31 | KTX2 photos | 13 | PR #133: paused, **do not merge** till Emma says yes |
 
 Done since section 18 was written: N109 V3.58, N114 V3.59, N118 V3.60, N119 V3.61. Waiting on Emma: `docs/HANDOVER.md` "Waiting on Emma" and

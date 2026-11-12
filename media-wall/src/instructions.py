@@ -488,13 +488,13 @@ def full():
             tools=["Detector", "SDS drill", "Drill-driver", "Spirit level", "Jigsaw or track saw", "Clamps"],
             draw=[],
             parts_full=[
-                ("The C-table", [                                                   # v43: in the plan; its own chapter (v44)
+                *([("The C-table", [                                                   # v43: in the plan; its own chapter (v44)
                     f"Cut the top {n(CT['top'][0])} × {n(CT['top'][1])}, the upright {n(CT['upright'][0])} × {n(CT['upright'][1])} and the foot {n(CT['foot'][0])} × {n(CT['foot'][1])} from the second 18 mm oak board; round the top's and the foot's outer corners (a 3 cm radius).",
                     "Glue and screw the upright to the top's outer edge with three 4 × 40 mm screws, counterbored and plugged, square to it; then the foot to the upright's bottom the same way.",
                     "Sand to 180 and give it two coats of hardwax oil.",
                     "Screw the 400 × 200 × 6 mm steel plate under the foot (four 4 × 20 mm screws through drilled holes), its back edge 1 cm in from the foot's; stick felt pads under the plate.",
                     f"Stand it at the sofa's open end, the foot's back edge just under the seat's edge, the top {n(ideas.CTABLE['over'])} over the seat. A full mug on the far edge mustn't make it rock.",
-                ]),
+                ])] if "ctable" in G.FIRM.get("ideas", []) else []),   # V3.74: out of the plan
                 ("The bar beside the cabinet", [
                     f"Measure the gap at the floor, at 45 and at 90: the cabinet's end to your shelf's end, less the 10 cm gap. Drawn: {n(g.BAR_BUILT['w'])} wide, {n(g.BAR_BUILT['d'])} deep.",
                     "Scribe the two ends to the cabinet's end and the wall, then glue and screw the floor, the shelf and the back between them; the plinth front set back 2.",
@@ -502,11 +502,11 @@ def full():
                     f"Fix the oak counter on top, {n(g.BAR_BUILT['top_t'])} thick, its front edge flush; hang the doors on soft-close hinges with a push catch (no handle to catch the table door).",
                     f"Over it: the ENHET frame on the wall, its bottom at {n(g.BAR_BUILT['enhet_y0'])}, plugged into the solid wall; the mirror behind it; the glasses on its shelves.",
                 ]),
-                ("The record table", [
+                *([("The record table", [
                     "Assemble the two KALLAX as IKEA shows, then lay them on their backs side by side and screw them together through the sides (4 × 30).",
                     f"Screw the 12 mm ply base to their open backs and the four castors to the base, 3 cm in from each corner.",
                     f"Hinge the oak lid ({n(g.RECORD_TABLE['w'])} × {n(g.RECORD_TABLE['d'])}) along one long side; fit both lid stays so it can't drop. Full of LPs it's about {n(g.RECORD_TABLE['kg'])} kg: roll it, don't lift it.",
-                ]),
+                ])] if "recordtable" in G.FIRM["sugg"] else []),   # V3.74: the lift-top is the plan's now (bought)
                 ("The wall cabinets", [
                     f"Mark the rail's line over the sofa's corner, the cabinets' bottoms at {n(g.WALL_CABS['y0'])}; detector first.",
                     "Screw IKEA's rail to the wall with 5 × 60 screws in brown plugs, level; hang the two EKET on it and tighten their fittings.",

@@ -501,7 +501,7 @@ CAP3D = {"3d_room": "The whole room from above the window side, the window wall 
          "3d_records_breast": "Your vinyl stand (70 \u00d7 32 \u00d7 78) on the chimney breast (layout A): two face-out bays on top.",
          "3d_plants_breast": "Layout B: the plant stand on the breast instead (the ledge comes off, the frames go up).",
          "3d_ideas_window": "Idea, not in the plan: glass plant shelves across the window's reveal, beside your plant stand in the west corner",
-         "3d_ideas_ctable": "The oak C-table over the sofa's open end, in your plan",
+         "3d_ideas_ctable": "The oak C-table over the sofa's open end (an idea)",
          "3d_glass_case": "The glass display case on the chimney breast, in the plan: 90 × 85 × 12, oak.",
          "3d_case_mixed": "The same case with a black frame and a bit of everything: 7-inch singles, a cap and figures, small plants.",
          "3d_case_singles": "The same case with a white frame, 7-inch singles face-out and a stack of tapes, in the Cosy preset",
@@ -996,7 +996,7 @@ def ring(key, hue, label, go):
 def before_after(prefix=""):
     """v39, UPGRADE_PLAN_v38 item 13 ("before and after: your own photos beside the 3D room from the same spot, with a slider")."""
     pairs = (("stairs", "The stairs wall, from the sofa", "The dining cabinet and the bar"),
-             ("window", "The window and the sofa, from the stairs", "The media wall and the record table"))
+             ("window", "The window and the sofa, from the stairs", "The media wall and the coffee table"))
     out = ""
     for k, t, cap in pairs:
         out += (f'<figure class="ba" style="--ba:50%"><div class="ba-box"><img src="{prefix}art/ba_{k}_after.webp" alt="{html.escape(t)}: the plan in 3D" loading="lazy" width="1200" height="900">'

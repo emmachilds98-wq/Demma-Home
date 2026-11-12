@@ -128,6 +128,7 @@ SHORT += [
     ("Your picks", "Two IKEA KUGGIS lidded boxes", "2", "IKEA KUGGIS box, 35 × 26 × 15"),
     ("Can wait (after you move in)", "Drawers in the bottom three steps", "1 set", "Step drawers: ply boxes, oak fronts, runners"),
     ("Your picks", "The blanket basket", "1", "Blanket basket, water hyacinth, 59 × 51 × 29"),
-    ("Your picks", "The record table", "1 set", "Record table: two KALLAX, oak lid, ply base, castors"),
-    ("Your picks", "The C-table", "1 set", "C-table: oak top, upright and foot, steel plate"),   # v44
+    *([("Your picks", "The record table", "1 set", "Record table: two KALLAX, oak lid, ply base, castors")] if "recordtable" in __import__("geometry").FIRM["sugg"] else []),
+    *([("Your picks", "The lift-top coffee table", "1", "Lift-top coffee table, 90 × 50 × 48, storage inside")] if "liftcoffee" in __import__("geometry").FIRM["sugg"] else []),   # V3.74
+    *([("Your picks", "The C-table", "1 set", "C-table: oak top, upright and foot, steel plate")] if "ctable" in __import__("geometry").FIRM.get("ideas", []) else []),   # v44; V3.74: out of the plan
 ]

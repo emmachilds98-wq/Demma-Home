@@ -138,10 +138,10 @@ function useMyScene(i) {
    Save my plan opens a chooser. What goes in is ticked (picks and costs, the set-up, colours and decor, lights, furniture moved or added,
    the link); each line names the choice and marks what differs from the plan. Share (the phone's share sheet), Copy, and on the shared
    page Save for us, which stores it with a name and the date in the page's database (setups), where we read it directly */
-const SETUP_KEYS = ["sofa", "sbed", "site", "dining", "cab", "cabw", "tdoor", "chairs", "beside", "plants", "seat", "lamp", "drawers", "curtains", "blind", "trolley", "ctop", "lid", "barflap", "sdraw", "foot", "lp", "laser", "lbox", "pc", "grow"];
+const SETUP_KEYS = ["sofa", "sbed", "stools", "site", "dining", "cab", "cabw", "tdoor", "chairs", "beside", "plants", "seat", "lamp", "drawers", "curtains", "blind", "trolley", "ctop", "lid", "barflap", "sdraw", "foot", "lp", "laser", "lbox", "pc", "grow"];
 const LAYER_NAME = { strip: "Ceiling strip", uprights: "Uprights and side shelf", bias: "TV backlight", bar1: "Spot bar 1", bar2: "Spot bar 2", lamp: "Red lamp", accent: "Accents" };
 const word = v => v === true ? "on" : v === false ? "off" : String(v);
-const SETUP_NAME = { sofa: "The sofa", sbed: "The sofa bed", site: "Where the table is", dining: "The table", cab: "The dining cabinet", cabw: "The table's width", tdoor: "The table door",
+const SETUP_NAME = { sofa: "The sofa", sbed: "The sofa bed", stools: "The sofa bed's stools", site: "Where the table is", dining: "The table", cab: "The dining cabinet", cabw: "The table's width", tdoor: "The table door",
   chairs: "The chairs", beside: "Beside the cabinet", plants: "The plant stand", seat: "The fold-down seat", lamp: "The red lamp", drawers: "Media wall drawers",
   curtains: "Curtains drawn", blind: "The blind", trolley: "The trolley", ctop: "The record table's lid", lid: "The record lifted out", barflap: "The bar's flap",
   sdraw: "The step drawers", foot: "The floor the open table needs", lp: "The ledge's LP", laser: "The laser lights", lbox: "The light box", pc: "The PC's glow", grow: "The grow lights" };

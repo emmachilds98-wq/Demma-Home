@@ -17,7 +17,7 @@ IDEAS = [
      "Your deep sill already takes a row of plants; two glass shelves above it make the window a green screen that still lets the light "
      "through. Studs into the reveal's sides, and a slim steel rod down from the head at the middle so a 235 span can't sag.",
      "Inside the window's 22 cm reveal, in front of the glass, clear of the curtains.", True),
-    ("ctable", "The oak C-table at the sofa's open end (in your plan)",
+    ("ctable", "The oak C-table at the sofa's open end",   # V3.74: out of the plan, an idea again
      "top 45 × 30 at 62, 12 over the seat", (8, 15),
      "The ottoman end has no arm for a drink. Its top reaches over the seat; its foot stands beside the sofa, weighed down by a steel "
      "plate. Oak from the second Snowdon board.",
@@ -316,8 +316,8 @@ OPTION_GROUPS = [
     ("blankets", "Your blankets (about five)", "one", "The plan's basket, or one of two others; pick one.",
      [("blanketbasket", "The plan's basket (water hyacinth)", {"sugg": "blanketbasket"}), ("cotswoldbasket", "The lidded seagrass one", {"sugg": "cotswoldbasket"}),
       ("rail", "An oak rail beside the cabinet", {"beside": "rail"})]),
-    ("coffee", "The coffee table", "one", "The plan's record table, or the lift-top; None is your own.",
-     [("recordtable", "The record table (the plan)", {"sugg": "recordtable"}), ("liftcoffee", "A lift-top coffee table", {"sugg": "liftcoffee"})]),
+    ("coffee", "The coffee table", "one", "The plan's lift-top with storage, or the record table; None is your own.",   # V3.74: the lift-top is the plan's
+     [("liftcoffee", "The lift-top with storage (the plan)", {"sugg": "liftcoffee"}), ("recordtable", "The record table", {"sugg": "recordtable"})]),
     ("corner", "The window corner", "one", "Your plant stand is here now. Pick one and it takes the corner.",
      [("windowseat", "A storage window seat", {"sugg": "windowseat"}), ("hallbench", "A bench with cubbies", {"sugg": "hallbench"}),
       ("wardrobe", "A built-in cupboard", {"sugg": "wardrobe"})]),

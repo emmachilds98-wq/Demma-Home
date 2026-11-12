@@ -277,6 +277,9 @@ root.addEventListener("click", e => {
   if (d.site) { S.site = d.site; applyState(); if (S.view === "dining") setView("dining"); }
   else if (d.dining) { S.dining = d.dining; S.tdoor = false; applyState(); if (S.view === "dining") setView("dining"); }   // v30: folding it shuts the door too
   else if (d.sofa) { S.sofa = d.sofa; if (S.sofa !== "bed") S.sbed = false; applyState(); }       // V3.71: your sofa or the green sofa bed
+  else if (d.stools) { S.stools = d.stools === "out"; if (S.stools) S.sofa = "bed"; applyState(); }   // V3.74: the sofa bed's stools out or in
+  else if (d.hr) { S.hr = Object.assign({}, S.hr, { [d.hr]: !(S.hr || {})[d.hr] }); applyState(); }   // V3.74: a headrest up or down
+  else if (d.hrall) { S.hr = d.hrall === "up" ? { 0: true, 1: true, 2: true, 3: true, 4: true } : {}; applyState(); }
   else if (d.sbed) { S.sbed = d.sbed === "out"; if (S.sbed) S.sofa = "bed"; applyState(); }          // V3.71: its bed pulled out
   else if (d.cabw) { S.cabw = d.cabw; applyState(); if (S.view === "dining" || S.view === "chairs") setView(S.view); }              // v33: the table 90 or 80 wide
   else if (d.tdoor) { S.tdoor = d.tdoor === "open"; if (S.tdoor && S.chairs === "open") S.chairs = "cupboard"; applyState(); }
