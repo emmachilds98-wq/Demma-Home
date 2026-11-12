@@ -986,7 +986,9 @@ FIRM = dict(
     svar={"blanketbasket": "natural", "stairdrawers": "oak", "wallcabs": "walnut", "shelfboxes": "white",
           "doorshelf": "white", "recordtable": "oak"},
     beside="bar", cabw="90", decor={"rug": "stripes", "ceiling": "stipple"},   # v45: the Artex stipple ceiling
-    ideas=["ctable"],                         # v43, client: "I want the c table in the current main plan"
+    # v43, client: "I want the c table in the current main plan"; V3.74, client (12 Nov 2026): "remove the c table over the end": out of
+    # the plan, an option to look at again (ideas.IDEAS), off in the room
+    ideas=[],
 )
 # v38 (the clash check): with the table out for six, the ottoman can't stay by the coffee table (the table's end reaches 7 into it, and
 # pushing it to the sofa doesn't clear that); its dinner spot is in front of the media wall, clear of the table, the chairs and the

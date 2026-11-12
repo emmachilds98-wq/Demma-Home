@@ -24,7 +24,7 @@ PIECES = [
          spec=[(14, ["Over the hall door"])], buy=["An oak shelf over the hall door", "Two IKEA KUGGIS lidded boxes"], cut="fitted",
          time="2 h", who="You", what="An oak shelf on two brackets over the hall door, two lidded boxes on it."),
     _from("cabinet", "dining"), _from("bar", "dining"),
-    _from("recordtable", "sofa"), _from("ctable", "sofa"),
+    _from("recordtable", "sofa"), *([_from("ctable", "sofa")] if "ctable" in G.FIRM.get("ideas", []) else []),   # V3.74: the C-table out of the plan
     dict(key="wallcabs", title="The wall cabinets", place="sofa", pic="render_v99_3d_sg_wallcabs.png",
          spec=[(14, ["The wall cabinets"])], buy=["Two IKEA EKET wall cabinets"], cut=None,
          time="2 h", who="You + a helper", what="Two glass-fronted cabinets on a rail over the sofa's corner."),

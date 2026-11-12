@@ -1439,5 +1439,6 @@ def ctable_zone():
 def zones():
     out = _zones_v42()
     i = next((i for i, z in enumerate(out) if z[0].startswith("Your picks")), len(out) - 1) + 1
-    out.insert(i, ctable_zone())
+    if "ctable" in G.FIRM.get("ideas", []):                                     # V3.74: only while it's in the plan
+        out.insert(i, ctable_zone())
     return out

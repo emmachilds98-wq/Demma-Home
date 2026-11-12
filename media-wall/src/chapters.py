@@ -52,6 +52,7 @@ MAKE = [
      ["Two IKEA EKET wall cabinets", "An oak shelf over the hall door", "Two IKEA KUGGIS lidded boxes"],
      "1 day", "You + a helper"),
 ]
+MAKE = [m for m in MAKE if m[0] != "ctable" or "ctable" in __import__("geometry").FIRM.get("ideas", [])]   # V3.74: the C-table out of the plan
 
 JOBS = [
     ("network", "The network", "The mesh up and the two switches, before any cables.", [(2, None)],

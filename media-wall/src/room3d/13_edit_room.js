@@ -201,7 +201,7 @@ function buildPlantsAndRecords() {
   if (IDEA_G.ctable) {
     const T = R.IDEAS.ctable, cx = (T.x[0] + T.x[1]) / 2, cz = R.SOFA.end;
     shell.remove(IDEA_G.ctable); IDEA_G.ctable.position.copy(v3(-cx, 0, -cz)); IDEA_G.ctable.position.x = cx * M; IDEA_G.ctable.visible = true;
-    movable("ctable", "The C-table", IDEA_G.ctable, () => ({ x: cx, z: cz, rot: 0 }), T.x[1] - T.x[0], T.depth, [], false, { when: () => !!S.ideas.ctable });
+    movable("ctable", "The C-table", IDEA_G.ctable, () => ({ x: cx, z: cz + openEndShift(), rot: 0 }), T.x[1] - T.x[0], T.depth, [], false, { when: () => !!S.ideas.ctable });   // V3.74: at the shown sofa's open end
     delete IDEA_G.ctable;
   }
   S.added.forEach(a => addThing(a, false));

@@ -2,7 +2,7 @@
 
 **Now (11 Nov 2026, V3.60):** what's open and who has it is `docs/REAL_PLAN.md` section 19; this page is brought to now by N121.
 
-**Latest (11 Nov 2026, V3.73, for the next agent):** the client is testing a sofa she may buy. V3.71 (#242, N126) added Room → The sofa:
+**Latest (12 Nov 2026, V3.74, for the next agent; V3.74 took the C-table out of the plan and gave the sofa bed its own chenille):** the client is testing a sofa she may buy. V3.71 (#242, N126) added Room → The sofa:
 Yours · Green sofa bed (the Lovesofas Amelia, Blade Green, 264 × 165, `geometry.SOFABED`, `fit.SOURCES["amelia"]`), its bed pulling
 out with the coffee table stepping aside, and Watch the bed open. V3.72 (#243, N127) gave it its upholstery detail. V3.73 (N128–N130)
 made it the room's sofa (yours one tap away), moved the record table, ottoman and red lamp to suit it, layered the living room's lights

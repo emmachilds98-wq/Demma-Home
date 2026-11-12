@@ -89,6 +89,8 @@ if (!S.v314) {  // V3.14, client: "It's now definite I also want the plant shelf
   S.v314 = 1; S.plants = DEF.plants; for (const k of ["plants", "records"]) if (S.layout && S.layout[k]) delete S.layout[k]; if (S.sugg) S.sugg.alcoveshelves = false; }
 if (!S.v373 && R.SOFABED && R.SOFABED.default) {   // V3.73, client: "make the new green version the main version showing in the room": once, a saved room moves to it
   S.v373 = 1; S.sofa = "bed"; S.sbed = false; }
+if (!S.v374) {   // V3.74, client: "remove the c table over the end": once, a saved room takes it away (it's an idea to switch on again)
+  S.v374 = 1; S.ideas = Object.assign({}, S.ideas, { ctable: false }); if (S.layout && S.layout.ctable) delete S.layout.ctable; }
 if (!S.scback && R.STAIR_CURTAIN) {   // N99: once, a saved room gets the stair curtain back, drawn open
   S.scback = 1; S.sugg = Object.assign({}, S.sugg, { stairscurtain: true }); S.scopen = true; }
 if (!S.v50) {   // v50, client: "make the natural default light a bit cosier and less overly light washed": once, a saved room moves to the new Evening

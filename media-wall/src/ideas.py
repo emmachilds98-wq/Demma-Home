@@ -17,7 +17,7 @@ IDEAS = [
      "Your deep sill already takes a row of plants; two glass shelves above it make the window a green screen that still lets the light "
      "through. Studs into the reveal's sides, and a slim steel rod down from the head at the middle so a 235 span can't sag.",
      "Inside the window's 22 cm reveal, in front of the glass, clear of the curtains.", True),
-    ("ctable", "The oak C-table at the sofa's open end (in your plan)",
+    ("ctable", "The oak C-table at the sofa's open end",   # V3.74: out of the plan, an idea again
      "top 45 × 30 at 62, 12 over the seat", (8, 15),
      "The ottoman end has no arm for a drink. Its top reaches over the seat; its foot stands beside the sofa, weighed down by a steel "
      "plate. Oak from the second Snowdon board.",

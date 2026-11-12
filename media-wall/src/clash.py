@@ -78,8 +78,9 @@ def pieces():
     b.append(box("record table", g.COFFEE["x"], (0, g.RECORD_TABLE["h"]), g.COFFEE["z"]))      # v38: the plan's coffee table
     import ideas as _I                                                                              # v43: the C-table, in the plan
     T, ze = _I.CTABLE, (g.SOFABED["end_z"] if getattr(g, "SOFABED", {}).get("default") else g.CHAISE_END_Z)   # V3.73: at the shown sofa's open end
-    b.append(box("C-table's top", T["x"], (T["top"] - T["t"], T["top"]), (ze - T["over"], ze - T["over"] + T["depth"])))
-    b.append(box("C-table's foot and upright", T["x"], (0, T["top"] - T["t"]), (ze - 3, ze - T["over"] + T["depth"])))
+    if "ctable" in g.FIRM.get("ideas", []):                                     # V3.74: only while it's in the plan
+        b.append(box("C-table's top", T["x"], (T["top"] - T["t"], T["top"]), (ze - T["over"], ze - T["over"] + T["depth"])))
+        b.append(box("C-table's foot and upright", T["x"], (0, T["top"] - T["t"]), (ze - 3, ze - T["over"] + T["depth"])))
     po = g.SOFA_POUF
     b.append(box("ottoman", po["x"], (0, po["h"]), po["z"]))
     bb = g.BLANKET_BASKET
