@@ -25,6 +25,19 @@ function duskVeil(on) {
     VEIL.material.clippingPlanes = []; VEIL.position.copy(v3((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2)); VEIL.raycast = () => {}; VEIL.renderOrder = 5; VEIL.name = "duskVeil"; scene.add(VEIL); }
   VEIL.visible = on;
 }
+/* V3.92 (N143): soft cloud in the sky, painted in the sky's own shader before the first sky is made (the one shown and the one the
+   house's reflections are made from share it: no new draw, no new shader). It thins to nothing at the horizon and takes the sky's own
+   colour: white by day, warm at dusk, dark at night */
+if (!Sky.SkyShader.fragmentShader.includes("cloudFbm")) Sky.SkyShader.fragmentShader = Sky.SkyShader.fragmentShader
+  .replace("void main() {", `float cloudH(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+float cloudN(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(cloudH(i), cloudH(i + vec2(1.0, 0.0)), f.x), mix(cloudH(i + vec2(0.0, 1.0)), cloudH(i + vec2(1.0, 1.0)), f.x), f.y); }
+float cloudFbm(vec2 p) { float s = 0.0, a = 0.5; for (int k = 0; k < 5; k++) { s += a * cloudN(p); p = p * 2.03 + vec2(17.1, 9.2); a *= 0.5; } return s; }
+void main() {`)
+  .replace("gl_FragColor = vec4( retColor, 1.0 );", `vec3 cdir = normalize( vWorldPosition - cameraPosition );
+			if ( cdir.y > 0.0 ) { vec2 cp = cdir.xz / ( cdir.y + 0.12 ) * 2.2; float cov = smoothstep( 0.5, 0.78, cloudFbm( cp + vec2( 3.7, 1.3 ) ) ) * smoothstep( 0.0, 0.2, cdir.y );
+				float lum = dot( retColor, vec3( 0.299, 0.587, 0.114 ) ); retColor = mix( retColor, mix( retColor, vec3( lum ) * 1.35 + retColor * 0.25, 0.75 ), cov * 0.8 ); }
+			gl_FragColor = vec4( retColor, 1.0 );`);
 function outdoor() {
   const house = !!(R.HOUSE3 && S.view === "house" && hfloor === "all"), room = roomOut(), on = house || room;
   if (on && !OUT.sky) {
