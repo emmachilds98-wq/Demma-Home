@@ -3,15 +3,15 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.4 (12 Nov 2026). V4.4 (N165, N164): a steadier speed check; the phone's top row checked. V4.3 (N167):
+**Version:** V4.5 (12 Nov 2026). V4.5 (N169): the plot's edge soft, the sky hazy at the horizon. V4.4 (N165, N164): a steadier speed check; the phone's top row checked. V4.3 (N167):
 bedroom 3's two artisan oak cube shelves and the oak flip-up table. V4.2 (N159, N166): the house framed to the screen; the
 budgets lowered. V4.1 (N157, N158): the house on its own unless Gardens or Next door is on; a PC's drag swings the view the way
 you drag. V4.0 (N162): Home Plan V4.
-The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.4 ↻"): on the
+The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.5 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 21 (12 Nov: Home Plan V4, the house on its own, its real surroundings, the views; open: N160, N161 on the client's screenshots,
-N163–N165, N168, N169). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier task's state.
+N163–N165, N168). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier task's state.
 
 ## Where it lives
 - **The site:** https://emmachilds98-wq.github.io/Demma-Home/, built and published by `.github/workflows/build.yml` on every push to
@@ -68,7 +68,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 - The artex finer and softer (V3.76). Floors and tiles made here: laminate planks, marble, metro, herringbone, LVT, porcelain.
 - Doors' painted grain, gloss brush strokes, uPVC's peel. Frosted glass glows by day. Mirrors reflect the room in HD standing still.
 - Room views sit on the page's cream, not black.
-- Outside: a real sky with soft cloud (V3.92), a patchwork lawn, the back garden as its photos, a stand-in street out front
+- Outside: a real sky with soft cloud (V3.92) that fades into the haze at the horizon, so the ground has no hard edge (V4.5), a patchwork lawn, the back garden as its photos, a stand-in street out front
   (not the real one).
 
 **Change the house** (`23_finish.js`, `docs/NOTES.md` section 5 for Look's rows):
