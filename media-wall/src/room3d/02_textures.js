@@ -243,9 +243,10 @@ const flatNormal = () => canvasTex(4, 4, (g, w, h) => { g.fillStyle = "#8080ff";
 const OAK_NRM = flatNormal(), CORD_NRM = flatNormal(), ARTEX_NRM = flatNormal();
 CORD_NRM.repeat.set(1.44, 0.6);          // the photo's 100 ribs a copy: 144 across a cushion, as the drawn cord's
 ARTEX_NRM.repeat.set(8, 8);              // V2.2: the living room's ceiling in artex (the house's stipple, 0.5 m a copy on a ~4 m piece)
+const SATIN_NRM = flatNormal(); SATIN_NRM.repeat.set(1.2, 1.2);   // N142 (V4.11): the media wall's painted boards: the satin's fine strokes (the house's gloss, 0.5 m a copy on GRAIN's 0.6 m)
 photoInto(OAK_TEX, "lr_oak", "map"); photoInto(OAK_NRM, "lr_oak", "nor");
 photoInto(HESSIAN, "lr_hessian", "map"); photoInto(CORD_NRM, "lr_cord", "nor"); photoInto(ARTEX_NRM, "artex", "nor");
-photoInto(CARPET, "carpet_grey", "tmap"); photoInto(OATMEAL, "carpet", "tmap");   // the house's Carpet012, in your grey and the oatmeal
+photoInto(SATIN_NRM, "gloss", "nor"); photoInto(CARPET, "carpet_grey", "tmap"); photoInto(OATMEAL, "carpet", "tmap");   // the house's Carpet012, in your grey and the oatmeal
 /* V4.4 (N141): the sofa bed's chenille (V3.74, V3.75) is made at build (build_textures.py --fabrics, pixel for pixel what was drawn here
    at every load) and comes with the photos on every device; until then its mean colour and a flat relief, the same texture objects */
 const fabricTex = (k, srgb, fill) => { const t = canvasTex(4, 4, g => { g.fillStyle = fill; g.fillRect(0, 0, 4, 4); }, srgb);

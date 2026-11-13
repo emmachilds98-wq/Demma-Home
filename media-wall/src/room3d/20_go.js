@@ -15,8 +15,8 @@ const SUNCFG = { lux: 80, out: 0.5 };   // tuned on stills: the bars' shadows re
 const HTEX = {}, HI_T = new Set(["tile_w", "tile_f", "door_wood", "chalk"]);
 /* V2.56 (REAL_PLAN R3): the finishes without a photo take one of ours (build_textures.finishes): uPVC's peel, gloss paint's strokes, brushed
    metal; these keep their own colour over a white detail map (TINT) */
-const HTEX_AS = { artisan: "oak", frame_out: "upvc", door_out: "upvc", gutter: "upvc", sill_board: "upvc", skirting: "gloss", door_white: "joinery", door_cream: "joinery", door_wood: "joinery", newel: "joinery", rail_white: "gloss", steel: "brushed", steel_dark: "brushed" };
-const HTEX_TINT = new Set(["upvc", "gloss", "brushed", "joinery"]);   // N111: the doors' painted timber, its grain up the leaf (the skirting's strokes along it, gloss)
+const HTEX_AS = { artisan: "oak", frame_out: "upvc", door_out: "upvc", gutter: "upvc", sill_board: "upvc", skirting: "gloss", door_white: "joinery", door_cream: "joinery", door_wood: "joinery", newel: "joinery", rail_white: "gloss", steel: "brushed", steel_dark: "brushed", wardrobe: "melamine" };   // N142 (V4.11): the white units' foil
+const HTEX_TINT = new Set(["upvc", "gloss", "brushed", "joinery", "melamine"]);   // N111: the doors' painted timber, its grain up the leaf (the skirting's strokes along it, gloss)
 const BED_TINT = new Set(["duvet", "pillow", "artisan"]);   // V4.3: and artisan oak, a hair warmer than the oak it shares   // V3.66 (N113): the bedding's own colour over its cotton photo, a hair below white (it drew the photo at full white: clipped on a phone)
 /* V3.36 (N87): the soft things still flat colour in their own colours over the cotton's white, each with a relief of its kind: the
    tapestry's dark border and the roller blinds woven as the chair-bed, the music room's felt panels knitted, the bath mats' pile as the
@@ -156,7 +156,6 @@ function houseTex(k) {
     for (const yy of [0.12, 0.88]) { g.fillStyle = "rgba(0,0,0,0.12)"; g.fillRect(0, h * yy, w, 6); } }];
   T.door_wood = [0.8, 1.0, (g, w, h) => grain(g, w, h, "#b0713f", "rgba(110,60,25,", 70, 12)];
   T.door_white = [0.8, 0.8, (g, w, h) => { g.fillStyle = "#efece5"; g.fillRect(0, 0, w, h); noise(g, w, h, 6000, 0.05, ["#d8d4cb"]); }];
-  T.wardrobe = [0.8, 0.8, (g, w, h) => { g.fillStyle = "#f2f1ec"; g.fillRect(0, 0, w, h); noise(g, w, h, 5000, 0.04, ["#dcdad3"]); }];
   T.rug = [0.25, 0.25, (g, w, h) => weave(g, w, h, "#8e4a32", ["#7a3d28", "#a35a3e", "#86452e"], 8, 0.5)];   // V3.73: the music room's rug, rust
   T.storebox = [0.3, 0.3, (g, w, h) => weave(g, w, h, "#c9c1b2", ["#b9b1a2", "#d6cfc1"], 8, 0.4)];
   T.tapestry = [0.4, 0.4, (g, w, h) => weave(g, w, h, "#d9892a", ["#c97a20", "#e39a3c", "#d08327"], 6, 0.35)];

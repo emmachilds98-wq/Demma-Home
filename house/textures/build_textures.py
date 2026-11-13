@@ -292,7 +292,9 @@ def tiles():
 # grain (the steel); these three are white detail maps (the viewer keeps each material's own colour over them, 20_go.js TINT). The
 # dormer's cheeks, as the back photo: dark-stained timber weatherboards 15 high, each lapped over the one below, the grain along them.
 MADE = {"upvc": (0.5, 512, "peel"), "gloss": (0.5, 512, "paint"), "brushed": (0.3, 512, "brushed"), "hung": (0.6, 1024, "boards"),
-        "joinery": (0.6, 512, "timber")}   # N111: the doors and their frames: painted timber, the grain's lines under the satin
+        "joinery": (0.6, 512, "timber"),   # N111: the doors and their frames: painted timber, the grain's lines under the satin
+        "melamine": (0.4, 512, "foil")}    # N142 (V4.11): the white KALLAX-type units (MATS wardrobe): a melamine foil's fine pressed
+                                           # stipple, a hair deep, and its sheen breaking up a little (they were flat, a drawn speckle)
 
 
 def finishes():
@@ -314,6 +316,9 @@ def finishes():
             ln = (0.5 + 0.5 * np.cos(2 * np.pi * (14 * x + 1.5 * w))) ** 6     # 14 thin ridges a picture, ~4 cm apart, wide flats
             st = fbm(px, 57, 2, 6, 40).T                                       # the brush, along them
             h = peel * 0.008 + st * 0.012 + ln * 0.035; tone = 1 - 0.012 * st - 0.01 * ln; r = 0.8 + (st - 0.5) * 0.08 - 0.04 * ln
+        elif kind == "foil":                                                   # a pressed stipple under 1 mm, its satin a little uneven
+            fine = fbm(px, 58, 64, 2)
+            h = fine * 0.02 + peel * 0.004; tone = 1 - 0.008 * fine; r = 0.85 + (fine - 0.5) * 0.12
         elif kind == "brushed":
             st = fbm(px, 54, 1, 7, 160)                                        # fine grain one way, a hair deep
             h = st * 0.006; tone = 0.97 + 0.05 * st; r = 0.85 + (st - 0.5) * 0.25
