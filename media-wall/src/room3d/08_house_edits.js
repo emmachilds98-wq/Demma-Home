@@ -3,8 +3,7 @@ let HBUILD = null;     // V1: builds (or rebuilds, with edits) one floor of the 
 const HEDITS = {};     // V1 (Phase 3): the client's edits, {item id: {from: box, to: box, op?: the opening's old and new edges}}
 let NOWV = false;      // V3.90 (N151): As it is: the house without your colours and changes, shown only (23_finish.js nowMode)
 const mapAx = (v, f0, f1, t0, t1) => (f1 - f0 < 0.01 ? v + (t0 - f0) : t0 + (v - f0) * (t1 - t0) / (f1 - f0));
-/* V2.33 (REAL_PLAN R6): a piece turned a quarter (E.turn, 1-3) about the centre of its new box, after its size and place: a box's x and z
-   swap round that centre, a turned shape's centre goes round with it, a profile's extrusion changes axis (turnPrism) */
+/* V2.33: a quarter turn (E.turn, 1-3) about the new box's centre; a profile's extrusion changes axis (turnPrism) */
 const turnBox = (b, cx, cz) => [cx - (b[5] - cz), b[1], cz + (b[0] - cx), cx - (b[2] - cz), b[4], cz + (b[3] - cx)].map(v => Math.round(v * 10) / 10);
 function editXf(E) {
   const f = editScale(E), q = (E.turn || 0) % 4; if (!q || E.removed) return f;
@@ -84,9 +83,8 @@ function mapPrism(P, f) {
     const pts = P.pts.map(([u, w]) => { const q = P.axis === "x" ? f([0, w, u, 0, w, u]) : f([u, w, 0, u, w, 0]); return P.axis === "x" ? [q[2], q[1]] : [q[0], q[1]]; });
     const ab = P.axis === "x" ? f([P.a, 0, 0, P.b, 0, 0]) : f([0, 0, P.a, 0, 0, P.b]); return Object.assign({}, P, { pts, a: P.axis === "x" ? ab[0] : ab[2], b: P.axis === "x" ? ab[3] : ab[5] });
 }
-/* V1.50 (V1_PLAN phase 3, the old app's Edit in the old design): tap a piece in the house and change its size. Each piece's boxes, by its
-   tag, find what a tap is on; the changes are Measure's "edits" rows ({item, field, value}: measure.js's store, so Send shares them),
-   with the same arithmetic as tools/pull_edits.py, which folds them into house/survey_data.py. */
+/* V1.50: tap a piece in the house and change its size; the changes are Measure's "edits" rows ({item, field, value}), with
+   tools/pull_edits.py's arithmetic */
 const PICK = {}, PARTED = new Set();   // V2.33: pieces with a part that swings or lifts (they don't turn)
 const wbox = b => new THREE.Box3(new THREE.Vector3(-b[3] * M, b[1] * M, b[2] * M), new THREE.Vector3(-b[0] * M, b[4] * M, b[5] * M));
 function pickable(fk, F) {
@@ -106,8 +104,7 @@ function housePiece(hits, cut) {   // the piece whose box the ray meets first, a
       if (d <= d0 + 0.05 && (!best || d < best.d)) best = { id: it.id, d }; } }
   return best ? best.id : null;
 }
-/* the picked piece: a dashed outline round its box and its size on a tag (the design's Edit mode) */
-const SEL = { g: null };
+const SEL = { g: null };   // the picked piece: a dashed outline round its box and its size on a tag (the design's Edit mode)
 function clearSel() { if (!SEL.g) return; scene.remove(SEL.g); SEL.g.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { o.material.map && o.material.map.dispose(); o.material.dispose(); } }); SEL.g = null; dirty(); }
 function selPiece(o) {
   clearSel(); if (!o || !o.box) return;
@@ -126,8 +123,7 @@ function selPiece(o) {
   }
   g.traverse(q => { q.raycast = () => {}; }); SEL.g = g; scene.add(g); dirty();
 }
-/* edits: rebuild only the floors whose pieces changed */
-let pend = null;
+let pend = null;   // edits: rebuild only the floors whose pieces changed
 function applyHEdits(map) {
   const before = new Set(Object.keys(HEDITS));
   for (const k of Object.keys(HEDITS)) if (!map[k]) delete HEDITS[k];
@@ -140,9 +136,7 @@ function applyHEdits(map) {
 }
 const HIT = id => (((R.HOUSE3 || {}).items) || {})[id];
 const DS = () => window.DemmaStore || null;
-/* V2.32 (REAL_PLAN R6, the client: "keep working on the full upgrade"): a piece moves out from its wall too ("out": across the other way
-   on the floor), not only along it; doors and windows stay in their walls */
-const FIELDS = [["w", "Width"], ["h", "Height"], ["up", "Up from the floor"], ["along", "Along the wall"], ["out", "Out from the wall"]];
+const FIELDS = [["w", "Width"], ["h", "Height"], ["up", "Up from the floor"], ["along", "Along the wall"], ["out", "Out from the wall"]];   // V2.32: a piece moves out from its wall too; doors and windows stay in their walls
 function pieceNow(id) {
   const it = HIT(id), e = {}, ds = DS();
   if (ds) for (const v of Object.values(ds.rows("edits") || {})) if (v && v.item === id && (typeof v.value === "number" || v.field === "removed" || v.field === "swap")) e[v.field] = v.value;
@@ -158,8 +152,7 @@ function pieceBox(id) {
   const t = turnBox(b, (b[0] + b[3]) / 2, (b[2] + b[5]) / 2), [sx, sz] = turnFit(id, b, t);   // V2.33: its outline turned too
   t[0] += sx; t[3] += sx; t[2] += sz; t[5] += sz; return t;
 }
-/* V2.36: a piece turns about its centre, so one against a wall went into it: if it stood inside its room, it slides back in, by as
-   little as it takes (a wardrobe turned against a wall stays against it) */
+/* V2.36: a piece turned into a wall slides back into its room by as little as it takes */
 function turnFit(id, b, t) {
   const r = HIT(id) && R.HOUSE3 && (R.HOUSE3.rooms || {})[HIT(id).r]; if (!r) return [0, 0];
   const inside = b[0] >= r[0] - 1 && b[3] <= r[1] + 1 && b[2] >= r[2] - 1 && b[5] <= r[3] + 1; if (!inside) return [0, 0];
@@ -202,10 +195,8 @@ window.addEventListener("demma-rows", e => { if (e.detail !== "edits") return; s
 const cmR = v => Math.round(v * 10) / 10;
 const clampF = (f, v) => Math.max(f === "along" || f === "up" || f === "out" ? -500 : 1, Math.min(1000, v));
 function selOf(id) { const it = HIT(id); if (!it) { clearSel(); return; } const c = pieceNow(id); selPiece({ box: pieceBox(id), label: `${Math.round(c.w)} × ${Math.round(c.h)}` }); }
-/* V3.91 (N150), the plan's section 20: drag a piece in any room. With its Move or resize card open, a press on the piece (its outline
-   on screen, a finger's width round it) drags it over the floor: along its wall and out from it, as the card's steppers do (a door or a
-   window along its wall only); within 15 cm of its room's wall it goes against it. The outline follows the finger; let go and Measure's
-   rows take it, as a typed size does (the card, Measure and Send stay in step) */
+/* V3.91 (N150): with its Move card open, a press on a piece drags it over the floor (doors and windows along their wall only); within
+   15 cm of a wall it goes against it; Measure's rows take it on release */
 let hdrag = null;
 function hdragOn(e, id) {
   const bx = wbox(pieceBox(id)), r = canvas.getBoundingClientRect(), pad = e.pointerType === "touch" ? 28 : 10; let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9;

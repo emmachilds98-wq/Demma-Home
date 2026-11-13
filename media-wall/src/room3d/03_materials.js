@@ -1,19 +1,14 @@
 /* ---------------------------------------------------------------- materials */
 const MATS = [];
-/* v21: the dolls'-house cutaway. From outside the room (the views from above), whatever stands along the wall nearest the camera (curtains,
-   the window frame, the plant stand, the stairs) is cut off above CUT_H, like a section drawing, so nothing blocks the room. Every material
-   carries the same two planes; clipIntersection cuts only where both agree (near that wall AND above CUT_H); updateCut() moves plane 0. */
+/* v21: the cutaway: from above, what stands along the wall nearest the camera is cut off above CUT_H (both planes must agree:
+   clipIntersection); updateCut() moves plane 0. */
 const CUT_H = 95, CUT_IN = 32;
 const CLIP = [new THREE.Plane(new THREE.Vector3(0, 0, 1), 1e3), new THREE.Plane(new THREE.Vector3(0, -1, 0), CUT_H * 0.01)];
 const clipMat = m => { m.clippingPlanes = CLIP; m.clipIntersection = true; m.clipShadows = true; return m; };
-/* v39, client: "the render is still slow on PC ... lag and frame drop on movement": a material with transmission (the bar's bottles and
-   glasses) makes three draw the whole room a second time, every frame, to see through it (984 draw calls instead of about 500). In the
-   live room glass is plain see-through; still() puts the transmission back for the saved pictures. */
-const glassLive = m => { if (m.transmission > 0) { m.userData.trans = m.transmission; m.transmission = 0; } return m; };
+const glassLive = m => { if (m.transmission > 0) { m.userData.trans = m.transmission; m.transmission = 0; } return m; };   // v39: no live transmission (it draws the room twice a frame); still() puts it back for saved pictures
 const reg = m => (MATS.push(clipMat(glassLive(grassy(m)))), m);
-/* V2.29: the ground's lawn without its repeat; V2.68 (N22): every lawn (the gardens', next door's, the ground's), and the two copies no
-   longer mixed half and half (it greyed the grass): a slow patchwork over metres picks the photo or its larger, turned copy, and a
-   slower one lightens and darkens it. One program for them all ("grass"); the lawn's photo is marked in houseTex */
+/* V2.68 (N22): every lawn without its repeat: a slow patchwork picks the photo or its larger turned copy, a slower one shades it; one
+   program ("grass") */
 function grassy(m) {
   if (!(m.map && m.map.userData.grass)) return m;
   m.customProgramCacheKey = () => "grass";
@@ -96,9 +91,7 @@ const GRAIN = 0.6;   // metres of oak per texture repeat
 const fillCol = f => new THREE.Color(f === "glass" || f === "art" || f === "brick" ? "#ffffff" : f);   // v35: kinds, not colours (the console's "Unknown color" warnings)
 function colAttr(geo, cols) { geo.setAttribute("color", new THREE.Float32BufferAttribute(cols, 3)); }
 const SOFT = new Set([R.SOFA_CORD[0]]);   // v15: the blue corduroy sofa, upholstered rather than boxy
-/* V3.86 (N139): your sofa's parts are upholstered as the sofa bed's (12's cushGeo): the seats swell and are piped top and foot, the
-   backs plump and lean on the frame, the frame and arms piped along their tops, each with its own shade where it meets the next (it
-   was rounded boxes). The cord's ribs at the size they were (cushGeo maps in 20 cm tiles; 0.3 of that is a copy every 65 cm) */
+/* V3.86 (N139): your sofa upholstered as the sofa bed's (12's cushGeo): piped, swelling seats, plump backs; the cord at its old size */
 function softGeo(b) {
   const [, x, y, z, w, h, d, f] = b, seat = h <= 14, back = Math.min(w, d) <= 16 && h <= 32 && !seat;
   const g = seat ? cushGeo(w, h, d, 1.6, 0.9, 3.5, 0.25, { welt: 0.45, bottom: true }) : back ? cushGeo(w, h, d, 2.2, 1.4, 6, 0.25, { welt: 0.45 })
@@ -109,11 +102,8 @@ function softGeo(b) {
   for (let i = 0; i < col.count; i++) { const k = col.getX(i); col.setXYZ(i, c.r * k, c.g * k, c.b * k); }
   return g;
 }
-/* V1.1: a box with its edges rounded off (EDGE cm, real joinery's arris): each face stops short of its edges, a strip joins each pair
-   of faces and a triangle each corner, and every vertex keeps its own face's normal, so the light rolls round the edge as on a real
-   board instead of stopping at a hard line. 44 triangles (a plain box 12). Faces in BoxGeometry's order (+x, -x, +y, -y, +z, -z) for the
-   colours and the grain; a strip's or a corner's vertex takes the colour and grain of the face it sits on. Sharp on a phone without a
-   capable chip */
+/* V1.1: a box with rounded edges (EDGE cm): faces stop short, strips and corner triangles join them with each face's normal, so light
+   rolls round the arris. 44 triangles; faces in BoxGeometry's order; sharp on a phone without a capable chip */
 const EDGE = SMALL && !GOOD_PHONE ? 0 : 0.35;
 function bevelBox(H, r) {            // H: half sizes (m); out: positions, normals and each vertex's face, three to a triangle
   const I = H.map(v => v - r), pos = [], nrm = [], face = [];
@@ -227,9 +217,7 @@ function buildGroup(items, name) {
     if (fill === "screen" || fill === null) continue;
     if (it[0] === "b") { kind = SOFT.has(fill) ? "fabric" : kindOf(fill, flags, Math.max(it[4], it[5], it[6])); geo = boxGeo(it); }
     else { kind = kindOf(fill, flags); geo = polyGeo(it); }
-    // V1.59: and a wall wholly past the room's back wall (the stairwell's, over the hall): the house has its own walls there, so in the
-    // house's views it showed through them as green blocks (seen from the living room, it still stands)
-    const high = it[0] === "p" && (Math.min(...it[1].filter((_, i) => i % 3 === 1)) >= R.CEIL - 0.5 || Math.min(...it[1].filter((_, i) => i % 3 === 2)) >= R.RECESS_Z + 0.5);
+    const high = it[0] === "p" && (Math.min(...it[1].filter((_, i) => i % 3 === 1)) >= R.CEIL - 0.5 || Math.min(...it[1].filter((_, i) => i % 3 === 2)) >= R.RECESS_Z + 0.5);   // V1.59: and a wall wholly past the room's back wall (the house has its own there)
     if (kind === "paint") {
       const st = (flags || "").includes("s");   // V2.0: the stair wall past the room in the room's own stair-wall paint (its 2D shade drew a line part-way up the stairs)
       const m = new THREE.Mesh(it[0] === "p" ? twoFaced(geo) : geo, paintMat((st && it[0] === "p" ? lum("#2d5a46") : lum(fill)) / BASE_L, it[0] === "b", false, st ? "w:stairs" : "wall"));
@@ -246,10 +234,7 @@ function buildGroup(items, name) {
   }
   return grp;
 }
-/* V2.79 (N27): a panel seen from both sides drawn one-sided, its other face a copy wound the other way with its normals turned. A
-   two-sided material is a shader of its own (three in all with the house's lights) and, see-through, two draws; this way the panels use
-   the boxes' shaders, in one draw. The turned copies go first, so a see-through panel's far faces still draw before its near ones, in
-   the order three's two passes drew them; the shadows take both faces, as before */
+/* V2.79 (N27): a two-sided panel as two one-sided copies (the turned copy first), so it shares the boxes' shaders in one draw */
 function twoFaced(g) {
   const s = g.index ? g.toNonIndexed() : g, n = s.attributes.position.count, out = new THREE.BufferGeometry();
   for (const [k, a] of Object.entries(s.attributes)) {

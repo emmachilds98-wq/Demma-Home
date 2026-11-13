@@ -1,7 +1,5 @@
-/* ---------------------------------------------------------------- v40: the plants, in HD
-   Client: "more HD realistic plants". Every leaf is a shaped mesh (a grid along its outline, folded on the midrib and curled to the tip)
-   with a painted texture (midrib, veins, variegation) and its own shade of green; six kinds suit the room's spots. Each group's leaves
-   merge into one mesh a material and its pots into one a finish, so a shelf of plants is a handful of draw calls. */
+/* ---------------------------------------------------------------- v40: the plants, in HD: every leaf a shaped mesh with a painted
+   texture and its own green; six kinds. A group's leaves merge into one mesh a material, its pots one a finish. */
 const FLORA_KINDS = {     // outline (half-width over the length, a fraction of it), texture, cut-outs
   pothos: { w: t => 0.44 * Math.pow(Math.sin(Math.PI * Math.pow(t, 0.62)), 0.7) + (t < 0.1 ? 0.06 : 0) },
   snake: { w: t => 0.075 * (1 - Math.pow(t, 4)) * (0.75 + 0.25 * Math.sin(Math.PI * t)) + 0.004, rows: 12 },
@@ -38,8 +36,7 @@ function leafTexture(kind) {         // u across the leaf (0 and 1 its edges, 0.
       for (let v = 0.22; v < 0.7; v += 0.12) for (const s of [-1, 1]) { g.beginPath(); g.ellipse(w / 2 + s * w * 0.14, vy(v), w * 0.025, h * 0.02, 0, 0, Math.PI * 2); g.fill(); }
       g.globalCompositeOperation = "source-over";
     }
-    // the edge a touch darker, the midrib lighter, the veins
-    const eg = g.createLinearGradient(0, 0, w, 0); eg.addColorStop(0, "rgba(10,30,10,0.35)"); eg.addColorStop(0.08, "rgba(10,30,10,0)");
+    const eg = g.createLinearGradient(0, 0, w, 0); eg.addColorStop(0, "rgba(10,30,10,0.35)"); eg.addColorStop(0.08, "rgba(10,30,10,0)");   // the edge a touch darker, the midrib lighter, the veins
     eg.addColorStop(0.92, "rgba(10,30,10,0)"); eg.addColorStop(1, "rgba(10,30,10,0.35)");
     g.globalCompositeOperation = "source-atop"; g.fillStyle = eg; g.fillRect(0, 0, w, h);
     if (kind === "snake") {           // wavy bands across, and the yellow edges of a 'Laurentii'
@@ -68,9 +65,7 @@ function leafTexture(kind) {         // u across the leaf (0 and 1 its edges, 0.
   });
 }
 const FLORA = new Map(), ATLAS_KINDS = ["pothos", "snake", "monstera", "fern", "spider", "calathea", "ficus"];
-/* every leaf kind, the stalks and the soil share one texture (four cells by two: the kinds, then a cell half stalk grey, half soil),
-   so a group's greenery is one mesh, one draw call */
-let FLORA_ATLAS = null;
+let FLORA_ATLAS = null;   // every leaf kind, the stalks and the soil share one atlas (four cells by two), so a group's greenery is one draw
 function floraAtlas() {
   if (FLORA_ATLAS) return FLORA_ATLAS;
   const tex = canvasTex(1024, 1024, g => {
@@ -230,8 +225,7 @@ function floraKind(r, big, h) {      // which kind for a pot, by its size and th
   if (big) return FLORA_STYLE === "lush" || r() < 0.6 ? "monstera" : "snake";
   const pick = r(); return h > 9 ? (pick < 0.5 ? "snake" : "calathea") : pick < 0.3 ? "fern" : pick < 0.55 ? "spider" : pick < 0.8 ? "calathea" : "pothos";
 }
-/* a pot at (x, y, z) room cm, rad its radius, h how tall the plant grows, trail strands over its front: the plant's kind is picked to
-   suit; potM the pot's own material (its versions recolour it). Into g's batch: floraFlush(g) once the group's plants are in */
+/* a pot at (x, y, z) room cm, its plant's kind picked to suit; into g's batch: floraFlush(g) once the group's plants are in */
 function potPlant(g, x, y, z, rad, h, trail, r, potM, leafM, o = {}) {
   const B = floraBatch(g), ph = rad * 1.5, pot = potGeo(rad, ph); pot.translate(-x * M, y * M, z * M);
   floraAdd(B, FLORA_POTS !== "mine" ? potFinish(FLORA_POTS) : o.terracotta ? floraMat("terracotta") : potM, pot);
@@ -250,9 +244,7 @@ function potPlant(g, x, y, z, rad, h, trail, r, potM, leafM, o = {}) {
   if (!g.userData.floraHold) floraFlush(g);
 }
 
-/* v43, client: "we have taller ones in the middle, spider plants on the right and some smaller ones on left" (the window sill, from the
-   room). The room's x runs right to left as you face the window, so the spider plants are at the low-x end; no pot stands behind a
-   rear speaker. */
+/* v43: the sill: taller ones in the middle, spider plants at the low-x end (right as you face the window), smaller on the left */
 const SILL_ROW = [   // [from the sill's low-x end (cm), radius, how tall it grows, kind, strands over the nose]
   [12, 7, 12, "spider", 0], [36, 7.5, 13, "spider", 0], [60, 7, 12, "spider", 0],      // on the right: spider plants, full
   [92, 7.5, 18, "snake", 0], [122, 8, 20, "ficus", 0],                                 // in the middle: the tall ones

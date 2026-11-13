@@ -185,9 +185,7 @@ ul.plain, ol.plain { margin: 0; padding-left: 1.3rem; display: grid; gap: 8px; m
 .meter { display: flex; align-items: center; gap: 10px; font-size: 14.5px; color: var(--muted); }
 .meter .bar { width: 140px; height: 8px; border-radius: 4px; background: var(--chip); overflow: hidden; }
 .meter .bar i { display: block; height: 100%; width: 0; background: var(--ok); }
-.qs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
 .q { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 8px; align-content: start; min-width: 0; }
-.q.answered { border-color: var(--ok); }
 .q h3 { margin: 0; font-size: 16px; line-height: 1.35; display: grid; grid-template-columns: 1.8rem 1fr; gap: 6px; }
 .q h3 .n { font-family: var(--mono); font-size: 13px; color: var(--muted); padding-top: 2px; }
 .q p { margin: 0; font-size: 14px; color: var(--muted); }
@@ -353,9 +351,6 @@ summary .part { font-weight: 400; }
 .need { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px 18px; background: var(--note); border-radius: 8px; padding: 10px 14px; }
 .need h5 { margin: 0 0 4px; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
 .need ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 3px; font-size: 14.5px; }
-details.sdraw > summary { cursor: pointer; font-size: 14px; color: var(--oak); font-weight: 700; padding: 2px 0; }
-details.sdraw figure.dia { margin: 8px 0 0; background: var(--paper); border: 1px solid var(--paper-line); border-radius: 10px; padding: 10px; overflow-x: auto; }
-details.sdraw figure.dia svg { display: block; width: 100%; min-width: 640px; height: auto; }
 /* cost by phase */
 .chart { display: grid; gap: 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
 .crow { display: grid; grid-template-columns: minmax(8rem, 13rem) minmax(0, 1fr) 9.5rem; gap: 4px 14px; align-items: center; }

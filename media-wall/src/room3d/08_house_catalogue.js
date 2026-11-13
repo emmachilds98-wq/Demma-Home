@@ -1,9 +1,6 @@
-/* V2.46 (REAL_PLAN N7, R6): swap a piece of the house for another of its kind, or add one from the catalogue, in any room. Each piece
-   here is built from the house's own boxes and materials (its turned parts as lathes), so a swapped or added piece is drawn, tapped,
-   walked round, moved, resized and turned exactly as the house's own are. Its rows are Measure's "edits" (Send carries them):
-     {item, field: "swap", value: <a key below>}                      a piece swapped (As planned puts it back)
-     {item: "add.<n>", field: "add", value: <key>, room, x, z, y}     a piece added where the floor was tapped (Take it out removes it)
-   A piece is built in its own frame: u along its wall (0 to W), v up (0 to H), t out from its back (0 at the wall, D at its front). */
+/* V2.46 (N7): swap a piece for another of its kind, or add one, in any room; built from the house's own boxes so it's drawn, tapped,
+   moved and turned as the house's are. Rows are Measure's "edits": {item, field: "swap", value: key}; {item: "add.<n>", field: "add",
+   value: key, room, x, z, y}. A piece's own frame: u along its wall (0..W), v up (0..H), t out from its back (0..D). */
 const HCAT_KINDS = { bed: "Beds", wardrobe: "Wardrobes", chest: "Chests", bedside: "Bedsides", desk: "Desks", shelves: "Shelves", seat: "Seats", plant: "Plants", more: "More" };
 function hcChest(mat, cols, rows, knob = "knob") {   // drawers: a carcass, its fronts with a shadow gap, a knob each ("grip": MALM's grip along each front's top)
   return (W, H, D, B) => {
@@ -180,8 +177,7 @@ function hcBuild(key, it, t) {
   C.b(W, H, D, B, L);
   return out;
 }
-/* the floor as drawn, with the pieces swapped (their own boxes out, the new one's in their place) and those added (a new tag each) */
-const HCFK = { "-260": "lower", "0": "ground", "260": "first" };
+const HCFK = { "-260": "lower", "0": "ground", "260": "first" };   // the floor as drawn, with the pieces swapped (their own boxes out, the new one's in their place) and those added (a new tag each)
 function withCatalogue(fk, F) {
   const tags = F.tags || [], sw = [], ad = [];
   for (const [id, E] of Object.entries(HEDITS)) { if (E.removed || !HIT(id)) continue;
@@ -217,8 +213,7 @@ function syncAdds() {
     H3.items[id] = { n: C.n, k: "furniture", r: v.room, ax, b: b.map(q => Math.round(q * 10) / 10), s: [C.w, C.h, 0], g: false, al: Math.round((b[a] - ra[0]) * 10) / 10, op: null, add: v.value, fk: HCFK[String(r[4])] };
   }
 }
-/* the fit check on the page: a piece you've moved, swapped or added, against the others in its room it now stands in (not those it
-   stood in as planned: a chair at its desk, a PC under it; not the chairs and rugs, which you'd push aside or stand on) */
+/* the fit check: a moved, swapped or added piece against the others in the room it now stands in (not chairs and rugs) */
 const HCSKIP = new Set(["decor", "finish", "light", "switch", "socket", "fitting", "window", "door"]), hcSoft = k => /chairs?$|stools?$|rug/.test(k + " " + ((HIT(k) || {}).add || ""));
 function clashes(id) {
   const it = HIT(id); if (!it || pieceNow(id).removed || hcSoft(id) || (!it.add && !pieceDelta(id).some(Boolean))) return [];
@@ -226,9 +221,8 @@ function clashes(id) {
   return Object.keys(R.HOUSE3.items).filter(k => { const o = HIT(k); return k !== id && o.r === it.r && !HCSKIP.has(o.k) && !hcSoft(k) && !pieceNow(k).removed
     && !(!it.add && !o.add && over(it.b, o.b)) && over(b, pieceBox(k)); }).map(k => { const c = pieceNow(k).swap; return c ? HCAT[c].n : HIT(k).n; });
 }
-/* N5 (REAL_PLAN R7): a plant in any room, from Look's floor card: kept as the room's row [23] (schemes, Undo, Copy and Send carry it), it
-   stands in the room's free corner farthest from its doors (else along a wall, else wherever it fits), clear of the furniture, the
-   slopes and the doors' swing; a piece of the house like any other (tap it to move it, turn it, change it) */
+/* N5: a plant in any room (Look's floor card, the room's row [23]): in the free corner farthest from its doors, clear of the furniture,
+   slopes and door swings; a piece like any other */
 const PLANTED = {}, PLANTAT = {};
 const plantKeys = () => hcOf("plant");
 function plantSpot(room, C) {
