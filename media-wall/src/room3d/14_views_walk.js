@@ -6,15 +6,15 @@ const VIEWS = {
   room:    { label: "The whole room", eye: [250, 440, -540], at: [238, 60, -118], fov: 50, above: true },
   livstand: { label: "Standing in the living room", eye: [372, 160, -6], at: [110, 150, -210], fov: STAND_FOV, stand: true },   // V1.6: Be there, from the door
   livalone: { label: "The living room on its own", eye: [-170, 520, 230], at: [240, 40, -140], fov: 46, above: true },   // v78b: from the hall's corner, the ceiling off
-  landing: { label: "Landing", eye: [330, 425, 250], at: [345, 330, -60], fov: 80, box: [288, 402, 275, 485, -72, 256] },     // v66: from the top of the stairs
-  hall:    { label: "Entrance hall", eye: [395, 165, 345], at: [445, -100, 170], fov: 80, box: [310, 398, 15, 225, 50, 416] },   // V3.17 (N62), the client: "I can't see down to the lower floor" (standing in the hall): facing the doorway down, the stairs and the landing below in view   // v66: in from the front door
-  garage:  { label: "Garage", eye: [250, 145, 483], at: [100, 40, 120], fov: 80, box: [8, 284, -10, 215, 52, 493] },          // v66: from inside its door
-  wc:      { label: "WC", eye: [420, -95, -142], at: [420, -190, -290], fov: 80, box: [380, 462, -255, -30, -304, -140] },      // v66: from its door
-  bath:    { label: "Bathroom", eye: [325, 424, -48], at: [410, 318, -240], fov: 84, box: [288, 462, 275, 485, -282, -44] },   // v75/v76/v77: from its door (v77 in the corner)   // v65: from its door, as the client's photos
-  master:  { label: "Master bedroom", eye: [262, 428, 200], at: [20, 330, 300], fov: 80, box: [10, 266, 275, 485, 126, 494] },   // v72: past the 1 m cupboard   // v63: from its door, the bed facing you
-  bed2:    { label: "Music room", eye: [44, 428, 30], at: [222, 318, -205], fov: 80, box: [12, 262, 275, 485, -280, 48] },   // v72: bigger behind the master   // v66: the music room from over the day bed: the keyboard, the desk under the window, the guitars
-  office:  { label: "The office", eye: [298, 440, 282], at: [445, 340, 440], fov: 74, box: [290, 460, 275, 485, 282, 492] },   // v68: 225 deep   // v61: bedroom 3 from its door, the new desk ahead
-  kitchen: { label: "The kitchen", eye: [215, -92, -292], at: [165, -140, 20], fov: 74, box: [8, 356, -245, -35, -300, 28] },   // v60: where the client's wide photo was taken: the L, the fridge, the cubby, the door
+  landing: { label: "Landing", eye: [298, 428, 254], at: [352, 352, -40], fov: 68, box: [288, 402, 275, 485, -72, 256] },     // v66: from the top of the stairs
+  hall:    { label: "Entrance hall", eye: [325, 165, 374], at: [372, 25, 110], fov: 68, box: [310, 398, 15, 225, 50, 416] },   // N170: down the hall from the front door's corner, the stairs down in view, the mirror at the edge
+  garage:  { label: "Garage", eye: [272, 150, 488], at: [90, 70, 110], fov: 68, box: [8, 284, -10, 215, 52, 493] },          // v66: from inside its door
+  wc:      { label: "WC", eye: [390, -92, -141], at: [432, -168, -305], fov: 68, box: [380, 462, -255, -30, -304, -140] },      // v66: from its door
+  bath:    { label: "Bathroom", eye: [300, 425, -50], at: [432, 335, -245], fov: 70, box: [288, 462, 275, 485, -282, -44] },   // v75/v76/v77: from its door (v77 in the corner)   // v65: from its door, as the client's photos
+  master:  { label: "Master bedroom", eye: [262, 428, 200], at: [20, 330, 300], fov: 82, box: [10, 266, 275, 485, 126, 494] },   // v72: past the 1 m cupboard   // v63: from its door, the bed facing you
+  bed2:    { label: "Music room", eye: [44, 428, 30], at: [222, 318, -205], fov: 82, box: [12, 262, 275, 485, -280, 48] },   // v72: bigger behind the master   // v66: the music room from over the day bed: the keyboard, the desk under the window, the guitars
+  office:  { label: "The office", eye: [298, 440, 282], at: [445, 340, 440], fov: 82, box: [290, 460, 275, 485, 282, 492] },   // v68: 225 deep   // v61: bedroom 3 from its door, the new desk ahead
+  kitchen: { label: "The kitchen", eye: [222, -92, -298], at: [160, -135, 20], fov: 68, box: [8, 356, -245, -35, -300, 28] },   // v60: where the client's wide photo was taken: the L, the fridge, the cubby, the door
   house:   { label: "The whole house", eye: [-400, 1200, 1300], at: [230, 40, 40], fov: 50, above: true },   // v55: from the front, the alley side   // v54: every floor and both gardens, a draft
   // v21: the window view moved to the window's middle, over the sofa's back (it stood behind your red lamp)
   window:  { label: "From the window", eye: [190, 192, -298], at: [214, 82, -10], fov: 68 },
@@ -713,7 +713,7 @@ function setView(name, instant, dur) {
       // v54: a phone stands further back to take in every floor (V1.30: less far: the buttons take less room)
     p = { eye: p.at.map((a, i) => a + (p.eye[i] - a) * f), at: p.at }; }
   else if (name === "house") p = { eye: p.at.map((a, i) => a + (p.eye[i] - a) * 1.25), at: p.at };   // V3.27: a computer a little further back, the roof clear of the rows
-  flyTo(p.eye, p.at, R.HOUSE3 && v.box ? Math.max(v.fov, 82) : v.fov, !!v.above, instant, dur);   // v71: the house's rooms wide
+  flyTo(p.eye, p.at, v.fov, !!v.above, instant, dur);   // N170: each room its own lens (a floor of 82 bowed the small rooms)
   if (!houseG && R.HOUSE && HOUSEV(name)) { buildHouse(); reshadow(); }   // v69 (B6): built the first time (the living room starts without it)
   if (houseG) { houseG.visible = HOUSEV(name); view.visible = !v.above; applyFloors(); setAbove(!v.above); }   // v56: the sky only from inside
   if (wasHouse !== HOUSEV(name) && started) { applyLight(); sizeRenderer(); }   // V1: in the app the house is by day, its rooms as they are   // v58: the outside's daylight on or off; v73: and the house's resolution
