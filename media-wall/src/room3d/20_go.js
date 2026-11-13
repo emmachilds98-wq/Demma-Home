@@ -361,9 +361,8 @@ function buildStreet(land) {
       if (hedge) box("hedge", w0 + 10, dr - 2, zp + 15, w1 - 10, dr + 95, zp + 70); else { box(brick, w0, dr - 2, zp, w1, dr + 55, zp + 23); box("kerb", w0 - 2, dr + 55, zp - 2, w1 + 2, dr + 61, zp + 25); }
     }
   }
-  const pools = [];   // V4.4 (N163): where each lamp lights the road and pavement by evening
   for (let x = X0 + 900; x < X1; x += 3000) {   // lamp posts on the far pavement
-    pools.push(x); box("post", x - 6, dr, zr1 + 45, x + 6, dr + 620, zr1 + 57); box("post", x - 5, dr + 608, zr1 - 60, x + 5, dr + 618, zr1 + 57); box("lamp", x - 14, dr + 596, zr1 - 75, x + 14, dr + 608, zr1 - 30); }
+    box("post", x - 6, dr, zr1 + 45, x + 6, dr + 620, zr1 + 57); box("post", x - 5, dr + 608, zr1 - 60, x + 5, dr + 618, zr1 + 57); box("lamp", x - 14, dr + 596, zr1 - 75, x + 14, dr + 608, zr1 - 30); }
   /* each finish the house's own material (a copy, its colour tinted where said, uncut): its program already built, so the street adds
      none (the phone's first picture has no shader to spare) */
   const FIN_ = { road: ["road"], paving: ["paving"], kerb: ["concrete"], brick: ["brick"], brick2: ["brick_buff"], roof: ["tile"], frame: ["upvc"], pane: ["pane"], panelit: ["pane"],
@@ -377,12 +376,6 @@ function buildStreet(land) {
     const glow = { lamp: [5, "#ffc77a"], panelit: [3, "#ffbf7a"] }[k];   // V3.59: lit by evening (09 streetTod): the lamps' sodium-warm heads, curtained rooms behind the panes
     if (glow) { mt.userData.glow = glow[0]; mt.userData.glowCol = glow[1]; STREET_LIT.push(mt); } if (k === "road") { mt.polygonOffset = true; mt.polygonOffsetFactor = 2; mt.polygonOffsetUnits = 2; }
     const m = new THREE.Mesh(geo, mt); m.receiveShadow = true; m.raycast = () => {}; m.name = "street_" + k; g.add(m); }
-  if (pools.length) {   // V4.4 (N163): a soft warm pool under each lamp, shown by evening (09 streetTod); an additive disc as the bulbs' halo
-    const tex = canvasTex(64, 64, (c, w, h) => { const r = c.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
-      r.addColorStop(0, "rgba(255,255,255,0.9)"); r.addColorStop(0.45, "rgba(255,255,255,0.35)"); r.addColorStop(1, "rgba(255,255,255,0)"); c.fillStyle = r; c.fillRect(0, 0, w, h); });
-    const pm = new THREE.MeshBasicMaterial({ map: tex, color: "#ffb766", transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false });
-    const pg = new THREE.CircleGeometry(340 * M, 28); pg.rotateX(-Math.PI / 2);
-    for (const x of pools) { const p = new THREE.Mesh(pg, pm); p.position.copy(v3(x, dr + 3, zr1 - 40)); p.raycast = () => {}; p.renderOrder = 4; p.visible = false; p.name = "street_pool"; g.add(p); STREET_POOL.push(p); } }
   land.add(g); streetTod(); return true;
 }
 /* V1.6: the things in the gardens (survey_data.GARDEN_THINGS, from the view photos): ours (the round table and its chairs, with Gardens)

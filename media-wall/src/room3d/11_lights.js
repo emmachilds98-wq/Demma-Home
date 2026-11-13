@@ -10,21 +10,7 @@ const dayLight = { position: v3(700, 1400, 1100), target: { position: v3(233, 0,
    the back wall, the garden's behind it, as the land steps down. Only in The whole house from outside (a floor shown keeps its cutaway
    clear); built the first time */
 const OUT = { sky: null, ground: null, sunOut: false };
-const sunLux = () => (S.view === "house" ? !outEve() : S.quality === "hd" && S.tod === "day") ? SUNCFG.lux * (OUT.sunOut ? SUNCFG.out : 1) : 0;   // V3.19: the whole house in sun in Fast too (it was a third as bright as in HD; the sun is in every shader already)
-/* V4.4 (N163): the house from outside by the clock: from just before sunset to just after sunrise (worked out from the date, for the
-   middle of Britain) it's evening outside: a dusk sky and haze, no sun, its windows lit warm, Next door's lamps and windows on. A room
-   keeps the Time of day you set. ?dusk or ?daylight shows one or the other. Colours and strengths only: no shader built */
-const DUSKQ = /[?&]dusk\b/.test(location.search) ? true : /[?&]daylight\b/.test(location.search) ? false : null;
-function clockEve(t = new Date()) {
-  if (DUSKQ !== null) return DUSKQ;
-  const n = (t - Date.UTC(t.getUTCFullYear(), 0, 0)) / 864e5, dec = -0.409 * Math.cos(2 * Math.PI * (n + 10) / 365), lat = 0.925;   // the sun's tilt that day; 53° north
-  const half = Math.acos(Math.max(-1, Math.min(1, -Math.tan(lat) * Math.tan(dec)))) * 12 / Math.PI, h = t.getUTCHours() + t.getUTCMinutes() / 60;   // half the day's light, in hours; now, GMT
-  return Math.abs(h - 12.1) > half - 0.3;   // from 20 minutes before sunset to 20 after sunrise
-}
-const DUSK_HAZE = "#6e5d6c";   // the haze and the sky past the land at dusk
-const outEve = () => S.view === "house" && !!R.HOUSE3 && hfloor === "all" && clockEve();
-const eveNow = () => S.view === "house" && R.HOUSE3 ? outEve() : S.tod !== "day";   // the evening where you are: outside by the clock, a room by Time of day
-setInterval(() => { if (started && S.view === "house" && outEve() !== !!OUT.eve) outdoor(); }, 60000);   // sunset while you look
+const sunLux = () => S.view === "house" || (S.quality === "hd" && S.tod === "day") ? SUNCFG.lux * (OUT.sunOut ? SUNCFG.out : 1) : 0;   // V3.19: the whole house in sun in Fast too (it was a third as bright as in HD; the sun is in every shader already)
 /* V1.5 (BUILD_SPEC phase 5): and out of the living room's window by day, from inside it: the same sky and land, the garden, its trees and
    the building past the fence, in place of the plain sky (v56's stand-in until the outside was modelled); by evening the dusk plane */
 const INSIDE = () => !!ROOMV() && (RMODE === "in" || RMODE === "stand");   // V1.10: standing in one of the house's rooms (In it, Be there)
@@ -46,20 +32,15 @@ function duskVeil(on) {
 /* V3.92 (N143): soft cloud in the sky, painted in the sky's own shader before the first sky is made (the one shown and the one the
    house's reflections are made from share it: no new draw, no new shader). It thins to nothing at the horizon and takes the sky's own
    colour: white by day, warm at dusk, dark at night */
-Sky.SkyShader.uniforms.cloudDusk = { value: 0 };   // V4.4 (N163): 1 outside by evening: the cloud darker than the sky between, as at dusk (0 leaves it as it was)
 if (!Sky.SkyShader.fragmentShader.includes("cloudFbm")) Sky.SkyShader.fragmentShader = Sky.SkyShader.fragmentShader
-  .replace("void main() {", `uniform float cloudDusk;
-float cloudH(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+  .replace("void main() {", `float cloudH(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float cloudN(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
   return mix(mix(cloudH(i), cloudH(i + vec2(1.0, 0.0)), f.x), mix(cloudH(i + vec2(0.0, 1.0)), cloudH(i + vec2(1.0, 1.0)), f.x), f.y); }
 float cloudFbm(vec2 p) { float s = 0.0, a = 0.5; for (int k = 0; k < 5; k++) { s += a * cloudN(p); p = p * 2.03 + vec2(17.1, 9.2); a *= 0.5; } return s; }
 void main() {`)
   .replace("gl_FragColor = vec4( retColor, 1.0 );", `vec3 cdir = normalize( vWorldPosition - cameraPosition );
-			if ( cloudDusk > 0.0 ) { float hy = max( cdir.y, 0.0 ), sw = pow( max( dot( normalize( vec3( cdir.x, 0.0, cdir.z ) + 1e-5 ), normalize( vec3( vSunDirection.x, 0.0, vSunDirection.z ) + 1e-5 ) ), 0.0 ), 3.0 );
-				vec3 dk = mix( mix( vec3( 0.3, 0.19, 0.22 ), vec3( 1.0, 0.45, 0.2 ), sw ), vec3( 0.17, 0.13, 0.22 ), smoothstep( 0.0, 0.15, hy ) );
-				dk = mix( dk, vec3( 0.03, 0.045, 0.11 ), smoothstep( 0.12, 0.7, hy ) ); retColor = mix( retColor, dk, cloudDusk ); }
 			if ( cdir.y > 0.0 ) { vec2 cp = cdir.xz / ( cdir.y + 0.12 ) * 2.2; float cov = smoothstep( 0.5, 0.78, cloudFbm( cp + vec2( 3.7, 1.3 ) ) ) * smoothstep( 0.0, 0.2, cdir.y );
-				float lum = dot( retColor, vec3( 0.299, 0.587, 0.114 ) ); retColor = mix( retColor, mix( retColor, mix( vec3( lum ) * 1.35 + retColor * 0.25, retColor * 0.5, cloudDusk ), 0.75 ), cov * 0.8 ); }
+				float lum = dot( retColor, vec3( 0.299, 0.587, 0.114 ) ); retColor = mix( retColor, mix( retColor, vec3( lum ) * 1.35 + retColor * 0.25, 0.75 ), cov * 0.8 ); }
 			gl_FragColor = vec4( retColor, 1.0 );`)
   .replace("#include <colorspace_fragment>", `#include <colorspace_fragment>
 			float haze = 1.0 - smoothstep( -0.005, 0.2, cdir.y ); gl_FragColor.rgb = mix( gl_FragColor.rgb, hazeColor, haze * haze * ( 3.0 - 2.0 * haze ) );`)
@@ -113,10 +94,7 @@ function outdoor() {
     { const st = OUT.ground.getObjectByName("street"); if (st) st.visible = !house || !!S.hstreet; }   // and the street with Next door (from a room's window it's always there)
     const d = house || !liv || !sun ? dayLight.position.clone().sub(dayLight.target.position) : sun.position.clone().sub(sun.target.position);   // the sun the sky shows: the one lighting it
     OUT.sky.material.uniforms.sunPosition.value.copy(d.normalize());
-    if (S.tod !== "day" && !house) OUT.sky.material.uniforms.sunPosition.value.set(-0.6, -0.04, -0.8).normalize();   // V1.47: by evening from inside, the sun just down: a dusk sky
-    const ev = house && outEve(); OUT.sky.material.uniforms.cloudDusk.value = ev ? 1 : 0;   // V4.4 (N163): outside by evening, the dusk's own colours, its glow behind the house as you first see it
-    if (ev) OUT.sky.material.uniforms.sunPosition.value.set(0.3, -0.02, -1).normalize(); }
-  scene.fog.color.set(house && outEve() ? DUSK_HAZE : "#cbd8e3");   // V4.4: the haze at dusk
+    if (S.tod !== "day" && !house) OUT.sky.material.uniforms.sunPosition.value.set(-0.6, -0.04, -0.8).normalize(); }   // V1.47: by evening from inside, the sun just down: a dusk sky
   duskVeil(INSIDE() && S.tod !== "day");
   scene.fog.near = on ? 40 : 1e4; scene.fog.far = on ? 700 : 2e4;   // V1.4: the hill at 330 m about half hazed, as the view photos (was 30–110: nothing past 110 m)
   if (camera.far !== (on ? 3000 : 120)) { camera.far = on ? 3000 : 120; camera.updateProjectionMatrix(); }   // and seen out to the sky
@@ -128,7 +106,6 @@ function outdoor() {
     sun.shadow.normalBias = on ? 0.02 : 0.008;   // V1.28: about a texel and a half (2 cm lifted the room's shadows off its joins: light along the skirting)
     sun.intensity = sunLux(); if (!on) placeRoomLights(); reshadow();
   }
-  if (outEve() !== !!OUT.eve) { OUT.eve = outEve(); if (started) applyLight(); }   // V4.4 (N163): into or out of the evening outside: every light again
 }
 function area(color, w, h, pos, look) {
   const l = new THREE.RectAreaLight(color, 1, w * M, h * M);

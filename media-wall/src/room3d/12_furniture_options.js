@@ -307,7 +307,7 @@ function blindsApply() { if (HMATS && HMATS.blind_cloth) HMATS.blind_cloth.visib
 function applyLight() {
   blindsApply();
   placeRoomLights();                                          // v69: a room of the house: its ceiling lights, day or evening
-  const day = S.view === "house" ? !outEve() : S.tod === "day", hd = S.quality === "hd";   // V1.3: the whole house by day (inside, the rooms keep the time you set)
+  const day = S.tod === "day" || S.view === "house", hd = S.quality === "hd";   // V1.3: the whole house by day (inside, the rooms keep the time you set)
   const L = {}; LAYERS.forEach(k => L[k] = lvl(k));          // v15: the sliders (a scene button fills them in), times the master
   const warmC = warmColour();                                 // v46: Warmth
   const set = (list, lv) => list.forEach(l => {
@@ -354,21 +354,20 @@ function applyLight() {
   const on = (L.strip * 1.0 + L.uprights * 0.3 + L.bar1 * 0.5 + L.bar2 * 0.5 + L.lamp * 0.35 + L.accent * 0.06 + (L.bias > 0 ? 8 : 0) + (S.lbox ? 4 : 0)) / 100;
   hemi.intensity = day ? 0.3 + (hd ? 0 : 0.25) : 0.04 + on * 0.26 + (hd ? 0 : (L.strip * 0.0075 + L.uprights * 0.0015 + (L.bias > 0 ? 0.08 : 0)));   // v50: less bounce, more shape
   win.visible = hd || day;
-  if (S.view === "house" && !day) hemi.intensity = 0.06;   // V4.4 (N163): outside by evening the dusk sky lights it, not the living room's bounce (a phone's lawn glowed green)
-  envLevels(day); bloomLevels(day || S.view === "house");   // V4.4 (N163): the house by evening without the glow pass (by the clock, its first picture builds no more shaders)
+  envLevels(day); bloomLevels(day);
   if (sun) sun.intensity = sunLux();                                                      // v48 §6: the sun, by day in HD
   envSoon();
-  gl.toneMappingExposure = S.view === "house" && R.HOUSE3 ? (day ? 0.32 : 0.5) : day ? 0.4 : 0.58;   // V3.19, the client: "all lighting the same across the house": every room one exposure (the house's rooms had 0.32 by day), the outside a little lower
+  gl.toneMappingExposure = S.view === "house" && R.HOUSE3 ? 0.32 : day ? 0.4 : 0.58;   // V3.19, the client: "all lighting the same across the house": every room one exposure (the house's rooms had 0.32 by day), the outside a little lower
   const outside = HOUSEV(S.view);                                                    // v58: the built house in daylight
   skyFill.intensity = outside ? (day ? (hd && ROOMV() && WINLIGHTS.some(l => l.visible) ? 1.4 : 2.6) : 0.5) : hd ? 0 : day ? 3.5 : 1;   // V3.30: a room with windows, by day in HD: less even fill, more from its windows and light (it read flat and grey)               // V3.19: Fast's living room (no window light) as bright as the other rooms
   const inK = !!ROOMV();                                                                // v60: in a room of the house, light off its pale floor and walls,
-  const sky = outside && !inK; skyFill.color.set(sky ? (day ? "#dfe8f1" : "#8f9cc9") : hemi.color); skyFill.groundColor.set(sky ? "#5d5446" : "#d9d3c9");   // V3.19: the rooms' fill the living room's tint (it was the sky's blue); the living room's own lights stay upstairs
+  const sky = outside && !inK; skyFill.color.set(sky ? "#dfe8f1" : hemi.color); skyFill.groundColor.set(sky ? "#5d5446" : "#d9d3c9");   // V3.19: the rooms' fill the living room's tint (it was the sky's blue); the living room's own lights stay upstairs
   if (inK) { scene.traverse(l => { if (l.isLight && l !== skyFill && l !== sun && !l.userData.houseLight) l.intensity = 0; }); hemi.intensity = day ? (hd && WINLIGHTS.length ? 0.38 : 0.5) : 0.2; }   // V2.39: by day in HD the window lights (less even fill); V3.30: the sun, the room's light and its windows' kept (a second change of a light, Warmth, put them out)   // every light of the living room's, the spots too
   /* V2.21 (REAL_PLAN R1): by evening in a room of the house its own ceiling light lights it: the even fill and the studio's reflections
      down (they lit every corner alike), the light up (09_house_views.js placeRoomLights): a warm pool, the corners falling off */
   if (inK && !day && hd) { hemi.intensity = 0.08; skyFill.intensity = 0.2; }   // V3.34 (N86): an evening in HD lit by its own light (the 0.5 fill washed every wall alike)
-  houseEnvK(inK && !day ? (hd ? 0.25 : 0.35) : S.view === "house" && !day ? 0.3 : 1);   // V4.4: less of the day sky in the house by evening
-  scene.background.set(outside && R.HOUSE3 ? (day ? "#c6d6e3" : S.view === "house" ? DUSK_HAZE : "#1b2233") : "#0d100e");             // and a sky behind it
+  houseEnvK(inK && !day ? (hd ? 0.25 : 0.35) : 1);
+  scene.background.set(outside && R.HOUSE3 ? (day ? "#c6d6e3" : "#1b2233") : "#0d100e");             // and a sky behind it
   if (gl.shadowMap.enabled !== hd) { gl.shadowMap.enabled = hd; MATS.forEach(m => m.needsUpdate = true); sizeRenderer(); if (LIVE && started) precompile(); }
   if (started) { if (ROOMV() && S.tod !== lastTod) applyFloors(); else outdoor(); lastTod = S.tod; }   // V1.5: day or evening changes the living room's window; V1.15: and a room's (applyFloors ends in outdoor), only when it changes (not each slider move)
   reshadow();

@@ -199,19 +199,8 @@ function glassTod(m) {
 /* the street's evening (20_go buildStreet): its lamps and about a third of the windows opposite lit warm, so the view out of the front
    rooms is a street at dusk, not a dark grey wall. An emissive colour each (a uniform): no shader built */
 const STREET_LIT = [];
-const STREET_POOL = [];   // V4.4 (N163): each lamp's pool of light on the pavement (20_go buildStreet), by evening
-const streetTod = () => { const eve = eveNow(); for (const m of STREET_LIT) { m.emissive.set(m.userData.glowCol); m.emissiveIntensity = eve ? m.userData.glow : 0; }
-  for (const p of STREET_POOL) p.visible = eve; };
-/* V4.4 (N163): from outside by evening the house's windows lit warm, as rooms with their lights on behind net curtains (the rooms
-   aren't lit from outside: the glass glows instead). Each glass put back as it was first, then the time of day's own (glassTod) */
-const GLASS_EVE = { glass: ["#ffc584", 0.95, 0.8], glass_frost: ["#ffd9a6", 1.1, 0.97] };
-function glassOut(m, k) {
-  const o = m.userData.o0 || (m.userData.o0 = { op: m.opacity, col: m.color.getHex(), em: m.emissive.getHex(), ei: m.emissiveIntensity, dw: m.depthWrite });
-  m.opacity = o.op; m.color.setHex(o.col); m.emissive.setHex(o.em); m.emissiveIntensity = o.ei; m.depthWrite = o.dw;
-  glassTod(m);
-  if (outEve()) { const [c, ei, op] = GLASS_EVE[k]; m.emissive.set(c); m.emissiveIntensity = ei; m.opacity = op; m.color.set("#3a3026"); }
-}
-const glassAll = () => { if (HMATS) for (const k of ["glass", "glass_frost"]) if (HMATS[k]) glassOut(HMATS[k], k); streetTod(); };
+const streetTod = () => { const eve = S.tod !== "day"; for (const m of STREET_LIT) { m.emissive.set(m.userData.glowCol); m.emissiveIntensity = eve ? m.userData.glow : 0; } };
+const glassAll = () => { if (HMATS) for (const k of ["glass", "glass_frost"]) if (HMATS[k]) glassTod(HMATS[k]); streetTod(); };
 function houseEnvK(k) {   // V2.21 (REAL_PLAN R1): the house's reflections scaled (an evening in a room: its own light leads)
   if (!HMATS || k === HENVK) return; HENVK = k;
   for (const m of Object.values(HMATS)) if (m && m.envMap && "envMapIntensity" in m) m.envMapIntensity = m.userData.real ? 1 : finishEnv(m) * k;   // V3.57: a mirror shows its room as it is

@@ -10,8 +10,8 @@ The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in P
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 22 (13 Nov: the next round after V4.5, N170–N178 in streams A–F: the small rooms' views, finishes,
-outside, fewer pills, leaner code, a hitch check; N178 done: `docs/HANDOVER.md` brought to now). Section 21's open rows carry on (N160, N161 on the client's screenshots;
-N163 done V4.8, her card open). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier task's state.
+outside, fewer pills, leaner code, a hitch check; N178 done: `docs/HANDOVER.md` brought to now). Section 21's open rows carry on (N160, N161 on the client's screenshots; N163 on hold:
+the outside by day, as the client asked). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier task's state.
 
 ## Where it lives
 - **The site:** https://emmachilds98-wq.github.io/Demma-Home/, built and published by `.github/workflows/build.yml` on every push to
@@ -57,8 +57,8 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
   and doors open as you reach them.
 - The house from outside, on its own (Gardens and Next door bring the rest, V4.1): a PC's left-drag swings the view round the
   spot grabbed, the way you drag (V4.1), and a right-drag pans; a double-click on its outside centres there, one on a room's floor
-  stands you in it (V4.5); a phone drags, pinches and twists; a floor alone is cut a metre under the eye.
-- By evening outside (V4.8, N163): sunset to sunrise by the device's clock, a dusk sky, the windows lit warm, Next door's lamps on.
+  stands you in it (V4.5); a phone drags, pinches and twists. A floor on its own is cut a
+  metre under the eye.
 - Glides ease the same at any frame rate; the wheel eases each notch.
 
 **Light and looks:**
@@ -137,8 +137,7 @@ Quality is under View → More (HD or Fast). `?perf` shows the speed in a box ab
 
 ## Open with the client
 1. Your road and surroundings (N160, N161): a satellite screenshot of the house, the close and the junction; Street View from the
-   front door (left, ahead, right, up the hill); about how much higher the main road is; names covered. Outside by evening (N163,
-   V4.8): it follows the clock now (dusk after sunset); or always by day, or by Time of day (evening by default)?
+   front door (left, ahead, right, up the hill); about how much higher the main road is; names covered.
 2. The speed from the iPhone 15 Pro and the RTX 5070: open the house, move a moment, then Measure → Send.
 3. KTX2 (N31, #133; section 20's N141): confirm before the workflow builds the encoder. Dark panels on a dark device, or cream.
 4. The living room door's real width (drawn 67, a guess): the sofa bed's largest box is 166 × 101 × 68 and needs 70 clear (N152).
