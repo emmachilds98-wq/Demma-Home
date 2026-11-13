@@ -257,7 +257,7 @@ function backdrop() {   // each frame, before it's drawn (01_renderer.js draw): 
   if (!BD.on || !bg.equals(BD.set)) BD.saved.copy(bg);   // the light's own (it set it again since)
   bg.copy(BD.want); BD.set.copy(BD.want); BD.on = true;
 }
-/* V4.9 (N174): ⋯ puts As it is and Hide labels out beside it; a tap anywhere else or Esc tucks them away */
+/* V4.10 (N174): ⋯ puts As it is and Hide labels out beside it; a tap anywhere else or Esc tucks them away */
 const MORE = qs("#r3d-more"), moreOpen = on => { MORE.closest(".r3d-mini").classList.toggle("more", on); MORE.setAttribute("aria-expanded", String(on)); };
 if (MORE) { MORE.addEventListener("click", () => moreOpen(MORE.getAttribute("aria-expanded") !== "true"));
   document.addEventListener("pointerdown", e => { if (MORE.getAttribute("aria-expanded") === "true" && !e.target.closest(".r3d-mini")) moreOpen(false); });

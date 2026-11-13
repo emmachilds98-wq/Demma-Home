@@ -7,7 +7,7 @@
   "half_mb": 2.6
  },
  "paths": {
-  "_": "first_visit_mb: what a first visit fetches from the site (the icon font and the like from elsewhere aside); shaders_first: shader programs built by the first picture; draws_house, draws_living: a frame's draws while moving, the whole house as it opens and standing in the living room (R3D.perf().calls, the shadows' redraw left out). phone: a phone without a strong chip (Fast, half-size photos); computer: no graphics card, 1920 wide (Fast); iphone: Apple graphics (HD); rtx: an NVIDIA RTX (HD, 1280 wide); shaders_spot (HD paths): shaders built on the spot going from the whole house into the living room, after the house's warm-up.",
+  "_": "first_visit_mb: what a first visit fetches from the site (the icon font and the like from elsewhere aside); shaders_first: shader programs built by the first picture; draws_house, draws_living: a frame's draws while moving, the whole house as it opens and standing in the living room (R3D.perf().calls, the shadows' redraw left out). phone: a phone without a strong chip (Fast, half-size photos); computer: no graphics card, 1920 wide (Fast); iphone: Apple graphics (HD); rtx: an NVIDIA RTX (HD, 1280 wide); shaders_spot (HD paths): shaders built on the spot going from the whole house into the living room, after the house's warm-up; hitches (rtx, N177): frames of a walk (hall, living room, landing, lower floor) that built a shader on the spot or sent a photo, on a 144 Hz clock after the warm-up.",
   "phone": {
    "first_visit_mb": 5.8,
    "shaders_first": 20,
@@ -32,7 +32,8 @@
    "shaders_first": 44,
    "draws_house": 205,
    "draws_living": 410,
-   "shaders_spot": 3
+   "shaders_spot": 3,
+   "hitches": 1
   }
  }
 }
