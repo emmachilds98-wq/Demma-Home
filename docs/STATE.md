@@ -3,15 +3,14 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.4 (12 Nov 2026). V4.4 (N165, N164): a steadier speed check; the phone's top row checked. V4.3 (N167):
-bedroom 3's two artisan oak cube shelves and the oak flip-up table. V4.2 (N159, N166): the house framed to the screen; the
-budgets lowered. V4.1 (N157, N158): the house on its own unless Gardens or Next door is on; a PC's drag swings the view the way
-you drag. V4.0 (N162): Home Plan V4.
-The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.4 ↻"): on the
+**Version:** V4.5 (12 Nov 2026). V4.5 (N163): the house from outside by evening, by the clock. V4.4 (N165, N164): a steadier
+speed check; the phone's top row checked. V4.3 (N167): bedroom 3's cube shelves and flip-up table. V4.2 (N159, N166): the house
+framed; the budgets lowered.
+The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.5 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 21 (12 Nov: Home Plan V4, the house on its own, its real surroundings, the views; open: N160, N161 on the client's screenshots,
-N163–N165, N168, N169). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier task's state.
+N168, N169). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier task's state.
 
 ## Where it lives
 - **The site:** https://emmachilds98-wq.github.io/Demma-Home/, built and published by `.github/workflows/build.yml` on every push to
@@ -58,6 +57,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 - The house from outside, on its own (Gardens and Next door bring the rest, V4.1): a PC's left-drag swings the view round the
   spot grabbed, the way you drag (V4.1), and a right-drag pans; a phone drags, pinches and twists. A floor on its own is cut a
   metre under the eye.
+- By evening outside (V4.5, N163): sunset to sunrise by the device's clock, a dusk sky, the windows lit warm, Next door's lamps on.
 - Glides ease the same at any frame rate; the wheel eases each notch.
 
 **Light and looks:**
@@ -136,8 +136,8 @@ Quality is under View → More (HD or Fast). `?perf` shows the speed in a box ab
 
 ## Open with the client
 1. Your road and surroundings (N160, N161): a satellite screenshot of the house, the close and the junction; Street View from the
-   front door (left, ahead, right, up the hill); about how much higher the main road is; names covered. Outside by evening (N163):
-   keep it by day, or follow the time (evening by default: the house would open at dusk)?
+   front door (left, ahead, right, up the hill); about how much higher the main road is; names covered. Outside by evening (N163,
+   V4.5): it follows the clock now (dusk after sunset); or always by day, or by Time of day (evening by default)?
 2. The speed from the iPhone 15 Pro and the RTX 5070: open the house, move a moment, then Measure → Send.
 3. KTX2 (N31, #133; section 20's N141): confirm before the workflow builds the encoder. Dark panels on a dark device, or cream.
 4. The living room door's real width (drawn 67, a guess): the sofa bed's largest box is 166 × 101 × 68 and needs 70 clear (N152).
