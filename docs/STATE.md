@@ -3,10 +3,10 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.16 (13 Nov 2026). V4.16 (N172, garage): the garage's slab with a joint, tyre tracks and an oil mark; its walls masonry paint. V4.15 (N172, walls): the painted walls a faint tone across them and a soft sheen, still smooth. V4.14 (N180): the PC's walk to the lower floor without a stutter; the hitch budget 0. V4.13 (N171): the whole house opens bigger on a phone; Gardens and Next door stand back. V4.12 (N142): detail maps for the white units (melamine foil) and the living room's trim.
+**Version:** V4.17 (13 Nov 2026). V4.17 (N172, garage): the garage's slab with a joint, tyre tracks and an oil mark; its walls masonry paint. V4.16 (N181): opens without Gardens and Next door every time, both built only when first shown. V4.15 (N172, walls): the painted walls a faint tone across them and a soft sheen, still smooth. V4.14 (N180): the PC's walk to the lower floor without a stutter; the hitch budget 0. V4.13 (N171): the whole house opens bigger on a phone; Gardens and Next door stand back. V4.12 (N142): detail maps for the white units (melamine foil) and the living room's trim.
 V4.11 (N170): the small rooms' In it views without bowed walls; the hall looks down the hall. V4.10 (N174, N175): fewer view pills (As it is and Hide labels behind ⋯; Gardens, Next door on Outside only); the walk stick faint until touched. V4.9 (N177): a hitch check for a PC's walk. V4.8 (N141): the sofa bed's chenille made at build; photos 7.7 to 7.5 MB. V4.7 (N176):
 leaner code. V4.6 (N169): the plot's edge soft, the sky hazy. Earlier: `docs/HISTORY.md`.
-The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.16 ↻"): on the
+The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.17 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 22 (13 Nov: the next round after V4.5, N170–N178 in streams A–F: the small rooms' views, finishes,
@@ -55,7 +55,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 - A room: Be there · In it · Above · On its own. In it uses each view's own lens (`VIEWS`): the small rooms 68–70° from a corner (V4.11).
 - Walking: WASD, the arrows, the wheel, a double-tap walks you to a spot, Mouse look (M). You pass over low furniture, not wardrobes,
   and doors open as you reach them.
-- The house from outside, on its own (Gardens and Next door bring the rest and stand back for it, V4.1, V4.13; a phone opens on it at about 70% of the width): a PC's left-drag swings the view round the
+- The house from outside, on its own (Gardens and Next door bring the rest and stand back for it, V4.1, V4.13; both off at every open and built the first time they show, V4.16; a phone opens on it at about 70% of the width): a PC's left-drag swings the view round the
   spot grabbed, the way you drag (V4.1), and a right-drag pans; a double-click on its outside centres there, one on a room's floor
   stands you in it (V4.5); a phone drags, pinches and twists. A floor on its own is cut a
   metre under the eye.
@@ -66,7 +66,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 - HD on a real graphics card and the iPhones: soft shadows, GTAO, glow and windows' daylight. Fast keeps the rest.
 - Shade bands where walls meet floors, ceilings and corners on every path, and shade round each piece's foot.
 - The ceiling bulbs lit and warm, with a faint glow on the ceiling round each pendant, seen from in a room (V3.76).
-- The walls' emulsion smooth but not flat: a faint tone across a wall and a soft sheen in the roller's laps, worked out in the walls' shader (V4.15). The garage's slab has its joint, tyre tracks and an oil mark, its walls a cooler masonry paint (V4.16).
+- The walls' emulsion smooth but not flat: a faint tone across a wall and a soft sheen in the roller's laps, worked out in the walls' shader (V4.15). The garage's slab has its joint, tyre tracks and an oil mark, its walls a cooler masonry paint (V4.17).
 - The artex finer and softer (V3.76). Floors and tiles made here: laminate planks, marble, metro, herringbone, LVT, porcelain.
 - Doors' painted grain, gloss brush strokes, uPVC's peel. Frosted glass glows by day. Mirrors reflect the room in HD standing still.
 - Room views sit on the page's cream, not black.
