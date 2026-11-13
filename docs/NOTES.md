@@ -60,6 +60,8 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   beside the page) and doesn't count; one used on the frame the draw linked it does. Wrap `renderBufferDirect` to name what drew it (the
   shadow pass goes through it too). New shadow maps (2048² render targets) are sometimes made going down to the lower floor: allocations,
   not photos, so not counted; worth a look if a PC still stutters there.
+  N180 (V4.14): `compileClipped`'s shadow stand-ins once went only with the pieces on show; a hidden piece's sun shadow then built
+  mid-walk. They now take the same pieces as the colours: a new kind of piece that casts needs nothing more.
 - **The first picture (N12, N13, N14):** photos sent a few at a time (`upStep`, `gl.initTexture`; `texPut` disposes every clone first:
   they share GL storage); the house's materials always carry 6 clip planes (`houseClip`) so a cut builds no shader; `compileClipped`
   (`01_renderer`) asks for shaders grouped by plane set, each group primed by a light-less speck (`prime`); `postWarm`, `texWarm`,
