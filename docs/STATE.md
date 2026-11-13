@@ -3,15 +3,15 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.13 (13 Nov 2026). V4.13 (N172, walls): the painted walls a faint tone across them and a soft sheen, still smooth. V4.12 (N142): detail maps for the white units (melamine foil) and the living room's trim.
+**Version:** V4.14 (13 Nov 2026). V4.14 (N172, walls): the painted walls a faint tone across them and a soft sheen, still smooth. V4.13 (N171): the whole house opens bigger on a phone; Gardens and Next door stand back. V4.12 (N142): detail maps for the white units (melamine foil) and the living room's trim.
 V4.11 (N170): the small rooms' In it views without bowed walls; the hall looks down the hall. V4.10 (N174, N175): fewer view pills (As it is and Hide labels behind ⋯; Gardens, Next door on Outside only); the walk stick faint until touched. V4.9 (N177): a hitch check for a PC's walk. V4.8 (N141): the sofa bed's chenille made at build; photos 7.7 to 7.5 MB. V4.7 (N176):
 leaner code. V4.6 (N169): the plot's edge soft, the sky hazy. Earlier: `docs/HISTORY.md`.
-The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.13 ↻"): on the
+The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.14 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 22 (13 Nov: the next round after V4.5, N170–N178 in streams A–F: the small rooms' views, finishes,
-outside, fewer pills, leaner code, a hitch check; N178 done: `docs/HANDOVER.md` brought to now). Section 21's open rows carry on (N160, N161 on the client's screenshots; N163 on her
-card). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier task's state.
+outside, fewer pills, leaner code, a hitch check; N178 done: `docs/HANDOVER.md` brought to now). Section 21's open rows carry on (N160, N161 on the client's screenshots; N163 on hold:
+the outside by day, as the client asked). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier task's state.
 
 ## Where it lives
 - **The site:** https://emmachilds98-wq.github.io/Demma-Home/, built and published by `.github/workflows/build.yml` on every push to
@@ -55,7 +55,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 - A room: Be there · In it · Above · On its own. In it uses each view's own lens (`VIEWS`): the small rooms 68–70° from a corner (V4.11).
 - Walking: WASD, the arrows, the wheel, a double-tap walks you to a spot, Mouse look (M). You pass over low furniture, not wardrobes,
   and doors open as you reach them.
-- The house from outside, on its own (Gardens and Next door bring the rest, V4.1): a PC's left-drag swings the view round the
+- The house from outside, on its own (Gardens and Next door bring the rest and stand back for it, V4.1, V4.13; a phone opens on it at about 70% of the width): a PC's left-drag swings the view round the
   spot grabbed, the way you drag (V4.1), and a right-drag pans; a double-click on its outside centres there, one on a room's floor
   stands you in it (V4.5); a phone drags, pinches and twists. A floor on its own is cut a
   metre under the eye.
@@ -66,7 +66,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 - HD on a real graphics card and the iPhones: soft shadows, GTAO, glow and windows' daylight. Fast keeps the rest.
 - Shade bands where walls meet floors, ceilings and corners on every path, and shade round each piece's foot.
 - The ceiling bulbs lit and warm, with a faint glow on the ceiling round each pendant, seen from in a room (V3.76).
-- The walls' emulsion smooth but not flat: a faint tone across a wall and a soft sheen in the roller's laps, worked out in the walls' shader (V4.13).
+- The walls' emulsion smooth but not flat: a faint tone across a wall and a soft sheen in the roller's laps, worked out in the walls' shader (V4.14).
 - The artex finer and softer (V3.76). Floors and tiles made here: laminate planks, marble, metro, herringbone, LVT, porcelain.
 - Doors' painted grain, gloss brush strokes, uPVC's peel. Frosted glass glows by day. Mirrors reflect the room in HD standing still.
 - Room views sit on the page's cream, not black.
@@ -138,8 +138,7 @@ Quality is under View → More (HD or Fast). `?perf` shows the speed in a box ab
 
 ## Open with the client
 1. Your road and surroundings (N160, N161): a satellite screenshot of the house, the close and the junction; Street View from the
-   front door (left, ahead, right, up the hill); about how much higher the main road is; names covered. Outside by evening (N163):
-   keep it by day, or follow the time (evening by default: the house would open at dusk)?
+   front door (left, ahead, right, up the hill); about how much higher the main road is; names covered.
 2. The speed from the iPhone 15 Pro and the RTX 5070: open the house, move a moment, then Measure → Send.
 3. KTX2 (N31, #133; section 20's N141): confirm before the workflow builds the encoder. Dark panels on a dark device, or cream.
 4. The living room door's real width (drawn 67, a guess): the sofa bed's largest box is 166 × 101 × 68 and needs 70 clear (N152).
