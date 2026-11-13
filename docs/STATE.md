@@ -3,10 +3,10 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.7 (13 Nov 2026). V4.7 (N176): leaner code, nothing seen to change; `checks.py` `lean`. V4.6 (N169): the plot's edge soft, the sky hazy at the horizon. V4.5 (N168): a double-click on the house's outside centres on that spot. V4.4 (N165, N164):
+**Version:** V4.8 (13 Nov 2026). V4.8 (N170): the small rooms' In it views without bowed walls; the hall looks down the hall. V4.7 (N176): leaner code, nothing seen to change; `checks.py` `lean`. V4.6 (N169): the plot's edge soft, the sky hazy at the horizon. V4.5 (N168): a double-click on the house's outside centres on that spot. V4.4 (N165, N164):
 a steadier speed check; the phone's top row checked. V4.3 (N167): bedroom 3's cube shelves and flip-up table. V4.2 (N159, N166):
 the house framed to the screen; the budgets lowered. V4.1 (N157, N158): the house on its own; a PC's drag swings the way you drag. V4.0 (N162): Home Plan V4.
-The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.7 ↻"): on the
+The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.8 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 22 (13 Nov: the next round after V4.5, N170–N178 in streams A–F: the small rooms' views, finishes,
@@ -52,7 +52,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 - Back, Esc and Tab each go one layer at a time; every tap is 44 px on a touch screen; the panels are cream.
 
 **Moving round:**
-- A room: Be there · In it · Above · On its own.
+- A room: Be there · In it · Above · On its own. In it uses each view's own lens (`VIEWS`): the small rooms 68–70° from a corner (V4.8).
 - Walking: WASD, the arrows, the wheel, a double-tap walks you to a spot, Mouse look (M). You pass over low furniture, not wardrobes,
   and doors open as you reach them.
 - The house from outside, on its own (Gardens and Next door bring the rest, V4.1): a PC's left-drag swings the view round the

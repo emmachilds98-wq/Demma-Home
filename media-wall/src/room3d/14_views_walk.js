@@ -7,7 +7,7 @@ const VIEWS = {
   livstand: { label: "Standing in the living room", eye: [372, 160, -6], at: [110, 150, -210], fov: STAND_FOV, stand: true },   // V1.6: Be there, from the door
   livalone: { label: "The living room on its own", eye: [-170, 520, 230], at: [240, 40, -140], fov: 46, above: true },   // v78b: from the hall's corner, the ceiling off
   landing: { label: "Landing", eye: [298, 428, 254], at: [352, 352, -40], fov: 68, box: [288, 402, 275, 485, -72, 256] },     // v66: from the top of the stairs
-  hall:    { label: "Entrance hall", eye: [325, 165, 374], at: [372, 25, 110], fov: 68, box: [310, 398, 15, 225, 50, 416] },   // V3.17 (N62), the client: "I can't see down to the lower floor" (standing in the hall): facing the doorway down, the stairs and the landing below in view   // v66: in from the front door
+  hall:    { label: "Entrance hall", eye: [325, 165, 374], at: [372, 25, 110], fov: 68, box: [310, 398, 15, 225, 50, 416] },   // N170: down the hall from the front door's corner, the stairs down in view, the mirror at the edge
   garage:  { label: "Garage", eye: [272, 150, 488], at: [90, 70, 110], fov: 68, box: [8, 284, -10, 215, 52, 493] },          // v66: from inside its door
   wc:      { label: "WC", eye: [390, -92, -141], at: [432, -168, -305], fov: 68, box: [380, 462, -255, -30, -304, -140] },      // v66: from its door
   bath:    { label: "Bathroom", eye: [300, 425, -50], at: [432, 335, -245], fov: 70, box: [288, 462, 275, 485, -282, -44] },   // v75/v76/v77: from its door (v77 in the corner)   // v65: from its door, as the client's photos
@@ -709,7 +709,7 @@ function setView(name, instant, dur) {
       // v54: a phone stands further back to take in every floor (V1.30: less far: the buttons take less room)
     p = { eye: p.at.map((a, i) => a + (p.eye[i] - a) * f), at: p.at }; }
   else if (name === "house") p = { eye: p.at.map((a, i) => a + (p.eye[i] - a) * 1.25), at: p.at };   // V3.27: a computer a little further back, the roof clear of the rows
-  flyTo(p.eye, p.at, v.fov, !!v.above, instant, dur);   // V4.6 (N170): each room its own lens (82 at least bowed the small rooms' walls)
+  flyTo(p.eye, p.at, v.fov, !!v.above, instant, dur);   // N170: each room its own lens (a floor of 82 bowed the small rooms)
   if (!houseG && R.HOUSE && HOUSEV(name)) { buildHouse(); reshadow(); }   // v69 (B6): built the first time (the living room starts without it)
   if (houseG) { houseG.visible = HOUSEV(name); view.visible = !v.above; applyFloors(); setAbove(!v.above); }   // v56: the sky only from inside
   if (wasHouse !== HOUSEV(name) && started) { applyLight(); sizeRenderer(); }   // V1: in the app the house is by day, its rooms as they are   // v58: the outside's daylight on or off; v73: and the house's resolution
