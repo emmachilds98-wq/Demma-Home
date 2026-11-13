@@ -191,6 +191,29 @@ BUDGET = json.loads((ROOT / "tools/perf_budget.json").read_text())
 HD_PATHS = (("iphone", 393, 852, True, "Apple GPU"), ("rtx", 1280, 800, False, "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0)"))
 
 
+# N177: a walk on the RTX path counting hitches, the frames a real PC would stall on: a shader built and used on the same frame by the
+# draw itself (the warm-up's compile and compileAsync aside: a PC's browser builds those beside the page), or a photo sent to the graphics
+# card mid-walk. The clock is a 144 Hz screen's (each frame 1/144 s on, time inside a frame as it passes), so what eases by time eases as on
+# her PC; the walk is WALK's (hall, the living room, up its stairs to the landing, back, down to the lower floor and back), after the warm-up.
+HITCH_INIT = """(() => { const H = window.__H = { on: false, f: {}, what: [] }, P = WebGL2RenderingContext.prototype, raf = window.requestAnimationFrame,
+    pn = performance.now.bind(performance); let F = 0, R0 = 0, last = -1, out = 0, hf = 0;
+  performance.now = () => { const v = F ? Math.max(out, F + pn() - R0) : pn(); out = v; return v; };
+  window.requestAnimationFrame = cb => raf(t => { if (t !== last) { last = t; hf++; R0 = pn(); F = F ? Math.max(F + 1000 / 144, out) : R0; } cb(F); });
+  const hit = (k, w) => { if (!H.on) return; (H.f[hf] = H.f[hf] || {})[k] = 1; H.what.push(w); };
+  const LK = new WeakMap(), lk = P.linkProgram, up = P.useProgram;
+  P.linkProgram = function (q) { if (!window.__pre) LK.set(q, hf); return lk.call(this, q); };
+  P.useProgram = function (q) { if (LK.has(q)) { if (LK.get(q) === hf) { const m = window.__mat; hit("shader", "a shader built mid-walk (" + (m ? m.type + " " + (m.name || "") : "?") + ")"); } LK.delete(q); } return up.call(this, q); };
+  for (const n of ["texImage2D", "texSubImage2D"]) { const o = P[n]; P[n] = function (...a) { const s = a.find(x => x && typeof x === "object" && (x.naturalWidth || x.width) && !ArrayBuffer.isView(x));
+      if (s && (s.naturalWidth || s.width) * (s.naturalHeight || s.height) >= 65536) hit("photo", "a photo sent mid-walk (" + String(s.currentSrc || s.src || s.constructor.name).split("/").pop() + ")");
+      return o.apply(this, a); }; }
+})();"""
+HITCH_WARM = """async () => { const D = R3D._dbg, G = D.gl, sl = ms => new Promise(r => setTimeout(r, ms));
+  for (const k of ["compile", "compileAsync"]) { const o = G[k].bind(G); G[k] = (...a) => { window.__pre = true; try { return o(...a); } finally { window.__pre = false; } }; }
+  const rbd = G.renderBufferDirect.bind(G); G.renderBufferDirect = (c, s, g, m, o, gr) => { window.__mat = m; return rbd(c, s, g, m, o, gr); };
+  for (let i = 0; i < 600; i++) { const w = D.warming; if (!w.busy && !w.parts && !D.PRE.queue.length && D.WARMED.size) break; await sl(1000); } }"""
+HITCH_WALK = WALK.replace("const legs = [],", "window.__H.on = true; const legs = [],").replace("return { seen,", "window.__H.on = false; return { hitches: Object.keys(window.__H.f).length, what: [...new Set(window.__H.what)], seen,")
+
+
 def over_budget(path, got):
     want = BUDGET["paths"][path]
     return [f"{path}: {k} {got.get(k)} over {v}" for k, v in want.items() if not k.startswith("_") and not 0 <= (got.get(k) or 0) <= v]
@@ -402,11 +425,21 @@ def main():
             if perf[name]["quality"] != "hd": fails.append(f"{name}: drawn in {perf[name]['quality']}, not HD")
             if errs: fails.append(f"{name}: errors: {errs[:4]}")
             ctx.close()
+        ctx = b.new_context(viewport={"width": 1280, "height": 800}, device_scale_factor=1, service_workers="block")   # N177: the hitch walk
+        ctx.add_init_script(PERF_INIT % (json.dumps(HD_PATHS[1][4]), "true") + HITCH_INIT); pg = ctx.new_page(); pg.set_default_timeout(900000); localcdn.route(pg); errs = []
+        pg.on("pageerror", lambda e: errs.append("pageerror: " + str(e)[:300]))
+        pg.goto(base + "index.html"); pg.wait_for_function("window.R3D && window.R3D.ready && window.__first", timeout=600000)
+        pg.evaluate(HITCH_WARM); hw = pg.evaluate(HITCH_WALK)
+        perf.setdefault("rtx", {})["hitches"] = hw["hitches"]; fails += over_budget("rtx", perf["rtx"])
+        if hw["seen"][-1:] != ["hall"] or "kitchen" not in hw["seen"] or "landing" not in hw["seen"]: fails.append(f"rtx: the hitch walk went {hw['seen']} (legs {hw['legs']})")
+        if hw["hitches"]: print("hitches: " + "; ".join(hw["what"][:6]))
+        if errs: fails.append(f"rtx hitch walk: errors: {errs[:4]}")
+        ctx.close()
         b.close()
     (SHOTS / "perf.json").write_text(json.dumps(perf, indent=1))
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
-    print("speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room" + (f", {v['shaders_spot']} built on the spot into it" if "shaders_spot" in v else "") for k, v in perf.items()))
+    print("speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room" + (f", {v['shaders_spot']} built on the spot into it" if "shaders_spot" in v else "") + (f", {v['hitches']} hitches walking" if "hitches" in v else "") for k, v in perf.items()))
     print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named (shut panels, a card, Edit's list too), Esc one layer a press, Tab the top row then the 3D, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, Back from a room to the house, down to the lower floor and back, the speed budget on 4 paths, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
