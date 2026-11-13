@@ -82,6 +82,7 @@ function finPatch(m, k) {   // the walls' and ceilings' materials read the palet
       }
       finD *= shd; } }
   vec4 diffuseColor = vec4( finD, opacity );`);
+    if (FIN.kind[k] === 0) paintGrain(sh);   // N172: the emulsion's tone and sheen
   };
   return m;
 }
@@ -615,7 +616,7 @@ function buildHouse() {
     // V2.0: the stair wall up to the landing in the living room's own stair-wall paint (a copy, so Look's colour follows it up the stairs)
     const stairMat = () => { const m = paintMat(lum("#2d5a46") / BASE_L, false, false, "w:stairs").clone(); paintMats.set("house:stairs", reg(m));
       const rk = (H3.depth_rank || {}).stairpaint ?? 2; m.polygonOffset = true; m.polygonOffsetFactor = 0; m.polygonOffsetUnits = -2 * rk;
-      m.clippingPlanes = []; m.userData.hk = "stairpaint"; return m; };   // V2.8, the client: "first floor landing west wall should match the living room west wall and act as one wall": never the landing's palette
+      m.clippingPlanes = []; m.userData.hk = "stairpaint"; m.onBeforeCompile = paintGrain; m.customProgramCacheKey = () => "paintwall"; return m; };   // N172: its emulsion as the walls   // V2.8, the client: "first floor landing west wall should match the living room west wall and act as one wall": never the landing's palette
     const m3 = {}, mat3 = k => m3[k] || (m3[k] = k === "contact" ? contactMat() : k === "stairpaint" ? stairMat() : (() => { const [c, r] = H3.mats[k] || ["#cccccc", 0.9], gl3 = k === "glass" || k === "glass_frost", T = houseTex(k);
       const m = reg(new THREE.MeshStandardMaterial({ color: T && !T.tint && !BED_TINT.has(k) ? "#ffffff" : c, map: T ? T.map : null, bumpMap: T && T.bump ? T.map : null, bumpScale: T ? T.bump : 1, normalMap: T && T.normal || null, roughness: T && T.rough ? Math.min(1, r / T.roughMean) : r, roughnessMap: T && T.rough || null, metalness: k === "brass" || k === "chrome" || k === "steel" ? 0.8 : k === "mirror" ? 0.25 : 0, transparent: gl3, opacity: gl3 ? (k === "glass" ? 0.14 : 0.86) : 1,   /* V1.13: clear (0.3 tinted the outside blue-green); V2.40: frosted, the light through */ depthWrite: !gl3, side: HOUSE_SIDE,
         emissive: { led: "#ffffff", pc_glow: "#cfe0ff", screen: "#1b2433", lamp_purple: "#8a45ff", bulb: "#ffc98a" }[k] || "#000000", emissiveIntensity: { led: 1.5, pc_glow: 0.9, screen: 0.12, lamp_purple: 2.2, bulb: 4 }[k] || 0 }));   // V3.76 (N116): a ceiling bulb lit, warm   // V2.48: the office's purple lamp   // v60: the kitchen's LED battens glow; v61: the PC's glass, the screens
