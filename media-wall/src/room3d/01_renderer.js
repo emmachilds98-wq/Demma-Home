@@ -100,10 +100,11 @@ function precompileBatch() {
 function compileClipped(cam, shownOnly, roots) {   // shownOnly: what's shown now (the rooms' warm-up), not every hidden part too; roots: only these hidden parts (V3.23)
   const key = m => gl.localClippingEnabled && m.clippingPlanes && m.clippingPlanes.length ? m.clippingPlanes.length + (m.clipIntersection ? "i" : "u") : "0";
   const G = new Map(), D = new Map(), put = (M, k, o, m) => { if (!M.has(k)) M.set(k, []); M.get(k).push([o, m]); };
-  (roots ? f => roots.forEach(r => r.traverse(f)) : f => scene[shownOnly ? "traverseVisible" : "traverse"](f))(o => { const m = [].concat(o.material || [])[0]; if (m && (o.isMesh || o.isLine || o.isPoints || o.isSprite)) put(G, key(m), o, o.material); });
+  const each = roots ? f => roots.forEach(r => r.traverse(f)) : f => scene[shownOnly ? "traverseVisible" : "traverse"](f);
+  each(o => { const m = [].concat(o.material || [])[0]; if (m && (o.isMesh || o.isLine || o.isPoints || o.isSprite)) put(G, key(m), o, o.material); });
   const lit = []; scene.traverseVisible(l => { if (l.isLight) lit.push(l); });   // N35: the shadows' own materials: a one-of-a-kind stand-in put on each caster for the asking (and taken off)
-  if (gl.shadowMap.enabled && !roots) { const pts = new Set(lit.filter(l => l.castShadow).map(l => !!l.isPointLight));
-    for (const pt of pts) scene.traverseVisible(o => { if (!o.isMesh || !o.castShadow || !o.material) return; const d = Array.isArray(o.material) ? o.material.map(m => depthMat(m, pt)) : depthMat(o.material, pt), d0 = [].concat(d)[0]; put(D, "s" + (d0.clipShadows ? key(d0) : "0"), o, d); }); }
+  if (gl.shadowMap.enabled) { const pts = new Set(lit.filter(l => l.castShadow).map(l => !!l.isPointLight));   // N180: the hidden parts' shadows too (a lower-floor piece's sun shadow built mid-walk)
+    for (const pt of pts) each(o => { if (!o.isMesh || !o.castShadow || !o.material) return; const d = Array.isArray(o.material) ? o.material.map(m => depthMat(m, pt)) : depthMat(o.material, pt), d0 = [].concat(d)[0]; put(D, "s" + (d0.clipShadows ? key(d0) : "0"), o, d); }); }
   const jobs = [], was = gl.getRenderTarget();
   if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
   try {
