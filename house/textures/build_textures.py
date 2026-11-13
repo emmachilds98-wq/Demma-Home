@@ -293,7 +293,7 @@ def tiles():
 # dormer's cheeks, as the back photo: dark-stained timber weatherboards 15 high, each lapped over the one below, the grain along them.
 MADE = {"upvc": (0.5, 512, "peel"), "gloss": (0.5, 512, "paint"), "brushed": (0.3, 512, "brushed"), "hung": (0.6, 1024, "boards"),
         "joinery": (0.6, 512, "timber"),   # N111: the doors and their frames: painted timber, the grain's lines under the satin
-        "melamine": (0.4, 512, "foil")}    # N142 (V4.11): the white KALLAX-type units (MATS wardrobe): a melamine foil's fine pressed
+        "melamine": (0.4, 512, "foil")}    # N142 (V4.12): the white KALLAX-type units (MATS wardrobe): a melamine foil's fine pressed
                                            # stipple, a hair deep, and its sheen breaking up a little (they were flat, a drawn speckle)
 
 
