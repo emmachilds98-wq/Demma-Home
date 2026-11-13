@@ -196,8 +196,8 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   V3.82 (N138): Make up the bed (`S.made`, `WORK.made.sync`, shown once `WORK.sbed.p` is 1; `restMerge` skips it and the chaise's `fold`).
   The chaise is hollow: a base and four 3.2-thick walls round the lining, the folded bedding on its floor.
 - **The iPhone path's `draws_living` once read 680** (#260, V3.87; budget 273): the same build gave 195 locally and main's run passed;
-  the measure takes the least of three frames, so a slow CI frame that caught extra passes (the AO back 0.25 s after a stop, or a
-  mirror's refresh) can read high. Nothing in that PR drew anything: if it repeats, read `R3D.perf()` frame by frame there.
+  a frame's count (`FT.calls`, `gl.info.render.calls` after the frame) takes in any shadows redrawn that frame, and after a room change
+  `shStag` spreads those over the next frames; all three frames read carried some. V4.4 (N165) reads six and keeps the least.
 - **`shaders_spot` wobbles** (seen on #254, V3.81): on the RTX path, main and a branch alike build 0 or 5 shaders on the spot stepping
   into the living room after the warm-up (CI once 30, on a slow runner): shadow-depth programs with the living room's 2 clipping planes,
   which the warm-up's stand-ins (`01` `depthMat`) don't always reach first. Measure with `check_site.SPOT` after waiting for `WARMED`;
@@ -210,7 +210,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   group sits at the back frame's front top edge (`back_h` 81, the run's `-hd + t`, the side's `xi`); the pad hangs back from it with `over`
   in front; `rotation.x` (the run) or `rotation.z` (the side) by `up` lifts the back of the pad, so its foot dips behind the back cushion.
   `head_up_h` (106) is the raised top; `clash.py` checks it. The scissor links are their own group in the bed (`lk`, not merged), set each
-  frame from the top's rise (`linkAt`). The chenille (`02` `CHENILLE`, `CHENILLE_B`; since V4.4 made by `build_textures.py --fabrics`
+  frame from the top's rise (`linkAt`). The chenille (`02` `CHENILLE`, `CHENILLE_B`; since V4.5 made by `build_textures.py --fabrics`
   as `chenille_map` and `chenille_pile_map`, pixel for pixel the old drawing, loaded with the photos on every device): 4 px loops (1.6 mm), a twill
   `sin((x + y)π/4)`, sines for the mottle so it tiles (any random block or row reads at room distance). The colour is drawn greener and
   greyer than the photos (`#586b4c`): the room's warm light turns a green about 25° yellower. Tufts take `dimp` (the cloth × 0.8), not `seam`.

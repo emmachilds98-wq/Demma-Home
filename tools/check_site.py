@@ -181,7 +181,7 @@ PERF = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   for (const e of performance.getEntriesByType("resource")) if (e.name.startsWith(location.origin)) bytes += e.encodedBodySize;
   const still = async () => { const g = D.gl.shadowMap; let c = 1e9;   // a frame's draws while you move: the shadows' redraw (a room change) left out
     const fresh = async () => { const f = window.__fr || 0; for (let i = 0; i < 100 && (window.__fr || 0) < f + 2; i++) await sl(200); };   // V3.26: a frame drawn since (CI's frames take seconds: 600 ms read the fly's last, house and room both, 770-945)
-    for (let i = 0; i < 3; i++) { g.needsUpdate = false; D.controls.dispatchEvent({ type: "change" }); await sl(600); await fresh(); c = Math.min(c, R3D.perf().calls); }
+    for (let i = 0; i < 6; i++) { g.needsUpdate = false; D.controls.dispatchEvent({ type: "change" }); await sl(600); await fresh(); c = Math.min(c, R3D.perf().calls); }   // V4.4 (N165): six frames, the least kept (three once all carried the staggered shadows' redraw after a room change: 680 on #260)
     g.needsUpdate = true; D.controls.dispatchEvent({ type: "change" }); return c; };
   const h = await still();                                     // the house as it opens (R3D.set shows the living room from outside: 91 more draws)
   R3D.set({ view: "livstand" }); await settle(); const l = await still(); R3D.set({ view: "house" }); await settle();
