@@ -3,10 +3,10 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.16 (13 Nov 2026). V4.16 (N181): opens without Gardens and Next door every time, both built only when first shown. V4.15 (N172, walls): the painted walls a faint tone across them and a soft sheen, still smooth. V4.14 (N180): the PC's walk to the lower floor without a stutter; the hitch budget 0. V4.13 (N171): the whole house opens bigger on a phone; Gardens and Next door stand back. V4.12 (N142): detail maps for the white units (melamine foil) and the living room's trim.
+**Version:** V4.17 (13 Nov 2026). V4.17 (N152): will the sofa bed go in, on its card and in the plan's options. V4.16 (N181): opens without Gardens and Next door every time, both built only when first shown. V4.15 (N172, walls): the painted walls a faint tone across them and a soft sheen, still smooth. V4.14 (N180): the PC's walk to the lower floor without a stutter; the hitch budget 0. V4.13 (N171): the whole house opens bigger on a phone; Gardens and Next door stand back. V4.12 (N142): detail maps for the white units (melamine foil) and the living room's trim.
 V4.11 (N170): the small rooms' In it views without bowed walls; the hall looks down the hall. V4.10 (N174, N175): fewer view pills (As it is and Hide labels behind ⋯; Gardens, Next door on Outside only); the walk stick faint until touched. V4.9 (N177): a hitch check for a PC's walk. V4.8 (N141): the sofa bed's chenille made at build; photos 7.7 to 7.5 MB. V4.7 (N176):
 leaner code. V4.6 (N169): the plot's edge soft, the sky hazy. Earlier: `docs/HISTORY.md`.
-The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.16 ↻"): on the
+The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.17 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 22 (13 Nov: the next round after V4.5, N170–N178 in streams A–F: the small rooms' views, finishes,
@@ -84,7 +84,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 
 **The living room (the media wall project):**
 - The sofa bed (Lovesofas Amelia, Blade Green; an option, no buy rows) is the room's sofa; Room → The sofa swaps yours back,
-  upholstered the same way (V3.86).
+  upholstered the same way (V3.86). Its card says if its biggest box goes in the doors (`fit.sofabed_fit_line`, Measure's rows; V4.17).
 - Its bed pulls out and lifts on a scissor frame; its five headrests flip up on hinges; its stools slide out; its chaise lifts.
   Its cushions carry their own shade where they meet (V3.81), piping in their edges and buttons in dimples (V3.85). Pulled out,
   Make up the bed lays a duvet and pillows on it; the chaise's storage holds the bedding (V3.82).
@@ -141,7 +141,7 @@ Quality is under View → More (HD or Fast). `?perf` shows the speed in a box ab
    front door (left, ahead, right, up the hill); about how much higher the main road is; names covered.
 2. The speed from the iPhone 15 Pro and the RTX 5070: open the house, move a moment, then Measure → Send.
 3. KTX2 (N31, #133; section 20's N141): confirm before the workflow builds the encoder. Dark panels on a dark device, or cream.
-4. The living room door's real width (drawn 67, a guess): the sofa bed's largest box is 166 × 101 × 68 and needs 70 clear (N152).
+4. The living room door's width (drawn 67, a guess; the sofa bed's biggest box needs 70: "3 short") and the front door's (82, a guess) (N152).
 5. The sofa bed's price (about £700–950; the sandbox shows dollars). A microwave photo, if there is one.
 6. Still to measure (all in Measure): the bathroom door (about 61 in the photo, drawn 68), the boiler cupboard, the bathroom's ceiling
    over the toilet and its slope, the vanity, the bath (184), the hall's door down (66) and bench, the kitchen's radiator, the WC window
