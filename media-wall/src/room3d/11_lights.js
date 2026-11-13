@@ -69,10 +69,10 @@ function outdoor() {
     quad(-E, E, -E, yb, zb, yb);                                                                    // the gardens' side, a storey down
     quad(-E, A0, zb, yb, zf, yt, false, true); quad(A0, A1, zb, yb, zf, yt, true, true); quad(482, E, zb, yb, zf, yt, false, true);   // the slope the terrace is built into (by it, the alley's own steps with Gardens on); V1.47, the client: "the garden green floor can be seen through the window of the kitchen": not across the house (A1 to its party wall, 482), where it ran through the lower floor's rooms
     quad(-E, E, zf, yt, E, yt);                                                                     // the street's side, out to the horizon
-    buildBeyond(null, g);                                                                           // V1.4: the hill opposite
     scene.add(g);
   }
-  if (OUT.ground && !OUT.street) OUT.street = buildStreet(OUT.ground);   // V3.44 (N81): the street out front (with the house's materials, once they're made)
+  if (OUT.ground && !OUT.hill && (room || S.hgarden)) { OUT.hill = true; buildBeyond(null, OUT.ground); }   // V1.4: the hill opposite and the valley's trees; N181: built the first time they show (Gardens, or a room's windows)
+  if (OUT.ground && !OUT.street && (room || S.hstreet)) OUT.street = buildStreet(OUT.ground);   // V3.44 (N81): the street out front (with the house's materials, once they're made); N181: the first time it shows (Next door, or a room's windows)
   if (house && !OUT.skyEnv) {   // V1.13 (QUALITY_PLAN Q3): outside, the house reflects its own sky: an environment made from a sky like the
     // one shown, at the room reflection's size (so swapping them rebuilds no shaders), once
     const pm = new THREE.PMREMGenerator(gl), sk = new Sky(), sc = new THREE.Scene(), u = sk.material.uniforms, u0 = OUT.sky.material.uniforms;
