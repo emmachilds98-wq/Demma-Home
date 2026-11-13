@@ -33,6 +33,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Testing a link's `#share=` (N118):** going from the page to the same address with only a new `#...` doesn't reload it (Playwright's
   `goto` too), so nothing reads the link: go to `about:blank` first. Serving `_site` with `python3 -m http.server` for several browser
   contexts stalled on the photos; abort `tex/`, `photos.` and the fonts in a test that needs no picture, and wait for `domcontentloaded`.
+- **Matching the fog (N169):** three mixes fog after the colour conversion, with `fogColor` in the screen's space when drawing to it and linear into a render target (`refreshFogUniforms`). A custom shader that must match the fog (the sky's haze, `11_lights.js` `skyHaze`) mixes at the same point and sets its colour the same way in `onBeforeRender`; a plain copy of `fog.color` comes out too blue on Fast.
 - **Ticks (N118):** every tick store saves through `localStorage.setItem`; `measure.js` wraps it for the five keys in `TICKS` and times
   each changed key (`demma-ticks-at`). A new store of ticks only needs adding to `TICKS` (and `pull_edits.TICKS`, `tick_val`).
 - **Git:** force-push is refused. After a merged PR, restart the branch from `origin/main` (a fast-forward push works).
@@ -53,6 +54,12 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   ever firing). Put a `// note` at a line's end only: one put mid-line in a one-line statement commented out the rest of it.
 
 ## 3. Speed: what was done, how, what's left
+- **The hitch walk (N177, V4.9):** its own check (`checks.py --only hitch`, `check_site.py --hitch`, its own CI job: inside the site job it took that past 40 min). `check_site.py` `HITCH_INIT`/`HITCH_WARM`/`HITCH_WALK`. A faked clock must move `performance.now()` with the
+  rAF time (each frame 1/144 s on, time inside a frame as it passes): faking only rAF's timestamp left tweens started from `performance.now()`
+  with a negative k, and the camera flew off to x = 287 km. A link inside three's `compile`/`compileAsync` is the warm-up's (on a PC it builds
+  beside the page) and doesn't count; one used on the frame the draw linked it does. Wrap `renderBufferDirect` to name what drew it (the
+  shadow pass goes through it too). New shadow maps (2048² render targets) are sometimes made going down to the lower floor: allocations,
+  not photos, so not counted; worth a look if a PC still stutters there.
 - **The first picture (N12, N13, N14):** photos sent a few at a time (`upStep`, `gl.initTexture`; `texPut` disposes every clone first:
   they share GL storage); the house's materials always carry 6 clip planes (`houseClip`) so a cut builds no shader; `compileClipped`
   (`01_renderer`) asks for shaders grouped by plane set, each group primed by a light-less speck (`prime`); `postWarm`, `texWarm`,
@@ -103,6 +110,8 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `movable`'s `_flat` stays by place (04 and 07 pass it). N120 (V3.67): `optC`, 19's `d.cab`, bar 2's six copies (`BAR2` is one bar now),
   page.js's `user`/`need`, fit.py's four functions defined twice (pyflakes: "redefinition of unused"). ESLint finds nothing more in the
   joined room3d file. Left: 15's `LOOK_STR` `cab`; pyflakes' unused locals in fit.py, build_viewer.py, room3d_page.py, plan_ui.py, model.py.
+  N176 (V4.7): `checks.py` `lean` now watches for it. A comment-only trim is proved by esbuild: the joined parts minified (`--minify-whitespace
+  --minify-syntax`) before and after must be byte-identical; a one-line comment goes at the end of the line it explains.
 
 - **A room's light (N80):** `applyLight` zeroes every light but the fill in a room of the house; it must leave the house's own (`userData.houseLight`) and the sun alone, as `placeRoomLights` runs before it, not after (a second change of a light left rooms lit by the fill alone). To compare a room with the living room, shoot both and take the mean grey (about 150 is the living room's by day).
 - **A material that's lost (N82):** a key with no row in `model.MATS` draws as `mat3`'s grey `#cccccc`, matt, with no error. A `# note` mid-line in that dict once dropped three (V3.14 to V3.32). To check: every quoted first argument of `o.box`/`o.prism`/... in `model.py` against `model.MATS`; a raycast in the page shows `material.color` `cccccc`.
@@ -210,7 +219,8 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   group sits at the back frame's front top edge (`back_h` 81, the run's `-hd + t`, the side's `xi`); the pad hangs back from it with `over`
   in front; `rotation.x` (the run) or `rotation.z` (the side) by `up` lifts the back of the pad, so its foot dips behind the back cushion.
   `head_up_h` (106) is the raised top; `clash.py` checks it. The scissor links are their own group in the bed (`lk`, not merged), set each
-  frame from the top's rise (`linkAt`). The chenille (`02` `CHENILLE`, `CHENILLE_B`) is per-pixel ImageData: 4 px loops (1.6 mm), a twill
+  frame from the top's rise (`linkAt`). The chenille (`02` `CHENILLE`, `CHENILLE_B`; since V4.8 made by `build_textures.py --fabrics`
+  as `chenille_map` and `chenille_pile_map`, pixel for pixel the old drawing, loaded with the photos on every device): 4 px loops (1.6 mm), a twill
   `sin((x + y)π/4)`, sines for the mottle so it tiles (any random block or row reads at room distance). The colour is drawn greener and
   greyer than the photos (`#586b4c`): the room's warm light turns a green about 25° yellower. Tufts take `dimp` (the cloth × 0.8), not `seam`.
 - **As it is** (V3.90 N151, `23_finish.js` `nowMode`): `NOWV` (08) set aside, never changed: `finHold` holds the colours (the living

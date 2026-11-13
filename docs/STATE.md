@@ -3,15 +3,15 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.5 (12 Nov 2026). V4.5 (N152): will the sofa bed go in, a line on its card and in the plan's options. V4.4 (N165, N164): a steadier speed check; the phone's top row checked. V4.3 (N167):
-bedroom 3's two artisan oak cube shelves and the oak flip-up table. V4.2 (N159, N166): the house framed to the screen; the
-budgets lowered. V4.1 (N157, N158): the house on its own unless Gardens or Next door is on; a PC's drag swings the view the way
-you drag. V4.0 (N162): Home Plan V4.
-The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.5 ↻"): on the
+**Version:** V4.13 (13 Nov 2026). V4.13 (N152): will the sofa bed go in, on its card and in the plan's options. V4.12 (N142): detail maps for the white units (melamine foil) and the living room's trim.
+V4.11 (N170): the small rooms' In it views without bowed walls; the hall looks down the hall. V4.10 (N174, N175): fewer view pills (As it is and Hide labels behind ⋯; Gardens, Next door on Outside only); the walk stick faint until touched. V4.9 (N177): a hitch check for a PC's walk. V4.8 (N141): the sofa bed's chenille made at build; photos 7.7 to 7.5 MB. V4.7 (N176):
+leaner code. V4.6 (N169): the plot's edge soft, the sky hazy. Earlier: `docs/HISTORY.md`.
+The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.13 ↻"): on the
 home-screen app, tap it to get the newest.
 
-**Work from:** `docs/REAL_PLAN.md` section 21 (12 Nov: Home Plan V4, the house on its own, its real surroundings, the views; open: N160, N161 on the client's screenshots,
-N163–N165, N168, N169). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier task's state.
+**Work from:** `docs/REAL_PLAN.md` section 22 (13 Nov: the next round after V4.5, N170–N178 in streams A–F: the small rooms' views, finishes,
+outside, fewer pills, leaner code, a hitch check; N178 done: `docs/HANDOVER.md` brought to now). Section 21's open rows carry on (N160, N161 on the client's screenshots; N163 on her
+card). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier task's state.
 
 ## Where it lives
 - **The site:** https://emmachilds98-wq.github.io/Demma-Home/, built and published by `.github/workflows/build.yml` on every push to
@@ -23,7 +23,7 @@ N163–N165, N168, N169). A new team starts with `docs/HANDOVER.md`. Section 9 h
 ```bash
 npm ci && python3 -m pip install -r media-wall/requirements.txt   # three.js and esbuild; Playwright 1.63.0 for the browser checks
 python3 tools/build.py            # everything into _site/ (about 3 min; --fast keeps the renders and PDFs)
-python3 tools/checks.py           # every check, one verdict (--quick: no browser). Paste its lines in the PR.
+python3 tools/checks.py           # every check, one verdict (--quick: no browser; lean: nothing unused). Paste its lines in the PR.
 python3 tools/round.py "words"    # a client round: version up, pull their numbers, build, check, HISTORY
 python3 tools/pull_edits.py --link URL   # the client's numbers and ticks from a Send link
 python3 house/privacy_check.py    # before every commit
@@ -38,7 +38,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 | `house/` | `survey_data.py` (sizes, sourced) → `model.py` (geometry, `MATS`) → `export_house.py` (the house file); `measure.py` (guesses: Measure's rows); `textures/` (made here or CC0); `HOUSE.md`, `EVIDENCE.md`, `SURVEY.md` |
 | `media-wall/inputs/` | The client's photos and plans (EXIF stripped) |
 | `tools/` | `build.py`, `checks.py`, `check_site.py`, `gallery.py` (every room's shot), `compare.py` and `camfit.py` (photos beside the 3D), `pull_edits.py`, `round.py` |
-| `docs/` | `HANDOVER.md` (start here), `REAL_PLAN.md` (the plan; section 20 now), this file, `NOTES.md`, `DECISIONS.md`, `HISTORY.md` |
+| `docs/` | `HANDOVER.md` (start here), `REAL_PLAN.md` (the plan; section 22 now), this file, `NOTES.md`, `DECISIONS.md`, `HISTORY.md` |
 | `_site/` (built, never committed) | `index.html`, `sheets.<hash>.json`, `sw.js`, `version.txt`, `three.<hash>.js`, `tex/` (a photo a file), `data/`, the PDFs |
 
 ## The site now
@@ -52,11 +52,12 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 - Back, Esc and Tab each go one layer at a time; every tap is 44 px on a touch screen; the panels are cream.
 
 **Moving round:**
-- A room: Be there · In it · Above · On its own.
+- A room: Be there · In it · Above · On its own. In it uses each view's own lens (`VIEWS`): the small rooms 68–70° from a corner (V4.11).
 - Walking: WASD, the arrows, the wheel, a double-tap walks you to a spot, Mouse look (M). You pass over low furniture, not wardrobes,
   and doors open as you reach them.
 - The house from outside, on its own (Gardens and Next door bring the rest, V4.1): a PC's left-drag swings the view round the
-  spot grabbed, the way you drag (V4.1), and a right-drag pans; a phone drags, pinches and twists. A floor on its own is cut a
+  spot grabbed, the way you drag (V4.1), and a right-drag pans; a double-click on its outside centres there, one on a room's floor
+  stands you in it (V4.5); a phone drags, pinches and twists. A floor on its own is cut a
   metre under the eye.
 - Glides ease the same at any frame rate; the wheel eases each notch.
 
@@ -68,7 +69,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 - The artex finer and softer (V3.76). Floors and tiles made here: laminate planks, marble, metro, herringbone, LVT, porcelain.
 - Doors' painted grain, gloss brush strokes, uPVC's peel. Frosted glass glows by day. Mirrors reflect the room in HD standing still.
 - Room views sit on the page's cream, not black.
-- Outside: a real sky with soft cloud (V3.92), a patchwork lawn, the back garden as its photos, a stand-in street out front
+- Outside: a real sky with soft cloud (V3.92) that fades into the haze at the horizon, so the ground has no hard edge (V4.6), a patchwork lawn, the back garden as its photos, a stand-in street out front
   (not the real one).
 
 **Change the house** (`23_finish.js`, `docs/NOTES.md` section 5 for Look's rows):
@@ -82,7 +83,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 
 **The living room (the media wall project):**
 - The sofa bed (Lovesofas Amelia, Blade Green; an option, no buy rows) is the room's sofa; Room → The sofa swaps yours back,
-  upholstered the same way (V3.86). Its card says if its biggest box goes in the doors (`fit.sofabed_fit_line`, Measure's rows; V4.5).
+  upholstered the same way (V3.86). Its card says if its biggest box goes in the doors (`fit.sofabed_fit_line`, Measure's rows; V4.13).
 - Its bed pulls out and lifts on a scissor frame; its five headrests flip up on hinges; its stools slide out; its chaise lifts.
   Its cushions carry their own shade where they meet (V3.81), piping in their edges and buttons in dimples (V3.85). Pulled out,
   Make up the bed lays a duvet and pillows on it; the chaise's storage holds the bedding (V3.82).
@@ -107,7 +108,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
   they rest (`restMerge`, V3.77).
 
 ## Numbers (CI's software graphics: relative, not a real card's)
-- `sizes`: page 1.1 MB, photos 8.0 MB in 94 files (budget 8.7), three.js 0.86 MB.
+- `sizes`: page 1.1 MB, photos 7.5 MB in 96 files (budget 8.7), three.js 0.86 MB.
 - From `_shots/perf.json` (V3.75; the phone's living room 181 since V3.77), budget in brackets:
 
   | Path | Draws, house | Draws, living room | Shaders, first picture |
@@ -140,7 +141,7 @@ Quality is under View → More (HD or Fast). `?perf` shows the speed in a box ab
    keep it by day, or follow the time (evening by default: the house would open at dusk)?
 2. The speed from the iPhone 15 Pro and the RTX 5070: open the house, move a moment, then Measure → Send.
 3. KTX2 (N31, #133; section 20's N141): confirm before the workflow builds the encoder. Dark panels on a dark device, or cream.
-4. The living room door's width (drawn 67, a guess; the sofa bed's biggest box needs 70: "3 short") and the front door's (82) (N152).
+4. The living room door's width (drawn 67, a guess; the sofa bed's biggest box needs 70: "3 short") and the front door's (82, a guess) (N152).
 5. The sofa bed's price (about £700–950; the sandbox shows dollars). A microwave photo, if there is one.
 6. Still to measure (all in Measure): the bathroom door (about 61 in the photo, drawn 68), the boiler cupboard, the bathroom's ceiling
    over the toilet and its slope, the vanity, the bath (184), the hall's door down (66) and bench, the kitchen's radiator, the WC window

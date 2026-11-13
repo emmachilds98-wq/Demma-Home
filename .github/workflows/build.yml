@@ -105,7 +105,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: [site, page, taps]
+        check: [site, hitch, page, taps]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

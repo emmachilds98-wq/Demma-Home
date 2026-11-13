@@ -1,7 +1,5 @@
-/* v14: the room in 3D. The furniture is the plan's own geometry (export3d.py records every box, polygon and face frame the
-   HD renderer draws); the shell, the lights, the TV picture, shelf B and the floor lamp are built here from the same numbers.
-   Room coordinates are cm: x from the side (east) wall, y up, z from the room (negative) to the alcove's back. Three.js uses
-   metres with x mirrored so the picture isn't flipped. */
+/* v14: the room in 3D, from the plan's own geometry (export3d.py). Room cm: x from the east wall, y up, z from the room (negative) to
+   the alcove's back; three.js metres, x mirrored so the picture isn't flipped. */
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
@@ -19,9 +17,7 @@ const MOD_AT = performance.now();   // V1.31: when this script began (R3D.timing
 const root = document.getElementById("r3d");
 const SC = JSON.parse(document.getElementById("scene3d-data").textContent);
 const R = SC.room;
-/* v37, client: "The shelf on the wall alongside the stairs must always end 10cm short of the right-hand wall, regardless of any other
-   sizing or positioning logic": the black shelf's window end is pinned to the pipe boxing's face plus its gap, whatever the data says */
-{ const sb = R.SHELF_B, gap = 10, len = Math.abs(sb.z[0] - sb.z[1]), end = R.PIPE_BOX.z[1] + gap; sb.gap = gap; sb.z = [end + len, end]; }
+{ const sb = R.SHELF_B, gap = 10, len = Math.abs(sb.z[0] - sb.z[1]), end = R.PIPE_BOX.z[1] + gap; sb.gap = gap; sb.z = [end + len, end]; }   // v37: the stairs-wall shelf always ends 10 cm short of the pipe boxing, whatever the data says
 const M = 0.01;
 const v3 = (x, y, z) => new THREE.Vector3(-x * M, y * M, z * M);
 const qs = s => root.querySelector(s), qsa = s => [...root.querySelectorAll(s)];
@@ -29,10 +25,7 @@ const msg = qs("#r3d-msg");
 
 const store = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
                 set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
-/* v35: an error trap. Anything that goes wrong in the room (a script error, a failed promise, three's own console errors: a shader
-   that won't compile, a lost graphics context) shows a small note and is kept: the last 20 in this browser (R3D.errors() lists them)
-   and, on the deck, in its database ("errors"), so the next round can read what you saw, on which device */
-const ERRS = { t: 0, busy: false, db: null };
+const ERRS = { t: 0, busy: false, db: null };   // v35: an error trap: any error shows a note and is kept (the last 20 here, R3D.errors(); the deck's "errors" database)
 function noteError(kind, m, stack) {
   if (ERRS.busy) return; ERRS.busy = true;
   try {
@@ -67,13 +60,10 @@ const DEF = { site: "C", dining: "folded",   // v27: the dining cabinet is the p
               cam: "orbit", pad: false, foot: false, beside: "clear", sofa: R.SOFABED && R.SOFABED.default ? "bed" : "mine", sbed: false, stools: false, hr: {},   // V3.71: your sofa or the green sofa bed; its bed out (V3.73: the sofa bed by default)
               blind: "down", lp: false, trolley: "park", lid: false, barflap: false, ctop: false, sdraw: false, scopen: false };   // v37: the step drawers out   // v34: the blind (a suggestion) down or rolled up; a record lifted out of the vinyl stand; the trolley parked or at the table   // v31: what's beside the compact cabinet   // v31: a drag circles round a spot or looks round from where you stand; the move buttons on the room   // v30: the compact cabinet (the plan) or the sliding one; the table door open with the table folded   // v23: the fold-down seat at the stair end (an option): "off", "up" (folded) or "down"   // v20: the chair cupboard beside the table (doors shut); "open", "hooks" or "away" (the garage)
 DEF.lamp = R.LAMP_DEFAULT || "sofa";
-/* v38: the room opens on the client's plan (geometry.FIRM: their saved picks, the bar beside the cabinet, the sage-stripe rug); every
-   other choice is an option to look at */
-if (R.FIRM) { DEF.sugg = Object.fromEntries(R.FIRM.sugg.map(k => [k, true])); DEF.svar = Object.assign({}, R.FIRM.svar);
+if (R.FIRM) { DEF.sugg = Object.fromEntries(R.FIRM.sugg.map(k => [k, true])); DEF.svar = Object.assign({}, R.FIRM.svar);   // v38: the room opens on the client's plan (geometry.FIRM); every other choice is an option to look at
   DEF.beside = R.FIRM.beside; DEF.cabw = R.FIRM.cabw; DEF.decor = Object.assign({}, DEF.decor, R.FIRM.decor);
   DEF.ideas = Object.fromEntries((R.FIRM.ideas || []).map(k => [k, true])); }
-/* N99, the client (10 Nov 2026): "The stairwell curtains are also missing I want them there just with the ability to draw them open and
-   edit them": the stair curtain is up by default, drawn back so the stairs stay open to walk and see; its card draws it across, a colour */
+/* N99: the stair curtain up by default, drawn back so the stairs stay open */
 if (R.STAIR_CURTAIN) { DEF.sugg.stairscurtain = true; DEF.scopen = true; }   // v43: the C-table is in the plan   // v18: the window corner holds the plant stand or the record shelf   // v16: the table by the stairs by default; the laser off
 const KEY = "mw18-3d";
 const S = Object.assign({}, DEF, store.get(KEY, {}));
@@ -91,8 +81,7 @@ if (!S.v373 && R.SOFABED && R.SOFABED.default) {   // V3.73, client: "make the n
   S.v373 = 1; S.sofa = "bed"; S.sbed = false; }
 if (!S.v374) {   // V3.74, client: "remove the c table over the end": once, a saved room takes it away (it's an idea to switch on again)
   S.v374 = 1; S.ideas = Object.assign({}, S.ideas, { ctable: false }); if (S.layout && S.layout.ctable) delete S.layout.ctable;
-  // and "I want the storage coffee table fit into the room by default": the lift-top in the record table's place
-  S.sugg = Object.assign({}, S.sugg, { recordtable: false, liftcoffee: true }); S.svar = Object.assign({}, S.svar, { liftcoffee: "oak" }); }
+  S.sugg = Object.assign({}, S.sugg, { recordtable: false, liftcoffee: true }); S.svar = Object.assign({}, S.svar, { liftcoffee: "oak" }); }   // and "I want the storage coffee table fit into the room by default": the lift-top in the record table's place
 if (!S.scback && R.STAIR_CURTAIN) {   // N99: once, a saved room gets the stair curtain back, drawn open
   S.scback = 1; S.sugg = Object.assign({}, S.sugg, { stairscurtain: true }); S.scopen = true; }
 if (!S.v50) {   // v50, client: "make the natural default light a bit cosier and less overly light washed": once, a saved room moves to the new Evening
@@ -110,21 +99,15 @@ if (!Array.isArray(S.added)) S.added = [];
 if (!(S.plants in R.PLANT_LAYOUTS)) S.plants = DEF.plants;
 S.edit = false;
 if (!S.seen21) { S.view = "room"; S.seen21 = true; }   // v21: everyone starts once on the new whole-room view
-// V1.2, the client (28 Oct 2026): "Old style, rebuilt" and "The whole house in 3D" first: the page opens on the house, not the room it was
-// left in (?room opens the living room; a #look- link opens its look as before)
-if (!/[?&]room\b/.test(location.search) && !/^#look-/.test(location.hash)) S.view = "house";
-if (!S.seen27) { if (S.site === "B") S.site = "C"; S.seen27 = true; }   // v27: the dining cabinet is the plan now: the old default moves to it once
+if (!/[?&]room\b/.test(location.search) && !/^#look-/.test(location.hash)) S.view = "house";   // V1.2: the page opens on the house (?room opens the living room; a #look- link its look)
 if (S.dining === "eight") S.dining = "six";                              // v27: the cabinet seats six (v26 had eight)
 if (!(S.paint in R.PAINTS) && S.paint !== "custom") S.paint = DEF.paint;
-/* v38, client: "I want ability to change each walls colour individually": each wall is a named surface; S.walls holds a colour for any
-   wall that differs from the rest ("match" or missing: the walls' paint) */
+/* v38: each wall a named surface; S.walls holds a colour for a wall that differs ("match" or missing: the walls' paint) */
 const WALLS = [["media", "Media wall"], ["breast", "Chimney breast"], ["door", "Door wall"], ["stairs", "Stairs wall"], ["window", "Window wall"], ["pc", "PC wall"]];
 const WALL_NAME = Object.fromEntries(WALLS);
 if (!S.walls || typeof S.walls !== "object") S.walls = {};
-/* v38, client: "Turning the light fixture as a whole as well as the light heads": each fixture (the two spot bars on their ceiling roses,
-   the red lamp on its base) turns as a whole, S.fix[id] in degrees from the plan's; each head, S.head["bar1:0"], has its own on/off,
-   level, colour and aim (turn and tilt, in degrees from its plan aim). A turn or an aim rebuilds that fixture with the same number of
-   lights, so the graphics card makes no new shaders (v35) */
+/* v38: a fixture turns as a whole (S.fix[id], degrees); each head (S.head["bar1:0"]) its own on/off, level, colour and aim. A turn
+   rebuilds the fixture with as many lights: no new shaders (v35) */
 if (!S.fix || typeof S.fix !== "object" || Array.isArray(S.fix)) S.fix = {};
 if (!S.head || typeof S.head !== "object" || Array.isArray(S.head)) S.head = {};
 const FIX_NAME = { bar1: "Spot bar 1, over the sofa", bar2: "Spot bar 2, over the table", lamp: "Your red lamp" };
@@ -145,9 +128,8 @@ function setWall(id, v) {        // a paint's key, a colour, or "match"; the wal
   if (h && /^#[0-9a-f]{6}$/i.test(h) && h.toLowerCase() !== paintHex().toLowerCase()) S.walls[id] = h; else delete S.walls[id];
 }
 
-/* ---------------------------------------------------------------- the lighting presets (scenes.py) and their two rules
-   v25: three presets (bright, cosy, film); dinner is a rule (the table open lifts bar 2), daytime a switch (S.tod) that works with any
-   preset. Saved choices from the old six buttons map across once. */
+/* ---------------------------------------------------------------- the lighting presets (scenes.py): v25, three presets; dinner a
+   rule (the table open lifts bar 2), daytime a switch (S.tod). Old saved choices map across once. */
 const SCENES = JSON.parse(document.getElementById("scenes-data").textContent);
 const LIGHT_RULES = JSON.parse((document.getElementById("lightrules-data") || {}).textContent || '{"boost":{"bar2_min":45,"bar2_max":55,"bar1_max":15,"strip_max":40,"bias":0},"old":{}}');
 const OLD_SCENE = LIGHT_RULES.old || {};

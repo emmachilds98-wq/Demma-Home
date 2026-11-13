@@ -1,20 +1,17 @@
-# Handover (8 Nov 2026, V3.03)
+# Handover (brought to now 13 Nov 2026, V4.5)
 
-**Now (11 Nov 2026, V3.60):** what's open and who has it is `docs/REAL_PLAN.md` section 19; this page is brought to now by N121.
-
-**Next (12 Nov 2026):** the upgrade plan is `docs/REAL_PLAN.md` section 20 (the client: "review the repo and make an upgrade plan ..."):
-N135–N156 in streams A–G. Done: N154 (V3.76: #231's lit bulbs and #232's artex landed, STATE under 150 lines) and N153 (V3.77: the living room 216 to 181 draws on a phone; V3.76's extra shader put right). N135 (V3.78: the sofa's green in HD, Edit's colour on all of it). N144 (V3.79: the phone's rows), N149 (V3.80: take out and put back in every room). N137 (V3.81: the cushions' shade), N138 (V3.82: Make up the bed). N140 (V3.83, V3.84: the lift-top on its legs, + Add's and the options' materials). N136 (V3.85: the piping and dimples in the sofa bed's cushions). N139 (V3.86: your sofa and the ottoman upholstered the same). N145 (V3.87: Edit light on the room), N146 (V3.88: cards beside their piece; a phone's sheet swipes away), N148 (V3.89: Room's panel shorter), N151 (V3.90: As it is), N150 (V3.91: drag a piece in any room), N143 (V3.92: cloud in the sky), N147 (V3.93: Decide's pictures). Section 20 is done but for N141, N142 and N152, which wait on Emma. **Next: section 21** (12 Nov: Home Plan V4, the house on its own, its real road and surroundings, the views): N162 done (V4.0: Home Plan); N157 and N158 (V4.1: the house on its own, the PC's swing); N159, N166 (V4.2: the house framed, the budgets); N167 (V4.3: bedroom 3's cube shelves and flip-up table); N165, N164 (V4.4: a steadier speed check; the phone's row fits); N163 waits on Emma (the house would open at dusk: evening is the default time); N168 and N169 (#269's rows) open; N160 and N161 wait on the client's screenshots.
-**Latest (12 Nov 2026, V3.75):** the sofa bed true to its Amazon listing (headrests that flip up on a hinge, its green, its weave), and any
-living-room piece taken out and put back (Room → Taken out, Edit's + Add, the toast): `docs/NOTES.md` section 5, "Taking a piece out".
-**Before it (V3.74 took the C-table out of the plan and gave the sofa bed its own chenille):** the client is testing a sofa she may buy. V3.71 (#242, N126) added Room → The sofa:
-Yours · Green sofa bed (the Lovesofas Amelia, Blade Green, 264 × 165, `geometry.SOFABED`, `fit.SOURCES["amelia"]`), its bed pulling
-out with the coffee table stepping aside, and Watch the bed open. V3.72 (#243, N127) gave it its upholstery detail. V3.73 (N128–N130)
-made it the room's sofa (yours one tap away), moved the record table, ottoman and red lamp to suit it, layered the living room's lights
-(`geometry.LIGHT_AIMS`, now a decision in `docs/DECISIONS.md`) and reworked the music room (`house/HOUSE.md`, bedroom 2). Where it all lives:
-`docs/NOTES.md` section 5, "The green sofa bed". It's an option to look at (no buy rows) until she says she's buying it. Her open
-question on it is in "Waiting on Emma" below (7). GitHub had a major Actions and Pages outage 20:48–21:07 UTC on 11 Nov: if `main`'s
-"Build, check and publish" run for a merge still sits queued or failed on an artifact upload (not a test), re-run it from the Actions
-tab: Pages publishes only from that run.
+## Now
+- **Live:** Home Plan V4.5 at https://emmachilds98-wq.github.io/Demma-Home/ (main at #271, the double-click to centre).
+- **The plan:** `docs/REAL_PLAN.md` section 22 (13 Nov, N170–N178, six streams: A views, B finishes, C outside, D UI, E lean and
+  smooth, F docs). Each row names its files; take the next open row of a stream. Section 21's open rows carry on.
+- **Open PRs:** #272 (N141, fabrics made at build), #273 (N163, outside by evening: waits on Emma's card), #274 (N169, the plot's
+  soft edge), #275 (N152, will the sofa bed go in: waits on the door's width), #133 (KTX2, paused: do not merge).
+- **Next when they land:** stream B (N142, then N172) after #272; stream C (N173) after #273 and #274.
+- **The rules in force:** furniture and layouts finished; the light the same in every room, cosy; smooth on the iPhone 15 Pro and the
+  RTX 5070 inside `tools/perf_budget.json`; walls smooth (no plaster relief); customisation after the quality work; the address never
+  written. The project's own rules (read first, merge main last, the next free version at merge) are in the project's instructions
+  and below.
+- **Waiting on Emma:** see "Waiting on Emma" below.
 
 Emma stopped work on 8 Nov 2026 ("stop and handover for a new set of agents and make sure everything is findable in github"), as she
 did once on 7 Nov at V2.74. Everything a new team needs is in this repo; nothing lives only outside GitHub. Read in this order:
@@ -27,7 +24,7 @@ did once on 7 Nov at V2.74. Everything a new team needs is in this repo; nothing
 ## What it is
 Emma and Dave's whole house in 3D, in its upgraded state, to plan and track the upgrades. The 3D fills the screen and is the site;
 everything floats over it as pills and panels (the old design: no dashboards, side menus or lists of rooms). It must run well on an
-iPhone 15 Pro and an RTX 5070 PC (and Dave's iPhone 16 and RTX 3060). Live: https://emmachilds98-wq.github.io/Demma-Home/ (V3.03).
+iPhone 15 Pro and an RTX 5070 PC (and Dave's iPhone 16 and RTX 3060). Live: https://emmachilds98-wq.github.io/Demma-Home/.
 
 ## Architecture (one line a part)
 - `house/survey_data.py` (every size, with its source) → `house/model.py` (geometry, each piece an `o.item`) → `house/export_house.py`
@@ -51,68 +48,32 @@ python3 house/privacy_check.py  # before every commit
 **Sandbox:** jsDelivr is blocked: for the browser checks set `THREE_LOCAL` to an unpacked `three@0.160.0` (`npm pack three@0.160.0`),
 and use `playwright==1.63.0` with `/opt/pw-browsers`. More in `docs/NOTES.md` section 1.
 Nothing built is committed. `.github/workflows/build.yml` on every push to `main` and every PR: build, quick checks, three browser jobs
-(site, page, taps; skipped when only docs changed), then on `main` the Pages deploy. A `v*` tag puts that version's PDFs on a Release.
+(site, hitch, page, taps; skipped when only docs changed), then on `main` the Pages deploy. A `v*` tag puts that version's PDFs on a Release.
 CI takes about 20 minutes.
 
 ## How the work runs (the thread rules)
 - A plan section holds tasks N# in a table; each row names the files it owns. A thread takes one task: **one task a PR**, only its files.
-- **Versions:** V3.x, one a PR that changes the site (`VERSION`, a line in `docs/HISTORY.md`, `docs/STATE.md` **rewritten**, not
+- **Versions:** V4.x, one a PR that changes the site (`VERSION`, a line in `docs/HISTORY.md`, `docs/STATE.md` **rewritten**, not
   appended, the row ticked in `docs/REAL_PLAN.md`). Take the **next free version at merge time**: once CI is green, bring `main` in
   (rebase or a merge commit; the rounds used merge commits), renumber if taken, `checks.py --quick` and `build.py --fast`, push, merge
   straight away. Never below main's. A docs-only conflict needs no second full CI wait. Docs-only PRs take no version (this one doesn't).
 - Draft PRs; the client's words quoted at the top; the template's sections (`.github/pull_request_template.md`); `checks.py`'s lines pasted.
 - New guesses get a Measure row (`house/measure.py`); new pieces an `o.item(...)`; every size a cited source (`fit.SOURCES`).
 
-## What was done since the last handover (sections 10–12 of `docs/REAL_PLAN.md`)
-| Version | PR | Task |
-|---|---|---|
-| V2.75–V2.79 | #121, #122, #128–#130 | The outside (N21), fewer buttons (N20), wallpaper (N29), the plan's code trimmed (N28), fewer shaders (N27); #131 the speed budget (N26) |
-| V2.80, V2.92 | #141, #142 | A lighter start (N25): icon subset, sheets on first need, fonts that don't block |
-| V2.82 | #139 | Lighter photo files (N32) |
-| V2.83 | #136 | The version in Plan is a refresh button |
-| V2.87 | #144 | Room to room with no shader built (N35) |
-| V2.88 | #143 | Phone and PC look-over (N33): 44 px taps |
-| V2.89, V2.93 | #138, #147 | The back garden as its photos (N30), four garden ideas to look at |
-| V2.90, V2.91 | #145, #146 | The bathroom and the master beside their photos (N34), soft bedding (N36) |
-| V2.94 | #148 | The stairwells: both flights 85, the living room door 67 (N38) |
-| V2.95 | #153 | Lean 3D code (N41) |
-| V2.96 | #151 | Back goes back (N39) |
-| V2.97 | #152 | Keys and names on a PC (N42) |
-| V2.98 | #155 | Fewer draws for the house, 287 to 188 (N37) |
-| V2.99 | #149 | No second front door (the bin cupboards' doors) |
-| V3.00 | #156 | Opens fast on a weak signal (N43) |
-| V3.01 | #157 | The changes' costs whole (N40) |
-| V3.02 | #158 | Add a piece made real: 28 catalogue pieces, each cited (N45) |
-| V3.03 | #159 | The kitchen and the hall beside their photos (N44); the kitchen's door leaf removed |
-Docs: #134 (the last handover), #135 (the flaky site check), #137, #140, #150, #154 (plan sections). Skipped numbers: V2.81, V2.84–V2.86.
-
-## Open at this handover
-| PR / branch | What | To finish |
-|---|---|---|
-| #133 `claude/project-thread-tmpz6b` | N31 KTX2 photos, build side only. WIP, **do not merge** | Emma's OK; then the workflow step that builds basisu 1.16.4 (commit 900e40fb5d25), the page's `KTX2Loader` with JPEG fallback (`docs/NOTES.md` section 3), merge main in, a version |
-No other PR is open and no issue is open.
-**Stale branches** (left in place: deleting them needs the owner's say). 38 `claude/*` branches have every commit in `main`
-(`git branch -r --merged origin/main` lists them): safe to delete. Two belong to closed PRs whose work landed another way:
-`claude/project-thread-m2wdin` (#127, the duplicate of #122) and `claude/project-thread-1fxdc5` (#132, folded into the last handover).
-Five from before V2.0 hold commits not in `main`, work since redone or dropped: `claude/cool-darwin-jq4pu4` (V1.27),
-`claude/sweet-noether-y2q5qh` (V1.25), `claude/upgrade-review` (V1.37), `claude/cool-hypatia-lbng98` (the finishes plan at V2.2),
-`claude/eloquent-ritchie-pkuk5w` (WIP V2.24, taking a piece out: since done as R6). Look, then delete. Keep `claude/project-thread-tmpz6b` (#133).
+## Open branches
+Open PRs are listed under "Now". About 100 `claude/*` branches remain from finished threads; `git branch -r --merged origin/main`
+lists those safe to delete (deleting needs the owner's say). Keep `claude/project-thread-tmpz6b` (#133). Every version and its PR is
+in `docs/HISTORY.md`.
 
 ## Waiting on Emma
-1. **The kitchen's door:** V3.03 took the leaf out (no door in any photo). Is there a door? If so, its width and which way it opens.
-2. **KTX2 (#133):** she picked "let CI build it" on 7 Nov; confirm before the workflow builds the encoder.
-3. **The living room door's width:** drawn 67 cm since V2.94 to fit beside the 85 cm stairs. A tape measure decides.
-4. **`?perf` screenshots** (the corner box after opening the house once) from the iPhone 15 Pro and the RTX 5070 PC (N10).
-5. **Dark panels** on a dark device, or keep the cream (the old design) (N9's rest).
-6. **A photo of the microwave**, if there is one (N6 found none).
-7. **The green sofa bed:** V3.73 settled 230 vs 165 from the listing's photos (the sections are 165, the loose chaise makes 230). Still
-   open: the price (it showed in US dollars from the sandbox; about £700–950 is a guess); the arm, stools and chaise are scaled off photos.
-   Answered 12 Nov: five headrests ("there are 5 from what i can see"), as drawn since V3.74.
-The older list (measurements still guessed, smaller confirmations) is in `docs/STATE.md`, "Open with the client", and in Measure on the site.
+1. **KTX2 (#133, N141's full form):** yes or no. A yes frees most of the photo budget.
+2. **The living room door's width** (N152, #275): drawn 67 cm since V2.94. A tape measure decides.
+3. **Map and Street View screenshots**, names painted out (N160 the road, N161 the neighbours; section 21 says which).
+4. **Outside by evening** (N163, #273): keep it by day, follow the clock, or day unless evening is picked.
+5. **The sofa bed's price** (about £700–950 is a guess).
+6. **A speed reading from the PC:** a Measure → Send link (`tools/pull_edits.py --link`) after moving round the house.
+7. Older and smaller: the kitchen's door (is there one?), dark panels or cream, a microwave photo; the guessed sizes are Measure's rows.
 
-## Suggested next work for the new team
-**Taken up 8 Nov 2026:** the new team's round is `docs/REAL_PLAN.md` section 13 (N46–N51 side by side, N31 on Emma's yes).
-1. Ask Emma the six questions above; act on her answers (each one small PR).
-2. N31 (KTX2) on her OK, from #133.
-3. With her `?perf` numbers: the living room's own draws and the GTAO pass (`docs/NOTES.md` section 3), then the code trims listed there.
-4. The older photo fits (office, landing, WC) again with the photo's own lens (`compare.TRUE_FOV`), as N44 did for the kitchen and hall.
+## Suggested next work
+Section 22's streams in order, then customisation (the client's own colours, pieces and saved looks), planned once the quality rows
+are done. A new finding is a new row in `docs/REAL_PLAN.md`; a lesson goes in `docs/NOTES.md`.

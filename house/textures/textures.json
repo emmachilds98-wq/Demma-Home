@@ -233,5 +233,23 @@
   "size": 0.6,
   "url": "",
   "licence": "ours"
+ },
+ "chenille": {
+  "asset": "made by build_textures.fabrics",
+  "size": 0.2,
+  "url": "",
+  "licence": "ours"
+ },
+ "chenille_pile": {
+  "asset": "made by build_textures.fabrics",
+  "size": 0.2,
+  "url": "",
+  "licence": "ours"
+ },
+ "melamine": {
+  "asset": "made by build_textures.finishes",
+  "size": 0.4,
+  "url": "",
+  "licence": "ours"
  }
 }
