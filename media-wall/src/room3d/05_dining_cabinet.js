@@ -1,12 +1,7 @@
-/* v26: option C, the dining cabinet; v27: the plan, made for six; v29: two sliding doors (OPTC). v30, client: "is there anyway you can
-   optimise the dining cabinet build to fit the chairs in a better way so the cabinet doesnt have to be so big", "show me both versions":
-   the compact cabinet (CAB) is the plan (V3.04, N47: the sliding one's paths gone; it was never built after v39). S.site "C"; S.dining folded /
-   four / six; S.chairs "open" opens the chair door (the table folded); S.tdoor opens the table door with the table still folded.
-   The doors move by tween (cabTween), so a tap in the room swings or slides them; a still (R3D.set) snaps them. */
+/* v26–v33: the dining cabinet, the compact one (CAB) the plan. S.dining folded / four / six; S.chairs "open" opens the chair door;
+   S.tdoor the table door, the table folded. Doors move by tween (cabTween); a still (R3D.set) snaps them. */
 const cabC = () => (S.cabw === "80" && R.CAB80 ? R.CAB80 : R.CAB);   // v30: the cabinet on show; v33: its 80-wide version
-/* v32: everything in the cabinets that moves is an "anim": one number p, 0 to 1, and what it does to the model (a door's swing or
-   slide, a chair drawn out, the table's joints); twTo eases p, the show sets it from its own clock */
-const ease = k => (k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2);
+const ease = k => (k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2);   // v32: everything that moves is an "anim": one number p, 0 to 1; twTo eases it, the show sets it from its own clock
 const anim = (fn, p = 0) => { const a = { p, set(v) { a.p = v; fn(v); } }; a.set(p); return a; };
 const RIG = [0, 0.2, 0.35, 0.55, 0.8, 0.9, 1];   // the table's p at: tilted out, first legs down, level, second half over, its legs down, flat
 let CK = null;
@@ -29,18 +24,14 @@ function cabKit() {      // the parts both cabinets share: materials, the table 
   };
   K.bx = (g, x, y, z, w, h, d, m) => { const me = new THREE.Mesh(new THREE.BoxGeometry(w * M, h * M, d * M), m); me.position.copy(v3(x + w / 2, y + h / 2, z + d / 2)); g.add(shadow(me)); return me; };
   K.rbx = (g, x, y, z, w, h, d, m, r = 0.6) => { const me = new THREE.Mesh(new RoundedBoxGeometry(w * M, h * M, d * M, 2, Math.min(r, Math.min(w, h, d) / 2.2) * M), m); me.position.copy(v3(x + w / 2, y + h / 2, z + d / 2)); g.add(shadow(me)); return me; };
-  // v32, client: "slow down the playback of the table opening to show clearly how it puts together and opens": the table jointed as it
-  // is built. The first half turns on the piano hinge at the rail (C.pivot), the second on the flip-top hinges at the joint (folded,
-  // it lies face down on the first), each leg on its bracket under its apron. One number runs it (rig.p): 0 folded, standing on the
-  // rail; 1 open on its four legs. On the way (RIG): the pair tilts out, the first legs fold down, it lowers onto them, the second half
-  // flips over, its legs fold down, it lies flat.
+  // v32: the table jointed as built: the first half turns on the rail's piano hinge (C.pivot), the second on the flip-top hinges,
+  // each leg on its bracket. rig.p 0 folded on the rail, 1 open on four legs; the steps between are RIG.
   K.tableRig = C => {
     const root = new THREE.Group(), [tw, , tt] = C.top, [tz0, tz1] = C.tz, ap = C.apron, [px, py] = C.pivot, [tx0, tx1] = C.tx, jx = C.joint_x;
     const hinge = new THREE.Group(), joint = new THREE.Group(), half = [new THREE.Group(), new THREE.Group()], legs = [[], []];
     hinge.position.copy(v3(px, py, 0)); joint.position.copy(v3(jx, py + tt + 0.15, 0)).sub(hinge.position);
     root.add(hinge); hinge.add(joint);
-    // built open in room cm, the first half (by the rail) then the second: each a centre of staves between two breadboard ends, the
-    // corners eased; its aprons
+    // built open in room cm, the first half (by the rail) then the second: staves between breadboard ends, its aprons
     [[jx, tx1], [tx0, jx - 0.15]].forEach(([a, b], i) => {
       K.rbx(half[i], a + 7, py, tz1, b - a - 14, tt, tw, K.oak, 0.5);
       for (const e of [a, b - 7]) K.rbx(half[i], e, py, tz1, 7, tt, tw, K.oakEnd, 0.6);
@@ -70,9 +61,8 @@ function cabKit() {      // the parts both cabinets share: materials, the table 
   // the chairs at the table; a plate at each
   K.seats = C => {
     const out = {}, [tz0, tz1] = C.tz, tx0 = C.tx[0], py = C.pivot[1], tt = C.top[2];
-    // v33: your padded folding chairs (Brayden Studio), drawn from the photo you sent (inputs/chairs_padded_listing_photo.webp): bent-wood
-    // sides, each back upright curving forward at the seat into the front leg, the back leg crossing it under the seat; a thick buttoned
-    // cushion on the seat (47 × 47, 6.5) and a buttoned pad between the uprights, reclined to 110°
+    // v33: your padded folding chairs (Brayden Studio, inputs/chairs_padded_listing_photo.webp): bent-wood sides, a buttoned seat
+    // cushion (47 × 47, 6.5) and back pad, reclined to 110°
     const seg = (c, x, y1, z1, y2, z2, w, d, mat) => {
       const L = Math.hypot(y2 - y1, z2 - z1), m = new THREE.Mesh(new THREE.BoxGeometry(w * M, L * M, d * M), mat);
       m.position.copy(v3(x, (y1 + y2) / 2, (z1 + z2) / 2)); m.rotation.x = Math.atan2(z2 - z1, y2 - y1); c.add(shadow(m)); return m;
@@ -118,8 +108,7 @@ function cabKit() {      // the parts both cabinets share: materials, the table 
     }
     return out;
   };
-  // v33: a folded chair standing up (your grey padded ones, 47 wide, 10 thick, 90 tall), its room-side face at x0, cz its centre along the wall
-  const FOLD = () => R.CHAIR_PADDED.folded;
+  const FOLD = () => R.CHAIR_PADDED.folded;   // v33: a folded chair standing up (your grey padded ones, 47 wide, 10 thick, 90 tall), its room-side face at x0, cz its centre along the wall
   K.fchair = (g, x0, y0, cz) => {
     const [cw, cdep, ch] = FOLD();
     for (const sd of [-1, 1]) {
@@ -143,21 +132,14 @@ function cabKit() {      // the parts both cabinets share: materials, the table 
   return K;
 }
 
-/* v32: each cabinet's moving parts (cabP() the one on show): its table door and chair door, the chairs in the chair box (stand) and in
-   the base (base), the pads on the table door, the table (rig), the chairs at the table (seats) */
-const CABP = {};
+const CABP = {};   // v32: each cabinet's moving parts (cabP() the one on show): its doors, chairs (stand, base, seats), pads and table (rig)
 const cabP = () => CABP.compact;
 function slideOut(parent, d = 60) {      // a folded chair (or the pads) drawn straight out of the cabinet into the room, then put down
   return fill => { const g = new THREE.Group(); fill(g); mergeStatic(g); parent.add(g); return anim(v => { g.position.x = d * M * v; g.visible = v < 0.999; }); };   // V3.04 (N47): a chair one draw a material
 }
-/* v39: the sliding cabinet (v29's buildOptC) is gone: since v33 every state opens on the compact cabinet (applyState), so it was built
-   and never shown. Its numbers stay in geometry.OPTC; the code is in git history, v39. */
 
-/* v30: the compact cabinet, two boxes side by side: the table box at the stair end (the table on its hinge rail, two chairs lying on
-   their sides in the base under it, the linen shelf over it, the six seat pads on the door's back) and the chair box (four chairs, two
-   deep on its floor and two deep on its shelf). Inset doors, each on a full-height piano hinge with its knuckle on the front: the table
-   door turns 180° towards the window and lies back over the chair door and the wall beyond; the chair door turns 180° towards the
-   stairs and lies back over the table door. */
+/* v30: the compact cabinet: the table box at the stair end (table on its hinge rail, two chairs in the base, linen shelf, six pads on
+   the door's back) and the chair box (four chairs). Inset doors on full-height piano hinges, each turning 180° back over the other. */
 let cab = null, cabRig = null, cabSeats = {}, cabIn = null, cabDoor = {}, cabPads = null, cabLit = [];
 function buildCab(C = cabC()) {
   if (!C) return;
@@ -179,17 +161,14 @@ function buildCab(C = cabC()) {
   bx(cab, xi + C.pads, C.linen[0] - t, bt1, C.linen_d, t, bt0 - bt1, K.oakIn);                    // the linen shelf (v31: the same)
   bx(cbox, xi, C.shelf_y, bc1, deepIn, t, bc0 - bc1, K.oakIn);                                    // the chair bay's shelf
   [[0, 0], [1, 1], [2, 2]].forEach(([i, c]) => bx(cab, xi + C.pads + 1 + i * 0.4, C.linen[0] + i * 3.2, bt1 + 8 + i * 6, deepIn - C.pads - 2, 3, 34, K.cloth[c]));   // the cloth, napkins, runner
-  // the chairs: two lying in the base, two deep; four standing in the chair bay, two deep on its floor and on its shelf
-  cabIn = new THREE.Group();
+  cabIn = new THREE.Group();   // the chairs: two lying in the base, two deep; four standing in the chair bay, two deep on its floor and on its shelf
   const out = slideOut(cabIn), base = [], stand = [];
   for (let j = 0; j < C.chairs_base; j++) base.push(out(g => K.fchairLying(g, xi + 0.3 + j * (cdep + 0.3), C.base[0], C.cz)));
   for (const x0 of [...C.chair_x].sort((a, b) => a - b)) for (const y0 of [C.plinth, C.shelf_y + t]) stand.push(out(g => K.fchair(g, x0, y0, C.chair_z)));
   cab.add(cabIn);
   cabRig = K.tableRig(C); cab.add(cabRig);
   cabSeats = K.seats(C); Object.values(cabSeats).forEach(g => cab.add(g));
-  // the doors: each a group at its hinge's axis, so turning it is a rotation; the door panel, a routed finger slot near its free edge,
-  // the piano hinge's knuckle; the table door carries the six seat pads on its back (a child of the door, so they swing with it)
-  cabDoor = {};
+  cabDoor = {};   // the doors, each a group at its hinge's axis; the table door carries the six seat pads (a child, so they swing with it)
   const ax = xf - C.knuckle;
   const door = (key, z0, z1, hz) => {
     const g = new THREE.Group(); g.position.copy(v3(ax, 0, hz));
@@ -204,9 +183,7 @@ function buildCab(C = cabC()) {
   door("T", C.door_t[0], C.door_t[1], C.door_t[1] - C.hinge_gap / 2);
   door("C", C.door_c[0], C.door_c[1], C.door_c[0] + C.hinge_gap / 2); cbox.add(cabDoor.C);
   cab.add(cbox);
-  // the six pads on the table door's back, two across and three high, from the hinge rail's underside up (v31: 40 × 40 tie-on pads,
-  // their ties hanging; the rail and the linen shelf stand back so they can)
-  cabPads = new THREE.Group();
+  cabPads = new THREE.Group();   // the six pads on the table door's back, two across, three high (v31: 40 × 40 tie-on pads, their ties hanging)
   const hzT = C.door_t[1] - C.hinge_gap / 2, mid = (C.door_t[0] + C.door_t[1]) / 2, [pw, ph, pt] = C.pad;
   for (let r = 0; r < 3; r++) for (const s of [-1, 1]) {
     const y0 = C.pad_zone[0] + 0.3 + r * (ph + 0.2), z0 = mid + s * (pw / 2 + 0.2) - pw / 2 - hzT;
@@ -215,8 +192,7 @@ function buildCab(C = cabC()) {
   }
   cabDoor.T.add(cabPads);
   mergeStatic(cab); mergeStatic(cbox); mergeStatic(cabPads);   // V3.04 (N47): the carcasses and the pads one draw a material (what moves is in its own group, kept)
-  // v32 (a suggestion): a 40 cm motion-sensing light bar under each box's top, at the front, lit while its door is open
-  { const g = SUGG_G.cablights = new THREE.Group(), barM = reg(new THREE.MeshStandardMaterial({ color: "#eeebe4", roughness: 0.4 }));
+  { const g = SUGG_G.cablights = new THREE.Group(), barM = reg(new THREE.MeshStandardMaterial({ color: "#eeebe4", roughness: 0.4 }));   // v32 (a suggestion): a 40 cm motion-sensing light bar under each box's top, at the front, lit while its door is open
     const glowC = new THREE.MeshBasicMaterial({ color: "#ffd59a", toneMapped: false }); SVAR_MATS.cablights = [glowC];
     cabLit = [];
     for (const [a_, b_] of [C.z_t, C.z_c]) {
@@ -240,8 +216,7 @@ function rebuildCab() {
   buildCab(cabC()); clipGroup(cab); applySuggest();
   const was = cabSnap; cabSnap = true; cabGo(CABP.compact); cabSnap = was;
 }
-/* the cabinets' tween: each entry eases an anim's p to a target, after a wait (delay) if it has one; a still snaps them (cabSnap) */
-const CAB_TW = new Map();
+const CAB_TW = new Map();   // the cabinets' tween: each entry eases an anim's p to a target, after a wait (delay) if it has one; a still snaps them (cabSnap)
 let cabSnap = false;
 function twTo(a, to, dur = 700, delay = 0, lin = false) {
   if (!a) return;
@@ -265,9 +240,8 @@ function cabDoors() {        // which doors stand open: the table door with the 
   const folded = S.dining === "folded";
   return { table: !folded || !!S.tdoor, chairs: folded && S.chairs === "open" && !S.tdoor };
 }
-/* v32: the cabinet goes to S one part after another, each waiting for the one before, so nothing passes through anything: opening, the
-   chair door shuts, the table door opens, the pads come off it, the two chairs in the base come out, the table unfolds (2.6 s), the
-   chairs come in round it; folding away, the same backwards. A part already where it should be takes no time. */
+/* v32: the cabinet goes to S one part after another so nothing passes through anything (doors, pads, chairs, table, chairs in);
+   folding away the same backwards. A part already in place takes no time. */
 function cabGo(P) {
   const folded = S.dining === "folded", n = S.dining === "six" ? "six" : "four", dr = cabDoors();
   let t = 0;
@@ -311,9 +285,7 @@ function placeOptC() {
   if (on && P && !SH) cabGo(P);                        // v32: while "Watch it open" runs, its clock moves the cabinet
   placeFoot(); placeBeside();
 }
-/* v31: beside the compact cabinet (Layout, "Beside the cabinet"): left clear, a tall mirror, a slim trolley or a low oak shelf. All of
-   them stand no deeper than the cabinet, behind the open table door's line */
-let beside = null;
+let beside = null;   // v31: beside the compact cabinet: clear, a tall mirror, a slim trolley or a low oak shelf, no deeper than the open table door's line
 const BES = {};
 function buildBeside() {
   const B = R.BESIDE; if (!B) return;
@@ -365,10 +337,8 @@ function buildBeside() {
       }
     });
   }
-  /* v37, client: "Add a new 'Bar' option ... next to the dining cabinet ... a fixed, built-in counter-style unit (permanent joinery attached
-     to the wall/floor), not a freestanding or wheeled trolley": a back-bar scribed between the cabinet's end and the pipe boxing, no deeper
-     than the open table door's line. A cupboard on a recessed plinth (two doors, twenty bottles on two shelves), an oak counter at 90, a
-     mirror back, an oak shelf at 135 with a glass rail under it, a display shelf at 165. Its doors open with the other bars (S.barflap) */
+  /* v37: the built-in back-bar between the cabinet's end and the pipe boxing: a cupboard on a recessed plinth, an oak counter at 90, a
+     mirror back, an oak shelf at 135 with a glass rail, a display shelf at 165. Its doors open with the other bars (S.barflap) */
   if (R.BAR_BUILT) {
     const b = R.BAR_BUILT, g = new THREE.Group(); g.name = "bar"; BES.bar = g; beside.add(g);
     const [z0, z1] = b.z, w = z0 - z1, t = b.t, d = b.d, x0 = W - d, ct = b.counter - b.top_t;
@@ -403,8 +373,7 @@ function buildBeside() {
     const shaker = new THREE.Mesh(new THREE.CylinderGeometry(3.4 * M, 4 * M, 20 * M, 18), steel); shaker.position.copy(v3(W - 9, b.counter + 10, z1 + 9)); g.add(shaker);
     bx(g, W - 16, b.counter, (z0 + z1) / 2 - 12, 12, 1.2, 24, K.oakIn);                                        // a small oak tray
     for (const dz of [-6, 4]) { const tu = new THREE.Mesh(new THREE.CylinderGeometry(3.8 * M, 3.3 * M, 9 * M, 18), clear); tu.position.copy(v3(W - 10, b.counter + 1.2 + 4.5, (z0 + z1) / 2 + dz)); g.add(tu); }
-    // the two doors, each hinged at its outer end, brass knobs at the meeting edge
-    const dw = (w - 2 * t - 0.6) / 2, dh = ct - b.plinth - 0.4, brass = mat({ color: "#b8913f", roughness: 0.3, metalness: 0.8 }), leaves = [];
+    const dw = (w - 2 * t - 0.6) / 2, dh = ct - b.plinth - 0.4, brass = mat({ color: "#b8913f", roughness: 0.3, metalness: 0.8 }), leaves = [];   // the two doors, each hinged at its outer end, brass knobs at the meeting edge
     for (const [hz, s_] of [[z1 + t + 0.15, 1], [z0 - t - 0.15, -1]]) {
       const pv = new THREE.Group(); pv.position.copy(v3(x0, b.plinth + 0.2, hz)); g.add(pv);
       const leaf = new THREE.Mesh(new THREE.BoxGeometry(b.door * M, dh * M, dw * M), outer); leaf.position.set(-b.door / 2 * M, dh / 2 * M, s_ * dw / 2 * M); pv.add(shadow(leaf));
@@ -431,8 +400,7 @@ function buildBeside() {
       const w = new THREE.Mesh(new THREE.CylinderGeometry(2 * M, 2 * M, 1.5 * M, 14), K.dark); w.rotation.x = Math.PI / 2; w.position.copy(v3(xx, 2, zz)); g.add(w); }
     const cup = mat({ color: "#efe7d8", roughness: 0.5 });
     for (let i = 0; i < 3; i++) { const c = new THREE.Mesh(new THREE.CylinderGeometry(4 * M, 3.4 * M, 9 * M, 16), cup); c.position.copy(v3(x0 + tr.d / 2, tr.tiers[tr.tiers.length - 1] + 5.3, z0 + 8 + i * (tr.w - 16) / 2)); g.add(c); }
-    // v34: the slim trolley as a drinks trolley (a suggestion): bottles on the top tray, glasses, mixers and an ice bucket below
-    { const dk = SUGG_G.bartrolley = new THREE.Group(), r = rnd(23), xm = x0 + tr.d / 2, [, t2, t3, t4] = tr.tiers;
+    { const dk = SUGG_G.bartrolley = new THREE.Group(), r = rnd(23), xm = x0 + tr.d / 2, [, t2, t3, t4] = tr.tiers;   // v34: the slim trolley as a drinks trolley (a suggestion): bottles on the top tray, glasses, mixers and an ice bucket below
       const tint = reg(new THREE.MeshPhysicalMaterial({ color: "#3f6b3a", roughness: 0.08, transmission: 0.35, transparent: true, opacity: 0.88 })), clear = reg(new THREE.MeshPhysicalMaterial({ color: "#e8eef0", roughness: 0.06, transmission: 0.6, transparent: true, opacity: 0.55 }));
       SVAR_MATS.bartrolley = [tint];
       for (let i = 0; i < 4; i++) { const bh = 26 + r() * 7, br = 3.7 + r() * 0.8, zz = z0 + 5.5 + i * (tr.w - 11) / 3;
@@ -444,10 +412,8 @@ function buildBeside() {
       for (let i = 0; i < 3; i++) { const cn = new THREE.Mesh(new THREE.CylinderGeometry(3.3 * M, 3.3 * M, 11.5 * M, 14), reg(new THREE.MeshStandardMaterial({ color: ["#e9e4da", "#c7643a", "#8e9a80"][i], roughness: 0.4, metalness: 0.4 })));
         cn.position.copy(v3(xm, t2 + 0.8 + 5.75, z0 + 26 + i * 7)); dk.add(cn); }
       g.add(dk); }
-    // v34: "Pull it out for dinner": it slides along the wall to 1.3 clear of the plant stand's corner (z -234 .. -277.2, wherever the
-    // cabinet's width put it), then rolls 119.5 straight out, to x 326 .. 346: past the table door's whole swing (90.5 from its hinge),
-    // 13 behind the window-side chairs, clear of the lamp and the sofa. It can't reach the table's far end: with six sat down the sofa's
-    // end and the chairs leave no way past. It comes out, and goes back, only with the table door shut (the open door lies over its spot)
+    // v34: "Pull it out for dinner": it slides along the wall clear of the plant stand, then rolls 119.5 out past the table door's
+    // swing; only with the table door shut (the open door lies over its spot)
     WORK.trolley = anim(v => {
       const zT = -255.6, dz = zT - (zc + beside.position.z / M), a = Math.min(1, v / 0.15), b = Math.max(0, (v - 0.15) / 0.85);
       g.position.set(119.5 * ease(b) * M, 0, dz * ease(a) * M); });
@@ -481,9 +447,7 @@ function placeBeside() {
   for (const [k, g] of Object.entries(BES)) g.visible = on && S.beside === k;
   beside.position.z = S.cabw === "80" && R.CAB80 ? (R.CAB.z[1] - R.CAB80.z[1]) / 2 * M : 0;   // v33: centred in the longer gap
 }
-/* v31: "Show the space it needs, open": with the table folded, the floor it takes when it's out for six: the table, the six chairs
-   and (the compact one) the table door's swing, drawn flat on the floor */
-let foot = null, footKey = "";
+let foot = null, footKey = "";   // v31: the floor the table takes out for six (table, chairs, the table door's swing), drawn flat
 function buildFoot(C) {
   const g = new THREE.Group(); g.name = "foot";
   const mat = (c, o) => new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: o, depthWrite: false, side: THREE.DoubleSide });

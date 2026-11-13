@@ -60,8 +60,7 @@ qs("#r3d-save").addEventListener("click", async () => {
   } else st.textContent = "Saving isn’t available in this view.";
 });
 
-/* v39, UPGRADE_PLAN_v38 item 13 ("measure in 3D: tap two points to read the distance, so you can check a gap yourselves") */
-const MEAS = { on: false, a: null, d: 0, dh: 0, dv: 0, g: null };
+const MEAS = { on: false, a: null, d: 0, dh: 0, dv: 0, g: null };   // v39, UPGRADE_PLAN_v38 item 13 ("measure in 3D: tap two points to read the distance, so you can check a gap yourselves")
 function clearMeasure() { MEAS.a = null; MEAS.d = 0; if (MEAS.g) { scene.remove(MEAS.g); MEAS.g.traverse(o => o.geometry && o.geometry.dispose()); MEAS.g = null; } dirty(); }
 function endMeasure() { MEAS.on = false; clearMeasure(); root.classList.remove("measuring"); }
 function startMeasure() { if (window.DemmaTools) window.DemmaTools.close(); MEAS.on = true; clearMeasure(); root.classList.add("measuring");
@@ -80,8 +79,7 @@ function measureTap(e) {
     line.position.copy(a).add(b).multiplyScalar(0.5); line.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.clone().normalize()); line.renderOrder = 999; MEAS.g.add(line); }
   dirty(); actId = "measure"; act.hidden = false; renderAct();
 }
-/* v39, item 13 ("a now playing swap: tap the turntable to choose which LP faces out on the ledge"): the left LP on the breast's ledge
-   wears one of these covers, or a photo of one of yours (kept on this device) */
+/* v39: "now playing": the ledge's left LP wears one of these covers or a photo of yours (kept on this device) */
 const NOWP = [{ name: "Sunburst", draw: (g, w) => { const gr = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w * 0.7); gr.addColorStop(0, "#ffd36b"); gr.addColorStop(1, "#c8452f"); g.fillStyle = gr; g.fillRect(0, 0, w, w); } },
   { name: "Blue stripes", draw: (g, w) => { g.fillStyle = "#1f2f4f"; g.fillRect(0, 0, w, w); g.fillStyle = "#7fb2e5"; for (let i = 0; i < 8; i++) g.fillRect(0, i * w / 8 + w / 32, w, w / 32); } },
   { name: "Moon", draw: (g, w) => { g.fillStyle = "#121318"; g.fillRect(0, 0, w, w); g.fillStyle = "#f2efe8"; g.beginPath(); g.arc(w * 0.6, w * 0.4, w * 0.22, 0, 7); g.fill(); g.fillStyle = "#121318"; g.beginPath(); g.arc(w * 0.68, w * 0.36, w * 0.2, 0, 7); g.fill(); } },
@@ -113,9 +111,7 @@ function pickNowPic() {                 // a photo of one of your records: scale
     img.src = URL.createObjectURL(f); }; inp.click();
 }
 try { const u = localStorage.getItem("mw39-nowpic"); if (u) { const img = new Image(); img.onload = () => { nowPic = new THREE.Texture(img); nowPic.colorSpace = THREE.SRGBColorSpace; nowPic.needsUpdate = true; applyNow(); }; img.src = u; } } catch (e) {}
-/* v39, item 13 ("your own light scenes: save a set of fixture angles and head settings as a named scene next to the presets"), kept on
-   this device; and "Save my plan": your picks and a link to this room, to paste to us */
-const MYK = "mw39-scenes";
+const MYK = "mw39-scenes";   // v39: your own light scenes, kept on this device; and "Save my plan": your picks and a link to this room
 function myScenes() { try { return JSON.parse(localStorage.getItem(MYK) || "[]"); } catch (e) { return []; } }
 function drawMyScenes() {
   const box = qs("#r3d-myscl"); if (!box) return; const L = myScenes();
@@ -134,10 +130,8 @@ function useMyScene(i) {
   S.fix = Object.assign({}, x.fix || {}); S.head = JSON.parse(JSON.stringify(x.head || {}));
   applyState(); syncButtons(); toast(x.name);
 }
-/* v50, client: "Improve the save copy paste criteria and selection to get better info if needed now we have a lot of custom options":
-   Save my plan opens a chooser. What goes in is ticked (picks and costs, the set-up, colours and decor, lights, furniture moved or added,
-   the link); each line names the choice and marks what differs from the plan. Share (the phone's share sheet), Copy, and on the shared
-   page Save for us, which stores it with a name and the date in the page's database (setups), where we read it directly */
+/* v50: Save my plan's chooser: the ticked parts (picks and costs, set-up, colours, lights, furniture, the link), each line marking what
+   differs from the plan; Share, Copy, and on the shared page Save for us (the "setups" database) */
 const SETUP_KEYS = ["sofa", "sbed", "stools", "site", "dining", "cab", "cabw", "tdoor", "chairs", "beside", "plants", "seat", "lamp", "drawers", "curtains", "blind", "trolley", "ctop", "lid", "barflap", "sdraw", "foot", "lp", "laser", "lbox", "pc", "grow"];
 const LAYER_NAME = { strip: "Ceiling strip", uprights: "Uprights and side shelf", bias: "TV backlight", bar1: "Spot bar 1", bar2: "Spot bar 2", lamp: "Red lamp", accent: "Accents" };
 const word = v => v === true ? "on" : v === false ? "off" : String(v);
