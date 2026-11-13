@@ -381,7 +381,7 @@ body.bare .r3d .r3d-mini .r3d-minib.r3d-bare { background: var(--ink, #1d2a22); 
 .r3d-mini > #r3d-fview, .r3d-mini > #r3d-rmode { order: 1; } .r3d-mini > #r3d-floors { order: 2; flex: 1 1 0; min-width: 0; max-width: max-content; }
 .r3d-mini > #r3d-mlook { order: 3; } .r3d-mini > #r3d-home { order: 4; } .r3d-mini > #r3d-now { order: 4; } .r3d-mini > #r3d-pick { order: 5; }
 .r3d .r3d-mini #r3d-now[aria-pressed=true] { background: var(--ink); color: var(--cream); }   /* V3.90 (N151): As it is, on */
-/* V4.6 (N174): fewer pills: As it is and Hide labels behind ⋯ (out while it's open, As it is while on, Show while bare); Gardens and Next door on Outside only */
+/* V4.7 (N174): fewer pills: As it is and Hide labels behind ⋯ (out while it's open, As it is while on, Show while bare); Gardens and Next door on Outside only */
 .r3d-mini > #r3d-more { order: 5; } .r3d .r3d-mini #r3d-more[aria-expanded=true] { background: var(--ink); color: var(--cream); }
 .r3d-mini:not(.more) > #r3d-now:not([aria-pressed=true]), body:not(.bare) .r3d-mini:not(.more) > #r3d-pick { display: none; }
 #r3d-floors:not(:has([data-hfloor=all][aria-pressed=true])) :is(.tog, .sep) { display: none; }
@@ -429,7 +429,7 @@ body.bare .r3d-peg, .r3d.editing .r3d-peg { display: none; }
 .r3d-stick i { position: absolute; left: 50%; top: 50%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: color-mix(in oklab, var(--ink, #1d2a22) 80%, transparent);
   box-shadow: 0 2px 8px rgba(0,0,0,.25); transform: translate(var(--x, 0px), var(--y, 0px)); display: none; }
 .r3d-stick.held i { display: block; }
-/* V4.6 (N175): faint until touched, full while held; on a PC gone once the keys walk, back when the mouse comes near; never over a card or a sheet */
+/* V4.7 (N175): faint until touched, full while held; on a PC gone once the keys walk, back when the mouse comes near; never over a card or a sheet */
 .r3d-stick { opacity: .4; transition: background .15s, opacity .3s; } .r3d-stick.held { opacity: 1; } @media (hover: hover) { .r3d-stick:hover { opacity: 1; } }
 .r3d.keyed .r3d-stick:not(.held):not(:hover) { opacity: 0; } .r3d:has(.r3d-pop:not([hidden])) .r3d-stick, body.sheet-open .r3d-stick { display: none; }
 /* V1.30 (U3): only the tools that work where you are (room3d.js brandPlace) */
