@@ -25,7 +25,7 @@ function duskVeil(on) {
     VEIL.material.clippingPlanes = []; VEIL.position.copy(v3((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2)); VEIL.raycast = () => {}; VEIL.renderOrder = 5; VEIL.name = "duskVeil"; scene.add(VEIL); }
   VEIL.visible = on;
 }
-/* V4.5 (N169): the plot's edge goes soft. The far ground was already the fog's colour, but it met the sky in a hard line (the sky's own
+/* V4.6 (N169): the plot's edge goes soft. The far ground was already the fog's colour, but it met the sky in a hard line (the sky's own
    blue sat right on it). The sky now takes the fog's colour at the horizon and fades to its own blue over the lowest ten degrees or so,
    mixed after its colour conversion as three's fog is on the ground, so the two meet with no seam on both paths: a hazy field all
    round. In the sky's shader, before the first sky is made: no new shader, draw or picture. */
@@ -45,7 +45,7 @@ void main() {`)
   .replace("#include <colorspace_fragment>", `#include <colorspace_fragment>
 			float haze = 1.0 - smoothstep( -0.005, 0.2, cdir.y ); gl_FragColor.rgb = mix( gl_FragColor.rgb, hazeColor, haze * haze * ( 3.0 - 2.0 * haze ) );`)
   .replace("uniform vec3 up;", "uniform vec3 up;\nuniform vec3 hazeColor;");
-Sky.SkyShader.uniforms.hazeColor = { value: new THREE.Color() };   // V4.5 (N169): the fog's colour, in the space three gives the fog
+Sky.SkyShader.uniforms.hazeColor = { value: new THREE.Color() };   // V4.6 (N169): the fog's colour, in the space three gives the fog
 function skyHaze(sk) { sk.onBeforeRender = r => scene.fog.color.getRGB(sk.material.uniforms.hazeColor.value, r.getRenderTarget() ? THREE.LinearSRGBColorSpace : r.outputColorSpace); }   // as three's refreshFogUniforms: the screen's space straight to it, linear into the HD composer
 function outdoor() {
   const house = !!(R.HOUSE3 && S.view === "house" && hfloor === "all"), room = roomOut(), on = house || room;
