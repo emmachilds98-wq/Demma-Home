@@ -54,7 +54,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   ever firing). Put a `// note` at a line's end only: one put mid-line in a one-line statement commented out the rest of it.
 
 ## 3. Speed: what was done, how, what's left
-- **The hitch walk (N177, V4.8):** `check_site.py` `HITCH_INIT`/`HITCH_WARM`/`HITCH_WALK`. A faked clock must move `performance.now()` with the
+- **The hitch walk (N177, V4.8):** its own check (`checks.py --only hitch`, `check_site.py --hitch`, its own CI job: inside the site job it took that past 40 min). `check_site.py` `HITCH_INIT`/`HITCH_WARM`/`HITCH_WALK`. A faked clock must move `performance.now()` with the
   rAF time (each frame 1/144 s on, time inside a frame as it passes): faking only rAF's timestamp left tweens started from `performance.now()`
   with a negative k, and the camera flew off to x = 287 km. A link inside three's `compile`/`compileAsync` is the warm-up's (on a PC it builds
   beside the page) and doesn't count; one used on the frame the draw linked it does. Wrap `renderBufferDirect` to name what drew it (the
