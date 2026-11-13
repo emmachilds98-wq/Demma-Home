@@ -155,9 +155,6 @@ details.readmore[open] > summary .ms { transform: rotate(180deg); }
 details.fold { border-radius: 22px; background: var(--surface); padding: 4px 16px; }
 details.fold > summary { cursor: pointer; font: 600 16px var(--display); padding: 12px 0; }
 /* Build: progress in part colours, round ticks */
-.segbar { display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 4px; margin: 6px 0 4px; }
-.segbar i { height: 12px; border-radius: 999px; background: color-mix(in oklab, var(--pc) 30%, #efe7d8); transition: background .3s; }
-.segbar i.on { background: var(--pc); }
 .step { padding: 6px 4px; }
 .shead { align-items: center; }
 .sn { width: 44px !important; height: 44px !important; border-radius: 50% !important; font-family: var(--display) !important; background: var(--soft) !important; color: var(--ink) !important; }
@@ -171,13 +168,9 @@ details.fold > summary { cursor: pointer; font: 600 16px var(--display); padding
 .items input[type=checkbox]:checked::after { content: "✓"; color: #fff; font-weight: 700; }
 .tiles div { background: oklch(0.92 0.06 165) !important; }
 .tiles strong { font-family: var(--display); }
-/* Ask: quick taps */
-.qs { gap: 12px; }
 .q { background: var(--surface); padding: 18px 20px; transition: background .4s; }
-.q.answered { background: oklch(0.92 0.06 var(--h, 235)) !important; }
 .q h3 { font-size: 18px; }
 .q h3 .n { font-family: var(--display); background: oklch(0.92 0.06 var(--h, 235)); border-radius: 999px; padding: 0 10px; }
-details.qwhy > summary { cursor: pointer; font-weight: 600; font-size: 14px; color: var(--mut2); margin-top: 10px; }
 /* the celebration */
 .toast { position: fixed; left: 50%; bottom: 120px; z-index: 90; transform: translate(-50%, 40px); opacity: 0; pointer-events: none; display: inline-flex; gap: 8px; align-items: center;
   padding: 12px 22px; border-radius: 999px; background: var(--ink); color: var(--page); font: 600 17px var(--display); box-shadow: var(--shadow); transition: transform .45s var(--spring), opacity .25s; }
@@ -185,10 +178,8 @@ details.qwhy > summary { cursor: pointer; font-weight: 600; font-size: 14px; col
 .confetti { position: fixed; left: 0; top: 0; z-index: 91; pointer-events: none; }
 .confetti i { position: absolute; width: 10px; height: 10px; border-radius: 50%; animation: dmBurst .9s var(--sheet) forwards; }
 @keyframes dmBurst { 0% { transform: translate(0, 0) scale(.4); opacity: 1; } 70% { opacity: 1; } 100% { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 0; } }
-@keyframes dmPop { 0% { transform: scale(1); } 40% { transform: scale(1.25); } 100% { transform: scale(1); } }
-.pop { animation: dmPop .45s var(--spring); }
 @media (prefers-reduced-motion: reduce) {
-  .confetti { display: none; } .pop { animation: none; }
+  .confetti { display: none; }
   .sheet, .sheet.open, .toast, .ctile, .ring .vl { transition: none !important; }
 }
 .lightbox { z-index: 95; }
@@ -409,9 +400,9 @@ details.mk.done .mkp b { color: #fff; }
 /* v46.1, client: "I want plans and images to fit in my phone screen not scroll ... I want to see full plans when images are involved
    or tables / cad designs": nothing scrolls sideways. Drawings fit the width (tap one to see it full screen and pinch to zoom); a wide
    table becomes one card per row on a phone, each value under its column's name */
-.tscroll, .scroll, .doc figure.dia, details.sdraw figure.dia, .tp figure.cutfig { overflow-x: visible !important; }
+.tscroll, .scroll, .doc figure.dia, .tp figure.cutfig { overflow-x: visible !important; }
 .tscroll table, table.fit, .keycols .tscroll table { min-width: 0 !important; }
-.doc figure.dia svg, details.sdraw figure.dia svg, .tp figure.cutfig svg, .mk figure svg { min-width: 0 !important; width: 100% !important; max-width: 100%; height: auto; }
+.doc figure.dia svg, .tp figure.cutfig svg, .mk figure svg { min-width: 0 !important; width: 100% !important; max-width: 100%; height: auto; }
 .doc figure img, .mk figure img { max-width: 100%; height: auto; }
 figure.zoomable { position: relative; cursor: zoom-in; }
 figure.zoomable::after { content: "⤢"; position: absolute; right: 10px; top: 10px; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;

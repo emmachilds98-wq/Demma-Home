@@ -1,11 +1,8 @@
-/* ---------------------------------------------------------------- v18: things you can move (edit mode)
-   Each movable thing is a group built round the centre of its footprint (room cm, its front towards local +z), on a pivot that
-   edit mode drags across the floor and turns. Where it stands, its turn, its colour and whether it's removed live in S.layout[id];
-   the things you add live in S.added. The red lamp is rebuilt where you drop it, so its lights move with it. */
+/* ---------------------------------------------------------------- v18: things you can move (edit mode): each a group round its
+   footprint's centre (front to local +z) on a pivot; S.layout[id] its place, turn, colour, removal; S.added what you add */
 const MOV = {};
 const movers = new THREE.Group(); scene.add(movers);
-/* V3.81 (N137): a material that takes its shade from its vertices (the sofa bed's cloth) needs a colour on every shape it's on (white:
-   none), or that shape draws black; and shapes merge only with the same attributes */
+/* V3.81 (N137): a vertex-coloured material needs a colour on every shape (white: none) or it draws black */
 function vcol(geo, mat) { if (mat && mat.vertexColors && !geo.attributes.color) geo.setAttribute("color", new THREE.Float32BufferAttribute(new Float32Array(geo.attributes.position.count * 3).fill(1), 3)); return geo; }
 function rlb(g, x, y, z, w, h, d, mat, r = 3) {           // v32: the same, its edges rounded (upholstery)
   const m = new THREE.Mesh(vcol(new RoundedBoxGeometry(w * M, h * M, d * M, 3, Math.min(r, w / 2.2, h / 2.2, d / 2.2) * M), mat), mat);
@@ -25,8 +22,7 @@ function lb(g, x, y, z, w, h, d, mat, cast = true) {      // a box in a movable'
   const m = new THREE.Mesh(vcol(new THREE.BoxGeometry(w * M, h * M, d * M), mat), mat);
   m.position.copy(v3(x, y + h / 2, z)); g.add(shadow(m, cast)); return m;
 }
-/* v22: fewer draws: a static group's direct child meshes become one mesh per material (your plant stand was 152 meshes, the vinyl stand 45).
-   Nested groups (the sofa's cushions, the coffee table's tray, the chair cupboard's doors) are left alone, so their own switches still work. */
+/* v22: a static group's direct child meshes become one mesh a material; nested groups (cushions, trays, doors) stay switchable */
 function mergeStatic(g) {
   g.updateMatrixWorld(true);
   const inv = new THREE.Matrix4().copy(g.matrixWorld).invert(), by = new Map();
@@ -45,9 +41,8 @@ function mergeStatic(g) {
   }
   return g;
 }
-/* V3.77 (N153): a piece whose parts move (the sofa bed's headrests, stools and bed; the chaise's lid) draws as one mesh a material while
-   they're all at rest, and as its moving groups only while one moves. live: a group of the piece's parts (its own meshes merged, its
-   moving groups inside); skip: groups never seen at rest (the bed's links, the struts). Returns the rest copy and a switch */
+/* V3.77 (N153): a piece with moving parts is one mesh a material at rest and its moving groups only while one moves (live: the moving
+   groups; skip: groups never seen at rest). Returns the rest copy and a switch */
 function restMerge(g, live, skip = []) {
   g.updateMatrixWorld(true);
   const inv = new THREE.Matrix4().copy(g.matrixWorld).invert(), by = new Map(), under = o => { for (let p = o; p && p !== live; p = p.parent) if (skip.includes(p) || !p.visible) return true; return false; };
@@ -100,9 +95,7 @@ function capShadows(n) {   // the brightest n spotlights cast shadows; the rest 
   sp.forEach((l, i) => { l.castShadow = i < n; });
 }
 // a pot with a plant in it, in a movable's coordinates
-/* v15's hanging plant, as a builder (v36): a pot centred at x (room cm) on a shelf whose top is at top, its strands falling from the
-   edges in edges (each strand picks one: the shelf's front, or v36's gap behind the plant shelf) */
-let plantBG = null;
+let plantBG = null;   // v15's hanging plant as a builder: a pot at x on a shelf top, its strands falling from the given edges
 function hangPlant(par, x, top, z, edges, seed, gapZ) {   // v38: gapZ [the shelf's end, the boxing's face]: the strands fall through that gap
   const PB = R.PLANT_B, pot = FLORA_POTS !== "mine" ? potFinish(FLORA_POTS) : (hangPlant.pot = hangPlant.pot || reg(new THREE.MeshStandardMaterial({ color: "#e9e4da", roughness: 0.3 })));   // v40: a glazed pot, a real pothos
   const hold = { userData: {} }, B = floraBatch(hold), pg = potGeo(PB.pot / 2, 12); pg.translate(-x * M, top * M, z * M); floraAdd(B, pot, pg);
@@ -151,9 +144,8 @@ function buildPlantsAndRecords() {
     PS.tower.forEach(y => { tier(L[0], L[1], y, 0); tier(Rr[0], Rr[1], y, 0); });
     PS.middle.forEach(y => tier(Mi[0], Mi[1], y, 0));
     for (const z of [-d / 2 + pt / 2, d / 2 - pt / 2]) lb(g, 0, h - 2, z, w, 2, pt, wood);  // the top rails across the open middle
-    /* v43, client: "the plant shelf is not built yet give it what you think will look best": one plant a tier so each reads, trailing
-       pothos and spider plants up top spilling down the towers, a monstera in the tall open middle and a snake plant over it, calathea
-       and fern lower down, a small snake plant and a ficus at the bottom. [x, tier top, radius, how tall, kind, strands, pot] */
+    /* v43: one plant a tier: trailing pothos and spider plants up top, a monstera and a snake plant in the middle, calathea and fern
+       lower, a small snake plant and a ficus at the bottom. [x, tier top, radius, how tall, kind, strands, pot] */
     const cx = t => (t[0] + t[1]) / 2, TOP = y => y + 1.2;
     [[L, 4, 6.5, 7, "pothos", 3, 0], [Rr, 4, 7, 12, "spider", 0, 3], [L, 3, 7, 12, "spider", 0, 0], [Rr, 3, 6, 6, "pothos", 2, 2],
      [L, 2, 6.5, 9, "calathea", 0, 1], [Rr, 2, 6, 8, "fern", 0, 3], [L, 1, 6, 8, "fern", 0, 4], [Rr, 1, 6.5, 9, "calathea", 0, 0],
@@ -172,8 +164,7 @@ function buildPlantsAndRecords() {
         { terracotta: pm === 2, edgeZ: d / 2, kind: FLORA_STYLE === "easy" ? undefined : kind });
       g.userData.floraHold = false; floraFlush(g); });
     movable("plants", "Your plant stand", g, () => { const [x, z, f] = R.PLANT_LAYOUTS[S.plants].plants; return { x, z, rot: f < 0 ? 180 : 0 }; }, w, d, [wood], false, { when: () => !cornerHides("plants") });   // v37: a window-corner pick takes its place
-    // v32: the idea of an uplight on the floor under the stand's open middle, throwing the leaves up the wall behind
-    const upl = IDEA_G.plantlight = new THREE.Group(), blk = reg(new THREE.MeshStandardMaterial({ color: "#1b1c1f", roughness: 0.45 }));
+    const upl = IDEA_G.plantlight = new THREE.Group(), blk = reg(new THREE.MeshStandardMaterial({ color: "#1b1c1f", roughness: 0.45 }));   // v32: the idea of an uplight on the floor under the stand's open middle, throwing the leaves up the wall behind
     const can = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.042, 0.1, 18), blk); can.position.set(0, 0.05, -0.06); can.rotation.x = -0.35; upl.add(shadow(can));
     const lens = new THREE.Mesh(new THREE.CircleGeometry(0.03, 18), new THREE.MeshBasicMaterial({ color: "#fff1d6", toneMapped: false })); lens.position.set(0, 0.1, -0.075); lens.rotation.x = -Math.PI / 2 - 0.35; upl.add(lens);
     const sp = new THREE.SpotLight("#ffd9a8", 22, 3, 0.7, 0.6, 2); sp.position.set(0, 0.12, -0.08); sp.target.position.set(0, 1.9, -0.32);
@@ -249,9 +240,7 @@ const CATALOGUE = {
   plant: { label: "Tall floor plant", w: 40, d: 40, col: "#d8cfc0", build(g, m) {
     potPlant(g, 0, 0, 0, 16, 26, 0, rnd(5), m, null); } },
   bookcase: { label: "Slim bookcase", w: 60, d: 30, col: "#c48c57", build(g, m) {
-    // v34: closer to a real one: a recessed plinth, an overhanging top, books of every size (some leaning, a stack lying flat), two
-    // baskets on the bottom shelf, a trailing plant, a framed print, a vase and a candle
-    m.map = OAK_TEX; m.color.set("#c48c57"); m.roughness = 0.55;
+    m.map = OAK_TEX; m.color.set("#c48c57"); m.roughness = 0.55;   // v34: a recessed plinth, an overhanging top, books every size, baskets, a trailing plant, a print, a vase and a candle
     lb(g, -29, 0, 0, 2, 178, 30, m); lb(g, 29, 0, 0, 2, 178, 30, m); lb(g, 0, 6, -14.5, 56, 172, 1, m);   // the sides, the back
     lb(g, 0, 0, 11.5, 56, 6, 2, m); lb(g, 0, 178, 0.5, 62, 2.4, 31.5, m);                  // the kick board, set back; the top
     for (const y of [6, 42, 78, 114, 150]) lb(g, 0, y, 0, 56, 2, 30, m);
@@ -263,20 +252,15 @@ const CATALOGUE = {
       return b;
     };
     const row = (y, x0, x1) => { let x = x0; while (x < x1) { const bw = 1.8 + r() * 3.2; book(x + bw / 2, y, bw, 19 + r() * 11, 15 + r() * 7); x += bw + 0.2; } return x; };
-    // the bottom shelf: two seagrass baskets
-    const sea = reg(new THREE.MeshStandardMaterial({ color: "#b89a6c", roughness: 1, bumpMap: HESSIAN, bumpScale: 1.2 }));
+    const sea = reg(new THREE.MeshStandardMaterial({ color: "#b89a6c", roughness: 1, bumpMap: HESSIAN, bumpScale: 1.2 }));   // the bottom shelf: two seagrass baskets
     for (const x of [-13.5, 13.5]) { lb(g, x, 8, 0, 25, 24, 26, sea); lb(g, x, 31, 0, 25.6, 1.4, 26.6, sea); }
-    // books upright, then two leaning on them
-    let x = row(44, -26, 12); book(x + 3.2, 44, 2.6, 27, 19, 0.32); book(x + 7.4, 44, 3, 24, 17, 0.34);
-    // a stack lying flat, a small trailing plant, a framed print
-    for (let i = 0, yy = 80; i < 4; i++) { const bh = 2.2 + r() * 2; lb(g, -18 + (r() - 0.5) * 2, yy, 2, 22 - i * 1.5, bh, 17 - i, spines[(i * 3 + 1) % spines.length]); yy += bh; }
+    let x = row(44, -26, 12); book(x + 3.2, 44, 2.6, 27, 19, 0.32); book(x + 7.4, 44, 3, 24, 17, 0.34);   // books upright, then two leaning on them
+    for (let i = 0, yy = 80; i < 4; i++) { const bh = 2.2 + r() * 2; lb(g, -18 + (r() - 0.5) * 2, yy, 2, 22 - i * 1.5, bh, 17 - i, spines[(i * 3 + 1) % spines.length]); yy += bh; }   // a stack lying flat, a small trailing plant, a framed print
     potPlant(g, 2, 80, 4, 6, 6, 3, rnd(41), mt("#d8cfc0"), null);
     const fr = lb(g, 18, 80, -10, 17, 22, 1.6, mt("#1f1f21")); fr.rotation.x = 0.12;
     lb(g, 18, 82.4, -9.0, 13, 17, 0.2, mt("#e7c9a0")).rotation.x = 0.12;
-    // books again, and a bookend
-    x = row(116, -26, 14); lb(g, x + 2, 116, 4, 1, 14, 10, mt("#2a2a2c"));
-    // the top shelf: a vase, a candle, a few books
-    const vase = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, 0.2, 20), mt("#c46c45")); vase.position.copy(v3(-17, 162, 2)); g.add(shadow(vase));
+    x = row(116, -26, 14); lb(g, x + 2, 116, 4, 1, 14, 10, mt("#2a2a2c"));   // books again, and a bookend
+    const vase = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.05, 0.2, 20), mt("#c46c45")); vase.position.copy(v3(-17, 162, 2)); g.add(shadow(vase));   // the top shelf: a vase, a candle, a few books
     const wax = reg(new THREE.MeshStandardMaterial({ color: "#f3ecdc", roughness: 0.8, emissive: "#ffb35a", emissiveIntensity: 0.12 }));
     const cdl = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.1, 18), wax); cdl.position.copy(v3(-5, 157, 4)); g.add(shadow(cdl));
     row(152, 4, 25); } },
@@ -344,9 +328,7 @@ Object.assign(CATALOGUE, {
     const wax = reg(new THREE.MeshStandardMaterial({ color: "#f3ecdc", roughness: 0.8, emissive: "#ffb35a", emissiveIntensity: 0.15 }));
     const c = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.2, 16), wax); c.position.y = 0.115; g.add(c); } },
 });
-/* V3.83 (N140): each piece in what it's made of (they were one flat colour each, the oak ones too): oak's grain, a woven cloth's
-   relief, rattan's and seagrass's coarser weave, metal's sheen, glazed ceramic; the colour still the piece's (and Edit's). Each a
-   material the room already draws, so no new shader */
+/* V3.83 (N140): each piece in what it's made of (oak, cloth, rattan, metal, ceramic), its colour still its own; no new shader */
 const SURF = { armchair: "cloth", sidetable: "oak", plant: "ceramic", bookcase: "oak", beanbag: "cloth", footstool: "cloth", cushion: "cloth", crate: "oak",
   rattan: "weave", ladder: "oak", bench: "oak", arclamp: "metal", vase: "ceramic", pouffe: "knit", basket: "weave", mirror: "oak", lantern: "metal" };
 const SURF_P = { oak: { map: OAK_TEX, roughness: 0.55 }, cloth: { roughness: 0.95, bumpMap: HESSIAN, bumpScale: 0.6 }, knit: { roughness: 0.95, bumpMap: HESSIAN, bumpScale: 1.2 },
@@ -392,8 +374,7 @@ function clampItem(it, x, z, rot) {
   x = Math.min(Math.max(x, hx), R.W - hx);
   const zmax = zmaxAt(x, hx);
   z = Math.min(Math.max(z, R.WINDOW_Z + hz), zmax - hz);
-  // v19: within 5 cm of a wall, it goes flush against it
-  if (x - hx < SNAP) x = hx; else if (R.W - hx - x < SNAP) x = R.W - hx;
+  if (x - hx < SNAP) x = hx; else if (R.W - hx - x < SNAP) x = R.W - hx;   // v19: within 5 cm of a wall, it goes flush against it
   if (z - hz - R.WINDOW_Z < SNAP) z = R.WINDOW_Z + hz; else if (zmax - hz - z < SNAP) z = zmax - hz;
   return { x: Math.round(x), z: Math.round(z) };
 }
@@ -418,8 +399,7 @@ function backToWall(id) {       // v27: to the nearest wall, its back to it (a p
   if (w.k === "x0") x = hx; else if (w.k === "xW") x = R.W - hx; else if (w.k === "zmin") z = R.WINDOW_Z + hz; else z = zmaxAt(x, hx) - hz;
   const c = clampItem(it, x, z, w.rot); setLayout(id, { rot: w.rot, x: c.x, z: c.z });
 }
-/* v19: undo, the last ten changes to the layout (moves, turns, colours, removals, additions) */
-const UNDO = [];
+const UNDO = [];   // v19: undo, the last ten changes to the layout (moves, turns, colours, removals, additions)
 function snapshot() { return JSON.stringify({ layout: S.layout, added: S.added }); }
 function pushUndo() { UNDO.push(snapshot()); if (UNDO.length > 10) UNDO.shift(); undoBtn(); }
 function undoBtn() { const b = qs("#r3d-undo"); if (b) b.disabled = !UNDO.length; }
@@ -439,9 +419,7 @@ function select(id) {
   if (id) { const h = qs("#r3d-edithint"); if (h) h.hidden = true; }
   editPanel(); dirty(); if (!ovRaf) selOverlay();
 }
-/* V3.87 (N145): on the piece itself, its size over it and a turn handle beside it: drag the handle round and it turns, 15° a step, the
-   way the finger goes whichever side you look from (it stays against the walls it was against when let go) */
-const TH = qs("#r3d-turnh"), SM = qs("#r3d-selmeas"); let ovRaf = 0, turnDrag = null;
+const TH = qs("#r3d-turnh"), SM = qs("#r3d-selmeas"); let ovRaf = 0, turnDrag = null;   // V3.87 (N145): the piece's size over it and a turn handle: 15° a step, the way the finger goes
 function scrOf(v, r) { const q = v.clone().project(camera); return [r.left + (q.x + 1) / 2 * r.width, r.top + (1 - q.y) / 2 * r.height, q.z]; }
 function selOverlay() {
   ovRaf = 0; if (!TH || !SM) return;
@@ -526,11 +504,8 @@ function addList() {
   qs("#r3d-addlist").innerHTML = outList().map(([k, n]) => `<button type="button" class="chip" data-outback="${k}">↩ ${n}</button>`).join("")
     + Object.entries(CATALOGUE).map(([k, c]) => `<button type="button" class="chip" data-add="${k}">${c.label}</button>`).join("");
 }
-/* V3.75, client (12 Nov 2026): "I also want ability to remove items from the room completely as well as move them. Make sure anything
-   that I can remove can be re added via the ui menu". Every piece that stands in the room takes Take it out on its card (and in Edit);
-   what's out is listed in Room → Taken out and at the head of Edit's + Add, a tap each to put it back, and the toast's Put back undoes
-   it at once. A piece is out by S.layout[id].off (as Edit's Remove always did); the plan's picks and an option you took out by S.sugg /
-   S.ideas off, kept in S.gone so they're listed till they're back. A piece you added from + Add goes for good (+ Add has it again) */
+/* V3.75: any piece can be taken out (its card, Edit) and put back (Room → Taken out, + Add, the toast's Put back): S.layout[id].off,
+   or S.sugg / S.ideas off kept in S.gone; an added piece goes for good */
 function outList() {   // [["mov:id" | "sugg:k" | "idea:k", its name]]: what's out of the room now
   const L = Object.values(MOV).filter(it => !it.added && (S.layout[it.id] || {}).off && (!it.when || it.when())).map(it => ["mov:" + it.id, it.label.replace(/ \(suggested\)$/, "")]);
   const firm = R.FIRM || {}, gone = S.gone || {};
@@ -565,8 +540,7 @@ function outRow() {   // Room → Taken out: shown only while something is
   row.hidden = !L.length;
   l.innerHTML = L.map(([k, n]) => `<button type="button" class="chip" data-outback="${k}">↩ ${n}</button>`).join("") + (L.length > 1 ? '<button type="button" class="chip" data-outback="all">Put all back</button>' : "");
 }
-/* V3.75: a nudge, 5 cm a tap (1 with Shift), along the room's wall nearest to the way the arrow points on screen, so ← is left as you
-   look; a finer move than a drag, on a phone above all */
+/* V3.75: a nudge, 5 cm a tap (1 with Shift), along the wall nearest the arrow's way on screen */
 function nudge(id, dir, fine) {
   const it = MOV[id]; if (!it || it.fixed) return;
   const f = new THREE.Vector3(); camera.getWorldDirection(f); f.y = 0; if (f.lengthSq() < 1e-6) f.set(0, 0, -1); f.normalize();
@@ -578,10 +552,8 @@ function nudge(id, dir, fine) {
   if (it.lamp) { built.lamp = null; applyState(); select(id); } else { placeAll(); store.set(KEY, S); }
   dirty();
 }
-/* V3.07, the client: "in edit mode for moving things it still swings the camera round": a press on a piece is the piece's alone, caught
-   on the way down (root, capture) before the orbit, Look round's turn and the pinch see it. Near the selected piece (its outline on screen
-   and a finger's width round it) that piece is grabbed, unless another standing piece is under the pointer (the rug gives way). A drag
-   off the pieces still moves the view */
+/* V3.07: a press on a piece is caught before the orbit (root, capture); near the selected piece it grabs it unless another standing
+   piece is under the pointer; a drag off the pieces still moves the view */
 const boxOf = id => new THREE.Box3().setFromObject(MOV[id].pivot);
 function grabbed(e) {
   const h = hitMovable(e), it = MOV[selId];
@@ -683,8 +655,7 @@ qs("#r3d-selcol").addEventListener("input", e => {
   store.set(KEY, S); dirty();
 });
 document.addEventListener("keydown", e => { if (S.edit && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && !e.shiftKey) { e.preventDefault(); undo(); } });
-/* v19: one layout for both of you, kept in the plan page's shared database (only where the page has one) */
-let ldb = null, sharedDoc = null, sharing = Promise.resolve();
+let ldb = null, sharedDoc = null, sharing = Promise.resolve();   // v19: one layout for both of you, kept in the plan page's shared database (only where the page has one)
 (async () => {
   try { ldb = (window.sharedStore && window.sharedStore.use) ? await window.sharedStore.use("db") : null; } catch (e) { ldb = null; }
   if (!ldb) return;
@@ -695,8 +666,7 @@ let ldb = null, sharedDoc = null, sharing = Promise.resolve();
     snap.docChanges().forEach(ch => { if (ch.type === "removed") delete SETUPS[ch.doc.id]; else SETUPS[ch.doc.id] = ch.doc.data(); });
     drawSetups(); }, () => {});
 })();
-/* v52: Your saved plans: each one saved for us (Save my plan, then Save for us), newest first, opens the room just as it was saved */
-const SETUPS = {};
+const SETUPS = {};   // v52: Your saved plans: each one saved for us (Save my plan, then Save for us), newest first, opens the room just as it was saved
 function drawSetups() {
   const box = qs("#r3d-setups"); if (!box) return;
   const L = Object.entries(SETUPS).filter(([, d]) => d && d.look).sort((a, b) => String(b[1].at).localeCompare(String(a[1].at))).slice(0, 8);
@@ -759,10 +729,7 @@ qs("#r3d-picksave")?.addEventListener("click", () => {
   ldb.doc("layouts/picks").set(JSON.parse(JSON.stringify({ items, text: pickText(items), at: new Date().toISOString() })))
     .then(() => { st.textContent = "Saved for the next round."; }, e => { st.textContent = e && e.code === "invalid_argument" ? "This view can't save (read-only)." : "Couldn't save. Try again in a moment."; });
 });
-/* v18: if the graphics card gives up (most often HD with shadows on a phone), say so and come back in Fast. v35: the browser usually
-   gives the context back within a second or two: then the room rebuilds itself in Fast where it was, no reload; the button stays as
-   the way out if it doesn't come back */
-let glLost = false;
+let glLost = false;   // v18, v35: a lost graphics context comes back in Fast where it was, no reload; the button stays if it doesn't
 canvas.addEventListener("webglcontextlost", e => {
   e.preventDefault(); glLost = true; if (!BIG_GPU) { S.quality = "fast"; S.picked = true; store.set(KEY, S); }   // V2.25: a real card comes back in HD
   msg.hidden = false; root.classList.remove("ready");

@@ -3,15 +3,15 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.5 (12 Nov 2026). V4.5 (N141, its half without KTX2): the sofa bed's chenille made at build, not drawn at
-every load; the curtains', leather's and living room's photos re-saved (photos 7.7 to 7.5 MB). V4.4 (N165, N164): a steadier
-speed check; the phone's top row checked. V4.3 (N167): bedroom 3's two artisan oak cube shelves and the oak flip-up table.
-V4.2 (N159, N166): the house framed to the screen; the budgets lowered. V4.1 (N157, N158): the house on its own.
-The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.5 ↻"): on the
+**Version:** V4.8 (13 Nov 2026). V4.8 (N141): the sofa bed's chenille made at build; photos 7.7 to 7.5 MB. V4.7 (N176):
+leaner code. V4.6 (N169): the plot's edge soft, the sky hazy. V4.5 (N168): a double-click centres on that spot. V4.4 (N165,
+N164): a steadier speed check. Earlier: `docs/HISTORY.md`.
+The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.8 ↻"): on the
 home-screen app, tap it to get the newest.
 
-**Work from:** `docs/REAL_PLAN.md` section 21 (12 Nov: Home Plan V4, the house on its own, its real surroundings, the views; open: N160, N161 on the client's screenshots,
-N163–N165, N168, N169). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier task's state.
+**Work from:** `docs/REAL_PLAN.md` section 22 (13 Nov: the next round after V4.5, N170–N178 in streams A–F: the small rooms' views, finishes,
+outside, fewer pills, leaner code, a hitch check; N178 done: `docs/HANDOVER.md` brought to now). Section 21's open rows carry on (N160, N161 on the client's screenshots; N163 on her
+card). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier task's state.
 
 ## Where it lives
 - **The site:** https://emmachilds98-wq.github.io/Demma-Home/, built and published by `.github/workflows/build.yml` on every push to
@@ -23,7 +23,7 @@ N163–N165, N168, N169). A new team starts with `docs/HANDOVER.md`. Section 9 h
 ```bash
 npm ci && python3 -m pip install -r media-wall/requirements.txt   # three.js and esbuild; Playwright 1.63.0 for the browser checks
 python3 tools/build.py            # everything into _site/ (about 3 min; --fast keeps the renders and PDFs)
-python3 tools/checks.py           # every check, one verdict (--quick: no browser). Paste its lines in the PR.
+python3 tools/checks.py           # every check, one verdict (--quick: no browser; lean: nothing unused). Paste its lines in the PR.
 python3 tools/round.py "words"    # a client round: version up, pull their numbers, build, check, HISTORY
 python3 tools/pull_edits.py --link URL   # the client's numbers and ticks from a Send link
 python3 house/privacy_check.py    # before every commit
@@ -38,7 +38,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 | `house/` | `survey_data.py` (sizes, sourced) → `model.py` (geometry, `MATS`) → `export_house.py` (the house file); `measure.py` (guesses: Measure's rows); `textures/` (made here or CC0); `HOUSE.md`, `EVIDENCE.md`, `SURVEY.md` |
 | `media-wall/inputs/` | The client's photos and plans (EXIF stripped) |
 | `tools/` | `build.py`, `checks.py`, `check_site.py`, `gallery.py` (every room's shot), `compare.py` and `camfit.py` (photos beside the 3D), `pull_edits.py`, `round.py` |
-| `docs/` | `HANDOVER.md` (start here), `REAL_PLAN.md` (the plan; section 20 now), this file, `NOTES.md`, `DECISIONS.md`, `HISTORY.md` |
+| `docs/` | `HANDOVER.md` (start here), `REAL_PLAN.md` (the plan; section 22 now), this file, `NOTES.md`, `DECISIONS.md`, `HISTORY.md` |
 | `_site/` (built, never committed) | `index.html`, `sheets.<hash>.json`, `sw.js`, `version.txt`, `three.<hash>.js`, `tex/` (a photo a file), `data/`, the PDFs |
 
 ## The site now
@@ -56,7 +56,8 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 - Walking: WASD, the arrows, the wheel, a double-tap walks you to a spot, Mouse look (M). You pass over low furniture, not wardrobes,
   and doors open as you reach them.
 - The house from outside, on its own (Gardens and Next door bring the rest, V4.1): a PC's left-drag swings the view round the
-  spot grabbed, the way you drag (V4.1), and a right-drag pans; a phone drags, pinches and twists. A floor on its own is cut a
+  spot grabbed, the way you drag (V4.1), and a right-drag pans; a double-click on its outside centres there, one on a room's floor
+  stands you in it (V4.5); a phone drags, pinches and twists. A floor on its own is cut a
   metre under the eye.
 - Glides ease the same at any frame rate; the wheel eases each notch.
 
@@ -68,7 +69,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 - The artex finer and softer (V3.76). Floors and tiles made here: laminate planks, marble, metro, herringbone, LVT, porcelain.
 - Doors' painted grain, gloss brush strokes, uPVC's peel. Frosted glass glows by day. Mirrors reflect the room in HD standing still.
 - Room views sit on the page's cream, not black.
-- Outside: a real sky with soft cloud (V3.92), a patchwork lawn, the back garden as its photos, a stand-in street out front
+- Outside: a real sky with soft cloud (V3.92) that fades into the haze at the horizon, so the ground has no hard edge (V4.6), a patchwork lawn, the back garden as its photos, a stand-in street out front
   (not the real one).
 
 **Change the house** (`23_finish.js`, `docs/NOTES.md` section 5 for Look's rows):
