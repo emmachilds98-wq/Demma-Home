@@ -180,12 +180,24 @@ function mapGlide() {   // the flick slowing to a stop, frame-rate free
   if (MVEL.lengthSq() < 0.01 || MAPPT.size || tween) { MVEL.set(0, 0, 0); return false; }
   mapShift(MVEL.clone().multiplyScalar(dt)); MVEL.multiplyScalar(Math.exp(-5 * dt)); return true;
 }
-/* a double-tap (a double-click) on the ground over the house, with no room there to stand in: the view glides to centre on it */
-function mapCentre(e) {
+/* a double-tap (a double-click) over the house where there's no room to stand in: the view glides to centre on it. V4.5 (N168, N159's rest):
+   on a PC it centres on the spot clicked itself (the roof, a wall, the garden, not the ground's level behind it), and a double-click that
+   lands on the house's outside centres there rather than dropping you through the roof; one on a room's floor or inside stands you there as
+   before. The angle and the distance are kept (the view slides, its limits hold); a phone's double-tap stands you in the same places */
+const mouseEv = e => !e.pointerType || e.pointerType === "mouse";
+function mapOut(e) {   // a PC's double-click over the house that lands on its outside (or nothing): [the spot] to centre on, else null
+  if (!mapMode() || tween || !mouseEv(e)) return null;
+  const p = mapPick(e.clientX, e.clientY); if (!p) return null;
+  const q = p.clone().addScaledVector(p.clone().sub(camera.position).normalize(), -0.05);   // this side of what was hit
+  return standRoomAt(-q.x / M, q.y / M - 1, q.z / M) ? null : p;
+}
+function mapCentre(e, at) {
   if (!mapMode() || tween) return false;
-  ray.setFromCamera(ndc(e), camera); const t = controls.target, p = new THREE.Vector3();
-  if (!ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), 0), p) || p.distanceTo(t) > 60) return false;
-  const d = p.sub(t).setY(0), cm = v => [-v.x / M, v.y / M, v.z / M];
+  const t = controls.target, p = at || mapPick(e.clientX, e.clientY);   // a phone's too: what's under the finger (it took the ground's level behind a roof, 10 m off)
+  if (!p || p.distanceTo(t) > 60) return false;
+  const b = mapBox(); if (b) { p.x = Math.min(b[1], Math.max(b[0], p.x)); p.z = Math.min(b[3], Math.max(b[2], p.z)); }
+  p.y = Math.min(6, Math.max(-3, p.y));   // mapHold's limits: nothing jumps when the glide ends
+  const d = p.sub(t), cm = v => [-v.x / M, v.y / M, v.z / M];
   flyTo(cm(camera.position.clone().add(d)), cm(t.clone().add(d)), baseFov, true, false, 450); return true;
 }
 /* the orbit's own update, each frame: the drags and limits for where you are, the held keys, the glide, and the view kept round the house */
@@ -200,8 +212,8 @@ function mapCentre(e) {
     const cut = floorCut();   // V3.68: a floor cut under the eye as it comes down (09)
     return (m && !tween && mapHold()) || ch || keyed || glid || cut;
   }; }
-{ const T = { angle: "From an angle: drag to swing round (a finger moves), right-drag to move, two fingers turn and tilt, scroll or pinch to zoom",
-              top: "From straight above: drag to move, right-drag or two fingers to turn, scroll or pinch to zoom" };
+{ const T = { angle: "From an angle: drag to swing round (a finger moves), right-drag to move, double-click to centre, scroll or pinch to zoom",
+              top: "From straight above: drag to move, right-drag or two fingers to turn, double-click to centre, scroll or pinch to zoom" };
   qsa("[data-hfview]").forEach(b => { if (T[b.dataset.hfview]) b.title = T[b.dataset.hfview]; }); }
 /* V3.26, the client 9 Nov 2026: "i want pc to be better ... it is still clunky i want fluid like the mobile version". A phone's pinch
    zooms smoothly; a mouse wheel jumped a notch at a time (the orbit 3 %, the map 16 %, a walk 11 cm, all in one frame). Now each notch is
