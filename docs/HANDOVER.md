@@ -48,7 +48,7 @@ python3 house/privacy_check.py  # before every commit
 **Sandbox:** jsDelivr is blocked: for the browser checks set `THREE_LOCAL` to an unpacked `three@0.160.0` (`npm pack three@0.160.0`),
 and use `playwright==1.63.0` with `/opt/pw-browsers`. More in `docs/NOTES.md` section 1.
 Nothing built is committed. `.github/workflows/build.yml` on every push to `main` and every PR: build, quick checks, three browser jobs
-(site, page, taps; skipped when only docs changed), then on `main` the Pages deploy. A `v*` tag puts that version's PDFs on a Release.
+(site, hitch, page, taps; skipped when only docs changed), then on `main` the Pages deploy. A `v*` tag puts that version's PDFs on a Release.
 CI takes about 20 minutes.
 
 ## How the work runs (the thread rules)
