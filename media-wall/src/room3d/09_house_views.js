@@ -62,6 +62,8 @@ function syncRmode() {
   rm.hidden = !(ROOMV() || liv); qsa("[data-rmode]", rm).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.rmode === cur)));
 }
 const HFLOOR = {};     // v55: its floors (lower, ground, first) and the outside (gardens, the alley), for the floor picker
+const OUTLAZY = {};   // N181: what's built the first time it shows (20_go buildHouse: the gardens, next door's things)
+function outNeed(k) { const f = OUTLAZY[k]; if (!f) return; delete OUTLAZY[k]; f(); reshadow(); }
 let hfloor = "all", hidReal = [], hidLay = [], hfview = "angle";   // v74: a floor seen from an angle or from straight above
 const ROOMLIGHTS = [], WINLIGHTS = [];   // v69 (B3): warm ceiling lights round the room you're in (a fixed set: no shader rebuilds); V2.39: and windows'. V3.57: six and three (Fast four and none)
 let roomKey = "";
@@ -215,6 +217,7 @@ const HPARTS = {};     // v68: the house's moving pieces (the master bedroom's o
 function applyFloors() {
   if (!houseG) return;
   const on = S.view === "house", sel = on ? hfloor : "all", ex = sel === "all" && !R.HOUSE3 ? 330 : 0;   // v58: Outside, the house closed (no lifting)
+  if (houseG.visible) { if (!on || S.hgarden) outNeed("out"); if (!on || S.hstreet) outNeed("nextThings"); }   // N181: built the first time they show
   /* V2.10, the client: "when in overhead and angled views, sometimes walls are clipping out when not necessary": the first floor on its
      own kept its roof's group (its gable, the dormer's cheeks and the slopes are in it) with only the roof's coverings and the ceilings off */
   const roofWalls = sel === "first";

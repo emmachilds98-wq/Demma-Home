@@ -818,11 +818,15 @@ function buildHouse() {
     const xs = F.rooms.map(r => [r.x0, r.x1]).flat();
     label([F.title.split(" · ")[0], F.title.split(" · ")[1] || ""], (Math.min(...xs) + Math.max(...xs)) / 2, F.y + WH + 160, F.zn - 120);
   }
-  cur = HFLOOR.out = new THREE.Group(); houseG.add(cur);
+  /* N181, the client 13 Nov 2026: "open in pc and mobile without next door and gardens to lighten load": the gardens round the house (the
+     plants, the low building, the table, the front, the alley) and next door's things are built the first time they show (Gardens or Next
+     door on, or a room's windows: outNeed in 09_house_views), not with the house */
+  HFLOOR.out = new THREE.Group(); houseG.add(HFLOOR.out); HFLOOR.nextThings = new THREE.Group(); houseG.add(HFLOOR.nextThings);
+  OUTLAZY.nextThings = () => buildThings(HFLOOR.nextThings, "next");   // next door's, with Next door
+  OUTLAZY.out = () => { const was = cur; cur = HFLOOR.out;
   buildPlants(cur);                                                               // V1.3: the cordyline in the back garden (with Gardens)
   buildBeyond(cur, null);                                                          // V1.4: the low building past the far fence
   buildThings(cur, "ours");                                                        // V1.6: the table and chairs
-  HFLOOR.nextThings = new THREE.Group(); houseG.add(HFLOOR.nextThings); buildThings(HFLOOR.nextThings, "next");   // and next door's, with Next door
   // the front: the drive in front of the garage, the small lawn left of it (from the street) with its low brick wall, a strip of lawn
   // by the neighbour's fence with a young tree, the pavement and the close (house/HOUSE.md, the agent's photo of the front)
   const G0 = HS.find(F => F.id === "ground"), zf = H3 ? H3.front : G0 ? G0.zs + 20 : 530, gar = G0 && G0.rooms.find(r => r.id === "garage"), hall = G0 && G0.rooms.find(r => r.id === "hall");
@@ -864,6 +868,7 @@ function buildHouse() {
     box(ax1 - 22, ax1 - 16, yTop + 100, yTop + 112, zg + 2.9, zg + 4.5, "#26282a");                                 // the latch
   }
   label(["The alley", "stairs down to the garden"], (ax0 + ax1) / 2, 120, -40);
+  cur = was; };
   finFloorApply();   // V2.7 (FINISHES F4): the floors chosen in the tray, on their rooms
 }
 function buildSun() {

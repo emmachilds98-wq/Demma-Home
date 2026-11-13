@@ -67,6 +67,7 @@ if (R.FIRM) { DEF.sugg = Object.fromEntries(R.FIRM.sugg.map(k => [k, true])); DE
 if (R.STAIR_CURTAIN) { DEF.sugg.stairscurtain = true; DEF.scopen = true; }   // v43: the C-table is in the plan   // v18: the window corner holds the plant stand or the record shelf   // v16: the table by the stairs by default; the laser off
 const KEY = "mw18-3d";
 const S = Object.assign({}, DEF, store.get(KEY, {}));
+S.hgarden = S.hstreet = false;   // N181, the client 13 Nov 2026: "open in pc and mobile without next door and gardens to lighten load": every open starts with both off (a saved on came back)
 if (!S.open147) { S.curtains = false; S.blinds = false; S.open147 = true; }   // V1.47, the client: "pull blinds up and open curtains in all rooms": once, whatever was saved
 if (!S.v45) {   // v45, client: "stipple ceiling as default and cosy lighting": once, a saved room moves to them; your own choices stay after
   S.v45 = 1; S.scene = "cosy"; S.tod = "evening"; S.lv = null; S.decor = Object.assign({}, S.decor, { ceiling: "stipple" });
