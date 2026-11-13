@@ -10,8 +10,8 @@ The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in P
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 22 (13 Nov: the next round after V4.5, N170–N178 in streams A–F: the small rooms' views, finishes,
-outside, fewer pills, leaner code, a hitch check; N178 done: `docs/HANDOVER.md` brought to now). Section 21's open rows carry on (N160, N161 on the client's screenshots; N163 on her
-card). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier task's state.
+outside, fewer pills, leaner code, a hitch check; N178 done: `docs/HANDOVER.md` brought to now). Section 21's open rows carry on (N160, N161 on the client's screenshots; N163 on hold:
+the outside by day, as the client asked). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier task's state.
 
 ## Where it lives
 - **The site:** https://emmachilds98-wq.github.io/Demma-Home/, built and published by `.github/workflows/build.yml` on every push to
@@ -137,8 +137,7 @@ Quality is under View → More (HD or Fast). `?perf` shows the speed in a box ab
 
 ## Open with the client
 1. Your road and surroundings (N160, N161): a satellite screenshot of the house, the close and the junction; Street View from the
-   front door (left, ahead, right, up the hill); about how much higher the main road is; names covered. Outside by evening (N163):
-   keep it by day, or follow the time (evening by default: the house would open at dusk)?
+   front door (left, ahead, right, up the hill); about how much higher the main road is; names covered.
 2. The speed from the iPhone 15 Pro and the RTX 5070: open the house, move a moment, then Measure → Send.
 3. KTX2 (N31, #133; section 20's N141): confirm before the workflow builds the encoder. Dark panels on a dark device, or cream.
 4. The living room door's real width (drawn 67, a guess): the sofa bed's largest box is 166 × 101 × 68 and needs 70 clear (N152).
