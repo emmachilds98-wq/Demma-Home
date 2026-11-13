@@ -9,7 +9,7 @@ The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in P
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 22 (13 Nov: the next round after V4.5, N170–N178 in streams A–F: the small rooms' views, finishes,
-outside, fewer pills, leaner code, a hitch check). Section 21's open rows carry on (N160, N161 on the client's screenshots; N163 on her
+outside, fewer pills, leaner code, a hitch check; N178 done: `docs/HANDOVER.md` brought to now). Section 21's open rows carry on (N160, N161 on the client's screenshots; N163 on her
 card; N169 in #274). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier task's state.
 
 ## Where it lives
