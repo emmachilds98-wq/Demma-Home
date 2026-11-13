@@ -46,6 +46,9 @@ PX.update(carpet=512, carpet_grey=512, check=512, lycksele=512, duvet=512)
 # more (the road, never closer than the drive: 5.9 mm a pixel; the lawn's and the brick's relief, which a standing eye reads at 2-4 m;
 # the living room's curtain and sofa weave relief, a hair at a metre): key_kind: px
 PX.update(road_map=512, road_nor=512, lawn_nor=512, brick_nor=512, lr_hessian_nor=512, lr_cord_nor=512)
+# V4.4 (N141): the same for the soft things a view comes a metre from (0.65 mm a pixel there): bedroom 2's leather relief (0.5 m a copy) and
+# the curtains' linen (0.4 m), 1024 to 768
+PX.update(leather_nor=768, curtain_map=768, curtain_nor=768)
 # V1.1: the living room's own surfaces, the photo as it is (room3d.js matches each to its drawn texture's average colour as it loads,
 # so the parts keep their colours and only the grain, weave and relief are real): key: (asset, real size m, map px, normal px, turn,
 # relief). The oak is turned a quarter so its grain runs along the boards, as the drawn oak's does; 0 px leaves that picture out. Veneer
@@ -522,6 +525,42 @@ def flakes():
     print("flakes", key)
 
 
+def js_rnd(seed, n):
+    """02_textures.js rnd(seed): the same Park-Miller numbers, so a map made here is the one the page drew"""
+    import numpy as np
+    out = np.empty(n, np.float64)
+    for i in range(n):
+        seed = seed * 16807 % 2147483647; out[i] = (seed - 1) / 2147483646
+    return out
+
+
+def fabrics():
+    """python3 house/textures/build_textures.py --fabrics   V4.4 (N141): the sofa bed's chenille (V3.75), made here, not drawn by the page at
+    every load (two 512 squares a pixel at a time, on the page's thread): chenille_map, near white, heathered (its plies in 4 px loops, a
+    faint twill, a soft mottle), tinted by the piece's colour; chenille_pile_map, the loops' height for its relief (a bump: grey, not
+    sRGB). 20 cm a tile, as drawn; the numbers are 02_textures.js's own (rnd 73 and 74), pixel for pixel"""
+    import numpy as np
+    meta = json.loads((HERE / "textures.json").read_text())
+    px, T = 512, 2 * np.pi / 512
+    y, x = np.mgrid[0:px, 0:px]
+    cy = y >> 2
+    cells = lambda s: js_rnd(s, 128 * 128).astype(np.float32).astype(np.float64)   # its Float32Array
+    c = cells(73)[cy * 128 + (((x + (cy & 1) * 2) >> 2) & 127)]
+    ply = np.where(c < 0.22, -30, np.where(c > 0.84, 22, (c - 0.5) * 14))
+    k = 228 + ply + 4 * np.sin((x + y) * np.pi / 4) + 4 * np.sin(3 * x * T + 1) * np.sin(2 * y * T) + 3 * np.sin((5 * x + 7 * y) * T)
+    k = np.clip(k, 0, 255)
+    rgb = np.rint(np.dstack([k, np.minimum(255, k + 2), k - 3])).clip(0, 255).astype("uint8")
+    sx = x + (cy & 1) * 2; fx, fy = (sx & 3) - 1.5, (y & 3) - 1.5
+    dome = np.maximum(0, 1 - (fx * fx + fy * fy) / 5)
+    h = 128 + (dome * (0.55 + cells(74)[cy * 128 + ((sx >> 2) & 127)] * 0.9) - 0.55) * 90 + 10 * np.sin((x + y) * np.pi / 4)
+    Image.fromarray(rgb).save(HERE / "chenille_map.jpg", quality=86, optimize=True)
+    Image.fromarray(np.rint(h).clip(0, 255).astype("uint8")).save(HERE / "chenille_pile_map.jpg", quality=90, optimize=True)
+    for key in ("chenille", "chenille_pile"):
+        meta[key] = {"asset": "made by build_textures.fabrics", "size": 0.2, "url": "", "licence": "ours"}
+    (HERE / "textures.json").write_text(json.dumps(meta, indent=1) + "\n")
+    print("fabrics", "chenille", "chenille_pile")
+
+
 def share(meta):
     """V2.81 (N32): a picture an earlier key has already (the two carpets' pile, the pines' relief) goes once: the later key drops its copy
     and says like=<key> (export3d reads that key's file for any it lacks; only when it lacks nothing else that key has); then textures.json"""
@@ -550,4 +589,4 @@ def slim():
 
 
 if __name__ == "__main__":
-    {"--buff": buff, "--rough": rough, "--tiles": tiles, "--finishes": finishes, "--floors": floors, "--slim": slim, "--seams": seams, "--polish": polish, "--contrast": contrast, "--flakes": flakes}.get((sys.argv[1:] or [""])[0], lambda: main(sys.argv[1]))()
+    {"--buff": buff, "--rough": rough, "--tiles": tiles, "--finishes": finishes, "--floors": floors, "--slim": slim, "--seams": seams, "--polish": polish, "--contrast": contrast, "--flakes": flakes, "--fabrics": fabrics}.get((sys.argv[1:] or [""])[0], lambda: main(sys.argv[1]))()
