@@ -87,7 +87,6 @@ function dash() {
   const tk = (window.PIECEP ? PIECEP.tasks : [sd.length, st.length]).slice();   // v46: tasks, not steps
   const U = window.DemmaUps && DemmaUps(); if (U) { tk[0] += U.T.d; tk[1] += U.T.n; }   // N119: and every room's changes
   $("#d-steps").textContent = tk[0] + "/" + tk[1]; ring("d-steps-bar", tk[0], tk[1]);
-  $$("#segbar i").forEach(i => i.classList.toggle("on", !!document.querySelector("#step-" + i.dataset.s + ".done")));
   const nx = $("#d-next"), nb = $("#d-nextdone");
   if (next) { nx.textContent = $("h3", next).textContent; $("#d-nextn").textContent = next.dataset.s; $("#d-nextmeta").textContent = $(".smeta", next).textContent; nb.hidden = false; nb.dataset.s = next.dataset.s; $("#d-nextgo").dataset.step = next.dataset.s; }
   else { nx.textContent = "Every step done"; $("#d-nextn").textContent = "✓"; $("#d-nextmeta").textContent = "The build is finished: enjoy the room."; nb.hidden = true; }
