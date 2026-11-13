@@ -3,10 +3,10 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.11 (13 Nov 2026). V4.11 (N170): the small rooms' In it views without bowed walls; the hall looks down the hall. V4.10 (N174, N175): fewer view pills (As it is and Hide labels behind ⋯; Gardens, Next door on Outside only); the walk stick faint until touched. V4.9 (N177): a hitch check for a PC's walk. V4.8 (N141): the sofa bed's chenille made at build; photos 7.7 to 7.5 MB. V4.7 (N176):
+**Version:** V4.12 (13 Nov 2026). V4.12 (N172, walls): the painted walls a faint tone across them and a soft sheen, still smooth. V4.11 (N170): the small rooms' In it views without bowed walls; the hall looks down the hall. V4.10 (N174, N175): fewer view pills (As it is and Hide labels behind ⋯; Gardens, Next door on Outside only); the walk stick faint until touched. V4.9 (N177): a hitch check for a PC's walk. V4.8 (N141): the sofa bed's chenille made at build; photos 7.7 to 7.5 MB. V4.7 (N176):
 leaner code. V4.6 (N169): the plot's edge soft, the sky hazy. V4.5 (N168): a double-click centres on that spot. V4.4 (N165,
 N164): a steadier speed check. Earlier: `docs/HISTORY.md`.
-The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.11 ↻"): on the
+The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.12 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 22 (13 Nov: the next round after V4.5, N170–N178 in streams A–F: the small rooms' views, finishes,
@@ -66,6 +66,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to an unpacked `three@0
 - HD on a real graphics card and the iPhones: soft shadows, GTAO, glow and windows' daylight. Fast keeps the rest.
 - Shade bands where walls meet floors, ceilings and corners on every path, and shade round each piece's foot.
 - The ceiling bulbs lit and warm, with a faint glow on the ceiling round each pendant, seen from in a room (V3.76).
+- The walls' emulsion smooth but not flat: a faint tone across a wall and a soft sheen in the roller's laps, worked out in the walls' shader (V4.12).
 - The artex finer and softer (V3.76). Floors and tiles made here: laminate planks, marble, metro, herringbone, LVT, porcelain.
 - Doors' painted grain, gloss brush strokes, uPVC's peel. Frosted glass glows by day. Mirrors reflect the room in HD standing still.
 - Room views sit on the page's cream, not black.
