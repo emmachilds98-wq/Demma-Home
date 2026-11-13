@@ -1422,6 +1422,37 @@ SOURCES["amelia"] = ("Amazon UK (Nov 2026, B0HDC8WYBT): Lovesofas Amelia L-shape
                      "(the text says three, the photos show five pads that flip up on a hinge: drawn five), the 95 to the headrests lying down (the "
                      "drawing's arrow), black metal feet, a solid wood frame, 172 kg, four boxes (the largest 166 × 101 × 68). About £700–950, to check on the day")
 ORDER.append("amelia")
+# V4 (N152): will the sofa bed go in? Its biggest box (166 × 101 × 68, SOURCES "amelia") carried on its side, the 166 first: it needs
+# its 68 and 2 to spare (hands) across each opening on the way, the front door, the hall past the stair box and the living room door, in
+# line (no turn). A door left on its hinges, open flat, takes about its leaf's thickness (E: 4) more. The doors' widths are Measure's
+# rows (house/measure.py "front_door", "living_door"), so the line follows them when the client measures.
+SOFABED_BOX, SOFABED_SPARE, SOFABED_LEAF = (166.0, 101.0, 68.0), 2.0, 4.0
+
+
+def sofabed_way_in():
+    """[(where, width, measured?, verdict)], verdict "yes", "door off" (fits with the door off its hinges) or "no" """
+    import sys, pathlib
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "house"))
+    import measure, model
+    rows = {r["id"]: r for r in measure.rows()}
+    need = min(SOFABED_BOX) + SOFABED_SPARE
+    hall = next(r for r in model.rooms("ground") if r["id"] == "hall")["x0"]
+    way = [("front door", rows["front_door"]["drawn"], True), ("hall", round(model.stair_box_x() - hall, 1), False),
+           ("living room door", rows["living_door"]["drawn"], True)]
+    return [(n, w, d, "yes" if w >= need + (SOFABED_LEAF if d else 0) else "door off" if w >= need else "no") for n, w, d in way]
+
+
+def sofabed_fit_line():
+    """The option's one line: each opening's width and whether the box goes; what to do when one's short"""
+    way, need = sofabed_way_in(), min(SOFABED_BOX) + SOFABED_SPARE
+    say = lambda w, v: "goes" if v == "yes" else "goes with the door off" if v == "door off" else f"{n0(need - w)} short"
+    line = (f"Its biggest box ({' × '.join(n0(x) for x in SOFABED_BOX)}) needs {n0(need)} on its side: "
+            + "; ".join(f"{n} {n0(w)}, {say(w, v)}" for n, w, _d, v in way))
+    return line + (": unbox it in the hall, or measure the door" if any(v == "no" for *_x, v in way) else "")
+
+
+def n0(x):
+    return str(int(round(x)))
 _zones_v42 = zones
 
 

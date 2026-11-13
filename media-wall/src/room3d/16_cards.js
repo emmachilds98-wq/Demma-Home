@@ -266,7 +266,8 @@ function actItems(id) {     // [title, how it is now, buttons]
        the headrests, the stools), the five headrests a row of their own, each flipping up on its hinge; then the chaise, the show, moving
        it, taking it out, yours back and the listing itself */
     const heads = `<div class="r3d-fin"><span class="r3d-finlab">Headrests: tap one to flip it up or down</span><div class="r3d-finsc" role="group" aria-label="Headrests">${
-      ["Arm seat", "Middle", "Corner", "Corner side", "Side end"].map((nm, i) => `<button type="button" data-hr="${i}" aria-pressed="${!!(S.hr && S.hr[i])}">${nm}</button>`).join("")}</div></div>`;
+      ["Arm seat", "Middle", "Corner", "Corner side", "Side end"].map((nm, i) => `<button type="button" data-hr="${i}" aria-pressed="${!!(S.hr && S.hr[i])}">${nm}</button>`).join("")}</div>${
+      R.SOFABED_IN ? `<span class="r3d-finlab">Will it go in? ${R.SOFABED_IN}</span>` : ""}</div>`;   // V4 (N152): its boxes through the doors (Measure's widths)
     if (ch) return ["Its storage chaise", S.lid ? "Open: the bed's bedding folded inside" : `${B.chaise.w} × ${B.chaise.d}, ${B.chaise.h} high · the lid lifts on gas struts`, [
       btn(S.lid ? "Shut the chaise" : "Open the chaise", { lid: S.lid ? "on" : "off" }), btn("Move the chaise", { actedit: "chaise2" }), btn("Take the chaise out", { takeout: id }),
       btn("The sofa bed", { actopen: "mov:sofa2" })]];

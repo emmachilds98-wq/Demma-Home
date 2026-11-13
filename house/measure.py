@@ -51,6 +51,7 @@ ROWS = [
     ("bed2_long", "bed2", "Bathroom wall to the wall behind the wardrobes", "along the carpet, the longest way", lambda: 388.0, None),   # V1.20: the wall 25 into the master
     ("stairs_tread", "living", "One stair tread's depth", "nose to nose", lambda: __import__("model").Gm.STAIR_GOING, None),
     ("stairs_width", "living", "The stairs' width in the living room", "wall to the banister, not counting it", lambda: (lambda g: g.STAIR_X[1] - g.STAIR_X[0])(__import__("model").Gm), None),   # V2.24: the first floor's stairwell measured 85; V2.93: the flight drawn 85 too
+    ("front_door", "hall", "The front door's width", "inside the frame", lambda: (lambda x: round(x[1] - x[0], 1))(next(o for o in D.OPENINGS if o["id"] == "front_door")["x"]), ("length", ("OPENINGS", next(i for i, o in enumerate(D.OPENINGS) if o["id"] == "front_door"), "x"))),   # V4 (N152): the sofa bed's way in
     ("living_door", "living", "The living room door's width", "inside the frame", lambda: (lambda g: g.DOOR_X[1] - g.DOOR_X[0])(__import__("model").Gm), None),   # V2.93: fitted between the breast and the wider stairs
     ("meters", "hall", "The meter cupboard's width", "inside", lambda: 38.0, None),
     ("bins", "porch", "The bin cupboard's width", "inside", lambda: 39.0, None),
