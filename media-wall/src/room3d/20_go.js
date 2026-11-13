@@ -82,6 +82,7 @@ function finPatch(m, k) {   // the walls' and ceilings' materials read the palet
       }
       finD *= shd; } }
   vec4 diffuseColor = vec4( finD, opacity );`);
+    if (FIN.kind[k] === 0) paintGrain(sh);   // N172: the emulsion's tone and sheen
   };
   return m;
 }
@@ -615,7 +616,7 @@ function buildHouse() {
     // V2.0: the stair wall up to the landing in the living room's own stair-wall paint (a copy, so Look's colour follows it up the stairs)
     const stairMat = () => { const m = paintMat(lum("#2d5a46") / BASE_L, false, false, "w:stairs").clone(); paintMats.set("house:stairs", reg(m));
       const rk = (H3.depth_rank || {}).stairpaint ?? 2; m.polygonOffset = true; m.polygonOffsetFactor = 0; m.polygonOffsetUnits = -2 * rk;
-      m.clippingPlanes = []; m.userData.hk = "stairpaint"; return m; };   // V2.8, the client: "first floor landing west wall should match the living room west wall and act as one wall": never the landing's palette
+      m.clippingPlanes = []; m.userData.hk = "stairpaint"; m.onBeforeCompile = paintGrain; m.customProgramCacheKey = () => "paintwall"; return m; };   // N172: its emulsion as the walls   // V2.8, the client: "first floor landing west wall should match the living room west wall and act as one wall": never the landing's palette
     const m3 = {}, mat3 = k => m3[k] || (m3[k] = k === "contact" ? contactMat() : k === "stairpaint" ? stairMat() : (() => { const [c, r] = H3.mats[k] || ["#cccccc", 0.9], gl3 = k === "glass" || k === "glass_frost", T = houseTex(k);
       const m = reg(new THREE.MeshStandardMaterial({ color: T && !T.tint && !BED_TINT.has(k) ? "#ffffff" : c, map: T ? T.map : null, bumpMap: T && T.bump ? T.map : null, bumpScale: T ? T.bump : 1, normalMap: T && T.normal || null, roughness: T && T.rough ? Math.min(1, r / T.roughMean) : r, roughnessMap: T && T.rough || null, metalness: k === "brass" || k === "chrome" || k === "steel" ? 0.8 : k === "mirror" ? 0.25 : 0, transparent: gl3, opacity: gl3 ? (k === "glass" ? 0.14 : 0.86) : 1,   /* V1.13: clear (0.3 tinted the outside blue-green); V2.40: frosted, the light through */ depthWrite: !gl3, side: HOUSE_SIDE,
         emissive: { led: "#ffffff", pc_glow: "#cfe0ff", screen: "#1b2433", lamp_purple: "#8a45ff", bulb: "#ffc98a" }[k] || "#000000", emissiveIntensity: { led: 1.5, pc_glow: 0.9, screen: 0.12, lamp_purple: 2.2, bulb: 4 }[k] || 0 }));   // V3.76 (N116): a ceiling bulb lit, warm   // V2.48: the office's purple lamp   // v60: the kitchen's LED battens glow; v61: the PC's glass, the screens
@@ -818,11 +819,15 @@ function buildHouse() {
     const xs = F.rooms.map(r => [r.x0, r.x1]).flat();
     label([F.title.split(" · ")[0], F.title.split(" · ")[1] || ""], (Math.min(...xs) + Math.max(...xs)) / 2, F.y + WH + 160, F.zn - 120);
   }
-  cur = HFLOOR.out = new THREE.Group(); houseG.add(cur);
+  /* N181, the client 13 Nov 2026: "open in pc and mobile without next door and gardens to lighten load": the gardens round the house (the
+     plants, the low building, the table, the front, the alley) and next door's things are built the first time they show (Gardens or Next
+     door on, or a room's windows: outNeed in 09_house_views), not with the house */
+  HFLOOR.out = new THREE.Group(); houseG.add(HFLOOR.out); HFLOOR.nextThings = new THREE.Group(); houseG.add(HFLOOR.nextThings);
+  OUTLAZY.nextThings = () => buildThings(HFLOOR.nextThings, "next");   // next door's, with Next door
+  OUTLAZY.out = () => { const was = cur; cur = HFLOOR.out;
   buildPlants(cur);                                                               // V1.3: the cordyline in the back garden (with Gardens)
   buildBeyond(cur, null);                                                          // V1.4: the low building past the far fence
   buildThings(cur, "ours");                                                        // V1.6: the table and chairs
-  HFLOOR.nextThings = new THREE.Group(); houseG.add(HFLOOR.nextThings); buildThings(HFLOOR.nextThings, "next");   // and next door's, with Next door
   // the front: the drive in front of the garage, the small lawn left of it (from the street) with its low brick wall, a strip of lawn
   // by the neighbour's fence with a young tree, the pavement and the close (house/HOUSE.md, the agent's photo of the front)
   const G0 = HS.find(F => F.id === "ground"), zf = H3 ? H3.front : G0 ? G0.zs + 20 : 530, gar = G0 && G0.rooms.find(r => r.id === "garage"), hall = G0 && G0.rooms.find(r => r.id === "hall");
@@ -864,6 +869,7 @@ function buildHouse() {
     box(ax1 - 22, ax1 - 16, yTop + 100, yTop + 112, zg + 2.9, zg + 4.5, "#26282a");                                 // the latch
   }
   label(["The alley", "stairs down to the garden"], (ax0 + ax1) / 2, 120, -40);
+  cur = was; };
   finFloorApply();   // V2.7 (FINISHES F4): the floors chosen in the tray, on their rooms
 }
 function buildSun() {

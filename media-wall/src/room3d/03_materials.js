@@ -37,6 +37,22 @@ function paintColour(ratio, ch = "wall") {
   const c = new THREE.Color(chHex(ch)); const o = {}; c.getHSL(o);
   return new THREE.Color().setHSL(o.h, o.s, Math.min(0.94, o.l * Math.pow(ratio, 0.6)));
 }
+/* N172: the walls' emulsion, smooth but not computer-flat: a faint tone that drifts across a wall (about ±4%, a metre or so a patch) and
+   its soft sheen, a little glossier in the roller's vertical laps (roughness about 0.76 to 0.95 of the paint's own). No relief, no picture:
+   worked out from where the pixel is in the world, so it runs on across the living room's walls and the house's alike */
+const PAINT_GRAIN = `varying vec3 vPgP;
+float pgH(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+float pgN(vec3 x) { vec3 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(pgH(i), pgH(i + vec3(1, 0, 0)), f.x), mix(pgH(i + vec3(0, 1, 0)), pgH(i + vec3(1, 1, 0)), f.x), f.y),
+             mix(mix(pgH(i + vec3(0, 0, 1)), pgH(i + vec3(1, 0, 1)), f.x), mix(pgH(i + vec3(0, 1, 1)), pgH(i + vec3(1, 1, 1)), f.x), f.y), f.z); }
+`;
+function paintGrain(sh) {
+  sh.vertexShader = "varying vec3 vPgP;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n vPgP = (modelMatrix * vec4(transformed, 1.0)).xyz;");
+  sh.fragmentShader = PAINT_GRAIN + sh.fragmentShader.replace("#include <color_fragment>", `#include <color_fragment>
+  float pgT = 0.6 * pgN(vPgP * 0.9 + 3.1) + 0.4 * pgN(vPgP * 2.6 + 7.3);
+  diffuseColor.rgb *= 1.0 + 0.09 * (pgT - 0.5);`).replace("#include <roughnessmap_fragment>", `#include <roughnessmap_fragment>
+  roughnessFactor *= mix(0.76, 0.95, pgN(vec3(vPgP.x * 4.3, vPgP.y * 0.6, vPgP.z * 4.3) + 1.7));`);
+}
 function paintMat(ratio, eggshell, both, ch = "wall") {
   const k = ratio.toFixed(2) + (eggshell ? "e" : "") + (both ? "d" : "") + ch;
   // V2.2, the client: "ensure walls are all smooth but ceilings have the popcorn artex type ceiling": the walls flat emulsion, the ceilings artex
@@ -44,6 +60,8 @@ function paintMat(ratio, eggshell, both, ch = "wall") {
   const relief = eggshell ? (PHOTOS ? { normalMap: SATIN_NRM, normalScale: new THREE.Vector2(0.6, 0.6) } : {}) : ch !== "ceil" ? {} : PHOTOS ? { normalMap: ARTEX_NRM, normalScale: new THREE.Vector2(0.8, 0.8) } : { bumpMap: WALL_BUMP, bumpScale: 0.6 };
   if (!paintMats.has(k)) paintMats.set(k, reg(new THREE.MeshStandardMaterial({ color: paintColour(ratio, ch), roughness: eggshell ? 0.45 : 0.92,
     ...relief, side: both ? THREE.DoubleSide : THREE.FrontSide, userData: { ratio, ch } })));   // (buildGroup's panels: twoFaced, not both)
+  const m = paintMats.get(k);
+  if (!eggshell && ch !== "ceil" && !m.userData.pg) { m.userData.pg = true; m.customProgramCacheKey = () => "paintwall"; m.onBeforeCompile = paintGrain; }   // N172
   return paintMats.get(k);
 }
 function repaint() { paintMats.forEach(m => m.color.copy(paintColour(m.userData.ratio, m.userData.ch))); reshadow(); }
