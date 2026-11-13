@@ -33,6 +33,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Testing a link's `#share=` (N118):** going from the page to the same address with only a new `#...` doesn't reload it (Playwright's
   `goto` too), so nothing reads the link: go to `about:blank` first. Serving `_site` with `python3 -m http.server` for several browser
   contexts stalled on the photos; abort `tex/`, `photos.` and the fonts in a test that needs no picture, and wait for `domcontentloaded`.
+- **Matching the fog (N169):** three mixes fog after the colour conversion, with `fogColor` in the screen's space when drawing to it and linear into a render target (`refreshFogUniforms`). A custom shader that must match the fog (the sky's haze, `11_lights.js` `skyHaze`) mixes at the same point and sets its colour the same way in `onBeforeRender`; a plain copy of `fog.color` comes out too blue on Fast.
 - **Ticks (N118):** every tick store saves through `localStorage.setItem`; `measure.js` wraps it for the five keys in `TICKS` and times
   each changed key (`demma-ticks-at`). A new store of ticks only needs adding to `TICKS` (and `pull_edits.TICKS`, `tick_val`).
 - **Git:** force-push is refused. After a merged PR, restart the branch from `origin/main` (a fast-forward push works).
