@@ -37,7 +37,7 @@ def _tinted(f, want):
     im = Image.open(f).convert("RGB")
     want = ImageColor.getrgb(want) if isinstance(want, str) else want
     out = Image.merge("RGB", [b.point(lambda v, k=w / h: min(255, round(v * k))) for b, w, h in zip(im.split(), want, ImageStat.Stat(im).mean)])
-    buf = io.BytesIO(); out.save(buf, "JPEG", quality=85, optimize=True)   # about its source's (build_textures: 76-86)
+    buf = io.BytesIO(); out.save(buf, "JPEG", quality=78, optimize=True)   # V4.4 (N141): its source's own (76-78): 85 over a 76 made the oak 680 KB for nothing (was 85)
     return "data:image/jpeg;base64," + base64.b64encode(buf.getvalue()).decode()
 
 

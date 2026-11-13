@@ -174,26 +174,6 @@ HESSIAN.repeat.set(3, 9);
    about a millimetre and a half across, on a slight twill), no ribs: its rows read as corduroy. Each 4 px cell (1.6 mm at 20 cm a tile) is a
    loop: mostly mid, some light and some dark plies; the twill a faint diagonal; a soft mottle over it. The relief: each loop a soft dome
    of its own height, offset row to row as the weave is, the twill's ridge under it */
-function chenCells(seed) { const r = rnd(seed), n = 128, c = new Float32Array(n * n); for (let i = 0; i < c.length; i++) c[i] = r(); return c; }
-const CHENILLE = canvasTex(512, 512, (g, w, h) => {
-  const c = chenCells(73), d = g.createImageData(w, h), px = d.data, T = 2 * Math.PI / 512;
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const cy = y >> 2, cx = ((x + (cy & 1) * 2) >> 2) & 127, v = c[cy * 128 + cx];
-    const ply = v < 0.22 ? -30 : v > 0.84 ? 22 : (v - 0.5) * 14, tw = 4 * Math.sin((x + y) * Math.PI / 4), mo = 4 * Math.sin(3 * x * T + 1) * Math.sin(2 * y * T) + 3 * Math.sin((5 * x + 7 * y) * T);
-    const k = Math.max(0, Math.min(255, 228 + ply + tw + mo)), i = (y * w + x) * 4;
-    px[i] = k; px[i + 1] = Math.min(255, k + 2); px[i + 2] = k - 3; px[i + 3] = 255;
-  }
-  g.putImageData(d, 0, 0);
-}, true);
-const CHENILLE_B = canvasTex(512, 512, (g, w, h) => {
-  const c = chenCells(74), d = g.createImageData(w, h), px = d.data;
-  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
-    const cy = y >> 2, sx = x + (cy & 1) * 2, cx = (sx >> 2) & 127, fx = (sx & 3) - 1.5, fy = (y & 3) - 1.5;
-    const dome = Math.max(0, 1 - (fx * fx + fy * fy) / 5), k = 128 + (dome * (0.55 + c[cy * 128 + cx] * 0.9) - 0.55) * 90 + 10 * Math.sin((x + y) * Math.PI / 4), i = (y * w + x) * 4;
-    px[i] = px[i + 1] = px[i + 2] = Math.max(0, Math.min(255, k)); px[i + 3] = 255;
-  }
-  g.putImageData(d, 0, 0);
-}, false);
 /* V1.1, the client: "i want better realism, quality and speed": CC0 photos (house/textures, house/SOURCES.md; inline in the data, as the
    house's) take over the drawn textures above as they arrive. The same texture objects, so no material changes and no new shaders. A
    colour photo is scaled to its drawn texture's average (at build, export3d.TINT), so every part keeps its colour (yours, the plan's) and only the grain, the
@@ -263,9 +243,15 @@ const flatNormal = () => canvasTex(4, 4, (g, w, h) => { g.fillStyle = "#8080ff";
 const OAK_NRM = flatNormal(), CORD_NRM = flatNormal(), ARTEX_NRM = flatNormal();
 CORD_NRM.repeat.set(1.44, 0.6);          // the photo's 100 ribs a copy: 144 across a cushion, as the drawn cord's
 ARTEX_NRM.repeat.set(8, 8);              // V2.2: the living room's ceiling in artex (the house's stipple, 0.5 m a copy on a ~4 m piece)
+const SATIN_NRM = flatNormal(); SATIN_NRM.repeat.set(1.2, 1.2);   // N142 (V4.12): the media wall's painted boards: the satin's fine strokes (the house's gloss, 0.5 m a copy on GRAIN's 0.6 m)
 photoInto(OAK_TEX, "lr_oak", "map"); photoInto(OAK_NRM, "lr_oak", "nor");
 photoInto(HESSIAN, "lr_hessian", "map"); photoInto(CORD_NRM, "lr_cord", "nor"); photoInto(ARTEX_NRM, "artex", "nor");
-photoInto(CARPET, "carpet_grey", "tmap"); photoInto(OATMEAL, "carpet", "tmap");   // the house's Carpet012, in your grey and the oatmeal
+photoInto(SATIN_NRM, "gloss", "nor"); photoInto(CARPET, "carpet_grey", "tmap"); photoInto(OATMEAL, "carpet", "tmap");   // the house's Carpet012, in your grey and the oatmeal
+/* V4.4 (N141): the sofa bed's chenille (V3.74, V3.75) is made at build (build_textures.py --fabrics, pixel for pixel what was drawn here
+   at every load) and comes with the photos on every device; until then its mean colour and a flat relief, the same texture objects */
+const fabricTex = (k, srgb, fill) => { const t = canvasTex(4, 4, g => { g.fillStyle = fill; g.fillRect(0, 0, 4, 4); }, srgb);
+  whenPhoto(k, "map", src => decodeImg(src).then(im => texSet(t, im)), t); return t; };
+const CHENILLE = fabricTex("chenille", true, (PMETA.chenille && PMETA.chenille.avg) || "#e4e5e1"), CHENILLE_B = fabricTex("chenille_pile", false, "#808080");
 // v16: the client's light box is an IKEA OBEGRÄNSAD: a black panel with a 16 x 16 grid of white LEDs that shows blocky black-and-white
 // pictures, "like pharmacy LED ads". Drawn showing a pixel music note; the unlit LEDs are dark grey dots on the black face.
 // v16: the cap's embroidery. v37: drawn as rows of gold stitching in the shape of the client's cap (four lines on the crown, fourteen

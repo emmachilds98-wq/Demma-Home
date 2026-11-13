@@ -153,6 +153,12 @@ def site():
     return code == 0, " | ".join(last[-4:]) or out[-300:]
 
 
+def hitch():
+    code, out = sh([ROOT / "tools/check_site.py", SITE, "--hitch"], timeout=2400)
+    last = [l for l in out.splitlines() if l.startswith(("hitch check", "hitches", "speed", "FAIL"))]
+    return code == 0, " | ".join(last[-4:]) or out[-300:]
+
+
 def qa():
     SHOTS.mkdir(exist_ok=True)
     code, out = sh(["qa.py", SHOTS], SRC, timeout=2400)
@@ -176,10 +182,10 @@ def taps():
 def main(argv):
     """python3 tools/checks.py [--quick | --only site,page,taps]"""
     quick = "--quick" in argv
-    checks = [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("repo", repo), ("sizes", sizes), ("lean", lean)] + ([] if quick else [("site", site), ("page", qa), ("taps", taps)])
+    checks = [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("repo", repo), ("sizes", sizes), ("lean", lean)] + ([] if quick else [("site", site), ("hitch", hitch), ("page", qa), ("taps", taps)])
     if "--only" in argv:                                         # V1.35 (U10): one or more by name (the workflow runs the browser checks side by side)
         want = argv[argv.index("--only") + 1].split(",")
-        checks = [c for c in [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("repo", repo), ("sizes", sizes), ("lean", lean), ("site", site), ("page", qa), ("taps", taps)] if c[0] in want]
+        checks = [c for c in [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("repo", repo), ("sizes", sizes), ("lean", lean), ("site", site), ("hitch", hitch), ("page", qa), ("taps", taps)] if c[0] in want]
     fails = 0
     for name, fn in checks:
         t = time.time()
