@@ -52,9 +52,9 @@ function finPatch(m, k) {   // the walls' and ceilings' materials read the palet
   const room = -1, scale = m.map ? 1 / 0.95 : 1;
   m.customProgramCacheKey = () => "finish" + FIN.kind[k] + (room > 0 ? "r" : "");
   m.onBeforeCompile = sh => {
-    Object.assign(sh.uniforms, { finMap: { value: FIN.map }, finPal: { value: FIN.pal }, finKind: { value: FIN.kind[k] }, finRoom: { value: room }, finScale: { value: scale }, finInv: { value: FIN.inv } });
+    Object.assign(sh.uniforms, { finMap: { value: FIN.map }, finPal: { value: FIN.pal }, finKind: { value: FIN.kind[k] }, finRoom: { value: room }, finScale: { value: scale }, finInv: { value: FIN.inv } , finGar: { value: garageAt() } });
     sh.vertexShader = "uniform mat4 finInv;\nvarying vec3 vFinP;\nvarying vec3 vFinN;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n vFinP = " + (FIN.kind[k] === 2 ? "(finInv * modelMatrix * vec4(transformed, 1.0)).xyz" : "transformed") + "; vFinN = objectNormal;");
-    sh.fragmentShader = "uniform sampler2D finMap;\nuniform sampler2D finPal;\nuniform float finKind;\nuniform float finRoom;\nuniform float finScale;\nvarying vec3 vFinP;\nvarying vec3 vFinN;\n" +
+    sh.fragmentShader = "uniform vec2 finGar;\nuniform sampler2D finMap;\nuniform sampler2D finPal;\nuniform float finKind;\nuniform float finRoom;\nuniform float finScale;\nvarying vec3 vFinP;\nvarying vec3 vFinN;\n" +
       `int finAt(vec2 c, int fl) { ivec2 t = ivec2(int(clamp(floor(c.x / 2.0), 0.0, ${FIN.W - 1}.0)), int(clamp(floor((c.y + 309.0) / 2.0), 0.0, ${FIN.H - 1}.0)) + fl * ${FIN.H}); return int(texelFetch(finMap, t, 0).r * 255.0 + 0.5); }\n` +
       sh.fragmentShader.replace("vec4 diffuseColor = vec4( diffuse, opacity );", `vec3 finD = diffuse;
   { vec3 fn = normalize(vFinN); float xc = -vFinP.x * 100.0, zc = vFinP.z * 100.0, yc = vFinP.y * 100.0;
@@ -80,9 +80,43 @@ function finPatch(m, k) {   // the walls' and ceilings' materials read the palet
           if (finAt(c0 + vec2(dd, 0.0), fl) != rm || finAt(c0 - vec2(dd, 0.0), fl) != rm || finAt(c0 + vec2(0.0, dd), fl) != rm || finAt(c0 - vec2(0.0, dd), fl) != rm) cn = 1.0 - float(d - 1) / 3.0; }
         shd -= 0.08 * cn;
       }
-      finD *= shd; } }
+      finD *= shd;${FIN.kind[k] === 0 ? `
+      if (rm == int(finGar.x)) { float gh = yc - finGar.y, gm = pgN(vPgP * 0.8 + 11.0), gd = pgN(vec3(xc, yc * 0.3, zc) * 0.05);
+        finD *= vec3(0.95, 0.95, 0.96) * (0.94 + 0.1 * gm) * (1.0 - (0.08 + 0.08 * gd) * exp(-max(gh + 15.0, 0.0) / 30.0)); }` : ""} } }
   vec4 diffuseColor = vec4( finD, opacity );`);
     if (FIN.kind[k] === 0) paintGrain(sh);   // N172: the emulsion's tone and sheen
+  };
+  return m;
+}
+/* N172 (the garage): its room in the palette's numbering and its floor's height (the room's; its slab lies 15 lower, by the step down from the hall); its walls a cooler masonry paint, its mottle and the dust
+   and scuffs at their foot (still smooth) (above), its floor's slab (garageFloor) */
+function garageAt() { const r = ((R.HOUSE3 || {}).rooms || {}).garage; return new THREE.Vector2(r ? FIN.rooms.indexOf("garage") + 1 : -1, r ? r[4] : 0); }
+/* the garage's slab, the concrete's own photo kept: a saw-cut joint across it towards the door (clear of the cover), the dust along the walls, the tyres' two tracks a
+   shade darker and polished, an old oil mark where an engine stood, darker and glossier. Only inside the garage's outline (the drive
+   shares the concrete); one program ("garagefloor"), worked out from where the pixel is */
+function garageFloor(m) {
+  const r = ((R.HOUSE3 || {}).rooms || {}).garage; if (!r) return m;
+  /* in the living room's own view (its 2 planes, cut where both cut) the garage is never seen: there the concrete keeps the plain program
+     the house's photos share, warmed with that view (its own was built mid-walk on a PC) */
+  const plain = THREE.Material.prototype.onBeforeCompile.toString();
+  m.customProgramCacheKey = () => m.clipIntersection ? plain : "garagefloor";
+  m.onBeforeCompile = sh => { if (m.clipIntersection) return;
+    sh.uniforms.gR = { value: new THREE.Vector4(r[0], r[1], r[2], r[3]) }; sh.uniforms.gY = { value: r[4] };
+    sh.vertexShader = "varying vec3 vPgP;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n vPgP = (modelMatrix * vec4(transformed, 1.0)).xyz;");
+    sh.fragmentShader = PAINT_GRAIN + "uniform vec4 gR;\nuniform float gY;\n" + sh.fragmentShader.replace("#include <color_fragment>", `#include <color_fragment>
+  float gfR = 1.0;
+  { vec2 c = vec2(-vPgP.x * 100.0, vPgP.z * 100.0);
+    if (c.x > gR.x && c.x < gR.y && c.y > gR.z && c.y < gR.w && abs(vPgP.y * 100.0 - gY) < 20.0) {
+      float W = gR.y - gR.x, L = gR.w - gR.z, u = c.x - gR.x, v = c.y - gR.z, n = pgN(vPgP * 9.0), n2 = pgN(vPgP * 1.6 + 5.0), k = 1.0;
+      k *= mix(0.5, 1.0, smoothstep(0.2, 0.55, abs(v - L * 0.7) + (n - 0.5) * 0.25));
+      float e = min(min(u, W - u), min(v, L - v));
+      k *= 1.0 - 0.1 * exp(-e / 12.0) * (0.6 + 0.8 * n2);
+      float tr = 0.0; for (int s = -1; s <= 1; s += 2) tr = max(tr, 1.0 - smoothstep(5.0, 13.0, abs(u - W * 0.5 - float(s) * 76.0)));
+      tr *= smoothstep(L * 0.12, L * 0.3, v) * (0.5 + 0.5 * n2);
+      k *= 1.0 - 0.1 * tr; gfR *= 1.0 - 0.25 * tr;
+      float od = length(vec2(u - W * 0.5, (v - L * 0.27) * 0.8)) + (n2 - 0.5) * 24.0 + (n - 0.5) * 6.0, oil = 1.0 - smoothstep(14.0, 30.0, od);
+      k *= 1.0 - 0.3 * oil; gfR *= 1.0 - 0.45 * oil;
+      diffuseColor.rgb *= k; } }`).replace("#include <roughnessmap_fragment>", "#include <roughnessmap_fragment>\n  roughnessFactor *= gfR;");
   };
   return m;
 }
@@ -629,7 +663,7 @@ function buildHouse() {
       if (gl3) glassTod(m);
       const rk = (H3.depth_rank || {})[k] ?? 3;   // V1.31 (U6): where faces lie in one plane the higher rank is drawn (house/model.py depth_rank); constant, so nothing shows through at a slant
       if (rk) { m.polygonOffset = true; m.polygonOffsetFactor = 0; m.polygonOffsetUnits = -2 * rk; }
-      houseClip(m, [], false); m.userData.hk = k; return finPatch(m, k); })());   // V2.64: 6 planes from the start (09_house_views)
+      houseClip(m, [], false); m.userData.hk = k; return k === "concrete" ? garageFloor(m) : finPatch(m, k); })());   // V2.64: 6 planes from the start (09_house_views)
     if (S.fin === undefined && R.HOUSE3.client_finishes && Object.keys(R.HOUSE3.client_finishes).length) finRestore(R.HOUSE3.client_finishes);   // V2.11: the scheme kept in the repo, until this device picks its own
     HMATS = m3; FIN.mat3 = mat3; blindsApply(); hceilApply(); finApplyAll();
     if (window.__finPending) { const p = window.__finPending; window.__finPending = null; finImport(p); }   // V2.11: from a Send link opened before the 3D was ready   // V2.7: (mat3 for a floor laid by the tray)   // V2.6: the colours kept for the house's rooms

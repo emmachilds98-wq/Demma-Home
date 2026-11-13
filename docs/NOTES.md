@@ -277,6 +277,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 
 ## 6. Finishes and furniture (section 14, N56–N58; section 17 stream A)
 - **The walls' emulsion (N172):** `paintGrain` (`03_materials.js`) adds a world-position varying and value noise to a wall's shader (tone at `color_fragment`, sheen at `roughnessmap_fragment`). It runs on `paintMat`'s walls (key `paintwall`), the stair wall (`stairMat`: a `clone()` drops `onBeforeCompile`, so it's set again) and the house's `paint` (inside `finPatch`, `finish0`). A material's `clone()` never carries `onBeforeCompile` or `customProgramCacheKey`. HD shots in the rig sometimes catch the GTAO unsettled (a dark speckle by the landing's newel): shoot twice before blaming a change.
+- **One room's finish in a shared material (N172 garage):** the garage's floor is the drive's `concrete`; `garageFloor` (`20_go.js`) patches that material and acts only inside `H3.rooms.garage`'s outline (its slab lies 15 cm under the room's y). The walls' palette shader (`finPatch`) knows each pixel's room (`rm`): `finGar` holds the garage's number for its masonry look.
 - **New floors** are made, not downloaded: `build_textures.py --floors` cuts the oak veneer's own grain into blocks or planks (a block's
   look keyed by its place in the repeat so the picture wraps: herringbone repeats every 2 × n × √2 × width); tiles by `tiles` (`TILED`,
   looks `veins`, `stone`, `lime`). A floor key needs a `model.MATS` row, `FIN_FLOORS`, `UPC.floor` and a `fit.SOURCES` row.
