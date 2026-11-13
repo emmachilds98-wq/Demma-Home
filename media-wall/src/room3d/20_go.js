@@ -96,8 +96,11 @@ function garageAt() { const r = ((R.HOUSE3 || {}).rooms || {}).garage; return ne
    shares the concrete); one program ("garagefloor"), worked out from where the pixel is */
 function garageFloor(m) {
   const r = ((R.HOUSE3 || {}).rooms || {}).garage; if (!r) return m;
-  m.customProgramCacheKey = () => "garagefloor";
-  m.onBeforeCompile = sh => {
+  /* in the living room's own view (its 2 planes, cut where both cut) the garage is never seen: there the concrete keeps the plain program
+     the house's photos share, warmed with that view (its own was built mid-walk on a PC) */
+  const plain = THREE.Material.prototype.onBeforeCompile.toString();
+  m.customProgramCacheKey = () => m.clipIntersection ? plain : "garagefloor";
+  m.onBeforeCompile = sh => { if (m.clipIntersection) return;
     sh.uniforms.gR = { value: new THREE.Vector4(r[0], r[1], r[2], r[3]) }; sh.uniforms.gY = { value: r[4] };
     sh.vertexShader = "varying vec3 vPgP;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n vPgP = (modelMatrix * vec4(transformed, 1.0)).xyz;");
     sh.fragmentShader = PAINT_GRAIN + "uniform vec4 gR;\nuniform float gY;\n" + sh.fragmentShader.replace("#include <color_fragment>", `#include <color_fragment>
