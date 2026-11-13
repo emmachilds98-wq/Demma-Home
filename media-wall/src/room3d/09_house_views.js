@@ -451,7 +451,7 @@ function fromAbove(cx, y, cz, dist, fov) {  // straight down on (cx, y, cz) from
 /* V4.2 (N159), the client: "improve views where needed": the whole house from outside framed to the screen, the house (on its own since
    V4.1) filling it on a phone's tall screen as on a PC's wide one, from the same side as before (VIEWS.house's first eye and point) */
 function fitHouseView() {
-  if (!R.HOUSE3 || hfloor !== "all") return;
+  if (!R.HOUSE3 || hfloor !== "all") return false;
   const H = VIEWS.house; if (!fitHouseView.e0) { fitHouseView.e0 = H.eye.slice(); fitHouseView.a0 = H.at.slice(); }
   const rs = [...Object.values(R.HOUSE3.rooms || {}), [0, R.W, R.WINDOW_Z, R.RECESS_Z, 0]];
   const x0 = Math.min(...rs.map(r => r[0])), x1 = Math.max(...rs.map(r => r[1])), z0 = Math.min(...rs.map(r => r[2])), z1 = Math.max(...rs.map(r => r[3]));
@@ -461,14 +461,19 @@ function fitHouseView() {
   // search on the distance), then moved so it sits in the middle of that space
   const cam = camera.clone(), cw = v3(c[0], c[1], c[2]), pts = [];
   for (let k = 0; k < 8; k++) pts.push(v3(k & 1 ? x1 : x0, k & 2 ? 860 : 0, k & 4 ? z1 : z0));
-  const span = D => { cam.position.copy(v3(c[0] + dir.x * D, c[1] + dir.y * D, c[2] + dir.z * D)); cam.lookAt(cw); cam.updateMatrixWorld(); cam.updateProjectionMatrix();
-    let a = 9, b = -9, e = 9, f = -9; for (const q of pts) { const n = q.clone().project(cam); a = Math.min(a, n.x); b = Math.max(b, n.x); e = Math.min(e, n.y); f = Math.max(f, n.y); } return [a, b, e, f]; };
-  const ok = D => { const [a, b, e, f] = span(D); return b - a < 1.75 && f - e < 1.45; };   // the box is bigger than the house it holds (its roof, its corners), so it may reach past the space a little
+  const span = (D, P = pts) => { cam.position.copy(v3(c[0] + dir.x * D, c[1] + dir.y * D, c[2] + dir.z * D)); cam.lookAt(cw); cam.updateMatrixWorld(); cam.updateProjectionMatrix();
+    let a = 9, b = -9, e = 9, f = -9; for (const q of P) { const n = q.clone().project(cam); a = Math.min(a, n.x); b = Math.max(b, n.x); e = Math.min(e, n.y); f = Math.max(f, n.y); } return [a, b, e, f]; };
+  // N171: a phone stood up fits the house's own walls to 70% of the width (the box's corners left it at about 45%), its height between the rows
+  const tall = camera.aspect < 1, walls = tall ? rs.flatMap(r => [r[0], r[1]].flatMap(x => [r[2], r[3]].flatMap(z => [0, 780].map(y => v3(x, y, z))))) : null, k0 = tall ? freeFrame()[0] : 1;
+  if (tall) cam.fov = fitFov(H.fov);   // the lens it will have (a phone's is widened), not the one it has now
+  const ok = D => { const [a, b, e, f] = span(D); if (!tall) return b - a < 1.75 && f - e < 1.45;   // the box is bigger than the house it holds (its roof, its corners), so it may reach past the space a little
+    const [p, q, g, h] = span(D, walls); return q - p < 1.5 && h - g < 1.8 * k0; };   // the walls up to the ridge
   let lo = 600, hi = 20000; for (let k = 0; k < 24; k++) { const m = (lo + hi) / 2; if (ok(m)) hi = m; else lo = m; }
-  const [a, b, e, f] = span(hi), hh = hi * M * Math.tan(cam.fov * Math.PI / 360), right = new THREE.Vector3(1, 0, 0).applyQuaternion(cam.quaternion), up = new THREE.Vector3(0, 1, 0).applyQuaternion(cam.quaternion);
+  hi *= S.hstreet ? 2 : S.hgarden ? 1.5 : 1;   // N171: Gardens and Next door stand back to take in what they add
+  const [a, b, e, f] = tall ? span(hi, walls) : span(hi), hh = hi * M * Math.tan(cam.fov * Math.PI / 360), right = new THREE.Vector3(1, 0, 0).applyQuaternion(cam.quaternion), up = new THREE.Vector3(0, 1, 0).applyQuaternion(cam.quaternion);
   const sh = right.multiplyScalar((a + b) / 2 * hh * cam.aspect).add(up.multiplyScalar(((e + f) / 2 - 0.03) * hh));   // the box's middle to the space's
   const room = w => [-w.x / M, w.y / M, w.z / M], eye = cam.position.clone().add(sh), at = cw.clone().add(sh);
-  H.at = room(at); H.eye = room(eye);
+  H.at = room(at); H.eye = room(eye); return tall;
 }
 function floorCam() {
   if (S.view !== "house" || !R.HOUSE3) return;
@@ -502,7 +507,7 @@ document.addEventListener("click", e => {
   const b = e.target.closest("[data-hfloor]"); if (b) { hfloor = b.dataset.hfloor; applyFloors(); floorCam(); return; }
   const fvb = e.target.closest("[data-hfview]"); if (fvb) { hfview = fvb.dataset.hfview; applyFloors(); floorCam(); return; }   // v74
   if (e.target.closest("#r3d-pick")) { setBare(!document.body.classList.contains("bare")); return; }
-  const tg = e.target.closest("[data-htog]"); if (tg) { S[tg.dataset.htog] = !S[tg.dataset.htog]; store.set(KEY, S); applyFloors(); return; }
+  const tg = e.target.closest("[data-htog]"); if (tg) { S[tg.dataset.htog] = !S[tg.dataset.htog]; store.set(KEY, S); applyFloors(); if (S.view === "house" && hfloor === "all") setView("house"); return; }   // N171: and stand back for them
   const r = e.target.closest("[data-hroom]"); if (!r || !R.HOUSE3) return;
   const id = r.dataset.hroom, v = ROOM_VIEW[id];
   if (v) { goRoom(v); return; }
