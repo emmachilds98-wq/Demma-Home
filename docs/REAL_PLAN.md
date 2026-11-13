@@ -623,7 +623,7 @@ in. Each one is read once for its shapes; names and numbers are painted out befo
 | N165 | D Review | The speed check steady: the living room's draws read once the shade and glow are back and settled, so one slow CI frame can't read 680 (#260) | `tools/check_site.py` (`PERF`) | — | Done V4.4 (the least of six frames; a frame's count takes in the staggered shadows' redraw after a room change) |
 | N166 | D Review | The budgets lowered to what's drawn after N157 (the house alone draws less): the house's budget on each path cut to its new count plus a margin, so a later change can't add back what N157 took out unseen | `tools/perf_budget.json` | N157 | Done V4.2 (draws_house 205 each path; shaders_first 20, 21, 44, 44) |
 | N168 | B Views | N159's rest: a double-click on a PC centres the view on the spot clicked, with a short glide; the swing's limits kept | `19_view_controls.js` | — | Done V4.5 (a double-click on the house's outside, its roof, a wall or the garden, centres on that spot in a 0.45 s glide, the angle and distance kept; one on a room's floor still stands you there; a phone's double-tap centres on what's under the finger too, not the ground 10 m behind it) |
-| N169 | D Outside | N143's rest: the plot's edge softened into a hazy field (it ends in a hard line), without fog (fog rebuilds every shader): a fade in the ground's own material or a soft ring, no new first-picture shader | `20_go.js` (the ground), `11_lights.js` (`outdoor` only if needed) | — | Open |
+| N169 | D Outside | N143's rest: the plot's edge softened into a hazy field (it ends in a hard line), without fog (fog rebuilds every shader): a fade in the ground's own material or a soft ring, no new first-picture shader | `20_go.js` (the ground), `11_lights.js` (`outdoor` only if needed) | — | Done V4.6 (the sky takes the fog's colour at the horizon, mixed after its colour conversion as three's fog is: no seam on Fast or HD; in the sky's shader, no new shader; the ground unchanged) |
 
 ## 22. The next round after V4.5: views in the small rooms, finishes, outside, a quieter UI, leaner and smoother (13 Nov 2026)
 
@@ -653,7 +653,7 @@ the iPhone 15 Pro and the RTX 5070 inside `tools/perf_budget.json`; customisatio
 - **Lean and smooth:** the 3D is 24 parts and 9,760 lines; many comments carry each version's story, which `docs/HISTORY.md` already
   holds. The speed check counts draws and shaders but not the hitches a real PC feels while walking (a shader built or a photo uploaded
   mid-move). The PC `?perf` screenshot is still owed.
-- **Open PRs:** #272 (N141) and #275 (N152) are drafts; #274 (N169) is ready; #273 (N163) waits on the client's card; #133 (KTX2)
+- **Open PRs:** #272 (N141) and #275 (N152) are drafts; #274 (N169) is ready (landed V4.6); #273 (N163) waits on the client's card; #133 (KTX2)
   paused since 7 Nov.
 
 ### The tasks
