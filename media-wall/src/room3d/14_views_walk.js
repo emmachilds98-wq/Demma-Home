@@ -701,7 +701,7 @@ document.addEventListener("keyup", e => { WALK.fast = e.shiftKey; const k = WALK
 window.addEventListener("blur", () => { WALK.keys.clear(); WALK.stick = [0, 0]; });
 canvas.addEventListener("pointerdown", () => { canvas.focus({ preventScroll: true }); if (tourSt) tourEnd(); if (SH) SH.own = true; });   // v28: touching the room ends the tour; v32: "Watch it open" carries on, the camera yours
 function setView(name, instant, dur) {
-  if (name === "house" && typeof fitHouseView === "function") fitHouseView();   // V4.2 (N159): the house framed to the screen
+  const fitted = name === "house" && typeof fitHouseView === "function" && fitHouseView();   // V4.2 (N159): the house framed to the screen (N171: a phone's too)
   const v = VIEWS[name] || VIEWS.window, wasHouse = HOUSEV(S.view);
   if (name !== "house" && typeof welcome === "function") try { welcome(false); } catch (e) {}   // V2.43: going in puts the welcome away
   if (name !== S.view && actId && typeof closeAct === "function") closeAct();   // V1.28: a piece's card doesn't follow you to another room
@@ -709,10 +709,10 @@ function setView(name, instant, dur) {
   if (RMODE !== "in") setRmode("in", true);                               // v71: a new view starts in the room
   standLook(!!v.stand);                                                     // V1.6: the living room's Be there looks round from where you stand
   let p = v[S.site] || v;
-  if (name === "house" && camera.aspect < 1.2) { const f = Math.min(0.95, 0.42 / camera.aspect) * 0.72 / freeFrame()[0];   // V2.74 (N18, left by N19): a tenth closer   // V2.46: and back by the share the buttons leave free (the roof was under the floors row)
+  if (name === "house" && camera.aspect < 1.2 && !fitted) { const f = Math.min(0.95, 0.42 / camera.aspect) * 0.72 / freeFrame()[0];   // V2.74 (N18, left by N19): a tenth closer   // V2.46: and back by the share the buttons leave free (the roof was under the floors row)
       // v54: a phone stands further back to take in every floor (V1.30: less far: the buttons take less room)
     p = { eye: p.at.map((a, i) => a + (p.eye[i] - a) * f), at: p.at }; }
-  else if (name === "house") p = { eye: p.at.map((a, i) => a + (p.eye[i] - a) * 1.25), at: p.at };   // V3.27: a computer a little further back, the roof clear of the rows
+  else if (name === "house" && !fitted) p = { eye: p.at.map((a, i) => a + (p.eye[i] - a) * 1.25), at: p.at };   // V3.27: a computer a little further back, the roof clear of the rows
   flyTo(p.eye, p.at, v.fov, !!v.above, instant, dur);   // N170: each room its own lens (a floor of 82 bowed the small rooms)
   if (!houseG && R.HOUSE && HOUSEV(name)) { buildHouse(); reshadow(); }   // v69 (B6): built the first time (the living room starts without it)
   if (houseG) { houseG.visible = HOUSEV(name); view.visible = !v.above; applyFloors(); setAbove(!v.above); }   // v56: the sky only from inside
