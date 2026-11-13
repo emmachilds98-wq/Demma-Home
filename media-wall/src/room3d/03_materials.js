@@ -56,7 +56,8 @@ function paintGrain(sh) {
 function paintMat(ratio, eggshell, both, ch = "wall") {
   const k = ratio.toFixed(2) + (eggshell ? "e" : "") + (both ? "d" : "") + ch;
   // V2.2, the client: "ensure walls are all smooth but ceilings have the popcorn artex type ceiling": the walls flat emulsion, the ceilings artex
-  const relief = eggshell || ch !== "ceil" ? {} : PHOTOS ? { normalMap: ARTEX_NRM, normalScale: new THREE.Vector2(0.8, 0.8) } : { bumpMap: WALL_BUMP, bumpScale: 0.6 };
+  // N142 (V4.12): the eggshell boxes (the media wall's painted boards, the trim) the satin's fine strokes; the walls stay smooth
+  const relief = eggshell ? (PHOTOS ? { normalMap: SATIN_NRM, normalScale: new THREE.Vector2(0.6, 0.6) } : {}) : ch !== "ceil" ? {} : PHOTOS ? { normalMap: ARTEX_NRM, normalScale: new THREE.Vector2(0.8, 0.8) } : { bumpMap: WALL_BUMP, bumpScale: 0.6 };
   if (!paintMats.has(k)) paintMats.set(k, reg(new THREE.MeshStandardMaterial({ color: paintColour(ratio, ch), roughness: eggshell ? 0.45 : 0.92,
     ...relief, side: both ? THREE.DoubleSide : THREE.FrontSide, userData: { ratio, ch } })));   // (buildGroup's panels: twoFaced, not both)
   const m = paintMats.get(k);
