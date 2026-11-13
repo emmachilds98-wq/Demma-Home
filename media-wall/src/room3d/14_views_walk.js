@@ -391,6 +391,10 @@ STICK.addEventListener("pointerdown", e => { stickId = e.pointerId; STICK.classL
 STICK.addEventListener("pointermove", e => { if (e.pointerId === stickId) stickMove(e); });
 const stickEnd = e => { if (e.pointerId !== stickId) return; stickId = null; STICK.classList.remove("held"); WALK.stick = [0, 0]; STICK.style.setProperty("--x", "0px"); STICK.style.setProperty("--y", "0px"); };
 STICK.addEventListener("pointerup", stickEnd); STICK.addEventListener("pointercancel", stickEnd);
+/* V4.10 (N175): on a PC the stick steps aside once the keys walk, back when the mouse comes near it */
+if (!COARSE) { addEventListener("keydown", e => { if (/^(Key[WASDQE]|Arrow)/.test(e.code) && !/input|textarea|select/i.test(e.target.tagName)) root.classList.add("keyed"); });
+  addEventListener("mousemove", e => { if (!root.classList.contains("keyed")) return; const r = STICK.getBoundingClientRect();
+    if (Math.hypot(e.clientX - r.left - r.width / 2, e.clientY - r.top - r.height / 2) < 170) root.classList.remove("keyed"); }); }
 /* V2.31, the client: "fluid motion ... almost like im in a first person pov in a game": on a computer, while walking, Mouse look (or M)
    holds the pointer: the mouse turns you with no button held, W A S D walk, a click opens what's under the dot in the middle (a card lets
    the pointer go), a double-click walks you to the floor there, Esc stops it. Phones keep the stick and the drag */
