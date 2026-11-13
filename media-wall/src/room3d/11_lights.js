@@ -39,6 +39,10 @@ function duskVeil(on) {
     VEIL.material.clippingPlanes = []; VEIL.position.copy(v3((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2)); VEIL.raycast = () => {}; VEIL.renderOrder = 5; VEIL.name = "duskVeil"; scene.add(VEIL); }
   VEIL.visible = on;
 }
+/* V4.6 (N169): the plot's edge goes soft. The far ground was already the fog's colour, but it met the sky in a hard line (the sky's own
+   blue sat right on it). The sky now takes the fog's colour at the horizon and fades to its own blue over the lowest ten degrees or so,
+   mixed after its colour conversion as three's fog is on the ground, so the two meet with no seam on both paths: a hazy field all
+   round. In the sky's shader, before the first sky is made: no new shader, draw or picture. */
 /* V3.92 (N143): soft cloud in the sky, painted in the sky's own shader before the first sky is made (the one shown and the one the
    house's reflections are made from share it: no new draw, no new shader). It thins to nothing at the horizon and takes the sky's own
    colour: white by day, warm at dusk, dark at night */
@@ -56,14 +60,19 @@ void main() {`)
 				dk = mix( dk, vec3( 0.03, 0.045, 0.11 ), smoothstep( 0.12, 0.7, hy ) ); retColor = mix( retColor, dk, cloudDusk ); }
 			if ( cdir.y > 0.0 ) { vec2 cp = cdir.xz / ( cdir.y + 0.12 ) * 2.2; float cov = smoothstep( 0.5, 0.78, cloudFbm( cp + vec2( 3.7, 1.3 ) ) ) * smoothstep( 0.0, 0.2, cdir.y );
 				float lum = dot( retColor, vec3( 0.299, 0.587, 0.114 ) ); retColor = mix( retColor, mix( retColor, mix( vec3( lum ) * 1.35 + retColor * 0.25, retColor * 0.5, cloudDusk ), 0.75 ), cov * 0.8 ); }
-			gl_FragColor = vec4( retColor, 1.0 );`);
+			gl_FragColor = vec4( retColor, 1.0 );`)
+  .replace("#include <colorspace_fragment>", `#include <colorspace_fragment>
+			float haze = 1.0 - smoothstep( -0.005, 0.2, cdir.y ); gl_FragColor.rgb = mix( gl_FragColor.rgb, hazeColor, haze * haze * ( 3.0 - 2.0 * haze ) );`)
+  .replace("uniform vec3 up;", "uniform vec3 up;\nuniform vec3 hazeColor;");
+Sky.SkyShader.uniforms.hazeColor = { value: new THREE.Color() };   // V4.6 (N169): the fog's colour, in the space three gives the fog
+function skyHaze(sk) { sk.onBeforeRender = r => scene.fog.color.getRGB(sk.material.uniforms.hazeColor.value, r.getRenderTarget() ? THREE.LinearSRGBColorSpace : r.outputColorSpace); }   // as three's refreshFogUniforms: the screen's space straight to it, linear into the HD composer
 function outdoor() {
   const house = !!(R.HOUSE3 && S.view === "house" && hfloor === "all"), room = roomOut(), on = house || room;
   if (on && !OUT.sky) {
     const sky = OUT.sky = new Sky(); sky.scale.setScalar(3000); sky.name = "sky";   // V1.4: past the hill (it was 100 m: anything further was behind it)
     const u = sky.material.uniforms; u.turbidity.value = 3.5; u.rayleigh.value = 1.1; u.mieCoefficient.value = 0.004; u.mieDirectionalG.value = 0.8;
     u.sunPosition.value.copy(dayLight.position).sub(dayLight.target.position).normalize();
-    sky.raycast = () => {}; scene.add(sky);
+    skyHaze(sky); sky.raycast = () => {}; scene.add(sky);
     const H = R.HOUSE3, g = OUT.ground = new THREE.Group(); g.name = "ground";
     /* V2.28, the client: "best version with best performance and quality should be on pc": the ground round the house was one flat
        colour, 3 km of it, washed to khaki by the sun on a PC; now the lawn's own photo and relief, in metres (worldUV), as the gardens' lawn */
@@ -87,7 +96,7 @@ function outdoor() {
     // one shown, at the room reflection's size (so swapping them rebuilds no shaders), once
     const pm = new THREE.PMREMGenerator(gl), sk = new Sky(), sc = new THREE.Scene(), u = sk.material.uniforms, u0 = OUT.sky.material.uniforms;
     for (const k of ["turbidity", "rayleigh", "mieCoefficient", "mieDirectionalG"]) u[k].value = u0[k].value;
-    u.sunPosition.value.copy(dayLight.position).sub(dayLight.target.position).normalize(); sk.scale.setScalar(50); sc.add(sk);
+    u.sunPosition.value.copy(dayLight.position).sub(dayLight.target.position).normalize(); skyHaze(sk); sk.scale.setScalar(50); sc.add(sk);
     OUT.skyEnv = pm.fromScene(sc, 0.02, 0.1, 100).texture; pm.dispose(); sk.geometry.dispose(); sk.material.dispose();
   }
   glassAll();   // V3.52 (N104): frosted glass glows from inside, not from outside
