@@ -6,7 +6,7 @@
   smooth, F docs). Each row names its files; take the next open row of a stream. Section 21's open rows carry on.
 - **Open PRs:** #272 (N141, fabrics made at build), #274 (N169, the plot's
   soft edge), #275 (N152, will the sofa bed go in: waits on the door's width), #133 (KTX2, paused: do not merge).
-- **Next when they land:** stream B (N142, then N172) after #272; stream C (N173) after #273 and #274.
+- **Next when they land:** stream B (N142, then N172) after #272; stream C (N173) after #274.
 - **The rules in force:** furniture and layouts finished; the light the same in every room, cosy; smooth on the iPhone 15 Pro and the
   RTX 5070 inside `tools/perf_budget.json`; walls smooth (no plaster relief); customisation after the quality work; the address never
   written. The project's own rules (read first, merge main last, the next free version at merge) are in the project's instructions
