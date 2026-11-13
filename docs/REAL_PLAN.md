@@ -624,3 +624,63 @@ in. Each one is read once for its shapes; names and numbers are painted out befo
 | N166 | D Review | The budgets lowered to what's drawn after N157 (the house alone draws less): the house's budget on each path cut to its new count plus a margin, so a later change can't add back what N157 took out unseen | `tools/perf_budget.json` | N157 | Done V4.2 (draws_house 205 each path; shaders_first 20, 21, 44, 44) |
 | N168 | B Views | N159's rest: a double-click on a PC centres the view on the spot clicked, with a short glide; the swing's limits kept | `19_view_controls.js` | — | Done V4.5 (a double-click on the house's outside, its roof, a wall or the garden, centres on that spot in a 0.45 s glide, the angle and distance kept; one on a room's floor still stands you there; a phone's double-tap centres on what's under the finger too, not the ground 10 m behind it) |
 | N169 | D Outside | N143's rest: the plot's edge softened into a hazy field (it ends in a hard line), without fog (fog rebuilds every shader): a fade in the ground's own material or a soft ring, no new first-picture shader | `20_go.js` (the ground), `11_lights.js` (`outdoor` only if needed) | — | Open |
+
+## 22. The next round after V4.5: views in the small rooms, finishes, outside, a quieter UI, leaner and smoother (13 Nov 2026)
+
+The client, 13 Nov 2026: "ive done a lot of work on the repo, review and look at what next upgrade plan is". Reviewed on V4.5 (main at
+#271): every merge since V4.3 (V4.4 the speed check and the phone's row, V4.5 the double-click), the five open PRs (#272 N141, #273 N163,
+#274 N169, #275 N152, #133 KTX2 paused), every room by day in HD at 1280 × 800 (`tools/gallery.py`), and the house, Gardens and Next door,
+the ground floor from above, the kitchen, living room and master at 393 × 852 (Apple GPU) and 1280 × 800 (RTX). Shots in the project
+files, `review-v45/`.
+
+The rules stay: furniture and layouts finished (no piece added, moved or reshaped); the light the same in every room and cosy; smooth on
+the iPhone 15 Pro and the RTX 5070 inside `tools/perf_budget.json`; customisation after the quality work; the address never written.
+
+### What the review found
+
+- **The small rooms' In it views bow:** the hall, landing, WC, garage and bathroom open at an 80° lens (`STAND_FOV`), so their walls lean
+  in at the edges and the WC's tiles look tipped. The hall still opens face-on to the mirror's glass (section 20 found it; no row took it).
+- **The whole house opens small on a phone:** at 393 the house fills about 45% of the width under the rows, with lawn all round
+  (V4.2 framed it on a PC; check it on the phone too).
+- **The painted walls read computer-flat** (every room; the landing's green wall most). The client wants them smooth (DECISIONS,
+  5 Nov: "walls all smooth"), so the fix is the emulsion's soft sheen and tone, never a plaster relief. **The garage** is still a bare grey
+  box: its floor one flat grey with a dark hatch, its walls plain.
+- **Outside, with Gardens:** the trees read as a mass of green strips from above, the lawn's pattern repeats at a distance, and the
+  neighbours are the house repeated (N161 waits on the client's screenshots for the real ones).
+- **The UI:** on a PC at 1280 the view row is eleven pills (Angled, Overhead, Outside, First, Ground, Lower, Gardens, Next door, Whole
+  house, As it is, Hide labels) under Plan · Build · Buy; on a phone the walk stick's ring sits over the room all the time (over the
+  coffee table, over the bed).
+- **Lean and smooth:** the 3D is 24 parts and 9,760 lines; many comments carry each version's story, which `docs/HISTORY.md` already
+  holds. The speed check counts draws and shaders but not the hitches a real PC feels while walking (a shader built or a photo uploaded
+  mid-move). The PC `?perf` screenshot is still owed.
+- **Open PRs:** #272 (N141) and #275 (N152) are drafts; #274 (N169) is ready; #273 (N163) waits on the client's card; #133 (KTX2)
+  paused since 7 Nov.
+
+### The tasks
+
+| Task | Stream | What | Files | Waits for | State |
+|---|---|---|---|---|---|
+| N170 | A Views | The small rooms without bowed walls: each In it view (hall, landing, WC, garage, bathroom, kitchen) from the room's far corner with the lens about 68° where the room allows (80° only where nothing else shows the room); the hall opens down the hall, not on the mirror's face; Be there's lens unchanged | `14_views_walk.js` (`VIEWS`) | — | Open |
+| N171 | A Views | The whole house opens bigger on a phone: the house about 70% of the width between the top rows and the dock at 393 and 375 (now about 45%), as V4.2 framed it on a PC; Gardens and Next door pull back to fit what they add | `14_views_walk.js` (`VIEWS.house`), `19_view_controls.js` (the fit only) | N170 | Open |
+| N172 | B Finishes | Smooth walls that aren't computer-flat: the emulsion's soft sheen and a faint tone change across a wall (a low-contrast roughness map at room scale, no relief: the walls stay smooth), the ceilings' artex kept; the garage's concrete floor with its joints and wear and its painted block walls, its materials only | `house/textures/build_textures.py`, `20_go.js` (`HTEX`, `HTEX_AS` lines), `house/model.py` (`MATS` keys only) | #272 (N141), then N142 | Open |
+| N173 | C Outside | The garden trees and hedges up close: leaves in clumps that let light through, a darker inside to each head, the bark's colour; the lawn without a repeat at a distance; within the house's draws (205) and no new first-picture shader | `20_go.js` (the trees, the lawn), `10_plants.js` (only if a shared leaf helper) | #273, #274 | Open |
+| N174 | D UI | Fewer pills on a PC: the view row in one short line (Angled · Overhead, the floors, Whole house), Gardens and Next door shown only when Outside is picked, As it is and Hide labels under one ⋯; the same names, the same keys | `room3d_page.py` (the row's markup and CSS), `19_view_controls.js` (`syncButtons`) | — | Open |
+| N175 | D UI | A quieter walk stick: faint until touched on a phone, full while held; on a PC shown only while the mouse is near it or the keys aren't used; never over a card | `19_controls.js` (the stick), `room3d_page.py` (its CSS) | N174 | Open |
+| N176 | E Lean | Leaner code with nothing seen to change: a `lean` check in `tools/checks.py` listing top-level functions, materials and CSS rules nothing uses; those removed; version-story comments cut to their tag (the story is in HISTORY.md); about 5% fewer lines, the gallery the same picture for picture | `tools/checks.py`, `05_dining_cabinet.js`, `06_moments.js`, `07_suggestions_ideas.js`, `08_house_catalogue.js`, `15_tour_link_stickers.js`, `18_caption_hd.js`, `page.css` | — | Open |
+| N177 | E Smooth | A hitch check for walking on a PC: `check_site.py` walks the living room to the hall and up the stairs on the RTX path with a faked clock, counting frames that build a shader or upload a photo while moving (each a stutter on a real PC); the target 0 after the warm-up, a new `hitches` number in the budget; anything found added to the warm-up | `tools/check_site.py`, `tools/perf_budget.json` (a new key only), `01_renderer.js` (the warm-up list) | — | Open |
+| N178 | F Docs | `docs/HANDOVER.md`'s top brought to now in ten lines (what's open, who has it, what waits on the client), the rest kept | `docs/HANDOVER.md` | — | Done (13 Nov: Now, Open branches and Waiting on Emma rewritten; the old done table left to HISTORY.md) |
+
+**How to run it.**
+- Six streams side by side; inside a stream one row follows the other. Start A, D, E and F now: none touches a file an open PR has.
+- B starts when #272 lands (then N142, then N172); C when #273 and #274 land. B and C both touch `20_go.js` but different lines
+  (B the `HTEX` lines at the top, C the trees and lawn): whoever merges second merges main first and keeps the other's change.
+- Every code row: before/after at 393 and 1280 in the project files, `tools/checks.py` lines in the PR, `house/privacy_check.py`, the
+  next free version at merge, its row ticked here and `docs/STATE.md` rewritten.
+- After this round: customisation (the client's own colours, pieces and saved looks), planned once the quality rows are done.
+
+**Waiting on the client for this section and the last:**
+- KTX2 yes or no (#133, N141's full form);
+- the living room door's width (N152);
+- the map and Street View screenshots, names painted out (N160, N161);
+- outside by evening: keep by day, follow the clock, or day unless evening is picked (N163, #273);
+- the sofa bed's price; a PC `?perf` screenshot or a Measure → Send link from the PC.
