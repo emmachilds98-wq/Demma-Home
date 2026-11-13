@@ -3,10 +3,10 @@
 Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.7 (13 Nov 2026). V4.7 (N174, N175): fewer pills in the view row (As it is and Hide labels behind ⋯, Gardens and Next door on Outside only); the walk stick faint until touched. V4.6 (N169): the plot's edge soft, the sky hazy at the horizon. V4.5 (N168): a double-click on the house's outside centres on that spot. V4.4 (N165, N164):
+**Version:** V4.8 (13 Nov 2026). V4.8 (N174, N175): fewer pills in the view row (As it is and Hide labels behind ⋯, Gardens and Next door on Outside only); the walk stick faint until touched. V4.7 (N176): leaner code, nothing seen to change; `checks.py` `lean`. V4.6 (N169): the plot's edge soft, the sky hazy at the horizon. V4.5 (N168): a double-click on the house's outside centres on that spot. V4.4 (N165, N164):
 a steadier speed check; the phone's top row checked. V4.3 (N167): bedroom 3's cube shelves and flip-up table. V4.2 (N159, N166):
 the house framed to the screen; the budgets lowered. V4.1 (N157, N158): the house on its own; a PC's drag swings the way you drag. V4.0 (N162): Home Plan V4.
-The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.7 ↻"): on the
+The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.8 ↻"): on the
 home-screen app, tap it to get the newest.
 
 **Work from:** `docs/REAL_PLAN.md` section 22 (13 Nov: the next round after V4.5, N170–N178 in streams A–F: the small rooms' views, finishes,
@@ -23,7 +23,7 @@ card). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier ta
 ```bash
 npm ci && python3 -m pip install -r media-wall/requirements.txt   # three.js and esbuild; Playwright 1.63.0 for the browser checks
 python3 tools/build.py            # everything into _site/ (about 3 min; --fast keeps the renders and PDFs)
-python3 tools/checks.py           # every check, one verdict (--quick: no browser). Paste its lines in the PR.
+python3 tools/checks.py           # every check, one verdict (--quick: no browser; lean: nothing unused). Paste its lines in the PR.
 python3 tools/round.py "words"    # a client round: version up, pull their numbers, build, check, HISTORY
 python3 tools/pull_edits.py --link URL   # the client's numbers and ticks from a Send link
 python3 house/privacy_check.py    # before every commit

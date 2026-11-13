@@ -8,10 +8,7 @@ function rect(cx, cy, cz, w, h, normal, mat) {     // a wall patch w × h (cm) c
   const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * w / 100, uv.getY(i) * h / 100);
   bucket(g.applyMatrix4(m.matrix), mat, true);   // v48 §6: walls keep the sun out (it came through every wall but the window's)
 }
-/* V1.39, the client: "Build in our living room properly too": the living room gets the house's soft shade where its floor meets the
-   walls (V1.33's houseShade): bands along every wall, the alcove, the breast, the flight's side and foot; on every device (the live
-   shade, GTAO, only runs on the capable ones in HD); cut away with the room. Not its ceiling: the LED strip's glow is brightest there */
-let livShadeG = null;
+let livShadeG = null;   // V1.39: the house's soft shade where the living room's floor meets every wall, on every device; not the ceiling (the strip's glow)
 function livShade() {
   const tex = canvasTex(4, 64, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h);
     gr.addColorStop(0, "rgba(0,0,0,0.34)"); gr.addColorStop(0.35, "rgba(0,0,0,0.12)"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.clearRect(0, 0, w, h); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, false);
@@ -64,9 +61,7 @@ function buildShell() {
   const egg = paintMat(lum("#346650") / BASE_L, true, false, "trim");
   const C = R.CEIL, Wd = R.W, A = R.ALC_W, AD = R.ALC_D, [B0, B1] = R.BREAST_X, RZ = R.RECESS_Z, WZ = R.WINDOW_Z;
   const LD = R.HOUSE3.living.door, LW = R.HOUSE3.living.window, [dx0, dx1] = [LD.a, LD.b], DH = LD.h, [wx0, wx1] = LW.x, [wy0, wy1] = LW.y;   // V1.46: the door and the window from the house file
-  // V1.45 (V1_PLAN phase 5): the walls from the house file (model.living_shell): the PC wall, into the alcove, the alcove's back, the
-  // breast's reveal, the breast, the recess's side, the door wall (open over the stairs), the stairs wall, the window wall
-  for (const w of R.HOUSE3.living.walls) wall(w.axis, w.c, w.u[0], w.u[1], w.y[0], w.y[1], w.n, (w.tone === "r" ? rP : wP)(w.paint), w.holes);
+  for (const w of R.HOUSE3.living.walls) wall(w.axis, w.c, w.u[0], w.u[1], w.y[0], w.y[1], w.n, (w.tone === "r" ? rP : wP)(w.paint), w.holes);   // V1.45: the walls from the house file (model.living_shell)
   // v16: the hollow pipe boxing in the window's west corner, floor to ceiling, painted with the walls
   const PX = R.HOUSE3.living.pipe_box;   // V1.48: from the house file
   cube(PX.x[0], 0, PX.z[0], PX.x[1] - PX.x[0], C, PX.z[1] - PX.z[0], wallP);
@@ -91,28 +86,21 @@ function buildShell() {
     bucket(new THREE.PlaneGeometry((xb - xa) * M, (zb - za) * M).rotateX(Math.PI / 2).translate(q.x, q.y, q.z), ceilMat, true);   // v48: and the ceiling
   }
   livShade();
-  // skirting, eggshell in the wall colour
-  for (const [x0, y0, z0, x1, y1, z1] of LS.skirting) cube(x0, y0, z0, x1 - x0, y1 - y0, z1 - z0, egg, false);
-  // the door, shut, with its frame and handle
-  // v20, client: "door of room is also white": the door and its frame stay white satin, not the wall colour
+  for (const [x0, y0, z0, x1, y1, z1] of LS.skirting) cube(x0, y0, z0, x1 - x0, y1 - y0, z1 - z0, egg, false);   // skirting, eggshell in the wall colour
+  // the door, shut, with its frame and handle; v20: white satin, not the wall colour
   const doorW = reg(new THREE.MeshStandardMaterial({ color: "#efece5", roughness: 0.35 })), frameW = reg(new THREE.MeshStandardMaterial({ color: "#f3f1eb", roughness: 0.4 }));
   cube(dx0 - 6, 0, RZ - 1.5, 6, DH + 6, 2, frameW); cube(dx1, 0, RZ - 1.5, 6, DH + 6, 2, frameW);
   cube(dx0 - 6, DH, RZ - 1.5, dx1 - dx0 + 12, 6, 2, frameW);
-  // V1.38: the leaf on its hinge at the breast's end (the house's door.living_door turns it: a walk opens it, or a tap)
-  const brass = reg(new THREE.MeshStandardMaterial({ color: "#c9b58a", metalness: 0.9, roughness: 0.3 }));
+  const brass = reg(new THREE.MeshStandardMaterial({ color: "#c9b58a", metalness: 0.9, roughness: 0.3 }));   // V1.38: the leaf on its hinge at the breast's end (the house's door.living_door turns it: a walk opens it, or a tap)
   livLeaf = new THREE.Group(); livLeaf.name = "livLeaf"; livLeaf.position.copy(v3(dx0, 0, RZ + 1)); shell.add(livLeaf);
   const leafBox = (x, y, z, w, h, d, m) => { const me = new THREE.Mesh(new THREE.BoxGeometry(w * M, h * M, d * M), m); me.position.copy(v3(x + w / 2, y + h / 2, z + d / 2)).sub(livLeaf.position); livLeaf.add(shadow(me)); };
   leafBox(dx0, 0, RZ + 1, dx1 - dx0, DH, 4, doorW);
   for (const [y0, y1] of [[14, 98], [112, 186]]) leafBox(dx0 + 9, y0, RZ + 0.6, dx1 - dx0 - 18, y1 - y0, 0.5, doorW);
   leafBox(dx1 - 12, 100, RZ - 1.6, 9, 1.4, 2.6, brass); mergeStatic(livLeaf);   // V3.04 (N47): the leaf and its panels one draw
-  // the window: white frame, glass, a sill, the view out
-  const white = reg(new THREE.MeshStandardMaterial({ color: "#f1efe9", roughness: 0.45 }));
+  const white = reg(new THREE.MeshStandardMaterial({ color: "#f1efe9", roughness: 0.45 }));   // the window: white frame, glass, a sill, the view out
   const fw = 6, mid = (wx0 + wx1) / 2;
-  // v17: the frame sits back in a deep reveal (the jambs and head in the wall paint), with a deep white sill for the plants
-  const REV = R.WINDOW_REVEAL, FZ = WZ - REV;
-  /* v47.2, from the client's photo of the back of the house: three sections (narrow sides, a wide middle), a row of top lights, and white
-     Georgian bars on the glass: two panes across in each side, three in the middle, three down under the top lights */
-  const WD = R.WINDOW_DESIGN || { sections: [0.5, 0.5], top: 0.68, cols: [1, 1], rows: 1, frame: fw, mullion: 6, transom: 5, bar: 1.6 };
+  const REV = R.WINDOW_REVEAL, FZ = WZ - REV;   // v17: the frame sits back in a deep reveal (the jambs and head in the wall paint), with a deep white sill for the plants
+  const WD = R.WINDOW_DESIGN || { sections: [0.5, 0.5], top: 0.68, cols: [1, 1], rows: 1, frame: fw, mullion: 6, transom: 5, bar: 1.6 };   // v47.2, from the client's photo: three sections, top lights, white Georgian bars
   const ww = wx1 - wx0, wh = wy1 - wy0, ty = wy0 + WD.top * wh;
   const parts = [[wx0, wy0, WD.frame, wh], [wx1 - WD.frame, wy0, WD.frame, wh], [wx0, wy0, ww, WD.frame], [wx0, wy1 - WD.frame, ww, WD.frame], [wx0, ty - WD.transom / 2, ww, WD.transom]];
   let sx = wx0; const secs = WD.sections.map(f => { const a = sx; sx += f * ww; return [a, sx]; });
@@ -132,15 +120,12 @@ function buildShell() {
   glass.userData.envK = 0.4;   // review after v48: v44's glossy-surface reflections (2.4×) laid a white veil over the garden; the pane stays faint
   const pane = new THREE.Mesh(new THREE.PlaneGeometry((wx1 - wx0) * M, (wy1 - wy0) * M), glass);
   pane.position.copy(v3(mid, (wy0 + wy1) / 2, FZ - 1)); shell.add(pane);
-  /* v48, client: "It's a floor up so take perspective into account": the garden picture is made from one eye in the room (the window's
-     middle, at standing height), straight out and level (v48's garden_window.py, in git history), so hung square-on at d from that eye, at the size its angles
-     give, it lines up: the lawn well below the sill, the trees and the hill across the valley at eye level, from anywhere in the room */
+  /* v48: the garden picture made from one eye (the window's middle, standing height, level), hung square-on at d from it, so it lines
+     up from anywhere in the room */
   const GV = R.GARDEN_VIEW || { eye: [mid, 150, WZ + 60], d: 1000, tan: [2.747, 0.839, 2.145] }, [tx, tu, td] = GV.tan;
   view = new THREE.Mesh(new THREE.PlaneGeometry(2 * GV.d * tx * M, GV.d * (tu + td) * M), new THREE.MeshBasicMaterial({ color: "#1d2535", toneMapped: false }));
   view.position.copy(v3(GV.eye[0], GV.eye[1] + GV.d * (tu - td) / 2, GV.eye[2] - GV.d)); shell.add(view);
-  /* v53, client: "Can you make the garden visible through the window at any angle ... both gardens": from above (Whole room, Bird's eye,
-     Dolls' house) the back garden is ground under the room: the house's back wall down to the lawn, the patio, the lawn, the path down
-     the left, the fences, 25 m out (geometry.GARDEN). Looking out from inside, the photo stays (it carries the real garden) */
+  /* v53: from above, the back garden is ground under the room (geometry.GARDEN); from inside, the photo stays */
   { const GD = R.GARDEN || { drop: 260, length: 2500, patio: 0, path: 90, fence: 180, fence_r: 120 }, BG = R.HOUSE3 && R.HOUSE3.garden, y0 = -GD.drop, z0 = WZ - 30, z1 = z0 - GD.length, x0 = BG ? BG.x[0] : -12, x1 = BG ? BG.x[1] : Wd + 12;
     garden3d = new THREE.Group(); garden3d.visible = false; scene.add(garden3d);   // v55: in the scene, so it stays when Lower takes the room off
     const mat = c => reg(new THREE.MeshStandardMaterial({ color: c, roughness: 0.95 }));
@@ -178,8 +163,7 @@ function buildShell() {
     if (!R.HOUSE3) box(x0, x1, y0, 0, z0 + 30, z0, mat("#9a5a43"));               // the house's back wall below the room (brick), down to the lawn (v58: the built house has its own)
   }
   sillPlants(wx0, wx1, SL.y, FZ + 2, WZ + SL.nose - 1);
-  // the radiator under the window, painted in
-  const [rx0, rx1] = R.HOUSE3.living.radiator.x, [ry0, ry1] = R.HOUSE3.living.radiator.y, radP = paintMat(lum("#3b6e56") / BASE_L, true, false, "trim");
+  const [rx0, rx1] = R.HOUSE3.living.radiator.x, [ry0, ry1] = R.HOUSE3.living.radiator.y, radP = paintMat(lum("#3b6e56") / BASE_L, true, false, "trim");   // the radiator under the window, painted in
   for (let x = rx0; x < rx1 - 2; x += 5) cube(x, ry0, WZ + 3, 3.4, ry1 - ry0, 7, radP);
   // the coffee table (its footprint from the plan; drawn as a plain low table)
   const cof = R.COFFEE, cofM = reg(new THREE.MeshStandardMaterial({ color: "#2c2a28", map: OAK_TEX, roughness: 0.5 }));   // V3.83 (N140): dark oak, not flat
@@ -190,8 +174,7 @@ function buildShell() {
     movable("coffee", "Coffee table", g, () => ({ x: (cof.x[0] + cof.x[1]) / 2, z: (cof.z[0] + cof.z[1]) / 2, rot: 0 }), cw, cd, [cofM]);
     const B_ = R.SOFABED, cofOut = B_ ? B_.cof_out ?? Math.max(0, R.SOFA.back + B_.run_d + B_.bed_out + 4 - cof.z[0]) : 0;   // V3.73: just clear of the open bed (geometry: 34)
     WORK.cof = anim(v => { g.position.z = cofOut * v * M; }); WORK.cof.out = cofOut; }   // V3.71: towards the media wall while the sofa bed is out   // v27: it stays put (v26 moved it for an eighth seat)
-  // v15: the rug, 230 × 160 in front of the sofa (geometry.RUG), with its design and a little thickness
-  const RG = R.RUG, rugW = RG.x[1] - RG.x[0], rugD = RG.z[1] - RG.z[0];
+  const RG = R.RUG, rugW = RG.x[1] - RG.x[0], rugD = RG.z[1] - RG.z[0];   // v15: the rug, 230 × 160 in front of the sofa (geometry.RUG), with its design and a little thickness
   const rug = new THREE.Mesh(new THREE.BoxGeometry(rugW * M, 0.008, rugD * M),
     [0, 1, 2, 3, 4, 5].map(i => i === 2 ? reg(new THREE.MeshStandardMaterial({ map: RUG_TEX, roughness: 0.97, bumpMap: PILE, bumpScale: 0.35 }))
                                         : reg(new THREE.MeshStandardMaterial({ color: RG.cols[3], roughness: 1 }))));
@@ -200,9 +183,7 @@ function buildShell() {
   rug.position.y = 0.004; rug.rotation.y = Math.PI; rug.receiveShadow = true; rugMesh = rug;
   { const g = new THREE.Group(); g.add(rug);
     movable("rug", "Rug", g, () => ({ x: (RG.x[0] + RG.x[1]) / 2, z: (RG.z[0] + RG.z[1]) / 2, rot: 0 }), rugW, rugD, [], true); }
-  // v15: the curtains, from the client's photo: long pencil-pleat panels to the floor in oatmeal, on a rail just under the ceiling strip
-  // running 30 past the window each side; open (stacked either side) or drawn across (S.curtains)
-  // "hessian curtains from dunelm with a wood rail": a coarse natural weave, on a 28 mm wooden pole with rings and ball finials
+  // v15: the curtains: hessian pencil-pleat panels to the floor on a 28 mm wooden pole, 30 past the window each side (S.curtains)
   const CU = R.CURTAIN, cloth = curtCloth = reg(new THREE.MeshStandardMaterial({ color: CU.col, roughness: 1, side: THREE.DoubleSide, map: HESSIAN, bumpMap: HESSIAN, bumpScale: 0.8 }));
   const wood = reg(new THREE.MeshStandardMaterial({ color: CU.pole_col, map: OAK_TEX, roughness: 0.5 }));  wood.userData.noTint = true;   // v26: yours, not the new oak
   const poleL = wx1 - wx0 + 2 * CU.ext, pq = v3((wx0 + wx1) / 2, CU.rail_y + CU.pole / 2, CU.z + 1);   // V3.04 (N47): the pole and its finials one draw
@@ -231,18 +212,14 @@ function buildShell() {
   const half = (wx1 - wx0) / 2 + CU.ext;
   curtShut.add(panel(wx0 - CU.ext, half, CU.folds * 2.2), panel(wx0 - CU.ext + half, half, CU.folds * 2.2));
   shell.add(mergeStatic(curtOpen), mergeStatic(curtShut));   // V3.04 (N47): each pair one draw
-  // shelf B: the client's 2 m black floating shelf on the stairs wall
-  const sb = R.SHELF_B, black = shelfMat = reg(new THREE.MeshStandardMaterial({ color: "#1a1a1b", map: BLANK, roughness: 0.55 }));
+  const sb = R.SHELF_B, black = shelfMat = reg(new THREE.MeshStandardMaterial({ color: "#1a1a1b", map: BLANK, roughness: 0.55 }));   // shelf B: the client's 2 m black floating shelf on the stairs wall
   cube(Wd - sb.d, sb.top - sb.t, sb.z[1], sb.d, sb.t, sb.z[0] - sb.z[1], black);
-  // v16: "on the left of that shelf is my ikea light box" ... "black not white": the OBEGRÄNSAD panel, black, standing landscape against
-  // the wall at the shelf's stair end; its 16 x 16 LEDs fill a square in the middle of the face
-  const LB = R.LIGHTBOX, lbBlack = reg(new THREE.MeshStandardMaterial({ color: "#121213", roughness: 0.5 }));
+  const LB = R.LIGHTBOX, lbBlack = reg(new THREE.MeshStandardMaterial({ color: "#121213", roughness: 0.5 }));   // v16: the black OBEGRÄNSAD light box, landscape against the wall at the shelf's stair end; 16 × 16 LEDs mid-face
   cube(Wd - 1 - LB.d, sb.top, LB.z[1], LB.d, LB.h, LB.z[0] - LB.z[1], lbBlack);
   const lbS = LB.h - 4;
   lboxFace = new THREE.Mesh(new THREE.PlaneGeometry(lbS * M, lbS * M), new THREE.MeshBasicMaterial({ map: LBOX_TEX, toneMapped: false }));
   lboxFace.position.copy(v3(Wd - 1 - LB.d - 0.15, sb.top + LB.h / 2, (LB.z[0] + LB.z[1]) / 2)); lboxFace.rotation.y = Math.PI / 2; shell.add(lboxFace);   // v16: faces the room (it faced the wall)
-  // v15: "add my small laser from the middle": a small star projector on the shelf; its dots land on the ceiling over the room
-  const LZ = R.LASER, [lw, lh, ld] = LZ.size;
+  const LZ = R.LASER, [lw, lh, ld] = LZ.size;   // v15: "add my small laser from the middle": a small star projector on the shelf; its dots land on the ceiling over the room
   cube(Wd - 6 - lw, sb.top, LZ.z - ld / 2, lw, lh, ld, reg(new THREE.MeshStandardMaterial({ color: "#202124", roughness: 0.35, metalness: 0.3 })));
   const dots = [], dcol = [], rr = rnd(17), gcol = new THREE.Color("#39ff7a"), bcol = new THREE.Color("#4d7dff"), rcol = new THREE.Color("#ff3b5c");
   for (let i = 0; i < 260; i++) {                 // a fan of dots from the projector, over the ceiling and the top of the walls
@@ -255,9 +232,7 @@ function buildShell() {
   const dg = new THREE.BufferGeometry(); dg.setAttribute("position", new THREE.Float32BufferAttribute(dots, 3)); dg.setAttribute("color", new THREE.Float32BufferAttribute(dcol, 3));
   laserDots = new THREE.Points(dg, new THREE.PointsMaterial({ size: 0.018, vertexColors: true, toneMapped: false, transparent: true, opacity: 0.9, depthWrite: false }));
   shell.add(laserDots);
-  // v15: "make the hanging plant on the wall shelf actually hang": a pot at the window end, its strands trailing down off the shelf.
-  // v36: its own group (plantBG). v37: it stays here, at the shelf's window end, now 10 short of the boxing (v36's plant shelf is gone)
-  plantBG = new THREE.Group(); shell.add(plantBG);
+  plantBG = new THREE.Group(); shell.add(plantBG);   // v15: the hanging plant at the shelf's window end, its strands trailing down (its own group, plantBG)
   floraSpot(plantBG, () => hangPlant(plantBG, Wd - sb.d / 2 - 1, sb.top, R.PLANT_B.z, [Wd - sb.d - 1], 4, R.PLANT_THROUGH_GAP ? [sb.z[1], R.PIPE_BOX.z[1]] : null));   // v40: rebuilt with Look's plants   // v38: through the 10 cm gap
   // v15: "either add my hat there or give it a wallstand": an oak peg on the stairs wall with the hat on it. v16: off until the photo
   if (R.HAT_PEG) {
@@ -270,11 +245,9 @@ function buildShell() {
   const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.09, 0.11, 32), felt); crown.position.y = 0.058;
   const ribbon = new THREE.Mesh(new THREE.CylinderGeometry(0.0905, 0.0915, 0.022, 32), band); ribbon.position.y = 0.016;
   hat.add(shadow(brim), shadow(crown), ribbon);
-  // resting on the peg, crown up and tipped a little towards the room, as a hat sits on a hook
-  hat.rotation.z = -0.22; hat.position.copy(v3(Wd - 15, HP.y + 1.5, HP.z)); shell.add(hat);
+  hat.rotation.z = -0.22; hat.position.copy(v3(Wd - 15, HP.y + 1.5, HP.z)); shell.add(hat);   // resting on the peg, crown up and tipped a little towards the room, as a hat sits on a hook
   }
-  // ceiling LED strip: an emissive line round the room's edge
-  ledMat = new THREE.MeshBasicMaterial({ color: "#ffd9a8", toneMapped: false });
+  ledMat = new THREE.MeshBasicMaterial({ color: "#ffd9a8", toneMapped: false });   // ceiling LED strip: an emissive line round the room's edge
   const ly = R.LED_Y - 0.8;
   [[0.5, WZ + 1, 1, AD - WZ - 2], [Wd - 1.5, WZ + 1, 1, front - WZ - 2]].forEach(([x, z, w, d]) => cube(x, ly, z, w, 0.8, d, ledMat, false));
   [[1, WZ + 0.5, Wd - 2], [1, AD - 1.5, A - 2], [B0, -1.5, B1 - B0], [B1, RZ - 1.5, wx - B1]].forEach(([x, z, w]) => cube(x, ly, z, w, 0.8, 1, ledMat, false));
@@ -293,8 +266,7 @@ function buildShell() {
       const lx = w > d ? x : x + (x < 1 ? V.d - 1 : 0), lz = w > d ? z + (z === WZ ? V.d - 1 : 0) : z;
       put(cv, lx, C - 2, lz, w > d ? w : 1, 0.6, w > d ? 1 : d, ledMat); }
     for (const g of Object.values(CEIL_G)) { g.visible = false; shell.add(g); } }
-  // v15: the side run's LED strip, under its front edge (on the uprights' driver)
-  runLed = new THREE.MeshBasicMaterial({ color: "#ffd9a8", toneMapped: false });
+  runLed = new THREE.MeshBasicMaterial({ color: "#ffd9a8", toneMapped: false });   // v15: the side run's LED strip, under its front edge (on the uprights' driver)
   const SR = R.SIDE_RUN;
   for (let i = 0; i < SR.edge.length - 1; i++) {
     const [d1, z1] = SR.edge[i], [d2, z2] = SR.edge[i + 1];
@@ -308,9 +280,7 @@ function buildShell() {
   buildStairs();
   flushCubes(shell);
 }
-/* v38, client: "Make the stairs solid until the landing": the flight as one solid, a stepped profile run across its width, 13 risers
-   up to a landing at the first floor, oak treads and a closed oak string on the open side. A stand-in shape (the stairs will change).
-   The cutaway leaves it whole (its materials carry no clipping planes), so it never shows in slices. */
+/* v38: the flight as one solid to the landing: 13 risers, oak treads, a closed string; no clipping planes, so the cutaway leaves it whole */
 function buildStairs() {
   const FL = R.HOUSE3.living.flight, sx0 = FL.x0, sx1 = FL.x1, n = FL.n, r = FL.r, gq = FL.g, tb = 2.2, nose = 1.5;   // V1.46: the flight from the house file
   const z0 = FL.z0, zl = FL.zl, zl1 = FL.zl1, top = n * r;
@@ -329,10 +299,7 @@ function buildStairs() {
   const prof = [[z0, 0]];                    // the body: risers and treads (under the boards) down to the floor, the landing on top
   for (let i = 1; i < n; i++) prof.push([z0 + (i - 1) * gq, i * r - tb], [z0 + i * gq, i * r - tb]);
   prof.push([zl, top - tb], [zl1, top - tb], [zl1, 0]);
-  /* V1.59, the client: "when on ground floor view and looking down the stairs there is strange clipping and green blocks": past the living
-     room's back wall the flight runs on over the hall and the lower stairs, where the house has its own walls round it; there its body
-     fought those walls and showed the living room's green. That part is the hall's off-white now, and drawn behind the house's walls */
-  const RZ = R.RECESS_Z, steps = prof.slice(1, -1), yAt = z => { let y = 0; for (const [pz, py] of steps) if (pz <= z + 1e-6) y = py; return y; };
+  const RZ = R.RECESS_Z, steps = prof.slice(1, -1), yAt = z => { let y = 0; for (const [pz, py] of steps) if (pz <= z + 1e-6) y = py; return y; };   // V1.59: past the living room's back wall the flight is the hall's off-white, drawn behind the house's walls
   const inner = [[z0, 0], ...steps.filter(([pz]) => pz < RZ), [RZ, yAt(RZ)], [RZ, 0]];
   const outer = [[RZ, 0], [RZ, yAt(RZ)], ...steps.filter(([pz]) => pz > RZ), [zl1, 0]];
   solid(inner, sx0 + 0.2, sx1 - 0.2, body);
@@ -344,7 +311,5 @@ function buildStairs() {
   solid([[z0, 0], [zf, 0], [zl, top - 21], [zl1, top - 21], [zl1, top + 3], [zl, top + 3], [z0, pitch(z0) + 3]], sx0 - 2.2, sx0 - 0.2, str);
   mergeStatic(g);   // V3.04 (N47): the treads and the landing's boards one draw (they were 13)
 }
-/* v40: the flip-top's chair cupboard, its hooks and the fold-down seat are gone (never shown since the dining cabinet became the only
-   table in v33; the code is in git history, v40) */
-function placeChairs() { placeOptC(); }
+function placeChairs() { placeOptC(); }   // v40: the flip-top's chair cupboard, hooks and seat are in git history
 

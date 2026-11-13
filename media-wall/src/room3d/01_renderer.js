@@ -11,49 +11,28 @@ try {
 gl.debug.checkShaderErrors = !!navigator.webdriver || /[?&]debug\b/.test(location.search);   // V3.45 (N97), the client 10 Nov 2026: "smooth motion like im there when walking through the house": each new shader asked the graphics card for its error log, a wait of its own; the checks (and CI) keep it, ?debug too
 gl.outputColorSpace = THREE.SRGBColorSpace;
 gl.toneMapping = THREE.AgXToneMapping;   // v44: AgX over ACES: the wall reads nearer Card Room Green and the glass case and window keep their highlights
-/* v39, client: "PC should be using GPU in order to speed up and keep frames high since most PCs will have 1060 or higher": the renderer
-   asks for the high-performance GPU; a PC whose browser reports a real graphics card starts in HD (no Fast-then-HD second set of shaders
-   to build) and keeps full resolution while you move unless its frames actually slow down. */
+/* v39: a PC asks for the high-performance GPU; a real graphics card starts in HD and keeps full resolution while moving unless slow */
 const GPU = (() => { try { const c = gl.getContext(), e = c.getExtension("WEBGL_debug_renderer_info"); return String(e ? c.getParameter(e.UNMASKED_RENDERER_WEBGL) : c.getParameter(c.RENDERER)); } catch (e) { return ""; } })();
-/* N124, the client's PC (9 Nov 2026, "still not as fluid as mobile"): her browser hid the graphics card's name (Send said "other"), so a
-   PC with an RTX was drawn as an unknown computer: half sharpness and a new canvas on every drag, no shade, no glow. A computer whose
-   browser hides the name (no maker in it, not software) is taken as one with a card; its moving frames still decide (slowDev) */
+/* N124: a desktop browser that hides the card's name (no maker, not software) is taken as one with a card; slowDev still decides */
 const MASKED = !SMALL && !matchMedia("(pointer: coarse)").matches && !/nvidia|geforce|rtx|gtx|quadro|amd|radeon|ati\b|intel|apple|adreno|mali|immortalis|xclipse|powervr|qualcomm|arm\b|swiftshader|llvmpipe|software|basic render|microsoft|vmware|virtualbox|parallels|mesa|google/i.test(GPU);
 const BIG_GPU = MASKED || !matchMedia("(pointer: coarse)").matches && /nvidia|geforce|rtx|gtx|quadro|radeon\s*(rx|pro|r9)|radeon\(tm\) rx|intel.*\barc\b|apple m\d/i.test(GPU) && !/swiftshader|llvmpipe|software|basic render/i.test(GPU);
-/* V2.25, the client: "the main access point will be a gaming pc with a graphics card (5070 & 3060) so no lighter model should be used on
-   pc ... best version with best performance and quality should be on pc": a real card (whatever the window's width) opens in HD on every
-   visit, a saved Fast too (a driver reset used to save one for good), and never steps itself down (17_render_loop, 13_edit_room) */
-if (BIG_GPU) S.quality = "hd";
-/* v39, client: "Mobile ... is slow and doesn't render full quality expected". Phones drew at 0.85 of a CSS pixel (a third of a 3× screen's
-   sharpness) and never left Fast. Now a phone draws at its own sharpness (2× on a capable chip, 1.5× otherwise; halved only while you
-   move), and a capable chip (any iPhone's Apple GPU, Adreno 6xx and up, Mali-G57 and up, Immortalis, Xclipse) goes on to HD when its
-   first frames are quick, and back to Fast if HD runs slow. */
+if (BIG_GPU) S.quality = "hd";   // V2.25: a real card opens in HD on every visit (a saved Fast too) and never steps itself down (17_render_loop, 13_edit_room)
+/* v39: a phone draws at its own sharpness; a capable chip (Apple GPU, Adreno 6xx+, Mali-G57+, Immortalis, Xclipse) goes on to HD */
 const GOOD_PHONE = SMALL && /apple gpu|adreno[^0-9]*([6-9]\d{2})|mali-g(5[7-9]|6\d|7\d|[1-9]\d{2})|immortalis|xclipse/i.test(GPU);
-/* V1.11, the client: "i dont want these low res versions, best textures, quality and performance on the PC and mobile": a capable phone
-   (their iPhones) starts in HD at its screen's own sharpness with the shade, the glow and the PCs' soft 2048 shadows; if its frames run
-   slow it gives way a step at a time (3× to 2×, then the shade, then Fast) rather than starting low */
-if (GOOD_PHONE && !S.picked) S.quality = "hd";
+if (GOOD_PHONE && !S.picked) S.quality = "hd";   // V1.11: a capable phone starts in HD with the shade, the glow and 2048 shadows; if slow it steps down (3× to 2×, the shade, Fast)
 const HI = BIG_GPU || GOOD_PHONE, LOWD = SMALL && !GOOD_PHONE;   // LOWD: a phone without a capable chip, the only one still drawn lighter
 const LIVE_SHADOW = HI ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap, LIVE_MAP = HI ? 2048 : 1024;   // v44: a real graphics card gets the pictures' soft 2048 shadows live
 gl.shadowMap.type = LIVE_SHADOW;   // v14.1: PCF while you look round; the saved HD pictures use soft shadows
 gl.shadowMap.autoUpdate = false;          // v14.1: shadows don't move with the camera, so they're redrawn only when the room changes
 const reshadow = () => { gl.shadowMap.needsUpdate = true; };
-/* v35, client: "it currently still crashes in the shared version ... it also is a bit slow on the render sometimes becoming HD".
-   three.js builds every material's shader for the number of lights it can see and how many cast shadows, so each light switched on or
-   off (a scene, the table rule, a suggestion, a hidden group with a light in it) rebuilt about 20 shaders: 10 s for "Film", 21 s to open
-   the table. Now, while you use the room, the lights the renderer sees are a fixed set for each quality (Fast leaves out the area lights
-   and every other bar head, as before), a light that's "off" is turned down to nothing, and only one head on each spot bar casts a
-   shadow (HD). A light inside something that can be hidden (an idea, a suggestion, the cabinet's bars) moves to an always-shown rig that
-   follows it: always in HD's set (at nothing while hidden), never in Fast's (their glowing materials still show). While still() renders a picture (LIVE false) every light
-   behaves as it always did, so the saved pictures don't change. */
+/* v35: the lights the renderer sees are a fixed set per quality (an "off" light at zero; one shadow-casting head a bar in HD), so a
+   switch builds no shaders; a light in a hideable group moves to the always-shown lightRig. still() (LIVE false) draws as it always did */
 let LIVE = true;
 const lightRig = new THREE.Group(); lightRig.name = "lightRig";
 const RIGGED = [];
 function shownChain(o) { for (; o && o.parent; o = o.parent) if (!o.visible) return false; return true; }
 function lightIn(l) {                 // in the renderer's set for this quality
-  /* v73, the client: "still extremely slow" on a PC: in the house's views the living room's 36 lights (spot heads, area lights, LEDs),
-     turned down to nothing, were still in every pixel's sums, two of them drawing shadows. There, only the sky, the sun and the room's
-     own two ceiling lights are in the set (the shaders change once, going between the living room and the house) */
+  /* v73: in the house's views only the sky, the sun and the house's own lights are in the set (the living room's 36 are not) */
   if (LIVE && R.HOUSE3 && HOUSEV(S.view)) return !!(l.isHemisphereLight || l.userData.sun || (l.userData.houseLight && (!(l.userData.win || l.userData.hdOnly) || S.quality === "hd")));   // V3.57: and the last two ceiling lights   // V2.39: a window's daylight in HD
   if (l.userData.win) return false;
   const hd = S.quality === "hd";
@@ -79,12 +58,8 @@ function adoptLights(scn) {           // after anything that builds lights (the 
   const found = []; scn.traverse(o => { if (o.isLight && !o.userData.adopted) found.push(o); });
   found.forEach(l => adoptLight(l, scn));
 }
-/* v35: the first time the table opened, 18 shaders compiled for the parts that had been hidden (the open table, the chairs round it,
-   the plates): 18 s here, a freeze on a phone. three's compile() can't make them ahead (it doesn't set up the cutaway's clipping, so
-   its shaders don't match), so once the room is on screen and still, each hidden part is drawn on its own (camera layer 31: the part
-   and every light) into a 1 × 1 target that three treats like the screen (same colour space and tone mapping, so the same shaders):
-   its shaders are then ready when you open the table or switch something on. Nothing on screen changes, so there's no redraw after.
-   One part at a time, only after a second with no taps or drags; again after a quality change */
+/* v35: hidden parts (the open table, the chairs, ...) drawn one at a time at 1 × 1 (camera layer 31, three's own colour space and
+   tone mapping) once the room is still a second, so their shaders are ready before they're shown; again after a quality change */
 const PRE = { queue: [], done: 0, rt: null, idleT: 0 };
 function precompile() {
   PRE.queue.length = 0;
@@ -108,9 +83,7 @@ function precompileStep() {           // from the frame loop, when nothing's mov
   PRE.done++;
   return true;
 }
-/* V3.23: where the browser builds shaders in parallel (Chrome on a PC, Safari), the hidden parts are asked for a dozen at a time
-   (compileClipped), not drawn one by one: each draw waited for its shaders, on Windows the driver's compiler (a second or more each,
-   the page held); now they build beside the page, which keeps answering */
+/* V3.23: where shaders build in parallel, hidden parts are asked for a dozen at a time (compileClipped) beside the page */
 function precompileBatch() {
   if (PRE.busy || !PRE.queue.length || !LIVE || (gl.shadowMap.enabled && gl.shadowMap.needsUpdate)) return false;
   const roots = PRE.queue.splice(0, 12).filter(o => o.visible === false && o.parent);
@@ -122,18 +95,13 @@ function precompileBatch() {
   PRE.busy = true; Promise.race([job.catch(() => {}), new Promise(r => setTimeout(r, 8000))]).then(() => { PRE.busy = false; PRE.done += roots.length; });
   return true;
 }
-/* V2.64, the client's iPhone froze on the first tap on a floor: three's compileAsync (the start's shaders, built in parallel where the
-   browser can: Safari and Chrome have KHR_parallel_shader_compile) builds every shader for the cutting planes of whatever was drawn
-   last, so the house's 6 planes and the living room's 2 never matched and were built again, one at a time, on the frame that first
-   showed them (34 to 44: seconds on a phone). Now the scene is compiled in groups with the same planes, each after a speck with those
-   planes is drawn off screen (prime: which sets three's planes to its) */
+/* V2.64: three builds for the cutting planes of whatever it drew last, so the scene compiles in groups that share planes, each after
+   a speck with those planes is drawn off screen (prime) */
 function compileClipped(cam, shownOnly, roots) {   // shownOnly: what's shown now (the rooms' warm-up), not every hidden part too; roots: only these hidden parts (V3.23)
   const key = m => gl.localClippingEnabled && m.clippingPlanes && m.clippingPlanes.length ? m.clippingPlanes.length + (m.clipIntersection ? "i" : "u") : "0";
   const G = new Map(), D = new Map(), put = (M, k, o, m) => { if (!M.has(k)) M.set(k, []); M.get(k).push([o, m]); };
   (roots ? f => roots.forEach(r => r.traverse(f)) : f => scene[shownOnly ? "traverseVisible" : "traverse"](f))(o => { const m = [].concat(o.material || [])[0]; if (m && (o.isMesh || o.isLine || o.isPoints || o.isSprite)) put(G, key(m), o, o.material); });
-  /* N35 (V2.87): and the shadows' own: three draws each caster into a shadow with a material of its own (cut, mapped or not) that it
-     can't be asked to build ahead, so a stand-in like it, one of a kind, is put on each caster for the asking (and taken off) */
-  const lit = []; scene.traverseVisible(l => { if (l.isLight) lit.push(l); });
+  const lit = []; scene.traverseVisible(l => { if (l.isLight) lit.push(l); });   // N35: the shadows' own materials: a one-of-a-kind stand-in put on each caster for the asking (and taken off)
   if (gl.shadowMap.enabled && !roots) { const pts = new Set(lit.filter(l => l.castShadow).map(l => !!l.isPointLight));
     for (const pt of pts) scene.traverseVisible(o => { if (!o.isMesh || !o.castShadow || !o.material) return; const d = Array.isArray(o.material) ? o.material.map(m => depthMat(m, pt)) : depthMat(o.material, pt), d0 = [].concat(d)[0]; put(D, "s" + (d0.clipShadows ? key(d0) : "0"), o, d); }); }
   const jobs = [], was = gl.getRenderTarget();
@@ -150,9 +118,7 @@ function compileClipped(cam, shownOnly, roots) {   // shownOnly: what's shown no
   } finally { gl.setRenderTarget(was); }
   return Promise.all(jobs);
 }
-/* three builds for the cutting planes of whatever it drew last: a speck with the same planes (and no lights: one tiny shader for each
-   set, ever), drawn into the 1 × 1 target. It drew one of the group's own pieces (N35: its shader then built on the spot) */
-const PRIME = new THREE.Mesh(new THREE.PlaneGeometry(1e-4, 1e-4), new THREE.MeshBasicMaterial()), PRIMES = new THREE.Scene().add(PRIME);
+const PRIME = new THREE.Mesh(new THREE.PlaneGeometry(1e-4, 1e-4), new THREE.MeshBasicMaterial()), PRIMES = new THREE.Scene().add(PRIME);   // the speck (one tiny unlit shader a plane set) drawn into the 1 × 1 target
 PRIME.frustumCulled = false;
 function prime(mat, cam) {
   const m = [].concat(mat || {})[0], p = PRIME.material, su = gl.shadowMap.needsUpdate;
@@ -170,11 +136,8 @@ function depthMat(m, pt) {   // as three's getDepthMaterial makes it (PCF shadow
     displacementMap: m.displacementMap, displacementScale: m.displacementScale, displacementBias: m.displacementBias });
   return d;
 }
-/* V2.66 (N13), the client 7 Nov 2026: "iPhone is running better but there's still some initial freezing": after the warm-up the first
-   picture still built 16 shaders one after another (the shade's, the glow's, their output, the shadows' depth), drew every shadow and
-   sent about 220 textures, all in one frame. Now the shade's and the glow's shaders are asked for in the warm-up with the rest (in
-   parallel where the browser can), every texture is sent in short slices while it waits, and the shadows are drawn a frame before the
-   first picture (off screen), so no one frame does it all */
+/* V2.66 (N13): the shade's and glow's shaders built in the warm-up, textures sent in slices, shadows drawn a frame before the first
+   picture, so no one frame does it all */
 function postWarm() {                 // the composer's own shaders, in parallel (01's aoComposer made early)
   if (!postLive() || !gl.compileAsync) return Promise.resolve();
   const sz = gl.getSize(new THREE.Vector2()); aoComposer(sz.x, sz.y, gl.getPixelRatio()); AO.w = sz.x; AO.h = sz.y; AO.pr = gl.getPixelRatio();
@@ -196,19 +159,12 @@ function texWarm() {                  // every texture onto the chip in slices o
   const L = [...T], step = () => { const t0 = performance.now(); while (L.length && performance.now() - t0 < 8) { try { gl.initTexture(L.pop()); } catch (e) {} } if (L.length) setTimeout(step, 0); };
   step();
 }
-/* V3.51 (N103), the client 10 Nov 2026: "i want smooth motion like im there when walking through the house": a room's shaders were
-   built ahead, but its shapes went to the graphics card on the frame that first showed them (from the hall, 305 shapes, 15 MB, in
-   the one frame by the living room's door). Now a room's shapes go after its warm-up's shaders, a few at a time between frames,
-   drawn at 1 × 1 in one plain material (no lights: no new shaders); nothing with its own before-draw step (the room's stickers) */
-const GEO_DONE = new WeakSet(), GEO_Q = []; let geoT = 0, geoH = null;
+const GEO_DONE = new WeakSet(), GEO_Q = []; let geoT = 0, geoH = null;   // V3.51 (N103): a room's shapes uploaded after its warm-up's shaders, a few between frames, drawn 1 × 1 in one plain material
 function geoWarm(list) {
   for (const o of list) if (o.isMesh && o.geometry && !GEO_DONE.has(o.geometry) && o.onBeforeRender === THREE.Object3D.prototype.onBeforeRender) { GEO_DONE.add(o.geometry); GEO_Q.push(o); }
   if (GEO_Q.length && !geoT) geoT = setTimeout(geoStep, 0);
 }
-/* V3.69 (N123), the phone smoother: the plain material's shader differs by a shape's kind (its UVs, its colours, ...), so the first
-   shapes of each kind built one on the spot (3 on the first walk on the iPhone path: a stall each on a phone). Each queued shape's
-   variant is now asked for first beside the page (compileAsync: in parallel on the iPhone), then drawn */
-const GEO_C = new WeakSet(); let geoP = null;
+const GEO_C = new WeakSet(); let geoP = null;   // V3.69 (N123): each queued shape's plain-material variant compiled beside the page (compileAsync) before it's drawn
 function geoStep() {
   geoT = 0; if (!PRE.rt) return;
   if (!geoH) { geoH = new THREE.Scene(); geoH.overrideMaterial = new THREE.MeshBasicMaterial(); geoH.matrixWorldAutoUpdate = false; geoP = new THREE.Scene(); geoP.matrixWorldAutoUpdate = false; }
@@ -234,28 +190,17 @@ function preDraw() {                  // the frame before the first: the shadows
   const was = gl.getRenderTarget(); gl.setRenderTarget(postLive() ? PRE.rtAO : PRE.rt);
   try { gl.render(scene, camera); } finally { gl.setRenderTarget(was); }
 }
-/* v40, client: "better rendering and graphics": ambient occlusion (three's GTAO), the soft shade where things meet. Always in the HD
-   pictures; live in HD on a real graphics card (aoLive). With it the room draws into the composer's target (linear, tone-mapped at the
-   end), so the warm-up draws into a target of the same kind and the shaders match. N46: the shade reads that target's depth
-   (cut by the cutaway as drawn) instead of drawing the scene a second time for its normals: HD's draws about halved */
+/* v40: GTAO in HD pictures and live on a real card (aoLive); the warm-up draws into a target of the composer's kind so the shaders
+   match. N46: the shade reads that target's depth (no second normals pass) */
 const AO = { c: null, g: null };
-/* v73 (B): if the house still runs under 25 frames a second in HD (the gaps while it moves), it drops its ambient occlusion and draws at
-   1× (the living room keeps its HD); once, for this visit (?houselite forces it, for a check) */
-let houseLite = /[?&]houselite\b/.test(location.search);
-/* V1.1, the client's iPhones (15 Pro, 16): a capable phone in HD whose frames are quick (under 14 ms) gets the PCs' shade and glow too
-   (phoneAO, from autoQuality), lighter (8 samples, 2× anti-aliasing); off again for the visit if its frames then pass 30 ms */
+let houseLite = /[?&]houselite\b/.test(location.search);   // v73 (B): a house under 25 fps in HD drops its AO and draws at 1× for the visit (?houselite forces it)
+/* V1.1: a capable phone in HD that runs under 14 ms gets the shade and glow, lighter (phoneAO); off for the visit past 30 ms */
 let phoneAO = GOOD_PHONE, phoneAOoff = false, phoneCap = 2;   // V1.11: on from the start; phoneCap: the phone's sharpness
-/* V2.64, the client: "the phone version on my iPhone is freezing on load after first move and is quite laggy": the iPhone drew at its
-   screen's 3× (2.25 times 2×'s pixels, every frame through the shade and the glow) and the speed check then stepped it to 2× in its
-   first seconds, a new set of buffers each step; it starts at 2× now (with 4× anti-aliasing, as sharp to the eye at a phone's size).
-   And a phone in HD always draws through the composer, the shade on or off: the shaders for a target and for the screen differ, so
-   the shade going off after the speed check built every shader in sight again (15 to 30 programs: seconds on a phone) */
+/* V2.64: an iPhone starts at 2× (4× anti-aliasing) and in HD always draws through the composer, the shade on or off, so the speed
+   check never rebuilds the shaders in sight */
 const PHONE_HD = GOOD_PHONE && !BIG_GPU, dragLite = () => PHONE_HD && postLive();
-/* V3.39 (N91), the client 10 Nov 2026: "pc is getting better but still some stutter when moving, i want smooth motion like im there when
-   walking through the house". The phone leaves out the soft shade and the glow while it moves and is smooth; a PC kept both on every
-   frame of a walk, on a 144-165 Hz screen close to the frame's whole time (6-7 ms), so a frame now and then missed its turn: an uneven
-   step, a stutter. Now a PC does as the phone does: while you walk, look round or drag, the shade and the glow wait (the same shaders,
-   the passes skipped, nothing rebuilt), and they come back a quarter of a second after you stop. ?fullmove keeps them on */
+/* V3.39 (N91): while you walk, look or drag, a PC skips the shade and the glow as the phone does (same shaders); they come back a
+   quarter of a second after you stop. ?fullmove keeps them on */
 let moveLite = false;
 const MOVE_LITE = !/[?&]fullmove\b/.test(location.search);
 const postLive = () => S.quality === "hd" && (BIG_GPU || GOOD_PHONE || /[?&]ao\b/.test(location.search)) && !/[?&]noao\b/.test(location.search);   // V2.64: drawn through the composer
@@ -270,9 +215,7 @@ function aoComposer(w, h, pr) {
     AO.g.updateGtaoMaterial({ radius: 0.3, distanceExponent: 1.4, thickness: 1.2, scale: 1.1, samples: SMALL && !GOOD_PHONE ? 8 : 16, distanceFallOff: 1 });
     AO.g.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: SMALL && !GOOD_PHONE ? 8 : 16 });
     AO.c.addPass(AO.g);
-    // v48 §5, client: "improving the renders graphics and quality": a soft glow round what's brighter than white (the LED strips, the lamp's
-    // shades, the lit spot heads, the screen), in HD on a real graphics card and in every saved picture; the phone's Fast view has none
-    AO.b = new UnrealBloomPass(new THREE.Vector2(w, h), 0.2, 0.4, 2.2); AO.c.addPass(AO.b); bloomLevels(S.tod === "day");
+    AO.b = new UnrealBloomPass(new THREE.Vector2(w, h), 0.2, 0.4, 2.2); AO.c.addPass(AO.b); bloomLevels(S.tod === "day");   // v48: a soft glow round what's brighter than white, in HD on a real card and in every saved picture
     AO.c.addPass(new OutputPass());
   }
   AO.c.setPixelRatio(pr); AO.c.setSize(w, h);
@@ -306,8 +249,7 @@ controls.dampingFactor = 0.09;
 controls.maxDistance = 6;          // v17: 6 m inside the room (the views from above lift it), never closer than 30 cm
 controls.minDistance = 0.3;
 controls.screenSpacePanning = false;   // v17: a right-drag slides along the floor
-// v31, client: "make camera movement easier ... sometimes the movement is quite uncontrollable": it stops soon after you let go,
-// and a drag, a pinch or a scroll moves it about half as far
+// v31: it stops soon after you let go; a drag, pinch or scroll moves it about half as far
 const DAMP = 0.2; controls.dampingFactor = DAMP;   // V2.60: per 60th of a second (17_render_loop scales it to the frame)
 controls.rotateSpeed = 0.55; controls.zoomSpeed = 0.6; controls.panSpeed = 0.6;
 controls.zoomToCursor = true;   // V1.29 (U2), the client: "how quick the render can ... zoom": a scroll or a pinch goes towards what you point at, not the middle

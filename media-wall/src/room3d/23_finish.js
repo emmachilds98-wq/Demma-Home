@@ -1,12 +1,8 @@
-/* V2.6 (docs/FINISHES_PLAN.md F3), the client: "customise different areas of the house in a fluid way, ie colour of walls": tap a wall or a
-   ceiling in any of the house's rooms; its card has the colours as a tray (tap one: the room changes at once), where it goes (this wall,
-   this room, the whole house), Undo, and Hold to compare (the house as planned till you let go). Kept on this device (S.fin: room ->
-   slot -> colour), drawn through F2's palette (20_go.js finish). The living room keeps its own Look. */
+/* V2.6 (F3): tap a wall or ceiling in any room: its card's colour tray, where it goes (wall, room, house), Undo, Hold to compare.
+   Kept on this device (S.fin: room -> slot -> colour), drawn through 20_go.js finish. */
 let finScope = "room", finHeld = null, livHeld = null;
-/* N5 (REAL_PLAN R7, the finishes plan's F8): the living room on the house's rows. Its colours stay where its own Look keeps them (S.paint,
-   S.walls, S.ceil, S.skirt: drawn pixel for pixel as before); as a row it reads 0-3 its walls, 4 its ceiling, 11-16 its six walls by name
-   (media, breast, door, stairs, window, PC), 17 the skirting, the door and its frame. So a tap on its wall opens the house's card, and the
-   schemes, Undo, Copy and Paste and Send carry it with the rest of the house */
+/* N5 (F8): the living room on the house's rows, its colours where its Look keeps them: 0-3 walls, 4 ceiling, 11-16 its six named walls,
+   17 the skirting, door and frame; so schemes, Undo, Copy, Paste and Send carry it */
 const LIVR = "living", LIV_W = WALLS.map(([k]) => k), LIV_HEX = /^#[0-9a-f]{6}$/i;
 const livChanged = () => S.paint !== DEF.paint || Object.keys(S.walls).length > 0 || S.ceil !== "match" || S.skirt !== "match" || S.decor.rug !== DEF.decor.rug || S.decor.curtains !== DEF.decor.curtains;
 function livRow() {
@@ -32,16 +28,14 @@ const finPush = () => { if (NOWV) nowMode(false); FIN_UNDO.push(JSON.stringify(f
 const finSlotName = (room, slot) => room === LIVR && slot >= 11 && slot <= 16 ? WALLS[slot - 11][1].toLowerCase() : room === LIVR && slot === 17 ? "skirting and door" : `${FIN_NAMES[slot]} wall`;
 const FIN_UNDO = [];
 const FIN_NAMES = ["back", "front", "east", "west", "ceiling", "floor"];
-/* V2.7 (F4): the floors in the tray: the house's own floor materials (their photos, house/textures), laid as a room's new floor; the mean
-   colour of each photo is its swatch */
+/* V2.7 (F4): the floors: the house's own floor photos; each swatch the photo's mean colour */
 const FIN_FLOORS = [["carpet_grey", "Grey carpet"], ["carpet", "Oatmeal carpet"], ["laminate", "Laminate"], ["oak", "Oak boards"], ["pine", "Pine boards"],
   ["tile_f", "Pale tiles"], ["marble", "Black marble"], ["quarry", "Quarry tiles"],
   ["herring", "Herringbone oak"], ["lvt_grey", "Grey oak LVT"], ["porcelain", "Stone porcelain"]];   // V3.14 (N56): upgrades to try (fit.SOURCES upfloors)
 const FIN_FLOOR_KEYS = new Set([...FIN_FLOORS.map(([k]) => k), "board", "concrete", "vinyl", "earth"]);
 const finFloorCol = k => { const pm = ((R.HOUSE3 || {}).photo_meta || {})[k]; return (pm && pm.avg) || ((((R.HOUSE3 || {}).mats || {})[k]) || ["#999999"])[0]; };
 let FIN_LAID = [];
-/* V2.9 (F5, in part): a room's bulbs: their colour (warm 2700 K to daylight 5000 K) and how bright, on the room's ceiling lights. On the
-   ceiling's card and a light's own card; the two ceiling lights that follow you (09_house_views.js placeRoomLights) take them */
+/* V2.9 (F5): a room's bulbs (2700 K to 5000 K, how bright) on its two ceiling lights (09 placeRoomLights) */
 const FIN_BULBS = [["2700", "Warm"], ["3000", "Neutral"], ["4000", "Cool"], ["5000", "Daylight"]], FIN_LUX = [["0.6", "Soft"], ["1", "Normal"], ["1.4", "Bright"]];
 function kelvinHex(k) {   // a bulb's colour temperature as a colour (Tanner Helland's fit)
   const t = k / 100; let r = 255, g, b;
@@ -55,9 +49,7 @@ function finBulbTray(room) {
   return `<div class="r3d-finsc" role="group" aria-label="Bulbs">${chips(FIN_BULBS, "finbulb", b.k || "2700")}</div>`
     + `<div class="r3d-finsc" role="group" aria-label="How bright">${chips(FIN_LUX, "finlux", b.lux === 1 ? "1" : String(b.lux))}</div>`;
 }
-/* V2.15 (F5): the fitting: what hangs at the room's ceiling point, in place of the one drawn (the photos' pendant, or none): a bare bulb,
-   a drum shade, an opal globe, a flush dome or four spots (E: typical sizes: a 40 drum, a 25 globe, a 32 dome, GU10 spots 45 out) */
-const FIN_FITS = [["bare", "Bare bulb"], ["drum", "Drum shade"], ["globe", "Globe"], ["dome", "Flush dome"], ["spots", "Four spots"]];
+const FIN_FITS = [["bare", "Bare bulb"], ["drum", "Drum shade"], ["globe", "Globe"], ["dome", "Flush dome"], ["spots", "Four spots"]];   // V2.15 (F5): the fitting at the ceiling point (E: a 40 drum, a 25 globe, a 32 dome, GU10 spots 45 out)
 const FIT_DROP = { bare: 40, drum: 36, globe: 33, dome: 9, spots: 5 };   // how far below the ceiling the room's light sits
 let FIT_LAID = [], FIT_SHADE = null;
 function finFitDrop(room) { const k = finGet(room, 8); return k ? FIT_DROP[k] : 40; }
@@ -100,9 +92,8 @@ function finFloorApply() {   // every room with a floor chosen: a thin floor on 
       me.receiveShadow = true; me.userData.finRoom = room; me.userData.finFloor = f; geos.forEach(q => q.dispose()); g.add(me); FIN_LAID.push(me); } });
   finFitApply(); finRugApply(); finCurtApply(); finPicApply(); finPaperApply(); finPanelApply(); dirty();
 }
-/* N5c (REAL_PLAN R7): curtains at a room's windows (house/survey_data OPENINGS, R.HOUSE3.windows_in), kept as its row [19]: a pole a
-   little wider than the window, two panels drawn back in folds, from just over the head to the sill (sill length: clear of a worktop under it), 14 cm into the room (clear
-   of a radiator). The living room's own are its Look's (S.decor.curtains) */
+/* N5c: curtains at a room's windows (row [19]): a pole a little wider than the window, two panels drawn back, head to sill (clear of a
+   worktop), 14 cm in (clear of a radiator). The living room's are its Look's */
 const FIN_CURT = [["linen", "Linen", "#e6e0d2"], ["sage", "Sage", "#8b9878"], ["blue", "Deep blue", "#34507f"], ["rust", "Rust", "#a65a38"], ["charcoal", "Charcoal", "#4a4d52"]];
 const LIV_CURT = [["hessian", "Your hessian"], ["linen", "Linen"], ["sage", "Sage"], ["blue", "Deep blue"], ["rust", "Rust"]];
 let CURT_LAID = []; const CURT_MATS = {};
@@ -137,10 +128,7 @@ function finBedTray(room) {
   return `<div class="r3d-fin"><span class="r3d-finlab">Bedding</span><div class="r3d-fintray" role="group" aria-label="Bedding">`
     + [["", "As planned"], ...FIN_BED].map(([h, t]) => `<button type="button" class="sw" data-finbed="${h}" style="--c:${h || "#e9e5dc"}" aria-pressed="${now === h}" title="${t}" aria-label="${t}"><i></i><span>${t}</span></button>`).join("") + `</div></div>`;
 }
-/* N5e (REAL_PLAN R7): a picture on a wall: a print in a 52 × 72 frame (IKEA RIBBA 50 × 70: fit.SOURCES ribba), its middle 150 cm up,
-   in the middle of the wall you tapped (the room's biggest piece of floor), 2 cm off it. Row [21] the print, [22] the wall (0-3, as the
-   palette's sides). Drawn here, nothing downloaded. A plant is the catalogue's (N7: Add a piece here) */
-const FIN_PICS = [["arches", "Arches"], ["sun", "Sunset"], ["leaves", "Leaves"], ["lines", "Lines"]];
+const FIN_PICS = [["arches", "Arches"], ["sun", "Sunset"], ["leaves", "Leaves"], ["lines", "Lines"]];   // N5e: a print in a 52 × 72 frame (IKEA RIBBA: fit.SOURCES ribba), its middle 150 up, mid-wall, 2 off it; row [21] the print, [22] the wall
 let PIC_LAID = []; const PIC_MATS = {};
 function picTex(k) {
   return canvasTex(256, 358, (g, w, h) => {
@@ -177,10 +165,8 @@ function finPicTray(room, slot) {
   return `<span class="r3d-finlab">Picture${now && !here ? " (on another wall)" : ""}</span><div class="r3d-finsc" role="group" aria-label="Picture">`
     + [["", "None"], ...FIN_PICS].map(([v, t]) => `<button type="button" data-finpic2="${v}" aria-pressed="${(here || !v) && now === v}">${t}</button>`).join("") + `</div>`;
 }
-/* N29 (FINISHES_PLAN F9): wallpaper on one wall of a room: row [24] the paper, [25] the wall (0-3, as the palette's sides), on the
-   room's biggest piece of floor. Drawn here at its real repeat (a tile is the roll's width by the repeat), lined up from the wall's
-   corner, round its doors and windows, up to its ceiling (a slope too). Sizes from real rolls (fit.SOURCES wallpaper); the rolls counted
-   from the wall's width and height: drops of the height and a repeat, plus one roll spare */
+/* N29 (F9): wallpaper on one wall (row [24] the paper, [25] the wall) at its real repeat from the corner, round openings, to the ceiling;
+   rolls from real sizes (fit.SOURCES wallpaper): drops of the height plus a repeat, one spare */
 const FIN_PAPERS = [["fine", "Fine stripe", 52, 1000, 53, 60], ["wide", "Wide stripe", 52, 1000, 64, 70], ["flower", "Wildflower", 52, 1000, 53, 60]];   // key, name, roll width and length (cm), repeat (cm), £ a roll
 let PAPER_LAID = []; const PAPER_MATS = {}, PAPER_AT = {};
 function paperTex(k, rep) {
@@ -239,9 +225,8 @@ function finPaperApply() {
     PAPER_AT[room] = { k, L, H, rolls, cost: rolls * cost }; }
   dirty();
 }
-/* N57 (REAL_PLAN section 14): panelling on a wall, to try (fit.SOURCES panels): Shaker, 97 × 9 mm MDF strips to 120 high in the wall's own
-   colour (a rail on the skirting, one at the top, stiles about 55 apart and at a door's sides); Oak slats, floor to ceiling, 27 wide with 13
-   gaps, 12 deep on 9 mm of black felt. Real boxes, round the doors and windows, under a slope; one draw each kind a room */
+/* N57: panelling (fit.SOURCES panels): Shaker MDF strips to 120 in the wall's colour, or oak slats floor to ceiling on black felt; real
+   boxes round openings, one draw a kind a room */
 const FIN_PANELS = [["shaker", "Shaker", 36.97, 8 * 240], ["slat", "Oak slats", 71.99, 60 * 240]];   // key, name, £ a pack, what a pack covers (cm of strip; cm² of panel)
 let PANEL_LAID = []; const PANEL_AT = {};
 function finPanelApply() {
@@ -283,8 +268,7 @@ function finPaperTray(room, slot) {
   return `<span class="r3d-finlab">Wallpaper${now && !here ? " (on another wall)" : now && A ? `: ${A.rolls} rolls, ~£${A.cost}` : ""}</span><div class="r3d-finsc" role="group" aria-label="Wallpaper">`
     + [["", "None"], ...FIN_PAPERS].map(([v, t]) => `<button type="button" data-finpaper="${v}" aria-pressed="${(here || !v) && now === v}">${t}</button>`).join("") + `</div>`;
 }
-/* N29 (FINISHES_PLAN F11): the colours each paint's own maker pairs with it (fit.SOURCES pairings), the hex their pages give: Farrow &
-   Ball's three Colour Schemes (an accent and a trim each), Little Greene's related whites and neutrals, coordinating, an accent, a dark */
+/* N29 (F11): each paint's maker's pairings (fit.SOURCES pairings), the hex their pages give */
 const FIN_PAIRS = {
   card_room: [["#e3ded0", "Farrow & Ball School House White No. 291"], ["#c5bdac", "Farrow & Ball Drop Cloth No. 283"], ["#889b9b", "Farrow & Ball Oval Room Blue No. 85"],
     ["#b19c8d", "Farrow & Ball Dead Salmon No. 28"], ["#464d4a", "Farrow & Ball Studio Green No. 93"], ["#6f4449", "Farrow & Ball Preference Red No. 297"]],
@@ -299,9 +283,7 @@ function finCurtTray(room) {
   return `<span class="r3d-finlab">Curtains</span><div class="r3d-finsc" role="group" aria-label="Curtains">`
     + (liv ? LIV_CURT : [["", "None"], ...FIN_CURT]).map(([v, t]) => `<button type="button" data-fincurt="${v}" aria-pressed="${now === v}">${t}</button>`).join("") + `</div>`;
 }
-/* N5b (REAL_PLAN R7): a rug in any room, from the living room's four (its Arches, jute, deep blue, sage stripes): kept as the room's row
-   [18]; laid in the middle of the room's biggest piece of floor, the biggest standard UK size that leaves 35 cm round it (Argos: 60×100,
-   80×150, 120×170, 160×230, 200×290: fit.SOURCES rugsizes), its long side along the room's. The living room's own is its Look's (S.decor.rug) */
+/* N5b: a rug in any room (row [18]) mid-floor, the biggest UK size leaving 35 cm round (fit.SOURCES rugsizes), long side along the room's */
 const FIN_RUGS = [["yours", "Arches"], ["jute", "Jute"], ["blue", "Deep blue"], ["stripes", "Sage stripes"]], RUG_SIZES = [[290, 200], [230, 160], [170, 120], [150, 80], [100, 60]];
 let RUG_LAID = []; const RUG_MATS = {};
 function rugMats(k) {
@@ -332,8 +314,7 @@ function finSwatches() {   // the paints to start with: the living room's (the c
   for (const [k, p] of Object.entries(R.PAINTS || {})) { const hex = p.hex || p[0], nm = String(p.name || p.label || p[1] || k).replace(/\s*\(#[0-9a-f]{6}\)/i, "").split(",")[0]; if (hex) L.push([hex, nm]); }
   return L;
 }
-/* V2.35 (FINISHES_PLAN F11, colours that go with it): under a picked colour, two lighter and two darker of it (its lightness in sRGB, as
-   the eye sees steps), a tap each, as any swatch */
+/* V2.35 (F11): two lighter and two darker of a picked colour, in sRGB lightness */
 function finShades(hex) {
   const hsl = {}; new THREE.Color(hex).getHSL(hsl, THREE.SRGBColorSpace);
   return [0.16, 0.08, -0.08, -0.16].map(d => ["#" + new THREE.Color().setHSL(hsl.h, hsl.s, Math.max(0.04, Math.min(0.97, hsl.l + d)), THREE.SRGBColorSpace).getHexString(), d > 0 ? "Lighter" : "Darker"])
@@ -361,8 +342,7 @@ function finAt(hit) {   // a tap on a wall or a ceiling of the house: its room a
   const nx = -n.x, nz = n.z, slot = ceil ? 4 : Math.abs(nx) > Math.abs(nz) ? (nx > 0 ? 2 : 3) : (nz > 0 ? 0 : 1);
   return { room: FIN.rooms[ri - 1], slot };
 }
-/* V2.11 (F6, in part): the finishes go with Measure's Send link (measure.js) and come in from one; checked as data: rooms and slots by
-   their shape, colours as #hex, floors and bulbs from the trays' own lists */
+/* V2.11 (F6): the finishes ride Measure's Send link; checked as data coming in */
 function finClean(o) {
   const out = {}, floors = new Set(FIN_FLOORS.map(([k]) => k)), bulbs = new Set(FIN_BULBS.map(([v]) => v)), lux = new Set(FIN_LUX.map(([v]) => v));
   for (const [room, sl] of Object.entries(o && typeof o === "object" ? o : {})) { if (!/^[a-z0-9_]{1,30}$/.test(room) || !sl || typeof sl !== "object") continue;
@@ -371,8 +351,7 @@ function finClean(o) {
   return out;
 }
 function finImport(o) { const c = finClean(o); if (!Object.keys(c).length) return false; finPush(); finRestore(c); store.set(KEY, S); finApplyAll(); toast("Their colours, floors and bulbs"); return true; }
-/* V2.12 (F7): what the choices take, from each room's surfaces' areas (house/surfaces.py via R.HOUSE3.finish_areas): the walls by colour
-   (two coats at about 12 m² a litre, in 2.5 L tins), the ceiling the same, the floor's m² with 10% for cutting; in Measure */
+/* V2.12 (F7): what the choices take, from R.HOUSE3.finish_areas: two coats at ~12 m² a litre in 2.5 L tins; floors +10% */
 function finTakes() {
   const box = qs("#ms-takes"), list = qs("#ms-tlist"), A = (R.HOUSE3 || {}).finish_areas || {}; if (!box || !list) return;
   const paint = hex => (finSwatches().find(([h]) => h.toLowerCase() === String(hex).toLowerCase()) || [0, hex])[1];
@@ -391,9 +370,7 @@ function finTakes() {
   const T = R.HOUSE3 ? upsAll()[1] : { n: 0 }; if (T.n) rows.push(`<div class="ms-erow"><b>All the changes</b> ${T.n}, about ${upRange(T.lo, T.hi) || "£0"}</div>`);   // N40: the house's total, sent with the rest
   list.innerHTML = rows.join(""); box.hidden = !rows.length;
 }
-/* V2.13 (F6): a room's look copied to another (Copy this room on its card; Paste on any other room's), and the whole house's colours, floors
-   and bulbs saved as named schemes (Look: The house's colours), switched in one tap; kept on this device */
-let FIN_COPY = null;
+let FIN_COPY = null;   // V2.13 (F6): Copy / Paste a room's look; the house's colours saved as named schemes on this device
 const FSK = "dh-fin-schemes";
 function finSchemes() { try { const L = JSON.parse(localStorage.getItem(FSK) || "[]"); return Array.isArray(L) ? L : []; } catch (e) { return []; } }
 function finSchDraw() {
@@ -416,9 +393,7 @@ function finCopyBtns(room) {   // on a room's card: Copy this room (when it has 
   if (room === LIVR || Object.keys((S.fin || {})[room] || {}).length) L.push(btn("Copy this room", { fincopy: "1" }));
   return L;
 }
-/* V2.13 (F6): a colour from a photo: choose one (it stays on this device, drawn small), tap a spot in it, and that's the colour (a 7 px
-   average, so one stray pixel doesn't decide it) */
-let FIN_PIC = null;
+let FIN_PIC = null;   // V2.13 (F6): a colour from a photo: tap a spot (a 7 px average)
 function finPicLoad(file) {
   if (!file || !/^image\//.test(file.type)) return;
   const url = URL.createObjectURL(file), img = new Image();
@@ -443,8 +418,7 @@ function finApplyAll() {   // what's kept, into the palette (on start, after Und
   for (const [room, sl] of Object.entries(S.fin || {})) for (const [s, hex] of Object.entries(sl)) if ((+s < 5 || +s === 20) && FIN.rooms.includes(room)) finish(room, +s === 20 ? "bedding" : FIN_NAMES[+s], hex);
   finFloorApply(); finOut(); storeEdits(); if (typeof placeRoomLights === "function") { roomKey = ""; placeRoomLights(); } finTakes(); finSchDraw();
 }
-/* V2.38 (FINISHES_PLAN F12, the outside): our window frames' outside face (model.window's frame_out: white inside, as foiled frames) and
-   the front door's (door_out), from the frames' usual colours (RAL) and the paints; kept as S.fin.outside[9] and [10] */
+/* V2.38 (F12): the window frames' and front door's outside colours (RAL), S.fin.outside[9] and [10] */
 const FIN_OUT = [["#f5f5f2", "White"], ["#383e42", "Anthracite grey (RAL 7016)"], ["#b5b8b1", "Agate grey (RAL 7038)"], ["#0a0a0a", "Black (RAL 9005)"], ["#fdf4e3", "Cream (RAL 9001)"]];
 const finOut = () => { for (const [s, k] of [[9, "frame_out"], [10, "door_out"]]) { const m = HMATS && HMATS[k]; if (m) m.color.set(!finHeld && finGet("outside", s) || R.HOUSE3.mats[k][0]); } dirty(); };
 const finName = hex => ([...FIN_OUT, ...finSwatches(), ...Object.values(FIN_PAIRS).flat()].find(([h]) => h.toLowerCase() === String(hex).toLowerCase()) || [0, hex])[1];
@@ -515,10 +489,8 @@ function finHold(on) {   // Hold to compare: while held, the palette empty (the 
   else if (!on && finHeld) {    FIN.pal.image.data.set(finHeld); finHeld = null; FIN_LAID.forEach(m => m.visible = true); RUG_LAID.forEach(m => m.visible = true); CURT_LAID.forEach(m => m.visible = true); PIC_LAID.forEach(m => m.visible = true); PAPER_LAID.forEach(m => m.visible = true); PANEL_LAID.forEach(m => m.visible = true); FIT_LAID.forEach(m => m.visible = true); for (const [r, g] of Object.entries(FIN_PEND)) g.visible = !finGet(r, 8); }
   FIN.pal.needsUpdate = true; finOut();
 }
-/* V3.90 (N151), the plan's section 20: Now or the plan. One switch (As it is, in the view's row) shows the house as it is: without
-   Look's colours (finHold, as the cards' hold to compare), every piece Edit moved back where the plan has it, what was added gone and
-   what was taken out back (HEDITS and the living room's layout set aside, not changed); tap again for your plan, a short fade between.
-   Nothing is saved while it's on (store.set holds off), and Edit or a colour picked switches it off first, so the plan is never lost */
+/* V3.90 (N151): As it is: the house without Look's colours, Edit's moves, adds and take-outs (set aside, not changed); tap again for
+   your plan. Nothing saves while on (store.set holds off); Edit or a colour picked switches it off first */
 function nowMode(on) {
   on = !!on; if (on === NOWV) return;
   root.classList.add("nowfade");

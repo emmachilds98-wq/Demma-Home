@@ -4,8 +4,7 @@ const MV = []; let mvLast = 0;   // v39: the gaps between frames while the room 
 function dirty() { need = Math.max(need, 2); }
 function fullRatio() { const d = window.devicePixelRatio || 1; if (SMALL && !BIG_GPU) return Math.min(d, GOOD_PHONE ? phoneCap : 1.5); if (S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view) && !BIG_GPU) return houseLite ? 1 : Math.min(d, 1.5);   // V2.25: a real card draws the house as sharp as a room   // V1.11: a real graphics card draws the house at 2× too   // v73: the house at the screen's own sharpness (no supersampling: it's many times the living room's drawing)
   return S.quality === "hd" ? (BIG_GPU ? Math.min(d, 2) : Math.min(d, 1.5)) : Math.min(d, 1); }   // V2.30: a real card at the screen's own sharpness, as a game (4× anti-aliasing smooths the edges; it drew 1.5× on top: 2.25 times the pixels)   // v39: phones at their own sharpness; v44: a real graphics card draws HD at 1.5–2×; v50: Fast on a PC at full size (was 0.85×)
-/* v21: narrower screens (phones show the room at 4:3) widen the field of view so every view takes in as much of the room across as at 16:9 */
-let baseFov = 50;
+let baseFov = 50;   // v21: narrower screens (phones show the room at 4:3) widen the field of view so every view takes in as much of the room across as at 16:9
 const fitFov = (fov, asp = camera.aspect) => asp >= 16 / 9 ? fov : Math.min(95, 2 * Math.atan(Math.tan(fov * Math.PI / 360) * (asp < 0.8 ? 1.45 : 16 / 9) / asp) * 180 / Math.PI);   // v33: portrait, tighter
 function sizeRenderer() {
   const w = canvas.clientWidth, h = canvas.clientHeight;
@@ -45,9 +44,7 @@ requestAnimationFrame(() => { measureShift(false); setLabels(labelsOn); });
 new ResizeObserver(sizeRenderer).observe(canvas);
 controls.addEventListener("start", () => { moving = true; });
 controls.addEventListener("end", () => { moving = false; });
-/* V1.31 (U4): from outside (The whole house, Outside) the living room's furniture, lights and fittings were drawn behind the house's
-   walls: about 440 of 659 draws. They're left out unless the eye is near its window at the back, where you can see in */
-const LIVING = []; let livOut = false;
+const LIVING = []; let livOut = false;   // V1.31 (U4): from outside, the living room's furniture, lights and fittings are left out unless the eye is near its window
 function livingFromOutside() {
   const x = -camera.position.x / M, z = camera.position.z / M, wx = (R.WINDOW_X[0] + R.WINDOW_X[1]) / 2;
   const want = !!R.HOUSE3 && S.view === "house" && hfloor === "all" && !tween && !(z < R.WINDOW_Z - 20 && Math.hypot(x - wx, z - R.WINDOW_Z) < 4000);   // V1.47, the client: "see in and out of the windows at all times": from anywhere behind the house (the garden is 25 m; was 14)
@@ -62,8 +59,7 @@ function livShow() {   // V2.98 (N37): what's put away shown again for a moment 
   for (const o of LIVING) if (o.userData.livWas !== undefined) { o.visible = o.userData.livWas; delete o.userData.livWas; }
   return true;
 }
-/* V1.35, found in V1.30: on a phone a floor's room names overlapped (the landing's and the boiler cupboard's). Where two would, the
-   smaller room's steps aside until there's room again */
+/* V1.35: where two room names would overlap on a phone, the smaller room's steps aside */
 function declutter() {
   if (!houseG || !houseG.visible || !canvas.clientWidth) return;
   const L = []; houseG.traverseVisible(o => { if (o.isSprite && o.userData.hlabel && o.userData.px) L.push(o); });
@@ -76,12 +72,8 @@ function declutter() {
     s_.material.visible = !hit; if (!hit) kept.push(r);
   }
 }
-/* V3.41 (N93), the client 10 Nov 2026: "GPU is becoming very fast when i boot the site". Measured on her RTX 5070 (2560 × 1440, 155 Hz):
-   once the house has opened and warmed (about 6 s) nothing is drawn while it's still; but with the welcome card up, the house's slow turn
-   behind it drew every frame the screen offered, 156 a second through the shade's composer, for as long as the card stayed (the 3D engine
-   at 28 % against 7 % at rest), and three's turn is a fixed step a frame, so it went 2.6 times as fast as on a 60 Hz screen. Now the turn
-   is drawn 60 times a second at most at its 60 Hz speed (the same picture), waits while the window is in the background, and comes to rest
-   after a minute (the card stays) */
+/* V3.41 (N93): the welcome card's slow turn draws at most 60 times a second at its 60 Hz speed, waits while the window is hidden and
+   rests after a minute (on a 155 Hz screen it drew every frame through the composer) */
 const SPIN = { t0: 0, at: 0 };
 function frame(now) {
   requestAnimationFrame(frame);
@@ -99,9 +91,7 @@ function frame(now) {
     need = 2;
   }
   const dt = Math.min(0.1, (now - (frame.last || now)) / 1000); frame.last = now;
-  /* V2.60, the client: "make it fluid and smooth": the glide after a drag eased a fifth of the way each frame, so it ran out twice as fast
-     on a 120 Hz screen as on a 60 Hz one and jumped when a frame ran long; now the same fifth each 60th of a second, at any frame rate */
-  controls.dampingFactor = 1 - Math.pow(1 - DAMP, Math.max(dt, 1 / 240) * 60);
+  controls.dampingFactor = 1 - Math.pow(1 - DAMP, Math.max(dt, 1 / 240) * 60);   // V2.60: the glide eases the same fifth each 60th of a second, at any frame rate
   const changed = controls.update(spin ? dt : null);   // V3.41: the turn by the time passed (three's own is a step a frame)
   if (changed) { need = 2; lostCheck(); }
   if (cabTween(now)) need = 2;                                    // v30: the cabinet's doors swinging or sliding
@@ -116,17 +106,11 @@ function frame(now) {
     if (PHONE_HD && lowRes && m > 24 && phoneCap > 1.5) capDue = true;   // V2.73 (N17): still slow with the lighter drawing
     if (m > 40 && !BIG_GPU && !houseLite && S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view)) { houseLite = true; sizeRenderer(); toast("A lighter drawing for the house on this computer"); } } }
   mvLast = active ? now : 0;
-  // v35: the lower resolution only while you hold and drag the room on a slow device, and only once the drag has lasted a moment:
-  // each switch resizes the canvas (a new drawing buffer), which cost more than it saved after a tap, a fly-to or a Look change
-  /* V2.73 (N17), the client: "minimise movement and view lag when moving in first person": a walk on the phone (the stick, the keys) is
-     moving too, so it draws without the shade and the glow as a drag does (no new buffers); and if its frames still run past 24 ms, the
-     phone draws at 1.5× from the next pause, once for the visit (the one resize, while still) */
-  const go = moving || (walked && dragLite());
+  // v35: lower resolution only while a drag on a slow device has lasted a moment (each switch is a new drawing buffer)
+  const go = moving || (walked && dragLite());   // V2.73 (N17): a phone's walk draws without the shade and glow as a drag does; past 24 ms a frame it drops to 1.5× once, while still
   if (go && slowDev) { if (!dragT) dragT = now; still_t = now; if (!lowRes && now - dragT > 150) { lowRes = true; dragLite() ? dirty() : sizeRenderer(); } }
   else { dragT = 0; if (active) still_t = now; else if (lowRes && now - still_t > 250) { lowRes = false; if (capDue) { capDue = false; phoneCap = 1.5; sizeRenderer(); } else dragLite() ? dirty() : sizeRenderer(); } }
-  /* V3.54 (N106), the client 10 Nov 2026, the phone smoother: an iPhone in HD kept the soft shade and the glow on every frame of a walk or
-     a drag unless its frames had already run slow (slowDev), about 25 passes a frame where the PC now draws 3 (V3.39); now a phone in HD
-     leaves them out while it moves too, the same way (the same shaders, the passes skipped), back a quarter of a second after you stop */
+  /* V3.54 (N106): an iPhone in HD leaves out the shade and glow while it moves too (the same shaders), back a quarter second after */
   if (MOVE_LITE && (BIG_GPU || PHONE_HD)) { if (active || walking() && (WALK.v.lengthSq() > 1e-5 || WALK.keys.size)) { if (!moveLite) moveLite = true; } else if (moveLite && now - still_t > 250) { moveLite = false; need = Math.max(need, 1); } }   // V3.39 (N91)
   if (updateCut()) need = 2;
   upStep(now, active || walking());                                // V2.64: the photos onto the graphics chip a few at a time
@@ -143,11 +127,7 @@ function frame(now) {
     if (t) { const c = gl.getContext(); c.readPixels(0, 0, 1, 1, c.RGBA, c.UNSIGNED_BYTE, PX); probeT.push(performance.now() - t); probe--; if (!probe) autoQuality(); }
   }
 }
-/* V3.56 (N122), the phone smoother: walking through a door moves the room's lights, so every shadow is drawn again in that one frame:
-   3 lights' 2048 maps, 784 draws against a frame's 241 on the iPhone path, a step at each doorway. On a phone, while you move, the
-   shadows are redrawn a light a frame instead (the others keep last frame's for a 60th of a second); still, all at once as before. The sun's
-   own pass is most of it (about 390 draws), so the doorway's frame goes 876 draws to 626 and the next two about 360 */
-const SH_STAG = SMALL && !BIG_GPU && !/[?&]fullmove\b/.test(location.search);
+const SH_STAG = SMALL && !BIG_GPU && !/[?&]fullmove\b/.test(location.search);   // V3.56 (N122): on a phone, while moving, the shadows are redrawn a light a frame (a doorway frame 876 draws to 626); still, all at once
 function shStag(moving_) {   // the lights left out this frame (their autoUpdate off for the one draw), or null
   const sm = gl.shadowMap, req = sm.needsUpdate; if (!SH_STAG || !sm.enabled) return null;
   if (!moving_ || !(req || shStag.left)) { if (shStag.left) { shStag.left = null; sm.needsUpdate = true; } return null; }   // still: the rest at once
@@ -163,8 +143,7 @@ function shStagEnd(ls) {
   for (const l of ls) l.shadow.autoUpdate = true;
   if (shStag.left) need = Math.max(need, 2);   // the next light next frame (2: this frame's own need-- follows)
 }
-// v14.1: if this device takes too long over a full HD frame, drop to Fast (unless you picked a quality yourself)
-let probe = 3; const probeT = [], PX = new Uint8Array(4);
+let probe = 3; const probeT = [], PX = new Uint8Array(4);   // v14.1: if this device takes too long over a full HD frame, drop to Fast (unless you picked a quality yourself)
 let preT = 0;
 const FT = []; FT.n = 0;   // v35: the last 60 frames' times, for R3D.perf()
 const med = a => { const s = a.slice().sort((x, y) => x - y); return s.length ? +s[s.length >> 1].toFixed(1) : null; };
