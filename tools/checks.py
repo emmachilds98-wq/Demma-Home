@@ -102,6 +102,51 @@ def parts_parse():
     return bad
 
 
+def lean():
+    """N176: nothing the code doesn't use: the 3D's top-level functions and names, page.css's classes and house/model.py's MATS keys,
+    each found in the code that would use it (comments left out), and the 3D's comment share (the story is in docs/HISTORY.md)"""
+    esb = ROOT / "node_modules/.bin/esbuild"
+    def nocom(t):   # the 3D without its comments (esbuild prints the code back, names kept); without esbuild, line comments only
+        if esb.exists():
+            r = subprocess.run([str(esb), "--loader=js", "--log-level=error"], input=t, capture_output=True, text=True)
+            if r.returncode == 0:
+                return r.stdout
+        return re.sub(r"(?m)^\s*//.*$", "", t)
+    parts = sorted((SRC / "room3d").glob("*.js"))
+    js = [p.read_text() for p in parts]
+    py = [re.sub(r"(?m)^\s*#.*$", "", f.read_text()) for f in [*SRC.glob("*.py"), *(ROOT / "tools").glob("*.py"), *(ROOT / "house").glob("*.py")]]
+    code = [nocom("".join(js))] + [nocom(f.read_text()) for f in SRC.glob("*.js")] + py
+    words = {}
+    for t in code:
+        for w in re.findall(r"[A-Za-z_$][\w$]*", t):
+            words[w] = words.get(w, 0) + 1
+    unused = [f"{p.name} {n}" for p, t in zip(parts, js)
+              for n in (a or b for a, b in re.findall(r"^(?:async\s+)?function\*?\s+([A-Za-z_$][\w$]*)|^(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=", t, re.M))
+              if words.get(n, 0) <= 1]
+    # page.css: a class nothing puts on an element (class="...", classList, className) or looks for (a selector in code)
+    css = re.sub(r"/\*.*?\*/", "", (SRC / "page.css").read_text(), flags=re.S)
+    src = "".join(code)
+    used = set()
+    for m in re.finditer(r"class(?:Name)?\s*=\s*\\?[\"']([^\"'\\]*)", src):
+        used.update(m.group(1).replace("${", " ").split())
+    for m in re.finditer(r"classList\.(?:add|remove|toggle|contains|replace)\(([^)]*)\)", src):
+        used.update(re.findall(r"[\"']([\w-]+)[\"']", m.group(1)))
+    for m in re.finditer(r"(?:closest|querySelector(?:All)?|qsa?|matches|\$\$?)\(\s*[\"'`]([^\"'`]*)", src):
+        used.update(re.findall(r"\.([\w-]+)", m.group(1)))
+    cls = sorted({c for c in re.findall(r"\.([a-zA-Z][\w-]*)", css) if not re.fullmatch(r"\d.*", c)})
+    loose = [c for c in cls if c not in used and not re.search(r"(?<![\w-])" + re.escape(c) + r"(?![\w-])", src)]
+    unused += [f"page.css .{c}" for c in loose]
+    # house/model.py's materials: a key no piece asks for
+    mp = (ROOT / "house/model.py").read_text()
+    i = mp.index("MATS = {"); j = mp.index("\n}", i)
+    rest = mp[:i] + mp[j:] + "".join(code) + "".join(f.read_text() for f in (ROOT / "house").rglob("*.py") if f.name != "model.py")
+    unused += [f"MATS {k}" for k in re.findall(r'"(\w+)":\s*\(', mp[i:j]) if not re.search(r"\b" + k + r"\b", rest)]
+    lines = sum(t.count("\n") for t in js)
+    com = sum(1 for t in js for l in t.splitlines() if l.lstrip().startswith(("//", "/*", "*")))
+    msg = f"the 3D {lines} lines, {com} of them comment ({100 * com / lines:.0f}%); {len(cls)} page.css classes"
+    return not unused, msg + (f"; nothing uses: {', '.join(unused[:12])}" if unused else ": every name, class and material used")
+
+
 def site():
     code, out = sh([ROOT / "tools/check_site.py", SITE], timeout=2400)
     last = [l for l in out.splitlines() if l.startswith("site check") or l.startswith("FAIL")]
@@ -131,10 +176,10 @@ def taps():
 def main(argv):
     """python3 tools/checks.py [--quick | --only site,page,taps]"""
     quick = "--quick" in argv
-    checks = [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("repo", repo), ("sizes", sizes)] + ([] if quick else [("site", site), ("page", qa), ("taps", taps)])
+    checks = [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("repo", repo), ("sizes", sizes), ("lean", lean)] + ([] if quick else [("site", site), ("page", qa), ("taps", taps)])
     if "--only" in argv:                                         # V1.35 (U10): one or more by name (the workflow runs the browser checks side by side)
         want = argv[argv.index("--only") + 1].split(",")
-        checks = [c for c in [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("repo", repo), ("sizes", sizes), ("site", site), ("page", qa), ("taps", taps)] if c[0] in want]
+        checks = [c for c in [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("repo", repo), ("sizes", sizes), ("lean", lean), ("site", site), ("page", qa), ("taps", taps)] if c[0] in want]
     fails = 0
     for name, fn in checks:
         t = time.time()

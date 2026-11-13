@@ -21,10 +21,8 @@ function playMoment(k) {
   if (m.set.scene) { S.lv = Object.assign({}, SCENES[m.set.scene].levels); S.master = 100; }
   applyState(); syncButtons(); if (m.aim) flyTo(m.aim.eye, m.aim.at, m.aim.fov); else setView(m.view); toast(m.say);
 }
-/* v31: "Watch it open". v32, client: "slow down the playback of the table opening to show clearly how it puts together and opens in a
-   slow and clear manner": thirteen steps, about forty seconds, on the show's own clock, each step on a card (what you do, a bar; back,
-   pause, next, stop). Every part's place is worked out from the clock, so pausing or stepping back and on is exact. Looking round
-   doesn't stop it (the camera then stays where you put it); Stop, Esc or any other button does, and leaves the table out for six. */
+/* v31–v32: "Watch it open": thirteen steps, about forty seconds, on the show's own clock, each on a card; every place worked out from
+   the clock, so pause and step are exact. Stop, Esc or another button ends it with the table out for six. */
 let SH = null;
 function showSteps(P) {
   const C = P.C, st = [], add = (title, text, dur, acts, view) => { st.push({ title, text, dur, acts, view }); };
@@ -53,9 +51,7 @@ function showSteps(P) {
   add("Six sit down", "The padded chairs unfold round it.", 4.6, each(P.seats.six, 0, 0.35, 1.2));
   return st;
 }
-/* V3.71, client: "move coffee table so the bed fits and i can view the animation of it opening and closing like the dining table": the
-   green sofa bed's own show, on the same clock and card: the coffee table steps aside, the bed pulls out and rises, then it all goes back */
-const BED_AIM = [[300, 150, -60], [150, 30, -200], 58];
+const BED_AIM = [[300, 150, -60], [150, 30, -200], 58];   // V3.71: the green sofa bed's own show on the same clock and card: the coffee table steps aside, the bed pulls out, then all goes back
 function bedSteps() {
   const B = R.SOFABED, w = B.w - B.corner - B.arm, l = B.seat_d + B.bed_out;   // the two seats and the top: 128 × 128
   return [
@@ -75,8 +71,7 @@ function showOpen(kind) {
   cabSnap = true; applyState(); cabSnap = false; syncButtons();
   const P = bed ? {} : cabP(); if (!P) return;
   CAB_TW.clear();
-  // each part's keyframes: [time s, p, linear], held between its moves
-  const steps = bed ? bedSteps() : showSteps(P), tracks = new Map();
+  const steps = bed ? bedSteps() : showSteps(P), tracks = new Map();   // each part's keyframes: [time s, p, linear], held between its moves
   let T = 0;
   for (const s of steps) {
     s.t0 = T;
@@ -141,24 +136,14 @@ function showStop(finish = true) {
   if (finish && bed) { S.sbed = false; applyState(); syncButtons(); }                              // V3.71: the bed goes back in
   else if (finish) { Object.assign(S, { site: "C", dining: "six", tdoor: false, chairs: "cupboard" }); applyState(); syncButtons(); }
 }
-/* v17: the ideas (ideas.py), each its own group, all hidden until its button is on */
-const IDEA_G = {};
+const IDEA_G = {};   // v17: the ideas (ideas.py), each its own group, all hidden until its button is on
 let ideaLed;
-/* v20: the decor to try (S.decor): set by applyDecor() */
-let rugMesh, curtCloth, caseFrameM, cushG, coffeeG, floorMat, shelfMat;
-/* v21: suggested furniture and decor (ideas.SUGGEST, the same keys), each on or off (S.sugg); the floor pieces move in Edit room */
-const SUGG_G = {};
-/* v34, client: "i like the large glass display case on the chimney breast": it's in the plan, so it's on the breast whenever the table
-   isn't (the flip-top's site A, set aside) */
-const caseOn = () => S.site !== "A" && !(S.plants === "breast" && S.sugg.alcoveshelves);
-/* V3.14, the client: "the plant shelf on the chimney breast and records on the left of the living room window, which means the display
-   shelf would move to the left of the window too": with the plants on the breast (the plan) the case and the "now playing" ledge hang
-   over the vinyl stand left of the window, turned round to face the room (the alcove shelves, an option now, take the case's place) */
-const caseBreast = () => caseOn() && S.plants !== "breast";
+let rugMesh, curtCloth, caseFrameM, cushG, coffeeG, floorMat, shelfMat;   // v20: the decor to try (S.decor): set by applyDecor()
+const SUGG_G = {};   // v21: suggested furniture and decor (ideas.SUGGEST, the same keys), each on or off (S.sugg); the floor pieces move in Edit room
+const caseOn = () => S.site !== "A" && !(S.plants === "breast" && S.sugg.alcoveshelves);   // v34: the glass display case is on the breast whenever the table isn't (site A, set aside)
+const caseBreast = () => caseOn() && S.plants !== "breast";   // V3.14: with the plants on the breast (the plan) the case and the "now playing" ledge hang over the vinyl stand left of the window
 function placeCorner() {
   const K = R.IDEAS.case_corner, C = R.IDEAS.case, on = S.plants === "breast", ox = -((C.x[0] + C.x[1]) / 2 + (K.x[0] + K.x[1]) / 2) * M;
   for (const g of [IDEA_G.case, G.now_ledge]) if (g) { g.rotation.y = on ? Math.PI : 0; g.position.x = on ? ox : 0; g.position.z = on ? K.z * M : 0; }
 }
-/* v34: more things that work from a tap (placeWork): the blind rolls up and down, the front records lift out of the vinyl stand, the
-   trolley beside the cabinet pulls out for dinner; each an anim, eased by the cabinets' tween */
-const WORK = {};
+const WORK = {};   // v34: things that work from a tap (placeWork): the blind, the records, the trolley; each an anim eased by the cabinets' tween

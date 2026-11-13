@@ -1,6 +1,5 @@
-/* ---------------------------------------------------------------- v28: the guided tour (room3d_page.tour)
-   Each stop flies to its view (slower than a tap) and shows its caption; a stop's own choices (the cabinet open) are put back after it.
-   Touching the room, Esc or End stops it. Reduced motion: no flying, the same stops. */
+/* ---------------------------------------------------------------- v28: the guided tour (room3d_page.tour): each stop flies to its
+   view and caption; a touch, Esc or End stops it; reduced motion doesn't fly */
 const TOURD = JSON.parse((document.getElementById("tour-data") || {}).textContent || '{"stops":[]}');
 const REDUCE = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
 const FLY = 2200, DWELL = 5200;
@@ -50,9 +49,8 @@ function tourEnd() {
 }
 document.addEventListener("keydown", e => { if (e.key === "Escape" && tourSt) { e.preventDefault(); tourEnd(); } else if (e.key === "Escape" && SH) { e.preventDefault(); showStop(true); } });
 
-/* ---------------------------------------------------------------- v28: "copy link to this view"
-   The look (where you stand and every choice, not Edit room's moves) as a plain #look-<token> (base64url JSON), which the page's
-   router leaves alone. The link is always the GitHub Pages page, so anyone can open it. */
+/* ---------------------------------------------------------------- v28: "copy link to this view": the look as #look-<base64url JSON>,
+   always the GitHub Pages address */
 const LOOK_STR = { site: ["A", "B", "C"], dining: ["folded", "four", "six"], chairs: null, plants: null, seat: ["off", "up", "down"], scene: null, tod: ["evening", "day"], paint: null, lamp: null, cab: ["compact", "sliding"], cabw: ["90", "80"], beside: null,
                    blind: ["down", "up"], trolley: ["park", "out"], sofa: ["mine", "bed"] };   // V3.71: the sofa   // v30: which cabinet; v31: beside it; v34: the blind, the trolley
 const LOOK_BOOL = ["drawers", "curtains", "lbox", "laser", "pc", "grow", "tdoor", "foot", "lp", "lid", "barflap", "ctop", "sdraw", "scopen", "sbed", "stools", "made"];   // v37: the step drawers   // v31: the open table's floor; v34: a record lifted out
@@ -87,9 +85,7 @@ function lookUrl() {
   const here = location.href.split("#")[0], local = location.protocol === "file:" || /^(localhost|127\.0\.0\.1)$/.test(location.hostname) || /github\.io$/.test(location.hostname);
   return (local ? here : TOURD.pages) + "#look-" + b64u(JSON.stringify(lookOf()));
 }
-/* V1.19, the client: "take more buttons off easily and make it clear how": Hide buttons takes every button off but Show (Esc too).
-   V2.66 (N20, fewer buttons): Hide labels and Hide buttons are one button: its first tap the labels, its next the buttons; Show
-   brings both back */
+/* V2.66 (N20): Hide's first tap the labels, its next the buttons; Show brings both back */
 function pickSync() {
   const pk = qs("#r3d-pick"); if (!pk) return;
   const bare = document.body.classList.contains("bare"), [ic, t] = bare ? ["visibility", "Show"] : labelsOn ? ["label_off", "Hide labels"] : ["visibility_off", "Hide buttons"];
@@ -176,10 +172,8 @@ function updateCut() {        // which wall the camera is outside of, if any (on
   reshadow();
   return true;
 }
-/* ---------------------------------------------------------------- v25: the numbered stickers on the room
-   Each has an anchor in room cm (room3d_page.hotspots). Every frame the camera moves it is projected to the stage; a sticker behind
-   the camera or off the picture hides; one on a wall seen from behind (and not opened by the cutaway) fades. Tapping one opens the
-   popover under it: Open in the plan (the page's Plan sheet, at that chapter) and Fly here (the matching view). */
+/* ---------------------------------------------------------------- v25: the numbered stickers (room3d_page.hotspots, room cm),
+   projected each frame the camera moves; behind or off the picture hidden, a wall's from behind faded; a tap opens its popover */
 const HOTS = JSON.parse((document.getElementById("hotspots-data") || {}).textContent || "[]");
 const stickEls = {}; qsa(".stk").forEach(b => { stickEls[b.dataset.hot] = b; });
 const pop = qs("#r3d-pop"), stage = qs(".r3d-stage");
@@ -193,14 +187,11 @@ function setLabels(on) {
   applyFloors();
   pickSync(); dirty();   // V2.66: the one Hide button says what its next tap does
 }
-// v35: each label's size is read once (and again after a resize or the fonts arriving), not every frame: reading it straight after
-// moving the labels made the browser lay the page out again for each label, each frame
-const stickSz = el => el._sz || (el.offsetWidth ? (el._sz = [el.offsetWidth, el.offsetHeight]) : [140, 40]);
+const stickSz = el => el._sz || (el.offsetWidth ? (el._sz = [el.offsetWidth, el.offsetHeight]) : [140, 40]);   // v35: each label's size read once (and after a resize or the fonts), not every frame (a layout a label a frame)
 const stickReset = () => { for (const k in stickEls) if (stickEls[k]) stickEls[k]._sz = null; };
 addEventListener("resize", () => { stickReset(); keepOut = null; }); if (document.fonts) document.fonts.ready.then(() => { stickReset(); dirty(); });
-/* V3.56 (N117, the phone's Above: "Window corner" cut off, the labels on top of each other): the biggest are placed first, each at the
-   first clear spot near its pin (down, up, then aside), 8 px from the others, off the bars, the stick and the figure; one with no room
-   is dropped (so the smallest go first). From above (Above, On its own) none is faded as "behind": every wall is seen from above */
+/* V3.56 (N117): the biggest placed first, each at the first clear spot near its pin, 8 px apart, off the bars; one with no room is
+   dropped. From above none fades as "behind" */
 let keepOut = null, keepT = 0;
 function keepOuts() {   // the overlays' boxes on the stage, read at most twice a second (not every frame: no layout per label)
   const now = performance.now(); if (keepOut && now - keepT < 500) return keepOut;
