@@ -54,7 +54,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   ever firing). Put a `// note` at a line's end only: one put mid-line in a one-line statement commented out the rest of it.
 
 ## 3. Speed: what was done, how, what's left
-- **The hitch walk (N177, V4.8):** its own check (`checks.py --only hitch`, `check_site.py --hitch`, its own CI job: inside the site job it took that past 40 min). `check_site.py` `HITCH_INIT`/`HITCH_WARM`/`HITCH_WALK`. A faked clock must move `performance.now()` with the
+- **The hitch walk (N177, V4.9):** its own check (`checks.py --only hitch`, `check_site.py --hitch`, its own CI job: inside the site job it took that past 40 min). `check_site.py` `HITCH_INIT`/`HITCH_WARM`/`HITCH_WALK`. A faked clock must move `performance.now()` with the
   rAF time (each frame 1/144 s on, time inside a frame as it passes): faking only rAF's timestamp left tweens started from `performance.now()`
   with a negative k, and the camera flew off to x = 287 km. A link inside three's `compile`/`compileAsync` is the warm-up's (on a PC it builds
   beside the page) and doesn't count; one used on the frame the draw linked it does. Wrap `renderBufferDirect` to name what drew it (the
@@ -219,7 +219,8 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   group sits at the back frame's front top edge (`back_h` 81, the run's `-hd + t`, the side's `xi`); the pad hangs back from it with `over`
   in front; `rotation.x` (the run) or `rotation.z` (the side) by `up` lifts the back of the pad, so its foot dips behind the back cushion.
   `head_up_h` (106) is the raised top; `clash.py` checks it. The scissor links are their own group in the bed (`lk`, not merged), set each
-  frame from the top's rise (`linkAt`). The chenille (`02` `CHENILLE`, `CHENILLE_B`) is per-pixel ImageData: 4 px loops (1.6 mm), a twill
+  frame from the top's rise (`linkAt`). The chenille (`02` `CHENILLE`, `CHENILLE_B`; since V4.8 made by `build_textures.py --fabrics`
+  as `chenille_map` and `chenille_pile_map`, pixel for pixel the old drawing, loaded with the photos on every device): 4 px loops (1.6 mm), a twill
   `sin((x + y)π/4)`, sines for the mottle so it tiles (any random block or row reads at room distance). The colour is drawn greener and
   greyer than the photos (`#586b4c`): the room's warm light turns a green about 25° yellower. Tufts take `dimp` (the cloth × 0.8), not `seam`.
 - **As it is** (V3.90 N151, `23_finish.js` `nowMode`): `NOWV` (08) set aside, never changed: `finHold` holds the colours (the living
