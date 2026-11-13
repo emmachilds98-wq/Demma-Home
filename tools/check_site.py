@@ -12,7 +12,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "media-wall/src"))
 import pw, localcdn  # noqa: E402
 
-SITE = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else ROOT / "_site").resolve()
+ARGS = [a for a in sys.argv[1:] if a != "--hitch"]; HITCH = "--hitch" in sys.argv   # N177: --hitch runs only the hitch walk (its own CI job: the site job is near its 40 min)
+SITE = pathlib.Path(ARGS[0] if ARGS else ROOT / "_site").resolve()
 SHOTS = ROOT / "_shots"
 # V1.38: a walk from the hall into the living room, up its stairs to the landing (feet at the first floor), back down and out to the hall
 WALK = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), seen = [];
@@ -191,6 +192,29 @@ BUDGET = json.loads((ROOT / "tools/perf_budget.json").read_text())
 HD_PATHS = (("iphone", 393, 852, True, "Apple GPU"), ("rtx", 1280, 800, False, "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0)"))
 
 
+# N177: a walk on the RTX path counting hitches, the frames a real PC would stall on: a shader built and used on the same frame by the
+# draw itself (the warm-up's compile and compileAsync aside: a PC's browser builds those beside the page), or a photo sent to the graphics
+# card mid-walk. The clock is a 144 Hz screen's (each frame 1/144 s on, time inside a frame as it passes), so what eases by time eases as on
+# her PC; the walk is WALK's (hall, the living room, up its stairs to the landing, back, down to the lower floor and back), after the warm-up.
+HITCH_INIT = """(() => { const H = window.__H = { on: false, f: {}, what: [] }, P = WebGL2RenderingContext.prototype, raf = window.requestAnimationFrame,
+    pn = performance.now.bind(performance); let F = 0, R0 = 0, last = -1, out = 0, hf = 0;
+  performance.now = () => { const v = F ? Math.max(out, F + pn() - R0) : pn(); out = v; return v; };
+  window.requestAnimationFrame = cb => raf(t => { if (t !== last) { last = t; hf++; R0 = pn(); F = F ? Math.max(F + 1000 / 144, out) : R0; } cb(F); });
+  const hit = (k, w) => { if (!H.on) return; (H.f[hf] = H.f[hf] || {})[k] = 1; H.what.push(w); };
+  const LK = new WeakMap(), lk = P.linkProgram, up = P.useProgram;
+  P.linkProgram = function (q) { if (!window.__pre) LK.set(q, hf); return lk.call(this, q); };
+  P.useProgram = function (q) { if (LK.has(q)) { if (LK.get(q) === hf) { const m = window.__mat; hit("shader", "a shader built mid-walk (" + (m ? m.type + " " + (m.name || "") : "?") + ")"); } LK.delete(q); } return up.call(this, q); };
+  for (const n of ["texImage2D", "texSubImage2D"]) { const o = P[n]; P[n] = function (...a) { const s = a.find(x => x && typeof x === "object" && (x.naturalWidth || x.width) && !ArrayBuffer.isView(x));
+      if (s && (s.naturalWidth || s.width) * (s.naturalHeight || s.height) >= 65536) hit("photo", "a photo sent mid-walk (" + String(s.currentSrc || s.src || s.constructor.name).split("/").pop() + ")");
+      return o.apply(this, a); }; }
+})();"""
+HITCH_WARM = """async () => { const D = R3D._dbg, G = D.gl, sl = ms => new Promise(r => setTimeout(r, ms));
+  for (const k of ["compile", "compileAsync"]) { const o = G[k].bind(G); G[k] = (...a) => { window.__pre = true; try { return o(...a); } finally { window.__pre = false; } }; }
+  const rbd = G.renderBufferDirect.bind(G); G.renderBufferDirect = (c, s, g, m, o, gr) => { window.__mat = m; return rbd(c, s, g, m, o, gr); };
+  for (let i = 0; i < 600; i++) { const w = D.warming; if (!w.busy && !w.parts && !D.PRE.queue.length && D.WARMED.size) break; await sl(1000); } }"""
+HITCH_WALK = WALK.replace("const legs = [],", "window.__H.on = true; const legs = [],").replace("return { seen,", "window.__H.on = false; return { hitches: Object.keys(window.__H.f).length, what: [...new Set(window.__H.what)], seen,")
+
+
 def over_budget(path, got):
     want = BUDGET["paths"][path]
     return [f"{path}: {k} {got.get(k)} over {v}" for k, v in want.items() if not k.startswith("_") and not 0 <= (got.get(k) or 0) <= v]
@@ -296,117 +320,130 @@ def main():
     fails, perf = [], {}
     with sync_playwright() as p:
         b = pw.launch(p, pw.GL)
-        for w, h in ((393, 852), (1920, 1080)):
-            phone = w < 600
-            ctx = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=phone, has_touch=phone, service_workers="block")
-            ctx.add_init_script(PERF_INIT % ("null", "false"))
-            if phone: ctx.add_init_script("window.__r3dDblMs = 20000;")   # V1.54: this rig hands each touch on only after a slow frame (~0.5 s here, seconds on GitHub), so its double-tap and tap allow longer (only two taps are sent)
-            pg = ctx.new_page(); pg.set_default_timeout(300000); localcdn.route(pg); errs = []   # V1.5: CI's software graphics draw the whole house at 1920 in ~20 s a frame; a screenshot took over 120 s
-            pg.on("pageerror", lambda e: errs.append("pageerror: " + str(e)[:300]))
-            pg.on("console", lambda m: errs.append(m.text[:300]) if (m.type == "error" and "favicon" not in m.text and "fonts.g" not in m.text) or "INVALID_" in m.text else None)   # V1.12: and any WebGL error (a photo sent into a texture too small for it, V1.9-V1.11)
-            pg.goto(base + "index.html"); pg.wait_for_function("window.R3D && window.R3D.ready", timeout=240000); pg.wait_for_timeout(3000)
-            view, place = pg.evaluate("() => [R3D._dbg.S.view, (document.getElementById('brand-place') || {}).textContent]")
-            if view != "house": fails.append(f"{w}: opens on {view!r}, not the whole house")
-            if place != "The whole house": fails.append(f"{w}: the brand says {place!r}")
-            got = pg.evaluate("() => R3D.photos()")   # V1.9: the photos come after the first picture (their own file)
-            if got != photos: fails.append(f"{w}: {got} of {photos} photo sets arrived")
-            name = "phone" if phone else "computer"                # V2.75 (N26): the budget, Fast's two paths (no graphics card)
-            perf[name] = pg.evaluate(PERF); fails += over_budget(name, perf[name])
-            off = pg.evaluate(OFF)
-            if off: fails.append(f"{w}: off the right edge: {off}")
-            pg.screenshot(path=str(SHOTS / f"site-{w}-house.png"))
-            acc = pg.evaluate(ACCESS)
-            if acc["noname"]: fails.append(f"{w}: controls with no name: {acc['noname']}")
-            if acc["label"]: fails.append(f"{w}: the 3D's label doesn't say where you are: {acc['label']!r}")
-            fails += names_keys(pg, w)
-            if phone:
-                fails += edit_drag(pg, w) + stick_all(pg, w)
-                bk = pg.evaluate(BACK)
-                if bk != ["master", "master", "house", True]: fails.append(f"{w}: two rooms, then Back: {bk} (want ['master', 'master', 'house', True]: one step, out to the house)")
-            pg.click("[data-hfloor=first]"); pg.wait_for_timeout(2500)
-            if phone:
-                fh = pg.evaluate("() => document.getElementById('r3d-floors').getBoundingClientRect().height")
-                if fh > 48: fails.append(f"{w}: the floors pill wraps ({fh:.0f} px tall)")
-            place = pg.evaluate("() => document.getElementById('brand-place').textContent")
-            if place != "The first floor": fails.append(f"{w}: on the first floor the brand says {place!r}")
-            pg.screenshot(path=str(SHOTS / f"site-{w}-first.png"))
-            pg.click("#r3d-dt-measure"); pg.wait_for_timeout(800)
-            n = pg.evaluate("() => document.querySelectorAll('#r3d-dp-measure [data-measure]').length")
-            if n != rows: fails.append(f"{w}: Measure lists {n} sizes, the house file {rows}")
-            pg.fill("#r3d-dp-measure [data-measure]", "123")   # V2.75: wait for the save (a 600 ms debounce behind a frame that takes seconds in CI), not a fixed 1.2 s: it failed main's V2.74 run and four PRs
-            try: pg.wait_for_function("() => { const r = JSON.parse(localStorage.getItem('demma-v1:measurements') || '{}'), f = document.querySelector('#r3d-dp-measure [data-measure]').dataset.measure; return r[f] && r[f].cm === 123; }", timeout=60000)
-            except Exception: pass
-            kept = pg.evaluate("() => JSON.parse(localStorage.getItem('demma-v1:measurements') || '{}')")
-            first = pg.evaluate("() => document.querySelector('#r3d-dp-measure [data-measure]').dataset.measure")
-            if (kept.get(first) or {}).get("cm") != 123: fails.append(f"{w}: Measure didn't keep the number typed ({kept})")
-            cnt = pg.evaluate("() => document.getElementById('ms-count').textContent")
-            if not cnt.startswith("1 of"): fails.append(f"{w}: Measure counts {cnt!r}")
-            pg.screenshot(path=str(SHOTS / f"site-{w}-measure.png"))
-            if phone:                                           # V1.50: tap a piece, change its size, put it back
-                pg.click("#r3d-dt-measure"); pg.wait_for_timeout(500)
-                sz = pg.evaluate(SIZE)
-                if sz.get("card") != "hitem:office.desk" or not sz.get("row") or not sz.get("ed") or not sz.get("listed") or sz.get("after") or not sz.get("gone"):
-                    fails.append(f"{w}: tapping the office desk and widening it: {sz} (want its card, a row of 223.9, the 3D changed, Measure listing it, then back as planned)")
-                pg.screenshot(path=str(SHOTS / f"site-{w}-size.png"))
-                sw = pg.evaluate(SWAP)                          # V2.46 (N7): swap the master's chest for another, add a plant from the catalogue, both back
-                if sw != {"swapped": True, "added": True, "gone": True, "planted": True, "unplanted": True}:
-                    fails.append(f"{w}: swapping the master bedroom's chest, adding a plant, bedroom 2's plant from Look: {sw} (want each drawn, then gone)")
-            if phone:                                           # V2.5 (FINISHES_PLAN F2): a room's walls and ceiling through the palette, then back
-                fn = pg.evaluate("() => [R3D.finish('bed2', 'walls', '#3a6b5a'), R3D.finish('bed2', 'ceiling', '#e8c0c8'), R3D.finish('nowhere', 'walls', '#000000'), R3D.finish(null, 'walls', null), R3D.finish(null, 'ceiling', null)]")
-                if fn != [True, True, False, True, True]:
-                    fails.append(f"{w}: R3D.finish on bedroom 2's walls and ceiling, a room that isn't, then all back: {fn} (want [true, true, false, true, true])")
-            if not phone:                                       # V2.6 (FINISHES F3): tap a wall in three rooms, a colour, Undo
-                f3 = pg.evaluate(FIN3)
-                bad = {k: v for k, v in f3.items() if not v[0] or not v[1]}
-                if bad:
-                    fails.append(f"{w}: tapping a wall and a colour in three rooms: {f3} (want each room's walls' card, the colour kept, then undone)")
-            if phone:                                           # V2.13 (FINISHES F6): a scheme saved, another set, the first back in one tap
-                sc = pg.evaluate("""async () => { const sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), was = R3D.finishes();
-                  try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {}
-                  R3D.setFinishes({ bed2: { 0: '#899081', 5: 'oak', 8: 'dome' } }); await sl(200); q('#r3d-finschname').value = 'A'; q('#r3d-finschsave').click();
-                  R3D.setFinishes({ landing: { 4: '#e8c0c8' } }); await sl(200); q('[data-finsch="0"]').click(); await sl(300);
-                  const got = JSON.stringify(R3D.finishes()); try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {} R3D.setFinishes(was); return got; }""")
-                if sc != '{"bed2":{"0":"#899081","5":"oak","8":"dome"}}':
-                    fails.append(f"{w}: the house's colours saved as a scheme, others set, the scheme back: {sc} (want bedroom 2's back wall, oak floor and flush dome)")
-            if phone:                                           # V1.53: the floor from overhead, then the figure dropped in
-                dr = pg.evaluate(DROP)
-                if dr.get("off") or dr.get("said") != "Bedroom 3" or dr.get("view") != "office" or dr.get("mode") != "stand" or abs(dr.get("eye", 0) - 420) > 15:
-                    fails.append(f"{w}: the first floor from overhead and the figure dropped on bedroom 3: {dr} (want every room on screen, 'Bedroom 3', standing in the office at 420)")
-                pg.screenshot(path=str(SHOTS / f"site-{w}-drop.png"))
-            if phone:                                           # V1.54: a real double-tap stands you there, the bed's card notwithstanding
-                x, y = pg.evaluate(TAPAT); cdp = ctx.new_cdp_session(pg)
-                for _ in range(2):
-                    cdp.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [{"x": x, "y": y}]}); cdp.send("Input.dispatchTouchEvent", {"type": "touchEnd", "touchPoints": []}); time.sleep(0.12)
-                tp = pg.evaluate(STOOD)
-                if tp.get("view") != "master" or tp.get("mode") != "stand" or tp.get("card") or abs(tp.get("eye", 0) - 420) > 15:
-                    fails.append(f"{w}: a double-tap (touches) on the master bedroom from overhead: {tp} (want standing in it at 420, no card)")
-            if phone:                                           # V1.38: walk into the living room, up to the landing and back out (the small screen: quicker frames)
-                wk = pg.evaluate(WALK)
-                want = ["hall", "livstand", "landing", "livstand", "hall", "kitchen", "hall"]
-                got = [v for i, v in enumerate(wk["seen"]) if i == 0 or v != wk["seen"][i - 1]]
-                if wk.get("low", 0) > -250: fails.append(f"{w}: down the lower stairs from the hall the feet got to {wk.get('low')} (want -260); legs {wk['legs']}")
-                if wk.get("stay", 0) < 255: fails.append(f"{w}: heading for bedroom 2 from the top of the living room's stairs took the walk down them (feet {wk.get('stay')}); legs {wk['legs']}")
-                if got != want or wk["top"] < 255: fails.append(f"{w}: the walk into the living room went {got}, its feet up to {wk['top']} (want {want}, 260); legs {wk['legs']}")
-                pg.screenshot(path=str(SHOTS / f"site-{w}-walk.png"))
-            if phone:                                           # V1.57: every door, both ways (after the walk: it moves the walker by hand)
-                dr = pg.evaluate(DOORS)
-                if dr.get("bad") or dr.get("n", 0) < 10: fails.append(f"{w}: walking through the doors ({dr.get('n')} walks): {dr.get('bad')}")
-            if errs: fails.append(f"{w}: errors: {errs[:4]}")
-            ctx.close()
-        for name, w, h, phone, gpu in HD_PATHS:                    # V2.75 (N26): the budget on the client's devices' paths, HD from the start
-            ctx = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=phone, has_touch=phone, service_workers="block")
-            ctx.add_init_script(PERF_INIT % (json.dumps(gpu), "true")); pg = ctx.new_page(); pg.set_default_timeout(600000); localcdn.route(pg); errs = []
+        if not HITCH:
+            for w, h in ((393, 852), (1920, 1080)):
+                phone = w < 600
+                ctx = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=phone, has_touch=phone, service_workers="block")
+                ctx.add_init_script(PERF_INIT % ("null", "false"))
+                if phone: ctx.add_init_script("window.__r3dDblMs = 20000;")   # V1.54: this rig hands each touch on only after a slow frame (~0.5 s here, seconds on GitHub), so its double-tap and tap allow longer (only two taps are sent)
+                pg = ctx.new_page(); pg.set_default_timeout(300000); localcdn.route(pg); errs = []   # V1.5: CI's software graphics draw the whole house at 1920 in ~20 s a frame; a screenshot took over 120 s
+                pg.on("pageerror", lambda e: errs.append("pageerror: " + str(e)[:300]))
+                pg.on("console", lambda m: errs.append(m.text[:300]) if (m.type == "error" and "favicon" not in m.text and "fonts.g" not in m.text) or "INVALID_" in m.text else None)   # V1.12: and any WebGL error (a photo sent into a texture too small for it, V1.9-V1.11)
+                pg.goto(base + "index.html"); pg.wait_for_function("window.R3D && window.R3D.ready", timeout=240000); pg.wait_for_timeout(3000)
+                view, place = pg.evaluate("() => [R3D._dbg.S.view, (document.getElementById('brand-place') || {}).textContent]")
+                if view != "house": fails.append(f"{w}: opens on {view!r}, not the whole house")
+                if place != "The whole house": fails.append(f"{w}: the brand says {place!r}")
+                got = pg.evaluate("() => R3D.photos()")   # V1.9: the photos come after the first picture (their own file)
+                if got != photos: fails.append(f"{w}: {got} of {photos} photo sets arrived")
+                name = "phone" if phone else "computer"                # V2.75 (N26): the budget, Fast's two paths (no graphics card)
+                perf[name] = pg.evaluate(PERF); fails += over_budget(name, perf[name])
+                off = pg.evaluate(OFF)
+                if off: fails.append(f"{w}: off the right edge: {off}")
+                pg.screenshot(path=str(SHOTS / f"site-{w}-house.png"))
+                acc = pg.evaluate(ACCESS)
+                if acc["noname"]: fails.append(f"{w}: controls with no name: {acc['noname']}")
+                if acc["label"]: fails.append(f"{w}: the 3D's label doesn't say where you are: {acc['label']!r}")
+                fails += names_keys(pg, w)
+                if phone:
+                    fails += edit_drag(pg, w) + stick_all(pg, w)
+                    bk = pg.evaluate(BACK)
+                    if bk != ["master", "master", "house", True]: fails.append(f"{w}: two rooms, then Back: {bk} (want ['master', 'master', 'house', True]: one step, out to the house)")
+                pg.click("[data-hfloor=first]"); pg.wait_for_timeout(2500)
+                if phone:
+                    fh = pg.evaluate("() => document.getElementById('r3d-floors').getBoundingClientRect().height")
+                    if fh > 48: fails.append(f"{w}: the floors pill wraps ({fh:.0f} px tall)")
+                place = pg.evaluate("() => document.getElementById('brand-place').textContent")
+                if place != "The first floor": fails.append(f"{w}: on the first floor the brand says {place!r}")
+                pg.screenshot(path=str(SHOTS / f"site-{w}-first.png"))
+                pg.click("#r3d-dt-measure"); pg.wait_for_timeout(800)
+                n = pg.evaluate("() => document.querySelectorAll('#r3d-dp-measure [data-measure]').length")
+                if n != rows: fails.append(f"{w}: Measure lists {n} sizes, the house file {rows}")
+                pg.fill("#r3d-dp-measure [data-measure]", "123")   # V2.75: wait for the save (a 600 ms debounce behind a frame that takes seconds in CI), not a fixed 1.2 s: it failed main's V2.74 run and four PRs
+                try: pg.wait_for_function("() => { const r = JSON.parse(localStorage.getItem('demma-v1:measurements') || '{}'), f = document.querySelector('#r3d-dp-measure [data-measure]').dataset.measure; return r[f] && r[f].cm === 123; }", timeout=60000)
+                except Exception: pass
+                kept = pg.evaluate("() => JSON.parse(localStorage.getItem('demma-v1:measurements') || '{}')")
+                first = pg.evaluate("() => document.querySelector('#r3d-dp-measure [data-measure]').dataset.measure")
+                if (kept.get(first) or {}).get("cm") != 123: fails.append(f"{w}: Measure didn't keep the number typed ({kept})")
+                cnt = pg.evaluate("() => document.getElementById('ms-count').textContent")
+                if not cnt.startswith("1 of"): fails.append(f"{w}: Measure counts {cnt!r}")
+                pg.screenshot(path=str(SHOTS / f"site-{w}-measure.png"))
+                if phone:                                           # V1.50: tap a piece, change its size, put it back
+                    pg.click("#r3d-dt-measure"); pg.wait_for_timeout(500)
+                    sz = pg.evaluate(SIZE)
+                    if sz.get("card") != "hitem:office.desk" or not sz.get("row") or not sz.get("ed") or not sz.get("listed") or sz.get("after") or not sz.get("gone"):
+                        fails.append(f"{w}: tapping the office desk and widening it: {sz} (want its card, a row of 223.9, the 3D changed, Measure listing it, then back as planned)")
+                    pg.screenshot(path=str(SHOTS / f"site-{w}-size.png"))
+                    sw = pg.evaluate(SWAP)                          # V2.46 (N7): swap the master's chest for another, add a plant from the catalogue, both back
+                    if sw != {"swapped": True, "added": True, "gone": True, "planted": True, "unplanted": True}:
+                        fails.append(f"{w}: swapping the master bedroom's chest, adding a plant, bedroom 2's plant from Look: {sw} (want each drawn, then gone)")
+                if phone:                                           # V2.5 (FINISHES_PLAN F2): a room's walls and ceiling through the palette, then back
+                    fn = pg.evaluate("() => [R3D.finish('bed2', 'walls', '#3a6b5a'), R3D.finish('bed2', 'ceiling', '#e8c0c8'), R3D.finish('nowhere', 'walls', '#000000'), R3D.finish(null, 'walls', null), R3D.finish(null, 'ceiling', null)]")
+                    if fn != [True, True, False, True, True]:
+                        fails.append(f"{w}: R3D.finish on bedroom 2's walls and ceiling, a room that isn't, then all back: {fn} (want [true, true, false, true, true])")
+                if not phone:                                       # V2.6 (FINISHES F3): tap a wall in three rooms, a colour, Undo
+                    f3 = pg.evaluate(FIN3)
+                    bad = {k: v for k, v in f3.items() if not v[0] or not v[1]}
+                    if bad:
+                        fails.append(f"{w}: tapping a wall and a colour in three rooms: {f3} (want each room's walls' card, the colour kept, then undone)")
+                if phone:                                           # V2.13 (FINISHES F6): a scheme saved, another set, the first back in one tap
+                    sc = pg.evaluate("""async () => { const sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), was = R3D.finishes();
+                      try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {}
+                      R3D.setFinishes({ bed2: { 0: '#899081', 5: 'oak', 8: 'dome' } }); await sl(200); q('#r3d-finschname').value = 'A'; q('#r3d-finschsave').click();
+                      R3D.setFinishes({ landing: { 4: '#e8c0c8' } }); await sl(200); q('[data-finsch="0"]').click(); await sl(300);
+                      const got = JSON.stringify(R3D.finishes()); try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {} R3D.setFinishes(was); return got; }""")
+                    if sc != '{"bed2":{"0":"#899081","5":"oak","8":"dome"}}':
+                        fails.append(f"{w}: the house's colours saved as a scheme, others set, the scheme back: {sc} (want bedroom 2's back wall, oak floor and flush dome)")
+                if phone:                                           # V1.53: the floor from overhead, then the figure dropped in
+                    dr = pg.evaluate(DROP)
+                    if dr.get("off") or dr.get("said") != "Bedroom 3" or dr.get("view") != "office" or dr.get("mode") != "stand" or abs(dr.get("eye", 0) - 420) > 15:
+                        fails.append(f"{w}: the first floor from overhead and the figure dropped on bedroom 3: {dr} (want every room on screen, 'Bedroom 3', standing in the office at 420)")
+                    pg.screenshot(path=str(SHOTS / f"site-{w}-drop.png"))
+                if phone:                                           # V1.54: a real double-tap stands you there, the bed's card notwithstanding
+                    x, y = pg.evaluate(TAPAT); cdp = ctx.new_cdp_session(pg)
+                    for _ in range(2):
+                        cdp.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [{"x": x, "y": y}]}); cdp.send("Input.dispatchTouchEvent", {"type": "touchEnd", "touchPoints": []}); time.sleep(0.12)
+                    tp = pg.evaluate(STOOD)
+                    if tp.get("view") != "master" or tp.get("mode") != "stand" or tp.get("card") or abs(tp.get("eye", 0) - 420) > 15:
+                        fails.append(f"{w}: a double-tap (touches) on the master bedroom from overhead: {tp} (want standing in it at 420, no card)")
+                if phone:                                           # V1.38: walk into the living room, up to the landing and back out (the small screen: quicker frames)
+                    wk = pg.evaluate(WALK)
+                    want = ["hall", "livstand", "landing", "livstand", "hall", "kitchen", "hall"]
+                    got = [v for i, v in enumerate(wk["seen"]) if i == 0 or v != wk["seen"][i - 1]]
+                    if wk.get("low", 0) > -250: fails.append(f"{w}: down the lower stairs from the hall the feet got to {wk.get('low')} (want -260); legs {wk['legs']}")
+                    if wk.get("stay", 0) < 255: fails.append(f"{w}: heading for bedroom 2 from the top of the living room's stairs took the walk down them (feet {wk.get('stay')}); legs {wk['legs']}")
+                    if got != want or wk["top"] < 255: fails.append(f"{w}: the walk into the living room went {got}, its feet up to {wk['top']} (want {want}, 260); legs {wk['legs']}")
+                    pg.screenshot(path=str(SHOTS / f"site-{w}-walk.png"))
+                if phone:                                           # V1.57: every door, both ways (after the walk: it moves the walker by hand)
+                    dr = pg.evaluate(DOORS)
+                    if dr.get("bad") or dr.get("n", 0) < 10: fails.append(f"{w}: walking through the doors ({dr.get('n')} walks): {dr.get('bad')}")
+                if errs: fails.append(f"{w}: errors: {errs[:4]}")
+                ctx.close()
+            for name, w, h, phone, gpu in HD_PATHS:                    # V2.75 (N26): the budget on the client's devices' paths, HD from the start
+                ctx = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=phone, has_touch=phone, service_workers="block")
+                ctx.add_init_script(PERF_INIT % (json.dumps(gpu), "true")); pg = ctx.new_page(); pg.set_default_timeout(600000); localcdn.route(pg); errs = []
+                pg.on("pageerror", lambda e: errs.append("pageerror: " + str(e)[:300]))
+                pg.goto(base + "index.html"); pg.wait_for_function("window.R3D && window.R3D.ready && window.__first", timeout=600000)
+                perf[name] = pg.evaluate(PERF); perf[name]["shaders_spot"] = pg.evaluate(SPOT); fails += over_budget(name, perf[name])
+                if perf[name]["quality"] != "hd": fails.append(f"{name}: drawn in {perf[name]['quality']}, not HD")
+                if errs: fails.append(f"{name}: errors: {errs[:4]}")
+                ctx.close()
+        else:
+            ctx = b.new_context(viewport={"width": 1280, "height": 800}, device_scale_factor=1, service_workers="block")   # N177: the hitch walk
+            ctx.add_init_script(PERF_INIT % (json.dumps(HD_PATHS[1][4]), "true") + HITCH_INIT); pg = ctx.new_page(); pg.set_default_timeout(900000); localcdn.route(pg); errs = []
             pg.on("pageerror", lambda e: errs.append("pageerror: " + str(e)[:300]))
             pg.goto(base + "index.html"); pg.wait_for_function("window.R3D && window.R3D.ready && window.__first", timeout=600000)
-            perf[name] = pg.evaluate(PERF); perf[name]["shaders_spot"] = pg.evaluate(SPOT); fails += over_budget(name, perf[name])
-            if perf[name]["quality"] != "hd": fails.append(f"{name}: drawn in {perf[name]['quality']}, not HD")
-            if errs: fails.append(f"{name}: errors: {errs[:4]}")
+            pg.evaluate(HITCH_WARM); hw = pg.evaluate(HITCH_WALK)
+            perf.setdefault("rtx", {})["hitches"] = hw["hitches"]; fails += over_budget("rtx", perf["rtx"])
+            if hw["seen"][-1:] != ["hall"] or "kitchen" not in hw["seen"] or "landing" not in hw["seen"]: fails.append(f"rtx: the hitch walk went {hw['seen']} (legs {hw['legs']})")
+            if hw["hitches"]: print("hitches: " + "; ".join(hw["what"][:6]))
+            if errs: fails.append(f"rtx hitch walk: errors: {errs[:4]}")
             ctx.close()
         b.close()
-    (SHOTS / "perf.json").write_text(json.dumps(perf, indent=1))
+    (SHOTS / ("perf-hitch.json" if HITCH else "perf.json")).write_text(json.dumps(perf, indent=1))
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
-    print("speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room" + (f", {v['shaders_spot']} built on the spot into it" if "shaders_spot" in v else "") for k, v in perf.items()))
+    if HITCH: print(f"hitch check: a walk on the PC path (hall, kitchen, living room, landing and back), {perf['rtx']['hitches']} hitches, {len(fails)} failed"); return 1 if fails else 0
+    print("speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room" + (f", {v['shaders_spot']} built on the spot into it" if "shaders_spot" in v else "") + (f", {v['hitches']} hitches walking" if "hitches" in v else "") for k, v in perf.items()))
     print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named (shut panels, a card, Edit's list too), Esc one layer a press, Tab the top row then the 3D, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, Back from a room to the house, down to the lower floor and back, the speed budget on 4 paths, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
