@@ -128,6 +128,15 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 
 - **The GPU at rest (N93, V3.41):** the loop draws only when `need` is set, so a busy card while still means something keeps setting it. Measured on the client's PC (headless Chrome `--use-angle=d3d11`, a temp profile, CDP; wrap `bindFramebuffer` and the draw calls to count frames drawn to the screen, and sum `\GPU Engine(*engtype_3D)\Utilization Percentage`): with no welcome the house warms in about 6 s and then draws 0 frames a second. The welcome's `controls.autoRotate` drew every frame (three's turn is a step a frame, so a 155 Hz screen spun 2.6× too fast); now `SPIN` in `17_render_loop.js`. Anything new that animates on its own should go through the same cap.
 
+- **Seen through an opening (N188, V4.27):** `09_house_views.js` `wellCull`, run from `scene.onBeforeRender` for the main camera, leaves
+  out of that draw (layer 0 off) a living-room piece the eye can't see down the stairwell and a piece out of doors it can't see through
+  any window or outside door of a room seen (`outPorts`). The test (`seenThrough`) projects a box's corners from the eye onto an opening's
+  plane and keeps it if their bounds touch the opening; a box not wholly beyond the plane is kept. It only ever over-draws. The shadows'
+  redraw (`gl.shadowMap.render`, wrapped) turns them back on first: three makes the camera's list before the shadows, so they still cast.
+  The check: before/after screenshots at fixed eyes must match once settled (a piece first drawn takes a frame or two to match).
+  The landing's stop pushed the site job past its 40 minutes, so the HD paths' speed budget (iPhone, RTX) moved to the hitch job
+  (`check_site.py --hitch`, `_shots/perf-hitch.json`); the site job keeps the phone's and the PC's Fast paths.
+
 ## 4. The house beside its photos
 - `tools/compare.py` pairs a photo with a view (`PAIRS`; a second photo of a room is `<view>_<what>`, e.g. `hall_front`);
   `tools/camfit.py` fits the camera. A sweep can't find the bathroom or the master: they need hand starts (`camfit.START`, solved from
