@@ -213,6 +213,7 @@ function applyFloors() {
   for (const k of ["lower", "ground", "first", "out"]) if (HFLOOR[k]) HFLOOR[k].traverse(o => { if (o.userData.hlabel) o.visible = labelsOn && (k === "out" ? on : (top ? top === k : !R.HOUSE3)); });   // v57: Hide labels hides these too
   if (rmodeG) rmodeG.traverse(o => { if (o.userData.rlabel) o.visible = labelsOn; });   // v72 (B5): the room's name in Above
   hidReal.forEach(o => o.visible = true); hidReal = []; hidLay.forEach(o => o.layers.enable(0)); hidLay = [];
+  wellOff(); WELL.list = []; WELL.outL = [];   // V4.22 (N188)
   roomUncull();   // V2.71 (N16)
   if (HMATS && HMATS.earth) HMATS.earth.visible = !(on && sel === "lower");   // V1.53: the earth over the secret room (under the garage) off, so the lower floor shows
   if (on && sel === "lower") scene.children.forEach(o => { if (o !== houseG && o !== garden3d && o !== lightRig && !o.isLight && o !== (sun && sun.target) && o.visible) { o.visible = false; hidReal.push(o); } });
@@ -249,7 +250,8 @@ function applyFloors() {
         const lim = -(R.STAIR_X[0] - 3) * M, bb = new THREE.Box3(); scene.updateMatrixWorld();
         scene.children.forEach(o => { if (lr(o)) o.traverse(m => { if ((m.isMesh || m.isPoints || m.isLine) && !m.isInstancedMesh && m.layers.isEnabled(0)) {
           const g = m.geometry; if (!g.boundingBox) g.computeBoundingBox();
-          if (bb.copy(g.boundingBox).applyMatrix4(m.matrixWorld).min.x > lim) { m.layers.disable(0); hidLay.push(m); } } }); }); }
+          if (bb.copy(g.boundingBox).applyMatrix4(m.matrixWorld).min.x > lim) { m.layers.disable(0); hidLay.push(m); } else if (inLiving(bb)) WELL.list.push(m); } }); });
+        WELL.eye = null; }
     }
   }
   if (houseG && R.HOUSE3 && S.view === "livstand") {   // V1.38: standing in the living room with its door open: the ground floor through it
@@ -263,6 +265,60 @@ function applyFloors() {
   requestAnimationFrame(() => { measureShift(!!(window.DemmaTools && window.DemmaTools.isOpen())); fadeRows(true); });   // V1.30: the rows above may have changed
   dirty();
 }
+/* V4.22 (N188): standing in a room, a piece is drawn only where the eye can see it: a living-room piece left by v81's cut (from the landing,
+   or a first-floor room that sees down the stairwell) through the stairwell, the first floor's opening over the flight (eye above it) then
+   the living room's ceiling opening or its wall's openings onto the flight and the hall; a piece out of doors through a window or a door
+   out of a room seen. Tested from the eye (when it moves) before each draw from the camera, and left out of that draw only: the shadows'
+   redraw puts it back first, so it still casts them. The landing 380 draws to about 230 */
+const WELL = { list: [], outL: [], ports: null, off: [], eye: null, P: null };
+const inLiving = bb => { const L = R.HOUSE3.living.box, x0 = -bb.max.x / M, x1 = -bb.min.x / M;   // (x mirrored)
+  return x0 > L[0] - 5 && x1 < L[1] + 5 && bb.min.z / M > L[2] - 5 && bb.max.z / M < L[3] + 5 && bb.min.y / M > -5 && bb.max.y / M < (R.HOUSE3.ceil || 235) + 5; };
+const cmBox = bb => [-bb.max.x / M, bb.min.y / M, bb.min.z / M, -bb.min.x / M, bb.max.y / M, bb.max.z / M];
+function wellOff() { for (const m of WELL.off) m.layers.enable(0); WELL.off = []; }
+function seenThrough(E, b, ax, c, r) {   // can the eye E see any of box b ([x0, y0, z0, x1, y1, z1], cm) through rectangle r ([u0, u1, v0, v1]) on the plane axis ax = c?
+  const u = ax ? 0 : 1, v = ax === 2 ? 1 : 2, d = E[ax] - c;
+  if (d > 0 ? b[ax + 3] >= c : b[ax] <= c) return true;   // not wholly beyond the plane: drawn
+  let u0 = Infinity, u1 = -Infinity, v0 = Infinity, v1 = -Infinity;
+  for (let i = 0; i < 8; i++) { const P = [b[i & 1 ? 3 : 0], b[i & 2 ? 4 : 1], b[i & 4 ? 5 : 2]], t = d / (E[ax] - P[ax]);
+    const qu = E[u] + t * (P[u] - E[u]), qv = E[v] + t * (P[v] - E[v]); u0 = Math.min(u0, qu); u1 = Math.max(u1, qu); v0 = Math.min(v0, qv); v1 = Math.max(v1, qv); }
+  return u1 > r[0] - 2 && u0 < r[1] + 2 && v1 > r[2] - 2 && v0 < r[3] + 2;
+}
+function outPorts(see, liv) {   // the openings out of the rooms seen: [axis, plane, rect]; null where a room seen opens out where none is listed (the porch)
+  const H = R.HOUSE3, ports = [], has = new Set(), op = o => [o.axis === "x" ? 2 : 0, o.line, [o.a, o.b, o.y0, o.y1]];
+  for (const it of Object.values(H.items || {})) if (it.op && (it.k === "window" && see.has(it.r))) { ports.push(op(it.op)); has.add(it.r); }
+  for (const [pk, a, b] of roomDoors().list) if ((a === "out") !== (b === "out") && (see.has(a) || see.has(b))) { const it = H.items[pk.slice(5)]; if (!it || !it.op) return null; ports.push(op(it.op)); has.add(a === "out" ? b : a); }
+  if (liv) { const L = H.living, W = L.window; if (!W) return null; ports.push([2, L.box[2], [W.x[0], W.x[1], W.y[0], W.y[1]]]); }
+  const { out } = roomDoors(); for (const r of see) if (out.has(r) && !has.has(r)) return null;
+  return ports;
+}
+function outCull(see) {   // the pieces out of doors (clear of the house) to test from the eye, and the openings they show through
+  const H = R.HOUSE3; WELL.outL = []; WELL.ports = null; WELL.eye = null;
+  let p = shell; while (p && p.visible) p = p.parent;   // the living room drawn (down the stairwell, or through its door from the hall): its window too
+  const ports = outPorts(see, !p); if (!ports) return;
+  let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity; for (const r of [...Object.values(H.rooms), H.living.box]) { x0 = Math.min(x0, r[0]); x1 = Math.max(x1, r[1]); z0 = Math.min(z0, r[2]); z1 = Math.max(z1, r[3]); }
+  const bb = new THREE.Box3(); scene.updateMatrixWorld(); WELL.ports = ports;
+  scene.traverseVisible(m => { if (!m.isMesh || m.isInstancedMesh || !m.layers.isEnabled(0) || !m.geometry) return;
+    const g = m.geometry; if (!g.boundingBox) g.computeBoundingBox(); const b = cmBox(bb.copy(g.boundingBox).applyMatrix4(m.matrixWorld));
+    if (b[3] < x0 - 40 || b[0] > x1 + 40 || b[5] < z0 - 40 || b[2] > z1 + 40) WELL.outL.push([m, b]); });
+}
+function wellCull(cam) {
+  if (cam !== camera || !(WELL.list.length || WELL.outL.length)) return;
+  const E = [-cam.position.x / M, cam.position.y / M, cam.position.z / M];
+  if (WELL.eye && Math.abs(E[0] - WELL.eye[0]) + Math.abs(E[1] - WELL.eye[1]) + Math.abs(E[2] - WELL.eye[2]) < 0.5) { for (const m of WELL.off) m.layers.disable(0); return; }
+  wellOff(); WELL.eye = E;
+  const off = m => { if (m.layers.isEnabled(0)) { m.layers.disable(0); WELL.off.push(m); } };
+  for (const [m, b] of WELL.outL) if (!WELL.ports.some(([ax, c, r]) => seenThrough(E, b, ax, c, r))) off(m);
+  const H = R.HOUSE3, L = H.living, F = L.flight, C = H.ceil || 235, FY = H.rooms.landing[4], LZ = L.box[3];
+  if (!WELL.list.length || E[1] <= C + 1) return;   // the eye at or under the living room's ceiling (low on the flight): all of it
+  if (!WELL.P) WELL.P = { S: [F.x0 - 2, L.box[1] + 2, F.z0 - 8, F.zl1 + 2], C: [F.x0 - 10, L.box[1] + 2, F.z0 - 8, LZ + 2],
+    W: (L.walls.find(w => w.axis === "z" && Math.abs(w.c - LZ) < 2) || { holes: [] }).holes };
+  const bb = new THREE.Box3();
+  for (const m of WELL.list) { if (!m.layers.isEnabled(0)) continue;
+    const g = m.geometry; if (!g.boundingBox) g.computeBoundingBox(); const b = cmBox(bb.copy(g.boundingBox).applyMatrix4(m.matrixWorld));
+    if (!((E[1] <= FY + 1 || seenThrough(E, b, 1, FY, WELL.P.S)) && (seenThrough(E, b, 1, C, WELL.P.C) || E[2] > LZ && WELL.P.W.some(h => seenThrough(E, b, 2, LZ, h))))) off(m); }
+}
+scene.onBeforeRender = (r, sc, cam) => wellCull(cam);
+{ const sm = gl.shadowMap, o = sm.render.bind(sm); sm.render = (...a) => { for (const m of WELL.off) m.layers.enable(0); return o(...a); }; }   // after the camera's list is made: the shadows cast as before
 /* V2.71 (N16): standing in a room, of the floors shown only that room is drawn, the rooms seen from it (through open or glazed doors, at a
    flight's ends) and the walls, slabs, stairs and roof; the outside only where one has a window or a door out. A room left out is cut from
    its meshes by draw range (at most three twins sharing a buffer); a door that swings asks again (swingDoor) */
@@ -340,6 +396,7 @@ function roomCull(again) {   // again: a door swung (only this part of applyFloo
   for (const [r, g] of Object.entries(FIN_PEND)) if (!see.has(r)) off(g);
   const dside = {}; for (const [pk, a, b] of roomDoors().list) dside[pk] = [a, b];
   for (const [pk, P] of Object.entries(HPARTS)) { const d = dside[pk], r = P.g.userData.room; if (d ? !see.has(d[0]) && !see.has(d[1]) : r && !see.has(r)) off(P.g); }
+  wellOff(); if (liv) { WELL.outL = []; WELL.eye = null; } else outCull(see);   // V4.22 (N188)
   const key = [...see].sort().join() + CULLG.length;
   if (again) dirty();
   if (key !== cullKey) { cullKey = key; reshadow(); }

@@ -53,7 +53,7 @@ def speed(raw):
     ms = lambda k: f"{g(k)} ms" if num(p.get(k)) is not None else "not yet"
     gpu, view, draws = w("gpu"), w("view"), num(p.get("draws"))
     kind = "iphone" if re.search(r"apple", gpu, re.I) else "rtx" if re.search(r"[rg]tx|radeon|arc", gpu, re.I) else "phone" if p.get("phone") is True else "computer"
-    key = "draws_house" if view == "house" else "draws_living" if view in LIVING else None
+    key = "draws_house" if view == "house" else "draws_living" if view in LIVING else "draws_landing" if view == "landing" else None   # V4.22 (N188)
     cap = json.loads((ROOT / "tools/perf_budget.json").read_text())["paths"].get(kind, {}).get(key) if key else None
     line = (f"{w('v') or '?'} · {gpu or '?'} ({kind}) · {w('q').upper() or '?'} at {g('ratio')}× · moving {ms('move')}, still {ms('still')}"
             f" · {g('draws')} draws ({view or '?'}{f', budget {cap}' if cap else ''}{', OVER' if cap and draws and draws > cap else ''}) · {g('shaders')} shaders")

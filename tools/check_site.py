@@ -2,7 +2,7 @@
 touch) and a desktop's (1920 × 1080): no script errors, nothing off the right edge, it opens on the whole house and the brand says so, the
 floors pill is one row on the phone, the photos arrive after the first picture (V1.9), a walk goes from the hall into the living room, up its stairs and back (V1.38), and the dock's Measure lists every open size, keeps a number typed in and counts it. Screenshots go
 to _shots/ (the workflow keeps them with the run). V2.75 (N26): the speed budget (tools/perf_budget.json) on four paths, the bytes of a
-first visit, the shaders built by the first picture and the draws for the house and the living room; the numbers go to _shots/perf.json.
+first visit, the shaders built by the first picture and the draws for the house, the living room and the landing (V4.22); the numbers go to _shots/perf.json.
 
 python3 tools/check_site.py [site dir]      exits non-zero on any failure; THREE_LOCAL serves three.js where the CDN is blocked"""
 import http.server, json, pathlib, socketserver, sys, threading, time
@@ -185,8 +185,10 @@ PERF = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
     for (let i = 0; i < 6; i++) { g.needsUpdate = false; D.controls.dispatchEvent({ type: "change" }); await sl(600); await fresh(); c = Math.min(c, R3D.perf().calls); }   // V4.4 (N165): six frames, the least kept (three once all carried the staggered shadows' redraw after a room change: 680 on #260)
     g.needsUpdate = true; D.controls.dispatchEvent({ type: "change" }); return c; };
   const h = await still();                                     // the house as it opens (R3D.set shows the living room from outside: 91 more draws)
-  R3D.set({ view: "livstand" }); await settle(); const l = await still(); R3D.set({ view: "house" }); await settle();
-  return { first_visit_mb: +(bytes / 1e6).toFixed(2), shaders_first: window.__first ?? -1, draws_house: h, draws_living: l, quality: R3D.perf().quality }; }"""
+  R3D.set({ view: "livstand" }); await settle(); const l = await still();
+  R3D.set({ view: "landing" }); await settle(); document.querySelector('[data-rmode=stand]').click(); await settle(); const ld = await still();   // V4.22 (N188): standing on the landing, the stairwell in view
+  R3D.set({ view: "house" }); await settle();
+  return { first_visit_mb: +(bytes / 1e6).toFixed(2), shaders_first: window.__first ?? -1, draws_house: h, draws_living: l, draws_landing: ld, quality: R3D.perf().quality }; }"""
 BUDGET = json.loads((ROOT / "tools/perf_budget.json").read_text())
 # the client's iPhones and PCs (tools/perf_budget.json "paths"): Apple graphics and an RTX start in HD
 HD_PATHS = (("iphone", 393, 852, True, "Apple GPU"), ("rtx", 1280, 800, False, "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0)"))
@@ -443,7 +445,7 @@ def main():
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
     if HITCH: print(f"hitch check: a walk on the PC path (hall, kitchen, living room, landing and back), {perf['rtx']['hitches']} hitches, {len(fails)} failed"); return 1 if fails else 0
-    print("speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room" + (f", {v['shaders_spot']} built on the spot into it" if "shaders_spot" in v else "") + (f", {v['hitches']} hitches walking" if "hitches" in v else "") for k, v in perf.items()))
+    print("speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room {v.get('draws_landing')} landing" + (f", {v['shaders_spot']} built on the spot into it" if "shaders_spot" in v else "") + (f", {v['hitches']} hitches walking" if "hitches" in v else "") for k, v in perf.items()))
     print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named (shut panels, a card, Edit's list too), Esc one layer a press, Tab the top row then the 3D, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, Back from a room to the house, down to the lower floor and back, the speed budget on 4 paths, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 

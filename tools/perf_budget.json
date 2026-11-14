@@ -1,5 +1,5 @@
 {
- "_": "V2.75 (N26): the speed budget. tools/checks.py fails a round that goes over: 'site' (tools/check_site.py) measures the paths, 'sizes' the built files. Each number is V2.74's plus about 10%. Lower one when a round wins; raise one only on purpose, saying why in the PR. Measured numbers: _shots/perf.json. V2.87 (N35): shaders_first +1 for Fast (phone, computer): the speck that sets a group's cutting planes before its shaders are asked for (one tiny shader, no lights, kept), so none of the group's own is built on the spot. V2.98 (N37): draws_house lowered to the new numbers plus about 10% (188 phone and PC, 189 iPhone, 371 RTX). V3.04 (N46): the RTX's draws lowered to the new numbers plus about 10% (the shade reads the picture's depth: no second pass; 190 house, 387 living room); the iPhone path runs without the shade in software graphics, so its numbers stay. V3.09 (N54): shaders_spot, the HD paths' shaders built on the frame that first drew them, from the whole house into the living room once the house has warmed it (was 58 on the RTX path, 27 on the iPhone's; now 0). V3.12 (N47): draws_living to the new numbers plus about 10%, the living room's fixed parts one draw a material (a frame standing in it: phone 246 to 235, PC 364 to 350, iPhone 260 to 249, RTX 387 to 373). V3.58 (N109): photos_mb 9.5 to 8.7, six pictures no view needs at full size made 512 (the road, the lawn's, brick's, hessian's and cord's relief): 9.5 MB to 7.9. V4.2 (N166): the house on its own (V4.1, N157) draws about 187 on every path (it was about 204) and builds two shaders fewer first: draws_house 210 to 205 on each path; shaders_first phone 21 to 20, computer 22 to 21, iPhone and RTX 54 to 44. The living room's stay (CI reads them higher than a local run).",
+ "_": "V2.75 (N26): the speed budget. tools/checks.py fails a round that goes over: 'site' (tools/check_site.py) measures the paths, 'sizes' the built files. Each number is V2.74's plus about 10%. Lower one when a round wins; raise one only on purpose, saying why in the PR. Measured numbers: _shots/perf.json. V2.87 (N35): shaders_first +1 for Fast (phone, computer): the speck that sets a group's cutting planes before its shaders are asked for (one tiny shader, no lights, kept), so none of the group's own is built on the spot. V2.98 (N37): draws_house lowered to the new numbers plus about 10% (188 phone and PC, 189 iPhone, 371 RTX). V3.04 (N46): the RTX's draws lowered to the new numbers plus about 10% (the shade reads the picture's depth: no second pass; 190 house, 387 living room); the iPhone path runs without the shade in software graphics, so its numbers stay. V3.09 (N54): shaders_spot, the HD paths' shaders built on the frame that first drew them, from the whole house into the living room once the house has warmed it (was 58 on the RTX path, 27 on the iPhone's; now 0). V3.12 (N47): draws_living to the new numbers plus about 10%, the living room's fixed parts one draw a material (a frame standing in it: phone 246 to 235, PC 364 to 350, iPhone 260 to 249, RTX 387 to 373). V3.58 (N109): photos_mb 9.5 to 8.7, six pictures no view needs at full size made 512 (the road, the lawn's, brick's, hessian's and cord's relief): 9.5 MB to 7.9. V4.2 (N166): the house on its own (V4.1, N157) draws about 187 on every path (it was about 204) and builds two shaders fewer first: draws_house 210 to 205 on each path; shaders_first phone 21 to 20, computer 22 to 21, iPhone and RTX 54 to 44. The living room's stay (CI reads them higher than a local run). V4.22 (N188): draws_landing, a frame's draws standing on the landing (the stairwell in view), new: the measured numbers plus about 10% (phone 229, PC 232, iPhone 244, RTX 250; it was about 380 before the stairwell's pieces were drawn only where seen).",
  "files": {
   "page_mb": 2.25,
   "three_mb": 0.95,
@@ -7,24 +7,27 @@
   "half_mb": 2.6
  },
  "paths": {
-  "_": "first_visit_mb: what a first visit fetches from the site (the icon font and the like from elsewhere aside); shaders_first: shader programs built by the first picture; draws_house, draws_living: a frame's draws while moving, the whole house as it opens and standing in the living room (R3D.perf().calls, the shadows' redraw left out). phone: a phone without a strong chip (Fast, half-size photos); computer: no graphics card, 1920 wide (Fast); iphone: Apple graphics (HD); rtx: an NVIDIA RTX (HD, 1280 wide); shaders_spot (HD paths): shaders built on the spot going from the whole house into the living room, after the house's warm-up; hitches (rtx, N177): frames of a walk (hall, living room, landing, lower floor) that built a shader on the spot or sent a photo, on a 144 Hz clock after the warm-up.",
+  "_": "first_visit_mb: what a first visit fetches from the site (the icon font and the like from elsewhere aside); shaders_first: shader programs built by the first picture; draws_house, draws_living, draws_landing: a frame's draws while moving, the whole house as it opens, standing in the living room and on the landing (R3D.perf().calls, the shadows' redraw left out). phone: a phone without a strong chip (Fast, half-size photos); computer: no graphics card, 1920 wide (Fast); iphone: Apple graphics (HD); rtx: an NVIDIA RTX (HD, 1280 wide); shaders_spot (HD paths): shaders built on the spot going from the whole house into the living room, after the house's warm-up; hitches (rtx, N177): frames of a walk (hall, living room, landing, lower floor) that built a shader on the spot or sent a photo, on a 144 Hz clock after the warm-up.",
   "phone": {
    "first_visit_mb": 5.8,
    "shaders_first": 20,
    "draws_house": 205,
-   "draws_living": 258
+   "draws_living": 258,
+   "draws_landing": 252
   },
   "computer": {
    "first_visit_mb": 15.0,
    "shaders_first": 21,
    "draws_house": 205,
-   "draws_living": 385
+   "draws_living": 385,
+   "draws_landing": 255
   },
   "iphone": {
    "first_visit_mb": 15.0,
    "shaders_first": 44,
    "draws_house": 205,
    "draws_living": 273,
+   "draws_landing": 268,
    "shaders_spot": 3
   },
   "rtx": {
@@ -32,6 +35,7 @@
    "shaders_first": 44,
    "draws_house": 205,
    "draws_living": 410,
+   "draws_landing": 275,
    "shaders_spot": 3,
    "hitches": 0
   }
