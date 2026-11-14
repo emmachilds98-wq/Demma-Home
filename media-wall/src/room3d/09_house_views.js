@@ -125,7 +125,7 @@ function placeRoomLights() {
     l.width = (o.b - o.a) * M; l.height = (o.y1 - o.y0) * M; l.position.copy(v3(cx, cy, o.line + d * 3)); l.lookAt(v3(cx, cy - 40, o.line + d * 100));
     l.intensity = day ? WK : 3; l.color.set(day ? "#eef0f2" : "#7d89b8"); });   // V3.57: WK, the neighbours' windows on too
   const key = b ? b.join() : "";
-  if (key === roomKey) return; roomKey = key;
+  if (key === roomKey || OUT.sunOut) return; roomKey = key;   // N189: outside, the sun is the whole house's (outdoor()): a room's left it over the living room with the house's box
   const d = b ? v3((b[0] + b[1]) / 2, 0, (b[4] + b[5]) / 2).sub(sun.userData.t0).setY(0) : new THREE.Vector3();
   sun.position.copy(sun.userData.p0).add(d); sun.target.position.copy(sun.userData.t0).add(d);
   /* V3.33 (N85): a room whose biggest window looks out of the front has the front's sun, its patch on the floor */
