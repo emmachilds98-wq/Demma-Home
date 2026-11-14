@@ -163,9 +163,34 @@ function mirrorStep() {
   const old = MIR.done[here]; MIR.done[here] = { key, tex }; mirrorUse(m, tex); if (old && old.tex !== tex) old.tex.dispose();
   return true;
 }
+const mirWhite = () => MIR.white || (MIR.white = canvasTex(4, 4, (g, w, h) => { g.fillStyle = "#ffffff"; g.fillRect(0, 0, w, h); }, true));
 function mirrorUse(m, tex) {
-  if (!MIR.white) MIR.white = canvasTex(4, 4, (g, w, h) => { g.fillStyle = "#ffffff"; g.fillRect(0, 0, w, h); }, true);
-  m.userData.real = true; m.envMap = tex; m.envMapIntensity = 1; m.metalness = 1; m.roughness = 0.03; m.color.set("#f4f6f6"); m.map = MIR.white; dirty();
+  m.userData.real = true; m.envMap = tex; m.envMapIntensity = 1; m.metalness = 1; m.roughness = 0.03; m.color.set("#f4f6f6"); m.map = mirWhite(); dirty();
+}
+/* N185: until the room lands (and on Fast) the glass shows a plain room at once (the stock neutral one reflects as flat grey): cream walls,
+   a pale ceiling and its light, a darker floor, a window and a door, made as the neutral room is (its plain kind of material: no shader
+   added). A slight green-grey tint. A phone drawn lighter has no reflection: the painted sheen stays */
+function mirrorRoom() {
+  if (MIR.room) return MIR.room;
+  const sc = new THREE.Scene(), box = new THREE.BoxGeometry(1, 1, 1), lin = (c, k) => new THREE.Color(c).multiplyScalar(k);
+  const put = (col, x, y, z, sx, sy, sz) => { const o = new THREE.Mesh(box, new THREE.MeshBasicMaterial({ color: col })); o.position.set(x, y, z); o.scale.set(sx, sy, sz); sc.add(o); };
+  const wall = lin("#efe6d6", 1), band = lin("#a89a88", 1);   // the room round the camera (the glass looks along -x into its room)
+  for (const [x, z, sx, sz] of [[-2.1, 0, 0.2, 4.4], [2.1, 0, 0.2, 4.4], [0, -2.1, 4.4, 0.2], [0, 2.1, 4.4, 0.2]]) {
+    put(wall, x, 0, z, sx, 4, sz); put(band, x * 0.97, -1, z * 0.97, sx, 1.2, sz); }                     // walls, a tiled band below
+  put(lin("#f6f3ec", 1.1), 0, 1.6, 0, 4.4, 0.2, 4.4); put(lin("#5e554b", 1), 0, -1.6, 0, 4.4, 0.2, 4.4);   // ceiling, floor
+  put(lin("#ffffff", 6), 0, 1.48, 0, 0.5, 0.04, 0.5);                                                       // its light
+  for (const [x, z, a] of [[-1.98, 1, 0], [0.4, 1.98, 1]]) { const w = a ? [1.4, 1.1, 0.04] : [0.04, 1.1, 1.2];
+    put(lin("#fbfbf8", 1), x, 0.45, z, w[0] + 0.12 * a, 1.22, w[2] + 0.12 * (1 - a)); put(lin("#eaf0f4", 3.2), x * 0.995, 0.45, z * 0.995, ...w);   // two windows in white frames,
+    put(lin("#fbfbf8", 1), x * 0.99, 0.45, z * 0.99, a ? 0.05 : 0.04, 1.1, a ? 0.04 : 0.05); }                                              // a bar up the middle
+  put(lin("#7d6a55", 1), -1.9, -0.35, -0.9, 0.04, 2.3, 0.85); put(lin("#f4f1ea", 1.2), 1.98, 0.2, -0.6, 0.04, 0.9, 1.4);   // a wood door, a pale cabinet
+  const pm = new THREE.PMREMGenerator(gl); MIR.room = pm.fromScene(sc, 0).texture; pm.dispose();
+  box.dispose(); sc.traverse(o => { if (o.material) o.material.dispose(); });
+  return MIR.room;
+}
+function mirrorFirst(m) {
+  if (!m.envMap || NOMIR) return;
+  m.envMap = mirrorRoom(); m.userData.real = true; m.userData.envK = 6.25;   // real: the stock room never swapped back in (11_lights); envLevels: 0.16 × 6.25
+  m.metalness = 1; m.roughness = 0.04; m.color.set("#e2eae8"); m.map = mirWhite(); m.envMapIntensity = 1;
 }
 const finishEnv = m => m.userData.hk === "glass" ? (S.tod === "day" ? 0.3 : 0.75) : m.userData.hk === "screen" ? 0.18 : m.roughness <= 0.3 ? 0.9 : m.roughness <= 0.6 ? 0.6 : 0.45;   // v72 (B3): gloss, satin, matt; V3.32 (N82): a screen that's off dark glass, as the living room's TV (the bright stock room in it read as a whiteboard)
 let HENVK = 1;
