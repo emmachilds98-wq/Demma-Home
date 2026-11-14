@@ -667,7 +667,7 @@ function buildHouse() {
       if (!LOWD) { m.userData.hk = k; m.envMap = houseEnv(); m.envMapIntensity = finishEnv(m); }   // v73: one neutral room, made once (V1.13: the iPhones too)
       if (!m.map && !gl3 && !BLACK_KEEP.has(k)) liftBlack(m.color);   // V3.44 (N96): a black piece shows its shape (it drew as a hole)
       if ((!m.map || T.tint) && !WHITE_KEEP.has(k)) capWhite(m.color);   // N184: a white under the clip, the palette's too (finPatch); the bedding as N113 left it
-      if (k === "mirror") { m.color.set("#ffffff"); m.map = MIRROR_SHEEN; }   // V1.17: the hall's and the bathroom's mirrors as the living room's (grey before; as metal, black)
+      if (k === "mirror") { m.color.set("#ffffff"); m.map = MIRROR_SHEEN; mirrorFirst(m); }   // V1.17: the hall's and the bathroom's mirrors as the living room's (grey before; as metal, black)
       if (gl3) glassTod(m);
       const rk = (H3.depth_rank || {})[k] ?? 3;   // V1.31 (U6): where faces lie in one plane the higher rank is drawn (house/model.py depth_rank); constant, so nothing shows through at a slant
       if (rk) { m.polygonOffset = true; m.polygonOffsetFactor = 0; m.polygonOffsetUnits = -2 * rk; }
