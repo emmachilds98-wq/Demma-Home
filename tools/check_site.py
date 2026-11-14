@@ -2,7 +2,7 @@
 touch) and a desktop's (1920 × 1080): no script errors, nothing off the right edge, it opens on the whole house and the brand says so, the
 floors pill is one row on the phone, the photos arrive after the first picture (V1.9), a walk goes from the hall into the living room, up its stairs and back (V1.38), and the dock's Measure lists every open size, keeps a number typed in and counts it. Screenshots go
 to _shots/ (the workflow keeps them with the run). V2.75 (N26): the speed budget (tools/perf_budget.json) on four paths, the bytes of a
-first visit, the shaders built by the first picture and the draws for the house, the living room and the landing (V4.22); the numbers go to _shots/perf.json.
+first visit, the shaders built by the first picture and the draws for the house, the living room and the landing (V4.23); the numbers go to _shots/perf.json.
 
 python3 tools/check_site.py [site dir]      exits non-zero on any failure; THREE_LOCAL serves three.js where the CDN is blocked"""
 import http.server, json, pathlib, socketserver, sys, threading, time
@@ -186,7 +186,7 @@ PERF = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
     g.needsUpdate = true; D.controls.dispatchEvent({ type: "change" }); return c; };
   const h = await still();                                     // the house as it opens (R3D.set shows the living room from outside: 91 more draws)
   R3D.set({ view: "livstand" }); await settle(); const l = await still();
-  R3D.set({ view: "landing" }); await settle(); document.querySelector('[data-rmode=stand]').click(); await settle(); const ld = await still();   // V4.22 (N188): standing on the landing, the stairwell in view
+  R3D.set({ view: "landing" }); await settle(); document.querySelector('[data-rmode=stand]').click(); await settle(); const ld = await still();   // V4.23 (N188): standing on the landing, the stairwell in view
   R3D.set({ view: "house" }); await settle();
   return { first_visit_mb: +(bytes / 1e6).toFixed(2), shaders_first: window.__first ?? -1, draws_house: h, draws_living: l, draws_landing: ld, quality: R3D.perf().quality }; }"""
 BUDGET = json.loads((ROOT / "tools/perf_budget.json").read_text())

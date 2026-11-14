@@ -489,6 +489,7 @@ function townTex() {    // the hill's face from across the valley: clusters of t
     g.globalAlpha = 1; for (let i = 0; i < 1100; i++) { g.fillStyle = ["#3b4f2d", "#4a6136", "#33462a", "#55693d"][i % 4]; g.beginPath(); g.arc(rnd() * w, rnd() * h, (4 + rnd() * 13) * sc, 0, 7); g.fill(); }   // trees in front of the houses (V3.59: more, breaking up the rows)
   });
 }
+const gridFrom = g => { g.computeBoundingBox(); const b = g.boundingBox; return { x: -b.min.x, y: -b.min.y, z: -b.min.z }; };   // N183: the WC's splashback's grid from its own corner (it ran from the house's, its grout stepping across the panel)
 function worldUV(geo, k, off) {
   const T = houseTex(k); if (!T) return geo;
   const P = geo.attributes.position, N = geo.attributes.normal, uv = new Float32Array(P.count * 2), [sw, sh] = T.size, ox = off ? off.x : 0, oy = off ? off.y : 0, oz = off ? off.z : 0;
@@ -682,7 +683,7 @@ function buildHouse() {
         for (const i of ord) { const q = geos[i], n = q.index ? q.index.count : q.attributes.position.count, id = V[i] ? V[i][0] : "", L = rooms[rooms.length - 1];
           if (L && L[0] === id) L[2] += n; else rooms.push([id, at, n]); at += n; }
         geos = ord.map(i => geos[i]); if (rooms.length === 1 && !rooms[0][0]) rooms = null; }
-      const me = new THREE.Mesh(worldUV(mergeGeometries(geos), m.userData.hk), m); me.receiveShadow = true;   // V2.8: the stair wall takes shadows as the living room's stair wall below it does (V2.2 took them off: two shades along the flight)
+      const mg = mergeGeometries(geos), me = new THREE.Mesh(worldUV(mg, m.userData.hk, m.userData.hk === "tile_w" ? gridFrom(mg) : null), m); me.receiveShadow = true;   // V2.8: the stair wall takes shadows as the living room's stair wall below it does (V2.2 took them off: two shades along the flight)
       if (rooms) me.userData.rooms = rooms;
       me.castShadow = !m.transparent; g.add(me); geos.forEach(q => q.dispose()); return me; };   // v69: the house's walls and pieces cast the sun's shadow (as the living room's)
     const mx = new THREE.Matrix4();

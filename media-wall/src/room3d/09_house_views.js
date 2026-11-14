@@ -213,7 +213,7 @@ function applyFloors() {
   for (const k of ["lower", "ground", "first", "out"]) if (HFLOOR[k]) HFLOOR[k].traverse(o => { if (o.userData.hlabel) o.visible = labelsOn && (k === "out" ? on : (top ? top === k : !R.HOUSE3)); });   // v57: Hide labels hides these too
   if (rmodeG) rmodeG.traverse(o => { if (o.userData.rlabel) o.visible = labelsOn; });   // v72 (B5): the room's name in Above
   hidReal.forEach(o => o.visible = true); hidReal = []; hidLay.forEach(o => o.layers.enable(0)); hidLay = [];
-  wellOff(); WELL.list = []; WELL.outL = [];   // V4.22 (N188)
+  wellOff(); WELL.list = []; WELL.outL = [];   // V4.23 (N188)
   roomUncull();   // V2.71 (N16)
   if (HMATS && HMATS.earth) HMATS.earth.visible = !(on && sel === "lower");   // V1.53: the earth over the secret room (under the garage) off, so the lower floor shows
   if (on && sel === "lower") scene.children.forEach(o => { if (o !== houseG && o !== garden3d && o !== lightRig && !o.isLight && o !== (sun && sun.target) && o.visible) { o.visible = false; hidReal.push(o); } });
@@ -265,7 +265,7 @@ function applyFloors() {
   requestAnimationFrame(() => { measureShift(!!(window.DemmaTools && window.DemmaTools.isOpen())); fadeRows(true); });   // V1.30: the rows above may have changed
   dirty();
 }
-/* V4.22 (N188): standing in a room, a piece is drawn only where the eye can see it: a living-room piece left by v81's cut (from the landing,
+/* V4.23 (N188): standing in a room, a piece is drawn only where the eye can see it: a living-room piece left by v81's cut (from the landing,
    or a first-floor room that sees down the stairwell) through the stairwell, the first floor's opening over the flight (eye above it) then
    the living room's ceiling opening or its wall's openings onto the flight and the hall; a piece out of doors through a window or a door
    out of a room seen. Tested from the eye (when it moves) before each draw from the camera, and left out of that draw only: the shadows'
@@ -396,7 +396,7 @@ function roomCull(again) {   // again: a door swung (only this part of applyFloo
   for (const [r, g] of Object.entries(FIN_PEND)) if (!see.has(r)) off(g);
   const dside = {}; for (const [pk, a, b] of roomDoors().list) dside[pk] = [a, b];
   for (const [pk, P] of Object.entries(HPARTS)) { const d = dside[pk], r = P.g.userData.room; if (d ? !see.has(d[0]) && !see.has(d[1]) : r && !see.has(r)) off(P.g); }
-  wellOff(); if (liv) { WELL.outL = []; WELL.eye = null; } else outCull(see);   // V4.22 (N188)
+  wellOff(); if (liv) { WELL.outL = []; WELL.eye = null; } else outCull(see);   // V4.23 (N188)
   const key = [...see].sort().join() + CULLG.length;
   if (again) dirty();
   if (key !== cullKey) { cullKey = key; reshadow(); }
