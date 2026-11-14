@@ -163,9 +163,34 @@ function mirrorStep() {
   const old = MIR.done[here]; MIR.done[here] = { key, tex }; mirrorUse(m, tex); if (old && old.tex !== tex) old.tex.dispose();
   return true;
 }
+const mirWhite = () => MIR.white || (MIR.white = canvasTex(4, 4, (g, w, h) => { g.fillStyle = "#ffffff"; g.fillRect(0, 0, w, h); }, true));
 function mirrorUse(m, tex) {
-  if (!MIR.white) MIR.white = canvasTex(4, 4, (g, w, h) => { g.fillStyle = "#ffffff"; g.fillRect(0, 0, w, h); }, true);
-  m.userData.real = true; m.envMap = tex; m.envMapIntensity = 1; m.metalness = 1; m.roughness = 0.03; m.color.set("#f4f6f6"); m.map = MIR.white; dirty();
+  m.userData.real = true; m.envMap = tex; m.envMapIntensity = 1; m.metalness = 1; m.roughness = 0.03; m.color.set("#f4f6f6"); m.map = mirWhite(); dirty();
+}
+/* N185: until the room lands (and on Fast) the glass shows a plain room at once (the stock neutral one reflects as flat grey): cream walls,
+   a pale ceiling and its light, a darker floor, a window and a door, made as the neutral room is (its plain kind of material: no shader
+   added). A slight green-grey tint. A phone drawn lighter has no reflection: the painted sheen stays */
+function mirrorRoom() {
+  if (MIR.room) return MIR.room;
+  const sc = new THREE.Scene(), box = new THREE.BoxGeometry(1, 1, 1), lin = (c, k) => new THREE.Color(c).multiplyScalar(k);
+  const put = (col, x, y, z, sx, sy, sz) => { const o = new THREE.Mesh(box, new THREE.MeshBasicMaterial({ color: col })); o.position.set(x, y, z); o.scale.set(sx, sy, sz); sc.add(o); };
+  const wall = lin("#efe6d6", 1), band = lin("#a89a88", 1);   // the room round the camera (the glass looks along -x into its room)
+  for (const [x, z, sx, sz] of [[-2.1, 0, 0.2, 4.4], [2.1, 0, 0.2, 4.4], [0, -2.1, 4.4, 0.2], [0, 2.1, 4.4, 0.2]]) {
+    put(wall, x, 0, z, sx, 4, sz); put(band, x * 0.97, -1, z * 0.97, sx, 1.2, sz); }                     // walls, a tiled band below
+  put(lin("#f6f3ec", 1.1), 0, 1.6, 0, 4.4, 0.2, 4.4); put(lin("#5e554b", 1), 0, -1.6, 0, 4.4, 0.2, 4.4);   // ceiling, floor
+  put(lin("#ffffff", 6), 0, 1.48, 0, 0.5, 0.04, 0.5);                                                       // its light
+  for (const [x, z, a] of [[-1.98, 1, 0], [0.4, 1.98, 1]]) { const w = a ? [1.4, 1.1, 0.04] : [0.04, 1.1, 1.2];
+    put(lin("#fbfbf8", 1), x, 0.45, z, w[0] + 0.12 * a, 1.22, w[2] + 0.12 * (1 - a)); put(lin("#eaf0f4", 3.2), x * 0.995, 0.45, z * 0.995, ...w);   // two windows in white frames,
+    put(lin("#fbfbf8", 1), x * 0.99, 0.45, z * 0.99, a ? 0.05 : 0.04, 1.1, a ? 0.04 : 0.05); }                                              // a bar up the middle
+  put(lin("#7d6a55", 1), -1.9, -0.35, -0.9, 0.04, 2.3, 0.85); put(lin("#f4f1ea", 1.2), 1.98, 0.2, -0.6, 0.04, 0.9, 1.4);   // a wood door, a pale cabinet
+  const pm = new THREE.PMREMGenerator(gl); MIR.room = pm.fromScene(sc, 0).texture; pm.dispose();
+  box.dispose(); sc.traverse(o => { if (o.material) o.material.dispose(); });
+  return MIR.room;
+}
+function mirrorFirst(m) {
+  if (!m.envMap || NOMIR) return;
+  m.envMap = mirrorRoom(); m.userData.real = true; m.userData.envK = 6.25;   // real: the stock room never swapped back in (11_lights); envLevels: 0.16 × 6.25
+  m.metalness = 1; m.roughness = 0.04; m.color.set("#e2eae8"); m.map = mirWhite(); m.envMapIntensity = 1;
 }
 const finishEnv = m => m.userData.hk === "glass" ? (S.tod === "day" ? 0.3 : 0.75) : m.userData.hk === "screen" ? 0.18 : m.roughness <= 0.3 ? 0.9 : m.roughness <= 0.6 ? 0.6 : 0.45;   // v72 (B3): gloss, satin, matt; V3.32 (N82): a screen that's off dark glass, as the living room's TV (the bright stock room in it read as a whiteboard)
 let HENVK = 1;
@@ -213,7 +238,7 @@ function applyFloors() {
   for (const k of ["lower", "ground", "first", "out"]) if (HFLOOR[k]) HFLOOR[k].traverse(o => { if (o.userData.hlabel) o.visible = labelsOn && (k === "out" ? on : (top ? top === k : !R.HOUSE3)); });   // v57: Hide labels hides these too
   if (rmodeG) rmodeG.traverse(o => { if (o.userData.rlabel) o.visible = labelsOn; });   // v72 (B5): the room's name in Above
   hidReal.forEach(o => o.visible = true); hidReal = []; hidLay.forEach(o => o.layers.enable(0)); hidLay = [];
-  wellOff(); WELL.list = []; WELL.outL = [];   // V4.24 (N188)
+  wellOff(); WELL.list = []; WELL.outL = [];   // V4.27 (N188)
   roomUncull();   // V2.71 (N16)
   if (HMATS && HMATS.earth) HMATS.earth.visible = !(on && sel === "lower");   // V1.53: the earth over the secret room (under the garage) off, so the lower floor shows
   if (on && sel === "lower") scene.children.forEach(o => { if (o !== houseG && o !== garden3d && o !== lightRig && !o.isLight && o !== (sun && sun.target) && o.visible) { o.visible = false; hidReal.push(o); } });
@@ -265,7 +290,7 @@ function applyFloors() {
   requestAnimationFrame(() => { measureShift(!!(window.DemmaTools && window.DemmaTools.isOpen())); fadeRows(true); });   // V1.30: the rows above may have changed
   dirty();
 }
-/* V4.24 (N188): standing in a room, a piece is drawn only where the eye can see it: a living-room piece left by v81's cut (from the landing,
+/* V4.27 (N188): standing in a room, a piece is drawn only where the eye can see it: a living-room piece left by v81's cut (from the landing,
    or a first-floor room that sees down the stairwell) through the stairwell, the first floor's opening over the flight (eye above it) then
    the living room's ceiling opening or its wall's openings onto the flight and the hall; a piece out of doors through a window or a door
    out of a room seen. Tested from the eye (when it moves) before each draw from the camera, and left out of that draw only: the shadows'
@@ -396,7 +421,7 @@ function roomCull(again) {   // again: a door swung (only this part of applyFloo
   for (const [r, g] of Object.entries(FIN_PEND)) if (!see.has(r)) off(g);
   const dside = {}; for (const [pk, a, b] of roomDoors().list) dside[pk] = [a, b];
   for (const [pk, P] of Object.entries(HPARTS)) { const d = dside[pk], r = P.g.userData.room; if (d ? !see.has(d[0]) && !see.has(d[1]) : r && !see.has(r)) off(P.g); }
-  wellOff(); if (liv) { WELL.outL = []; WELL.eye = null; } else outCull(see);   // V4.24 (N188)
+  wellOff(); if (liv) { WELL.outL = []; WELL.eye = null; } else outCull(see);   // V4.27 (N188)
   const key = [...see].sort().join() + CULLG.length;
   if (again) dirty();
   if (key !== cullKey) { cullKey = key; reshadow(); }
@@ -473,7 +498,7 @@ function fromAbove(cx, y, cz, dist, fov) {  // straight down on (cx, y, cz) from
 }
 /* N186: an eye and an aim that look at pts (room cm) from e0→a0's side through the lens fov will have, as close as lets their picture's
    width within wf of the screen's and its height within hf of the space between the top rows and the dock, then centred in that space */
-function frameFit(e0, a0, pts, fov, wf, hf) {
+function frameFit(e0, a0, pts, fov, wf, hf, ty) {   // ty: where the picture's middle goes (NDC y), else the space's middle
   const cam = camera.clone(); cam.clearViewOffset(); cam.fov = fitFov(fov);
   const [k, sh] = freeFrame(true), P = pts.map(p => v3(...p)), c = [0, 1, 2].map(i => pts.reduce((s, p) => s + p[i], 0) / pts.length), cw = v3(...c);
   const dir = new THREE.Vector3(e0[0] - a0[0], e0[1] - a0[1], e0[2] - a0[2]).normalize();
@@ -482,7 +507,7 @@ function frameFit(e0, a0, pts, fov, wf, hf) {
   let lo = 50, hi = 20000; for (let i = 0; i < 24; i++) { const m = (lo + hi) / 2, [a, b, e, f] = span(m); if (b - a < 2 * wf && f - e < 2 * hf * k) hi = m; else lo = m; }
   const [a, b, e, f] = span(hi), hh = hi * M * Math.tan(cam.fov * Math.PI / 360), H = stage ? stage.clientHeight : 1;
   const right = new THREE.Vector3(1, 0, 0).applyQuaternion(cam.quaternion), up = new THREE.Vector3(0, 1, 0).applyQuaternion(cam.quaternion);
-  const s = right.multiplyScalar((a + b) / 2 * hh * cam.aspect).add(up.multiplyScalar(((e + f) / 2 + 2 * sh / Math.max(1, H)) * hh));   // the picture's middle to the space's
+  const s = right.multiplyScalar((a + b) / 2 * hh * cam.aspect).add(up.multiplyScalar(((e + f) / 2 - (ty ?? -2 * sh / Math.max(1, H))) * hh));   // the picture's middle to the space's
   const room = w => [-w.x / M, w.y / M, w.z / M];
   return { eye: room(cam.position.clone().add(s)), at: room(cw.clone().add(s)) };
 }
@@ -495,30 +520,17 @@ function fitRoomView() {
   V.fov = tall ? 30 : F.f0;
   Object.assign(V, frameFit(tall ? [-220, 850, -140] : F.e0, tall ? [238, 60, -140] : F.a0, pts, V.fov, tall ? 0.96 : 0.92, tall ? 0.9 : 1));
 }
-/* V4.2 (N159): the whole house framed to the screen, on a phone's tall screen as on a PC's wide one, from VIEWS.house's side */
+/* V4.2 (N159): the whole house framed to the screen, on a phone's tall screen as on a PC's wide one, from VIEWS.house's side.
+   N171: its walls up to the ridge; N187: by frameFit, so the lens is the house's (from a room it was the room's: a PC came in far too
+   close by Whole house, or further off by R3D.set) and every way in frames it the same; measureShift centres it between the rows */
 function fitHouseView() {
   if (!R.HOUSE3 || hfloor !== "all") return false;
-  const H = VIEWS.house; if (!fitHouseView.e0) { fitHouseView.e0 = H.eye.slice(); fitHouseView.a0 = H.at.slice(); }
-  const rs = [...Object.values(R.HOUSE3.rooms || {}), [0, R.W, R.WINDOW_Z, R.RECESS_Z, 0]];
-  const x0 = Math.min(...rs.map(r => r[0])), x1 = Math.max(...rs.map(r => r[1])), z0 = Math.min(...rs.map(r => r[2])), z1 = Math.max(...rs.map(r => r[3]));
-  const c = [(x0 + x1) / 2, 380, (z0 + z1) / 2], e0 = fitHouseView.e0, a0 = fitHouseView.a0;
-  const dir = new THREE.Vector3(e0[0] - a0[0], e0[1] - a0[1], e0[2] - a0[2]).normalize();
-  // the house's box between the top row and the dock, its width in 80% of the screen (a binary search on the distance), then centred there
-  const cam = camera.clone(), cw = v3(c[0], c[1], c[2]), pts = [];
-  for (let k = 0; k < 8; k++) pts.push(v3(k & 1 ? x1 : x0, k & 2 ? 860 : 0, k & 4 ? z1 : z0));
-  const span = (D, P = pts) => { cam.position.copy(v3(c[0] + dir.x * D, c[1] + dir.y * D, c[2] + dir.z * D)); cam.lookAt(cw); cam.updateMatrixWorld(); cam.updateProjectionMatrix();
-    let a = 9, b = -9, e = 9, f = -9; for (const q of P) { const n = q.clone().project(cam); a = Math.min(a, n.x); b = Math.max(b, n.x); e = Math.min(e, n.y); f = Math.max(f, n.y); } return [a, b, e, f]; };
-  // N171: a phone stood up fits the house's own walls to 70% of the width (the box's corners left it at about 45%), its height between the rows
-  const tall = camera.aspect < 1, walls = tall ? rs.flatMap(r => [r[0], r[1]].flatMap(x => [r[2], r[3]].flatMap(z => [0, 780].map(y => v3(x, y, z))))) : null, k0 = tall ? freeFrame()[0] : 1;
-  if (tall) cam.fov = fitFov(H.fov);   // the lens it will have (a phone's is widened), not the one it has now
-  const ok = D => { const [a, b, e, f] = span(D); if (!tall) return b - a < 1.75 && f - e < 1.45;   // the box is bigger than the house it holds (its roof, its corners), so it may reach past the space a little
-    const [p, q, g, h] = span(D, walls); return q - p < 1.5 && h - g < 1.8 * k0; };   // the walls up to the ridge
-  let lo = 600, hi = 20000; for (let k = 0; k < 24; k++) { const m = (lo + hi) / 2; if (ok(m)) hi = m; else lo = m; }
-  hi *= S.hstreet ? 2 : S.hgarden ? 1.5 : 1;   // N171: Gardens and Next door stand back to take in what they add
-  const [a, b, e, f] = tall ? span(hi, walls) : span(hi), hh = hi * M * Math.tan(cam.fov * Math.PI / 360), right = new THREE.Vector3(1, 0, 0).applyQuaternion(cam.quaternion), up = new THREE.Vector3(0, 1, 0).applyQuaternion(cam.quaternion);
-  const sh = right.multiplyScalar((a + b) / 2 * hh * cam.aspect).add(up.multiplyScalar(((e + f) / 2 - 0.03) * hh));   // the box's middle to the space's
-  const room = w => [-w.x / M, w.y / M, w.z / M], eye = cam.position.clone().add(sh), at = cw.clone().add(sh);
-  H.at = room(at); H.eye = room(eye); return tall;
+  const H = VIEWS.house, F = fitHouseView; if (!F.e0) { F.e0 = H.eye.slice(); F.a0 = H.at.slice(); }
+  const rs = [...Object.values(R.HOUSE3.rooms || {}), [0, R.W, R.WINDOW_Z, R.RECESS_Z, 0]], tall = camera.aspect < 1;
+  const walls = rs.flatMap(r => [r[0], r[1]].flatMap(x => [r[2], r[3]].flatMap(z => [0, 780].map(y => [x, y, z]))));
+  const ty = 0.03 + (innerWidth >= 900 ? 0.24 * freeFrame(true)[0] : 0);   // measureShift draws a computer's house lower by 12% of the space: lifted back
+  const f = frameFit(F.e0, F.a0, walls, H.fov, tall ? 0.75 : 0.7, tall ? 0.9 : 0.82, ty), m = S.hstreet ? 2 : S.hgarden ? 1.5 : 1;   // N171: Gardens and Next door stand back
+  H.at = f.at; H.eye = f.at.map((a, i) => a + (f.eye[i] - a) * m); return true;
 }
 function floorCam() {
   if (S.view !== "house" || !R.HOUSE3) return;

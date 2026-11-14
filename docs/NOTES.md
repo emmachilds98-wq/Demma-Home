@@ -128,7 +128,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 
 - **The GPU at rest (N93, V3.41):** the loop draws only when `need` is set, so a busy card while still means something keeps setting it. Measured on the client's PC (headless Chrome `--use-angle=d3d11`, a temp profile, CDP; wrap `bindFramebuffer` and the draw calls to count frames drawn to the screen, and sum `\GPU Engine(*engtype_3D)\Utilization Percentage`): with no welcome the house warms in about 6 s and then draws 0 frames a second. The welcome's `controls.autoRotate` drew every frame (three's turn is a step a frame, so a 155 Hz screen spun 2.6× too fast); now `SPIN` in `17_render_loop.js`. Anything new that animates on its own should go through the same cap.
 
-- **Seen through an opening (N188, V4.24):** `09_house_views.js` `wellCull`, run from `scene.onBeforeRender` for the main camera, leaves
+- **Seen through an opening (N188, V4.27):** `09_house_views.js` `wellCull`, run from `scene.onBeforeRender` for the main camera, leaves
   out of that draw (layer 0 off) a living-room piece the eye can't see down the stairwell and a piece out of doors it can't see through
   any window or outside door of a room seen (`outPorts`). The test (`seenThrough`) projects a box's corners from the eye onto an opening's
   plane and keeps it if their bounds touch the opening; a box not wholly beyond the plane is kept. It only ever over-draws. The shadows'
@@ -286,6 +286,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **The outside by evening, on hold** (N163, 13 Nov: the client, "No time of day yet"; #273 landed docs only): it was built by the clock (`11` `clockEve`, the sky's `cloudDusk` gradient, `09` `glassOut` warm glass, `20` `STREET_POOL` lamp pools, no bloom outside so the first picture's shaders don't change with the clock); Time of day defaults to evening, so following it would open the house at dusk. Its code is in #273's commits (`git log --all -S cloudDusk`) for when she asks.
 - **Outside pieces without new shaders** (V3.44): the phone's first picture has no shader to spare (21 of 21), and a plain map-and-relief material outside is new (the ground's lawn is its own "grass" program). So the street copies the house's own materials (`FIN.mat3(k).clone()`, its `onBeforeCompile` and cache key carried over, `houseClip(m, [], false)` for six uncut planes): no new program. Check with the programs' ids (`gl.properties.get(m).currentProgram.id`).
 - **The photos budget is full** (V3.53, `tools/perf_budget.json` `photos_mb` 9.5): a new texture needs room made. V3.53 re-saved `artex_nor` (402 to 352 KB), `board_map` and `chipboard_map` at quality 78; `--floors` saves at 84, so re-save `board_map` at 78 after running it again.
+- **A mirror's first reflection (N185, V4.22):** the stock `RoomEnvironment` reflects as a flat grey in a fully metal mirror (its walls are
+  plain and dim), and `envLevels` (`12_furniture_options.js`) rewrites every registered material's `envMapIntensity` from `userData.envK`
+  (set it, or your intensity is lost on the next light change). `mirrorRoom` (`09`) is a PMREM of a few `MeshBasicMaterial` boxes, the
+  same kind as the stock room's lights, so it builds no shader (check `gl.info.programs` at `r3d-first`).
 - **Drawing into a render target makes new shaders** unless the frame already goes through one (V3.57): three keys a program by its output (tone mapping, colour space), so a reflection drawn into a cube target compiles every visible material again when the page draws straight to the screen. The mirrors only run with `postLive()` (the composer draws the scene into a target already). Check with `gl.info.programs.length` before and after.
 
 ## 6. Finishes and furniture (section 14, N56–N58; section 17 stream A)
@@ -299,6 +303,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Seeing a finish without tapping:** `R3D.setFinishes({room: {slot: value}})` then a screenshot (views: `bed3` is `office`, `bathroom` is `bath`).
 - **A made finish's grain runs up the picture's v** (`MADE` `joinery`, N111): on a house box that's up a door's leaf, but across a skirting or a rail, so those stay on `gloss` (strokes along u). `HTEX_AS` picks a key's map; `HTEX_TINT` keeps its own colour.
 - **A tiled panel's grid (N183):** a house material's UVs are world-sized from the house's origin (`worldUV`), so a tiled piece's grout falls wherever the world puts it; a small panel must be one box (not tiles as boxes with gaps, which double the grout off the grid) and take an offset from its own corner (`gridFrom`, as `tile_w`). Glaze is roughness alone (≤ 0.07, `finishEnv` gives it 0.9 of the room's reflection): no clearcoat, which would be a new shader.
+- **Whites (N184):** `capWhite` holds a house material's colour at #dc (sRGB, hue kept) and `finPatch` does the same to the palette's colour in linear before the corner shade (capping after it would flatten the shade). A photo map drawn untinted (`#ffffff`) isn't capped: its photo sets its own white. In software graphics the small rooms' whites sit at about 240, not 255: judge by the shading's spread, not clipping counts.
 - **A catalogue piece's own price:** `UPC.piece[key]` beats its kind's (`upCat`).
 - Don't rebuild `_site` while `checks.py` runs: a local site check once failed Edit's ottoman drag mid-rebuild; CI passed.
 - **Whites (N113):** a textured piece draws its map at full white and ignores its `model.MATS` colour unless its key is tinted (`HTEX_TINT`,
