@@ -62,6 +62,9 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   not photos, so not counted; worth a look if a PC still stutters there.
   N180 (V4.14): `compileClipped`'s shadow stand-ins once went only with the pieces on show; a hidden piece's sun shadow then built
   mid-walk. They now take the same pieces as the colours: a new kind of piece that casts needs nothing more.
+  N182 (V4.20): three keys every shader, a shadow's too, by the count of lights on (`numPointLights` and the rest), and the house
+  has two sets (the whole house's; with the living room's lights on). `compileClipped` keeps each set it meets (`LITS`) and asks for the
+  shadows in all of them. To name a mid-walk shader, diff its `gl.info.programs[i].cacheKey` against the warm-up's (index 33 on is the lights).
 - **The first picture (N12, N13, N14):** photos sent a few at a time (`upStep`, `gl.initTexture`; `texPut` disposes every clone first:
   they share GL storage); the house's materials always carry 6 clip planes (`houseClip`) so a cut builds no shader; `compileClipped`
   (`01_renderer`) asks for shaders grouped by plane set, each group primed by a light-less speck (`prime`); `postWarm`, `texWarm`,
