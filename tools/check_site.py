@@ -420,7 +420,8 @@ def main():
                     if dr.get("bad") or dr.get("n", 0) < 10: fails.append(f"{w}: walking through the doors ({dr.get('n')} walks): {dr.get('bad')}")
                 if errs: fails.append(f"{w}: errors: {errs[:4]}")
                 ctx.close()
-            for name, w, h, phone, gpu in HD_PATHS:                    # V2.75 (N26): the budget on the client's devices' paths, HD from the start
+        else:
+            for name, w, h, phone, gpu in HD_PATHS:                    # V2.75 (N26): the budget on the client's devices' paths, HD from the start; V4.24 (N188): in the hitch job (the site job was at its 40 min)
                 ctx = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=phone, has_touch=phone, service_workers="block")
                 ctx.add_init_script(PERF_INIT % (json.dumps(gpu), "true")); pg = ctx.new_page(); pg.set_default_timeout(600000); localcdn.route(pg); errs = []
                 pg.on("pageerror", lambda e: errs.append("pageerror: " + str(e)[:300]))
@@ -429,7 +430,6 @@ def main():
                 if perf[name]["quality"] != "hd": fails.append(f"{name}: drawn in {perf[name]['quality']}, not HD")
                 if errs: fails.append(f"{name}: errors: {errs[:4]}")
                 ctx.close()
-        else:
             ctx = b.new_context(viewport={"width": 1280, "height": 800}, device_scale_factor=1, service_workers="block")   # N177: the hitch walk
             ctx.add_init_script(PERF_INIT % (json.dumps(HD_PATHS[1][4]), "true") + HITCH_INIT); pg = ctx.new_page(); pg.set_default_timeout(900000); localcdn.route(pg); errs = []
             pg.on("pageerror", lambda e: errs.append("pageerror: " + str(e)[:300]))
@@ -444,9 +444,10 @@ def main():
     (SHOTS / ("perf-hitch.json" if HITCH else "perf.json")).write_text(json.dumps(perf, indent=1))
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
-    if HITCH: print(f"hitch check: a walk on the PC path (hall, kitchen, living room, landing and back), {perf['rtx']['hitches']} hitches, {len(fails)} failed"); return 1 if fails else 0
-    print("speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room {v.get('draws_landing')} landing" + (f", {v['shaders_spot']} built on the spot into it" if "shaders_spot" in v else "") + (f", {v['hitches']} hitches walking" if "hitches" in v else "") for k, v in perf.items()))
-    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named (shut panels, a card, Edit's list too), Esc one layer a press, Tab the top row then the 3D, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, Back from a room to the house, down to the lower floor and back, the speed budget on 4 paths, {len(fails)} failed; screenshots in _shots/")
+    speed = "speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room {v.get('draws_landing')} landing" + (f", {v['shaders_spot']} built on the spot into it" if "shaders_spot" in v else "") + (f", {v['hitches']} hitches walking" if "hitches" in v else "") for k, v in perf.items())
+    if HITCH: print(speed); print(f"hitch check: a walk on the PC path (hall, kitchen, living room, landing and back), {perf['rtx']['hitches']} hitches, the speed budget on the iPhone's and the RTX's paths, {len(fails)} failed"); return 1 if fails else 0
+    print(speed)
+    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named (shut panels, a card, Edit's list too), Esc one layer a press, Tab the top row then the 3D, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, Back from a room to the house, down to the lower floor and back, the speed budget on the phone's and the PC's Fast paths, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
 
