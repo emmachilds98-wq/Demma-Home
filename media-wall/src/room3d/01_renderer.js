@@ -104,7 +104,12 @@ function compileClipped(cam, shownOnly, roots) {   // shownOnly: what's shown no
   each(o => { const m = [].concat(o.material || [])[0]; if (m && (o.isMesh || o.isLine || o.isPoints || o.isSprite)) put(G, key(m), o, o.material); });
   const lit = []; scene.traverseVisible(l => { if (l.isLight) lit.push(l); });   // N35: the shadows' own materials: a one-of-a-kind stand-in put on each caster for the asking (and taken off)
   if (gl.shadowMap.enabled) { const pts = new Set(lit.filter(l => l.castShadow).map(l => !!l.isPointLight));   // N180: the hidden parts' shadows too (a lower-floor piece's sun shadow built mid-walk)
-    for (const pt of pts) each(o => { if (!o.isMesh || !o.castShadow || !o.material) return; const d = Array.isArray(o.material) ? o.material.map(m => depthMat(m, pt)) : depthMat(o.material, pt), d0 = [].concat(d)[0]; put(D, "s" + (d0.clipShadows ? key(d0) : "0"), o, d); }); }
+    const sig = lit.map(l => l.type + +l.castShadow).sort().join(), wide = !LITS.has(sig) && LITS.size > 0 && (shownOnly || roots);   // N182: a shadow's shader carries the count of lights on, so each set seen is kept and every set asked for;
+    if (!LITS.has(sig)) LITS.set(sig, lit);   // a new set (the living room's lights on) takes every caster's, hidden ones too: else a lower-floor piece built its own on the way down
+    const one = new Set();   // one caster a kind of shadow shader is enough (the same stand-in, the same shape's attributes)
+    for (const pt of pts) (wide ? f => scene.traverse(f) : each)(o => { if (!o.isMesh || !o.castShadow || !o.material) return; const d = Array.isArray(o.material) ? o.material.map(m => depthMat(m, pt)) : depthMat(o.material, pt), d0 = [].concat(d)[0], g = o.geometry, ma = g.morphAttributes;
+      const u = [[].concat(d).map(x => x.id).join("."), o.isInstancedMesh && (o.instanceColor ? 2 : 1), o.isSkinnedMesh, o.isBatchedMesh, ma.position && ma.position.length, ma.normal && 1, ma.color && 1, g.attributes.uv1 && 1, g.attributes.uv2 && 1, g.attributes.uv3 && 1].join();
+      if (!one.has(u)) { one.add(u); put(D, "s" + (d0.clipShadows ? key(d0) : "0"), o, d); } }); }
   const jobs = [], was = gl.getRenderTarget();
   if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
   try {
@@ -112,8 +117,8 @@ function compileClipped(cam, shownOnly, roots) {   // shownOnly: what's shown no
       if (k[0] === "s") gl.setRenderTarget(PRE.rtAO);
       prime(k === "s0" ? null : objs[0][1], cam);
       const was_ = objs.map(([o]) => o.material); objs.forEach(([o, m]) => { o.material = m; });
-      try { jobs.push(k[0] === "s" ? gl.compileAsync({ traverse: f => objs.forEach(([o]) => f(o)), traverseVisible: f => lit.forEach(f) }, cam, PRIMES)   // the shadows': no fog, as three's
-        : gl.compileAsync({ traverse: f => objs.forEach(([o]) => f(o)), traverseVisible() {} }, cam, scene)); }
+      try { if (k[0] === "s") for (const L of LITS.values()) jobs.push(gl.compileAsync({ traverse: f => objs.forEach(([o]) => f(o)), traverseVisible: f => L.forEach(f) }, cam, PRIMES));   // the shadows': no fog, as three's; in every set of lights
+        else jobs.push(gl.compileAsync({ traverse: f => objs.forEach(([o]) => f(o)), traverseVisible() {} }, cam, scene)); }
       finally { objs.forEach(([o], i) => { o.material = was_[i]; }); }
     }
   } finally { gl.setRenderTarget(was); }
@@ -127,6 +132,7 @@ function prime(mat, cam) {
   gl.shadowMap.needsUpdate = false;
   try { gl.render(PRIMES, cam); } finally { gl.shadowMap.needsUpdate = su; }
 }
+const LITS = new Map();   // N182: each set of lights a warm-up has seen (by kind and shadow), for the shadows' shaders
 const DEPTHS = new Map();   // kept, never disposed: one disposed would take its shader with it
 function depthMat(m, pt) {   // as three's getDepthMaterial makes it (PCF shadows)
   const side = m.shadowSide != null ? m.shadowSide : [THREE.BackSide, THREE.FrontSide, THREE.DoubleSide][m.side];
