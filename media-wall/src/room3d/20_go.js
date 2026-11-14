@@ -71,6 +71,7 @@ function finPatch(m, k) {   // the walls' and ceilings' materials read the palet
           if (finAt(c0 + vec2(dd, 0.0), fl) != rm || finAt(c0 - vec2(dd, 0.0), fl) != rm || finAt(c0 + vec2(0.0, dd), fl) != rm || finAt(c0 - vec2(0.0, dd), fl) != rm) cn = 1.0 - float(d - 1) / 3.0; }
         shd -= 0.08 * cn;
       }
+      ${FIN.kind[k] < 2 ? "{ float wm = max(finD.r, max(finD.g, finD.b)); if (wm > WMX) finD *= WMX / wm; }".replace(/WMX/g, Math.pow(WHITE_MAX, 2.2).toFixed(4)) : ""}
       finD *= shd;${FIN.kind[k] === 0 ? `
       if (rm == int(finGar.x)) { float gh = yc - finGar.y, gm = pgN(vPgP * 0.8 + 11.0), gd = pgN(vec3(xc, yc * 0.3, zc) * 0.05);
         finD *= vec3(0.95, 0.95, 0.96) * (0.94 + 0.1 * gm) * (1.0 - (0.08 + 0.08 * gd) * exp(-max(gh + 15.0, 0.0) / 30.0)); }` : ""} } }
@@ -127,6 +128,11 @@ const BLACK_MIN = 0x38 / 255, BLACK_KEEP = new Set(["contact", "screen", "glass_
 function liftBlack(c) { const t = {}; c.getRGB(t, THREE.SRGBColorSpace); const mx = Math.max(t.r, t.g, t.b); if (mx >= BLACK_MIN) return c;
   if (mx < 1e-3) return c.setRGB(BLACK_MIN, BLACK_MIN, BLACK_MIN, THREE.SRGBColorSpace);
   const f = BLACK_MIN / mx; return c.setRGB(t.r * f, t.g * f, t.b * f, THREE.SRGBColorSpace); }
+/* N184: the other end: a white over #dc is held to it, its hue kept, so the small rooms' baths, units, walls and ceilings keep their
+   shading under the clip as the living room's do (the light the same; only how much a white sends back) */
+const WHITE_MAX = 0xdc / 255, WHITE_KEEP = new Set(["led", "bulb", "pc_glow", "mirror", "glass", "glass_frost", "contact"]);
+function capWhite(c) { const t = {}; c.getRGB(t, THREE.SRGBColorSpace); const mx = Math.max(t.r, t.g, t.b); if (mx <= WHITE_MAX) return c;
+  const f = WHITE_MAX / mx; return c.setRGB(t.r * f, t.g * f, t.b * f, THREE.SRGBColorSpace); }
 function houseTex(k) {
   if (k in HTEX) return HTEX[k];
   if (k === "paint") return (HTEX[k] = null);
@@ -660,6 +666,7 @@ function buildHouse() {
       if (m.normalMap && NS) m.normalScale.set(NS, NS);
       if (!LOWD) { m.userData.hk = k; m.envMap = houseEnv(); m.envMapIntensity = finishEnv(m); }   // v73: one neutral room, made once (V1.13: the iPhones too)
       if (!m.map && !gl3 && !BLACK_KEEP.has(k)) liftBlack(m.color);   // V3.44 (N96): a black piece shows its shape (it drew as a hole)
+      if ((!m.map || T.tint) && !WHITE_KEEP.has(k)) capWhite(m.color);   // N184: a white under the clip, the palette's too (finPatch); the bedding as N113 left it
       if (k === "mirror") { m.color.set("#ffffff"); m.map = MIRROR_SHEEN; mirrorFirst(m); }   // V1.17: the hall's and the bathroom's mirrors as the living room's (grey before; as metal, black)
       if (gl3) glassTod(m);
       const rk = (H3.depth_rank || {})[k] ?? 3;   // V1.31 (U6): where faces lie in one plane the higher rank is drawn (house/model.py depth_rank); constant, so nothing shows through at a slant
