@@ -8,14 +8,16 @@ const clipMat = m => { m.clippingPlanes = CLIP; m.clipIntersection = true; m.cli
 const glassLive = m => { if (m.transmission > 0) { m.userData.trans = m.transmission; m.transmission = 0; } return m; };   // v39: no live transmission (it draws the room twice a frame); still() puts it back for saved pictures
 const reg = m => (MATS.push(clipMat(glassLive(grassy(m)))), m);
 /* V2.68 (N22): every lawn without its repeat: a slow patchwork picks the photo or its larger turned copy, a slower one shades it; one
-   program ("grass") */
+   program ("grass"). N173: further off, the photo's average under a slower tone still */
 function grassy(m) {
   if (!(m.map && m.map.userData.grass)) return m;
   m.customProgramCacheKey = () => "grass";
   m.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace("#include <map_fragment>", `#ifdef USE_MAP
     float ga = max(dot(textureLod(map, vec2(0.5), 12.0).rgb, vec3(0.333)), 0.01), gp = dot(texture2D(map, vMapUv * 0.061 + 0.23, 5.0).rgb, vec3(0.333)) / ga;
     vec4 sampledDiffuseColor = mix(texture2D(map, vMapUv), texture2D(map, mat2(0.8, -0.6, 0.6, 0.8) * vMapUv * 0.43 + 0.37), smoothstep(0.9, 1.1, gp));
-    sampledDiffuseColor.rgb *= clamp(dot(texture2D(map, vMapUv * 0.037 + 0.11, 4.0).rgb, vec3(0.333)) / ga, 0.8, 1.2); diffuseColor *= sampledDiffuseColor;
+    float gd = smoothstep(14.0, 60.0, length(vViewPosition));   // N173: far off, the photo's own pattern gives way to its average under the slow tones, so no repeat shows
+    sampledDiffuseColor.rgb = mix(sampledDiffuseColor.rgb, textureLod(map, vec2(0.5), 12.0).rgb, gd * 0.65) * clamp(dot(texture2D(map, vMapUv * 0.037 + 0.11, 4.0).rgb, vec3(0.333)) / ga, 0.8, 1.2)
+      * mix(1.0, clamp(dot(textureLod(map, vMapUv * 0.0083 + 0.61, 7.0).rgb, vec3(0.333)) / ga, 0.85, 1.15), gd); diffuseColor *= sampledDiffuseColor;
   #endif`); };
   return m;
 }

@@ -208,22 +208,23 @@ function houseTex(k) {
    narrow leaves, the young ones up, the old ones arching out and down; one merged mesh for the trunks, one for the leaves */
 function buildPlants(grp) {
   const PL = (R.HOUSE3 && R.HOUSE3.plants) || []; if (!PL.length || !grp) return;
-  const bark = reg(new THREE.MeshStandardMaterial({ color: "#8a7e70", roughness: 0.95 })), leaf = reg(new THREE.MeshStandardMaterial({ color: "#5b7a38", roughness: 0.6, side: THREE.DoubleSide }));
+  const bark = reg(new THREE.MeshStandardMaterial({ map: barkTex("cordy"), roughness: 0.95 })), leaf = reg(new THREE.MeshStandardMaterial({ color: "#5b7a38", vertexColors: true, roughness: 0.6, side: THREE.DoubleSide }));   // N173: its corky bark; each leaf its own green
   bark.clippingPlanes = []; leaf.clippingPlanes = [];
-  let sd = 4242; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+  let sd = 4242, s2 = 4243; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647, rn2 = () => (s2 = (s2 * 16807) % 2147483647) / 2147483647;
   const Y = new THREE.Vector3(0, 1, 0);
   buildTrees(grp, PL.filter(P => P.kind !== "cordyline"));                        // V1.4: the far end's trees
   for (const P of PL.filter(P => P.kind === "cordyline")) {
     const trunks = [], leaves = [], base = v3(P.x, P.y, P.z);
     const seg = (a, b, r0, r1) => { const d = b.clone().sub(a), L = d.length(), g = new THREE.CylinderGeometry(r1, r0, L, 8, 1, true);
-      g.translate(0, L / 2, 0); g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(Y, d.normalize())); g.translate(a.x, a.y, a.z); trunks.push(g); };
+      barkUV(g, L); g.translate(0, L / 2, 0); g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(Y, d.normalize())); g.translate(a.x, a.y, a.z); trunks.push(g); };
     const strip = (o, yaw, pitch, len) => {   // a leaf: five segments bending down as it goes, tapering to a point
-      const pos = [], idx = [], side = new THREE.Vector3(Math.cos(yaw + Math.PI / 2), 0, Math.sin(yaw + Math.PI / 2)), wd = 0.022;
-      let p = o.clone(), a = pitch;
-      for (let i = 0; i <= 5; i++) { const w = wd * (1 - i / 5.5); pos.push(p.x - side.x * w, p.y, p.z - side.z * w, p.x + side.x * w, p.y, p.z + side.z * w);
+      const pos = [], col = [], idx = [], side = new THREE.Vector3(Math.cos(yaw + Math.PI / 2), 0, Math.sin(yaw + Math.PI / 2)), wd = 0.022;
+      let p = o.clone(), a = pitch; const old = Math.max(0, Math.min(1, -pitch * 1.4)), lt = 0.78 + rn2() * 0.3;   // N173: the old hanging leaves olive and darker, the young ones up fresher; paler at the stalk
+      for (let i = 0; i <= 5; i++) { const w = wd * (1 - i / 5.5), k = lt * (1.12 - i * 0.05) * (1 - old * 0.22); pos.push(p.x - side.x * w, p.y, p.z - side.z * w, p.x + side.x * w, p.y, p.z + side.z * w);
+        for (let e = 0; e < 2; e++) col.push(k * (1 + old * 0.18), k, k * (1 - old * 0.25));
         if (i < 5) { const st = len / 5; p = p.clone().add(new THREE.Vector3(Math.cos(yaw) * Math.cos(a) * st, Math.sin(a) * st, Math.sin(yaw) * Math.cos(a) * st)); a -= 0.16 + (1 - Math.max(0, pitch)) * 0.08; } }
       for (let i = 0; i < 5; i++) idx.push(2 * i, 2 * i + 1, 2 * i + 2, 2 * i + 1, 2 * i + 3, 2 * i + 2);
-      const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals(); leaves.push(g.toNonIndexed()); };
+      const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("color", new THREE.Float32BufferAttribute(col, 3)); g.setIndex(idx); g.computeVertexNormals(); leaves.push(g.toNonIndexed()); };
     const fork = base.clone().add(new THREE.Vector3(0, P.fork * M, 0));
     seg(base, fork, P.r * M, P.r * 0.8 * M);
     for (let k = 0; k < P.heads; k++) {
@@ -239,6 +240,31 @@ function buildPlants(grp) {
 /* V1.4: the far end's trees (survey_data.PLANTS, from the view photos): a clump of tall pale stems with branches and an airy crown,
    and a conifer, a dense dark column. Their leaves are drawn sprays on cards (cut out by their alpha), one instanced mesh a kind */
 const SPRAY = {};
+/* N173: bark, drawn here: the cordyline's corky grey-brown with its rings of old leaf scars; the pale stems' smooth bark with dark
+   lenticels across; the conifer's fissured brown. u round the stem, v up it, a tile 40 cm tall (barkUV) */
+function barkTex(k) {
+  if (SPRAY["b" + k]) return SPRAY["b" + k];
+  let sd = 31 + k.length; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+  const [bg, dk, lt] = { cordy: ["#857a6c", "#5e5448", "#a39785"], pale: ["#b3ada3", "#4a4540", "#cfc9bf"], dark: ["#5b4b3d", "#3a2f26", "#74604d"] }[k];
+  return (SPRAY["b" + k] = canvasTex(128, 256, (g, w, h) => {
+    g.fillStyle = bg; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 260; i++) { g.fillStyle = rnd() < 0.5 ? dk : lt; g.globalAlpha = 0.08 + rnd() * 0.12; g.fillRect(rnd() * w, rnd() * h, 1 + rnd() * 3, 4 + rnd() * 26); }   // the grain up the stem
+    g.globalAlpha = 1;
+    if (k === "cordy") for (let y = 4; y < h; y += 9 + rnd() * 8) { g.strokeStyle = dk; g.globalAlpha = 0.35 + rnd() * 0.25; g.lineWidth = 1.5 + rnd() * 1.5;   // the old leaves' scars, ringing it
+      g.beginPath(); g.moveTo(0, y); for (let x = 0; x <= w; x += 16) g.lineTo(x, y + (rnd() - 0.5) * 3); g.stroke(); }
+    if (k === "pale") for (let i = 0; i < 46; i++) { g.fillStyle = dk; g.globalAlpha = 0.35 + rnd() * 0.4; const x = rnd() * w, y = rnd() * h; g.fillRect(x, y, 4 + rnd() * 18, 1 + rnd() * 2.5); }   // lenticels across
+    if (k === "dark") for (let i = 0; i < 14; i++) { g.strokeStyle = dk; g.globalAlpha = 0.6; g.lineWidth = 1 + rnd() * 2.5; let x = rnd() * w;   // fissures up it
+      g.beginPath(); g.moveTo(x, 0); for (let y = 0; y <= h; y += 12) g.lineTo((x += (rnd() - 0.5) * 6), y); g.stroke(); }
+    g.globalAlpha = 1; }));
+}
+function barkUV(g, L) { const uv = g.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setY(i, uv.getY(i) * L / 0.4); }
+/* N173: each leaf card's own shade: darker and cooler inside a head (the shade in a crown), warmer and lighter at its sunny outside,
+   a little lighter up the tree; a second random stream so the trees keep their shape */
+let TINT_SD = 6151;
+function leafTint(depth, up, c = new THREE.Color()) {
+  const r = (TINT_SD = (TINT_SD * 16807) % 2147483647) / 2147483647, d = Math.pow(Math.min(1, Math.max(0, depth)), 0.8), l = (0.48 + 0.56 * d) * (0.84 + 0.16 * up) * (0.92 + r * 0.16);
+  return c.setRGB(Math.min(1.1, l * (0.92 + 0.1 * d)), Math.min(1.1, l * (0.97 + 0.04 * d)), l * (1.02 - 0.12 * d));
+}
 function sprayTex(k) {
   if (SPRAY[k]) return SPRAY[k];
   let sd = 77 + k.length; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
@@ -253,7 +279,7 @@ function sprayTex(k) {
     /* V3.59 (N114): a soft clump, not a scatter: a dense darker core of overlapping rounds (the shade inside a crown), then leaves
        over it, more of them and nearer the middle, so a crown reads as masses of leaf, not salt and pepper */
     const deep = { leaf: "#3d5a26", dark: "#22381c", red: "#4a2a1c" }[k];
-    g.fillStyle = deep; for (let i = 0; i < 14; i++) { const a = rnd() * Math.PI * 2, r = Math.sqrt(rnd()) * w * 0.17; g.beginPath(); g.arc(w / 2 + Math.cos(a) * r, h / 2 + Math.sin(a) * r, w * (0.1 + rnd() * 0.07), 0, 7); g.fill(); }
+    g.fillStyle = deep; for (let i = 0; i < 9; i++) { const a = rnd() * Math.PI * 2, r = Math.sqrt(rnd()) * w * 0.17; g.beginPath(); g.arc(w / 2 + Math.cos(a) * r, h / 2 + Math.sin(a) * r, w * (0.1 + rnd() * 0.07), 0, 7); g.fill(); }
     for (let i = 0; i < 70; i++) {                             // leaves round the spray's middle, each a pointed oval with its midrib
       const a = rnd() * Math.PI * 2, r = Math.pow(rnd(), 0.7) * w * 0.34, x = w / 2 + Math.cos(a) * r, y = h / 2 + Math.sin(a) * r, L = w * (0.08 + rnd() * 0.05);
       g.save(); g.translate(x, y); g.rotate(rnd() * Math.PI * 2); g.fillStyle = cols[Math.floor(rnd() * cols.length)];
@@ -266,13 +292,13 @@ function buildTrees(grp, list) {
   let sd = 9157; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
   const Y = new THREE.Vector3(0, 1, 0), stems = { pale: [], dark: [] }, cards = { leaf: [], dark: [], needle: [], red: [] };
   const seg = (to, a, b, r0, r1) => { const d = b.clone().sub(a), L = d.length(), g = new THREE.CylinderGeometry(r1, r0, L, 7, 1, true);
-    g.translate(0, L / 2, 0); g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(Y, d.normalize())); g.translate(a.x, a.y, a.z); to.push(g.toNonIndexed()); };
+    barkUV(g, L); g.translate(0, L / 2, 0); g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(Y, d.normalize())); g.translate(a.x, a.y, a.z); to.push(g.toNonIndexed()); };
   for (const P of list) {
     const base = v3(P.x, P.y, P.z), H = P.h * M, S = P.spread * M / 2, card = (P.leaf || 60) * M;
     if (P.kind === "conifer") {                                // the trunk to near the top, the fronds in a column narrowing upwards
       seg(stems.dark, base, base.clone().add(new THREE.Vector3(0, H * 0.95, 0)), P.r * M, P.r * 0.15 * M);
       for (let i = 0; i < 2200; i++) { const t = Math.pow(rnd(), 0.85), a = rnd() * Math.PI * 2, rr = S * Math.pow(1 - t, 0.8) * (0.45 + 0.55 * Math.sqrt(rnd()));
-        cards.needle.push([base.x + Math.cos(a) * rr, base.y + H * (0.05 + 0.95 * t), base.z + Math.sin(a) * rr, card * (0.7 + rnd() * 0.5)]); }
+        cards.needle.push([base.x + Math.cos(a) * rr, base.y + H * (0.05 + 0.95 * t), base.z + Math.sin(a) * rr, card * (0.7 + rnd() * 0.5), leafTint(rr / Math.max(0.05, S * Math.pow(1 - t, 0.8)), t)]); }
       continue;
     }
     const ends = [];                                           // stems leaning out from one foot, each with branches up its top half
@@ -288,16 +314,16 @@ function buildTrees(grp, list) {
     }
     const per = Math.round((P.cards || 1400) * 0.45 / ends.length), to = cards[P.tone || (P.dark ? "dark" : "leaf")];   // V2.89 (N30): the red-tipped shrubs
     for (const e of ends) for (let i = 0; i < per; i++) { const u = rnd() * 2 - 1, a = rnd() * Math.PI * 2, rr = Math.cbrt(rnd()) * S * 0.4, q = Math.sqrt(1 - u * u);
-      to.push([e.x + Math.cos(a) * q * rr, e.y + u * rr * 0.65, e.z + Math.sin(a) * q * rr, card * 1.5 * (0.7 + rnd() * 0.6)]); }   // V3.59 (N114): fewer, larger clumps
+      to.push([e.x + Math.cos(a) * q * rr, e.y + u * rr * 0.65, e.z + Math.sin(a) * q * rr, card * 1.5 * (0.7 + rnd() * 0.6), leafTint(rr / (S * 0.4) * (0.75 + 0.25 * u), (e.y - base.y) / H)]); }   // V3.59 (N114): fewer, larger clumps
   }
   for (const [k, list2] of Object.entries(stems)) if (list2.length) {
-    const m = new THREE.Mesh(mergeGeometries(list2), reg(new THREE.MeshStandardMaterial({ color: k === "pale" ? "#a59f95" : "#5b4b3d", roughness: 0.95 })));
+    const m = new THREE.Mesh(mergeGeometries(list2), reg(new THREE.MeshStandardMaterial({ map: barkTex(k), roughness: 0.95 })));   // N173: their bark
     m.material.clippingPlanes = []; m.castShadow = m.receiveShadow = true; m.raycast = () => {}; grp.add(m); }
   const o = new THREE.Object3D(), plane = new THREE.PlaneGeometry(1, 1);
   for (const [k, list2] of Object.entries(cards)) if (list2.length) {
     const mt = reg(new THREE.MeshStandardMaterial({ map: sprayTex(k), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.8 })); mt.clippingPlanes = [];
     const im = new THREE.InstancedMesh(plane, mt, list2.length);
-    list2.forEach(([x, y, z, sz], i) => { o.position.set(x, y, z); o.rotation.set((rnd() - 0.5) * 1.6, rnd() * Math.PI * 2, (rnd() - 0.5) * 1.6); o.scale.setScalar(sz); o.updateMatrix(); im.setMatrixAt(i, o.matrix); });
+    list2.forEach(([x, y, z, sz, c], i) => { o.position.set(x, y, z); o.rotation.set((rnd() - 0.5) * 1.6, rnd() * Math.PI * 2, (rnd() - 0.5) * 1.6); o.scale.setScalar(sz); o.updateMatrix(); im.setMatrixAt(i, o.matrix); im.setColorAt(i, c); });
     im.castShadow = im.receiveShadow = true; im.raycast = () => {}; grp.add(im); }
 }
 /* V1.4: past the far fence (survey_data.BEYOND, from the view photos): the long low building with grey sheet roofs (with Gardens), and
@@ -340,12 +366,12 @@ function buildBeyond(grp, land) {
       const a = (Tr.a[0] + (Tr.a[1] - Tr.a[0]) * rnd()) * Math.PI / 180, r = Tr.r[0] + (Tr.r[1] - Tr.r[0]) * rnd(), h = Tr.h[0] + (Tr.h[1] - Tr.h[0]) * rnd();
       const cx = C.cx + Math.sin(a) * r, cz = C.cz - Math.cos(a) * r, to = rnd() < 0.35 ? list.dark : list.leaf;
       for (let k = 0; k < 12; k++) { const u = rnd() * 2 - 1, b = rnd() * Math.PI * 2, rr = Math.cbrt(rnd()) * h * 0.38, q = Math.sqrt(1 - u * u);   // V3.59 (N114): 12 larger clumps a tree (were 26 small)
-        to.push(v3(cx + Math.cos(b) * q * rr, (B.hill ? B.hill.base : -262) + h * 0.62 + u * rr * 0.7, cz + Math.sin(b) * q * rr)); } }
+        to.push([v3(cx + Math.cos(b) * q * rr, (B.hill ? B.hill.base : -262) + h * 0.62 + u * rr * 0.7, cz + Math.sin(b) * q * rr), leafTint(rr / (h * 0.38) * (0.75 + 0.25 * u), 0.5 + u * 0.5)]); } }
     const plane = new THREE.PlaneGeometry(1, 1);
     for (const [k, pts] of Object.entries(list)) {
       const mt = reg(new THREE.MeshStandardMaterial({ map: sprayTex(k), alphaTest: 0.5, side: THREE.DoubleSide, roughness: 0.85 })); mt.clippingPlanes = [];
       const im = new THREE.InstancedMesh(plane, mt, pts.length);
-      pts.forEach((p, i) => { o.position.copy(p); o.rotation.set((rnd() - 0.5) * 1.2, rnd() * Math.PI * 2, (rnd() - 0.5) * 1.2); o.scale.setScalar(3.6 + rnd() * 2.4); o.updateMatrix(); im.setMatrixAt(i, o.matrix); });
+      pts.forEach(([p, c], i) => { o.position.copy(p); im.setColorAt(i, c); o.rotation.set((rnd() - 0.5) * 1.2, rnd() * Math.PI * 2, (rnd() - 0.5) * 1.2); o.scale.setScalar(3.6 + rnd() * 2.4); o.updateMatrix(); im.setMatrixAt(i, o.matrix); });
       im.raycast = () => {}; land.add(im); }
   }
 }
