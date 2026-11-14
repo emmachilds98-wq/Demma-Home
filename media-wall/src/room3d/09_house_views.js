@@ -213,7 +213,7 @@ function applyFloors() {
   for (const k of ["lower", "ground", "first", "out"]) if (HFLOOR[k]) HFLOOR[k].traverse(o => { if (o.userData.hlabel) o.visible = labelsOn && (k === "out" ? on : (top ? top === k : !R.HOUSE3)); });   // v57: Hide labels hides these too
   if (rmodeG) rmodeG.traverse(o => { if (o.userData.rlabel) o.visible = labelsOn; });   // v72 (B5): the room's name in Above
   hidReal.forEach(o => o.visible = true); hidReal = []; hidLay.forEach(o => o.layers.enable(0)); hidLay = [];
-  wellOff(); WELL.list = []; WELL.outL = [];   // V4.23 (N188)
+  wellOff(); WELL.list = []; WELL.outL = [];   // V4.24 (N188)
   roomUncull();   // V2.71 (N16)
   if (HMATS && HMATS.earth) HMATS.earth.visible = !(on && sel === "lower");   // V1.53: the earth over the secret room (under the garage) off, so the lower floor shows
   if (on && sel === "lower") scene.children.forEach(o => { if (o !== houseG && o !== garden3d && o !== lightRig && !o.isLight && o !== (sun && sun.target) && o.visible) { o.visible = false; hidReal.push(o); } });
@@ -265,7 +265,7 @@ function applyFloors() {
   requestAnimationFrame(() => { measureShift(!!(window.DemmaTools && window.DemmaTools.isOpen())); fadeRows(true); });   // V1.30: the rows above may have changed
   dirty();
 }
-/* V4.23 (N188): standing in a room, a piece is drawn only where the eye can see it: a living-room piece left by v81's cut (from the landing,
+/* V4.24 (N188): standing in a room, a piece is drawn only where the eye can see it: a living-room piece left by v81's cut (from the landing,
    or a first-floor room that sees down the stairwell) through the stairwell, the first floor's opening over the flight (eye above it) then
    the living room's ceiling opening or its wall's openings onto the flight and the hall; a piece out of doors through a window or a door
    out of a room seen. Tested from the eye (when it moves) before each draw from the camera, and left out of that draw only: the shadows'
@@ -396,7 +396,7 @@ function roomCull(again) {   // again: a door swung (only this part of applyFloo
   for (const [r, g] of Object.entries(FIN_PEND)) if (!see.has(r)) off(g);
   const dside = {}; for (const [pk, a, b] of roomDoors().list) dside[pk] = [a, b];
   for (const [pk, P] of Object.entries(HPARTS)) { const d = dside[pk], r = P.g.userData.room; if (d ? !see.has(d[0]) && !see.has(d[1]) : r && !see.has(r)) off(P.g); }
-  wellOff(); if (liv) { WELL.outL = []; WELL.eye = null; } else outCull(see);   // V4.23 (N188)
+  wellOff(); if (liv) { WELL.outL = []; WELL.eye = null; } else outCull(see);   // V4.24 (N188)
   const key = [...see].sort().join() + CULLG.length;
   if (again) dirty();
   if (key !== cullKey) { cullKey = key; reshadow(); }
@@ -457,8 +457,8 @@ const ROOM_VIEW = { living: "room", kitchen: "kitchen", bed3: "office", bed2: "b
   landing: "landing", hall: "hall", garage: "garage", wc: "wc" };   // v66: every room a person stands in has its own view
 /* v74: a floor (or the whole house) picked, Angled looks from the house view's direction, Overhead straight down, far enough for all its rooms */
 /* V1.54: on a phone a view from above is framed between the top buttons and the dock: [its share of the height, its middle's drop (px)] */
-function freeFrame() {
-  if (camera.aspect >= 1 || typeof stage === "undefined" || !stage) return [1, 0];
+function freeFrame(any) {   // N186: any, a PC's screen too
+  if ((camera.aspect >= 1 && !any) || typeof stage === "undefined" || !stage) return [1, 0];
   const st = stage.getBoundingClientRect(), H = st.height; let top = 0, bot = 0;
   for (const el of document.querySelectorAll(".brand, .r3d-mini, #r3d-floors, #r3d-hrooms, #r3d-rmode, .hnav")) { const r = el.getBoundingClientRect();
     if (r.width && r.height && r.bottom - st.top < H * 0.5) top = Math.max(top, r.bottom - st.top); }
@@ -470,6 +470,30 @@ function fromAbove(cx, y, cz, dist, fov) {  // straight down on (cx, y, cz) from
   if (house && typeof measureShift === "function") measureShift(!!(window.DemmaTools && window.DemmaTools.isOpen()));
   const [k, sh] = freeFrame(), D = dist / k, oz = house ? 0 : -sh * 2 * D * Math.tan(fitFov(fov) * Math.PI / 360) / Math.max(1, stage ? stage.clientHeight : 1);   // the screen's up is -z
   flyTo([cx, y + D, cz + 1 + oz], [cx, y, cz + oz], fov, true, REDUCE);
+}
+/* N186: an eye and an aim that look at pts (room cm) from e0→a0's side through the lens fov will have, as close as lets their picture's
+   width within wf of the screen's and its height within hf of the space between the top rows and the dock, then centred in that space */
+function frameFit(e0, a0, pts, fov, wf, hf) {
+  const cam = camera.clone(); cam.clearViewOffset(); cam.fov = fitFov(fov);
+  const [k, sh] = freeFrame(true), P = pts.map(p => v3(...p)), c = [0, 1, 2].map(i => pts.reduce((s, p) => s + p[i], 0) / pts.length), cw = v3(...c);
+  const dir = new THREE.Vector3(e0[0] - a0[0], e0[1] - a0[1], e0[2] - a0[2]).normalize();
+  const span = D => { cam.position.copy(v3(c[0] + dir.x * D, c[1] + dir.y * D, c[2] + dir.z * D)); cam.lookAt(cw); cam.updateMatrixWorld(); cam.updateProjectionMatrix();
+    let a = 9, b = -9, e = 9, f = -9; for (const q of P) { const n = q.clone().project(cam); a = Math.min(a, n.x); b = Math.max(b, n.x); e = Math.min(e, n.y); f = Math.max(f, n.y); } return [a, b, e, f]; };
+  let lo = 50, hi = 20000; for (let i = 0; i < 24; i++) { const m = (lo + hi) / 2, [a, b, e, f] = span(m); if (b - a < 2 * wf && f - e < 2 * hf * k) hi = m; else lo = m; }
+  const [a, b, e, f] = span(hi), hh = hi * M * Math.tan(cam.fov * Math.PI / 360), H = stage ? stage.clientHeight : 1;
+  const right = new THREE.Vector3(1, 0, 0).applyQuaternion(cam.quaternion), up = new THREE.Vector3(0, 1, 0).applyQuaternion(cam.quaternion);
+  const s = right.multiplyScalar((a + b) / 2 * hh * cam.aspect).add(up.multiplyScalar(((e + f) / 2 + 2 * sh / Math.max(1, H)) * hh));   // the picture's middle to the space's
+  const room = w => [-w.x / M, w.y / M, w.z / M];
+  return { eye: room(cam.position.clone().add(s)), at: room(cw.clone().add(s)) };
+}
+/* N186: the living room's Above (VIEWS.room) fills a phone between its rows and the dock, as N171 framed the house; a PC's the same way.
+   A phone stood up looks along the room's length, from over the PC wall and through a longer lens: from the window side the room is
+   wider than deep, so it could fill only the width (about a third of the height); a PC keeps the window side */
+function fitRoomView() {
+  const V = VIEWS.room; if (!fitRoomView.e0) { fitRoomView.e0 = V.eye.slice(); fitRoomView.a0 = V.at.slice(); fitRoomView.f0 = V.fov; }
+  const pts = [0, R.W].flatMap(x => [R.WINDOW_Z, R.RECESS_Z].flatMap(z => [0, 235].map(y => [x, y, z]))), tall = camera.aspect < 1, F = fitRoomView;
+  V.fov = tall ? 30 : F.f0;
+  Object.assign(V, frameFit(tall ? [-220, 850, -140] : F.e0, tall ? [238, 60, -140] : F.a0, pts, V.fov, tall ? 0.96 : 0.92, tall ? 0.9 : 1));
 }
 /* V4.2 (N159): the whole house framed to the screen, on a phone's tall screen as on a PC's wide one, from VIEWS.house's side */
 function fitHouseView() {
