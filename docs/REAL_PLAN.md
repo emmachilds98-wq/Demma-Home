@@ -687,3 +687,48 @@ the iPhone 15 Pro and the RTX 5070 inside `tools/perf_budget.json`; customisatio
 - the living room door's width (N152);
 - the map and Street View screenshots, names painted out (N160, N161);
 - the sofa bed's price; a PC `?perf` screenshot or a Measure → Send link from the PC.
+
+## 23. The quality review after V4.21: the small rooms' finishes, mirrors, framing and the stairwell's draws (14 Nov 2026)
+
+Reviewed on V4.21 (main at #290): every room's In it view, the living room and the whole house by day in HD, at 1280 × 800 (RTX path) and
+393 × 852 (Apple GPU path), with `R3D.perf()` read in each. Shots in the project files, `review-v421/`. Section 22's open rows all wait on
+the client (N141 KTX2, N160 and N161 the screenshots, N163 time of day on hold).
+
+The rules stay: furniture and layouts finished (no piece added, moved or reshaped); the light the same in every room and cosy (no light
+changed; a look is changed in the materials); no time of day outside; walls smooth; inside `tools/perf_budget.json` (photos_mb full: no new
+picture file); customisation after the quality work.
+
+### What the review found
+
+- **The WC's and bathroom's sanitaryware reads as plastic:** the WC's primrose pan, cistern and basin are one flat matte yellow with no
+  glaze highlight; the bath and the bathroom's basin a flat white. The WC's wall tiles show stepped, jagged grout lines across the big tiles.
+- **The small rooms' whites blow out in HD:** the bathroom's bath, basin unit and tiles, the WC's walls and the hall's walls come out near
+  pure white with little shading (the living room keeps its form), so those rooms read flat and less cosy than the living room.
+- **The bathroom's mirror** shows a bright grey-white sheen rather than the room 5 s after arriving (N107's reflection lands only once you've
+  paused in HD); the hall's mirror at the edge of its view the same flat grey. Until the room lands it should look like a mirror, not a panel.
+- **The living room on a phone:** its view (Above) fills only the top 40% of a 393 screen, cream below; the house's rooms fill theirs.
+- **The whole house on a PC via R3D.set:** the house fills about a quarter of a 1280 screen's width (V4.2 framed it bigger at open): check
+  the fit runs on every way into the view, not only the first.
+- **Smoothness:** standing in the landing and bedroom 2 draws about 380 a frame on both paths (the view down the stairwell draws the hall,
+  the living room's flight and more), against 115–190 in the other rooms and the iPhone's living-room budget of 273. Neither room is in
+  the speed check.
+
+### The tasks
+
+| Task | Stream | What | Files | Waits for | State |
+|---|---|---|---|---|---|
+| N183 | A Finishes | Glazed sanitaryware: the WC's and bathroom's pans, cisterns, basins and bath read as vitreous china and enamel, a low roughness and a clear highlight, their colours kept (the WC's primrose); the WC's wall tiles' grout clean and straight (no stepped lines); materials only, no new shader on the first picture, no new picture file | `house/model.py` (`MATS` keys only), `20_go.js` (`HTEX`/`HTEX_AS` lines, the tiles' drawn texture) | — | Open |
+| N184 | A Finishes | The small rooms' whites with their form: the bathroom's, WC's and hall's white surfaces kept under the clip in HD (as V3.44 lifted the blacks: a white's albedo capped a touch, its hue kept), so the bath, units and walls show their shading as the living room's do; no light changed (the light the same in every room) | `20_go.js` (the house materials' colour pass, by V3.44's), `house/model.py` (`MATS` only) | N183 | Open |
+| N185 | B Reflections | Mirrors that look like mirrors before the room lands: the bathroom's and hall's mirror glass takes the house's neutral room reflection at once (low roughness, a slight tint), then N107's own reflection in HD as now; on Fast the neutral one stays; no shader added on the first picture | `09_house_views.js` (the mirrors, N107's code) | — | Open |
+| N186 | C Views | The living room fills a phone: its Above view framed to the space between the top rows and the dock at 393 and 375 (as N171 framed the house), the same on a PC | `14_views_walk.js` (`VIEWS.room`), `09_house_views.js` (the fit only) | — | Open |
+| N187 | C Views | The whole house framed the same however you reach it: on a PC the fit (`fitHouseView`) on R3D.set, Back and the Whole house button as at open; check 1280 and 1920 | `09_house_views.js` (`fitHouseView`), `19_view_controls.js` (the call only) | N186 | Open |
+| N188 | D Smooth | The stairwell's draws: in the landing and bedroom 2, draw only what the stairwell shows (the hall's floor and walls and the flight, not the living room's far side and the rest of the ground floor), about 380 to under 273 on the iPhone path; add the landing to the speed check (`draws_landing` in each path, the new number plus about 10%) | `09_house_views.js` (`roomCull`), `tools/check_site.py`, `tools/perf_budget.json` (a new key) | — | Open |
+
+**How to run it.**
+- Four streams side by side: A (N183 then N184), B (N185), C (N186 then N187), D (N188). A owns `house/model.py` and `20_go.js`'s
+  material lines; B, C and D each touch `09_house_views.js` but different functions (B the mirrors, C `fitHouseView`, D `roomCull`):
+  whoever merges second merges main first and keeps the other's change.
+- Every code row: before/after at 393 and 1280 in the project files, `tools/checks.py` lines in the PR, `house/privacy_check.py`, the
+  next free version at merge, its row ticked here and `docs/STATE.md` rewritten. Tell the coordinator when touching `20_go.js`.
+- After this round: customisation (the client's own colours, pieces and saved looks), planned once the quality rows are done.
+
