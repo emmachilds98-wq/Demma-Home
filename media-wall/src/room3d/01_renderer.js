@@ -106,7 +106,10 @@ function compileClipped(cam, shownOnly, roots) {   // shownOnly: what's shown no
   if (gl.shadowMap.enabled) { const pts = new Set(lit.filter(l => l.castShadow).map(l => !!l.isPointLight));   // N180: the hidden parts' shadows too (a lower-floor piece's sun shadow built mid-walk)
     const sig = lit.map(l => l.type + +l.castShadow).sort().join(), wide = !LITS.has(sig) && LITS.size > 0 && (shownOnly || roots);   // N182: a shadow's shader carries the count of lights on, so each set seen is kept and every set asked for;
     if (!LITS.has(sig)) LITS.set(sig, lit);   // a new set (the living room's lights on) takes every caster's, hidden ones too: else a lower-floor piece built its own on the way down
-    for (const pt of pts) (wide ? f => scene.traverse(f) : each)(o => { if (!o.isMesh || !o.castShadow || !o.material) return; const d = Array.isArray(o.material) ? o.material.map(m => depthMat(m, pt)) : depthMat(o.material, pt), d0 = [].concat(d)[0]; put(D, "s" + (d0.clipShadows ? key(d0) : "0"), o, d); }); }
+    const one = new Set();   // one caster a kind of shadow shader is enough (the same stand-in, the same shape's attributes)
+    for (const pt of pts) (wide ? f => scene.traverse(f) : each)(o => { if (!o.isMesh || !o.castShadow || !o.material) return; const d = Array.isArray(o.material) ? o.material.map(m => depthMat(m, pt)) : depthMat(o.material, pt), d0 = [].concat(d)[0], g = o.geometry, ma = g.morphAttributes;
+      const u = [[].concat(d).map(x => x.id).join("."), o.isInstancedMesh && (o.instanceColor ? 2 : 1), o.isSkinnedMesh, o.isBatchedMesh, ma.position && ma.position.length, ma.normal && 1, ma.color && 1, g.attributes.uv1 && 1, g.attributes.uv2 && 1, g.attributes.uv3 && 1].join();
+      if (!one.has(u)) { one.add(u); put(D, "s" + (d0.clipShadows ? key(d0) : "0"), o, d); } }); }
   const jobs = [], was = gl.getRenderTarget();
   if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
   try {
