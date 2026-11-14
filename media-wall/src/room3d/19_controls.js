@@ -1,9 +1,7 @@
 /* ---------------------------------------------------------------- the controls */
 function press(attr, val) { qsa(`[data-${attr}]`).forEach(b => b.setAttribute("aria-pressed", String(b.dataset[attr] === String(val)))); }
 const sameAsScene = () => LAYERS.every(k => (S.lv[k] ?? 0) === (SCENES[S.scene].levels[k] ?? 0));
-/* v36, client: "make sure its clear how to manage all these options in the 3D room": Extras opens on a row per need (ideas.OPTION_GROUPS):
-   a bar (pick one of three places), the games in the ottoman, the blankets (pick one), more storage (any), the plant shelf. Picking
-   shows it and flies the camera there; the row's caption says where it goes, its size and a rough cost */
+/* v36: Extras opens on a row per need (ideas.OPTION_GROUPS); picking shows it and flies there; the caption says where, its size, a rough cost */
 const OPT = JSON.parse((document.getElementById("opt-data") || {}).textContent || '{"groups":[]}');
 const optGroup = k => OPT.groups.find(g => g.k === k);
 function optOn(it) {
@@ -12,9 +10,8 @@ function optOn(it) {
   if ("lid" in it.set) return !!S.lid === it.set.lid;
   return false;
 }
-/* v37: one thing per place. The window corner takes one of the seat, the bench or the cupboard; the cupboard fills the corner the
-   alcove shelves would hang in, and leaves only a slot to reach the far end of the wall beside the dining cabinet, so it and the
-   beside pieces (the built-in bar, the shoe cabinets, the rail, the trolley...) take turns */
+/* v37: one thing per place: the window corner takes the seat, the bench or the cupboard (which fills the alcove shelves' corner), so the
+   beside pieces take turns */
 function extrasRule(kind, k, on) {
   if (!on) return;
   const off = (...ks) => { S.sugg = Object.assign({}, S.sugg); ks.forEach(x => { if (x !== k) S.sugg[x] = false; }); };
@@ -44,9 +41,8 @@ function optPick(gk, v) {
   applyState();
   if (it && optOn(it)) optSee(gk, it);
 }
-/* v39 (the approved redesign): the room opens on your plan; Try options shows what else could go in each place (tap a place or a piece,
-   then ‹ › on its card), and the plan bar says how many options are on and what they add to the plan or take off it. Back to my plan
-   (or Try options off) puts everything back. */
+/* v39: the room opens on your plan; Try options shows what else could go in each place (‹ › on its card), the plan bar what they add;
+   Back to my plan puts everything back */
 let tryOpts = false;
 const FIRMS = new Set((R.FIRM && R.FIRM.sugg) || []);
 const PLACE_GROUPS = { wall: ["storage"], dining: ["bar"], sofa: ["coffee", "blankets", "corner"] };
@@ -89,8 +85,7 @@ function updatePlanBar() {
   const sign = (d.lo + d.hi) / 2 >= 0 ? "+" : "−", a = Math.min(Math.abs(d.lo), Math.abs(d.hi)), b = Math.max(Math.abs(d.lo), Math.abs(d.hi));
   el.textContent = `${d.n} option${d.n > 1 ? "s" : ""} on · ${sign}${gbp(a)}–${gbp(b).slice(1)}`;
 }
-/* v40.2: back to a good view whenever you're lost, orbiting (not looking round from a spot); v68, the client: "take out the whole room
-   button for a whole house button": the whole house, every floor; pick a floor, then a room */
+/* v40.2, v68: back to a good view whenever you're lost: the whole house, every floor */
 function wholeRoom() {
   if (SH) showStop(true);
   if (actId) closeAct();
@@ -117,8 +112,7 @@ function liftTick(now) {   // each frame while a part moves (the frame loop, lik
     partPose(P); on = true; if (k >= 1) P.tw = null; }
   return on;
 }
-/* V1.26, the client: "i'd like to be able to open and close doors now at will": tap a door, it opens (or shuts) on its hinge; its card
-   opens or shuts every door. The bathroom's stops on the bath (house/survey_data.DOOR_HANG) */
+/* V1.26: tap a door, it opens or shuts on its hinge; its card opens or shuts every door; the bathroom's stops on the bath (DOOR_HANG) */
 const doorOpen = P => !!(P && (P.tw ? P.tw.to === 1 : P.t > 0.5));
 function swingDoor(k, on) {
   const P = HPARTS[k]; if (!P) return;
@@ -131,11 +125,9 @@ function swingDoor(k, on) {
   if (typeof placeRoomLights === "function") setTimeout(() => { placeRoomLights(); dirty(); }, on ? 0 : 950);   // V3.57 (N108): the room behind it lit (its lights already on at their level)
 }
 function swingAll(on) { for (const k of Object.keys(HPARTS)) if (k.startsWith("door.") && !(on && BINS.includes(k))) swingDoor(k, on); if (actId) renderAct(); }
-/* v71, the client: "three ways to view the room": in it (wide), from above (the ceiling and the floors over it cut away), and the room on
-   its own (the house cut to the room's walls, everything else put away), so nothing clips into it */
+/* v71: three ways to view a room: in it, from above (cut away over it), on its own (the house cut to its walls) */
 const VIEW_ROOM = Object.fromEntries(Object.entries(ROOM_VIEW).map(([r, v]) => [v, r]));
-/* v72 (B5): Above writes the room's name over its floor, faint (Hide labels hides it); On its own lays a soft shadow under the room so it
-   doesn't float. One small group in the house, rebuilt on each change */
+/* v72 (B5): Above writes the room's name faint on its floor; On its own a soft shadow under it. One small group, rebuilt on each change */
 let rmodeG = null;
 function rmodeDress(rr, rid) {
   if (rmodeG) { rmodeG.traverse(o => { if (o.material) { o.material.map && o.material.map.dispose(); o.material.dispose(); o.geometry.dispose(); } }); rmodeG.parent && rmodeG.parent.remove(rmodeG); rmodeG = null; }
@@ -368,10 +360,8 @@ root.addEventListener("input", e => {
   store.set(KEY, S);
 });
 
-/* V2.43, the client: "improve the landing page of the site too so that you have a nice welcome to the house and can easily see how to
-   navigate": a card over the whole house, the house turning slowly behind; Walk in (the hall, at the front door) or Look round. V2.66
-   (N19, "minimise words"): once on a device, after the first picture (the first screen's demma-landed), three icons of two words. The
-   name top left brings it back; a touch on the house, Esc or going in puts it away */
+/* V2.43, V2.66 (N19): the welcome, once a device after the first picture: three icons of two words over the turning house; the name top
+   left brings it back; a touch on the house, Esc or going in puts it away */
 const WEL = qs("#r3d-welcome"), BRAND = document.querySelector(".brand");
 const WEL_T = { in: ["Double-click in", "Double-tap in"], look: ["Drag round", "Drag round"], change: ["Click anything", "Tap anything"] };
 function welcome(on) {
@@ -384,8 +374,7 @@ WEL?.addEventListener("click", e => { const b = e.target.closest("[data-wgo]"); 
 BRAND?.addEventListener("click", () => welcome(!!WEL && WEL.hidden));
 BRAND?.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); welcome(!!WEL && WEL.hidden); } });
 canvas.addEventListener("pointerdown", () => welcome(false));
-/* V2.97 (N42): Esc shuts the top card or panel, one a press (it shut them all at once), and the focus goes back to what opened it. The
-   Plan's sheets, a zoomed picture and the lightbox keep their own Esc */
+/* V2.97 (N42): Esc shuts the top card or panel, one a press, the focus back to what opened it; the sheets and lightbox keep their own */
 const escBack = (el, to) => { if (to && (!document.activeElement || document.activeElement === document.body || el?.contains(document.activeElement))) to.focus({ preventScroll: true }); };
 const ESC = [
   [() => WEL && !WEL.hidden, () => { welcome(false); escBack(WEL, BRAND); }],

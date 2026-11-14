@@ -1,8 +1,6 @@
 /* ---------------------------------------------------------------- views */
 const VIEWS = {
-  // v21, client: "the default 3D room render to be at the best viewing to see most if not all the room without clipping or obstruction":
-  // from above the window side, the window wall cut away (updateCut): the media wall, the breast, the door, the stairs, the table's wall,
-  // the PC wall, the sofa and the rug in one picture
+  // v21: from above the window side, the window wall cut away (updateCut): the whole room in one picture
   room:    { label: "The whole room", eye: [250, 440, -540], at: [238, 60, -118], fov: 50, above: true },
   livstand: { label: "Standing in the living room", eye: [372, 160, -6], at: [110, 150, -210], fov: STAND_FOV, stand: true },   // V1.6: Be there, from the door
   livalone: { label: "The living room on its own", eye: [-170, 520, 230], at: [240, 40, -140], fov: 46, above: true },   // v78b: from the hall's corner, the ceiling off
@@ -49,9 +47,8 @@ function clampRoom(p, target = false) {   // the target (what you orbit round) m
   const q = v3(x, y, z), moved = q.distanceToSquared(p) > 1e-10;
   p.copy(q); return moved;
 }
-/* v41, client: "the camera stops you passing through walls or furniture": the furniture's boxes (each piece that stands in the room,
-   whichever is showing), worked out again when something moves; the eye is pushed out of any it's inside, unless it's above that
-   piece (you can still look down over the sofa) or under it (a shelf over your head) */
+/* v41: the furniture's boxes (what stands in the room, worked out again when something moves); the eye is pushed out of any it's in,
+   unless above it (look over the sofa) or under it (a shelf overhead) */
 let SOLID = null;
 const solidDirty = () => { SOLID = null; };
 function solidBoxes() {
@@ -69,11 +66,8 @@ function solidBoxes() {
   }
   return SOLID;
 }
-/* V1.28 (U1), the client: "fix technical issues like clipping": in the house's rooms the eye kept only inside the room's box, so it
-   could rest on a wall's face (the near plane then showed its inside), rise over a sloped ceiling into the roof and pass through beds
-   and wardrobes. Now every piece of the house (its boxes, its prisms: the slopes and eaves, its turned pieces) is solid to a 20 cm ball
-   round the eye. A move into something slides along it (each axis on its own from the last good place); a view that starts inside
-   something is pushed to the nearest free spot. Doors (the parts) stay passable */
+/* V1.28 (U1): in the house's rooms every piece (boxes, prisms, turned pieces) is solid to a 20 cm ball round the eye; a move slides along
+   what it meets (each axis on its own), a view starting inside something is pushed to the nearest free spot. Doors stay passable */
 const HSOLID = {}, EYE_R = 20;
 const NOSOLID = new Set(["contact"]), WALK_OVER = new Set(["furniture", "decor", "appliance", "light", "radiator", "switch", "socket"]);
 function hsolidSet(fk, F) {
@@ -85,10 +79,8 @@ function hsolidSet(fk, F) {
   const skin = new Set(["ceiling", "artex"]);   // V1.32: a walk ignores the ceilings' skins (each has a slab or the roof over it; the lower store's runs over the flight)
   // V1.57: and the chairs and stools (the office's stood in its doorway, a step in: you'd push past one), not the eye's view of them
   const tags = F.tags || [], soft = t => t != null && t >= 0 && /\.(chairs?|stools?)$/.test(tags[t] || ""), nl = (F.lathes || []).length;
-  /* V3.48 (N100), the client: "the joystick default view as I'm walking round the house be able to go over things like chairs and the
-     sofa so I can view from corners": a walk passes over the furnishings (furniture, things on them, appliances, lamps, radiators,
-     switches): only the head meets them (a wardrobe, a wall unit, a tall rack still stop you), and you don't climb onto them. Walls,
-     doors, windows, the stairs, the banisters and the fittings stop the whole body as before */
+  /* V3.48 (N100): a walk passes over the furnishings (only the head meets them; a wardrobe or tall rack still stops you) and doesn't climb
+     onto them; walls, doors, windows, stairs, banisters and fittings stop the whole body */
   const its = (R.HOUSE3 && R.HOUSE3.items) || {}, furn = t => t != null && t >= 0 && WALK_OVER.has((its[tags[t]] || {}).k);
   const bfu = [], wh = [], wb = [];          // in b's order: is it a furnishing
   for (const [m, list] of Object.entries(F.boxes || {})) if (!NOSOLID.has(m)) { const bt = (F.bt || {})[m] || [];
@@ -136,16 +128,13 @@ function houseCollide() {                   // true if it moved the eye
   }
   hLast = q; c.set(-q[0] * M, q[1] * M, q[2] * M); return true;
 }
-/* V1.32 (U7), the client: "review how to make the movement within the house better": Be there in the house's rooms is walking. Hold
-   W A S D or the arrows (Q and E turn) on a computer, the stick on a phone; drag to look. A body, not just an eye: it's stopped at the
-   knee, the hip and the eye (so not over a bed or through a wardrobe), steps up a stair (a rise up to 35) and follows the floor down;
-   it slides along what it meets. Walk into the next room and its name, its lights and what's drawn follow you (the eye stays where it
-   is); a door opens as you reach it. V1.38: the living room too (below) */
+/* V1.32 (U7): Be there in the house's rooms is walking: WASD or the arrows (Q E turn), the stick on a phone, a drag looks. A body stopped
+   at the knee, hip and eye, stepping up a stair (a rise to 35), following the floor down, sliding along what it meets; the next room's name,
+   lights and draws follow you; a door opens as you reach it. V1.38: the living room too */
 const WALK = { keys: new Set(), stick: [0, 0], v: new THREE.Vector2(), feet: null, doorT: 0, warmT: 0, hinted: false, held: 0, pace: 1, tv: 0 };
 const walking = () => (RMODE === "stand" && !!ROOMV() || S.view === "livstand") && !tween;   // V1.38: and the living room's Be there
-/* V1.38 (UPGRADE_REVIEW Next 1), the client: "review how to make the movement within the house better": the living room is drawn on its
-   own (geometry.py's measured room, not the house file), so a walk takes its walls, its furniture and its flight from that: in through
-   its door from the hall (the door opens as you reach it), round the room, up its stairs to the landing, and back down */
+/* V1.38: the living room is drawn on its own (geometry.py), so a walk takes its walls, furniture and flight from that: in from the hall,
+   round it, up its stairs to the landing and back */
 const LIV = () => R.HOUSE3.living;   // V1.44 (V1_PLAN phase 5): the living room's shell from the house file (house/model.py living_shell)
 const FLIGHT = () => LIV().flight;
 const livSolids = () => livWalls().concat(livFurn());
@@ -194,21 +183,16 @@ function walkMove(side, fwd, turn, dt) {    // -1..1 each; true if the eye moved
   let x = x0 - mv.x, z = z0 + mv.z;                                                    // room cm (x flipped)
   const blk = (x_, z_) => { const f_ = floorAtCm(x_, z_, WALK.feet);   // V1.38: tested where it will stand, a step up taken
     if (!(f_ < WALK.feet - 6 && f_ > WALK.feet - 45)) return bodyBlocked(x_, Math.max(WALK.feet, f_), z_);
-    // V1.57: a step down: the chest and head where they'll be (tested a step higher, the living room's stairs over the lower stairs met your
-    // head), the knee where it is (a step lower, it met the edge of the step just left)
+    // V1.57: a step down: the chest and head tested where they'll be, the knee where it is
     return bodyBlocked(x_, f_, z_, BODY.slice(1)) || bodyBlocked(x_, WALK.feet, z_, BODY.slice(0, 1)); };
-  /* V1.55, the client: "on mobile version I tried to walk into the first floor bedroom two and clipped into the living room without wanting
-     to": heading from the top of the living room's stairs for bedroom 2's door, the wall beside the stairs stopped the walk and its slide
-     along that wall took it down the stairs, a tread at a time, into the living room. A step down is now only taken on purpose: never by a
-     slide along a wall, the living room's flight only facing down it, and never off an edge (more than two treads at once, or no floor) */
+  /* V1.55: a step down only on purpose: never by a slide along a wall, the living room's flight only facing down it, never off an edge
+     (more than two treads, or no floor) */
   const L = FLIGHT(), here = floorAtCm(x0, z0, WALK.feet), ref = here > -Infinity ? here : WALK.feet;
   const onFlight = (x_, z_) => x_ > L.x0 - 4 && x_ < L.x1 && z_ > L.z0 - 12 && z_ < L.zl1;
   const badDown = (x_, z_, slid) => {
     const f = floorAtCm(x_, z_, WALK.feet); if (!(f < ref - 6)) return false;    // level, or up a step: fine
     if (f < ref - 45 || slid) return true;
-    /* V2.24: from its top landing onto the treads only facing squarely down them (within about 30°): with the first floor's stairwell
-       measured 85 (wider than the flight), heading across it for bedroom 2 stepped onto the top tread at 46° and along the stair box's
-       wall top beside it; now it eases along the landing round the stairwell. On the flight itself, as before */
+    /* V2.24: from its top landing onto the treads only facing squarely down them (within about 30°); otherwise round the stairwell */
     const onto = z0 >= L.zl - 1.5 && z_ < L.zl - 1.5;
     return onFlight(x_, z_) && (z_ - z0) > -(onto ? 0.86 : 0.6) * Math.hypot(x_ - x0, z_ - z0);   // the flight runs down toward -z
   };
@@ -216,8 +200,7 @@ function walkMove(side, fwd, turn, dt) {    // -1..1 each; true if the eye moved
   if (!blk(x0, z0) && blk(x, z)) {   // free to step out of something you start in (Be there by the guitars)
     slid = true; if (!blk(x, z0)) z = z0; else if (!blk(x0, z)) x = x0; else { x = x0; z = z0; } }
   if ((x !== x0 || z !== z0) && badDown(x, z, slid)) { x = x0; z = z0; }
-  /* V1.56: stopped dead (a door's frame, a bed's corner) with an opening a little to one side: ease toward it, as you would, and on
-     through (it took steering to the pixel on a phone's stick). Only when the way 25 cm on from there is clear, never down a step */
+  /* V1.56: stopped dead with an opening a little to one side: ease toward it and through, if 25 cm on is clear; never down a step */
   if (x === x0 && z === z0 && (fwd || side)) {
     const dx_ = -mv.x, dz_ = mv.z, l_ = Math.hypot(dx_, dz_) || 1, ux = dx_ / l_, uz = dz_ / l_, px = -uz, pz = ux;
     for (const o of [8, -8, 16, -16, 24, -24, 32, -32]) {
@@ -265,11 +248,8 @@ function enterRoom(name, warm) {   // V2.42: warm, the warm-up's visit there and
   syncRmode(); store.set(KEY, S); updateCaption(); brandPlace();
   qsa("[data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === name)));
 }
-/* V2.30, the client: "i want fluid motion and no slow change of view when moving around the house ... almost like im in a first person
-   pov in a game": walking between the house and the living room swaps the lights in play, so every shader in sight was built at the
-   doorway (about 30: a freeze mid-step), and each room's own (its cutaway, its lights) at its door. Standing still while walking, each
-   room is visited once off screen (there and back in one go, nothing culled, a room a pause), so its shaders are ready before you get
-   there */
+/* V2.30: standing still while walking, each room is visited once off screen (there and back, nothing culled, a room a pause), so its
+   shaders are ready before you get there */
 const WARMED = new Set();
 function warmSwitch() {
   if (S.view === "house") { if (warmHouse()) return true; if (!PARALLEL() || !houseG || !R.HOUSE3 || LOWD) return false;   // V3.23: then each room, one at a time, beside the page
@@ -280,11 +260,8 @@ function warmSwitch() {
 }
 function warmAt(key, go, back) {   // a visit off screen: go there, ask for the shaders of what shows, come back
   if (!houseG || !R.HOUSE3 || LOWD || WARMED.has(key + S.quality)) return false; WARMED.add(key + S.quality);
-  /* V2.64, the client's iPhone: the visit drew the whole room at once, every new shader built one after another before the frame
-     ended (a room's 20 to 30: seconds standing still, and a tap then waited for them). Now the room's shaders are only asked for
-     (compileClipped, in its lights; one drawn per set of cutting planes) and build in parallel where the browser can, the page still
-     answering; into the same kind of target as the frame's, so they match. N35: nothing's drawn into the shadows there, so they're
-     kept (they were drawn again after every visit) */
+  /* V2.64: the room's shaders are only asked for (compileClipped, in its lights; one per set of cutting planes) and build in parallel
+     where the browser can, into the frame's kind of target. N35: nothing drawn into the shadows, so they're kept */
   const was = gl.getRenderTarget(), su = gl.shadowMap.needsUpdate;
   if (!PRE.rt) { PRE.rt = new THREE.WebGLRenderTarget(1, 1); PRE.rt.isXRRenderTarget = true; PRE.rt.texture.colorSpace = gl.outputColorSpace; }
   if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
@@ -294,11 +271,8 @@ function warmAt(key, go, back) {   // a visit off screen: go there, ask for the 
   WARMP.set(key + S.quality, job); WARMB = job; job.then(() => { if (WARMB === job) WARMB = null; geoWarm(vis); });   // V3.51 (N103): then its shapes   // V3.23: the build's promise, so a room can wait for it
   dirty(); return true;
 }
-/* V3.23, the client 9 Nov 2026: "i want pc to be better ... it is still clunky i want fluid like the mobile version". Measured on her
-   RTX 5070 PC (Chrome, Direct3D 11): moving runs at the screen's 155 frames a second, but the living room picked from the house in
-   its first seconds froze the page 27 s: its 31 shaders (36 lights each) went through Windows' compiler on the frame that showed them,
-   the warm-up not yet there. Now, where the browser builds shaders in parallel, a room picked before its shaders are ready is built
-   first (the page still answering, "Opening ..." on a toast) and shown when they are; a room already built opens at once */
+/* V3.23: where the browser builds shaders in parallel, a room picked before its shaders are ready is built first ("Opening ..." on a
+   toast) and shown when they are; one already built opens at once */
 const WARMP = new Map(); let WARMB = null;
 const capWait = (p, ms = 8000) => Promise.race([p.catch(() => {}), new Promise(r => setTimeout(r, ms))]);   // a build never holds the queue past 8 s   // a build's promise by view; WARMB: the one still building (one at a time)
 const PARALLEL = () => !!(gl.extensions && gl.extensions.has("KHR_parallel_shader_compile"));
@@ -322,10 +296,7 @@ function readyThen(to, go) {   // go now if the room's shaders are built (or can
     go(); });
 }
 function warmRoom(to) { const v = S.view, rm = RMODE; return warmAt(to, () => enterRoom(to, true), () => { enterRoom(v, true); RMODE = rm; }); }
-/* N54 (V3.09), the client 8 Nov 2026: "optimise the pc version as much as the mobile version": from the whole house the first step into the
-   living room built its 58 shaders on the spot (its own 36 lights; on a Windows PC each goes through the graphics driver's compiler: a
-   freeze of seconds), a floor's cut 2 to 5; the rooms were warmed only once you stood in one. Now, a pause at a time, the house warms
-   the living room and each floor off screen too */
+/* N54 (V3.09): a pause at a time, the house warms the living room and each floor off screen too */
 function warmHouse() {
   const f = hfloor, to = ["livstand", "fl:ground", "fl:first", "fl:lower"].find(k => k !== "fl:" + f && !WARMED.has(k + S.quality));
   if (!to || !houseG || !R.HOUSE3 || LOWD) return false;
@@ -333,9 +304,7 @@ function warmHouse() {
   return to === "livstand" ? warmAt(to, () => enterRoom(to, true), () => { enterRoom("house", true); setAbove(false); livingFromOutside(); })
     : warmAt(to, () => { hfloor = to.slice(3); applyFloors(); }, () => { hfloor = f; applyFloors(); livingFromOutside(); });
 }
-/* N35 (V2.87): walking in from the hall built the living room's 24 shaders (and 4 of its shadows') on the step through its door, the
-   idle visit not yet made. Now a room 1.5 m or less away (through a door, up or down its stairs) is visited as you walk up to it, one a
-   step at most, its shaders building in parallel before you're in */
+/* N35 (V2.87): a room 1.5 m or less away (through a door, up or down its stairs) is visited as you walk up to it, one a step at most */
 function warmNear(x, feet, z) {
   const now = performance.now(); if (now - WALK.warmT < 250) return; WALK.warmT = now;
   const N = 150, near = (x0, x1, z0, z1) => x > x0 - N && x < x1 + N && z > z0 - N && z < z1 + N, L = LIV().box, want = [];
@@ -343,9 +312,7 @@ function warmNear(x, feet, z) {
   for (const [id, r] of Object.entries(R.HOUSE3.rooms || {})) { const v = ROOM_VIEW[id] || WALK_VIEW[id]; if (v && VIEWS[v] && VIEWS[v].box && near(r[0], r[1], r[2], r[3]) && Math.abs(feet - r[4]) < 230) want.push(v); }
   want.find(v => v !== S.view && warmRoom(v));
 }
-/* V3.17, the client: "still has two front doors": the bin cupboards' doors, once open, were remembered open on the device (V1.26b) and,
-   both open, lie across the porch in front of the front door. They always start shut, aren't remembered, open one at a time (the other
-   shuts) and "Open every door" leaves them */
+/* V3.17: the bin cupboards' doors always start shut, aren't remembered, open one at a time; "Open every door" leaves them */
 const BINS = ["door.store_w", "door.store_e"];
 const scShut = () => { const g = SUGG_G.stairscurtain; return !!g && shown(g) && !S.scopen; };
 function walkDoors(x, feet, z) {            // a shut door opens as you come up to it
@@ -354,8 +321,7 @@ function walkDoors(x, feet, z) {            // a shut door opens as you come up 
     if (sc && scShut() && feet < 60 && x > sc.x[0] - 80 && x < sc.x[1] + 20 && z > sc.z - 80 && z < (sc.side ? sc.side[1] : sc.z) + 20) { S.scopen = true; placeWork(); store.set(KEY, S); } }
   const w = new THREE.Vector3();
   for (const [pk, P] of Object.entries(HPARTS)) {
-    /* V2.99, the client: "a second front door seems to show": the bin cupboards' doors met across the porch as you came up to the front
-       door; they open on a tap only */
+    /* V2.99: the bin cupboards' doors open on a tap only */
     if (!pk.startsWith("door.") || BINS.includes(pk) || doorOpen(P)) continue;
     P.g.getWorldPosition(w); const dx = -w.x / M - x, dz = w.z / M - z, dy = w.y / M - feet;
     if (Math.hypot(dx, dz) < 95 && dy > -40 && dy < 220) swingDoor(pk, true);
@@ -367,20 +333,17 @@ function walkTick(dt) {
   const k = WALK.keys, f = (k.has("f") ? 1 : 0) - (k.has("b") ? 1 : 0) + WALK.stick[1], sd = (k.has("r") ? 1 : 0) - (k.has("l") ? 1 : 0) + WALK.stick[0];
   const want = new THREE.Vector2(sd, f); if (want.lengthSq() > 1) want.normalize();
   WALK.v.lerp(want, Math.min(1, dt * 12));   // eases in and out (V2.30: snappier, as a game's walk: was 8)
-  /* V2.60, the client: "still a bit slow moving in the house": a short press is still a careful step; held over half a second, the walk
-     eases up to half as quick again (a stroll to a brisk walk, 1.4 to 2.1 m/s) over the next second, as a game's does */
+  /* V2.60: a short press a careful step; held over half a second the walk eases up to half as quick again (1.4 to 2.1 m/s) */
   WALK.held = want.lengthSq() > 0.25 ? WALK.held + dt : 0;
   { const u = Math.min(1, Math.max(0, WALK.held - 0.5)); WALK.pace = 1 + 0.5 * u * u * (3 - 2 * u); }
-  /* V3.28, the client 9 Nov 2026: "the pc version still moves extremely rigidly like im moving frames rather than being a person in the
-     room": ← → turned at full speed from the first frame and stopped dead; now a turn eases in and out as the walk does */
+  /* V3.28: a turn eases in and out as the walk does */
   WALK.tv += ((k.has("tr") ? 1 : 0) - (k.has("tl") ? 1 : 0) - WALK.tv) * Math.min(1, dt * 9);
   const turn = Math.abs(WALK.tv) < 1e-3 ? 0 : WALK.tv;
   if (WALK.v.lengthSq() < 1e-5 && !turn) { WALK.tv = 0; if (WALK.feet === null) WALK.feet = camera.position.y / M - STAND_EYE; return false; }
   return walkMove(WALK.v.x, WALK.v.y, turn, dt);
 }
-/* V1.32: the phone's stick (bottom left): drag it the way to go. V3.15, the client: "add the joystick to all views for mobile movement":
-   walking it walks you; over the house, a floor and a room's Above it moves the map (19_view_controls.js mapKeys); in a view from your
-   eyes it stands you there and walks on */
+/* V1.32, V3.15: the phone's stick (bottom left), in every view: walking it walks you; over the house, a floor and Above it moves the map
+   (mapKeys); in a view from your eyes it stands you there and walks on */
 const COARSE = !!(window.matchMedia && matchMedia("(pointer: coarse)").matches);
 const STICK = document.createElement("div"); STICK.className = "r3d-stick"; STICK.hidden = true; STICK.setAttribute("aria-hidden", "true"); STICK.innerHTML = "<i></i>"; root.append(STICK);
 let stickId = null, stickC = [0, 0];
@@ -395,9 +358,8 @@ STICK.addEventListener("pointerup", stickEnd); STICK.addEventListener("pointerca
 if (!COARSE) { addEventListener("keydown", e => { if (/^(Key[WASDQE]|Arrow)/.test(e.code) && !/input|textarea|select/i.test(e.target.tagName)) root.classList.add("keyed"); });
   addEventListener("mousemove", e => { if (!root.classList.contains("keyed")) return; const r = STICK.getBoundingClientRect();
     if (Math.hypot(e.clientX - r.left - r.width / 2, e.clientY - r.top - r.height / 2) < 170) root.classList.remove("keyed"); }); }
-/* V2.31, the client: "fluid motion ... almost like im in a first person pov in a game": on a computer, while walking, Mouse look (or M)
-   holds the pointer: the mouse turns you with no button held, W A S D walk, a click opens what's under the dot in the middle (a card lets
-   the pointer go), a double-click walks you to the floor there, Esc stops it. Phones keep the stick and the drag */
+/* V2.31: Mouse look (or M) on a computer while walking: the mouse turns you, WASD walk, a click opens what's under the dot (a card lets
+   the pointer go), a double-click walks you there, Esc stops it */
 const MLOOK = qs("#r3d-mlook"), mlookOn = () => document.pointerLockElement === canvas;
 const mlook = on => { if (on && !COARSE && walking() && canvas.requestPointerLock) { const p = canvas.requestPointerLock(); if (p && p.catch) p.catch(() => {}); } else if (!on && mlookOn()) document.exitPointerLock(); };
 const aimed = e => { if (!mlookOn()) return e; const r = canvas.getBoundingClientRect();   // where the dot is, for a click while the pointer is held
@@ -426,8 +388,7 @@ function collide(p = camera.position) {    // true if it moved the eye
   }
   return moved;
 }
-/* v41, client: "a double-tap on the floor flies you to that spot, looking across the room": stand there at eye height (155), facing the
-   room's middle (or the media wall from the middle itself) */
+/* v41: a double-tap on the floor stands you there at eye height (155), facing the room's middle */
 let lastTap = null;
 function floorHop(e) {
   if (R.HOUSE3) { const out = mapOut(e); if (out) return mapCentre(e, out);   // V4.5 (N168): a PC's double-click on the house's outside centres on that spot (19)
@@ -452,12 +413,9 @@ function floorHop(e) {
   flyTo([x, 155, z], at, 60, false, false, 900); walked = true;
   return true;
 }
-/* V1.53, the client: "make double click in an area on pc take you there and wasd and arrow keys move you around as if you're walking while
-   holding mouse / screen will rotate view. enable a drop in man like street view to any area of the house too": a double-click (a double-tap)
-   on any floor you can see, from the whole house, a floor, a room from above or in it, stands you there (Be there: the keys walk, a drag
-   looks round where you stand); the figure in the corner drops you wherever you let go of it, a ring on the floor showing where. The spot:
-   what the pointer is on (a floor, a rug, the top of a bed: the floor under it, the nearest place a body fits), or through a roof or a wall,
-   the first floor down with a room under the pointer that you can stand in */
+/* V1.53: a double-click (double-tap) on any floor you can see stands you there (Be there); the figure in the corner drops you where you
+   let go, a ring showing where. The spot: the floor under the pointer (under a rug or bed, the nearest place a body fits), or through a
+   roof or wall the first floor down with a room you can stand in */
 function standRoomAt(x, y, z) {             // [the room, its floor's level] at a point in the house (cm), if it's one you can stand in
   if (!R.HOUSE3) return null;
   const LB = LIV().box;
@@ -621,10 +579,8 @@ function applyCam(reseat = true) {
   controls.enableRotate = !inPlace();   // V1.47: turning on the spot is ours (lookTurn), not the orbit's
   if (reseat) seatLook();
 }
-/* V1.47, the client: "its still hard to look around when in the rooms ... from a pc": a drag circled the eye round a point 35 cm (Be there)
-   or 2.2 m (In it) in front, so the eye slid about and met the walls. In the house's rooms and looking round, a drag now turns the view
-   where you stand, as a photo sphere does: the picture follows the pointer, a pixel of drag a pixel of view (from the lens), the tilt
-   kept short of straight up or down. Two fingers still pinch the lens; the whole house and the living room's views still orbit */
+/* V1.47: in the house's rooms a drag turns the view where you stand, as a photo sphere: a pixel of drag a pixel of view, the tilt short of
+   straight up or down; two fingers pinch the lens; the whole house and the living room's views orbit */
 const inPlace = () => S.cam === "look" || (!!ROOMV() && RMODE === "in");
 const LD_ = { ids: new Set(), id: null, x: 0, y: 0 };
 function lookTurn(dx, dy) {
@@ -639,8 +595,7 @@ canvas.addEventListener("pointerdown", e => { LD_.ids.add(e.pointerId); controls
   if (!inPlace() || tween || LD_.ids.size > 1 || (e.pointerType === "mouse" && e.button !== 0)) { LD_.id = null; return; }
   LD_.id = e.pointerId; LD_.x = e.clientX; LD_.y = e.clientY; }, true);
 addEventListener("pointermove", e => { if (e.pointerId !== LD_.id || !inPlace()) return; const dx = e.clientX - LD_.x, dy = e.clientY - LD_.y; LD_.x = e.clientX; LD_.y = e.clientY; if (dx || dy) (e.pointerType === "mouse" ? lookPend : lookTurn)(dx, dy); });
-/* V3.28: a mouse's moves come in bursts that don't keep step with the frames (a few one frame, none the next), so a look round with it
-   jerked where a finger's didn't; its moves now gather and are let out over the next frames (a 35 ms ease), every frame a share */
+/* V3.28: a mouse's bursty moves gather and are let out over the next frames (a 35 ms ease) */
 const LOOKP = [0, 0];
 function lookPend(dx, dy) { LOOKP[0] += dx; LOOKP[1] += dy; dirty(); }
 function lookTick(dt) {
@@ -659,9 +614,7 @@ function syncEye() {         // the height slider follows the camera
   const cm = Math.round(camera.position.y / M); i.value = Math.min(220, Math.max(40, cm)); if (o) o.textContent = cm > 220 ? "above the room" : `${cm} cm`;
 }
 function applyPad() { const p = qs("#r3d-pad"); if (p) p.hidden = !S.pad; }
-/* V1.29 (U2): looking round the wheel walks as far as it turns (it went in 15 cm jumps); a pinch changes the lens (25°–100°). V2.42, the
-   client: "movement is difficult again": standing (Be there) the wheel changed the lens instead, a fish-eye in a turn or two; now it walks
-   there too, and Ctrl + wheel (a trackpad's pinch) is the lens */
+/* V1.29 (U2), V2.42: the wheel walks as far as it turns; a pinch (Ctrl + wheel) changes the lens (25°–100°) */
 const lens = f => { if (tween) return; camera.fov = Math.max(25, Math.min(100, f)); camera.updateProjectionMatrix(); dirty(); };   // the lens as seen (a phone's portrait widening included)
 canvas.addEventListener("wheel", e => {
   if (S.cam !== "look") return;

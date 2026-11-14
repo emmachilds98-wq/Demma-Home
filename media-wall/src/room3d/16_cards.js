@@ -1,7 +1,5 @@
-/* ---------------------------------------------------------------- v30, client: "make function so say i click the dining cabinet i can
-   manage options to open it, close it etc as goes for drawers and other items i can interact with". A tap on the room (not a drag, not
-   in Edit room) finds what's under it and opens a card of what it can do. The card's buttons are the room's own controls (data-dining,
-   data-chairs, data-drawers, data-tog...), so they work, and stay in step with the Tools panel, exactly as its buttons do. */
+/* ---------------------------------------------------------------- v30: a tap on the room (not a drag, not in Edit room) opens a card of
+   what's under it; its buttons are the room's own controls (data-dining, data-chairs, data-drawers, data-tog...), so they stay in step */
 const act = qs("#r3d-act");
 let actId = null, actXY = null, tapDown = null, TAPAT = null;
 const clippedAt = h => [].concat(h.object.material).some(m => m && m.clippingPlanes === CLIP) && CLIP.every(pl => pl.distanceToPoint(h.point) < 0);   // the cutaway hides what's on the far side of both planes (V2.38: only what it cuts: from out front, the front door was let through to the hall behind)
@@ -50,8 +48,7 @@ function pickItem(e) {
   return null;
 }
 const btn = (label, attrs, on, cls, aria) => ({ label, attrs, on, cls, aria });
-/* V2.46 (N7): a swap's card (‹ › through the pieces of its kind, yours first) and an added piece's (‹ › through the catalogue, a row of its
-   kinds to jump to); each press shows it in the room at once */
+/* V2.46 (N7): a swap's card (‹ › its kind's pieces) and an added piece's (‹ › the catalogue, its kinds to jump to); shown at once */
 const HCAT_ADD = ["plant", "snake", "monstera", "olive", "armchair", "sidetable", "floorlamp", "rug", "bookcase", "cubes", "ladder", "chest3", "chest6", "tallboy", "bsdrawer", "bswhite", "bslegs",
   "desklegs", "deskdrawers", "trestle", "bench", "pouffe", "wardrobe2", "sliding", "openrail", "divan", "oakbed", "metalbed"];
 function hcatCard(id) {
@@ -66,9 +63,8 @@ function hcatCard(id) {
   return [C.n, `${i + 1} of ${HCAT_ADD.length} · ${C.src}`, [...nav(i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Remove", { hremove: k })], null,
     `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Kinds">${Object.entries(HCAT_KINDS).map(([q, t]) => `<button type="button" data-hcatk="${k}:${q}" aria-pressed="${C.k === q}">${t}</button>`).join("")}</div></div>`];
 }
-/* N23 (REAL_PLAN section 7), the client: "helps me keep track and plan those upgrades": a room's card of its changes (Look's and Edit's),
-   each a tap to tick done, with a rough cost; Plan has the house's total, room by room. Ticks in dh-done (Measure's Send carries them, N118), a tick's key
-   carries the choice, so a new choice starts unticked. Costs E: typical UK retail and trade prices, Nov 2026, a room's floor by its area */
+/* N23: a room's card of its changes (Look's and Edit's), a tap each to tick done, with a rough cost; Plan has the house's total. Ticks in
+   dh-done (N118); a tick's key carries the choice. Costs E: UK retail and trade, Nov 2026, a floor by its area */
 const UPC = { walls: [40, 80], wall: [15, 35], ceil: [20, 40], skirt: [15, 35], bulbs: [10, 30], rug: [40, 160], curt: [30, 100], bed: [25, 70], pic: [15, 60],
   frames: [150, 600], door_out: [30, 150], door: [150, 500], window: [400, 1500],
   floor: { carpet_grey: [20, 45], carpet: [20, 45], laminate: [20, 40], oak: [50, 90], pine: [30, 60], tile_f: [35, 70], marble: [80, 150], quarry: [45, 85], herring: [70, 115], lvt_grey: [45, 75], porcelain: [60, 110] },   // a m², laid (N56: fit.SOURCES upfloors)
@@ -157,8 +153,7 @@ function upsGo(room) {
   card();
 }
 const MAKE_CARD = { recordtable: "mk-recordtable", ctable: "mk-ctable", wallcabs: "mk-wallcabs", alcoveshelves: "mk-alcove", doorshelf: "mk-doorshelf", shelfboxes: "mk-doorshelf" };   // v44
-/* V3.80 (N149), the client (12 Nov): "Make sure anything that I can remove can be re added via the ui menu": in every room, as the
-   living room's Room → Taken out: a room's floor card says what's out of it and puts each back (Measure's list and the toast still do) */
+/* V3.80 (N149): a room's floor card says what's out of it and puts each back */
 const roomOuts = rm => DS() && R.HOUSE3 ? Object.keys(R.HOUSE3.items || {}).filter(k => { const it = HIT(k); return it && it.r === rm && !it.add && pieceNow(k).removed; }) : [];
 function actItems(id) {     // [title, how it is now, buttons]
   const folded = S.dining === "folded", lv = k => (S.lv[k] ?? 0) > 0;
@@ -262,9 +257,7 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id === "mov:sofa") return ["Your sofa", "Blue corduroy, as now", [   // V3.71: the swap is on its card
       btn("Try the green sofa bed", { sofa: "bed" }), btn("Move it", { actedit: "sofa" }), btn("Take it out", { takeout: "mov:sofa" }), btn("From above", { view: "plan" })]];
   if (id === "mov:sofa2" || id === "mov:chaise2") { const B = R.SOFABED, ch = id === "mov:chaise2", up = Object.values(S.hr || {}).some(Boolean);
-    /* V3.75, client: "the sofa matches the listing ... with all its features ... Upgrade and improve ui cards": what it does first (the bed,
-       the headrests, the stools), the five headrests a row of their own, each flipping up on its hinge; then the chaise, the show, moving
-       it, taking it out, yours back and the listing itself */
+    /* V3.75: what it does first (the bed, the headrests a row of their own, the stools), then the chaise, the show, moving it, taking it out, the listing */
     const heads = `<div class="r3d-fin"><span class="r3d-finlab">Headrests: tap one to flip it up or down</span><div class="r3d-finsc" role="group" aria-label="Headrests">${
       ["Arm seat", "Middle", "Corner", "Corner side", "Side end"].map((nm, i) => `<button type="button" data-hr="${i}" aria-pressed="${!!(S.hr && S.hr[i])}">${nm}</button>`).join("")}</div>${
       R.SOFABED_IN ? `<span class="r3d-finlab">Will it go in? ${R.SOFABED_IN}</span>` : ""}</div>`;   // V4 (N152): its boxes through the doors (Measure's widths)
@@ -340,9 +333,8 @@ function fixAct(d, fine) {             // the card's fixture and head buttons; t
   else return false;
   applyState(); syncButtons(); return true;
 }
-/* N68 (REAL_PLAN section 15), the client: "go through UI areas and info also and review how to improve and clean up these areas": every
-   card the same shape: its name, how it is now, its main tray, three buttons, then More (the other buttons and trays: a wall's curtains,
-   picture, wallpaper and panelling, a floor's rug and plant); a card never runs past the top pills or the dock: it scrolls inside */
+/* N68: every card one shape: its name, how it is now, its main tray, three buttons, then More; never past the top pills or the
+   dock: it scrolls inside */
 function renderAct() {
   const items = actId && actItems(actId);
   if (!items) { closeAct(); return; }
@@ -389,8 +381,7 @@ function placeAct() {
   fit(sh - 90 - top0);
   const pw = act.offsetWidth || 300, ph = act.offsetHeight || 200;
   act.classList.remove("beside", "onright");
-  /* V3.88 (N146): never over the piece it's for: beside it (its right, else its left), its arrow at the piece; under or over the tap
-     only when the piece fills the width */
+  /* V3.88 (N146): beside its piece (its right, else its left), the arrow at it; under or over the tap only when the piece fills the width */
   const tg = actTarget();
   if (tg) { const b = new THREE.Box3().setFromObject(tg);
     if (!b.isEmpty()) { let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9, behind = false;
@@ -416,8 +407,7 @@ function actTarget() {   // what the open card is for, as drawn (null: a wall, a
   if (/^(hitem|hsize|hswap|hadd)$/.test(k) && SEL.g) return SEL.g;
   return null;
 }
-/* V3.88 (N146): on a phone the card is a sheet over the dock; a swipe down closes it (from its top, or anywhere while it isn't
-   scrolled), as a sheet does */
+/* V3.88 (N146): on a phone the card is a sheet over the dock; a swipe down closes it */
 { let sw0 = null;
   act.addEventListener("touchstart", e => { if (!matchMedia("(max-width: 899px)").matches || e.touches.length !== 1) { sw0 = null; return; }
     sw0 = act.scrollTop <= 0 || e.touches[0].clientY - act.getBoundingClientRect().top < 48 ? { y: e.touches[0].clientY, dy: 0 } : null; }, { passive: true });
@@ -504,8 +494,7 @@ if (act) {
       if (mlookOn()) document.exitPointerLock();                              // V2.31: a card needs the pointer
       if (tryOpts) { const pl = placeOf(id); if (pl) id = `opt:${pl}:${placeIx(pl, id)}`; }           // v39: Try options: what else could go here
       openAct(id, xy); if (mouse) actAt = 0; };   // V1.54: only a finger's tap sends its click onto the card
-    /* V2.42, the client: "movement is difficult again": a click's card waits out a double-click, so a double-click walks you there and
-       opens nothing (its first click opened the card under the pointer and its second pressed a button on it) */
+    /* V2.42: a click's card waits out a double-click, so a double-click walks you there and opens nothing */
     if (mouse) tapT = setTimeout(go, DBL_MS); else go();
   });
   document.addEventListener("keydown", e => { if (e.key === "Escape" && actId) closeAct(); });
@@ -515,6 +504,5 @@ function setAbove(show) {   // the floor above (the stairwell's upper walls) hid
   scene.traverse(o => { if (o.name === "above") o.visible = show && !hs; });   // living room's green upper wall showed through the landing)
   if (view) view.visible = show;                                               // v56: the plain sky only from inside (from above it read as a pale slab)
 }
-/* v53, client: "Can you make the garden visible through the window at any angle": the garden picture stays in every view, the views from
-   above too (v52 showed it only once the camera was inside the room) */
+/* v53: the garden picture in every view, from above too */
 
