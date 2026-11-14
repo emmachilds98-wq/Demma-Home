@@ -1,39 +1,30 @@
 /* ---------------------------------------------------------------- go: built the first time the room is on screen (v14.1) */
 let started = false;
-/* v48 §6: the sun by day, through the window: it casts the frame, the bars and the sill's plants onto the sill, the sofa and the floor.
-   Its direction (geometry.SUN: degrees round from straight out of the window towards the room's +x, and up): v49, 7 am in June, low from
-   the right (the back faces 14° east of north: the only sun the room gets is on spring and summer mornings). Always in the scene (a light coming and going would rebuild every shader), dark by night
-   and in Fast, which has no shadows. */
+/* v48 §6, v49: the sun through the window casts the frame, bars and sill plants onto the sill, sofa and floor; its direction geometry.SUN
+   (7 am in June, low from the right: the back faces 14° east of north). Always in the scene (no shader rebuilds), dark by night and in Fast */
 const SUNCFG = { lux: 80, out: 0.5 };   // tuned on stills: the bars' shadows read on the sofa, the ottoman and the rug, the floor not washed out; outside (V1.3), higher in the sky, half
-/* v54, client: "You have rough measurements now and pictures so I'd like you to run the drafts" (every floor and both gardens): each
-   floor laid out as a plan in 3D (floors, walls cut at 110 like a dolls' house, solid walls dark, windows blue, doors brown, each room
-   named with its use and rough size), the ground floor round the real living room, the lower ground floor to the east and the first
-   floor to the west at their own levels, the front drive and lawn. From house/house.py (the client's corrected plans, the agent's sizes) */
-/* v59: real surfaces for the built house, drawn in the page (the shared page can't load picture files into the 3D room), sized to the
-   world so a brick is a brick on every wall: stretcher-bond brick in the photos' reds, concrete roof tiles in rows, the dormer's hung
-   tiles, lawn, concrete, paving, road, carpet, the kitchen's floor tiles, boards. Each: the canvas and the metres it covers */
+/* v54: each floor laid out from house/house.py round the real living room, the lower ground floor to the east and the first floor to the
+   west at their own levels, the front drive and lawn */
+/* v59: real surfaces drawn in the page, sized to the world (a brick a brick on every wall): brick, roof tiles, the dormer's hung tiles,
+   lawn, concrete, paving, road, carpet, tiles, boards. Each: the canvas and the metres it covers */
 const HTEX = {}, HI_T = new Set(["tile_w", "tile_f", "door_wood", "chalk"]);
-/* V2.56 (REAL_PLAN R3): the finishes without a photo take one of ours (build_textures.finishes): uPVC's peel, gloss paint's strokes, brushed
-   metal; these keep their own colour over a white detail map (TINT) */
+/* V2.56 (R3): finishes without a photo take one of ours (build_textures.finishes), their own colour over a white detail map (TINT) */
 const HTEX_AS = { artisan: "oak", frame_out: "upvc", door_out: "upvc", gutter: "upvc", sill_board: "upvc", skirting: "gloss", door_white: "joinery", door_cream: "joinery", door_wood: "joinery", newel: "joinery", rail_white: "gloss", steel: "brushed", steel_dark: "brushed", wardrobe: "melamine" };   // N142 (V4.12): the white units' foil
 const HTEX_TINT = new Set(["upvc", "gloss", "brushed", "joinery", "melamine"]);   // N111: the doors' painted timber, its grain up the leaf (the skirting's strokes along it, gloss)
 const BED_TINT = new Set(["duvet", "pillow", "artisan"]);   // V4.3: and artisan oak, a hair warmer than the oak it shares   // V3.66 (N113): the bedding's own colour over its cotton photo, a hair below white (it drew the photo at full white: clipped on a phone)
-/* V3.36 (N87): the soft things still flat colour in their own colours over the cotton's white, each with a relief of its kind: the
-   tapestry's dark border and the roller blinds woven as the chair-bed, the music room's felt panels knitted, the bath mats' pile as the
-   carpet's (the rug, the fabric boxes and the tapestry keep their drawn weaves, T below) */
+/* V3.36 (N87): the soft things in their own colours over the cotton's white, each with a relief of its kind (blinds woven, felt knitted,
+   mats' pile); the rug, fabric boxes and tapestry keep their drawn weaves */
 const SOFT_REL = { tapestry_dark: "lycksele", blind_cloth: "lycksele", panel: "check", bathmat: "carpet_grey" };
-/* V2.2, the client: "make sure ceilings are all white with ability to customise other than our living room picks so far": the house's
-   ceilings (flat and artex) white, or the colour picked in View (the living room's ceiling keeps Look's) */
+/* V2.2: the house's ceilings white, or the colour picked in View (the living room's keeps Look's) */
 function hceilApply() {
   if (!HMATS) return; const hex = /^#[0-9a-f]{6}$/i.test(S.hceil || "") ? S.hceil : null;
   for (const k of ["ceiling", "artex"]) { const m = HMATS[k]; if (!m) continue;
     if (!m.userData.c0) m.userData.c0 = m.color.clone();
     if (hex) m.color.set(hex).multiplyScalar(m.map ? 1 / 0.95 : 1); else m.color.copy(m.userData.c0); }
 }
-/* V2.5 (docs/FINISHES_PLAN.md F2): the palette. A wall's or a ceiling's colour per room and per side, without a new draw or shader: a plan
-   of the rooms (a picture, 2 cm a pixel, one band per floor: which room each spot is) and a palette (a picture, a row per room: back, front,
-   east, west, ceiling). The walls' and ceilings' shader looks up the room 3 cm in front of each face and its side from the face's normal; a
-   palette pixel with no colour leaves the face as drawn. R3D.finish(room, "walls" | side | "ceiling", "#hex" | null) writes one pixel. */
+/* V2.5 (F2): the palette: a wall's or ceiling's colour per room and side with no new draw or shader: a plan of the rooms (2 cm a pixel, a
+   band a floor) and a palette (a row a room: back, front, east, west, ceiling); the shader looks up the room 3 cm in front of a face and its
+   side from its normal; an empty pixel leaves it as drawn. R3D.finish(room, "walls" | side | "ceiling", "#hex" | null) writes one */
 const FIN = { W: 234, H: 404, map: null, pal: null, rooms: [], kind: { paint: 0, ceiling: 1, artex: 1, duvet: 2, pillow: 2 }, inv: new THREE.Matrix4() };   // N5d: the bedding (palette slot 5; its room from where it is in the house, as a bed's lid moves)   // V2.8: not the stair wall: it's the living room's (Look)
 function finSetup() {
   if (FIN.map || !R.HOUSE3 || !R.HOUSE3.finish_pieces) return FIN.map;
@@ -130,9 +121,8 @@ function finish(room, surface, hex) {   // R3D.finish: a room's walls (or one si
     if (c) { d[i] = Math.round(Math.min(1, c.r) * 255); d[i + 1] = Math.round(Math.min(1, c.g) * 255); d[i + 2] = Math.round(Math.min(1, c.b) * 255); d[i + 3] = 255; } else d[i + 3] = 0; }
   FIN.pal.needsUpdate = true; dirty(); return true;
 }
-/* V3.44 (N96): the black things (the desk chairs, the stools, the monitors' backs, the handles) drew near pure black in every room, their
-   shapes lost: a plain colour darker than #383838 is raised to it, its hue kept (black still black, its form now reads in the light). A
-   screen, the glass and the shade where things meet stay as they are */
+/* V3.44 (N96): a plain colour darker than #383838 is raised to it, its hue kept, so black pieces show their form; screens, glass and
+   the shade stay as they are */
 const BLACK_MIN = 0x38 / 255, BLACK_KEEP = new Set(["contact", "screen", "glass_dark", "pc_glow", "led"]);
 function liftBlack(c) { const t = {}; c.getRGB(t, THREE.SRGBColorSpace); const mx = Math.max(t.r, t.g, t.b); if (mx >= BLACK_MIN) return c;
   if (mx < 1e-3) return c.setRGB(BLACK_MIN, BLACK_MIN, BLACK_MIN, THREE.SRGBColorSpace);
@@ -143,8 +133,7 @@ function houseTex(k) {
   const rel = /^cloth\d$/.test(k) ? "check" : SOFT_REL[k];
   if (rel) { const J = houseTex(rel), W = houseTex("duvet");   // V3.32 (N82): the garments in their own colours over the poplin's white, with the knit's relief (they were flat card); a map and a relief, as the throw's: no shader of their own
     return (HTEX[k] = J && J.normal && W && W.map ? { map: W.map, normal: J.normal, size: J.size, bump: 0, rough: null, roughMean: 0, tint: true } : null); }   // V3.36 (N87): the other soft things the same way, each its own relief   // V2.2, the client: "ensure walls are all smooth": flat emulsion, no plaster relief
-  /* v70 (BUILD_SPEC phase 3): CC0 photo-textures (Poly Haven, house/SOURCES.md) and our own (build_textures.py) where we have them; the drawn
-     ones below for the rest (V2.37: the ones a photo replaced gone) */
+  /* v70: CC0 photos (house/SOURCES.md) and our own (build_textures.py) where we have them; the drawn ones below for the rest */
   const pkey = { party: "brick", soldier: "brick", pillow: "duvet", mattress: "duvet", ceiling: "artex", knob: "pine_dark", ...HTEX_AS }[k] || k, pm = PMETA[pkey];   // V1.21: the bedding's one cotton
   if (pkey !== k && pm && pm.map) return (HTEX[k] = houseTex(pkey));   // V2.56: one texture per finish, shared
   if (pm && pm.map) {   // V1.9: its mean colour and a flat relief until the photos land (loadPhotos), then the photo in the same texture
@@ -174,8 +163,7 @@ function houseTex(k) {
       if (i % 3 === 0) g.arc(x, y, s / 2, 0, Math.PI * 2); else { g.moveTo(x, y); g.bezierCurveTo(x + s, y - s * rnd(), x - s * rnd(), y + s, x + s * rnd(), y + s * 1.2); }
       g.stroke(); }
     g.globalAlpha = 1; }];
-  /* v69 (B2), the client: "more realistic like our living room": the surfaces still flat, drawn the same way (no downloads, so the
-     shared page shows them too), with a fine bump where the real thing has texture */
+  /* v69 (B2): a fine bump where the real thing has texture */
   const grain = (g, w, h, base, line, n, wave) => { g.fillStyle = base; g.fillRect(0, 0, w, h);
     for (let k = 0; k < n; k++) { g.strokeStyle = line + (0.06 + rnd() * 0.16) + ")"; g.lineWidth = 1 + rnd() * 2.2; const yy = rnd() * h; g.beginPath(); g.moveTo(0, yy);
       g.bezierCurveTo(w * 0.33, yy + rnd() * wave - wave / 2, w * 0.66, yy + rnd() * wave - wave / 2, w, yy + rnd() * wave / 2 - wave / 4); g.stroke(); } };
@@ -204,8 +192,8 @@ function houseTex(k) {
 }
 /* world-sized UVs (metres over the texture's size), by the face's direction: floors and roofs from above, walls from the side; roof
    slopes measured along the slope (35°) so the tile rows keep their gauge */
-/* V1.3: the gardens' plants (survey_data.PLANTS, from the client's photos). A cordyline: a grey-brown trunk forking into heads of long,
-   narrow leaves, the young ones up, the old ones arching out and down; one merged mesh for the trunks, one for the leaves */
+/* V1.3: the gardens' plants (survey_data.PLANTS). A cordyline: a trunk forking into heads of long narrow leaves, the old ones arching
+   down; one merged mesh for the trunks, one for the leaves */
 function buildPlants(grp) {
   const PL = (R.HOUSE3 && R.HOUSE3.plants) || []; if (!PL.length || !grp) return;
   const bark = reg(new THREE.MeshStandardMaterial({ map: barkTex("cordy"), roughness: 0.95 })), leaf = reg(new THREE.MeshStandardMaterial({ color: "#5b7a38", vertexColors: true, roughness: 0.6, side: THREE.DoubleSide }));   // N173: its corky bark; each leaf its own green
@@ -237,8 +225,8 @@ function buildPlants(grp) {
     for (const m of [tm, lm]) { m.castShadow = true; m.receiveShadow = true; m.raycast = () => {}; grp.add(m); }
   }
 }
-/* V1.4: the far end's trees (survey_data.PLANTS, from the view photos): a clump of tall pale stems with branches and an airy crown,
-   and a conifer, a dense dark column. Their leaves are drawn sprays on cards (cut out by their alpha), one instanced mesh a kind */
+/* V1.4: the far end's trees (survey_data.PLANTS): pale stems with an airy crown, and a conifer; leaves drawn sprays on cards (alpha cut),
+   one instanced mesh a kind */
 const SPRAY = {};
 /* N173: bark, drawn here: the cordyline's corky grey-brown with its rings of old leaf scars; the pale stems' smooth bark with dark
    lenticels across; the conifer's fissured brown. u round the stem, v up it, a tile 40 cm tall (barkUV) */
@@ -276,8 +264,7 @@ function sprayTex(k) {
         for (let t = 0; t < 1; t += 0.06) { const x = x0 + Math.cos(a) * L * t, y = y0 + Math.sin(a) * L * t, n = 14 * (1 - t * 0.6);
           for (const sg of [-1, 1]) { g.beginPath(); g.moveTo(x, y); g.lineTo(x + Math.cos(a + sg * 0.9) * n, y + Math.sin(a + sg * 0.9) * n); g.stroke(); } } }
       return; }
-    /* V3.59 (N114): a soft clump, not a scatter: a dense darker core of overlapping rounds (the shade inside a crown), then leaves
-       over it, more of them and nearer the middle, so a crown reads as masses of leaf, not salt and pepper */
+    /* V3.59 (N114): a darker core of overlapping rounds, then leaves over it nearer the middle, so a crown reads as masses of leaf */
     const deep = { leaf: "#3d5a26", dark: "#22381c", red: "#4a2a1c" }[k];
     g.fillStyle = deep; for (let i = 0; i < 9; i++) { const a = rnd() * Math.PI * 2, r = Math.sqrt(rnd()) * w * 0.17; g.beginPath(); g.arc(w / 2 + Math.cos(a) * r, h / 2 + Math.sin(a) * r, w * (0.1 + rnd() * 0.07), 0, 7); g.fill(); }
     for (let i = 0; i < 70; i++) {                             // leaves round the spray's middle, each a pointed oval with its midrib
@@ -326,8 +313,8 @@ function buildTrees(grp, list) {
     list2.forEach(([x, y, z, sz, c], i) => { o.position.set(x, y, z); o.rotation.set((rnd() - 0.5) * 1.6, rnd() * Math.PI * 2, (rnd() - 0.5) * 1.6); o.scale.setScalar(sz); o.updateMatrix(); im.setMatrixAt(i, o.matrix); im.setColorAt(i, c); });
     im.castShadow = im.receiveShadow = true; im.raycast = () => {}; grp.add(im); }
 }
-/* V1.4: past the far fence (survey_data.BEYOND, from the view photos): the long low building with grey sheet roofs (with Gardens), and
-   the hill opposite with its rows of houses across the valley (with the ground: the land, always there outside), hazy with distance */
+/* V1.4: past the far fence (survey_data.BEYOND): the low building with sheet roofs (with Gardens) and the hill opposite with its houses
+   (with the land), hazy with distance */
 function buildBeyond(grp, land) {
   const B = R.HOUSE3 && R.HOUSE3.beyond; if (!B) return;
   if (grp && B.building) {
@@ -375,11 +362,8 @@ function buildBeyond(grp, land) {
       im.raycast = () => {}; land.add(im); }
   }
 }
-/* V3.44 (N81), the client: "improve the graphics quality of other rooms to match like the living room": out of the front rooms' windows
-   the land ran flat and green to the sky. Now a street: the road and its pavements both ways, and across it a row of brick terraces
-   (front gardens, low walls, white windows, doors, tiled roofs, chimneys, lamp posts). A stand-in, not the real street (no address, no
-   photo of it): it changes when the client says what's across the road. One draw a finish; every finish a photo and its relief on the
-   ground's own shader (map and relief, both sides, no cut), so no shader of its own */
+/* V3.44 (N81): out of the front rooms' windows a stand-in street (not the real one: no address, no photo): the road and pavements, a
+   row of brick terraces opposite. One draw a finish, each on the ground's own shader (no shader of its own) */
 function buildStreet(land) {
   const H = R.HOUSE3; if (!land || !H || H.front == null || !FIN.mat3) return false;
   const dr = H.drive ?? -15, zf = H.front, zr0 = zf + 750, zr1 = zf + 1250, zp = zr1 + 200, zF = zp + 550, DEP = 800, EAVE = dr + 520, RIDGE = dr + 790;
@@ -424,8 +408,7 @@ function buildStreet(land) {
   }
   for (let x = X0 + 900; x < X1; x += 3000) {   // lamp posts on the far pavement
     box("post", x - 6, dr, zr1 + 45, x + 6, dr + 620, zr1 + 57); box("post", x - 5, dr + 608, zr1 - 60, x + 5, dr + 618, zr1 + 57); box("lamp", x - 14, dr + 596, zr1 - 75, x + 14, dr + 608, zr1 - 30); }
-  /* each finish the house's own material (a copy, its colour tinted where said, uncut): its program already built, so the street adds
-     none (the phone's first picture has no shader to spare) */
+  /* each finish a copy of the house's own material (tinted where said, uncut): its program already built */
   const FIN_ = { road: ["road"], paving: ["paving"], kerb: ["concrete"], brick: ["brick"], brick2: ["brick_buff"], roof: ["tile"], frame: ["upvc"], pane: ["pane"], panelit: ["pane"],
     door: ["door_out", "#3c4a5c"], door2: ["door_out", "#6b2a2a"], hedge: ["ivy"], post: ["steel_dark"], lamp: ["upvc", "#fff3dd"] };
   const g = new THREE.Group(); g.name = "street";
@@ -439,8 +422,8 @@ function buildStreet(land) {
     const m = new THREE.Mesh(geo, mt); m.receiveShadow = true; m.raycast = () => {}; m.name = "street_" + k; g.add(m); }
   land.add(g); streetTod(); return true;
 }
-/* V1.6: the things in the gardens (survey_data.GARDEN_THINGS, from the view photos): ours (the round table and its chairs, with Gardens)
-   and next door's (the trampoline, the sheds, with Next door); and for the living room's window, next door's back lawns and fences */
+/* V1.6: the gardens' things (survey_data.GARDEN_THINGS): ours with Gardens, next door's with Next door; and next door's lawns and
+   fences for the living room's window */
 function thingMat(c, o) { const m = reg(new THREE.MeshStandardMaterial(Object.assign({ color: c, roughness: 0.8 }, o || {}))); m.clippingPlanes = []; return m; }
 function buildThings(grp, own) {
   const L = ((R.HOUSE3 && R.HOUSE3.things) || []).filter(t => t.own === own); if (!L.length || !grp) return;
@@ -519,10 +502,8 @@ function worldUV(geo, k, off) {
   }
   geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2)); return geo;
 }
-/* V1.33 (U8, docs/UPGRADE_REVIEW.md), the client: "better in quality": the shade where things meet, made once: a soft dark band along
-   every room's floor at its walls (and along its ceiling where the ceiling is flat: the lower and ground floors), and round the house
-   where it meets the ground (the drive in front, the garden behind), so it sits on the ground and its rooms have corners. One mesh a
-   floor; on every device (the live shade, GTAO, is only on the capable ones in HD); never in the way of a tap */
+/* V1.33 (U8): the shade where things meet, made once: a soft band along each room's floor at its walls (and flat ceilings), and round
+   the house at the ground. One mesh a floor, on every device, never in a tap's way */
 function houseShade(H3, m3) {
   const tex = canvasTex(4, 64, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h);
     gr.addColorStop(0, "rgba(0,0,0,0.36)"); gr.addColorStop(0.35, "rgba(0,0,0,0.13)"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.clearRect(0, 0, w, h); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, false);
@@ -537,8 +518,7 @@ function houseShade(H3, m3) {
   const mesh = (pos, uv, mat, into) => { if (!pos.length) return; const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); g.computeVertexNormals();
     const me = new THREE.Mesh(g, mat); me.raycast = () => {}; me.renderOrder = 1; into.add(me); };
-  /* V3.35, the client: "obscure squares / lines" up the stairs: a band whose strip crosses a stairwell's opening (no floor, or no ceiling,
-     there: model.stair_wells) hung in the air over the flight; each edge keeps only its parts clear of them */
+  /* V3.35: a band's strip over a stairwell's opening (model.stair_wells) keeps only its parts clear of it */
   const WL = H3.wells || { floor: [], ceil: [] };
   const clear = (holes, y, a, b, n, w) => { const ax = n[0] === 0, k = ax ? 0 : 1, c = 1 - k, lo = Math.min(a[c], a[c] + n[c] * w), hi = Math.max(a[c], a[c] + n[c] * w);
     let seg = [[Math.min(a[k], b[k]), Math.max(a[k], b[k])]];
@@ -564,10 +544,8 @@ function houseShade(H3, m3) {
   band(pos, uv, [482, fr], [-28, fr], [0, 1], dr, 70, true); band(pos, uv, [-28, bk], [482, bk], [0, -1], lw, 90, true);
   mesh(pos, uv, mk(), houseG);
 }
-/* V2.52 (REAL_PLAN R2, N8): the shade round each standing piece's foot (a band out from each open side, mitred at its corners) and up
-   the wall beside a piece that stands against one (a wardrobe's sides, a fridge's), from the house file's outlines (model.piece_shade),
-   so phones without ambient occlusion have it too; built with its floor, so it follows a piece the client moves. One mesh a floor, the
-   shade's own material (houseShade's kind: no new shaders) */
+/* V2.52 (R2, N8): the shade round each standing piece's foot and up the wall beside one against it (model.piece_shade), so phones
+   without AO have it; built with its floor, so it follows a moved piece. One mesh a floor, houseShade's kind (no new shader) */
 function pieceShadeMat() {   // houseShade's kind of material (the same shader), its shade eased out to nothing: no edge to see
   const tex = canvasTex(4, 64, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h);
     for (const [t, a] of [[0, 0.24], [0.15, 0.15], [0.35, 0.07], [0.6, 0.025], [1, 0]]) gr.addColorStop(t, `rgba(0,0,0,${a})`);
@@ -597,9 +575,8 @@ function pieceShade(F, mat) {
   const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); geo.computeVertexNormals();
   const me = new THREE.Mesh(geo, mat); me.raycast = () => {}; me.renderOrder = 1; me.name = "pieceShade"; return me;
 }
-/* V3.63 (N112): the shade where a room's walls meet its floor, its ceiling and each other, on the walls (model.edge_shade): one mesh a
-   floor, pieceShadeMat's kind of material (the same shader), its own key in the house's materials so the cuts (Above, On its own) cut it
-   as the walls. Where the live shade (GTAO) draws this frame it isn't drawn: no doubled shade */
+/* V3.63 (N112): the shade where a room's walls meet floor, ceiling and each other (model.edge_shade): one mesh a floor, pieceShadeMat's
+   shader, its own key so the cuts cut it; not drawn where GTAO draws this frame */
 function edgeShadeMat() {
   const tex = canvasTex(4, 64, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h);   // deeper than a piece's: a corner's shade reads across a room
     for (const [t, a] of [[0, 0.42], [0.2, 0.25], [0.45, 0.11], [0.75, 0.035], [1, 0]]) gr.addColorStop(t, `rgba(0,0,0,${a})`);
@@ -619,9 +596,8 @@ function edgeShade(F, mat) {
   Object.defineProperty(me, "visible", { get: () => on && !(postLive() && aoLive()), set: v => { on = v; } });   // not drawn at all while GTAO draws
   return me;
 }
-/* V2.98 (N37): the house from outside: a material's pieces on every floor one draw, not one a floor (each floor's span noted, and the
-   floors shown are always a run, Lower, Lower and Ground, or all four, so one draw range); made when first wanted (09 houseJoin),
-   dropped when a floor is built again */
+/* V2.98 (N37): from outside a material's pieces on every floor one draw (the floors shown always a run); made when first wanted
+   (houseJoin), dropped when a floor is built again */
 let HJOIN = null;
 const JOIN_FL = ["lower", "ground", "first", "roof"];
 function joinBuild() {
@@ -664,11 +640,9 @@ function buildHouse() {
   const FLOOR = { kitchen: "#d6cfc2", bathroom: "#c3d6dc", wc: "#c3d6dc", garage: "#aaa69e", secret: "#8d8880", porch: "#b9a58e" }, WALL = "#f2eee6", WH = 110;
   const H3 = R.HOUSE3;
   if (H3) {
-    /* v58, client: "start the upgrade ... Use what you have to deduct sizing for now. Remember the living room sizes are accurate": the
-       house built from house/model.py: walls full height with their windows and doors cut through, white uPVC frames and glass, brick
-       outside, floors, the lower flight, the fittings, the tiled roof with the flat-roofed dormer. Merged per floor and material */
-    /* v72 (B2): the contact shadows: a soft dark patch, darkest under the piece's middle, fading to nothing at its edge (each box's own
-       0–1 UVs on its top), never writing depth (no flicker with the floor) */
+    /* v58: the house built from house/model.py: walls with their openings cut, uPVC frames and glass, brick, floors, the lower flight,
+       the fittings, the tiled roof and dormer. Merged per floor and material */
+    /* v72 (B2): contact shadows: a soft patch darkest under the piece's middle (each box's own 0–1 UVs), never writing depth */
     const contactMat = () => { const tex = canvasTex(128, 128, (g, w, h) => { const gr = g.createRadialGradient(w / 2, h / 2, 2, w / 2, h / 2, w / 2);
         gr.addColorStop(0, "rgba(0,0,0,0.55)"); gr.addColorStop(0.55, "rgba(0,0,0,0.35)"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.clearRect(0, 0, w, h); g.fillStyle = gr; g.fillRect(0, 0, w, h); });
       const m = reg(new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, toneMapped: false }));
@@ -693,9 +667,8 @@ function buildHouse() {
     if (S.fin === undefined && R.HOUSE3.client_finishes && Object.keys(R.HOUSE3.client_finishes).length) finRestore(R.HOUSE3.client_finishes);   // V2.11: the scheme kept in the repo, until this device picks its own
     HMATS = m3; FIN.mat3 = mat3; blindsApply(); hceilApply(); finApplyAll();
     if (window.__finPending) { const p = window.__finPending; window.__finPending = null; finImport(p); }   // V2.11: from a Send link opened before the 3D was ready   // V2.7: (mat3 for a floor laid by the tray)   // V2.6: the colours kept for the house's rooms
-    /* V2.71 (N16): each piece's room: the one room whose space holds it whole (walls, slabs, the stairs, the roof and what two rooms'
-       outlines share: none, always drawn). A floor's mesh of a material keeps each room's pieces together, in the rooms' order, each
-       room's span noted (userData.rooms: [room, first, count]), so standing in a room the rest can be left out (09 roomCull) */
+    /* V2.71 (N16): each piece's room, the one that holds it whole (shared pieces: none, always drawn); a floor's mesh keeps each room's
+       pieces together, its span noted (userData.rooms: [room, first, count]), so the rest can be left out (roomCull) */
     const RVOL = Object.entries(H3.rooms || {}).map(([id, r], i) => [id, r[0] - 1, r[1] + 1, r[4] - 2, r[4] + (r[4] >= 260 ? 420 : (H3.ceil || 235) + 2), r[2] - 1, r[3] + 1, i + 1]);
     const FLIGHT = ((H3.wells || {}).flight || []).map(f => Object.assign([...f], { V: RVOL.find(V => V[0] === "lower_stairs") })).filter(f => f.V);
     const roomOf = q => { if (!q.boundingBox) q.computeBoundingBox(); const b = q.boundingBox, x0 = -b.max.x / M, x1 = -b.min.x / M, y0 = b.min.y / M, y1 = b.max.y / M, z0 = b.min.z / M, z1 = b.max.z / M;
@@ -713,19 +686,15 @@ function buildHouse() {
       if (rooms) me.userData.rooms = rooms;
       me.castShadow = !m.transparent; g.add(me); geos.forEach(q => q.dispose()); return me; };   // v69: the house's walls and pieces cast the sun's shadow (as the living room's)
     const mx = new THREE.Matrix4();
-    /* v69 (B4), the client: "more realistic like our living room": furniture, fittings and soft things with rounded edges (cm by
-       material: the whites and woods a little, the suite and cushions a lot); walls, floors and frames stay sharp */
+    /* v69 (B4): rounded edges by material (whites and woods a little, the suite and cushions a lot); walls, floors and frames sharp */
     const ROUND = { pine: 0.8, pine_dark: 0.3, knob: 1.4, handle_black: 0.7, newel: 1.2, rail_white: 1.8, monitor_back: 1.5, mouse: 1.5, key_dark: 0.25, key_pink: 0.25, book0: 0.3, book1: 0.3, book2: 0.3, book3: 0.3, book4: 0.3, book5: 0.3, birch: 0.6, oak: 0.6, wardrobe: 0.5, gloss: 0.8, door_white: 0.4, door_wood: 0.4, fitting: 6, porcelain: 1, sanitary: 1,
       primrose: 4, duvet: 3, pot: 4, lycksele: 5, storebox: 1.5, leather: 2, check: 1, curtain: 1, mattress: 4, pillow: 6,
-      /* V2.44, the client: "improve graphics again so current blocky new room furniture looks more real": every piece's edges catch the
-         light (a bevel to its size): the black fittings, chairs and frames, the appliances, steel and chrome, the screens and the PC, the
-         rugs and mats, the bins, the chalkboard; the worktop a little (its joins stay tight) */
+      /* V2.44: every piece's edges catch the light (a bevel to its size); the worktop a little */
       black: 0.6, black_app: 1.2, worktop: 0.4, steel: 0.5, steel_dark: 0.5, chrome: 0.4, screen: 0.4, glass_dark: 0.3, pc_white: 0.8, panel: 0.5,
       rug: 0.8, bathmat: 0.8, recycle: 1, bin: 1, bin_white: 1, tapestry: 0.6, tapestry_dark: 0.6, chalk: 0.3, mirror: 0.3, blind_cloth: 0.3 };
     const SOFT = { pillow: 4, mattress: 3, duvet: 3 };
     const CLOTH = { lycksele: 1, leather: 1, pillow: 1, mattress: 1, duvet: 1, cloth0: 1, cloth1: 1, cloth2: 1, cloth3: 1, cloth4: 1, cloth5: 1, cloth6: 1 };   // V2.17: drawn as cloth (clothBox)   // V1.20: the soft things' edges round in steps (one step read as a chamfer: slabs)
-    /* v78: a face that exactly meets a neighbour's (two pieces of one wall, side by side) is never seen, but drawn it showed edge-on
-       as a bright hairline up the wall (the landing's, above each door). The faces two square pieces share, from opposite sides: */
+    /* v78: a face exactly meeting a neighbour's showed edge-on as a bright hairline; the faces two square pieces share, from opposite sides: */
     const fkey = (ax, p, a0, a1, b0, b1) => ax + "|" + p + "|" + a0 + "|" + a1 + "|" + b0 + "|" + b1;
     const sharedFaces = F => { const lo = new Set(), hi = new Set();
       for (const [mk, list] of Object.entries(F.boxes)) { if ((!(SMALL && !GOOD_PHONE) && (ROUND[mk] ?? (mk.startsWith("cloth") ? 1.5 : 0))) || mk === "glass" || mk === "contact") continue;
@@ -747,9 +716,8 @@ function buildHouse() {
             b.setIndex(keep); b.clearGroups(); } }
         return b; }
       if (CLOTH[mk] && !LOWD) return clothBox(mk, x0, y0, z0, x1, y1, z1, r);
-      /* V2.79 (N27): the rounding as fine as it shows: under 0.8 cm (the keys, books, handles, doors' arrises) one bevel an edge as the
-         living room's boxes have (bevelBox, 44 triangles, not 108; like RoundedBoxGeometry, not indexed), under 2 cm (the knobs, the mouse, the rails) two steps, not four
-         (108, not 300); the big curves (the fittings, the pots) as they were. The light rolls round each edge the same */
+      /* V2.79 (N27): the rounding as fine as it shows: under 0.8 cm one bevel an edge (bevelBox, 44 triangles), under 2 cm two steps (108);
+         the big curves as they were */
       const re = Math.max(0.0005, Math.min(r, Math.min(w, h, d) / 2 - 0.05));
       if (!SOFT[mk] && re < 0.8) {
         const { pos, nrm, face } = bevelBox([w * M / 2, h * M / 2, d * M / 2], re * M), AX = [[2, 1], [2, 1], [0, 2], [0, 2], [0, 1], [0, 1]], H = [w, h, d], uv = [];
@@ -758,10 +726,8 @@ function buildHouse() {
         b.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); b.translate(c.x, c.y, c.z); return b; }
       const b = new RoundedBoxGeometry(w * M, h * M, d * M, SOFT[mk] || (re >= 2 ? 2 : 1), re * M);
       b.translate(c.x, c.y, c.z); return b; };
-    /* V2.17 (docs/REAL_PLAN.md R4, the master bedroom first; the client: "increase quality and functions inc rendering items in hd"): the
-       soft things as cloth, not slabs: a finely divided box, its edges rounded, then shaped: a pillow plumped (full in the middle, thin at
-       its edges), a duvet in soft folds (two crossing waves along the bed, by where it lies, so a bed's folds stay put), a mattress's top
-       crowned, a hanging garment narrowing to its shoulders with a fall of folds */
+    /* V2.17 (R4): the soft things as cloth: a finely divided rounded box, shaped: a pillow plumped, a duvet in soft folds (two crossing waves),
+       a mattress crowned, a hanging garment narrowing to its shoulders */
     const clothBox = (mk, x0, y0, z0, x1, y1, z1, r) => {
       const w = x1 - x0, h = y1 - y0, d = z1 - z0, a = w / 2, bb = h / 2, cc = d / 2, cx = (x0 + x1) / 2, cy = (y0 + y1) / 2, cz = (z0 + z1) / 2;
       const seg = v => Math.min(40, Math.max(3, Math.round(v / 3))), B = new THREE.BoxGeometry(w, h, d, seg(w), seg(h), seg(d));
@@ -799,8 +765,7 @@ function buildHouse() {
       const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
       g.setIndex(idx.map((v, i) => idx[i - (i % 3) + [0, 2, 1][i % 3]]));   // x is mirrored into the world (v3), so each face is wound back
       g.computeVertexNormals(); g.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(pos.length / 3 * 2), 2)); return g; };
-    /* V1 (Phase 3): a floor can be built again with the client's edits (editedFloor: the edited pieces moved and sized, the walls round a
-       door or a window following it); the floor keeps its group, so what's shown and hidden stays as it was */
+    /* V1: a floor built again with the client's edits (editedFloor); it keeps its group, so what's shown stays as it was */
     HBUILD = (fk, F) => {
       joinDrop(); cur = HFLOOR[fk];
       if (cur) { for (const c of [...cur.children]) { if (c.userData.hlabel) continue; cur.remove(c); c.traverse(o => o.geometry && o.geometry.dispose()); } }
@@ -879,21 +844,18 @@ function buildHouse() {
     const xs = F.rooms.map(r => [r.x0, r.x1]).flat();
     label([F.title.split(" · ")[0], F.title.split(" · ")[1] || ""], (Math.min(...xs) + Math.max(...xs)) / 2, F.y + WH + 160, F.zn - 120);
   }
-  /* N181, the client 13 Nov 2026: "open in pc and mobile without next door and gardens to lighten load": the gardens round the house (the
-     plants, the low building, the table, the front, the alley) and next door's things are built the first time they show (Gardens or Next
-     door on, or a room's windows: outNeed in 09_house_views), not with the house */
+  /* N181: the gardens round the house and next door's things are built the first time they show (outNeed in 09), not with the house */
   HFLOOR.out = new THREE.Group(); houseG.add(HFLOOR.out); HFLOOR.nextThings = new THREE.Group(); houseG.add(HFLOOR.nextThings);
   OUTLAZY.nextThings = () => buildThings(HFLOOR.nextThings, "next");   // next door's, with Next door
   OUTLAZY.out = () => { const was = cur; cur = HFLOOR.out;
   buildPlants(cur);                                                               // V1.3: the cordyline in the back garden (with Gardens)
   buildBeyond(cur, null);                                                          // V1.4: the low building past the far fence
   buildThings(cur, "ours");                                                        // V1.6: the table and chairs
-  // the front: the drive in front of the garage, the small lawn left of it (from the street) with its low brick wall, a strip of lawn
-  // by the neighbour's fence with a young tree, the pavement and the close (house/HOUSE.md, the agent's photo of the front)
+  // the front: the drive, the small lawn left of it with its low brick wall, a lawn strip by the neighbour's fence with a young tree, the
+  // pavement and the close (house/HOUSE.md)
   const G0 = HS.find(F => F.id === "ground"), zf = H3 ? H3.front : G0 ? G0.zs + 20 : 530, gar = G0 && G0.rooms.find(r => r.id === "garage"), hall = G0 && G0.rooms.find(r => r.id === "hall");
   const gx0 = H3 ? H3.garage[0] : gar ? gar.x0 : 0, gx1 = H3 ? H3.garage[1] : gar ? gar.x1 : 290, hx1 = H3 ? H3.hall[1] : hall ? hall.x1 : 495;
-  // v66, the client: "entrance step up is still clipping and the alleyway": the front sat at the floor's level (0), 15 above the drive
-  // the house and next door stand on (house/survey_data.LEVELS); now every layer from next door's base, side by side
+  // v66: every layer from next door's base (15 under the floor, survey_data.LEVELS), side by side
   const dr = H3 ? (H3.drive ?? -15) : 0, B0 = H3 ? dr - 6 : -4, gw = H3 ? hx1 - 12 : hx1;
   box(gx0, gx1, B0, dr, zf, zf + 550, "#b4afa5");                    // the drive
   box(gx1, gw, B0, dr - 1, zf, zf + 550, "#5d6a44");                 // the front lawn
@@ -906,9 +868,8 @@ function buildHouse() {
   if (H3) { box(ge, ge1, -275, B0, zf, zf + 1250, "#6e5b45"); box(-120, -28, -275, B0, 100, zf, "#6e5b45"); }   // v58: the ground the street stands on
   label(["The front garden", "the drive, the lawn · sizes to come"], (gx0 + hx1) / 2, 120, zf + 280);
   label(["The back garden", "about 25 m"], 240, -260 + 160, -309 - 900);
-  /* v55, client: "The alley has stairs down": down the side of the house (the gate side, the east), level from the street along the
-     front, then stairs down to the garden's level by the back, the gate at the bottom. Rough until measured. v66: between the two end
-     walls (ours at -28, next door's at -125), from the drive's level */
+  /* v55, v66: the alley down the east side between the two end walls (ours at -28, next door's at -125): level from the street, then
+     stairs down to the garden's level, the gate at the bottom. Rough until measured */
   const ax0 = H3 ? -120 : -115, ax1 = H3 ? -28 : -15, zb = R.WINDOW_Z - 30, zTop = 100, zBot = -180, N = 13, yTop = dr;
   box(ax0, ax1, B0, yTop, zTop, H3 ? zf : zf + 40, "#a7a299");                    // level along the front
   for (let i = 0; i < N; i++) { const za = zTop - (zTop - zBot) * i / N, zz = zTop - (zTop - zBot) * (i + 1) / N, y = yTop - (yTop + 260) * (i + 1) / N;
@@ -919,8 +880,7 @@ function buildHouse() {
     box(ax0 - 5, ax0, yTop, yTop + 180, zTop, zf - 12, "#6b5644");
     for (let i = 0; i < N; i++) { const za = zTop - (zTop - zBot) * i / N, zz = zTop - (zTop - zBot) * (i + 1) / N, y = yTop - (yTop + 260) * (i + 1) / N; box(ax0 - 5, ax0, y, y + 180, zz, za, "#6b5644"); }
     box(ax0 - 5, ax0, -260, -80, zb, zBot, "#6b5644");
-    // v66, the client: "add the alleyway gate inbetween my house and next door to cover the alley": a close-board timber gate in line
-    // with the houses' fronts, 180 high, on two posts (next door's in the front photo is the same kind)
+    // v66: the alley's close-board gate in line with the fronts, 180 high, on two posts
     const zg = zf - 6;
     box(ax0 - 5, ax0 + 5, yTop, yTop + 188, zg - 6, zg + 4, "#5a4636"); box(ax1 - 10, ax1, yTop, yTop + 188, zg - 6, zg + 4, "#5a4636");   // the posts
     box(ax0 + 6, ax1 - 11, yTop + 4, yTop + 182, zg, zg + 2.5, "#6b5644");                                           // the boards
@@ -944,8 +904,7 @@ function buildSun() {
   scene.add(sun, sun.target);
   if (R.HOUSE3) for (let k = 0; k < 6; k++) { const l = new THREE.PointLight("#ffcf98", 0, 7, 2); l.visible = false; l.userData.houseLight = true; if (k >= 4) l.userData.hdOnly = true; scene.add(l); ROOMLIGHTS.push(l);   // v69 (B3): at the start, so the set never changes; V3.57 (N108): six (Fast four), every nearby room's on
     if (k < 3) { const w = new THREE.RectAreaLight("#eef0f2", 0, 1, 1); w.visible = false; w.userData.houseLight = w.userData.win = true; scene.add(w); WINLIGHTS.push(w); }   // V2.39: a window's daylight; V3.57: three
-    /* V2.17 (REAL_PLAN R1, the client: "rendering items in hd"): the room's own light casts its shadows in HD (the bed under its
-       light, the walls keeping it in its room); drawn only when the room changes (autoUpdate off), from the start (no shader rebuilds) */
+    /* V2.17 (R1): the room's own light casts its shadows in HD, drawn only when the room changes (autoUpdate off), from the start */
     if (k === 0) { l.castShadow = true; const ms = BIG_GPU ? 1024 : 512; l.shadow.mapSize.set(ms, ms); l.shadow.bias = -0.002; l.shadow.normalBias = 0.03; l.shadow.radius = 4;
       l.shadow.camera.near = 0.05; l.shadow.camera.far = 7; } }
 }
@@ -970,20 +929,14 @@ function start() {
   tm("state"); setView(S.view, true); tm("view");
   applyCam(S.cam === "look"); applyPad();                                               // v31
   sizeRenderer();
-  // v81: no gl.compile here: it ran before the cutaway's clipping was set, so its 28 programs never matched the first frame's (which made
-  // its own): 60 compiled for 32 used, about 1.7 s of a 15 s start here (more on a phone)
+  // v81: no gl.compile here: before the cutaway's clipping it built programs the first frame never used
   root.classList.add("ready");
-  /* V1.31 (U4): two thirds of the start was building shaders, all at the first frame (the page froze). Now they're built first with
-     compileAsync: in parallel where the browser can (KHR_parallel_shader_compile), the page still answering meanwhile; then the first
-     frame. For the right ones: after the cutaway's clipping is set (v81's lesson), and into a target like the shade's composer when it's
-     on (its shaders differ from the screen's). Never more than 8 s' wait */
+  /* V1.31 (U4): the shaders built first with compileAsync (in parallel where KHR_parallel_shader_compile is), then the first frame; after
+     the cutaway's clipping is set and into the composer's kind of target when it's on. Never more than 8 s */
   const first = () => { if (first.done) return; first.done = true; START_MS.compiled = Math.round(performance.now() - t0); msg.hidden = true;
     requestAnimationFrame(() => { preDraw(); requestAnimationFrame(frame); requestAnimationFrame(() => setTimeout(loadPhotos, 30)); });   // V2.66 (N13): the shadows a frame ahead   // V1.9: the photos once the first picture is up
     if (!/[?&]nocompile\b/.test(location.search)) setTimeout(() => (window.requestIdleCallback || (f => f()))(warmRest, { timeout: 4000 }), 1500); };   // V2.72 (N14): the rest after
-  /* V2.72 (N14), the client 7 Nov 2026: "Review if any further improvements could be made on the way you land into the site": the start
-     built every shader in the scene before the first picture, 108 of them, though the house from outside draws 30 (the living room is
-     hidden from outside, and its hidden parts too). Now it builds what the landing shows (the living room put away first, as the first
-     frame would), and the rest a moment after the first picture, in parallel where the browser can */
+  /* V2.72 (N14): only what the landing shows is built first (the living room put away), the rest after the first picture, in parallel */
   const warmRest = () => { const was = gl.getRenderTarget(); try { if (postLive() && PRE.rtAO) gl.setRenderTarget(PRE.rtAO); compileClipped(camera); } catch (e) {} finally { gl.setRenderTarget(was); } };
   precompile();                                                                         // v35: hidden parts' shaders, while the room's idle (listed before the living room is put away)
   livingFromOutside();                                                                  // V2.72 (N14): what the landing hides, hidden before its shaders are built

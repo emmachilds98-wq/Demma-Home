@@ -1,15 +1,10 @@
-/* V2.74 (REAL_PLAN N18), the client: "allow better controls in overhead and angled views of the house so I can control the screen better
-   on iPhone and pc". V3.08, the client: "When in overhead and angled views it has strange movement too on mobile and pc. Not intuitive":
-   a finger in Angled swung the house round, a drag lagged and slid on, a pinch zoomed off the floor. Now over the house (Outside, a floor's
-   Angled and Overhead) the drags are a map's, the same on a phone and a PC: one finger or a left-drag moves the ground with it (the spot
-   under the finger stays under it; a flick glides on); two fingers pinch to zoom and twist to turn round the spot between them, and in
-   Angled slide up or down together to tilt; the wheel zooms to the pointer; a right-drag (or Shift + drag) turns and tilts round the
-   middle. Angled tilts 10°–85° above the ground, Overhead stays flat. Arrows or W A S D move, Q E turn, + − (R F) zoom; a double-tap on
-   the ground (no room there) centres it */
+/* V2.74 (N18), V3.08: over the house (Outside, a floor's Angled and Overhead) the drags are a map's on a phone and a PC: one finger or a
+   left-drag moves the ground (the spot stays under the finger; a flick glides), two fingers pinch to zoom, twist to turn and in Angled slide
+   to tilt; the wheel zooms to the pointer; a right-drag (or Shift) turns and tilts. Angled 10°–85°, Overhead flat. Arrows or WASD move, Q E
+   turn, + − (R F) zoom; a double-tap on the ground centres it */
 const mapMode = () => walking() ? null : S.view === "house" ? (hfview === "top" ? "top" : "angle")   // V3.09: a room's Above too (the living room's is at an angle)
   : ROOMV() && RMODE === "above" ? "top" : S.view === "room" ? "angle" : null;
-/* V3.15: the rest of the views from above (a room's On its own, the living room's own, Bird's eye, Dolls' house): the keys and the stick glide
-   there too (they stepped a key's repeat at a time); the orbit keeps its drags */
+/* V3.15: the other views from above: the keys and the stick glide too; the orbit keeps its drags */
 const freeMode = () => !walking() && !mapMode() && !eyeView() && !!VIEWS[S.view] ? "free" : null;
 const MAP_POLAR = { top: [0.003, 0.003], angle: [5 * Math.PI / 180, 80 * Math.PI / 180] };   // from straight up: Angled 85° to 10° above the ground
 const mapPolar = m => m === "angle" && S.view === "house" && hfloor === "all" ? [5 * Math.PI / 180, 87 * Math.PI / 180] : MAP_POLAR[m];   // V3.68: Outside down to 3°, eye to eye with the house (a floor's walls would hide it lower)
@@ -86,10 +81,8 @@ function mapTilt(da, db) {   // round the middle: turn by da, lean by db (toward
   if (db && m === "angle") { const sp = new THREE.Spherical().setFromVector3(off); sp.phi = Math.min(hi, Math.max(lo, sp.phi + db)); off.setFromSpherical(sp); }
   camera.position.copy(t).add(off); camera.lookAt(t);
 }
-/* V3.68 (N125), the client 11 Nov 2026: "the pc navigation doesnt feel right still. when looking at the house from the outside, its hard to
-   look into floors easily and swing camera where i want it". On a PC from an angle a left-drag now swings the view round the spot grabbed
-   (the wall, window or floor under the mouse, not the middle of the ground), a right-drag (or Shift + drag) moves the ground; the wheel and a
-   pinch go towards what's under them (they went to the ground behind a wall); Outside goes down to 3° above the ground */
+/* V3.68 (N125): on a PC from an angle a left-drag swings round the spot grabbed, a right-drag (or Shift) moves the ground; the wheel and a
+   pinch go towards what's under them; Outside down to 3° */
 let MAPPK = null;   // the last pick: [x, y, time, point]: the eased wheel asks each frame, one ray a turn of it
 function mapPick(x, y) {   // what's drawn under a point on the screen (within 60 m), else the ground looked at
   if (MAPPK && Math.abs(MAPPK[0] - x) + Math.abs(MAPPK[1] - y) < 3 && performance.now() - MAPPK[2] < 400) return MAPPK[3].clone();
@@ -180,10 +173,8 @@ function mapGlide() {   // the flick slowing to a stop, frame-rate free
   if (MVEL.lengthSq() < 0.01 || MAPPT.size || tween) { MVEL.set(0, 0, 0); return false; }
   mapShift(MVEL.clone().multiplyScalar(dt)); MVEL.multiplyScalar(Math.exp(-5 * dt)); return true;
 }
-/* a double-tap (a double-click) over the house where there's no room to stand in: the view glides to centre on it. V4.5 (N168, N159's rest):
-   on a PC it centres on the spot clicked itself (the roof, a wall, the garden, not the ground's level behind it), and a double-click that
-   lands on the house's outside centres there rather than dropping you through the roof; one on a room's floor or inside stands you there as
-   before. The angle and the distance are kept (the view slides, its limits hold); a phone's double-tap stands you in the same places */
+/* a double-tap over the house where there's no room: the view glides to centre on it. V4.5 (N168): a PC centres on the spot clicked itself,
+   the outside included; a room's floor stands you there. Angle and distance kept */
 const mouseEv = e => !e.pointerType || e.pointerType === "mouse";
 function mapOut(e) {   // a PC's double-click over the house that lands on its outside (or nothing): [the spot] to centre on, else null
   if (!mapMode() || tween || !mouseEv(e)) return null;
@@ -215,10 +206,7 @@ function mapCentre(e, at) {
 { const T = { angle: "From an angle: drag to swing round (a finger moves), right-drag to move, double-click to centre, scroll or pinch to zoom",
               top: "From straight above: drag to move, right-drag or two fingers to turn, double-click to centre, scroll or pinch to zoom" };
   qsa("[data-hfview]").forEach(b => { if (T[b.dataset.hfview]) b.title = T[b.dataset.hfview]; }); }
-/* V3.26, the client 9 Nov 2026: "i want pc to be better ... it is still clunky i want fluid like the mobile version". A phone's pinch
-   zooms smoothly; a mouse wheel jumped a notch at a time (the orbit 3 %, the map 16 %, a walk 11 cm, all in one frame). Now each notch is
-   eased out over about a fifth of a second, frame by frame, and the same total arrives: the room, the map and a walk all glide. A
-   trackpad's pinch (Ctrl + wheel) and a sideways scroll come as they are */
+/* V3.26: each wheel notch eased over about a fifth of a second, the same total; a trackpad's pinch (Ctrl + wheel) and sideways scroll as they are */
 { const EASED = new WeakSet(); let pend = 0, at = null, raf = 0, tw = 0;
   const step = now => { const dt = Math.min(0.25, Math.max(0.001, (now - tw) / 1000)); tw = now;
     let d = pend * (1 - Math.exp(-dt / 0.07)); if (Math.abs(pend - d) < 3) d = pend; pend -= d;
@@ -232,9 +220,8 @@ function mapCentre(e, at) {
     pend += dy; at = [e.clientX, e.clientY, e.shiftKey];
     if (!raf) { tw = performance.now() - 16; raf = requestAnimationFrame(step); }
   }, { capture: true, passive: false }); }
-/* V3.64 (REAL_PLAN N115): no black void. A room's Above and On its own (the living room's too) sit on the page's cream by day and a warm
-   grey by evening, not the black or the sky. The colour only (no picture, no shader); through the HD composer the cream is passed in
-   so that after its AgX and exposure it comes out the same cream as on Fast. The whole house and the rooms from inside keep theirs */
+/* V3.64 (N115): a room's Above and On its own on the page's cream by day, a warm grey by evening; through the HD composer the colour is
+   passed in so it comes out the same as on Fast */
 const BACKDROP = { day: "#f1e9da", evening: "#6b645a" };
 const BD = { on: false, key: "", saved: new THREE.Color(), want: new THREE.Color(), set: new THREE.Color() };
 const backdropView = () => !walking() && (LIVV() ? S.view === "room" || S.view === "livalone" : !!ROOMV() && (RMODE === "above" || RMODE === "alone") || S.view === "house" && hfloor !== "all");   // V3.79 (N144): a floor on its own too (it sat on the sky's blue)

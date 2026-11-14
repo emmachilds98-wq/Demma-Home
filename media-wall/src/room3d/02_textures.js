@@ -167,20 +167,13 @@ const HESSIAN = canvasTex(256, 256, (g, w, h) => {   // v15: hessian's coarse, o
   for (let j = 0; j < h; j += 4) { g.fillStyle = `rgba(255,248,230,${0.08 + r() * 0.12})`; g.fillRect(0, j, w, 1.4); }
 }, true);
 HESSIAN.repeat.set(3, 9);
-/* V3.74, client: "Do more upgrades to the new sofas render quality": the sofa bed's woven chenille, drawn for it (20 cm a tile; cushGeo maps
-   every face in real cm, so the weave is one size on a headrest and on the chaise). The colour: near white, heathered (the yarn's light and
-   dark plies in short slubs), so the piece keeps its colour and Edit's; the relief: the fine pile rows and the slubs standing proud */
-/* V3.75, client: "matches the listing in the green": the listing's close-ups show a fine speckled heather (light and dark plies in loops
-   about a millimetre and a half across, on a slight twill), no ribs: its rows read as corduroy. Each 4 px cell (1.6 mm at 20 cm a tile) is a
-   loop: mostly mid, some light and some dark plies; the twill a faint diagonal; a soft mottle over it. The relief: each loop a soft dome
-   of its own height, offset row to row as the weave is, the twill's ridge under it */
-/* V1.1, the client: "i want better realism, quality and speed": CC0 photos (house/textures, house/SOURCES.md; inline in the data, as the
-   house's) take over the drawn textures above as they arrive. The same texture objects, so no material changes and no new shaders. A
-   colour photo is scaled to its drawn texture's average (at build, export3d.TINT), so every part keeps its colour (yours, the plan's) and only the grain, the
-   weave and the pile are real. A phone without a capable chip keeps the drawn ones */
-/* V1.9 (Phase 4): the photos come after the first picture (their own file on Pages, the page's last script on the shared page): until
-   then each photo's texture is its mean colour (house/textures, photo_meta) and a flat relief, the same texture objects, so nothing
-   recompiles when they land */
+/* V3.74: the sofa bed's woven chenille (20 cm a tile, cushGeo's faces in real cm): near white, heathered in slubs, so the piece
+   keeps its colour; the relief its pile rows and slubs */
+/* V3.75: as the listing's close-ups, a speckled heather of loops on a slight twill, no ribs: each 4 px cell a loop (mid, light or
+   dark ply), a soft dome each, offset row to row */
+/* V1.1: CC0 photos (house/textures, house/SOURCES.md) take over the drawn textures, the same texture objects (no new shader); a photo is
+   scaled to its drawn texture's average at build (export3d.TINT), so only the grain is real. A weak phone keeps the drawn ones */
+/* V1.9: the photos come after the first picture; until then each is its mean colour and a flat relief, so nothing recompiles */
 const PHOTO = {}, PMETA = (R.HOUSE3 && R.HOUSE3.photo_meta) || {}, PWAIT = [];
 const PHOTOS = !(SMALL && !GOOD_PHONE) && !!(PMETA.lr_oak && PMETA.lr_oak.map);
 let photosIn = null, photosDone = false;
@@ -192,8 +185,7 @@ function loadPhotos() {
       for (const t of Object.values(P)) for (const f of ["map", "tmap", "nor", "rough"]) if (typeof t[f] === "string" && t[f][0] === "@") { const [k, g] = t[f].slice(1).split("."); t[f] = P[k][g]; if (P[k].half && P[k].half[g]) (t.half = t.half || {})[f] = P[k].half[g]; }   // a shared picture, sent once
       if (LOWD) for (const t of Object.values(P)) for (const f in t.half || {}) t[f] = t.half[f];   // V2.55 (N3): a phone without a strong chip takes the half-size set
       Object.assign(PHOTO, P); photosDone = true;
-      /* V2.47 (speed, REAL_PLAN N2): each photo is a file of its own; the ones on what you can see now are fetched first, the rest
-         a moment later, so the view you're on looks finished sooner on a phone's connection */
+      /* V2.47 (N2): a file a photo, those on the view first */
       const seen = onScreen(), now = w => w.k === "tile" || texSeen(w.tex, seen), all = PWAIT.splice(0), later = all.filter(w => !now(w));   // V3.59 (N114): the roof's tiles always first (the house opened under a flat beige roof)
       all.filter(now).sort((a, b) => (b.k === "tile") - (a.k === "tile")).forEach(w => w.go());
       setTimeout(() => (window.requestIdleCallback || (f => f()))(() => later.forEach(w => w.go()), { timeout: 2000 }), 1200);
@@ -205,16 +197,13 @@ const whenPhoto = (k, f, fn, tex) => { if (!(PMETA[k] && PMETA[k][f])) return fa
 const TEX_CLONES = new WeakMap();   // a clone shares the picture but needs telling it changed (not in userData: three copies that as JSON)
 const texClone = t => { const c = t.clone(); TEX_CLONES.has(t) ? TEX_CLONES.get(t).push(c) : TEX_CLONES.set(t, [c]); return c; };
 TEX_CLONES.set(OAK_TEX, [OAK_TEX_V]);   // V1.12: the doors' upright oak, cloned before this list (it kept the drawn oak's texture: the site check's WebGL error)
-/* V1.12: dispose first: WebGL2 keeps a texture at the size it was first sent (immutable storage), so a 1024 photo sent into its 4 × 4
-   stand-in never showed (V1.9 to V1.11: the house's photos stayed their mean colour); disposed, it's made again at the photo's size */
+/* V1.12: dispose first: WebGL2 keeps a texture at its first size, so a photo sent into its 4 × 4 stand-in never showed */
 function texPut(tex, img) { const bmp = typeof ImageBitmap !== "undefined" && img instanceof ImageBitmap;   // V1.30: a bitmap comes flipped already
   const all = [tex, ...(TEX_CLONES.get(tex) || [])];
   all.forEach(t => t.dispose());   // every one first: a clone with the same settings shares the stand-in's storage until it's let go too
   for (const t of all) { t.image = img; t.flipY = !bmp; t.needsUpdate = true; gl.initTexture(t); } }
-/* V2.64, the client: "freezing on load after first move": the photos landed together and three sent each to the graphics chip on the
-   first frame that drew it. Now a photo waits its turn, each sent ahead of the frame that shows it (initTexture), the shadows redrawn
-   once at the end. V2.67 (N15): "lag when moving": none while you move (it was one every 120 ms), as many as fit in 6 ms once you've
-   been still 0.2 s; on a walk over 3 s, one a second, and only one on screen */
+/* V2.64, V2.67 (N15): a photo waits its turn, sent ahead of the frame that shows it (initTexture), the shadows redrawn once at the end;
+   none while you move, as many as fit in 6 ms once still 0.2 s; on a walk over 3 s one a second */
 const UPQ = []; let upShade = false, upT = 0, upMv = 0, upGo = 0;
 function texSet(tex, img, shade) { UPQ.push({ tex, img, shade }); }
 function upStep(now, busy) {   // from the frame loop, every frame
@@ -227,8 +216,7 @@ function upStep(now, busy) {   // from the frame loop, every frame
   do { const j = UPQ.splice(i, 1)[0]; i = 0; texPut(j.tex, j.img); if (j.shade) upShade = true; } while (UPQ.length && !busy && performance.now() - t0 < 6);
   upT = now; dirty();
 }
-/* V1.30 (U5): a photo decoded off the page's thread (createImageBitmap; it was decoded as it was first drawn, a stall each), flipped for
-   WebGL as three expects; an <img> where that isn't there */
+/* V1.30 (U5): decoded off the page's thread (createImageBitmap), flipped as three expects; an <img> where that isn't there */
 const DECODED = new Map();   // V2.47: a photo two textures share (the brick's, the pine's) is fetched and decoded once
 function decodeImg(src) { if (!DECODED.has(src)) DECODED.set(src, decodeOnce(src)); return DECODED.get(src); }
 function decodeOnce(src) {
@@ -247,15 +235,12 @@ const SATIN_NRM = flatNormal(); SATIN_NRM.repeat.set(1.2, 1.2);   // N142 (V4.12
 photoInto(OAK_TEX, "lr_oak", "map"); photoInto(OAK_NRM, "lr_oak", "nor");
 photoInto(HESSIAN, "lr_hessian", "map"); photoInto(CORD_NRM, "lr_cord", "nor"); photoInto(ARTEX_NRM, "artex", "nor");
 photoInto(SATIN_NRM, "gloss", "nor"); photoInto(CARPET, "carpet_grey", "tmap"); photoInto(OATMEAL, "carpet", "tmap");   // the house's Carpet012, in your grey and the oatmeal
-/* V4.4 (N141): the sofa bed's chenille (V3.74, V3.75) is made at build (build_textures.py --fabrics, pixel for pixel what was drawn here
-   at every load) and comes with the photos on every device; until then its mean colour and a flat relief, the same texture objects */
+/* V4.4 (N141): the sofa bed's chenille is made at build (build_textures.py --fabrics) and comes with the photos; until then its mean colour */
 const fabricTex = (k, srgb, fill) => { const t = canvasTex(4, 4, g => { g.fillStyle = fill; g.fillRect(0, 0, 4, 4); }, srgb);
   whenPhoto(k, "map", src => decodeImg(src).then(im => texSet(t, im)), t); return t; };
 const CHENILLE = fabricTex("chenille", true, (PMETA.chenille && PMETA.chenille.avg) || "#e4e5e1"), CHENILLE_B = fabricTex("chenille_pile", false, "#808080");
-// v16: the client's light box is an IKEA OBEGRÄNSAD: a black panel with a 16 x 16 grid of white LEDs that shows blocky black-and-white
-// pictures, "like pharmacy LED ads". Drawn showing a pixel music note; the unlit LEDs are dark grey dots on the black face.
-// v16: the cap's embroidery. v37: drawn as rows of gold stitching in the shape of the client's cap (four lines on the crown, fourteen
-// on the brim), not as words: on a transparent ground, laid over the green crown and the brown brim
+// v16: the light box, an IKEA OBEGRÄNSAD (16 × 16 white LEDs on black), showing a pixel music note.
+// v37: the cap's embroidery as rows of gold stitching (four lines on the crown, fourteen on the brim), on a transparent ground
 const stitchTex = (w, h, rows) => canvasTex(w, h, (g, W, H) => {
   g.clearRect(0, 0, W, H); g.fillStyle = "#e2c06a"; const r = rnd(rows.length * 7), lh = H / (rows.length + 1);
   rows.forEach((f, i) => { const y = lh * (i + 0.75), lw = W * f; let x = (W - lw) / 2;

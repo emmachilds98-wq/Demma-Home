@@ -1,13 +1,9 @@
 let houseG = null;     // v54: the whole house, drafted (The whole house view)
 const HOUSEV = n => n === "house" || (!!R.HOUSE3 && !!(VIEWS[n] || {}).box);   // v60: the views that show the built house (a room's own, from inside it)
 const ROOMV = () => R.HOUSE3 && (VIEWS[S.view] || {}).box;                       // v61: in one of the house's rooms: its walls keep the eye in
-/* v78b, the client: "add the viewing buttons to the living room also, it doesnt have the in it, above, on its own buttons like all other
-   rooms": the living room is drawn on its own (not in the house), so its three are its own views: from the window, the whole room from
-   above, and the room from the hall's corner with its ceiling off */
+/* v78b: the living room is drawn on its own, so its In it, Above and On its own are its own views */
 const LIV_RMODE = { in: "window", stand: "livstand", above: "room", alone: "livalone" };
-/* V1.6, the client: "give every room a wide angle within the room as if you're there viewing option": Be there, in every room (the living
-   room too): from its door at standing eye height, a wide lens, level; dragging looks round from where you stand (View's "Look round from
-   here"), put back as it was on the way out */
+/* V1.6: Be there, in every room: from its door at eye height, a wide lens, level; a drag looks round from there */
 const STAND_FOV = 80, STAND_EYE = 160, GO_MS = 550;   // V2.42: a double-click's glide there (0.9 s before)
 let standCam = null, standSpot = null;   // V1.53: standSpot, where a double-click or the figure puts you down ([x, z, dx, dz], room cm)
 function standLook(on) {
@@ -25,9 +21,8 @@ function standIn() {
   flyTo([x, fy + STAND_EYE, z], [v.at[0] + x - v.eye[0], fy + STAND_EYE - 10, v.at[2] + z - v.eye[2]], STAND_FOV, false, false, 600);
 }
 const LIVV = () => !HOUSEV(S.view) && !!VIEWS[S.view];
-/* V2.43, the client: "i want the first person pov like a game to be the main in the room way to look at the room": a room you pick (its
-   name on the house, or by name) stands you in it at your eyes, to walk and look round (Be there; the living room's Standing in it); In
-   it, Above and On its own stay a tap away. R3D.set, the tour and links keep each view as it is */
+/* V2.43: a room you pick stands you in it at your eyes (Be there); In it, Above and On its own a tap away. R3D.set, the tour and links
+   keep each view as it is */
 function goRoom(v, now, after) {
   if (v === "room") v = "livstand";
   if (!now) return readyThen(v, () => { goRoom(v, true); if (after) after(); });   // V3.23: its shaders built first where they aren't (no freeze on a PC)
@@ -35,8 +30,7 @@ function goRoom(v, now, after) {
   setView(v); if (VIEWS[v] && VIEWS[v].box) setRmode("stand");
   if (tween && far) tween.dur = Math.max(tween.dur, 1100);   // from the whole house, a glide in, not a dive
 }
-/* V2.96 (N39): a room is a step in the history, so the phone's back swipe and the browser's Back bring you out to the house, not off the
-   site; another room takes that step's place, the house gives it back. setView calls roomHist; a sheet's own steps sit on top (page_router) */
+/* V2.96 (N39): a room is a step in the history, so Back brings you out to the house, not off the site (setView calls roomHist) */
 const HIST = Math.random().toString(36).slice(2);
 let histPop = false, histBack = false;
 function roomHist() {
@@ -67,11 +61,8 @@ function outNeed(k) { const f = OUTLAZY[k]; if (!f) return; delete OUTLAZY[k]; f
 let hfloor = "all", hidReal = [], hidLay = [], hfview = "angle";   // v74: a floor seen from an angle or from straight above
 const ROOMLIGHTS = [], WINLIGHTS = [];   // v69 (B3): warm ceiling lights round the room you're in (a fixed set: no shader rebuilds); V2.39: and windows'. V3.57: six and three (Fast four and none)
 let roomKey = "";
-/* V3.57 (N108), the client: "From room to room the lights shouldn't turn off and on. Keep all lights on and keep the warm lighting in all
-   rooms so things aren't overly bright." Every room's lights are on, each at its own room's level (its size, its bulbs), whichever room
-   you're in: the set holds the room's own and its nearest neighbours' (on its floor first), so walking through a door nothing dims or
-   brightens, the room behind you as lit as when you stood in it. Each light reaches about its own room (less spill through the walls).
-   V3.40's half-second fade between the rooms' levels is gone: there is nothing left to fade */
+/* V3.57 (N108): every room's lights on, each at its own room's level, whichever room you're in: the set holds the room's own and its
+   nearest neighbours' (its floor first), so nothing dims or brightens through a door; each light reaches about its own room */
 const LK = 0.65, WK = 40;   // V3.57: the ceiling lights and the windows with the neighbours on: about as bright as before, one room lit alone
 function roomArea(id) { const r = R.HOUSE3.rooms && R.HOUSE3.rooms[id]; return r ? (r[1] - r[0]) * (r[3] - r[2]) / 1e4 : 10; }
 function roomReach(id) { const r = R.HOUSE3.rooms && R.HOUSE3.rooms[id]; return r ? Math.min(7, Math.max(3.6, Math.hypot(r[1] - r[0], r[3] - r[2]) * M * 1.1 + 1.2)) : 7; }
@@ -84,9 +75,8 @@ function lightAt(l, L, day, hd) {   // one light, as its own room has it
   l.position.copy(v3(L.x, L.y - drop, L.z)); l.intensity = (day ? 3 : hd ? 8.6 : 5.4) * LK * ks * fb.lux * (L.drop != null ? 0.6 : 1);   // two battens share the room's light; LK: the neighbours on too, each a little less (as bright as one room lit alone)
   if (fb.k) l.color.set(kelvinHex(+fb.k)); else l.color.copy(warmColour());   // V3.19: the living room's bulbs' colour (one Warmth for the house) unless the room's own
 }
-/* V3.76 (N116): a ceiling bulb reads lit, and the ceiling round it a faint warm glow, as a real bulb throws (the point light alone left
-   a flat ceiling on the paths without the glow pass). One shared additive disc a pendant, in the room's own pendant group (so it's culled
-   and hidden with it); shown in a room as a person, never from outside or above (the first picture builds no shader for it) */
+/* V3.76 (N116): a lit bulb's faint warm glow on the ceiling round it: one shared additive disc a pendant, in the room's pendant group;
+   shown in a room only (no shader in the first picture) */
 let HALO = null;
 function bulbHalos() {
   if (HALO || !R.HOUSE3 || !Object.keys(FIN_PEND).length) return HALO;
@@ -106,8 +96,7 @@ function haloShow() {
   for (const me of h.ms) me.visible = on; if (!on) return;
   h.mat.color.copy(warmColour()); h.mat.opacity = day ? 0.1 : 0.26;
 }
-/* v69, the client: "increasing the render quality to be more realistic like our living room version": in a room of the house, its
-   ceiling lights on, and the sun's shadow box moved over that room (it covered the living room only) */
+/* v69: in a room of the house, its ceiling lights on and the sun's shadow box over it */
 function placeRoomLights() {
   if (!ROOMLIGHTS.length || !sun) return;
   haloShow();   // V3.76 (N116)
@@ -122,9 +111,8 @@ function placeRoomLights() {
     list.sort((p, q) => p[0] - q[0]); }
   const n = hd ? ROOMLIGHTS.length : Math.min(4, ROOMLIGHTS.length);   // Fast: four (20_go.js: the last two are HD's)
   ROOMLIGHTS.forEach((l, k) => { const L = k < n && list[k] && list[k][1]; l.visible = !!L; if (L) lightAt(l, L, day, hd); });
-  /* V2.39 (REAL_PLAN R1, each window's daylight): a window lights the room as the sky does through it, an area light the opening's size
-     on the wall's inside face, facing in and a little down; by day the living room window's daylight, by evening its dusk. V3.57: the
-     room's own two biggest, then the nearest room's biggest (it stays lit as you go through its door) */
+  /* V2.39 (R1): a window lights the room as the sky does through it, an area light the opening's size facing in and a little down.
+     V3.57: the room's two biggest, then the nearest room's biggest */
   const op = it => it.op && it.op.axis === "x" && it.op, sz = it => (it.op.b - it.op.a) * (it.op.y1 - it.op.y0);
   let ws = [];
   if (rr) { const cx = (b[0] + b[1]) / 2, cz = (b[4] + b[5]) / 2, all = Object.values(R.HOUSE3.items || {}).filter(it => it.k === "window" && op(it) && R.HOUSE3.rooms[it.r]);
@@ -140,29 +128,22 @@ function placeRoomLights() {
   if (key === roomKey) return; roomKey = key;
   const d = b ? v3((b[0] + b[1]) / 2, 0, (b[4] + b[5]) / 2).sub(sun.userData.t0).setY(0) : new THREE.Vector3();
   sun.position.copy(sun.userData.p0).add(d); sun.target.position.copy(sun.userData.t0).add(d);
-  /* V3.33 (N85): a room whose biggest window looks out of the front has the front's sun (from the south-south-west, as outside), not the
-     living room's morning sun from the back, which the room's back wall stopped: its window's patch on the floor, as the living room's */
+  /* V3.33 (N85): a room whose biggest window looks out of the front has the front's sun, its patch on the floor */
   if (ws[0] && ws[0].r === rid && ws[0].op.line > (rr[2] + rr[3]) / 2) { const t = v3((b[0] + b[1]) / 2, b[2], (b[4] + b[5]) / 2);
     sun.target.position.copy(t); sun.position.copy(t).addScaledVector(dayLight.position.clone().sub(dayLight.target.position).normalize(), sun.userData.p0.distanceTo(sun.userData.t0)); }
   sun.target.updateMatrixWorld();
   reshadow();
 }
-/* v69 (B3) had each room's own reflections caught when you entered it (a cube camera round the whole scene, then every house material
-   recompiled). v73, the client: "consistent crashing on PC when accessing rooms": that froze the page for seconds each time (and leaked
-   a texture a visit), long enough for a PC's graphics driver to give up; phones never ran it. Now one neutral room reflection, made once,
-   is on the house's materials from the start (no recompiles), each surface reflecting by its finish */
+/* v73: one neutral room reflection, made once, on the house's materials from the start (v69's per-room cube camera froze PCs) */
 let HMATS = null, HENV = null;
-/* V1.31 (U6): the house's materials one-sided (every piece is a closed solid): half the drawing where faces turn away, and no shadow
-   acne from back faces; ?double for the old way, to compare */
+/* V1.31 (U6): the house's materials one-sided (every piece a closed solid); ?double for the old way */
 const HOUSE_SIDE = /[?&]double\b/.test(location.search) ? THREE.DoubleSide : THREE.FrontSide;
 function houseEnv() {
   if (!HENV) { const pm = new THREE.PMREMGenerator(gl), rs = new RoomEnvironment(); HENV = pm.fromScene(rs, 0.04).texture; pm.dispose(); rs.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
   return HENV;
 }
-/* V3.57 (N107), the client: "continue further shader and detail improvements": the hall's and the bathroom's mirrors showed a painted
-   sheen (a grey-blue gradient), never the room. Standing in one of those rooms in HD (drawn through the shade's composer, so the frame's shaders are already the kind a reflection draws with), once you've paused, the room is drawn round the
-   mirror, a face a frame (six frames, never while you move), and blurred as the house's own reflection is, so the mirror shows its room;
-   no shader added (the same kind and size of reflection). Made again for the evening */
+/* V3.57 (N107): the hall's and bathroom's mirrors show their room: in HD, once you've paused, the room drawn round the mirror a face a
+   frame (six, never while you move), blurred as the house's reflection; no shader added. Again for the evening */
 const MIR = { done: {}, face: 0, key: null, cc: null, rt: null, white: null };
 const NOMIR = /[?&]nomirror\b/.test(location.search);   // ?nomirror: the painted sheen, as before
 const MIRROR_AT = { hall: "hall.mirror", bathroom: "bath.mirror" };
@@ -188,9 +169,8 @@ function mirrorUse(m, tex) {
 }
 const finishEnv = m => m.userData.hk === "glass" ? (S.tod === "day" ? 0.3 : 0.75) : m.userData.hk === "screen" ? 0.18 : m.roughness <= 0.3 ? 0.9 : m.roughness <= 0.6 ? 0.6 : 0.45;   // v72 (B3): gloss, satin, matt; V3.32 (N82): a screen that's off dark glass, as the living room's TV (the bright stock room in it read as a whiteboard)
 let HENVK = 1;
-/* V3.52 (N104): the windows' glass by the time of day. Frosted (the bathroom's, the WC's) glows with the daylight through it, as the
-   photo, instead of showing the garden misted; by evening it's dark frosted glass with the room's light on it (it was flat navy).
-   Clear glass by evening catches more of the room, as a real pane at night. Colours and strengths only: no shader built */
+/* V3.52 (N104): the glass by the time of day: frosted glows by day, dark with the room's light by evening; clear catches more of the room
+   by evening. Colours and strengths only */
 function glassTod(m) {
   const k = m.userData.hk, day = S.tod === "day";
   if (k === "glass_frost") { m.opacity = 0.97; m.depthWrite = true;   // all but opaque: it hides the dusk veil behind it (the veil drew over it as flat navy)
@@ -198,8 +178,7 @@ function glassTod(m) {
   if (k === "glass") m.opacity = day ? 0.14 : 0.3;
   if (m.envMap && (k === "glass" || k === "glass_frost")) m.envMapIntensity = finishEnv(m) * HENVK;
 }
-/* the street's evening (20_go buildStreet): its lamps and about a third of the windows opposite lit warm, so the view out of the front
-   rooms is a street at dusk, not a dark grey wall. An emissive colour each (a uniform): no shader built */
+/* the street's evening (buildStreet): its lamps and a third of the windows opposite lit warm; an emissive each, no shader built */
 const STREET_LIT = [];
 const streetTod = () => { const eve = S.tod !== "day"; for (const m of STREET_LIT) { m.emissive.set(m.userData.glowCol); m.emissiveIntensity = eve ? m.userData.glow : 0; } };
 const glassAll = () => { if (HMATS) for (const k of ["glass", "glass_frost"]) if (HMATS[k]) glassTod(HMATS[k]); streetTod(); };
@@ -211,15 +190,13 @@ function houseEnvK(k) {   // V2.21 (REAL_PLAN R1): the house's reflections scale
 let RMODE = "in", hidMode = [], RPLANES = [];   // v71: how a room of the house is seen (in it, above, on its own) and what that put away
 const FIN_PEND = {};   // V2.15 (FINISHES F5): each room's own ceiling light, its own group (20_go.js), for a fitting to stand in for it
 const HPARTS = {};     // v68: the house's moving pieces (the master bedroom's ottoman lid), each its own group on its hinge
-/* v55: the floor picker. All lifts the floors apart (the first floor up, the lower ground floor down) so each one shows; First, Ground and
-   Lower show the house up to that floor, the ones above taken off (Lower takes the living room itself off too); only the top floor's
-   labels show, or every floor's in All */
+/* v55: the floor picker. All lifts the floors apart; First, Ground and Lower show the house up to that floor (Lower takes the living
+   room off too); only the top floor's labels show, or every floor's in All */
 function applyFloors() {
   if (!houseG) return;
   const on = S.view === "house", sel = on ? hfloor : "all", ex = sel === "all" && !R.HOUSE3 ? 330 : 0;   // v58: Outside, the house closed (no lifting)
   if (houseG.visible) { if (!on || S.hgarden) outNeed("out"); if (!on || S.hstreet) outNeed("nextThings"); }   // N181: built the first time they show
-  /* V2.10, the client: "when in overhead and angled views, sometimes walls are clipping out when not necessary": the first floor on its
-     own kept its roof's group (its gable, the dormer's cheeks and the slopes are in it) with only the roof's coverings and the ceilings off */
+  /* V2.10: the first floor on its own keeps its roof's group (gable, dormer cheeks, slopes), only the coverings and ceilings off */
   const roofWalls = sel === "first";
   if (HFLOOR.roof) HFLOOR.roof.visible = sel === "all" || roofWalls;
   if (HMATS) for (const k of ["tile", "ridge", "felt", "lead", "ceiling", "artex", "shade_ceil"]) { const m = HMATS[k]; if (!m) continue;
@@ -241,9 +218,7 @@ function applyFloors() {
   if (on && sel === "lower") scene.children.forEach(o => { if (o !== houseG && o !== garden3d && o !== lightRig && !o.isLight && o !== (sun && sun.target) && o.visible) { o.visible = false; hidReal.push(o); } });
   qsa("[data-hfloor]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.hfloor === hfloor)));
   const fl = qs("#r3d-floors"); if (fl) fl.hidden = !on;
-  // v64, client: "make sure I can take this off when needed so I can look at just my own house" and "whole house plus gardens": in
-  // The whole house the gardens (both, the alley, the street in front) and next door only when switched on; inside a room, the gardens
-  // show through its windows
+  // v64: in The whole house the gardens and next door only when switched on; inside a room they show through its windows
   const showG = !on || !!S.hgarden;
   if (HFLOOR.out) HFLOOR.out.visible = showG;
   if (garden3d && houseG.visible) garden3d.visible = showG;
@@ -252,18 +227,15 @@ function applyFloors() {
   qsa("[data-htog]").forEach(b => b.setAttribute("aria-pressed", String(!!S[b.dataset.htog])));
   const fv = qs("#r3d-fview"); if (fv) { fv.hidden = !on; qsa("[data-hfview]", fv).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.hfview === hfview))); }   // v74
   syncRmode();   // v71
-  /* v73, the client: "still extremely slow": standing in a room, only what can be seen from it is drawn: its own floor, the group with
-     its ceiling (the lower floor's are in the ground floor's, the first floor's in the roof's), the floor its stairs lead to (the landing,
-     the hall), the outside through its windows; the living room only from the landing (v81: down the stairwell) */
+  /* v73: standing in a room, only what can be seen from it is drawn: its floor, the group with its ceiling, the floor its stairs lead to,
+     the outside through its windows; the living room only from the landing (v81: down the stairwell) */
   if (INSIDE() && R.HOUSE3.rooms) {   // V1.10: Be there too (it drew the whole house)
     const rid = VIEW_ROOM[S.view], rr = R.HOUSE3.rooms[rid];
     if (rr) {
       const fk = { "-260": "lower", "0": "ground", "260": "first" }[String(rr[4])];
       const see = new Set([fk, { lower: "ground", ground: "first", first: "roof" }[fk], "out", "street", "nextThings"]);   // V1.47: the outside by evening too, in the evening's light (V1.15 hid it: it stayed in daylight)
       for (const k of ["street", "nextThings"]) if (HFLOOR[k]) HFLOOR[k].visible = true;   // V1.10: next door and the street through the windows
-      /* V3.49 (N101), the client: "walls sometimes glitch out and appear as brick ... in the doorway to bedroom three looking down the stairs":
-         a first-floor room with its door open onto the landing sees down the stairwell too, but only the landing drew the ground floor and
-         the living room's flight there, so the party wall's bare brick showed below the banister. Such a room now draws them as the landing does */
+      /* V3.49 (N101): a first-floor room with its door open onto the landing sees down the stairwell too, so it draws what the landing does */
       const well = rid === "landing" || (fk === "first" && roomSees([rid]).has("landing"));
       if (well) see.add("ground");
       if (rid === "hall") see.add("lower");
@@ -281,8 +253,7 @@ function applyFloors() {
     }
   }
   if (houseG && R.HOUSE3 && S.view === "livstand") {   // V1.38: standing in the living room with its door open: the ground floor through it
-    /* V2.0, the client: "ensure ceilings are complete on first floor": looking up the stairs from the room, the landing and its ceiling
-       (it was black there); the house's floors cut away below the landing over the room (its slab lay on the room's ceiling) */
+    /* V2.0: looking up the stairs, the landing and its ceiling; the floors cut away below the landing over the room */
     const open = doorOpen(HPARTS["door.living_door"]); houseG.visible = true;
     for (const [k, g] of Object.entries(HFLOOR)) if (!(k === "first" || k === "roof" || (open && k === "ground")) && g.visible) { g.visible = false; hidReal.push(g); }
   }
@@ -292,10 +263,9 @@ function applyFloors() {
   requestAnimationFrame(() => { measureShift(!!(window.DemmaTools && window.DemmaTools.isOpen())); fadeRows(true); });   // V1.30: the rows above may have changed
   dirty();
 }
-/* V2.71 (REAL_PLAN N16), the client: "minimise movement and view lag when moving in first person": standing in a room, of the floors
-   still shown only that room is drawn, the rooms seen from it (through an open or glazed door and the next, at a flight's top or foot) and the walls, floors' slabs, stairs and roof (each floor's mesh of a material keeps a room's pieces together: 20_go.js put);
-   the outside only where one of those rooms has a window or a door out. A room left out is cut from its meshes by their draw range
-   (a span past a big gap drawn by a twin sharing its buffers, at most three); a door that swings asks again (19_controls swingDoor) */
+/* V2.71 (N16): standing in a room, of the floors shown only that room is drawn, the rooms seen from it (through open or glazed doors, at a
+   flight's ends) and the walls, slabs, stairs and roof; the outside only where one has a window or a door out. A room left out is cut from
+   its meshes by draw range (at most three twins sharing a buffer); a door that swings asks again (swingDoor) */
 const RLINK = [["lower_landing", "lower_stairs", 0], ["lower_stairs", "hall", 1], ["hall", "landing", 2]];   // open to each other, and what it costs: one space (the lower flight), the short flight down, the long flight up
 let RDOORS = null, CULLM = [], CULLG = [], cullKey = "";
 function roomDoors() {   // each door's part and the rooms either side ("out": outside); and which rooms see out (a window, a door out, the porch's front door)
@@ -374,9 +344,8 @@ function roomCull(again) {   // again: a door swung (only this part of applyFloo
   if (again) dirty();
   if (key !== cullKey) { cullKey = key; reshadow(); }
 }
-/* V3.68 (N125), the client: "its hard to look into floors easily": a floor seen from low down showed its front wall. A floor on its own
-   is now cut at its ceiling, and as the eye comes down below that, a metre under the eye (not under 90 cm over the floor), in 20 cm
-   steps, so you always look in over its walls; from higher up nothing changes. One plane, its number moved: no shader built */
+/* V3.68 (N125): a floor on its own is cut at its ceiling, and below that a metre under the eye in 20 cm steps, so you look in over its
+   walls. One plane moved: no shader built */
 function floorCut(now) {
   const fy = { first: 260, ground: 0, lower: -260 }[hfloor]; if (!FLCLIP || fy == null || S.view !== "house") return false;
   const top = fy + (R.HOUSE3.ceil || 235) + 3, c = Math.min(top, Math.max(fy + 90, Math.round((camera.position.y / M - 100) / 20) * 20)) * M;
@@ -384,11 +353,9 @@ function floorCut(now) {
   FLCLIP[0].constant = c; if (!now) reshadow(); return true;
 }
 let LIVCLIP = null, livClipOn = false, FLCLIP = null;   // V2.0: in the living room's own view the house only above the landing's floor over the room
-/* V2.64, the client's iPhone froze on the first tap on a floor: three builds a shader for each number of cutting planes, so the first
-   floor's cut (1 plane), Above (1) and On its own (6) each built the house's 44 shaders again on the frame you tapped (seconds on a
-   phone). The house's materials now always carry 6 planes, the unused ones far off cutting nothing, so a cut changes numbers, not
-   shaders; the living room's own view (2 planes that cut only where both do) is its own set, built by the rooms' warm-up. CLIPSRC: the
-   planes as asked for (the code compares them) */
+/* V2.64: three builds a shader for each number of cutting planes, so the house's materials always carry 6 (the unused far off) and a cut
+   changes numbers, not shaders; the living room's own view (2 planes, cutting where both do) is its own set, built by the warm-up.
+   CLIPSRC: the planes as asked for */
 const CLIPSRC = new WeakMap(), NOCUT = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e4), PADDED = new WeakMap();
 function houseClip(m, P, inter) {
   CLIPSRC.set(m, P);
@@ -415,8 +382,8 @@ document.addEventListener("scroll", e => { if (e.target.classList && e.target.cl
 let hereRoom = null;                                   // V1.60: the room you stand in (walkRoom, goStand)
 const HERE_NAME = { lower_landing: "Lower landing", lower_stairs: "Lower stairs" };
 function brandPlace() {
-  /* V1.30 (U3): only the tools that work where you are: in the house's views Room and Edit (the living room's) step aside, and Look keeps only the house's colours (V2.13); in the
-     house's own rooms Plan · Build · Buy too (the media wall's plan) */
+  /* V1.30 (U3): only the tools that work where you are: in the house's views Room and Edit step aside and Look keeps the house's colours;
+     in the house's rooms Plan · Build · Buy too */
   const hv = HOUSEV(S.view), hr = !!ROOMV(); document.body.classList.toggle("hv", hv); document.body.classList.toggle("hroom", hr);
   if (hv && window.DemmaTools && DemmaTools.isOpen() && ["room"].some(k => { const d = qs("#r3d-dp-" + k); return d && !d.hidden; })) DemmaTools.close();
   const el = document.getElementById("brand-place"); if (!el) return;
@@ -428,15 +395,11 @@ function brandPlace() {
   el.textContent = t;
   canvas.setAttribute("aria-label", `${t} in 3D: drag to look round; in a room, scroll or W and S walk, the left and right arrows or Q and E turn, A and D step aside, Ctrl + scroll the lens`);   // V1.43: says where you are (it always said the living room)
 }
-/* v64, client: "by floor individually where you can choose to pick a room to focus on": on a floor, its rooms as buttons; a room with
-   its own view goes into it, the others are looked at from above */
+/* v64: on a floor, its rooms as buttons; a room with its own view goes into it, the others are seen from above */
 const ROOM_VIEW = { living: "room", kitchen: "kitchen", bed3: "office", bed2: "bed2", master: "master", bathroom: "bath",
   landing: "landing", hall: "hall", garage: "garage", wc: "wc" };   // v66: every room a person stands in has its own view
-/* v74, the client: "let me view overhead and the default view for each floor as a whole too": a floor picked (or the whole house),
-   Angled looks at it from the house view's direction, Overhead from straight above, each far enough to take in all its rooms */
-/* V1.54, the client: "make sure this new view mode works on iPhones and most mobiles": on a phone the floors' and rooms' buttons take the
-   top of the screen and the dock its foot, so a view from above is framed into what's left between them: [its share of the height, how
-   far its middle sits below the screen's (px)] */
+/* v74: a floor (or the whole house) picked, Angled looks from the house view's direction, Overhead straight down, far enough for all its rooms */
+/* V1.54: on a phone a view from above is framed between the top buttons and the dock: [its share of the height, its middle's drop (px)] */
 function freeFrame() {
   if (camera.aspect >= 1 || typeof stage === "undefined" || !stage) return [1, 0];
   const st = stage.getBoundingClientRect(), H = st.height; let top = 0, bot = 0;
@@ -451,8 +414,7 @@ function fromAbove(cx, y, cz, dist, fov) {  // straight down on (cx, y, cz) from
   const [k, sh] = freeFrame(), D = dist / k, oz = house ? 0 : -sh * 2 * D * Math.tan(fitFov(fov) * Math.PI / 360) / Math.max(1, stage ? stage.clientHeight : 1);   // the screen's up is -z
   flyTo([cx, y + D, cz + 1 + oz], [cx, y, cz + oz], fov, true, REDUCE);
 }
-/* V4.2 (N159), the client: "improve views where needed": the whole house from outside framed to the screen, the house (on its own since
-   V4.1) filling it on a phone's tall screen as on a PC's wide one, from the same side as before (VIEWS.house's first eye and point) */
+/* V4.2 (N159): the whole house framed to the screen, on a phone's tall screen as on a PC's wide one, from VIEWS.house's side */
 function fitHouseView() {
   if (!R.HOUSE3 || hfloor !== "all") return false;
   const H = VIEWS.house; if (!fitHouseView.e0) { fitHouseView.e0 = H.eye.slice(); fitHouseView.a0 = H.at.slice(); }
@@ -460,8 +422,7 @@ function fitHouseView() {
   const x0 = Math.min(...rs.map(r => r[0])), x1 = Math.max(...rs.map(r => r[1])), z0 = Math.min(...rs.map(r => r[2])), z1 = Math.max(...rs.map(r => r[3]));
   const c = [(x0 + x1) / 2, 380, (z0 + z1) / 2], e0 = fitHouseView.e0, a0 = fitHouseView.a0;
   const dir = new THREE.Vector3(e0[0] - a0[0], e0[1] - a0[1], e0[2] - a0[2]).normalize();
-  // the house's box on screen: as near as its height fits between the top row and the dock and its width in 80% of the screen (a binary
-  // search on the distance), then moved so it sits in the middle of that space
+  // the house's box between the top row and the dock, its width in 80% of the screen (a binary search on the distance), then centred there
   const cam = camera.clone(), cw = v3(c[0], c[1], c[2]), pts = [];
   for (let k = 0; k < 8; k++) pts.push(v3(k & 1 ? x1 : x0, k & 2 ? 860 : 0, k & 4 ? z1 : z0));
   const span = (D, P = pts) => { cam.position.copy(v3(c[0] + dir.x * D, c[1] + dir.y * D, c[2] + dir.z * D)); cam.lookAt(cw); cam.updateMatrixWorld(); cam.updateProjectionMatrix();
@@ -488,8 +449,7 @@ function floorCam() {
   const x0 = Math.min(...rs.map(r => r[0])), x1 = Math.max(...rs.map(r => r[1])), z0 = Math.min(...rs.map(r => r[2])), z1 = Math.max(...rs.map(r => r[3]));
   const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0, y = hfloor === "all" ? 540 : fy;
   const fit = (fov, sx, sy) => { const v = fitFov(fov) * Math.PI / 360, h = Math.atan(Math.tan(v) * camera.aspect); return (camera.aspect < 1 ? 1.12 : 1.25) * Math.max(sx / 2 / Math.tan(h), sy / 2 / Math.tan(v)); };
-  // V1.53, the client: "improve overhead views": a long lens from high up (the walls stand straight, not leaning out), and from above (flyTo's
-  // fourth is "above": REDUCE there had held the eye to 6 m, so a floor never fitted)
+  // V1.53: overhead a long lens from high up (the walls straight); flyTo's fourth is "above" (REDUCE held the eye to 6 m)
   if (hfview === "top") { fromAbove(cx, y, cz, 60 + fit(26, w, d), 26); return; }   // V1.29 (U2): flown, not cut
   const H = VIEWS.house, dir = new THREE.Vector3(H.eye[0] - H.at[0], H.eye[1] - H.at[1], H.eye[2] - H.at[2]).normalize();
   const r = 0.5 * Math.hypot(w, d, 235), v = 25 * Math.PI / 180, hh = Math.atan(Math.tan(v) * camera.aspect), D = (camera.aspect < 1 ? 0.5 : 0.9) * r / Math.sin(Math.min(v, hh));   // the floors below show under it too (V1.53: a phone closer, now it's not held to 6 m)

@@ -1,22 +1,17 @@
 /* ---------------------------------------------------------------- lights */
 const lights = { strip: [], uprights: [], bias: [], bar1: [], bar2: [], lamp: [], tv: [], fill: [] };
 const hemi = new THREE.HemisphereLight("#e2e0da", "#b39a7c", 0.05); scene.add(hemi);
-// v58: daylight on the outside of the house (The whole house only; kept in the scene at 0 otherwise, so no shader rebuilds): the sky's
-// fill and the sun from the south-west over the front (the back faces 14° east of north)
+// v58: daylight on the house's outside (The whole house only; kept at 0 otherwise, so no rebuild): the sky's fill and the sun from the south-west
 const skyFill = new THREE.HemisphereLight("#dfe8f1", "#5d5446", 0); scene.add(skyFill);
 const dayLight = { position: v3(700, 1400, 1100), target: { position: v3(233, 0, 80) } };   // V1.7: only where the outside's sun is (the sun lights it): a light at 0 here was in every living room shader
-/* V1.3, the client: "continue upgrading the 3d model of the house" (BUILD_SPEC phase 4, the start of 5): outside, the house stands under
-   a real sky (three's Sky, its sun where the day light comes from) on ground that runs to a hazy horizon: the street's level in front of
-   the back wall, the garden's behind it, as the land steps down. Only in The whole house from outside (a floor shown keeps its cutaway
-   clear); built the first time */
+/* V1.3: outside, a real sky (three's Sky, its sun where the day light comes from) over ground to a hazy horizon, the street's level in
+   front, the garden's behind. The whole house from outside only; built the first time */
 const OUT = { sky: null, ground: null, sunOut: false };
 const sunLux = () => S.view === "house" || (S.quality === "hd" && S.tod === "day") ? SUNCFG.lux * (OUT.sunOut ? SUNCFG.out : 1) : 0;   // V3.19: the whole house in sun in Fast too (it was a third as bright as in HD; the sun is in every shader already)
-/* V1.5 (BUILD_SPEC phase 5): and out of the living room's window by day, from inside it: the same sky and land, the garden, its trees and
-   the building past the fence, in place of the plain sky (v56's stand-in until the outside was modelled); by evening the dusk plane */
+/* V1.5: the same sky and land out of the rooms' windows by day; by evening the dusk plane */
 const INSIDE = () => !!ROOMV() && (RMODE === "in" || RMODE === "stand");   // V1.10: standing in one of the house's rooms (In it, Be there)
 const roomOut = () => !!(R.HOUSE3 && ((S.tod === "day" && !HOUSEV(S.view) && !(VIEWS[S.view] || {}).above) || INSIDE()));   // V1.10: and every room's windows; V1.47, the client: "see in and out of the windows at all times": the house's rooms by evening too, through a dusk veil (the living room keeps its dusk picture)
-/* V1.47: by evening, seen from a room of the house, the outside through its windows is dusk: a see-through dark blue shell just outside
-   the house's walls (drawn last, never in a tap's way), so the garden, next door and the hill show, dimmed, as at dusk */
+/* V1.47: by evening the outside through a room's windows is dusk: a see-through dark blue shell just outside the walls, drawn last */
 let VEIL = null;
 function duskVeil(on) {
   if (!on && !VEIL) return;
@@ -25,13 +20,9 @@ function duskVeil(on) {
     VEIL.material.clippingPlanes = []; VEIL.position.copy(v3((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2)); VEIL.raycast = () => {}; VEIL.renderOrder = 5; VEIL.name = "duskVeil"; scene.add(VEIL); }
   VEIL.visible = on;
 }
-/* V4.6 (N169): the plot's edge goes soft. The far ground was already the fog's colour, but it met the sky in a hard line (the sky's own
-   blue sat right on it). The sky now takes the fog's colour at the horizon and fades to its own blue over the lowest ten degrees or so,
-   mixed after its colour conversion as three's fog is on the ground, so the two meet with no seam on both paths: a hazy field all
-   round. In the sky's shader, before the first sky is made: no new shader, draw or picture. */
-/* V3.92 (N143): soft cloud in the sky, painted in the sky's own shader before the first sky is made (the one shown and the one the
-   house's reflections are made from share it: no new draw, no new shader). It thins to nothing at the horizon and takes the sky's own
-   colour: white by day, warm at dusk, dark at night */
+/* V4.6 (N169): the sky takes the fog's colour at the horizon and fades to its blue over the lowest ten degrees, mixed after the colour
+   conversion as three's fog is, so ground and sky meet with no seam on both paths; no new shader */
+/* V3.92 (N143): soft cloud in the sky's own shader (the shown sky and the reflections' share it), thinning at the horizon, in the sky's colour */
 if (!Sky.SkyShader.fragmentShader.includes("cloudFbm")) Sky.SkyShader.fragmentShader = Sky.SkyShader.fragmentShader
   .replace("void main() {", `float cloudH(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float cloudN(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
@@ -55,8 +46,7 @@ function outdoor() {
     u.sunPosition.value.copy(dayLight.position).sub(dayLight.target.position).normalize();
     skyHaze(sky); sky.raycast = () => {}; scene.add(sky);
     const H = R.HOUSE3, g = OUT.ground = new THREE.Group(); g.name = "ground";
-    /* V2.28, the client: "best version with best performance and quality should be on pc": the ground round the house was one flat
-       colour, 3 km of it, washed to khaki by the sun on a PC; now the lawn's own photo and relief, in metres (worldUV), as the gardens' lawn */
+    /* V2.28: the ground round the house the lawn's own photo and relief, in metres (worldUV) */
     const LT = houseTex("lawn");
     const mat = reg(new THREE.MeshStandardMaterial({ color: LT ? "#ffffff" : "#56633f", map: LT ? LT.map : null, normalMap: LT && LT.normal || null, roughness: 1, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 4, polygonOffsetUnits: 4 })); mat.clippingPlanes = [];
     const yt = (H.drive ?? -15) - 2, yb = (H.lawn ?? -260) - 2, A0 = -125, A1 = -28, E = 300000, zf = H.front, zb = H.back;   // V1.4: 3 km out (was 80 m), under the haze   // the alley (x -125 to -28)
@@ -125,9 +115,8 @@ function buildLights() {
   // v15: the side run's strip washes the side wall below it
   const SR = R.SIDE_RUN, zr0 = SR.edge[0][1], zr1 = SR.edge[SR.edge.length - 1][1];
   const sw = area("#ffcf96", zr0 - zr1, 3, [9, SR.under - 1, (zr0 + zr1) / 2], [0, SR.under - 60, (zr0 + zr1) / 2]); sw.userData.k = 260; sw.userData.colKey = "strips"; lights.uprights.push(sw);
-  /* v46: Fast (most phones) leaves out the area lights above, so the media wall and the sofa fell dark while the spot heads lit the
-     floor six times brighter. Five plain point lights stand in for them in Fast only (no shadows): four along the strip's walls, one
-     in front of the uprights; each follows its layer's slider */
+  /* v46: Fast leaves out the area lights, so five plain point lights stand in (no shadows): four along the strip's walls, one in front
+     of the uprights; each follows its layer's slider */
   const fillSpot = (pos, at, k, fill, colKey, ang) => { const f = new THREE.SpotLight("#ffe0bf", 1, 0, ang, 1.0, 2); f.position.copy(v3(...pos)); f.target.position.copy(v3(...at));
     f.userData = { k, fill, warm: !colKey, colKey }; scene.add(f, f.target); lights.fill.push(f); };
   fillSpot([40, C - 12, (AD + WZ) / 2], [0, 40, (AD + WZ) / 2], 75, "strip", null, 1.25);                          // the PC's side wall
@@ -199,8 +188,7 @@ function buildLamp() {   // three adjustable heads on a red pole, with colour bu
   const toward = new THREE.Vector3(...[233 - spot.x, 0, -135 - spot.z]).normalize();      // the room's middle, in room coords
   const th = fixDeg("lamp") * Math.PI / 180, pivotW = v3(spot.x, 0, spot.z), Yax = new THREE.Vector3(0, 1, 0);   // v38: the lamp turns on its base
   const turnP = p => p.sub(pivotW).applyAxisAngle(Yax, th).add(pivotW), turned = [];
-  // v17, client: "green lamp should face down more slightly, its looking at the ceiling, face at the shelf wall": the top head aims at a
-  // point on the stairs wall 30 below its own height, along the shelf (it was aimed 110 up, at the ceiling)
+  // v17: the top head aims at the stairs wall 30 below its own height, along the shelf
   const sbz = R.SHELF_B.z, wz = Math.min(Math.max(spot.z + 30, Math.min(sbz[0], sbz[1])), Math.max(sbz[0], sbz[1]));
   const aims = [[R.LAMP.h - 8, [R.W - spot.x, -22, wz - spot.z]], [R.LAMP.h - 45, [toward.x * 160, -40, toward.z * 160]], [R.LAMP.h - 80, [toward.x * 90, -110, toward.z * 90]]];
   // V3.73: by the sofa, the bottom (purple) head reads over the shoulder onto the arm-end seat (geometry.LAMP_READ)
@@ -213,8 +201,7 @@ function buildLamp() {   // three adjustable heads on a red pole, with colour bu
     spotHead(g, turnP(apex.clone()), aimDir(tgt.clone().sub(apex).normalize(), th, headOf("lamp:" + i)), R.LAMP_BODY, lights.lamp, 55, "lamp" + i, red);
     lights.lamp[lights.lamp.length - 1].userData.hk = "lamp:" + i;
   });
-  // v16, the client's photo ("Hat"): the hats live on the lamp: the graduation cap sits on the pole's top, tipped, and the navy cap with
-  // the poem printed under its peak hangs on the pole below the top head, peak down, crown out
+  // v16: the hats on the lamp: the graduation cap tipped on its top, the navy cap hung below the top head, peak down
   if (R.HATS) {
     const H = R.HATS, felt = reg(new THREE.MeshStandardMaterial({ color: "#16171b", roughness: 0.85 }));
     const mb = new THREE.Group();
@@ -238,10 +225,8 @@ function buildLamp() {   // three adjustable heads on a red pole, with colour bu
   fixtures.add(g);
 }
 
-/* v37, client: "It should be a baseball cap: a fitted, structured, rounded crown with a flat, stiff brim that projects forward. Make the
-   brim noticeably oversized (roughly 1.5-2x a normal proportion)". In the cap's own frame (metres): the crown up +y, the brim forward -z.
-   Six panels on an oval base, a seam down the middle of the front and five more, a button on top, an eyelet in each panel; a flat brim
-   1.8 times a usual one, stiff (an edged slab), with the gold stitching on its top and across the crown's front (geometry.HATS) */
+/* v37: a baseball cap in its own frame (metres; crown +y, brim -z): six panels on an oval base, a button, eyelets; a stiff flat brim
+   1.8 times a usual one, the gold stitching on it and the crown's front (geometry.HATS) */
 function buildCap(H) {
   const cap = new THREE.Group(), cm = M, a = H.crown_w / 2, b = H.crown_l / 2, h = H.crown_h;
   const green = reg(new THREE.MeshStandardMaterial({ color: H.crown_col, roughness: 0.85, side: THREE.DoubleSide }));

@@ -15,21 +15,14 @@ function buildFurniture() {
   }
   buildSofaBed();
 }
-/* V3.71, client (11 Nov 2026): "interchange my current sofa and ottoman with this sofabed and ottoman combination im thinking of buying ...
-   to test sizing and fit"; "the blade green version". The room's sofa (S.sofa): yours, or the green corner sofa bed with its loose storage
-   chaise, which stand in for your sofa and the navy ottoman. Its corner goes in your sofa's corner, its back on the same line; each part
-   moves, turns and takes a colour in Edit as the others do. Sizes: geometry.SOFABED (fit.SOURCES "amelia"). */
-/* V3.72, client: "Continue upgrading the quality and definition of the new sofa": upholstery that reads as upholstery. Each cushion swells
-   in the middle and pinches at its seams (cushGeo), a soft chenille sheen, piping along the seats' fronts, button tufts as in the listing's
-   photo, the headrests on their brackets, fabric pull loops, the bed's black steel frame once it's out, the chaise's tab and gas struts.
-   Every part of a group is one draw per material (mergeStatic); the tufts are one shape a group */
-/* V3.73: how far the shown sofa's open end is from your sofa's (the sofa bed's chaise reaches 62 further): what stands at the open end
-   (the C-table, an idea since V3.74; the floor plant, the seagrass basket) moves with it */
+/* V3.71: the room's sofa (S.sofa): yours, or the green corner sofa bed and its storage chaise in place of your sofa and the navy ottoman,
+   its corner in your sofa's, its back on the same line; each part moves, turns and takes a colour in Edit. Sizes: geometry.SOFABED ("amelia") */
+/* V3.72: upholstery: cushions swell and pinch at the seams (cushGeo), a chenille sheen, piping, button tufts, the headrests, pull loops,
+   the bed's black frame, the chaise's struts. A group one draw a material (mergeStatic) */
+/* V3.73: how much further the shown sofa's open end is than yours (the chaise 62): what stands there moves with it */
 function openEndShift() { return S.sofa === "bed" && R.SOFABED ? R.SOFABED.end_z - R.SOFA.end : 0; }
-/* V3.84 (N136): the cloth made as upholstery is, in the cushion's own shape (o): o.welt, the piping round its top (and o.bottom, its
-   foot) as a ridge where the top meets the boxing, its seam lines a shade down either side (no separate cylinders); o.dim, buttons'
-   dimples [x, z] (cm from its middle) pressed into the top, the cloth drawn in round each, on a grid fine enough to hold them. Where
-   each dimple's bottom lies goes back in g.userData.dimY, for its button */
+/* V3.84 (N136): the cloth in the cushion's own shape (o): o.welt the piping round its top (o.bottom its foot) as a ridge, its seams a
+   shade down; o.dim buttons' dimples [x, z] (cm from its middle) pressed in; each dimple's depth back in g.userData.dimY for its button */
 function cushGeo(w, h, d, crown = 1.2, bulge = 0.8, r = 3, lie = 0.25, o = {}) {   // cm: the top's crown, the sides' swell, the edges' radius, the cloth's lie
   const H = [w / 2 * M, h / 2 * M, d / 2 * M], rr = Math.min(r * M, ...H.map(v => v * 0.45)), m = 3;
   const spans = k => o.dim ? Math.max(4, Math.ceil((2 * H[k] - 2 * rr) / M / 1.8)) : 4, N = [spans(0) + 2 * m, 4 + 2 * m, spans(2) + 2 * m];
@@ -61,16 +54,14 @@ function cushGeo(w, h, d, crown = 1.2, bulge = 0.8, r = 3, lie = 0.25, o = {}) {
       p.setY(i, y); dimK[i] = k; }
     g.userData.dimY = low.map(([, i]) => p.getY(i)); }
   g.computeVertexNormals();
-  /* V3.74: each face mapped in real cm (a tile 20 cm), by the way it faces, so the chenille's weave is one size everywhere (a unit box's
-     faces each took the whole tile, whatever their size: a headrest's weave was four times the chaise's) */
+  /* V3.74: each face mapped in real cm (a tile 20 cm) by the way it faces, so the weave is one size everywhere */
   const nr = g.attributes.normal, uv = g.attributes.uv, T = 0.2;
   for (let i = 0; i < p.count; i++) {
     const ax = Math.abs(nr.getX(i)), ay = Math.abs(nr.getY(i)), az = Math.abs(nr.getZ(i)), X = p.getX(i) / T, Y = p.getY(i) / T, Z = p.getZ(i) / T;
     if (ay >= ax && ay >= az) uv.setXY(i, X, Z); else if (ax >= az) uv.setXY(i, Z, Y); else uv.setXY(i, X, Y);
   }
-  /* V3.81 (N137): the shade where a cushion meets what it rests on and its neighbours, in its own vertices (a colour the cloth's is
-     multiplied by): its underside 0.55, its sides dark at the foot and clear by 60% up, its top untouched. On every path, so the cushions
-     sit as GTAO makes them sit on a big card (the gaps between them, under the seats' fronts, where the backs meet the seats); no draw */
+  /* V3.81 (N137): the shade where a cushion meets what it rests on, in its vertices: its underside 0.55, its sides dark at the foot and
+     clear by 60% up; on every path, no draw */
   const col = new Float32Array(p.count * 3);
   for (let i = 0; i < p.count; i++) { const t = Math.min(1, Math.max(0, (p.getY(i) + H[1]) / (2 * H[1]) / 0.6)), k = nr.getY(i) < -0.6 ? 0.55 : 0.68 + 0.32 * t * t * (3 - 2 * t);
     col[i * 3] = col[i * 3 + 1] = col[i * 3 + 2] = k * ring[i] * dimK[i]; }
@@ -89,10 +80,8 @@ function tufts(g, pts, mat) {                                       // [x, y, z]
   if (!geos.length) return null; const m = new THREE.Mesh(vcol(mergeGeometries(geos), mat), mat); g.add(m); return m;
 }
 function buildSofaBed() {
-  /* V3.73, client: "an exact replica of the item I shared with you in look and size ... the lift up and out to get it out the storage then
-     a clip back into be level with the seating area. Clean up all corners and shaping": the Amelia as its photos show it. The run (the
-     arm with two stools under it, two seats over the pull-out bed), the corner section (its back running 165 down the side, the corner
-     seat and a seat facing in), the loose chaise on the end; rounded upholstery throughout, the backs piped, square black feet */
+  /* V3.73: the Amelia as its photos: the run (the arm with two stools under it, two seats over the pull-out bed), the corner section (its
+     back 165 down the side), the loose chaise; rounded upholstery, the backs piped, square black feet */
   const B = R.SOFABED, so = R.SOFA; if (!B || !so) return;
   // V3.74: the chenille's own weave and heather (02 CHENILLE), a soft sheen at the edges as the pile catches the light
   const chen = (c, k) => reg(new THREE.MeshPhysicalMaterial({ color: c, roughness: 0.92, sheen: k, sheenRoughness: 0.45, sheenColor: new THREE.Color("#d4e0b0"), map: CHENILLE, bumpMap: CHENILLE_B, bumpScale: 0.7, vertexColors: true }));   // V3.81 (N137): the cushions' own shade
@@ -120,8 +109,7 @@ function buildSofaBed() {
   cush(g, ax, B.arm_h - 20, 0, B.arm, 20, D, fab, 1.4, 0.8, 6, WT);
   for (const z of [-hd + 3, hd - 3]) cush(g, ax, F, z, B.arm, B.arm_h - 20 - F + 2, 6, fab, 0, 0.5, 2);
   cush(g, xa + 2, F, 0, 4, B.arm_h - 20 - F + 2, D - 10, fab, 0, 0.3, 1);
-  // V3.74, client: "Give function to move its built in side seats": the two stools slide out of the arm's side together (Pull the stools
-  // out), to sit on or put your feet up; one group, so one draw a material
+  // V3.74: the two stools slide out of the arm's side together; one group
   const T_ = B.stool, tx = hw - T_.w / 2 + 3, stG = new THREE.Group(), stTf = []; g.add(stG);
   for (const z of [-T_.d / 2 - 1, T_.d / 2 + 1]) { cush(stG, tx, 4, z, T_.w, T_.h - 4, T_.d, fab, 1.5, 0.7, 4, { welt: 0.45, bottom: true, dim: [[-0.22 * T_.w, 0], [0.22 * T_.w, 0]], tf: stTf });
     for (const dx of [-1, 1]) for (const dz of [-1, 1]) lb(stG, tx + dx * (T_.w / 2 - 4), 0, z + dz * (T_.d / 2 - 4), 4, 4, 4, steel); }
@@ -135,11 +123,8 @@ function buildSofaBed() {
   // the backs: three along the run (the corner's in its corner), two down the side, leaning back, up to the headrests (V3.75: 81, the frame's top)
   for (const [x0, x1] of [[xc, mid], [mid, xa], [xi, xc]]) { const c = cush(g, (x0 + x1) / 2, sh, bz, x1 - x0 - 1, B.back_h - sh - 3, bd, fab, 2.2, 1.4, 6, WT); c.rotation.x = -0.1; }
   for (const [z0, z1] of [[bz + bd / 2, hd - 0.5], [hd + 0.5, L - 1]]) { const c = cush(g, xi + bd / 2, sh, (z0 + z1) / 2, bd, B.back_h - sh - 3, z1 - z0, fab, 2.2, 1.4, 6, WT); c.rotation.z = -0.1; }
-  /* V3.75, client: "The headrests look like they just flip upwards but current render has armed lifts on making the headrest lift with a
-     gap in between it and the sofa": the listing's Clic-Clac headrests. Each is a pad lying on the back frame (B.head: 30 deep, 14 thick, 8
-     over the frame's front onto the back cushion's top), hinged at the frame's front top edge; Raise flips it up 74° on that hinge, its foot
-     tucked behind the back cushion, as the photos' raised one: no stems, no gap. The five of the photos (three along the back: the arm's
-     seat, the middle, the corner; two down the side: the corner, the end), one group each */
+  /* V3.75: the Clic-Clac headrests: each a pad on the back frame (B.head: 30 deep, 14 thick, 8 over the front), hinged at its front top
+     edge; Raise flips it 74°, its foot behind the back cushion. Five (three along the back, two down the side), a group each */
   const HD = B.head, hup = HD.up * Math.PI / 180; WORK.hr = [];
   const headrest = (x, z, span, side) => { const hg = new THREE.Group(), w_ = Math.min(HD.w, span - 2); hg.position.copy(v3(x, B.back_h, z)); g.add(hg);
     if (side) cush(hg, HD.over - HD.d / 2, 0, 0, HD.d, HD.t, w_, fab, 1.3, 1.1, 5.5, WT); else cush(hg, 0, 0, HD.over - HD.d / 2, w_, HD.t, HD.d, fab, 1.3, 1.1, 5.5, WT);
@@ -150,9 +135,8 @@ function buildSofaBed() {
   for (const [x, z, ry] of [[xi + 32, bz + 26, -0.7], [xa - 26, bz + 22, 0.15]]) {   // the two scatter cushions, plump, sat back against the backs (V3.74)
     const m = new THREE.Mesh(cushGeo(44, 44, 15, 0, 4.5, 9, 0.4), fab); m.position.copy(v3(x, sh + 20, z)); m.rotation.order = "YXZ"; m.rotation.y = ry; m.rotation.x = -0.26; g.add(shadow(m)); }
   tufts(g, tf, dimp);
-  /* the pull-out bed. Stowed under the deck, its fabric front (two loops to pull by, castors under it) is the sofa's face under the seats.
-     It pulls up and out on its castors, past where it rests (bed_over); its padded top lifts on the black frame to the seats' height; it
-     clips back against the seats, level with them, and settles on its castors. Backwards to put it away */
+  /* the pull-out bed: its fabric front under the seats; it pulls out on its castors past its rest (bed_over), its top lifts on the black
+     frame to the seats' height, clips back level and settles. Backwards to put it away */
   const bed = new THREE.Group(), top = new THREE.Group(); g.add(bed); bed.add(top);
   const bw = xa - xc - 2, ud = B.bed_out, uz0 = hd - ud, top0 = base - 1.5, rise = sh - top0, over = B.bed_over;
   cush(bed, mid, 4, hd - 2, bw, top0 - 4.5, 4, fab, 0, 0.3, 1.2);
@@ -165,17 +149,14 @@ function buildSofaBed() {
   for (const z of [uz0 + 6, hd - 12]) lb(top, mid, 12, z, bw - 14, 2, 2, steel, false);
   for (const dx of [-1, 1]) lb(top, mid + dx * (bw / 2 - 8), 12, (uz0 + hd - 4) / 2, 2, 2, ud - 10, steel, false);   // the platform's black frame
   mergeStatic(bed); mergeStatic(top);
-  /* V3.75: the lift as the photos show it: on each side two black links crossed in an X (a scissor) between the rail on the floor and the
-     platform's frame, opening as the top rises (they were four posts hanging under the top). Their own group, hidden while it's stowed */
+  /* V3.75: the lift a scissor each side between the floor rail and the platform's frame; hidden while stowed */
   const lk = new THREE.Group(), za = uz0 + 8, zb = hd - 14, links = []; bed.add(lk);
   for (const dx of [-1, 1]) for (const k of [0, 1]) { const m = new THREE.Mesh(new THREE.CylinderGeometry(0.009, 0.009, 1, 8), steel);
     m.position.x = v3(mid + dx * (bw / 2 - 5), 0, 0).x; lk.add(shadow(m)); links.push([m, k]); }
   const linkAt = b => { const yT = 12 + rise * b;
     for (const [m, k] of links) { const z0 = k ? zb : za, z1 = k ? za : zb, dy = yT - 7, dz = z1 - z0;
       m.position.y = (7 + dy / 2) * M; m.position.z = (z0 + dz / 2) * M; m.rotation.x = Math.atan2(dz, dy); m.scale.y = Math.hypot(dy, dz) * M; } };
-  /* V3.82 (N138), the listing: "Extra sleeping area": made up, a duvet over the seats and the pulled-out platform (one sleeping
-     surface, level since the platform clips back at the seats' height) and two pillows against the backs; shown once the bed is all
-     the way out (S.made), one group of its own, one draw */
+  /* V3.82 (N138): made up: a duvet over the seats and the platform, two pillows; shown once the bed is out (S.made), one draw */
   const cotton = reg(new THREE.MeshStandardMaterial({ color: "#f1eee7", roughness: 0.95, bumpMap: HESSIAN, bumpScale: 0.25 }));
   const madeG = new THREE.Group(), dz0 = sz0 + 4, dz1 = hd + ud - 2; g.add(madeG);
   cush(madeG, mid, sh - 0.5, (dz0 + dz1) / 2, bw + 4, 5, dz1 - dz0, cotton, 1.2, 1.2, 2.5);                  // the duvet, over the edges a little
@@ -189,14 +170,12 @@ function buildSofaBed() {
   const cx = so.x[0] + hw, cz = so.back + hd, live = new THREE.Group();
   while (g.children.length) live.add(g.children[0]); g.add(live); mergeStatic(live); setRest = restMerge(g, live, [lk, madeG]); sync();
   movable("sofa2", B.name, g, () => ({ x: cx, z: cz, rot: 0 }), W, D, [fab], false, { when: () => S.sofa === "bed", tints: [[seam, 0.62], [dimp, 0.8]] });   // V3.78 (N135): Edit's colour reaches its seams and dimples
-  // the loose storage chaise on the corner section's end: a buttoned lid lifting on its back edge on two gas struts (the ottoman's Lift
-  // the lid), a fabric loop on its front to lift it by, black lining, square black feet
+  // the storage chaise: a buttoned lid on two gas struts (Lift the lid), a loop to lift it by, black lining, square black feet
   const C = B.chaise, c = new THREE.Group(), lidH = C.lid, bodyH = C.h - lidH;
   // V3.78 (N135): its own cloth (it shared the sofa's, so recolouring the sofa in Edit was undone as the chaise was placed), following the sofa's colour unless it has its own
   const fabC = chen(B.col, 0.9), seamC = chen(new THREE.Color(B.col).multiplyScalar(0.62), 0.5), dimpC = chen(new THREE.Color(B.col).multiplyScalar(0.8), 0.4);
   for (const dx of [-1, 1]) for (const dz of [-1, 1]) cush(c, dx * (C.w / 2 - 6), 0, dz * (C.d / 2 - 6), 7, F + 1, 7, steel, 0, 0, 1);
-  /* V3.82 (N138): the body a real box, 22 deep inside (it was solid, a black sheet on its top standing in for the storage): its base, and
-     four upholstered walls 3.2 thick round the black lining, so what's kept in it shows with the lid up */
+  /* V3.82 (N138): the body a real box, 22 deep inside: its base and four upholstered walls 3.2 thick round the lining */
   const bw_ = 3.2, dep = 22;
   cush(c, 0, F, 0, C.w, bodyH - dep - F + 1, C.d, fabC, 0, 0.6, 2.5);
   for (const dz of [-1, 1]) cush(c, 0, bodyH - dep - 1, dz * (C.d / 2 - bw_ / 2), C.w, dep + 1, bw_, fabC, 0.5, 0.5, 1.5);
@@ -260,13 +239,11 @@ function setState() {
   try { applyNow(); } catch (e) {}                                       // v39: the ledge's LP
   dirty();
 }
-/* v46, client: "default view could balance lighting throughout the room using all fixtures ... then optimise and upgrade settings":
-   Warmth, one setting for every warm-white light (candle-warm to neutral white; the middle is the bulbs' warm white), unless you've
-   given a light its own colour */
+/* v46: Warmth, one setting for every warm-white light (candle to neutral; the middle the bulbs' own), unless a light has its own colour */
 const WARMTH = [new THREE.Color("#ffbf86"), new THREE.Color(WARM), new THREE.Color("#fff3e4")];   // candle-warm, the bulbs' warm white, neutral
 function warmColour() { const w = Math.max(0, Math.min(100, S.warm ?? 50)) / 50; return w <= 1 ? WARMTH[0].clone().lerp(WARMTH[1], w) : WARMTH[1].clone().lerp(WARMTH[2], w - 1); }
-/* v44: the room's reflections by surface: glass, the TV and gloss pots catch more of them, matte paint and fabric less. v48 §2: the window
-   by night is a faint mirror of the lit room over the dusk garden (as real glass is), by day a light sky sheen */
+/* v44: reflections by surface (glass, the TV and gloss more, matte and fabric less). v48: the window by night a faint mirror of the room,
+   by day a light sky sheen */
 function envLevels(day) {
   const own = ENV.tex && scene.environment === ENV.tex, g = own ? ENV.gain : 1;
   if (winGlass) { winGlass.userData.envK = day ? 0.4 : 1.2; winGlass.opacity = day ? 0.06 : 0.1; }
@@ -275,17 +252,15 @@ function envLevels(day) {
     if (m.userData.envK === undefined) m.userData.envK = m.roughness < 0.25 ? 2.4 : m.roughness < 0.5 ? 1.5 : m.roughness > 0.85 ? 0.7 : 1;
     m.envMapIntensity = (day ? 0.16 : 0.12) * m.userData.envK * g; });   // v50: day 0.25 → 0.16, less washed
 }
-/* v48 §3: reflections from the room itself, not a stock studio. A cube camera in the middle of the room takes it in six directions once
-   the room has changed and settled (1.2 s), in HD on a real graphics card (where the room already draws into a target of the same kind,
-   so no new shaders) and in every saved picture; phones and Fast keep the studio. */
+/* v48: the room's own reflections: a cube camera in its middle once it has settled (1.2 s), in HD on a real graphics card (no new
+   shaders) and in saved pictures; phones and Fast keep the studio */
 const ENV = { rt: null, cam: null, pm: null, tex: null, studio: null, t: 0, gain: 0.8 };
 function roomEnv() {
   if (!started) return;
   if (S.tod === "day") { if (ENV.studio && scene.environment !== ENV.studio) { scene.environment = ENV.studio; envLevels(true); } return; }   // by day the bright garden in the window swamped it: the studio stays
   if (!ENV.rt) { ENV.rt = new THREE.WebGLCubeRenderTarget(256, { type: THREE.HalfFloatType }); ENV.cam = new THREE.CubeCamera(0.05, 40, ENV.rt); ENV.pm = new THREE.PMREMGenerator(gl); }
   ENV.cam.position.copy(v3(R.W / 2, 125, (R.WINDOW_Z + R.RECESS_Z) / 2));
-  /* the whole room, not the cutaway. N54: by its cut put out of the way (as updateCut does standing in the room), not by switching cutting
-     off: off, the room drew through shaders of its own, about 20 built on the spot a second after you came in from the house (seconds on a PC) */
+  /* the whole room, not the cutaway. N54: its cut put out of the way, not switched off (off drew through about 20 shaders of its own) */
   const A = CLIP[0], an = A.normal.clone(), ak = A.constant; A.normal.set(0, 0, 1); A.constant = 1e3;
   const sunI = sun ? sun.intensity : 0; if (sun) sun.intensity = 0;            // the sun's patch stays out of the reflections (it lit the room twice)
   try { ENV.cam.update(gl, scene); } finally { A.normal.copy(an); A.constant = ak; if (sun) sun.intensity = sunI; }
@@ -349,8 +324,7 @@ function applyLight() {
   curtShut.visible = !!S.curtains; curtOpen.visible = !S.curtains;
   win.intensity = day ? 70 : 11; win.color.set(day ? "#eef0f2" : "#7d89b8");   // v47.1: dusk light, not black (v50: a softer, less blue day)
   view.material.color.set(day ? "#dfe6ec" : "#1d2535");   // v56: a plain sky (by day V1.5 shows the modelled outside instead)
-  // bounce light: a real room's walls relight it; this stands in for that, in proportion to what's on. v15: more of it, so the room
-  // reads evenly lit rather than as pools under each head
+  // bounce light, standing in for the walls' relight, in proportion to what's on (v15: more, so the room reads evenly lit)
   const on = (L.strip * 1.0 + L.uprights * 0.3 + L.bar1 * 0.5 + L.bar2 * 0.5 + L.lamp * 0.35 + L.accent * 0.06 + (L.bias > 0 ? 8 : 0) + (S.lbox ? 4 : 0)) / 100;
   hemi.intensity = day ? 0.3 + (hd ? 0 : 0.25) : 0.04 + on * 0.26 + (hd ? 0 : (L.strip * 0.0075 + L.uprights * 0.0015 + (L.bias > 0 ? 0.08 : 0)));   // v50: less bounce, more shape
   win.visible = hd || day;
@@ -363,8 +337,7 @@ function applyLight() {
   const inK = !!ROOMV();                                                                // v60: in a room of the house, light off its pale floor and walls,
   const sky = outside && !inK; skyFill.color.set(sky ? "#dfe8f1" : hemi.color); skyFill.groundColor.set(sky ? "#5d5446" : "#d9d3c9");   // V3.19: the rooms' fill the living room's tint (it was the sky's blue); the living room's own lights stay upstairs
   if (inK) { scene.traverse(l => { if (l.isLight && l !== skyFill && l !== sun && !l.userData.houseLight) l.intensity = 0; }); hemi.intensity = day ? (hd && WINLIGHTS.length ? 0.38 : 0.5) : 0.2; }   // V2.39: by day in HD the window lights (less even fill); V3.30: the sun, the room's light and its windows' kept (a second change of a light, Warmth, put them out)   // every light of the living room's, the spots too
-  /* V2.21 (REAL_PLAN R1): by evening in a room of the house its own ceiling light lights it: the even fill and the studio's reflections
-     down (they lit every corner alike), the light up (09_house_views.js placeRoomLights): a warm pool, the corners falling off */
+  /* V2.21 (R1): by evening a house room is lit by its own ceiling light (placeRoomLights): the fill and studio down, a warm pool */
   if (inK && !day && hd) { hemi.intensity = 0.08; skyFill.intensity = 0.2; }   // V3.34 (N86): an evening in HD lit by its own light (the 0.5 fill washed every wall alike)
   houseEnvK(inK && !day ? (hd ? 0.25 : 0.35) : 1);
   scene.background.set(outside && R.HOUSE3 ? (day ? "#c6d6e3" : "#1b2233") : "#0d100e");             // and a sky behind it

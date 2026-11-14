@@ -36,6 +36,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Matching the fog (N169):** three mixes fog after the colour conversion, with `fogColor` in the screen's space when drawing to it and linear into a render target (`refreshFogUniforms`). A custom shader that must match the fog (the sky's haze, `11_lights.js` `skyHaze`) mixes at the same point and sets its colour the same way in `onBeforeRender`; a plain copy of `fog.color` comes out too blue on Fast.
 - **Ticks (N118):** every tick store saves through `localStorage.setItem`; `measure.js` wraps it for the five keys in `TICKS` and times
   each changed key (`demma-ticks-at`). A new store of ticks only needs adding to `TICKS` (and `pull_edits.TICKS`, `tick_val`).
+- **Comment trims (N176, N179):** prove nothing changed by building `--fast` before and after and comparing `_site/index.html` byte for byte. A comment inside a shader's template text ships with it (and esbuild then renames identifiers too): leave those or accept the change.
 - **Git:** force-push is refused. After a merged PR, restart the branch from `origin/main` (a fast-forward push works).
 - **The gallery:** `tools/gallery.py _site` shoots fixed views; a before/after pixel diff proves a code trim changed nothing.
   `--catalogue k,k` puts catalogue pieces in the garage (`_shots/catalogue.jpg`). Bedding needs a viewport over 700 px (`clothBox` is skipped on `LOWD`).
