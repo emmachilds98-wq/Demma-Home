@@ -977,11 +977,12 @@ function start() {
   livingFromOutside();                                                                  // V2.72 (N14): what the landing hides, hidden before its shaders are built
   if (gl.compileAsync && !/[?&]nocompile\b/.test(location.search)) {
     msg.textContent = "Building the house…"; msg.hidden = false;
-    const was = gl.getRenderTarget();
-    try {
-      if (postLive()) { if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }); gl.setRenderTarget(PRE.rtAO); }
-      texWarm(); Promise.race([Promise.all([compileClipped(camera, true), postWarm()]), new Promise(r => setTimeout(r, 8000))]).then(first, first);   // V2.66 (N13): the shade's and glow's too; the textures meanwhile   // V2.64: by cutting planes (01_renderer)
-    } catch (e) { first(); } finally { gl.setRenderTarget(was); }
+    const go = () => { const was = gl.getRenderTarget();
+      try {
+        if (postLive()) { if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }); gl.setRenderTarget(PRE.rtAO); }
+        texWarm(); Promise.race([Promise.all([compileClipped(camera, true), postWarm()]), new Promise(r => setTimeout(r, 8000))]).then(first, first);   // V2.66 (N13): the shade's and glow's too; the textures meanwhile   // V2.64: by cutting planes (01_renderer)
+      } catch (e) { first(); } finally { gl.setRenderTarget(was); } };
+    if (BAKE.p) Promise.race([BAKE.p, new Promise(r => setTimeout(r, 2500))]).then(go, go); else go();   // N195: the baked light on first (its shaders warmed with the rest), never more than 2.5 s; without it, at once as before
   } else first();
   lookFromHash();                                                                       // v28: a shared #look- link (after the first compile, so its note shows)
   // for the headless stills (shot3d.py): set the options and a view, then take a picture
