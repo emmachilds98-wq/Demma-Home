@@ -1707,7 +1707,7 @@ def bathroom(o):
     o.item("bath.vanity", "The vanity unit", "bathroom", src="client's photo + E (85?)", data=("BATH", "vanity"), axis="z")
     v = B["vanity"]; za, zb = v["z"]; xc = xw - v["d"]
     o.box("gloss", xc + 3, y, za + 1, xw, y + 10, zb - 1)          # plinth, set back
-    o.box("gloss", xc, y + 10, za, xw, y + v["top"] - 4, zb)        # carcass
+    o.box("gloss", xc + 1.8, y + 10, za, xw, y + v["top"] - 4, zb)  # carcass, the fronts over it
     # V2.17 (REAL_PLAN R4): the basin's top round an opening, the basin itself sunk in it (its sides, its floor, the plughole), not a plate
     bx0_, bx1_, bz0_, bz1_ = xw - v["basin_d"] + 6, xw - 10, za + 8, zb - 8
     yt, yb = y + v["top"], y + v["top"] - 13
@@ -1718,9 +1718,11 @@ def bathroom(o):
     o.box("sanitary", bx0_ + 1.2, yb, bz0_ + 1.2, bx1_ - 1.2, yb + 1.2, bz1_ - 1.2)
     o.lathe("chrome", (bx0_ + bx1_) / 2, yb + 1.2, (bz0_ + bz1_) / 2, [(0, 0), (2, 0), (2, 0.2), (0, 0.2)])
     sec = [za, za + 28, za + 56.5, zb]                              # a drawer over a door at the far end, two doors nearer the door
-    for zz in sec[1:-1]:
-        o.box("gap", xc - 0.3, y + 11, zz - 0.3, xc, y + v["top"] - 5, zz + 0.3)
-    o.box("gap", xc - 0.3, y + 64, sec[0] + 1, xc, y + 64.6, sec[1] - 1)
+    for i in range(3):                                              # N198: each door and the drawer its own front, 1.8, a 3 mm gap round each
+        s_a, s_b = sec[i] + 0.15, sec[i + 1] - 0.15
+        o.box("gloss", xc, y + 10.3, s_a, xc + 1.8, y + (63.7 if i == 0 else v["top"] - 4.3), s_b)
+        if i == 0:
+            o.box("gloss", xc, y + 64.3, s_a, xc + 1.8, y + v["top"] - 4.3, s_b)
     for zz in (sec[1] - 4, sec[2] + 4, (sec[2] + sec[3]) / 2 + 4):  # chrome bar handles, upright on the doors
         o.box("chrome", xc - 2.5, y + 40, zz - 0.6, xc, y + 56, zz + 0.6)
     o.box("chrome", xc - 2.5, y + 72, (sec[0] + sec[1]) / 2 - 7, xc, y + 73.2, (sec[0] + sec[1]) / 2 + 7)
