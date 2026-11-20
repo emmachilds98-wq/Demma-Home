@@ -45,7 +45,8 @@ EXPORT = """async ([rooms, shell]) => {
     const nu = new Uint8Array(n / 3), e1 = new T.Vector3(), e2 = new T.Vector3(), ceil = /ceiling|artex/.test(hk);
     for (let f = 0; f < n / 3; f++) { e1.set(P[f * 9 + 3] - P[f * 9], P[f * 9 + 4] - P[f * 9 + 1], P[f * 9 + 5] - P[f * 9 + 2]); e2.set(P[f * 9 + 6] - P[f * 9], P[f * 9 + 7] - P[f * 9 + 1], P[f * 9 + 8] - P[f * 9 + 2]);
       const ny = e1.cross(e2).normalize().y; nu[f] = ceil ? ny < 0.5 : ny > -0.5; }
-    meshes.push({ i, hk, n, col, seen: b64(nu), rough: mt.roughness ?? 1, emit: e && (e.r + e.g + e.b) > 0 ? [e.r, e.g, e.b] : null, shell: shell.some(s => hk.startsWith(s)), pos: b64(P) });
+    let sx = 0; for (let j = 0; j < P.length; j++) sx += P[j] * ((j % 3) + 1);
+    meshes.push({ i, key: hk + ':' + n + ':' + Math.round(sx), hk, n, col, seen: b64(nu), rough: mt.roughness ?? 1, emit: e && (e.r + e.g + e.b) > 0 ? [e.r, e.g, e.b] : null, shell: shell.some(s => hk.startsWith(s)), pos: b64(P) });
     if (g !== m.geometry) g.dispose(); });
   return { meshes };
 }"""
@@ -105,7 +106,7 @@ def scene(ex):
                 bs.inputs["Emission Color"].default_value = (*m["emit"], 1); bs.inputs["Emission Strength"].default_value = 1.0
             mats[key] = mt
         me.materials.append(mats[key])
-        ob = bpy.data.objects.new(f"m{m['i']}", me); sc.collection.objects.link(ob); ob["shell"] = m["shell"]; ob["i"] = m["i"]; objs.append(ob)
+        ob = bpy.data.objects.new(f"m{m['i']}", me); sc.collection.objects.link(ob); ob["shell"] = m["shell"]; ob["i"] = m["i"]; ob["key"] = m["key"]; objs.append(ob)
         if m["emit"] and not m["shell"]:                          # a bulb glows in the page; its lamp is the light here
             ob.visible_shadow = ob.visible_diffuse = ob.visible_glossy = ob.visible_transmission = False
         if len(V) and len(V) < 3000:                              # a small piece's box (a bulb, a shade), to find the lamps inside
@@ -211,7 +212,7 @@ def uvs(sh):
         me = o.data; uv = np.zeros(len(me.loops) * 2, np.float32); me.uv_layers["bake"].data.foreach_get("uv", uv)
         oci = np.zeros(len(me.loops), np.int32); me.attributes["oci"].data.foreach_get("value", oci)
         full = np.full((o["nl"], 2), 0.997, np.float32); full[oci] = uv.reshape(-1, 2)
-        full[:, 1] = 1 - full[:, 1]; out.append((int(o["i"]), int(o["nl"]), full.ravel()))
+        full[:, 1] = 1 - full[:, 1]; out.append((o["key"], int(o["nl"]), full.ravel()))
     return out
 
 
