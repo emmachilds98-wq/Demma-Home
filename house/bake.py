@@ -3,6 +3,7 @@ and the shade under each piece) from a map worked out in Blender's Cycles, not e
 
 python3 house/bake.py [site] [--size 2048] [--samples 64] [--keep DIR]     bake into the site (and keep a copy)
 python3 house/bake.py [site] --put DIR                                       a kept bake into a fresh build
+python3 house/bake.py [site] --rewrite                                       the last bake written again, no baking
 
 1. The built site opened headless: every house mesh as the page builds it (world positions, its material's colour) and every light.
 2. Blender (bpy): the meshes, their colours, the lights in Blender's units; the shells unwrapped into one atlas; Cycles bakes the
@@ -216,6 +217,16 @@ def uvs(sh):
     return out
 
 
+def smooth(m, sigma=2.0):
+    """The samples' grain out: a blur that stays inside each island (the light and the island's mask blurred alike, then divided)."""
+    import numpy as np
+    r = int(3 * sigma); k = np.exp(-0.5 * (np.arange(-r, r + 1) / sigma) ** 2); k /= k.sum()
+    blur = lambda a: np.apply_along_axis(lambda v: np.convolve(v, k, "same"), 0, np.apply_along_axis(lambda v: np.convolve(v, k, "same"), 1, a))
+    mask = (m.max(2) > 0).astype(np.float32); w = blur(mask)
+    out = np.stack([blur(m[..., c] * mask) for c in range(3)], 2) / np.maximum(w, 1e-6)[..., None]
+    return np.where(mask[..., None] > 0, out, m).astype(np.float32)
+
+
 def write(site, maps, uv):
     """The atlases (sRGB under one scale, the unseen faces' corner at the mean) and the UVs, into the site; data/bake.json names them."""
     import numpy as np
@@ -224,7 +235,7 @@ def write(site, maps, uv):
     scale = float(np.percentile(lit, 99.9)) or 1.0
     files = {}
     for tod, m in maps.items():                                   # a fourth root: the rooms' dim corners keep their steps beside a sunlit floor
-        m = m.copy(); n = m.shape[0]; c = int(n * 0.991); m[c:, c:] = m[m.max(2) > 0].mean(0)
+        m = smooth(m); n = m.shape[0]; c = int(n * 0.991); m[c:, c:] = m[m.max(2) > 0].mean(0)
         px = (np.clip(m / scale, 0, 1) ** 0.25 * 255 + 0.5).astype(np.uint8)
         b = Image.fromarray(px); h = hashlib.sha1(px.tobytes()).hexdigest()[:10]; name = f"bake_{tod[:3]}.{h}.jpg"
         b.save(site / "tex" / name, quality=90, optimize=True); files[tod] = name
@@ -258,6 +269,10 @@ def main(argv):
             if f.is_file():
                 (site / f.relative_to(d)).parent.mkdir(parents=True, exist_ok=True); shutil.copy(f, site / f.relative_to(d))
         print("bake: put from", d); return
+    if "--rewrite" in argv:                                        # the last bake written again (a new curve, a new smoothing) without baking
+        import pickle
+        z = np.load(CACHE / "maps.npz"); j = write(site, {k: z[k] for k in z.files}, pickle.loads((CACHE / "uv.pkl").read_bytes()))
+        print("bake: written again, scale", j["scale"]); return
     opt = lambda k, d: int(argv[argv.index(k) + 1]) if k in argv else d
     size, samples, t0 = opt("--size", 2048), opt("--samples", 128), time.time()
     ex = retry(export, site, "day"); ev = retry(export, site, "evening")
