@@ -624,7 +624,7 @@ function joinDrop() {
 }
 function buildHouse() {
   const HS = R.HOUSE; if (!HS) return;
-  houseG = new THREE.Group(); houseG.visible = false; scene.add(houseG);
+  houseG = new THREE.Group(); houseG.name = "houseG"; houseG.visible = false; scene.add(houseG);
   let cur = houseG;                                                               // v55: each floor its own group (the floor picker)
   const TK = R.HOUSE3 ? { "#5d6a44": "lawn", "#b4afa5": "concrete", "#c9c5bd": "paving", "#5b5b5e": "road", "#a7a299": "paving", "#9a5a43": "brick", "#6b5644": "fence" } : {};   // v59; V1.3 the fences' boards
   const mats = {}, mat = c => mats[c] || (mats[c] = (() => { const T = TK[c] && houseTex(TK[c]); const m = reg(new THREE.MeshStandardMaterial({ color: T && !T.tint ? "#ffffff" : c, map: T ? T.map : null, normalMap: T && T.normal || null, roughness: 0.9 })); m.clippingPlanes = []; return m; })());   // v70: and the photo-textures' normals
@@ -899,7 +899,29 @@ function buildHouse() {
   label(["The alley", "stairs down to the garden"], (ax0 + ax1) / 2, 120, -40);
   cur = was; };
   finFloorApply();   // V2.7 (FINISHES F4): the floors chosen in the tray, on their rooms
+  bakeApply();
 }
+/* N195: the baked light (house/bake.py, data/bake.json): each shell (walls, floors, ceilings) gets its second UVs and the day's or the
+   evening's map, and takes no live direct light (the map holds every lamp's light and soft shadow, and what bounces); pieces stay live.
+   A mesh of a baked material the bake didn't see points at the atlas' corner texel, the house's mean light */
+function bakeApply() {
+  if (!BAKE.p || BAKE.done) return;
+  if (!BAKE.j) { BAKE.p.then(j => { if (j && houseG) { BAKE.j = j; bakeApply(); compileClipped(camera); need = true; } }); return; }
+  BAKE.done = true; const j = BAKE.j, ld = u => { const x = new THREE.TextureLoader().load("tex/" + u, () => (need = true)); x.colorSpace = THREE.NoColorSpace; x.flipY = false; x.channel = 1; return x; };   // a fourth root of the light (bake.py write)
+  BAKE.day = ld(j.day); BAKE.eve = ld(j.eve); BAKE.mats = new Set();
+  let i = -1, off = 0; const at = {}; for (const [k, n] of j.meshes) { at[k] = [off, n]; off += n * 2; }
+  houseG.traverse(m => { if (!m.isMesh || m.isInstancedMesh || Array.isArray(m.material) || !m.material.userData) return; i++;
+    const e = at[i]; if (!e) return; let g = m.geometry; if (g.index) { const u = g.toNonIndexed(); u.userData = g.userData; g.dispose(); g = m.geometry = u; }
+    if (g.attributes.position.count !== e[1]) return; g.setAttribute("uv1", new THREE.BufferAttribute(j.buf.subarray(e[0], e[0] + e[1] * 2), 2, true)); BAKE.mats.add(m.material); });
+  const corner = new Uint16Array([65535, 65535]);
+  houseG.traverse(m => { if (m.isMesh && BAKE.mats.has(m.material) && !m.geometry.attributes.uv1) m.geometry.setAttribute("uv1", new THREE.InstancedBufferAttribute(corner, 2, true, 1e9)); });
+  for (const mt of BAKE.mats) { const pre = mt.onBeforeCompile, key = mt.customProgramCacheKey;
+    mt.lightMap = S.tod === "evening" ? BAKE.eve : BAKE.day; mt.lightMapIntensity = Math.PI * j.scale;
+    mt.onBeforeCompile = (sh, r) => { pre.call(mt, sh, r); sh.fragmentShader = sh.fragmentShader.replace("#include <lights_fragment_begin>", "#undef RE_Direct\n#undef RE_Direct_RectArea\n#include <lights_fragment_begin>")
+      .replace("#include <lights_fragment_maps>", THREE.ShaderChunk.lights_fragment_maps.replace("lightMapTexel.rgb", "pow( lightMapTexel.rgb, vec3( 4.0 ) )")); };
+    mt.customProgramCacheKey = () => key.call(mt) + "baked"; mt.needsUpdate = true; }
+}
+function bakeTod() { if (BAKE.mats) for (const mt of BAKE.mats) mt.lightMap = S.tod === "evening" ? BAKE.eve : BAKE.day; }
 function buildSun() {
   const SN = R.SUN || { az: -12, el: 45 }, az = SN.az * Math.PI / 180, el = SN.el * Math.PI / 180;
   const wc = [(R.WINDOW_X[0] + R.WINDOW_X[1]) / 2, 120, R.WINDOW_Z], L = 700;

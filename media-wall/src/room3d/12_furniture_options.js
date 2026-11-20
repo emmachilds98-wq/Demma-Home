@@ -280,7 +280,7 @@ function envSoon() {
 let lastTod = null;   // V1.15: the time of day applyLight last saw
 function blindsApply() { if (HMATS && HMATS.blind_cloth) HMATS.blind_cloth.visible = !!S.blinds; }   // V1.47, the client: "pull blinds up ... give ability to close them": rolled up unless pulled down
 function applyLight() {
-  blindsApply();
+  blindsApply(); bakeTod();
   placeRoomLights();                                          // v69: a room of the house: its ceiling lights, day or evening
   const day = S.tod === "day" || S.view === "house", hd = S.quality === "hd";   // V1.3: the whole house by day (inside, the rooms keep the time you set)
   const L = {}; LAYERS.forEach(k => L[k] = lvl(k));          // v15: the sliders (a scene button fills them in), times the master
