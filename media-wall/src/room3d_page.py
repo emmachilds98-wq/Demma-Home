@@ -7,7 +7,7 @@ import render as R
 import geometry as G
 
 HERE = pathlib.Path(__file__).parent
-THREE = "https://cdn.jsdelivr.net/npm/three@0.160.0/"
+THREE = "https://cdn.jsdelivr.net/npm/three@0.187.0/"
 IMPORTMAP = ('<script type="importmap">' + json.dumps({"imports": {"three": THREE + "build/three.module.js",
                                                                    "three/addons/": THREE + "examples/jsm/"}}) + "</script>")
 

@@ -16,7 +16,7 @@ function still(w, h) {
   const fov0 = camera.fov;
   gl.setPixelRatio(1); gl.setSize(w, h, false); camera.aspect = w / h; camera.fov = fitFov(baseFov); camera.clearViewOffset(); camera.updateProjectionMatrix();
   LIVE = false; syncRig();                                                                 // v35: the lights as they always were, for the picture
-  const was = gl.shadowMap.enabled, wasQ = S.quality; gl.shadowMap.enabled = true; gl.shadowMap.type = THREE.PCFSoftShadowMap;
+  const was = gl.shadowMap.enabled, wasQ = S.quality; gl.shadowMap.enabled = true; gl.shadowMap.type = THREE.PCFShadowMap;
   if (wasQ !== "hd") { S.quality = "hd"; applyLight(); gl.shadowMap.enabled = true; }
   const big = LOWD ? 1024 : BIG_GPU ? 4096 : 2048;   // V1.11: a capable phone 2048   // v18: phones keep 1024 maps for the picture, and at most six spots cast shadows; v48: 4096 on a real card
   Object.values(lights).flat().forEach(l => { if (l.isSpotLight && l.visible) { l.castShadow = true; l.shadow.mapSize.set(big, big); if (l.shadow.map) { l.shadow.map.dispose(); l.shadow.map = null; } } });

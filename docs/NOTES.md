@@ -6,7 +6,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 
 ## 1. Working in the sandbox
 - **three.js:** jsDelivr is blocked. `npm ci` gives the local bundle; for the browser checks set `THREE_LOCAL` to an unpacked
-  `three@0.160.0` package (`npm pack three@0.160.0`, then untar it). fonts.googleapis is reachable.
+  `three` package (`node_modules/three` after `npm ci`). fonts.googleapis is reachable.
 - **Python:** `pip install -r media-wall/requirements.txt` and `playwright==1.63.0` (it must match the browser in `/opt/pw-browsers`;
   set `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`). Test scripts use `localcdn.route(pg)` and `pw.launch(p, pw.GL)` from `media-wall/src`.
 - **Speed of a run:** the full `tools/checks.py` takes over 10 minutes here: run it in the background. CI takes about 20 minutes.

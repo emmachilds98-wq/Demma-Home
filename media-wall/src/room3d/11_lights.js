@@ -22,20 +22,12 @@ function duskVeil(on) {
 }
 /* V4.6 (N169): the sky takes the fog's colour at the horizon and fades to its blue over the lowest ten degrees, mixed after the colour
    conversion as three's fog is, so ground and sky meet with no seam on both paths; no new shader */
-/* V3.92 (N143): soft cloud in the sky's own shader (the shown sky and the reflections' share it), thinning at the horizon, in the sky's colour */
-if (!Sky.SkyShader.fragmentShader.includes("cloudFbm")) Sky.SkyShader.fragmentShader = Sky.SkyShader.fragmentShader
-  .replace("void main() {", `float cloudH(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-float cloudN(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
-  return mix(mix(cloudH(i), cloudH(i + vec2(1.0, 0.0)), f.x), mix(cloudH(i + vec2(0.0, 1.0)), cloudH(i + vec2(1.0, 1.0)), f.x), f.y); }
-float cloudFbm(vec2 p) { float s = 0.0, a = 0.5; for (int k = 0; k < 5; k++) { s += a * cloudN(p); p = p * 2.03 + vec2(17.1, 9.2); a *= 0.5; } return s; }
-void main() {`)
-  .replace("gl_FragColor = vec4( retColor, 1.0 );", `vec3 cdir = normalize( vWorldPosition - cameraPosition );
-			if ( cdir.y > 0.0 ) { vec2 cp = cdir.xz / ( cdir.y + 0.12 ) * 2.2; float cov = smoothstep( 0.5, 0.78, cloudFbm( cp + vec2( 3.7, 1.3 ) ) ) * smoothstep( 0.0, 0.2, cdir.y );
-				float lum = dot( retColor, vec3( 0.299, 0.587, 0.114 ) ); retColor = mix( retColor, mix( retColor, vec3( lum ) * 1.35 + retColor * 0.25, 0.75 ), cov * 0.8 ); }
-			gl_FragColor = vec4( retColor, 1.0 );`)
+/* N192: three 0.187's sky draws its own soft cloud (thinning at the horizon, lit by the sun); the haze over the horizon is ours (V4.6) */
+if (!Sky.SkyShader.fragmentShader.includes("hazeColor")) Sky.SkyShader.fragmentShader = Sky.SkyShader.fragmentShader
+  .replace("uniform float time;", "uniform float time;\nuniform vec3 hazeColor;\nvarying float vSunfade;")
+  .replace("gl_FragColor = vec4( texColor, 1.0 );", "gl_FragColor = vec4( pow( texColor, vec3( 1.0 / ( 1.2 + 1.2 * vSunfade ) ) ), 1.0 );")   // 0.160's curve (the sky as it was)
   .replace("#include <colorspace_fragment>", `#include <colorspace_fragment>
-			float haze = 1.0 - smoothstep( -0.005, 0.2, cdir.y ); gl_FragColor.rgb = mix( gl_FragColor.rgb, hazeColor, haze * haze * ( 3.0 - 2.0 * haze ) );`)
-  .replace("uniform vec3 up;", "uniform vec3 up;\nuniform vec3 hazeColor;");
+			float haze = 1.0 - smoothstep( -0.005, 0.2, direction.y ); gl_FragColor.rgb = mix( gl_FragColor.rgb, hazeColor, haze * haze * ( 3.0 - 2.0 * haze ) );`);
 Sky.SkyShader.uniforms.hazeColor = { value: new THREE.Color() };   // V4.6 (N169): the fog's colour, in the space three gives the fog
 function skyHaze(sk) { sk.onBeforeRender = r => scene.fog.color.getRGB(sk.material.uniforms.hazeColor.value, r.getRenderTarget() ? THREE.LinearSRGBColorSpace : r.outputColorSpace); }   // as three's refreshFogUniforms: the screen's space straight to it, linear into the HD composer
 function outdoor() {
@@ -67,7 +59,7 @@ function outdoor() {
     // one shown, at the room reflection's size (so swapping them rebuilds no shaders), once
     const pm = new THREE.PMREMGenerator(gl), sk = new Sky(), sc = new THREE.Scene(), u = sk.material.uniforms, u0 = OUT.sky.material.uniforms;
     for (const k of ["turbidity", "rayleigh", "mieCoefficient", "mieDirectionalG"]) u[k].value = u0[k].value;
-    u.sunPosition.value.copy(dayLight.position).sub(dayLight.target.position).normalize(); skyHaze(sk); sk.scale.setScalar(50); sc.add(sk);
+    u.sunPosition.value.copy(dayLight.position).sub(dayLight.target.position).normalize(); u.showSunDisc.value = 0; skyHaze(sk); sk.scale.setScalar(50); sc.add(sk);   // N192: the sun's disc out of the light (the sun is its own light)
     OUT.skyEnv = pm.fromScene(sc, 0.02, 0.1, 100).texture; pm.dispose(); sk.geometry.dispose(); sk.material.dispose();
   }
   glassAll();   // V3.52 (N104): frosted glass glows from inside, not from outside
