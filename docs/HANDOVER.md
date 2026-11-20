@@ -2,7 +2,7 @@
 
 ## Now
 - **Live:** Home Plan V4.5 at https://emmachilds98-wq.github.io/Demma-Home/ (main at #271, the double-click to centre).
-- **The plan (20 Nov):** `docs/REAL_PLAN.md` section 24 (N190–N200, the full upgrade; KTX2 a yes). Done: N190 the picture check (`gallery.py --diff`), N191 the names check, N192 three.js 0.187 (V4.29), N200 the page's tokens (V4.30), N199 each room's scheme (V4.32). Started: N195 baked light (V4.31, behind `?bake`: bounce only, smoothed; left: the workflow step, the photo budget, the hitch check), N198 the furniture (V4.32: the kitchen's units and the bathroom vanity). Open: N193 BatchedMesh, N194 modules, N196 KTX2 (#133's branch has the encoder side), N197 the bedrooms' and office's pieces.
+- **The plan (20 Nov):** `docs/REAL_PLAN.md` section 24 (N190–N200, the full upgrade; KTX2 a yes). Done: N190 the picture check (`gallery.py --diff`), N191 the names check, N192 three.js 0.187 (V4.29), N200 the page's tokens (V4.30), N199 each room's scheme (V4.32). Done too: N195 baked light (V4.33, the bounce under the live light, baked in the workflow). Started: N198 the furniture (V4.32: the kitchen's units and the bathroom vanity). Open: N193 BatchedMesh, N194 modules, N196 KTX2 (#133's branch has the encoder side), N197 the bedrooms' and office's pieces.
   smooth, F docs). Each row names its files; take the next open row of a stream. Section 21's open rows carry on.
 - **Open PRs:** #272 (N141, fabrics made at build), #274 (N169, the plot's
   soft edge), #275 (N152, will the sofa bed go in: waits on the door's width), #133 (KTX2, paused: do not merge).
