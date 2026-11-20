@@ -624,7 +624,7 @@ function joinDrop() {
 }
 function buildHouse() {
   const HS = R.HOUSE; if (!HS) return;
-  houseG = new THREE.Group(); houseG.visible = false; scene.add(houseG);
+  houseG = new THREE.Group(); houseG.name = "houseG"; houseG.visible = false; scene.add(houseG);
   let cur = houseG;                                                               // v55: each floor its own group (the floor picker)
   const TK = R.HOUSE3 ? { "#5d6a44": "lawn", "#b4afa5": "concrete", "#c9c5bd": "paving", "#5b5b5e": "road", "#a7a299": "paving", "#9a5a43": "brick", "#6b5644": "fence" } : {};   // v59; V1.3 the fences' boards
   const mats = {}, mat = c => mats[c] || (mats[c] = (() => { const T = TK[c] && houseTex(TK[c]); const m = reg(new THREE.MeshStandardMaterial({ color: T && !T.tint ? "#ffffff" : c, map: T ? T.map : null, normalMap: T && T.normal || null, roughness: 0.9 })); m.clippingPlanes = []; return m; })());   // v70: and the photo-textures' normals
@@ -899,7 +899,32 @@ function buildHouse() {
   label(["The alley", "stairs down to the garden"], (ax0 + ax1) / 2, 120, -40);
   cur = was; };
   finFloorApply();   // V2.7 (FINISHES F4): the floors chosen in the tray, on their rooms
+  bakeApply();
 }
+/* N195: the baked light (house/bake.py, data/bake.json): each shell (walls, floors, ceilings) gets its second UVs and the day's or the
+   evening's map, its live direct light kept (the map holds what bounces round the room: colour bleed, soft corners, the shade under each piece).
+   A mesh of a baked material the bake didn't see points at the atlas' corner texel, the house's mean light */
+function bakeApply() {
+  if (!BAKE.p || BAKE.done) return;
+  if (!BAKE.j) { BAKE.p.then(j => { if (j && houseG) { BAKE.j = j; bakeApply(); compileClipped(camera); need = true; } }); return; }
+  BAKE.done = true; const j = BAKE.j, ld = u => { const x = new THREE.TextureLoader().load("tex/" + u, () => (need = true)); x.colorSpace = THREE.NoColorSpace; x.flipY = false; x.channel = 1; return x; };   // a fourth root of the light (bake.py write)
+  BAKE.day = ld(j.day); BAKE.eve = ld(j.eve); BAKE.mats = new Set();
+  let off = 0; const at = {}, pre = new Set(), v = new THREE.Vector3(); for (const [k, n] of j.meshes) { at[k] = [off, n]; off += n * 2; pre.add(k.slice(0, k.lastIndexOf(":"))); }
+  houseG.updateMatrixWorld(true);   // each shell found by its material, its corners and where they are (bake.py's key), not by order
+  houseG.traverse(m => { if (!m.isMesh || m.isInstancedMesh || Array.isArray(m.material) || !m.material.userData) return;
+    const g0 = m.geometry, P = g0.attributes.position, n = g0.index ? g0.index.count : P.count, k0 = (m.material.userData.hk || "") + ":" + n; if (!pre.has(k0)) return;
+    let sx = 0; for (let c = 0; c < n; c++) { v.fromBufferAttribute(P, g0.index ? g0.index.getX(c) : c).applyMatrix4(m.matrixWorld); sx += v.x + 2 * v.y + 3 * v.z; }
+    const e = at[k0 + ":" + Math.round(sx)]; if (!e) return;
+    let g = g0; if (g.index) { const u = g.toNonIndexed(); u.userData = g.userData; g.dispose(); g = m.geometry = u; }
+    g.setAttribute("uv1", new THREE.BufferAttribute(j.buf.subarray(e[0], e[0] + e[1] * 2), 2, true)); BAKE.mats.add(m.material); });
+  const corner = new Uint16Array([65535, 65535]);
+  houseG.traverse(m => { if (m.isMesh && BAKE.mats.has(m.material) && !m.geometry.attributes.uv1) m.geometry.setAttribute("uv1", new THREE.InstancedBufferAttribute(corner, 2, true, 1e9)); });
+  for (const mt of BAKE.mats) { const pre = mt.onBeforeCompile, key = mt.customProgramCacheKey;
+    mt.lightMap = S.tod === "evening" ? BAKE.eve : BAKE.day; mt.lightMapIntensity = Math.PI * j.scale * (j.gain || 1) * (+(location.search.match(/[?&]bake=([\d.]+)/) || [])[1] || 1);   // ?bake=N to try a level
+    mt.onBeforeCompile = (sh, r) => { pre.call(mt, sh, r); sh.fragmentShader = sh.fragmentShader.replace("#include <lights_fragment_maps>", THREE.ShaderChunk.lights_fragment_maps.replace("lightMapTexel.rgb", "pow( lightMapTexel.rgb, vec3( 4.0 ) )")); };
+    mt.customProgramCacheKey = () => key.call(mt) + "baked"; mt.needsUpdate = true; }
+}
+function bakeTod() { if (BAKE.mats) for (const mt of BAKE.mats) mt.lightMap = S.tod === "evening" ? BAKE.eve : BAKE.day; }
 function buildSun() {
   const SN = R.SUN || { az: -12, el: 45 }, az = SN.az * Math.PI / 180, el = SN.el * Math.PI / 180;
   const wc = [(R.WINDOW_X[0] + R.WINDOW_X[1]) / 2, 120, R.WINDOW_Z], L = 700;

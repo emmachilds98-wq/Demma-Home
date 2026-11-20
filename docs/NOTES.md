@@ -47,6 +47,12 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **The names check (N191):** `checks.py`'s "names" joins the 3D's parts (`_shots/room3d.js`) and runs ESLint's recommended rules
   (`tools/eslint.config.mjs`). A page global the 3D reads (`window.X &&`) goes in that file's globals.
 
+- **Baked light (N195):** `python3 -m pip install bpy==5.3.0` (Blender as a module; Python 3.13 only), then
+  `python3 house/bake.py --size 2048 --samples 64` after a build; open the site with `?bake` to see it. The export reads the page's own
+  meshes (`houseG`, named for it) in the order the page builds them, so a bake belongs to one build of the 3D. Blender's merge drops
+  slivers of no area: each corner carries its own index (`oci`) so the UVs map back. The raw light is kept in `_shots/bake/` to write
+  again without baking. three.js 0.187 lights in physical units: the sun 80 lux beside a lamp of a few candela, hence the fourth-root curve.
+
 ## 2. Merging when threads run side by side
 - **Versions race.** Each PR takes `VERSION`, a line in `docs/HISTORY.md`, `docs/STATE.md` and its plan row, and main moves every few
   minutes while CI runs about 20. Take the version **at merge time**: once the code is green, merge `main` in (a merge commit, not a
