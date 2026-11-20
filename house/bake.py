@@ -106,6 +106,10 @@ def scene(ex):
             mats[key] = mt
         me.materials.append(mats[key])
         ob = bpy.data.objects.new(f"m{m['i']}", me); sc.collection.objects.link(ob); ob["shell"] = m["shell"]; ob["i"] = m["i"]; objs.append(ob)
+        if m["emit"] and not m["shell"]:                          # a bulb glows in the page; its lamp is the light here
+            ob.visible_shadow = ob.visible_diffuse = ob.visible_glossy = ob.visible_transmission = False
+        if len(V) and len(V) < 3000:                              # a small piece's box (a bulb, a shade), to find the lamps inside
+            ob["box"] = [*V.min(0).tolist(), *V.max(0).tolist()]
         if m["shell"]:
             me.polygons.foreach_set("select", np.frombuffer(base64.b64decode(m["seen"]), dtype=np.uint8).astype(bool))
     return objs
@@ -140,6 +144,12 @@ def lights(ex, tod):
             if kind == "SPOT":
                 ld.spot_size = 2 * L["angle"]; ld.spot_blend = L["pen"] or 0
         ob = bpy.data.objects.new(L["type"], ld); ob.location = p; sc.collection.objects.link(ob)
+        if kind in ("POINT", "SPOT"):                             # a lamp inside its own bulb or shade: that mesh out of the bake's rays
+            for o in sc.objects:
+                if o.type == "MESH" and not o.get("shell") and o.get("box"):
+                    b = o["box"]
+                    if all(b[k] - 0.02 <= p[k] <= b[k + 3] + 0.02 for k in range(3)):
+                        o.visible_shadow = o.visible_diffuse = o.visible_glossy = o.visible_transmission = False
         if L["t"] and kind in ("SUN", "SPOT"):
             import mathutils
             d = mathutils.Vector((L["t"][0], -L["t"][2], L["t"][1])) - mathutils.Vector(p); ob.rotation_euler = d.to_track_quat("-Z", "Y").to_euler()
