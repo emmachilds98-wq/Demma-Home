@@ -1,5 +1,5 @@
 let houseG = null;     // v54: the whole house, drafted (The whole house view)
-const studioRoom = () => { const r = new RoomEnvironment(); r.traverse(o => { if (o.isPointLight) o.intensity = 5; }); return r; };   // N192: three 0.160's level (0.187 lights it at 900)
+const studioRoom = () => { const r = new RoomEnvironment(); r.traverse(o => { if (o.isPointLight) o.intensity = 5; if (o.material && o.material.isMeshLambertMaterial) o.material = new THREE.MeshBasicMaterial({ color: o.material.emissive.clone().multiplyScalar(o.material.emissiveIntensity) }); }); return r; };   // N192: three 0.160's room (its light 5, not 900; its lamps plain, no extra shader)
 const HOUSEV = n => n === "house" || (!!R.HOUSE3 && !!(VIEWS[n] || {}).box);   // v60: the views that show the built house (a room's own, from inside it)
 const ROOMV = () => R.HOUSE3 && (VIEWS[S.view] || {}).box;                       // v61: in one of the house's rooms: its walls keep the eye in
 /* v78b: the living room is drawn on its own, so its In it, Above and On its own are its own views */
