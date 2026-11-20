@@ -186,7 +186,7 @@ def unwrap(objs, size):
 
 
 def bake(ex, tod, size, samples, sh):
-    """The light (direct and bounced, every lamp's soft shadow) leaving a white shell, by `tod`, as a float atlas (size × size × 3)."""
+    """The bounced light leaving a white shell (the page draws the direct light live), by `tod`, as a float atlas (size × size × 3)."""
     import bpy, numpy as np
     lights(ex, tod)
     sc = bpy.context.scene; sc.cycles.samples = samples; sc.cycles.use_denoising = False; sc.render.bake.margin = 4; sc.render.bake.use_clear = True
@@ -198,7 +198,7 @@ def bake(ex, tod, size, samples, sh):
         o.select_set(True); o.data.uv_layers["bake"].active = True
     bpy.context.view_layer.objects.active = sh[0]
     t0 = time.time()
-    bpy.ops.object.bake(type="DIFFUSE", pass_filter={"DIRECT", "INDIRECT"}, use_selected_to_active=False)
+    bpy.ops.object.bake(type="DIFFUSE", pass_filter={"INDIRECT"}, use_selected_to_active=False)   # the bounce only: the page keeps its live direct light
     print(f"bake {tod}: {len(sh)} shells, {size}², {samples} samples, {time.time() - t0:.0f} s", flush=True)
     return np.array(img.pixels[:], dtype=np.float32).reshape(size, size, 4)[::-1, :, :3]
 

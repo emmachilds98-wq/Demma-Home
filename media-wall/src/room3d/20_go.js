@@ -902,7 +902,7 @@ function buildHouse() {
   bakeApply();
 }
 /* N195: the baked light (house/bake.py, data/bake.json): each shell (walls, floors, ceilings) gets its second UVs and the day's or the
-   evening's map, and takes no live direct light (the map holds every lamp's light and soft shadow, and what bounces); pieces stay live.
+   evening's map, its live direct light kept (the map holds what bounces round the room: colour bleed, soft corners, the shade under each piece).
    A mesh of a baked material the bake didn't see points at the atlas' corner texel, the house's mean light */
 function bakeApply() {
   if (!BAKE.p || BAKE.done) return;
@@ -921,8 +921,7 @@ function bakeApply() {
   houseG.traverse(m => { if (m.isMesh && BAKE.mats.has(m.material) && !m.geometry.attributes.uv1) m.geometry.setAttribute("uv1", new THREE.InstancedBufferAttribute(corner, 2, true, 1e9)); });
   for (const mt of BAKE.mats) { const pre = mt.onBeforeCompile, key = mt.customProgramCacheKey;
     mt.lightMap = S.tod === "evening" ? BAKE.eve : BAKE.day; mt.lightMapIntensity = Math.PI * j.scale * (j.gain || 1) * (+(location.search.match(/[?&]bake=([\d.]+)/) || [])[1] || 1);   // ?bake=N to try a level
-    mt.onBeforeCompile = (sh, r) => { pre.call(mt, sh, r); sh.fragmentShader = sh.fragmentShader.replace("#include <lights_fragment_begin>", "#undef RE_Direct\n#undef RE_Direct_RectArea\n#include <lights_fragment_begin>")
-      .replace("#include <lights_fragment_maps>", THREE.ShaderChunk.lights_fragment_maps.replace("lightMapTexel.rgb", "pow( lightMapTexel.rgb, vec3( 4.0 ) )")); };
+    mt.onBeforeCompile = (sh, r) => { pre.call(mt, sh, r); sh.fragmentShader = sh.fragmentShader.replace("#include <lights_fragment_maps>", THREE.ShaderChunk.lights_fragment_maps.replace("lightMapTexel.rgb", "pow( lightMapTexel.rgb, vec3( 4.0 ) )")); };
     mt.customProgramCacheKey = () => key.call(mt) + "baked"; mt.needsUpdate = true; }
 }
 function bakeTod() { if (BAKE.mats) for (const mt of BAKE.mats) mt.lightMap = S.tod === "evening" ? BAKE.eve : BAKE.day; }
