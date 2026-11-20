@@ -4,6 +4,8 @@
   "description": "V1.31 (U4): three.js and esbuild for the site's one-file bundle (media-wall/src/vendor.py); the build falls back to the CDN without them",
   "devDependencies": {
     "esbuild": "0.25.12",
+    "eslint": "9.39.5",
+    "globals": "15.15.0",
     "three": "0.160.0"
   }
 }

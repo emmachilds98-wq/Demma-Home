@@ -760,7 +760,7 @@ RTX 5070 inside `tools/perf_budget.json`; still lean (fewer lines, not more).
 
 | Task | Stream | What | Files | Waits for | State |
 |---|---|---|---|---|---|
-| N190 | A Net | The picture check: `tools/gallery.py --ref` keeps a set of fixed views from main, `--diff` compares a branch's to it pixel by pixel and names the views that moved (a code-only row: none) | `tools/gallery.py`, `tools/checks.py` | — | Open |
+| N190 | A Net | The picture check: `tools/gallery.py --ref` keeps a set of fixed views from main, `--diff` compares a branch's to it pixel by pixel and names the views that moved (a code-only row: none) | `tools/gallery.py`, `tools/checks.py` | — | Done (20 Nov): `gallery.py --diff REF [--views k,k]`; the same build twice moved 0.00% in all 11 views (about 13 min in software graphics) |
 | N191 | B Code | A name check on the joined 3D script: an undefined or twice-declared top-level name fails `checks.py` (esbuild's and a small scope pass, no new lines in the 3D); fix what it finds | `tools/checks.py`, `room3d/*` (fixes only) | — | Open |
 | N192 | B Code | three.js 0.160 to 0.187: the API changes, the shaders' patches (`onBeforeCompile`), the colour and tone; the pictures the same or better (N190), inside the speed budget | `package.json`, `room3d/*`, `vendor.py` | N190 | Open |
 | N193 | B Code | Fewer draws: the fixed furniture of a room one `BatchedMesh` a material (as `restMerge` does for a piece at rest), the draw budget lowered | `room3d/03_materials.js`, `20_go.js`, `perf_budget.json` | N192 | Open |
