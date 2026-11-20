@@ -733,3 +733,44 @@ picture file); customisation after the quality work.
   next free version at merge, its row ticked here and `docs/STATE.md` rewritten. Tell the coordinator when touching `20_go.js`.
 - After this round: customisation (the client's own colours, pieces and saved looks), planned once the quality rows are done.
 
+
+## 24. The full upgrade: quality, design and a leaner code base (20 Nov 2026)
+
+The client, 20 Nov 2026: "how would you do a full upgrade and improvement to this 3D build of my house to make it better in quality and
+design as well as optimised code base"; then "the house is an improvement plan so it shouldnt look the same as my house currently only in
+sizing and some furniture im keeping which is basically where we're at now. action everything else"; "but still upgrade the furniture we
+have". Reviewed on V4.28 (main at #298).
+
+**What changes in the rules.** The sizes, the layouts and the pieces they keep stay (the model as it is: every size sourced, every piece
+where it stands). How everything *looks* is the plan's to upgrade: the light, the materials, the furniture's detail (their own pieces too,
+same size and place), each room's finishes where they haven't chosen. Their own choices in `docs/DECISIONS.md` stay (the pale mint, the
+smooth walls, the artex ceilings, the old design, the media wall). KTX2 (#133, N141) is a yes. Still smooth on the iPhone 15 Pro and the
+RTX 5070 inside `tools/perf_budget.json`; still lean (fewer lines, not more).
+
+### What the review found
+- **The light is all worked out live** each frame (shadows, GTAO, shade bands, glow): the phones drop the shade while moving, and the
+  rooms have no bounced light or colour bleed. The light never changes (DECISIONS: the same in every room), so it can be baked.
+- **The furniture is boxes and curves made in code**, the client's own pieces most plainly (beds, wardrobes, desks, the kitchen's units).
+- **three.js 0.160** is a year behind (0.187 now): better shadows, `BatchedMesh` for fewer draws, KTX2 and the newer tone mapping.
+- **The 3D is 24 files joined into one scope** (a new top-level name can break another file), with no check for an undefined or
+  repeated name; `20_go.js` is 110 KB.
+- **No check that a code-only change leaves the picture alone**: each PR compares by eye.
+
+### The tasks
+
+| Task | Stream | What | Files | Waits for | State |
+|---|---|---|---|---|---|
+| N190 | A Net | The picture check: `tools/gallery.py --ref` keeps a set of fixed views from main, `--diff` compares a branch's to it pixel by pixel and names the views that moved (a code-only row: none) | `tools/gallery.py`, `tools/checks.py` | — | Open |
+| N191 | B Code | A name check on the joined 3D script: an undefined or twice-declared top-level name fails `checks.py` (esbuild's and a small scope pass, no new lines in the 3D); fix what it finds | `tools/checks.py`, `room3d/*` (fixes only) | — | Open |
+| N192 | B Code | three.js 0.160 to 0.187: the API changes, the shaders' patches (`onBeforeCompile`), the colour and tone; the pictures the same or better (N190), inside the speed budget | `package.json`, `room3d/*`, `vendor.py` | N190 | Open |
+| N193 | B Code | Fewer draws: the fixed furniture of a room one `BatchedMesh` a material (as `restMerge` does for a piece at rest), the draw budget lowered | `room3d/03_materials.js`, `20_go.js`, `perf_budget.json` | N192 | Open |
+| N194 | B Code | The 3D as modules: the shared state in one module, each part importing what it uses (esbuild bundles them as now), `20_go.js` split into the house build, its materials and the warm-up | `room3d/*`, `room3d_src.py` | N191, N192 | Open |
+| N195 | C Light | Baked light: the house's walls, floors, ceilings and fixed pieces baked in Blender (Cycles, `bpy` at build, cached by the house file's hash) into light maps with bounce and soft shadow; the live shade bands, GTAO and fixed pieces' shadows go where the map covers; Look's paints still change (the map holds light, not colour); pieces moved in Edit keep a live shadow. One room first (the master), then the house | `house/bake.py` (new), `room3d/20_go.js`, `03_materials.js`, `build.py`, the workflow | N192 | Open |
+| N196 | C Light | KTX2 (#133, the client's yes): the photos as KTX2 at build, sharper on the PC within the same budget; #133's branch brought up to main | `media-wall/src/build_viewer.py`, `room3d/02_textures.js`, the workflow | N192 | Open |
+| N197 | D Furniture | Their own pieces upgraded, same size and place: bevelled edges, real joinery, handles and hinges, grain and fabric, each piece's own materials; the master (the pine bed, the wardrobes), the office (the oak desk, the two setups, the shelf), bedroom 2 (the bed, the Kallax) | `room3d/08_house_catalogue.js`, `20_go.js` (the house's pieces), `house/model.py` (tags only) | N190 | Open |
+| N198 | D Furniture | The kitchen's units, worktop, bar and appliances; the bathroom's and WC's vanity, bath and cistern; the hall's and landing's pieces; the garage's | the same | N197 | Open |
+| N199 | E Design | Each room an improvement scheme where the client hasn't chosen (paint, floor, light fittings, soft furnishings), shown as the plan; As it is still shows today's; Look changes any of it | `room3d/23_finish.js`, `house/model.py` (`MATS`), `docs/DECISIONS.md` | N195 | Open |
+| N200 | F UI | The page's look in one place: colours, sizes, radii and motion as tokens in `page.css`; the pills, panels and cards read the same; the iPhone's accessibility (contrast, 44 px, reduced motion) | `media-wall/src/page.css`, `room3d_page.py` | — | Open |
+
+**How to run it.** Stream A first (N190: every later row shows its pictures beside main's). B and C after; D and E after A; F any
+time. One task a PR, the next free version at merge, this table ticked, `docs/STATE.md` rewritten.
