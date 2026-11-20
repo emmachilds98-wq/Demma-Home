@@ -38,6 +38,11 @@ take one out (to `docs/HISTORY.md`) when they change their mind.
 - **Never write the cap's poem out** in code or text (22 Oct 2026, round 31).
 - **Don't scrape Rightmove**: ask for screenshots instead.
 
+- **The house is the improvement plan** (20 Nov 2026): "the house is an improvement plan so it shouldnt look the same as my house
+  currently only in sizing and some furniture im keeping ... action everything else"; "but still upgrade the furniture we have". Sizes,
+  layouts and kept pieces stay; the light, materials, furniture detail and finishes they haven't chosen are the plan's to upgrade
+  (`docs/REAL_PLAN.md` section 24). KTX2 is a yes.
+
 ## The living room (the media wall project)
 
 - **The artisan oak media wall** is the plan (18 Oct 2026): oak uprights, through-tenons, the record ledge over the TV, the oak face frame,
