@@ -147,6 +147,17 @@ def lean():
     return not unused, msg + (f"; nothing uses: {', '.join(unused[:12])}" if unused else ": every name, class and material used")
 
 
+def names():
+    """N191: the 3D's parts share one scope, so a name used but never made (or made twice) only shows in the browser: ESLint's recommended
+    rules on the joined script. Needs npm ci (eslint is a dev dependency)."""
+    sys.path.insert(0, str(SRC)); import room3d_src
+    SHOTS.mkdir(exist_ok=True); (SHOTS / "room3d.js").write_text(room3d_src.js())
+    files = [SHOTS / "room3d.js"]
+    r = subprocess.run(["npx", "--no-install", "eslint", "-c", "tools/eslint.config.mjs", *map(str, files)], cwd=ROOT, capture_output=True, text=True)
+    errs = [l.strip() for l in r.stdout.splitlines() if " error " in l]
+    return r.returncode == 0, f"the 3D's {len(room3d_src.parts())} parts as one, {len(errs)} problems" + (": " + "; ".join(errs[:6]) if errs else "") if r.returncode in (0, 1) else r.stderr[-300:]
+
+
 def site():
     code, out = sh([ROOT / "tools/check_site.py", SITE], timeout=2400)
     last = [l for l in out.splitlines() if l.startswith("site check") or l.startswith("FAIL")]
@@ -182,7 +193,7 @@ def taps():
 def main(argv):
     """python3 tools/checks.py [--quick | --only site,page,taps]"""
     quick = "--quick" in argv
-    checks = [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("repo", repo), ("sizes", sizes), ("lean", lean)] + ([] if quick else [("site", site), ("hitch", hitch), ("page", qa), ("taps", taps)])
+    checks = [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("repo", repo), ("sizes", sizes), ("lean", lean), ("names", names)] + ([] if quick else [("site", site), ("hitch", hitch), ("page", qa), ("taps", taps)])
     if "--only" in argv:                                         # V1.35 (U10): one or more by name (the workflow runs the browser checks side by side)
         want = argv[argv.index("--only") + 1].split(",")
         checks = [c for c in [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("repo", repo), ("sizes", sizes), ("lean", lean), ("site", site), ("hitch", hitch), ("page", qa), ("taps", taps)] if c[0] in want]

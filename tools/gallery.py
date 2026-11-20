@@ -3,7 +3,9 @@ the client's quick look. The whole house, the living room, then each of the hous
 
 python3 tools/gallery.py [site dir] [--evening]      writes _shots/gallery.jpg (gallery_evening.jpg), each picture in _shots/gallery/;
 python3 tools/gallery.py [site dir] --catalogue [k,k]  V3.02 (N45): each of Add a piece's pieces (or those named) on its own in the garage,
-                                                      from its front: _shots/catalogue.jpg; THREE_LOCAL as check_site.py"""
+                                                      from its front: _shots/catalogue.jpg; THREE_LOCAL as check_site.py
+python3 tools/gallery.py [site dir] --diff REF [--views k,k]   N190: the same views from REF (main's build) and the site, compared pixel by
+                                                      pixel: a line a view (the share of pixels that moved), _shots/diff/<view>.jpg (REF | site | where)"""
 import http.server, pathlib, socketserver, sys, threading
 from functools import partial
 
@@ -11,7 +13,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "media-wall/src"))
 import pw, localcdn  # noqa: E402
 
-ARGS = [a for a in sys.argv[1:] if not a.startswith("--")]
+ARGS = [a for i, a in enumerate(sys.argv[1:]) if not a.startswith("--") and sys.argv[i] not in ("--diff", "--views")]
 TOD = "evening" if "--evening" in sys.argv else "day"   # V1.14: by evening too (the rooms' own lights)
 SITE = pathlib.Path(ARGS[0] if ARGS else ROOT / "_site").resolve()
 OUT = ROOT / "_shots" / "gallery"
@@ -65,11 +67,11 @@ def catalogue(only):
     print(f"catalogue: {len(shots)} pieces, _shots/catalogue.jpg")
 
 
-def main():
+def shoot(site, out, only=None):
+    """Each fixed view of `site` by TOD in HD, a PNG each in `out`: [(file, name)]."""
     from playwright.sync_api import sync_playwright
-    from PIL import Image, ImageDraw
-    OUT.mkdir(parents=True, exist_ok=True)
-    httpd = socketserver.ThreadingTCPServer(("127.0.0.1", 0), partial(Quiet, directory=str(SITE))); httpd.daemon_threads = True
+    out.mkdir(parents=True, exist_ok=True)
+    httpd = socketserver.ThreadingTCPServer(("127.0.0.1", 0), partial(Quiet, directory=str(site))); httpd.daemon_threads = True
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     shots = []
     with sync_playwright() as p:
@@ -81,11 +83,36 @@ def main():
                             ".concat(Object.entries(V).filter(([k, v]) => v.box).map(([k, v]) => [k, v.label || k])); }")
         pg.add_style_tag(content=".r3d-dock, .r3d-mini, .r3d-planbar, .r3d-stickers, header, .brand, .topbar { visibility: hidden !important; }")
         for k, name in views:
+            if only and k not in only:
+                continue
             pg.evaluate(f"() => R3D.set({{ view: '{k}', tod: '{TOD}', quality: 'hd' }})"); pg.wait_for_timeout(5000)
-            f = OUT / f"{k}{'_eve' if TOD == 'evening' else ''}.png"; pg.screenshot(path=str(f)); shots.append((f, pg.evaluate("() => (document.getElementById('brand-place') || {}).textContent") or name))
+            f = out / f"{k}{'_eve' if TOD == 'evening' else ''}.png"; pg.screenshot(path=str(f)); shots.append((f, pg.evaluate("() => (document.getElementById('brand-place') || {}).textContent") or name))
             print("shot", k, flush=True)
         b.close()
     httpd.shutdown()
+    return shots
+
+
+def diff(ref, only):
+    """N190: a code-only change should move no view; a looks change shows where it moved. A pixel 'moved' if any channel is off by more
+    than 8 (the soft shadows' and GTAO's noise stays under it)."""
+    import numpy as np
+    from PIL import Image
+    a, b, out = shoot(ref, OUT.parent / "ref", only), shoot(SITE, OUT, only), OUT.parent / "diff"; out.mkdir(parents=True, exist_ok=True)
+    moved = 0
+    for (fa, name), (fb, _) in zip(a, b):
+        x, y = (np.asarray(Image.open(f).convert("RGB")).astype(int) for f in (fa, fb))
+        m = np.abs(x - y).max(2) > 8; share = m.mean() * 100; moved += share > 0.5
+        where = np.where(m[..., None], [255, 40, 160], y // 3).astype("uint8")
+        Image.fromarray(np.hstack([x, y, where]).astype("uint8")).resize((W * 3 // 2, H // 2)).save(out / f"{fa.stem}.jpg", quality=85)
+        print(f"{fa.stem}: {share:.2f}% moved{'' if share <= 0.5 else '  <-'}")
+    print(f"pixels: {len(a)} views, {moved} moved (over 0.5%), _shots/diff/")
+    return moved
+
+
+def main():
+    from PIL import Image, ImageDraw
+    shots = shoot(SITE, OUT)
     rows = -(-len(shots) // COLS)
     sheet = Image.new("RGB", (COLS * W // 2, rows * (H // 2 + 28)), "#151a16"); d = ImageDraw.Draw(sheet)
     for i, (f, name) in enumerate(shots):
@@ -97,6 +124,9 @@ def main():
 
 
 if __name__ == "__main__":
+    if "--diff" in sys.argv:
+        only = sys.argv[sys.argv.index("--views") + 1].split(",") if "--views" in sys.argv else None
+        sys.exit(1 if diff(pathlib.Path(sys.argv[sys.argv.index("--diff") + 1]).resolve(), only) else 0)
     if "--catalogue" in sys.argv:
         catalogue([k for a in ARGS[1:] for k in a.split(",")])
     else:

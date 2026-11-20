@@ -41,6 +41,12 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **The gallery:** `tools/gallery.py _site` shoots fixed views; a before/after pixel diff proves a code trim changed nothing.
   `--catalogue k,k` puts catalogue pieces in the garage (`_shots/catalogue.jpg`). Bedding needs a viewport over 700 px (`clothBox` is skipped on `LOWD`).
 
+- **The picture check (N190):** build main into one folder and the branch into `_site`, then
+  `python3 tools/gallery.py --diff <main's site> [--views house,room]`: a line a view with the share of pixels that moved (more than 8 in
+  a channel), `_shots/diff/<view>.jpg` (main | branch | where in pink). The same build twice moves 0.00%, so a code-only change should too.
+- **The names check (N191):** `checks.py`'s "names" joins the 3D's parts (`_shots/room3d.js`) and runs ESLint's recommended rules
+  (`tools/eslint.config.mjs`). A page global the 3D reads (`window.X &&`) goes in that file's globals.
+
 ## 2. Merging when threads run side by side
 - **Versions race.** Each PR takes `VERSION`, a line in `docs/HISTORY.md`, `docs/STATE.md` and its plan row, and main moves every few
   minutes while CI runs about 20. Take the version **at merge time**: once the code is green, merge `main` in (a merge commit, not a
