@@ -41,7 +41,7 @@ take one out (to `docs/HISTORY.md`) when they change their mind.
 - **The house is the improvement plan** (20 Nov 2026): "the house is an improvement plan so it shouldnt look the same as my house
   currently only in sizing and some furniture im keeping ... action everything else"; "but still upgrade the furniture we have". Sizes,
   layouts and kept pieces stay; the light, materials, furniture detail and finishes they haven't chosen are the plan's to upgrade
-  (`docs/REAL_PLAN.md` section 24). KTX2 is a yes.
+  (`docs/REAL_PLAN.md` section 24). KTX2 is a yes. The plan's scheme for each room is `house/plan_finishes.json` (V4.32); the client's own colours always win.
 
 ## The living room (the media wall project)
 

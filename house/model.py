@@ -1120,9 +1120,18 @@ def kitchen(o):
             o.box("gloss", x0 + 0.5, Y(LEG), z0 + 1, x1 - 0.5, Y(TOP - WT), z1 - 1)
             for lx, lz in ((x0 + 5, z0 + 5), (x1 - 5, z0 + 5), (x0 + 5, z1 - 5), (x1 - 5, z1 - 5)):
                 o.box("black", lx - 1.5, Y(0), lz - 1.5, lx + 1.5, Y(LEG), lz + 1.5)
+            # N198: a kickboard over the legs, set back 5 (the units on legs before)
+            if face == "+z":
+                o.box("gloss", x0 + 0.5, Y(0), z0 + 1, x1 - 0.5, Y(LEG), z1 - 5)
+            elif face == "-z":
+                o.box("gloss", x0 + 0.5, Y(0), z0 + 5, x1 - 0.5, Y(LEG), z1 - 1)
+            else:
+                o.box("gloss", x0 + 1, Y(0), z0 + 0.5, x1 - 5, Y(LEG), z1 - 0.5)
             if kind == "corner":
                 continue
-            front(face, x0, x1, z0, z1, Y(71), Y(72), "gap", inset=0.5)
+            # N198: the door and the drawer as their own fronts, 1.8 proud with a 3 mm gap round each (a line drawn on one box before)
+            front(face, x0, x1, z0, z1, Y(LEG + 0.3), Y(71.7), "gloss", inset=0.8)
+            front(face, x0, x1, z0, z1, Y(72.3), Y(TOP - WT - 0.3), "gloss", inset=0.8)
             handle(face, x0, x1, z0, z1, Y(79))
             handle(face, x0, x1, z0, z1, Y(62))
     # the worktops (black speckled) and the sink
@@ -1145,15 +1154,15 @@ def kitchen(o):
     # the wall units, 30 deep, gloss doors with handles near the bottom
     o.item("kitchen.wall_units", "The wall cupboards", "kitchen", src="client (counted) + E", data=("KITCHEN", "wall_units"), measure=False)
     for a, b, n in K["wall_units"]["east"]:                         # v73: each run's doors as the client counts them
-        o.box("gloss", 0, Y(145), a, 30, Y(215), b); o.box("gloss", 0, Y(215), a, 32, Y(220), b)
-        for i in range(1, n):
-            zz = a + (b - a) * i / n; o.box("gap", 30, Y(146), zz - 0.3, 30.3, Y(214), zz + 0.3)
+        o.box("gloss", 0, Y(145), a, 28.2, Y(215), b); o.box("gloss", 0, Y(215), a, 32, Y(220), b)
+        for i in range(n):                                          # N198: each door its own, 1.8 thick, a 3 mm gap round it (lines on one box before)
+            o.box("gloss", 28.2, Y(145.3), a + (b - a) * i / n + 0.15, 30, Y(214.7), a + (b - a) * (i + 1) / n - 0.15)
         for i in range(n):
             handle("+x", 0, 30, a, b, Y(152), along=a + (b - a) * (i + 0.5) / n + (b - a) / n * 0.3)
     for a, b, n in K["wall_units"]["south"]:
-        o.box("gloss", a, Y(145), 36.2 - 30, b, Y(215), 36.2); o.box("gloss", a, Y(215), 36.2 - 32, b, Y(220), 36.2)
-        for i in range(1, n):
-            xx = a + (b - a) * i / n; o.box("gap", xx - 0.3, Y(146), 36.2 - 30.3, xx + 0.3, Y(214), 36.2 - 30)
+        o.box("gloss", a, Y(145), 36.2 - 28.2, b, Y(215), 36.2); o.box("gloss", a, Y(215), 36.2 - 32, b, Y(220), 36.2)
+        for i in range(n):
+            o.box("gloss", a + (b - a) * i / n + 0.15, Y(145.3), 36.2 - 30, a + (b - a) * (i + 1) / n - 0.15, Y(214.7), 36.2 - 28.2)
         for i in range(n):
             handle("-z", a, b, 6.2, 36.2, Y(152), along=a + (b - a) * (i + 0.5) / n + (b - a) / n * 0.3)
     p_ = K["pipes"]                                                  # v73: the pipes up the back corner, in the cupboards' 5 cm
@@ -1698,7 +1707,7 @@ def bathroom(o):
     o.item("bath.vanity", "The vanity unit", "bathroom", src="client's photo + E (85?)", data=("BATH", "vanity"), axis="z")
     v = B["vanity"]; za, zb = v["z"]; xc = xw - v["d"]
     o.box("gloss", xc + 3, y, za + 1, xw, y + 10, zb - 1)          # plinth, set back
-    o.box("gloss", xc, y + 10, za, xw, y + v["top"] - 4, zb)        # carcass
+    o.box("gloss", xc + 1.8, y + 10, za, xw, y + v["top"] - 4, zb)  # carcass, the fronts over it
     # V2.17 (REAL_PLAN R4): the basin's top round an opening, the basin itself sunk in it (its sides, its floor, the plughole), not a plate
     bx0_, bx1_, bz0_, bz1_ = xw - v["basin_d"] + 6, xw - 10, za + 8, zb - 8
     yt, yb = y + v["top"], y + v["top"] - 13
@@ -1709,9 +1718,11 @@ def bathroom(o):
     o.box("sanitary", bx0_ + 1.2, yb, bz0_ + 1.2, bx1_ - 1.2, yb + 1.2, bz1_ - 1.2)
     o.lathe("chrome", (bx0_ + bx1_) / 2, yb + 1.2, (bz0_ + bz1_) / 2, [(0, 0), (2, 0), (2, 0.2), (0, 0.2)])
     sec = [za, za + 28, za + 56.5, zb]                              # a drawer over a door at the far end, two doors nearer the door
-    for zz in sec[1:-1]:
-        o.box("gap", xc - 0.3, y + 11, zz - 0.3, xc, y + v["top"] - 5, zz + 0.3)
-    o.box("gap", xc - 0.3, y + 64, sec[0] + 1, xc, y + 64.6, sec[1] - 1)
+    for i in range(3):                                              # N198: each door and the drawer its own front, 1.8, a 3 mm gap round each
+        s_a, s_b = sec[i] + 0.15, sec[i + 1] - 0.15
+        o.box("gloss", xc, y + 10.3, s_a, xc + 1.8, y + (63.7 if i == 0 else v["top"] - 4.3), s_b)
+        if i == 0:
+            o.box("gloss", xc, y + 64.3, s_a, xc + 1.8, y + v["top"] - 4.3, s_b)
     for zz in (sec[1] - 4, sec[2] + 4, (sec[2] + sec[3]) / 2 + 4):  # chrome bar handles, upright on the doors
         o.box("chrome", xc - 2.5, y + 40, zz - 0.6, xc, y + 56, zz + 0.6)
     o.box("chrome", xc - 2.5, y + 72, (sec[0] + sec[1]) / 2 - 7, xc, y + 73.2, (sec[0] + sec[1]) / 2 + 7)
@@ -1720,7 +1731,8 @@ def bathroom(o):
     o.box("handle_black", xw - 16, y + v["top"] + 18, zt - 2.5, xw - 4, y + v["top"] + 22, zt + 2.5)
     o.item("bath.slim", "The slim cabinet", "bathroom", src="client's photo + E", data=("BATH", "slim"), axis="z")
     sl = B["slim"]; s0, s1 = sl["z"]                                # the slim cabinet, its round vents
-    o.box("gloss", xw - sl["d"], y + 0.3, s0, xw, y + sl["h"], s1)
+    o.box("gloss", xw - sl["d"] + 1.8, y + 0.3, s0, xw, y + sl["h"], s1)   # N198: the carcass, its door over it with a 3 mm gap
+    o.box("gloss", xw - sl["d"], y + 0.6, s0 + 0.15, xw - sl["d"] + 1.8, y + sl["h"] - 0.3, s1 - 0.15)
     for yy in (22, 44, 66):
         o.box("gap", xw - sl["d"] - 0.3, y + yy - 4, (s0 + s1) / 2 - 4, xw - sl["d"], y + yy + 4, (s0 + s1) / 2 + 4)
     # V2.40 (REAL_PLAN R5, the photo of 25 Oct): on the slim cabinet the grey toothbrush cup and the white hand wash; the black mat by the bath
@@ -2299,7 +2311,12 @@ def hall(o):
     o.box("mirror", xw - 2.6, y + m["y"][0] + 3, m["z"][0] + 3, xw - 2.4, y + m["y"][1] - 3, m["z"][1] - 3)   # V1.17: was clear glass
     o.item("hall.bench", "The bench", "hall", src="client's photo + E", data=("HALL", "bench"), axis="z")
     b = Hh["bench"]
-    o.box("black", b["x"][0], y, b["z"][0], b["x"][1] - 1.5, y + b["h"], b["z"][1])
+    bx0, bx1, bz0, bz1 = b["x"][0], b["x"][1] - 1.5, b["z"][0], b["z"][1]   # N198: a top on four legs with a low shelf (a solid block before)
+    o.box("black", bx0, y + b["h"] - 3, bz0, bx1, y + b["h"], bz1)
+    for lx in (bx0, bx1 - 3):
+        for lz in (bz0, bz1 - 3):
+            o.box("black", lx, y, lz, lx + 3, y + b["h"] - 3, lz + 3)
+    o.box("black", bx0 + 3, y + 10, bz0 + 1, bx1 - 3, y + 12, bz1 - 1)
     o.box("check", b["x"][0] + 2, y + b["h"], b["z"][0] + 6, b["x"][1] - 3, y + b["h"] + 4, b["z"][1] - 6)
     for r in Hh["racks"]:                                                      # black shoe racks, shoes on the shelves
         o.item(f"hall.rack{Hh['racks'].index(r) + 1}", "Shoe rack " + str(Hh["racks"].index(r) + 1), "hall", src="client's photo + E", data=("HALL", "racks"), axis="z")
