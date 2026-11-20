@@ -6,7 +6,7 @@ The page's import map points "three" and every add-on room3d.js imports at the o
 loaded once). Without Node or the packages (`npm ci`, package.json) the build keeps the CDN's import map, as before; the shared page
 always keeps the CDN's (tools/build.py artifact(): its size limit)."""
 import hashlib, json, pathlib, re, shutil, subprocess, tempfile
-import room3d_src
+import room3d_page, room3d_src
 
 HERE = pathlib.Path(__file__).parent
 ROOT = HERE.parents[1]
@@ -24,7 +24,7 @@ def bundle(site):
     if not esb.exists() or not (ROOT / "node_modules/three/package.json").exists() or not shutil.which("node"):
         return None
     ver = json.loads((ROOT / "node_modules/three/package.json").read_text())["version"]
-    if ver != "0.160.0":                                      # the same three as the CDN's (room3d_page.THREE)
+    if f"three@{ver}/" not in room3d_page.THREE:            # the same three as the CDN's
         return None
     names = addons()
     with tempfile.TemporaryDirectory(dir=ROOT / "node_modules") as d:   # inside node_modules' folder, so "three" resolves

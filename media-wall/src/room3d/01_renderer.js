@@ -21,7 +21,7 @@ if (BIG_GPU) S.quality = "hd";   // V2.25: a real card opens in HD on every visi
 const GOOD_PHONE = SMALL && /apple gpu|adreno[^0-9]*([6-9]\d{2})|mali-g(5[7-9]|6\d|7\d|[1-9]\d{2})|immortalis|xclipse/i.test(GPU);
 if (GOOD_PHONE && !S.picked) S.quality = "hd";   // V1.11: a capable phone starts in HD with the shade, the glow and 2048 shadows; if slow it steps down (3× to 2×, the shade, Fast)
 const HI = BIG_GPU || GOOD_PHONE, LOWD = SMALL && !GOOD_PHONE;   // LOWD: a phone without a capable chip, the only one still drawn lighter
-const LIVE_SHADOW = HI ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap, LIVE_MAP = HI ? 2048 : 1024;   // v44: a real graphics card gets the pictures' soft 2048 shadows live
+const LIVE_SHADOW = THREE.PCFShadowMap, LIVE_MAP = HI ? 2048 : 1024;   // v44: a real graphics card gets the pictures' soft 2048 shadows live
 gl.shadowMap.type = LIVE_SHADOW;   // v14.1: PCF while you look round; the saved HD pictures use soft shadows
 gl.shadowMap.autoUpdate = false;          // v14.1: shadows don't move with the camera, so they're redrawn only when the room changes
 const reshadow = () => { gl.shadowMap.needsUpdate = true; };
@@ -138,7 +138,7 @@ function depthMat(m, pt) {   // as three's getDepthMaterial makes it (PCF shadow
   const side = m.shadowSide != null ? m.shadowSide : [THREE.BackSide, THREE.FrontSide, THREE.DoubleSide][m.side];
   const clip = m.clipShadows && m.clippingPlanes && m.clippingPlanes.length ? m.clippingPlanes.length + (m.clipIntersection ? "i" : "u") : "";
   const k = [pt, side, !!m.map, !!m.alphaMap, m.alphaTest > 0, !!(m.displacementMap && m.displacementScale), !!m.wireframe, clip].join();
-  let d = DEPTHS.get(k); if (!d) DEPTHS.set(k, d = pt ? new THREE.MeshDistanceMaterial() : new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking }));
+  let d = DEPTHS.get(k); if (!d) DEPTHS.set(k, d = pt ? new THREE.MeshDistanceMaterial() : new THREE.MeshDepthMaterial());
   Object.assign(d, { side, map: m.map, alphaMap: m.alphaMap, alphaTest: m.alphaTest, wireframe: m.wireframe, clipShadows: m.clipShadows, clippingPlanes: m.clippingPlanes, clipIntersection: m.clipIntersection,
     displacementMap: m.displacementMap, displacementScale: m.displacementScale, displacementBias: m.displacementBias });
   return d;
@@ -148,7 +148,7 @@ function depthMat(m, pt) {   // as three's getDepthMaterial makes it (PCF shadow
 function postWarm() {                 // the composer's own shaders, in parallel (01's aoComposer made early)
   if (!postLive() || !gl.compileAsync) return Promise.resolve();
   const sz = gl.getSize(new THREE.Vector2()); aoComposer(sz.x, sz.y, gl.getPixelRatio()); AO.w = sz.x; AO.h = sz.y; AO.pr = gl.getPixelRatio();
-  const scr = new THREE.Scene(), tgt = new THREE.Scene(), geo = new THREE.PlaneGeometry(2, 2), cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  const scr = new THREE.Scene(), tgt = new THREE.Scene(), geo = new THREE.PlaneGeometry(2, 2).deleteAttribute("normal"), cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
   const fake = { outputColorSpace: gl.outputColorSpace, toneMapping: gl.toneMapping, setRenderTarget() {}, render() {}, clear() {}, getRenderTarget: () => null };
   for (const p of AO.c.passes) {
     if (p instanceof OutputPass) { try { p.render(fake, null, AO.c.readBuffer); } catch (e) {} scr.add(new THREE.Mesh(geo, p.material)); continue; }   // its defines are set as it first draws

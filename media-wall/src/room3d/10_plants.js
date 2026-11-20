@@ -75,7 +75,7 @@ function floraAtlas() {
   });
   tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
   const m = new THREE.MeshStandardMaterial({ map: tex, vertexColors: true, roughness: 0.55, side: THREE.DoubleSide, alphaTest: 0.5 });
-  m.userData.depth = new THREE.MeshDepthMaterial({ depthPacking: THREE.RGBADepthPacking, map: tex, alphaTest: 0.5 });
+  m.userData.depth = new THREE.MeshDepthMaterial({ map: tex, alphaTest: 0.5 });
   return FLORA_ATLAS = clipMat(reg(m));
 }
 function atlasUV(geo, kind) {        // a kind's (u, v) into its cell

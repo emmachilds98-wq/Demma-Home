@@ -921,7 +921,7 @@ function start() {
   started = true;
   const t0 = performance.now();
   const pmrem = new THREE.PMREMGenerator(gl);
-  scene.environment = ENV.studio = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environment = ENV.studio = pmrem.fromScene(studioRoom(), 0.04).texture;
   pmrem.dispose();
   buildSun();
   gl.localClippingEnabled = true;

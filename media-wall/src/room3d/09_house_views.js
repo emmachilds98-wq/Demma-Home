@@ -1,4 +1,5 @@
 let houseG = null;     // v54: the whole house, drafted (The whole house view)
+const studioRoom = () => { const r = new RoomEnvironment(); r.traverse(o => { if (o.isPointLight) o.intensity = 5; if (o.material && o.material.isMeshLambertMaterial) o.material = new THREE.MeshBasicMaterial({ color: o.material.emissive.clone().multiplyScalar(o.material.emissiveIntensity) }); }); return r; };   // N192: three 0.160's room (its light 5, not 900; its lamps plain, no extra shader)
 const HOUSEV = n => n === "house" || (!!R.HOUSE3 && !!(VIEWS[n] || {}).box);   // v60: the views that show the built house (a room's own, from inside it)
 const ROOMV = () => R.HOUSE3 && (VIEWS[S.view] || {}).box;                       // v61: in one of the house's rooms: its walls keep the eye in
 /* v78b: the living room is drawn on its own, so its In it, Above and On its own are its own views */
@@ -139,7 +140,7 @@ let HMATS = null, HENV = null;
 /* V1.31 (U6): the house's materials one-sided (every piece a closed solid); ?double for the old way */
 const HOUSE_SIDE = /[?&]double\b/.test(location.search) ? THREE.DoubleSide : THREE.FrontSide;
 function houseEnv() {
-  if (!HENV) { const pm = new THREE.PMREMGenerator(gl), rs = new RoomEnvironment(); HENV = pm.fromScene(rs, 0.04).texture; pm.dispose(); rs.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
+  if (!HENV) { const pm = new THREE.PMREMGenerator(gl), rs = studioRoom(); HENV = pm.fromScene(rs, 0.04).texture; pm.dispose(); rs.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); }
   return HENV;
 }
 /* V3.57 (N107): the hall's and bathroom's mirrors show their room: in HD, once you've paused, the room drawn round the mirror a face a
