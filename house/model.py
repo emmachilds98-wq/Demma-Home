@@ -1120,9 +1120,18 @@ def kitchen(o):
             o.box("gloss", x0 + 0.5, Y(LEG), z0 + 1, x1 - 0.5, Y(TOP - WT), z1 - 1)
             for lx, lz in ((x0 + 5, z0 + 5), (x1 - 5, z0 + 5), (x0 + 5, z1 - 5), (x1 - 5, z1 - 5)):
                 o.box("black", lx - 1.5, Y(0), lz - 1.5, lx + 1.5, Y(LEG), lz + 1.5)
+            # N198: a kickboard over the legs, set back 5 (the units on legs before)
+            if face == "+z":
+                o.box("gloss", x0 + 0.5, Y(0), z0 + 1, x1 - 0.5, Y(LEG), z1 - 5)
+            elif face == "-z":
+                o.box("gloss", x0 + 0.5, Y(0), z0 + 5, x1 - 0.5, Y(LEG), z1 - 1)
+            else:
+                o.box("gloss", x0 + 1, Y(0), z0 + 0.5, x1 - 5, Y(LEG), z1 - 0.5)
             if kind == "corner":
                 continue
-            front(face, x0, x1, z0, z1, Y(71), Y(72), "gap", inset=0.5)
+            # N198: the door and the drawer as their own fronts, 1.8 proud with a 3 mm gap round each (a line drawn on one box before)
+            front(face, x0, x1, z0, z1, Y(LEG + 0.3), Y(71.7), "gloss", inset=0.8)
+            front(face, x0, x1, z0, z1, Y(72.3), Y(TOP - WT - 0.3), "gloss", inset=0.8)
             handle(face, x0, x1, z0, z1, Y(79))
             handle(face, x0, x1, z0, z1, Y(62))
     # the worktops (black speckled) and the sink
@@ -1145,15 +1154,15 @@ def kitchen(o):
     # the wall units, 30 deep, gloss doors with handles near the bottom
     o.item("kitchen.wall_units", "The wall cupboards", "kitchen", src="client (counted) + E", data=("KITCHEN", "wall_units"), measure=False)
     for a, b, n in K["wall_units"]["east"]:                         # v73: each run's doors as the client counts them
-        o.box("gloss", 0, Y(145), a, 30, Y(215), b); o.box("gloss", 0, Y(215), a, 32, Y(220), b)
-        for i in range(1, n):
-            zz = a + (b - a) * i / n; o.box("gap", 30, Y(146), zz - 0.3, 30.3, Y(214), zz + 0.3)
+        o.box("gloss", 0, Y(145), a, 28.2, Y(215), b); o.box("gloss", 0, Y(215), a, 32, Y(220), b)
+        for i in range(n):                                          # N198: each door its own, 1.8 thick, a 3 mm gap round it (lines on one box before)
+            o.box("gloss", 28.2, Y(145.3), a + (b - a) * i / n + 0.15, 30, Y(214.7), a + (b - a) * (i + 1) / n - 0.15)
         for i in range(n):
             handle("+x", 0, 30, a, b, Y(152), along=a + (b - a) * (i + 0.5) / n + (b - a) / n * 0.3)
     for a, b, n in K["wall_units"]["south"]:
-        o.box("gloss", a, Y(145), 36.2 - 30, b, Y(215), 36.2); o.box("gloss", a, Y(215), 36.2 - 32, b, Y(220), 36.2)
-        for i in range(1, n):
-            xx = a + (b - a) * i / n; o.box("gap", xx - 0.3, Y(146), 36.2 - 30.3, xx + 0.3, Y(214), 36.2 - 30)
+        o.box("gloss", a, Y(145), 36.2 - 28.2, b, Y(215), 36.2); o.box("gloss", a, Y(215), 36.2 - 32, b, Y(220), 36.2)
+        for i in range(n):
+            o.box("gloss", a + (b - a) * i / n + 0.15, Y(145.3), 36.2 - 30, a + (b - a) * (i + 1) / n - 0.15, Y(214.7), 36.2 - 28.2)
         for i in range(n):
             handle("-z", a, b, 6.2, 36.2, Y(152), along=a + (b - a) * (i + 0.5) / n + (b - a) / n * 0.3)
     p_ = K["pipes"]                                                  # v73: the pipes up the back corner, in the cupboards' 5 cm

@@ -1,0 +1,14 @@
+{
+  "_": "N199 (REAL_PLAN section 24): the plan's scheme for each room the client hasn't chosen: one calm, warm palette through the house. Slots as 23_finish.js keeps them: 0-3 the walls, 5 the floor, 6 the bulbs (K), 8 the fitting, 19 the curtains, 21 a print. Ceilings stay white artex (DECISIONS, 5 Nov); the living room keeps its own; the stair wall follows the living room's. A device's own choice always wins; As it is shows the house today.",
+  "v": 1,
+  "rooms": {
+    "hall":    { "0": "#ddd5c8", "1": "#ddd5c8", "2": "#ddd5c8", "3": "#ddd5c8", "5": "herring", "6": "2700", "8": "globe", "21": "arches" },
+    "landing": { "0": "#ddd5c8", "1": "#ddd5c8", "2": "#ddd5c8", "3": "#ddd5c8", "5": "carpet", "6": "2700", "8": "globe" },
+    "master":  { "0": "#b7c0a8", "1": "#b7c0a8", "2": "#b7c0a8", "3": "#b7c0a8", "5": "carpet", "6": "2700", "8": "drum", "19": "linen", "21": "leaves" },
+    "bed3":    { "0": "#cdd5d8", "1": "#cdd5d8", "2": "#cdd5d8", "3": "#cdd5d8", "5": "oak", "6": "3000", "8": "dome", "21": "lines" },
+    "bed2":    { "0": "#3f5778", "1": "#d3d6da", "2": "#d3d6da", "3": "#d3d6da", "5": "lvt_grey", "6": "3000", "8": "spots" },
+    "kitchen": { "0": "#efe9df", "1": "#efe9df", "2": "#efe9df", "3": "#efe9df", "5": "lvt_grey", "6": "3000", "8": "spots" },
+    "bathroom":{ "0": "#cfd9d0", "1": "#cfd9d0", "2": "#cfd9d0", "3": "#cfd9d0", "5": "porcelain", "6": "3000", "8": "dome" },
+    "wc":      { "0": "#cfd9d0", "1": "#cfd9d0", "2": "#cfd9d0", "3": "#cfd9d0", "5": "porcelain", "6": "3000", "8": "dome" }
+  }
+}

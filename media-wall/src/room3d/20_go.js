@@ -672,7 +672,9 @@ function buildHouse() {
       const rk = (H3.depth_rank || {})[k] ?? 3;   // V1.31 (U6): where faces lie in one plane the higher rank is drawn (house/model.py depth_rank); constant, so nothing shows through at a slant
       if (rk) { m.polygonOffset = true; m.polygonOffsetFactor = 0; m.polygonOffsetUnits = -2 * rk; }
       houseClip(m, [], false); m.userData.hk = k; return k === "concrete" ? garageFloor(m) : finPatch(m, k); })());   // V2.64: 6 planes from the start (09_house_views)
-    if (S.fin === undefined && R.HOUSE3.client_finishes && Object.keys(R.HOUSE3.client_finishes).length) finRestore(R.HOUSE3.client_finishes);   // V2.11: the scheme kept in the repo, until this device picks its own
+    if (S.fin === undefined && R.HOUSE3.client_finishes && Object.keys(R.HOUSE3.client_finishes).length) finRestore(R.HOUSE3.client_finishes);
+    { const P = R.HOUSE3.plan_finishes || {}; if (P.rooms && S.planFin !== P.v) { const c = finClean(P.rooms); delete c[LIVR]; S.fin = S.fin || {};   // N199: the plan's scheme under each room's own choices (once a version)
+      for (const [r, sl] of Object.entries(c)) S.fin[r] = Object.assign({}, sl, S.fin[r]); S.planFin = P.v; store.set(KEY, S); } }   // V2.11: the scheme kept in the repo, until this device picks its own
     HMATS = m3; FIN.mat3 = mat3; blindsApply(); hceilApply(); finApplyAll();
     if (window.__finPending) { const p = window.__finPending; window.__finPending = null; finImport(p); }   // V2.11: from a Send link opened before the 3D was ready   // V2.7: (mat3 for a floor laid by the tray)   // V2.6: the colours kept for the house's rooms
     /* V2.71 (N16): each piece's room, the one that holds it whole (shared pieces: none, always drawn); a floor's mesh keeps each room's
