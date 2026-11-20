@@ -1731,7 +1731,8 @@ def bathroom(o):
     o.box("handle_black", xw - 16, y + v["top"] + 18, zt - 2.5, xw - 4, y + v["top"] + 22, zt + 2.5)
     o.item("bath.slim", "The slim cabinet", "bathroom", src="client's photo + E", data=("BATH", "slim"), axis="z")
     sl = B["slim"]; s0, s1 = sl["z"]                                # the slim cabinet, its round vents
-    o.box("gloss", xw - sl["d"], y + 0.3, s0, xw, y + sl["h"], s1)
+    o.box("gloss", xw - sl["d"] + 1.8, y + 0.3, s0, xw, y + sl["h"], s1)   # N198: the carcass, its door over it with a 3 mm gap
+    o.box("gloss", xw - sl["d"], y + 0.6, s0 + 0.15, xw - sl["d"] + 1.8, y + sl["h"] - 0.3, s1 - 0.15)
     for yy in (22, 44, 66):
         o.box("gap", xw - sl["d"] - 0.3, y + yy - 4, (s0 + s1) / 2 - 4, xw - sl["d"], y + yy + 4, (s0 + s1) / 2 + 4)
     # V2.40 (REAL_PLAN R5, the photo of 25 Oct): on the slim cabinet the grey toothbrush cup and the white hand wash; the black mat by the bath
@@ -2310,7 +2311,12 @@ def hall(o):
     o.box("mirror", xw - 2.6, y + m["y"][0] + 3, m["z"][0] + 3, xw - 2.4, y + m["y"][1] - 3, m["z"][1] - 3)   # V1.17: was clear glass
     o.item("hall.bench", "The bench", "hall", src="client's photo + E", data=("HALL", "bench"), axis="z")
     b = Hh["bench"]
-    o.box("black", b["x"][0], y, b["z"][0], b["x"][1] - 1.5, y + b["h"], b["z"][1])
+    bx0, bx1, bz0, bz1 = b["x"][0], b["x"][1] - 1.5, b["z"][0], b["z"][1]   # N198: a top on four legs with a low shelf (a solid block before)
+    o.box("black", bx0, y + b["h"] - 3, bz0, bx1, y + b["h"], bz1)
+    for lx in (bx0, bx1 - 3):
+        for lz in (bz0, bz1 - 3):
+            o.box("black", lx, y, lz, lx + 3, y + b["h"] - 3, lz + 3)
+    o.box("black", bx0 + 3, y + 10, bz0 + 1, bx1 - 3, y + 12, bz1 - 1)
     o.box("check", b["x"][0] + 2, y + b["h"], b["z"][0] + 6, b["x"][1] - 3, y + b["h"] + 4, b["z"][1] - 6)
     for r in Hh["racks"]:                                                      # black shoe racks, shoes on the shelves
         o.item(f"hall.rack{Hh['racks'].index(r) + 1}", "Shoe rack " + str(Hh["racks"].index(r) + 1), "hall", src="client's photo + E", data=("HALL", "racks"), axis="z")
