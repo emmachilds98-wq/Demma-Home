@@ -13,7 +13,7 @@ function livShade() {
   const tex = canvasTex(4, 64, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h);
     gr.addColorStop(0, "rgba(0,0,0,0.34)"); gr.addColorStop(0.35, "rgba(0,0,0,0.12)"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.clearRect(0, 0, w, h); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, false);
   tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
-  const mat = () => reg(new THREE.MeshBasicMaterial({ color: "#000000", map: tex, transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide,
+  const mat = () => reg(new THREE.MeshBasicMaterial({ color: "#000000", map: tex, transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide, forceSinglePass: true,
     polygonOffset: true, polygonOffsetFactor: 0, polygonOffsetUnits: -10 }));
   const E = R.HOUSE3.living.edges.map(([ax, az, bx, bz, nx, nz]) => [[ax, az], [bx, bz], [nx, nz]]);   // V1.44: each wall's foot from the house file
   const band = (pos, uv, [a, b, n], y, w) => {

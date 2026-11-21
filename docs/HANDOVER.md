@@ -14,13 +14,13 @@ that has been ongoing with another team"); what's still open is below and in sec
 - **Done:** N190 the picture check (`tools/gallery.py --diff`); N191 the names check (ESLint, `checks.py` "names"); N192 three.js 0.187
   (V4.29); N200 the page's tokens (V4.30); N199 each room's scheme (`house/plan_finishes.json`, V4.32); N198 the furniture (V4.32,
   V4.34); N197 reviewed (nothing to change); N195 the baked light (V4.35: on for everyone on the HD paths, the workflow bakes it,
-  cached); N196 KTX2 photos (V4.36, #308: on the iPhones; a PC keeps the exact JPEGs, the row says why and the one line to change).
+  cached); N196 KTX2 photos (V4.36, #308: on the iPhones; a PC keeps the exact JPEGs, the row says why and the one line to change);
+  N193 fewer draws (V4.37: the house 25% fewer on every path); N194 in part (V4.37: `20_go.js` split in five).
 - **Open, in the order to take them** (each row in section 24 has the detail):
-  1. **N193, fewer draws.** Measure first (`R3D.perf().calls`; `tools/check_site.py`'s four paths); change only for 10% or more, the
-     pictures the same, no shader added. `docs/wip/N193-draws-partial.patch` is an unmeasured start (on 1eac230; `docs/wip/README.md`).
-  2. **N194, the 3D as modules.** Last and alone: it touches all 24 parts of `media-wall/src/room3d/`. The names check (N191) and the
-     picture check (N190) are its safety net: 0 problems and 0.00% moved.
-  3. **Smaller:** the seam on the master's back wall in the bake (a new row if it shows).
+  1. **N194's rest, the 3D as ES modules.** The 28 parts share one scope with about 1,030 top-level names, many of them `let`s
+     that other parts reassign (an import is read-only), so modules need that state moved into one object first; the names check (N191)
+     already catches the clashes the review named. Take it a part at a time, the joined script's names check and `gallery.py --diff` each step.
+  2. **Smaller:** the seam on the master's back wall in the bake (a new row if it shows).
 - **What this round learned** (also in `docs/NOTES.md`): three.js 0.187 keys shaders on `hasPositionAttribute` and `vertexNormals`,
   and its shadow maps use basic depth packing, so the warm-up's stand-ins must match or shaders get built mid-walk (V4.29). Anything
   that adds a mesh or a material at the first picture (a scheme's fittings, curtains, prints) shows in the Fast paths' budgets
@@ -50,9 +50,10 @@ ceilings white artex; say less.
   (the house file, `house.schema.json`). Facts: `HOUSE.md`, `EVIDENCE.md` (what each size rests on), `SURVEY.md`, `measure.py` (guesses).
 - `media-wall/src/build_viewer.py` builds the one page: brand, Plan · Build · Buy sheets (in `sheets.<hash>.json`, built on first need),
   landing, offline (`sw.js`), photos a file each (`split_photos`). `page.css`, `room3d_page.py` (the dock and panels).
-- `media-wall/src/room3d/`: the 3D, 24 parts joined in order into one scope by `room3d_src.py` (a new top-level name can clash), then
+- `media-wall/src/room3d/`: the 3D, 28 parts joined in order into one scope by `room3d_src.py` (a new top-level name can clash), then
   minified by esbuild. Renderer and warm-up `01`, textures `02`, materials `03`, catalogue `08`, house views `09`, walk `14`, cards and
-  costs `16`, render loop `17`, keys `19_controls`, view controls `19_view_controls`, start and house build `20_go`, finishes `23_finish`.
+  costs `16`, render loop `17`, keys `19_controls`, view controls `19_view_controls`, the house's materials `20_1`, outside `20_2`,
+  shade and joins `20_3`, the house build and bake `20_4`, start `20_5`, finishes `23_finish`.
 - The living room is the media wall project (`geometry.py`, `fit.py`, renders and PDFs); every size is in `fit.SOURCES`.
 - three.js 0.187 from npm, bundled at build. Photos: `house/textures/` (CC0, made here) and `media-wall/inputs/` (the client's, EXIF stripped).
 - The baked light: `house/bake.py` (Blender as `bpy`), baked by the workflow into `_site/data/bake.json` and its maps. KTX2: the colour

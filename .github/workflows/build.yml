@@ -86,7 +86,7 @@ jobs:
       # its build are unchanged (a shell it doesn't match takes the mean bounce, so a stale bake never darkens a room)
       - name: The baked light's key
         id: bakekey
-        run: echo "key=bake-$(cat _site/data/house.json house/bake.py media-wall/src/room3d/20_go.js | sha1sum | cut -c1-20)" >> "$GITHUB_OUTPUT"
+        run: echo "key=bake-$(cat _site/data/house.json house/bake.py media-wall/src/room3d/20_*.js | sha1sum | cut -c1-20)" >> "$GITHUB_OUTPUT"
       - name: The baked light (kept)
         id: bakecache
         uses: actions/cache@v6

@@ -162,9 +162,9 @@ function buildCab(C = cabC()) {
   bx(cbox, xi, C.shelf_y, bc1, deepIn, t, bc0 - bc1, K.oakIn);                                    // the chair bay's shelf
   [[0, 0], [1, 1], [2, 2]].forEach(([i, c]) => bx(cab, xi + C.pads + 1 + i * 0.4, C.linen[0] + i * 3.2, bt1 + 8 + i * 6, deepIn - C.pads - 2, 3, 34, K.cloth[c]));   // the cloth, napkins, runner
   cabIn = new THREE.Group();   // the chairs: two lying in the base, two deep; four standing in the chair bay, two deep on its floor and on its shelf
-  const out = slideOut(cabIn), base = [], stand = [];
-  for (let j = 0; j < C.chairs_base; j++) base.push(out(g => K.fchairLying(g, xi + 0.3 + j * (cdep + 0.3), C.base[0], C.cz)));
-  for (const x0 of [...C.chair_x].sort((a, b) => a - b)) for (const y0 of [C.plinth, C.shelf_y + t]) stand.push(out(g => K.fchair(g, x0, y0, C.chair_z)));
+  const inT = new THREE.Group(), inC = new THREE.Group(), base = [], stand = []; cabIn.add(inT, inC);   // N193: each box's insides, left out while its door is shut
+  for (let j = 0; j < C.chairs_base; j++) base.push(slideOut(inT)(g => K.fchairLying(g, xi + 0.3 + j * (cdep + 0.3), C.base[0], C.cz)));
+  for (const x0 of [...C.chair_x].sort((a, b) => a - b)) for (const y0 of [C.plinth, C.shelf_y + t]) stand.push(slideOut(inC)(g => K.fchair(g, x0, y0, C.chair_z)));
   cab.add(cabIn);
   cabRig = K.tableRig(C); cab.add(cabRig);
   cabSeats = K.seats(C); Object.values(cabSeats).forEach(g => cab.add(g));
@@ -207,6 +207,8 @@ function buildCab(C = cabC()) {
   CABP.compact = { sl: false, C, doorT: anim(v => { cabDoor.T.rotation.y = Math.PI * v; cabLit[0].visible = v > 0.04; }), doorC: anim(v => { cabDoor.C.rotation.y = -Math.PI * v; cabLit[1].visible = v > 0.04; }),
                    stand, base, pads: anim(v => { cabPads.position.x = -0.25 * v; cabPads.visible = false; }), rig: cabRig.userData.rig,
                    seats: { four: cabSeats.four.userData.chairs, six: cabSeats.six.userData.chairs } };
+  { const P = CABP.compact, shut = () => { inT.visible = cabRig.visible = P.doorT.p > 1e-4 || P.rig.p > 1e-4; inC.visible = P.doorC.p > 1e-4; };   // N193: behind a shut door, not drawn
+    for (const a of [P.doorT, P.doorC, P.rig]) { const set = a.set; a.set = v => { set(v); shut(); }; } shut(); }
   scene.add(cab);
 }
 /* v33: the 80-wide version is the same build round a narrower table: swap the whole cabinet when the width changes */
