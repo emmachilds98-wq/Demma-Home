@@ -71,6 +71,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Flaky checks:** `browser (site)` "Measure didn't keep the number typed" was a fixed wait against Measure's 600 ms debounce;
   #135 waits for the saved row. Draw counts in CI vary: once `rtx draws_house 817 > 640` against 569 locally and on main, and once
   `iphone draws_living 945 over 295` locally. Re-run before hunting a cause; screenshots are in each run's `screenshots-site` artifact.
+- **`20_go.js` split (V4.37, N194):** older notes, comments and plan rows that say `20_go.js` mean one of `20_1_house_materials.js`
+  (`HTEX`, the palette `FIN`, `finish`, `garageFloor`, `liftBlack`), `20_2_house_outside.js` (plants, trees, the street, `worldUV`),
+  `20_3_house_shade.js` (`houseShade`, `pieceShade`, `edgeShade`, `joinBuild`), `20_4_house_build.js` (`buildHouse`, `bakeApply`) or
+  `20_5_go.js` (`buildSun`, `start`, `R3D`). Cut at top-level statements, so the joined script is the same byte for byte.
 - **The 3D's parts share one scope** (`room3d_src.py` joins them): a new top-level name can clash (`shown` once stopped `R3D.ready`
   ever firing). Put a `// note` at a line's end only: one put mid-line in a one-line statement commented out the rest of it.
 

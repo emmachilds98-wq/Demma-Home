@@ -9,7 +9,7 @@ python3 house/bake.py [site] --rewrite                                       the
 2. Blender (bpy): the meshes, their colours, the lights in Blender's units; the shells unwrapped into one atlas; Cycles bakes the
    indirect light, by day (sun and sky) and by evening (the rooms' lights), each into the atlas.
 3. Written into the site: tex/bake_day.<hash>.png, tex/bake_eve.<hash>.png and data/bake.<hash>.bin (each shell's second UVs), named in
-   data/bake.json, which the page reads after building the house (20_go.js `bakeApply`), the bounced light only, on top of the page's live
+   data/bake.json, which the page reads after building the house (`20_4_house_build.js` `bakeApply`), the bounced light only, on top of the page's live
    light; with ?bake for now (REAL_PLAN N195). A shell the bake didn't see takes the atlas' corner (the mean bounce).
 
 Units: three's lights are physical (metres, candela, lux); Cycles' a point or spot light of P W gives P / 4π W/sr, so P = 4π cd; a sun of
