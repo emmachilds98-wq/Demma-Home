@@ -48,7 +48,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   (`tools/eslint.config.mjs`). A page global the 3D reads (`window.X &&`) goes in that file's globals.
 
 - **Baked light (N195):** `python3 -m pip install bpy==5.3.0` (Blender as a module; Python 3.13 only), then
-  `python3 house/bake.py --size 2048 --samples 64` after a build; it's on for the HD paths (`HI`; `?nobake` off) and baked in the workflow (Python 3.13), cached by the house file, `bake.py` and `20_go.js`. A mesh of a baked material without baked UVs reads the atlas' (0,0), kept as the mean bounce, so joins and pieces laid later match. The export reads the page's own
+  `python3 house/bake.py --size 2048 --samples 64` after a build; see it with `?bake` on an HD path (`HI`). On for everyone it must be in the page before the house's warm-up, or every house material is built twice (#306: 112 shaders on the first picture). A mesh of a baked material without baked UVs reads the atlas' (0,0), kept as the mean bounce, so joins and pieces laid later match. The export reads the page's own
   meshes (`houseG`, named for it) in the order the page builds them, so a bake belongs to one build of the 3D. Blender's merge drops
   slivers of no area: each corner carries its own index (`oci`) so the UVs map back. The raw light is kept in `_shots/bake/` to write
   again without baking. three.js 0.187 lights in physical units: the sun 80 lux beside a lamp of a few candela, hence the fourth-root curve.
