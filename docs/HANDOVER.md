@@ -1,25 +1,35 @@
 # Handover (brought to now 13 Nov 2026, V4.5)
 
-## Now
-- **Live:** Home Plan V4.5 at https://emmachilds98-wq.github.io/Demma-Home/ (main at #271, the double-click to centre).
-- **The plan (20 Nov):** `docs/REAL_PLAN.md` section 24 (N190–N200, the full upgrade; KTX2 a yes). Done: N190 the picture check (`gallery.py --diff`), N191 the names check, N192 three.js 0.187 (V4.29), N200 the page's tokens (V4.30), N199 each room's scheme (V4.32). Started: N195 baked light (V4.34, behind `?bake`; its row says what's left), N198 the furniture (V4.32: the kitchen's units and the bathroom vanity). Open: N193 BatchedMesh, N194 modules, N196 KTX2 (#133's branch has the encoder side), N197 the bedrooms' and office's pieces.
-  smooth, F docs). Each row names its files; take the next open row of a stream. Section 21's open rows carry on.
-- **Open PRs:** #272 (N141, fabrics made at build), #274 (N169, the plot's
-  soft edge), #275 (N152, will the sofa bed go in: waits on the door's width), #133 (KTX2, paused: do not merge).
-- **Next when they land:** stream B (N142, then N172) after #272; stream C (N173) after #274.
-- **The rules in force:** furniture and layouts finished; the light the same in every room, cosy; smooth on the iPhone 15 Pro and the
-  RTX 5070 inside `tools/perf_budget.json`; walls smooth (no plaster relief); customisation after the quality work; the address never
-  written. The project's own rules (read first, merge main last, the next free version at merge) are in the project's instructions
-  and below.
-- **Waiting on Emma:** see "Waiting on Emma" below.
+## Now (21 Nov 2026, written mid-round so the next session can pick up if this one stops)
+- **Live:** main at V4.33 (#305). **Open: #306** (V4.34, N195's fixes, the bake still behind `?bake`): build, page, taps and site
+  green; the hitch check was running. Merge it when green (the project's rule), then take the queue below in order, one PR each.
+- **The plan:** `docs/REAL_PLAN.md` section 24 (N190–N200). Done: N190, N191, N192 (V4.29), N200 (V4.30), N199 (V4.32), N197 reviewed.
+  In progress: N195 baked light (behind `?bake`), N198 furniture. Open: N193, N194, N196.
+- **The queue (work done outside GitHub, in order):**
+  1. **N198, the last furniture** (ready): `docs/wip/N198-wc-garage-airing.patch` (`house/model.py` only: the garage's chipboard box as
+     1.8 sheets with 3 mm gaps; the WC's cistern a tank and lid, a round flush pipe, the basin's plughole and pillar tap, a bottle trap
+     under `wc.pipes`; the airing cupboard's shelves on battens; outer sizes kept, checked against the house file). `git apply` it,
+     `python3 tools/checks.py --quick` (it passed: 8 checks), version V4.35, HISTORY/STATE/REAL_PLAN rows, delete `docs/wip/`, PR.
+  2. **N195, the baked light on for everyone** (being worked on): on CI the bake's file landed after the warm-up and the HD paths built
+     112 shaders on the first picture (budget 44). Fix: the light map in the page before the house is built (inline `bake.json` and
+     the UVs into the page at build, or the house's build waiting on it); then the workflow step (in #306's history: Python 3.13 for
+     `bpy`, a 1024² atlas at 128 samples, cached by `house.json`, `bake.py`, `20_go.js`). Check with `checks.py --only hitch` and
+     `--only site`. The row in section 24 has the history (#303, #305, #306).
+  3. **N196, KTX2** (being worked on): the encoder side is on branch `claude/project-thread-tmpz6b` (#133, commit f10bba7, three
+     0.160 era): port it, add the page's `KTX2Loader` path in `02_textures.js` (JPEG the fallback), the encoder in the workflow; mind
+     `photos_mb` (both formats on disk).
+  4. **N193, fewer draws** (being measured): measure where the draws go first (`R3D.perf().calls`, `tools/check_site.py`'s paths); a
+     change only if it saves 10% or more with the pictures the same (`tools/gallery.py --diff`) and no shader added.
+  5. **N194, the 3D as modules**: last, alone (it touches every part; anything else in flight would conflict).
+- **How this round ran:** one branch (`claude/trusting-gauss-gra6z6`), one PR at a time, each merged when CI is green; helper agents
+  worked in their own worktrees and handed back patches only (never pushing). CI takes about 35 minutes a PR.
+- **The rules in force:** the house is the improvement plan (sizes, layouts and kept pieces stay; the looks are the plan's); the light
+  the same in every room, cosy; smooth on the iPhone 15 Pro and the RTX 5070 inside `tools/perf_budget.json`; walls smooth; the
+  address never written.
 
-Emma stopped work on 8 Nov 2026 ("stop and handover for a new set of agents and make sure everything is findable in github"), as she
-did once on 7 Nov at V2.74. Everything a new team needs is in this repo; nothing lives only outside GitHub. Read in this order:
-1. `CLAUDE.md`: the client's rules. **Privacy first: the address is never written anywhere** (files, commits, PRs, pictures).
-2. This page: how it runs, what's open, what waits on Emma.
-3. `docs/STATE.md`: what's true now. `docs/REAL_PLAN.md` section 9: every task's state.
-4. `docs/NOTES.md`: what the threads learned (the sandbox, merging, speed, photo fits, where each feature lives).
-5. As needed: `docs/DECISIONS.md` (the client's choices in force), `house/HOUSE.md` (house facts), `docs/HISTORY.md` (every version).
+Read in this order: `CLAUDE.md` (the client's rules; **privacy first: the address is never written anywhere**), this page,
+`docs/STATE.md` (what's true now), `docs/REAL_PLAN.md` section 24 (every task's state), `docs/NOTES.md` (what the threads learned),
+then as needed `docs/DECISIONS.md`, `house/HOUSE.md`, `docs/HISTORY.md`.
 
 ## What it is
 Emma and Dave's whole house in 3D, in its upgraded state, to plan and track the upgrades. The 3D fills the screen and is the site;
