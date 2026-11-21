@@ -9,7 +9,7 @@ leaner code. V4.6 (N169): the plot's edge soft, the sky hazy. Earlier: `docs/HIS
 The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.28 ↻"): on the
 home-screen app, tap it to get the newest.
 
-**Work from:** `docs/REAL_PLAN.md` section 24 (20 Nov: the full upgrade, N190–N200; the house is the improvement plan: sizes, layouts and kept pieces stay, the looks are the plan's). Done: N190–N200 (N194 in part: the split; ES modules left). A new team starts with `docs/HANDOVER.md`; earlier sections' rows: section 9.
+**Work from:** `docs/REAL_PLAN.md` section 25 (21 Nov: what's left for the next team, N201–N206: the real devices' check, the bake's seam, ES modules, Blender 6, KTX2 on the PC, customisation). Section 24 (the full upgrade, N190–N200) is done but N194's second half (N203). A new team starts with `docs/HANDOVER.md`; earlier sections' rows: section 9.
 outside, fewer pills, leaner code, a hitch check; N178 done: `docs/HANDOVER.md` brought to now). Section 21's open rows carry on (N160, N161 on the client's screenshots; N163 on hold:
 the outside by day, as the client asked). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier task's state.
 

@@ -75,6 +75,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   (`HTEX`, the palette `FIN`, `finish`, `garageFloor`, `liftBlack`), `20_2_house_outside.js` (plants, trees, the street, `worldUV`),
   `20_3_house_shade.js` (`houseShade`, `pieceShade`, `edgeShade`, `joinBuild`), `20_4_house_build.js` (`buildHouse`, `bakeApply`) or
   `20_5_go.js` (`buildSun`, `start`, `R3D`). Cut at top-level statements, so the joined script is the same byte for byte.
+- **CI's caches are per branch:** a PR's bake (and renders) aren't reused by main after the merge, so main bakes again (about 8 min). Local browser checks here take 40+ min on 4 cores with helpers running: let CI measure, run `checks.py --quick` locally.
 - **The 3D's parts share one scope** (`room3d_src.py` joins them): a new top-level name can clash (`shown` once stopped `R3D.ready`
   ever firing). Put a `// note` at a line's end only: one put mid-line in a one-line statement commented out the rest of it.
 
