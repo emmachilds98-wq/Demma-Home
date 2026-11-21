@@ -1,6 +1,10 @@
 # Handover (21 Nov 2026, V4.37: the round stopped here; start here)
 
 ## Now
+**First (21 Nov, later): Emma's review on the PC is `docs/REAL_PLAN.md` section 26** (N207–N212: the mouse look the wrong way
+round, grey carpet in bedroom 2 and the office, each room's floor from its card, the stairwells' holes covered by the landing's floor,
+the office's plastic ivy out, and a storage and display review). Take it before section 25; each row already says what was found.
+
 The client, 21 Nov 2026: "when this batch of work completes i want you to stop working here and summarise where we are and any
 remaining plans in the github repo in good enough detail that another team can pick up". Earlier the same day: "Start and complete the
 upgrade that has been ongoing with another team"; "merge it all when green"; "improve further to further increase quality of the repo".
