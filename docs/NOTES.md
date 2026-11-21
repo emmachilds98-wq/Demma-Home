@@ -149,6 +149,17 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   The landing's stop pushed the site job past its 40 minutes, so the HD paths' speed budget (iPhone, RTX) moved to the hitch job
   (`check_site.py --hitch`, `_shots/perf-hitch.json`); the site job keeps the phone's and the PC's Fast paths.
 
+- **three.js 0.187 (V4.29, N192):** `PCFSoftShadowMap` is gone (PCF with each light's `shadow.radius`); `RoomEnvironment` lights its
+  room at 900 where 0.160 used 5 without a renderer (`studioRoom` in `09` sets 5 and its lamps plain); the sky draws its own clouds and
+  lost 0.160's tone curve (our patch in `11_lights.js` keeps the curve and the haze, and leaves the sun's disc out of the outdoor light).
+  Shaders are keyed on `hasPositionAttribute` and `vertexNormals`, and the shadow maps use basic depth packing: the warm-up's stand-ins
+  (`postWarm`'s plane without normals, `depthMat` without RGBA packing, `10_plants`' leaf depth) must match what is drawn, or the real
+  shaders get built mid-walk (the hitch check). To compare shader lists between builds, record `R3D._dbg.gl.info.programs` (name and
+  cacheKey) at `r3d-first` with the GPU spoofed as `check_site.py`'s PERF_INIT does.
+- **First-picture budgets (V4.32, V4.34):** anything that adds a mesh or a material at open (a scheme's fittings, curtains or prints; a
+  light map arriving after the warm-up) shows in `shaders_first` and `draws_house` on the Fast paths or the HD ones. Measure with the
+  site and hitch checks before merging; CI is slower than a sandbox, so a race that passes locally can fail there.
+
 ## 4. The house beside its photos
 - `tools/compare.py` pairs a photo with a view (`PAIRS`; a second photo of a room is `<view>_<what>`, e.g. `hall_front`);
   `tools/camfit.py` fits the camera. A sweep can't find the bathroom or the master: they need hand starts (`camfit.START`, solved from

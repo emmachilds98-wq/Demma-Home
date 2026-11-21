@@ -38,6 +38,10 @@ context and plans to not drop anything from our round."
   the light the same in every room, cosy; smooth on the iPhone 15 Pro and the RTX 5070 inside `tools/perf_budget.json`; walls smooth,
   ceilings white artex; say less.
 - **Waiting on Emma:** as below (the door's width for the sofa bed, the map screenshots, the sofa bed's price, a speed reading).
+- **Everything is in this repo and its pull requests** (the client, 21 Nov: "Make sure all info needed is available via the GitHub repo
+  as they will not be in this Claude account or file"). Each PR's description (#299–#306) says what changed, why and the checks' lines.
+  Older rows (sections 20–23) mention screenshots "in the project files": those were in a claude.ai project that the next team won't
+  have; they aren't needed, and `python3 tools/gallery.py` (every room's view) or `--diff <main's build>` makes fresh ones.
 
 Read in this order: `CLAUDE.md` (the client's rules; **privacy first: the address is never written anywhere**), this page,
 `docs/STATE.md` (what's true now), `docs/REAL_PLAN.md` section 24 (every task's state), `docs/NOTES.md` (what the threads learned),
