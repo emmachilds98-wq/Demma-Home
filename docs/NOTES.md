@@ -48,10 +48,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   (`tools/eslint.config.mjs`). A page global the 3D reads (`window.X &&`) goes in that file's globals.
 
 - **Baked light (N195):** `python3 -m pip install bpy==5.3.0` (Blender as a module; Python 3.13 only), then
-  `python3 house/bake.py --size 2048 --samples 64` after a build; open the site with `?bake` to see it (on for everyone it failed the Fast paths' shader budget and the floors' join: REAL_PLAN N195). The export reads the page's own
+  `python3 house/bake.py --size 2048 --samples 64` after a build; on by default on an HD path (`HI`; `?nobake` to compare). On for everyone it must be in the page before the house's warm-up, or every house material is built twice (#306: 112 shaders on the first picture). A mesh of a baked material without baked UVs reads the atlas' (0,0), kept as the mean bounce, so joins and pieces laid later match. The export reads the page's own
   meshes (`houseG`, named for it) in the order the page builds them, so a bake belongs to one build of the 3D. Blender's merge drops
   slivers of no area: each corner carries its own index (`oci`) so the UVs map back. The raw light is kept in `_shots/bake/` to write
-  again without baking. three.js 0.187 lights in physical units: the sun 80 lux beside a lamp of a few candela, hence the fourth-root curve.
+  again without baking. On for everyone since V4.35: `start()` waits (2.5 s at most) for `BAKE.p` before building anything, and only a bake in hand then (`BAKE.use`) is applied; one that lands later would rebuild every house material (#306's 112 shaders). On CI the bake takes about 8 min (4 cores); here about 16 with other work running. three.js 0.187 lights in physical units: the sun 80 lux beside a lamp of a few candela, hence the fourth-root curve.
 
 ## 2. Merging when threads run side by side
 - **Versions race.** Each PR takes `VERSION`, a line in `docs/HISTORY.md`, `docs/STATE.md` and its plan row, and main moves every few
@@ -148,6 +148,17 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   The check: before/after screenshots at fixed eyes must match once settled (a piece first drawn takes a frame or two to match).
   The landing's stop pushed the site job past its 40 minutes, so the HD paths' speed budget (iPhone, RTX) moved to the hitch job
   (`check_site.py --hitch`, `_shots/perf-hitch.json`); the site job keeps the phone's and the PC's Fast paths.
+
+- **three.js 0.187 (V4.29, N192):** `PCFSoftShadowMap` is gone (PCF with each light's `shadow.radius`); `RoomEnvironment` lights its
+  room at 900 where 0.160 used 5 without a renderer (`studioRoom` in `09` sets 5 and its lamps plain); the sky draws its own clouds and
+  lost 0.160's tone curve (our patch in `11_lights.js` keeps the curve and the haze, and leaves the sun's disc out of the outdoor light).
+  Shaders are keyed on `hasPositionAttribute` and `vertexNormals`, and the shadow maps use basic depth packing: the warm-up's stand-ins
+  (`postWarm`'s plane without normals, `depthMat` without RGBA packing, `10_plants`' leaf depth) must match what is drawn, or the real
+  shaders get built mid-walk (the hitch check). To compare shader lists between builds, record `R3D._dbg.gl.info.programs` (name and
+  cacheKey) at `r3d-first` with the GPU spoofed as `check_site.py`'s PERF_INIT does.
+- **First-picture budgets (V4.32, V4.34):** anything that adds a mesh or a material at open (a scheme's fittings, curtains or prints; a
+  light map arriving after the warm-up) shows in `shaders_first` and `draws_house` on the Fast paths or the HD ones. Measure with the
+  site and hitch checks before merging; CI is slower than a sandbox, so a race that passes locally can fail there.
 
 ## 4. The house beside its photos
 - `tools/compare.py` pairs a photo with a view (`PAIRS`; a second photo of a room is `<view>_<what>`, e.g. `hall_front`);

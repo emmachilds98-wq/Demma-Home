@@ -1,25 +1,47 @@
 # Handover (brought to now 13 Nov 2026, V4.5)
 
-## Now
-- **Live:** Home Plan V4.5 at https://emmachilds98-wq.github.io/Demma-Home/ (main at #271, the double-click to centre).
-- **The plan (20 Nov):** `docs/REAL_PLAN.md` section 24 (N190–N200, the full upgrade; KTX2 a yes). Done: N190 the picture check (`gallery.py --diff`), N191 the names check, N192 three.js 0.187 (V4.29), N200 the page's tokens (V4.30), N199 each room's scheme (V4.32). Started: N195 baked light (V4.33, ready behind `?bake`; its row says what's left to switch it on), N198 the furniture (V4.32: the kitchen's units and the bathroom vanity). Open: N193 BatchedMesh, N194 modules, N196 KTX2 (#133's branch has the encoder side), N197 the bedrooms' and office's pieces.
-  smooth, F docs). Each row names its files; take the next open row of a stream. Section 21's open rows carry on.
-- **Open PRs:** #272 (N141, fabrics made at build), #274 (N169, the plot's
-  soft edge), #275 (N152, will the sofa bed go in: waits on the door's width), #133 (KTX2, paused: do not merge).
-- **Next when they land:** stream B (N142, then N172) after #272; stream C (N173) after #274.
-- **The rules in force:** furniture and layouts finished; the light the same in every room, cosy; smooth on the iPhone 15 Pro and the
-  RTX 5070 inside `tools/perf_budget.json`; walls smooth (no plaster relief); customisation after the quality work; the address never
-  written. The project's own rules (read first, merge main last, the next free version at merge) are in the project's instructions
-  and below.
-- **Waiting on Emma:** see "Waiting on Emma" below.
+## Now (21 Nov 2026: the round stopped; start here)
+The client, 21 Nov 2026: "Merge current work to main and stop the upgrade. Leave a clear upgrade plan for next team with the right
+context and plans to not drop anything from our round."
 
-Emma stopped work on 8 Nov 2026 ("stop and handover for a new set of agents and make sure everything is findable in github"), as she
-did once on 7 Nov at V2.74. Everything a new team needs is in this repo; nothing lives only outside GitHub. Read in this order:
-1. `CLAUDE.md`: the client's rules. **Privacy first: the address is never written anywhere** (files, commits, PRs, pictures).
-2. This page: how it runs, what's open, what waits on Emma.
-3. `docs/STATE.md`: what's true now. `docs/REAL_PLAN.md` section 9: every task's state.
-4. `docs/NOTES.md`: what the threads learned (the sandbox, merging, speed, photo fits, where each feature lives).
-5. As needed: `docs/DECISIONS.md` (the client's choices in force), `house/HOUSE.md` (house facts), `docs/HISTORY.md` (every version).
+- **Live:** main at **V4.35** (#307, which carried #306), published to GitHub Pages by the workflow. The round was picked up again on 21 Nov
+  ("Start and complete the upgrade that has been ongoing with another team"); what's still open is below and in section 24.
+- **The round (20–21 Nov, `docs/REAL_PLAN.md` section 24, N190–N200), the client's words:** "the house is an improvement plan so it
+  shouldnt look the same as my house currently only in sizing and some furniture im keeping ... action everything else"; "but still
+  upgrade the furniture we have". So: sizes, layouts and kept pieces stay; the light, materials, furniture detail and finishes they
+  haven't chosen are the plan's to upgrade (`docs/DECISIONS.md`).
+- **Done:** N190 the picture check (`tools/gallery.py --diff`); N191 the names check (ESLint, `checks.py` "names"); N192 three.js 0.187
+  (V4.29); N200 the page's tokens (V4.30); N199 each room's scheme (`house/plan_finishes.json`, V4.32); N198 the furniture (V4.32,
+  V4.34); N197 reviewed (nothing to change).
+- **Not finished, in the order to take them** (each row in section 24 has the detail; `docs/wip/README.md` has head starts made on
+  1eac230, unverified):
+  1. **N195, the baked light: done V4.35** (#307): on for everyone on the HD paths, the workflow bakes it (cached).
+  2. **N196, KTX2 photos** (the client's yes). `docs/wip/N196-ktx2-partial.patch` (the encoder side from #133, the page's
+     `KTX2Loader` path, the workflow's encoder step); `photos_mb` needs a decision if both formats ship.
+  3. **N193, fewer draws.** Measure first (`R3D.perf().calls`; `tools/check_site.py`'s four paths); change only for 10% or more, the
+     pictures the same, no shader added. `docs/wip/N193-draws-partial.patch` is an unmeasured start.
+  4. **N194, the 3D as modules.** Last and alone: it touches all 24 parts of `media-wall/src/room3d/`. The names check (N191) and the
+     picture check (N190) are its safety net: 0 problems and 0.00% moved.
+  5. **Smaller:** the seam on the master's back wall in the bake; Playwright pinned (V4.35).
+- **What this round learned** (also in `docs/NOTES.md`): three.js 0.187 keys shaders on `hasPositionAttribute` and `vertexNormals`,
+  and its shadow maps use basic depth packing, so the warm-up's stand-ins must match or shaders get built mid-walk (V4.29). Anything
+  that adds a mesh or a material at the first picture (a scheme's fittings, curtains, prints) shows in the Fast paths' budgets
+  (V4.32). A light map must exist before the house's materials are compiled.
+- **How the round ran:** one branch, one PR at a time, each merged when CI was green (about 35 minutes a PR); helper agents worked in
+  their own worktrees and handed back patches only. Keep the project's rules: the next free version at merge, `docs/STATE.md`
+  rewritten, a line in `docs/HISTORY.md`, the row ticked, `house/privacy_check.py` before every commit.
+- **The rules in force:** privacy first (the address never written); the old design (the 3D is the site, floating pills and panels);
+  the light the same in every room, cosy; smooth on the iPhone 15 Pro and the RTX 5070 inside `tools/perf_budget.json`; walls smooth,
+  ceilings white artex; say less.
+- **Waiting on Emma:** as below (the door's width for the sofa bed, the map screenshots, the sofa bed's price, a speed reading).
+- **Everything is in this repo and its pull requests** (the client, 21 Nov: "Make sure all info needed is available via the GitHub repo
+  as they will not be in this Claude account or file"). Each PR's description (#299–#306) says what changed, why and the checks' lines.
+  Older rows (sections 20–23) mention screenshots "in the project files": those were in a claude.ai project that the next team won't
+  have; they aren't needed, and `python3 tools/gallery.py` (every room's view) or `--diff <main's build>` makes fresh ones.
+
+Read in this order: `CLAUDE.md` (the client's rules; **privacy first: the address is never written anywhere**), this page,
+`docs/STATE.md` (what's true now), `docs/REAL_PLAN.md` section 24 (every task's state), `docs/NOTES.md` (what the threads learned),
+then as needed `docs/DECISIONS.md`, `house/HOUSE.md`, `docs/HISTORY.md`.
 
 ## What it is
 Emma and Dave's whole house in 3D, in its upgraded state, to plan and track the upgrades. The 3D fills the screen and is the site;
