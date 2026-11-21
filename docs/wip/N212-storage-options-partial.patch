@@ -1,0 +1,218 @@
+diff --git a/house/storage_ideas.py b/house/storage_ideas.py
+new file mode 100644
+index 0000000..e8f74fd
+--- /dev/null
++++ b/house/storage_ideas.py
+@@ -0,0 +1,191 @@
++"""N212 (Emma, 21 Nov 2026: "keep storage in mind as its a strange shaped house and needs to be adequate for all our things and displays /
++knick nacks"; "integrating good storage design in a unique way"): storage and display designed into the rooms, options to look at, never
++in the plan's build or buy lists (CLAUDE.md: core plan vs options). Each idea is one line (what, where, size, rough cost, source) and one or
++more pieces, each a real product's size (media-wall/src/fit.py SOURCES) placed in the house's own numbers (survey_data, model).
++
++What she keeps (100-300 LPs and room to grow, under 2 m of books and games, clothes and shoes, tech, cables and hobby kit, knick-knacks to
++show) and where it goes now: the living room holds 291 LPs (geometry.ALL_LPS) and its own options (the living room's Try options); the
++master's two wardrobes the clothes; the rooms in the roof the rest. The odd spaces looked at, and why some are left: bedroom 2's eaves block
++behind its 150 low wall has the Kallax drawers in front of it (the client's, v68), so it stays shut; the front rooms have no slope inside
++(the roof's front comes down outside them); the landing is a corridor of doors, so only over the doors and the top of the stairs; the store
++under the stairs is empty, 89 wide.
++
++The 3D draws a piece from its box with room3d/21_storage_ideas.js's builder (`cat`); `checks()` proves each fits (check_model.py)."""
++import model as M
++import survey_data as D
++
++FY = M.FLOOR_Y
++
++
++def _room(rid):
++    return next(r for f in FY for r in M.rooms(f) if r["id"] == rid)
++
++
++def _door(did):
++    return next(d for f in FY for d in M.doors(f) if d["id"] == did)
++
++
++def ideas():
++    """[dict(id, room, n, what, where, size, cost, ref, src, parts=[dict(cat, box, ax)])]: box [x0, y0, z0, x1, y1, z1] in house cm, ax the
++    axis it runs along (its back to the nearer wall of its room, as the catalogue's pieces)."""
++    y1, yl = FY["first"], FY["lower"]
++    out = []
++    mu, kx = D.MUSIC, D.MUSIC["kallax"]
++    # bedroom 2: the side wall past the slope (full height from where the slope meets the ceiling, M.ZC_BACK) to the guitars; clear of the
++    # Kallax drawers' pull (kallax z0 + d + drawer_d) and 2 off the wall for the skirting
++    za = kx["z0"] + kx["d"] + kx["drawer_d"] + 1.0
++    out.append(dict(id="records", room="bed2", n="Record wall", cat="kallax24", ax="z",
++                    box=[2.0, y1, za, 41.0, y1 + 77.0, za + 147.0],
++                    what="KALLAX 2 × 4 laid on its side: six cubes of LPs (about 300 more), two with doors for the deck's kit",
++                    where="bedroom 2, the side wall past the slope", size="147 × 39 × 77", cost=(55, 80), ref="kallax24",
++                    src="IKEA KALLAX 77 × 147, 39 deep"))
++    zc = za + 147.0 / 2
++    out.append(dict(id="glass", room="bed2", n="Lit glass cabinets", cat="eket2", ax="z",
++                    box=[0.0, y1 + 125.0, zc - 37.5, 35.0, y1 + 160.0, zc + 37.5],
++                    what="two EKET glass-door cabinets over the records, a spotlight in each: the knick-knacks lit",
++                    where="bedroom 2, over the record wall", size="2 × 35 × 35 × 35", cost=(80, 110), ref="eket",
++                    src="IKEA EKET with glass door 35 × 35 × 35; MITTLED spotlights"))
++    am, cb = mu["amp"], mu["chairbed"]
++    out.append(dict(id="pegboard", room="bed2", n="Pegboard for the gear", cat="skadis", ax="x",
++                    box=[4.0, y1 + 100.0, cb["z1"] - 10.0, 60.0, y1 + 156.0, cb["z1"]],
++                    what="a SKÅDIS pegboard over the amp: leads, pedals, picks, the headphones on hooks",
++                    where="bedroom 2, the front wall over the amp", size="56 × 56", cost=(20, 40), ref="skadis",
++                    src="IKEA SKÅDIS pegboard 56 × 56"))
++    ms = D.MASTER
++    bz0, bz1 = ms["bed"]["z"]
++    bs = ms["bedsides"]
++    hb = y1 + ms["bed"]["head_h"]
++    out.append(dict(id="ledges", room="master", n="Ledges over the bed", cat="ledges3", ax="z",
++                    box=[0.0, hb + 7.0, bs[0][0] - 2.0, 12.0, hb + 40.0, bs[1][1] + 2.0],
++                    what="an oak picture ledge over the bed for frames, and one over each bedside, a picture light over the middle",
++                    where="master bedroom, the wall behind the bed", size="115 and 2 × 55, 12 deep", cost=(30, 45), ref="mosslanda",
++                    src="IKEA MOSSLANDA 115 and 55; a battery picture light"))
++    of = D.OFFICE
++    pz1, pz0 = of["pc"]["z"][1], of["pc2"]["z"][0]
++    hz = (pz1 + 2 + 346.0) / 2                                            # between the two PCs' gear (the second's starts at 346)
++    out.append(dict(id="helmer", room="bed3", n="Drawers under the desk", cat="helmer", ax="z",
++                    box=[D.INSIDE["w"] - 3.0 - 44.0, y1, hz - 14.0, D.INSIDE["w"] - 3.0, y1 + 69.0, hz + 14.0],
++                    what="a HELMER drawer unit between the two PCs: cables, chargers, controllers, the hobby bits",
++                    where="bedroom 3, under the desk", size="28 × 44 × 69", cost=(30, 45), ref="helmer",
++                    src="IKEA HELMER on castors 28 × 44 × 69"))
++    la = _room("landing")
++    b2 = _door("bed2_door")
++    sy = y1 + D.DOOR_H + 10.0                                             # the brackets over the frames' heads (204) and bedroom 2's cap (207.5)
++    out.append(dict(id="books", room="landing", n="Books over the doors", cat="shelf2", ax="z",
++                    box=[la["x0"], sy, b2["a"] - 7.0, la["x0"] + 20.0, y1 + M.CEIL - 0.5, b2["a"] - 7.0 + 160.0],
++                    what="two shelves over bedroom 2's and the boiler cupboard's doors: paperbacks and game cases, 1.6 m, clear of the loft hatch",
++                    where="the landing, over the doors", size="2 × 80 × 20", cost=(35, 55), ref="bergshult",
++                    src="IKEA BERGSHULT 80 × 20 on RAMSHULT brackets"))
++    lt, fs = _room("landing_top"), _room("first_stairs")
++    out.append(dict(id="stairtop", room="landing", n="Ledges at the top of the stairs", cat="ledges55", ax="x",
++                    box=[lt["x0"] + 13.0, y1 + 115.0, lt["z1"] - 12.0, lt["x0"] + 68.0, y1 + 210.0, lt["z1"]],
++                    what="three oak picture ledges stacked, a picture light over them: the knick-knacks met at the top of the stairs",
++                    where="the landing, the end wall at the top of the stairs", size="3 × 55 × 12", cost=(30, 40), ref="mosslanda",
++                    src="IKEA MOSSLANDA 55; a battery picture light"))
++    sd, sx1 = _door("store_door"), _stairbox()
++    H, r = M.hang("lower", sd, 1.75), sd["b"] - sd["a"]                   # the door opens in from its west end: past its arc
++    z0 = sd["line"] + H["side"] * ((r * r - (sx1 - 30.5 - H["hinge"]) ** 2) ** 0.5 + 2.0)
++    out.append(dict(id="ivar", room="lower_store", n="Shelves in the store", cat="ivar", ax="z",
++                    box=[sx1 - 30.5, yl, z0, sx1 - 0.5, yl + 179.0, z0 + 89.0],
++                    what="an IVAR bay against the flight's boxed side: boxes of tech, cables and hobby kit; the back corner left for the washer dryer",
++                    where="the store under the stairs", size="89 × 30 × 179", cost=(70, 100), ref="ivar",
++                    src="IKEA IVAR 1 section 89 × 30 × 179"))
++    for i in out:
++        i["parts"] = [dict(cat=i.pop("cat"), box=[round(v, 1) for v in i.pop("box")], ax=i.pop("ax"))]
++    return out
++
++
++def for_3d():
++    """What the 3D needs: the ideas and their pieces (R.HOUSE3.storage)."""
++    return [dict(id=i["id"], room=i["room"], n=i["n"], line=f"{i['what']} · {i['size']} · £{i['cost'][0]}–{i['cost'][1]} · {i['src']}",
++                 parts=i["parts"]) for i in ideas()]
++
++
++def rows():
++    """The plan's table: (what, where, size, (lo, hi), source)."""
++    return [(f"{i['n']}: {i['what']}", i["where"], i["size"], i["cost"], i["src"]) for i in ideas()]
++
++
++# what a piece may touch: the floors it stands on, the walls it's fixed to (a box's face, not into it: a part is tested 0.5 in from its
++# faces), the house's shade and contact boxes (drawn, not solid)
++SOFT = {"contact", "shade", "rug", "carpet", "carpet_grey", "laminate", "vinyl", "tile_f", "herring", "lvt_grey", "porcelain", "board"}
++
++
++def _stairbox():
++    """The lower flight's boxed side in the store (x): the store's floor is west of it."""
++    import export_house
++    return export_house._bboxes(M.export())["lower.stair_box"][0]
++
++
++def _reserves():
++    """Space kept clear: (name, box) — the Kallax drawers pulled out, the walk to the music room's desk, the loft hatch's opening, the store's
++    washer dryer corner (the client, 5 Nov) and its walk."""
++    y1, yl = FY["first"], FY["lower"]
++    kx, st, h = D.MUSIC["kallax"], _room("lower_store"), D.LANDING["hatch"]
++    kz = kx["z0"] + kx["d"]
++    sx1 = _stairbox()
++    return [("the Kallax drawers pulled out", [kx["x"][0], y1, kz, kx["x"][1], y1 + 80, kz + kx["drawer_d"]]),
++            ("the loft hatch's opening", [h["x"][0], y1 + 150, h["z"][0], h["x"][1], y1 + M.CEIL, h["z"][1]]),
++            ("the washer dryer's corner (60 × 60)", [st["x0"], yl, st["z1"] - 60.0, st["x0"] + 60.0, yl + 90.0, st["z1"]]),
++            ("the walk into the store (55 wide)", [st["x0"], yl, st["z0"], st["x0"] + 55.0, yl + 200.0, st["z1"] - 60.0])]
++
++
++def checks():
++    """[(name, ok, note)]: each piece in its room, clear of the house's boxes, the doors' swings, the slopes and the space kept clear; its
++    source cited; its back to its wall (so the 3D faces it into the room)."""
++    import sys, pathlib
++    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "media-wall/src"))
++    import fit
++    e = M.export()
++    sizes = M.room_sizes()
++    over = lambda a, b, s=0.5: all(a[i] + s < b[i + 3] and b[i] < a[i + 3] - s for i in range(3))
++    def swept(d, H, b, y0):
++        """Does box b cut the door's swing (a quarter circle from its hinge, on the side it opens to, 205 high)?"""
++        if b[1] > y0 + 205:
++            return False
++        r, (al, ac) = d["b"] - d["a"], ((b[0], b[3]), (b[2], b[5])) if d["axis"] == "x" else ((b[2], b[5]), (b[0], b[3]))
++        qa, qc = sorted((H["hinge"], H["hinge"] + H["u"] * r)), sorted((d["line"], d["line"] + H["side"] * r))
++        a0, a1, c0, c1 = max(al[0], qa[0]), min(al[1], qa[1]), max(ac[0], qc[0]), min(ac[1], qc[1])
++        if a0 >= a1 - 0.5 or c0 >= c1 - 0.5:
++            return False
++        na, nc = min(max(H["hinge"], a0), a1), min(max(d["line"], c0), c1)
++        return (na - H["hinge"]) ** 2 + (nc - d["line"]) ** 2 < r * r
++    swings = [(f, d, M.hang(f, d, 1.75)) for f in FY for d in M.doors(f) if d["id"] not in ("store_w", "store_e", "hall_porch")]
++    res = []
++    for i in ideas():
++        bad = []
++        for p in i["parts"]:
++            b, rm = p["box"], sizes[i["room"]]
++            if not (rm["x0"] - 1 <= b[0] and b[3] <= rm["x1"] + 1 and rm["z0"] - 1 <= b[2] and b[5] <= rm["z1"] + 1):
++                bad.append("outside its room")
++            fk = rm["floor"]
++            F = e["floors"][fk]
++            tags = F.get("tags", [])
++            for m, L in F["boxes"].items():
++                if m in SOFT or m.startswith("shade"):
++                    continue
++                for q, t in zip(L, F.get("bt", {}).get(m, [-1] * len(L))):
++                    if over(b, q):
++                        bad.append(f"{m} of {tags[t] if t >= 0 else 'the shell'}")
++            bad += [f"{d['id']}'s swing" for f, d, H in swings if f == fk and swept(d, H, b, FY[f])]
++            bad += [n for n, q in _reserves() if over(b, q)]
++            if fk == "first":
++                top = min(M.headroom(b[0], b[3], z) for z in (b[2], b[5]))
++                if b[4] > top + 0.5:
++                    bad.append(f"the slope ({top - FY['first']:.0f} there)")
++            r = (sizes[i["room"]]["x0"], sizes[i["room"]]["x1"], sizes[i["room"]]["z0"], sizes[i["room"]]["z1"])
++            o = 2 if p["ax"] == "x" else 0                                # its back to the nearer wall of its room, as hcFrame
++            lo, hi = (b[2] - r[2], r[3] - b[5]) if o == 2 else (b[0] - r[0], r[1] - b[3])
++            if min(lo, hi) > 5.0:
++                bad.append(f"not against a wall ({min(lo, hi):.0f} off)")
++        if i["ref"] not in fit.SOURCES:
++            bad.append(f"no source {i['ref']}")
++        res.append((f"storage idea {i['id']}: fits", not bad, "; ".join(sorted(set(bad))) or f"{i['room']}, {i['size']}"))
++    return res
++
++
++if __name__ == "__main__":
++    for n, ok, note in checks():
++        print("PASS" if ok else "FAIL", n, note)
++    for r in rows():
++        print(" ·", r)
+diff --git a/media-wall/src/fit.py b/media-wall/src/fit.py
+index d7ee4f0..8501ce8 100644
+--- a/media-wall/src/fit.py
++++ b/media-wall/src/fit.py
+@@ -1422,6 +1422,16 @@ SOURCES["amelia"] = ("Amazon UK (Nov 2026, B0HDC8WYBT): Lovesofas Amelia L-shape
+                      "(the text says three, the photos show five pads that flip up on a hinge: drawn five), the 95 to the headrests lying down (the "
+                      "drawing's arrow), black metal feet, a solid wood frame, 172 kg, four boxes (the largest 166 × 101 × 68). About £700–950, to check on the day")
+ ORDER.append("amelia")
++# N212 (21 Nov 2026): the storage ideas' pieces (house/storage_ideas.py), options to look at
++SOURCES["kallax24"] = ("IKEA UK: KALLAX shelving unit, white stained oak effect, 77 × 147 cm, 39 deep, £49 (ikea.com/gb, 003.245.18): eight 33 cm "
++                       "cubes, stands either way up; LPs: about 50–70 a cube by their sleeves (Naim Audio community, \"IKEA Kallax for LPs?\")")
++SOURCES["skadis"] = "IKEA: SKÅDIS pegboard, white, 56 × 56 cm, hooks, shelves and baskets clip in (ikea.com, 303.208.06)"
++SOURCES["helmer"] = ("IKEA: HELMER drawer unit on castors, white or black, W 28 × D 44 × H 69 cm, six drawers 39 deep inside, £30–35 "
++                     "(ikea.com/ie, 102.510.45)")
++SOURCES["ivar"] = "IKEA: IVAR 1 section with shelves, pine, 89 × 30 × 179 cm, the shelves moved to suit (ikea.com, s29403845)"
++SOURCES["mittled"] = ("IKEA: MITTLED LED spotlight, dimmable, white or black, for inside cabinets (ikea.com, 404.536.45); about 6 across (E), "
++                      "a driver for up to nine")
++ORDER.extend(["kallax24", "skadis", "helmer", "ivar", "mittled"])
+ # V4 (N152): will the sofa bed go in? Its biggest box (166 × 101 × 68, SOURCES "amelia") carried on its side, the 166 first: it needs
+ # its 68 and 2 to spare (hands) across each opening on the way, the front door, the hall past the stair box and the living room door, in
+ # line (no turn). A door left on its hinges, open flat, takes about its leaf's thickness (E: 4) more. The doors' widths are Measure's
