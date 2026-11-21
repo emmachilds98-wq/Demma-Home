@@ -179,11 +179,12 @@ const PHOTOS = !(SMALL && !GOOD_PHONE) && !!(PMETA.lr_oak && PMETA.lr_oak.map);
 let photosIn = null, photosDone = false;
 function loadPhotos() {
   if (photosIn) return photosIn;
-  const el = document.getElementById("photo-data"), src = el && el.dataset.src, txt = el && el.textContent.trim();
-  return (photosIn = (txt ? Promise.resolve(txt) : src ? fetch(src).then(r => r.ok ? r.text() : "{}") : Promise.resolve("{}"))
-    .then(t => JSON.parse(t)).catch(() => ({})).then(P => {
-      for (const t of Object.values(P)) for (const f of ["map", "tmap", "nor", "rough"]) if (typeof t[f] === "string" && t[f][0] === "@") { const [k, g] = t[f].slice(1).split("."); t[f] = P[k][g]; if (P[k].half && P[k].half[g]) (t.half = t.half || {})[f] = P[k].half[g]; }   // a shared picture, sent once
+  const el = document.getElementById("photo-data"), src = el && el.dataset.src, txt = el && el.textContent.trim(), k2 = el && el.dataset.k2 && !LOWD && k2Load(el.dataset.k2);
+  return (photosIn = Promise.all([(txt ? Promise.resolve(txt) : src ? fetch(src).then(r => r.ok ? r.text() : "{}") : Promise.resolve("{}"))
+    .then(t => JSON.parse(t)).catch(() => ({})), k2]).then(([P, k2]) => {
+      for (const t of Object.values(P)) for (const f of ["map", "tmap", "nor", "rough"]) if (typeof t[f] === "string" && t[f][0] === "@") { const [k, g] = t[f].slice(1).split("."); t[f] = P[k][g]; for (const s of ["half", "k2"]) if (P[k][s] && P[k][s][g]) (t[s] = t[s] || {})[f] = P[k][s][g]; }   // a shared picture, sent once
       if (LOWD) for (const t of Object.values(P)) for (const f in t.half || {}) t[f] = t.half[f];   // V2.55 (N3): a phone without a strong chip takes the half-size set
+      else if (k2) for (const t of Object.values(P)) for (const f in t.k2 || {}) { K2_JPG.set(t.k2[f], t[f]); t[f] = t.k2[f]; }   // N196: the KTX2, the JPEG if it fails
       Object.assign(PHOTO, P); photosDone = true;
       /* V2.47 (N2): a file a photo, those on the view first */
       const seen = onScreen(), now = w => w.k === "tile" || texSeen(w.tex, seen), all = PWAIT.splice(0), later = all.filter(w => !now(w));   // V3.59 (N114): the roof's tiles always first (the house opened under a flat beige roof)
@@ -195,13 +196,14 @@ function onScreen() { const seen = new Set(); scene.traverseVisible(o => { for (
 const texSeen = (tex, seen) => !tex || [tex, ...(TEX_CLONES.get(tex) || [])].some(t => seen.has(t));
 const whenPhoto = (k, f, fn, tex) => { if (!(PMETA[k] && PMETA[k][f])) return false; const go = () => PHOTO[k] && PHOTO[k][f] && fn(PHOTO[k][f]); photosDone ? go() : PWAIT.push({ go, tex, k }); return true; };
 const TEX_CLONES = new WeakMap();   // a clone shares the picture but needs telling it changed (not in userData: three copies that as JSON)
-const texClone = t => { const c = t.clone(); TEX_CLONES.has(t) ? TEX_CLONES.get(t).push(c) : TEX_CLONES.set(t, [c]); return c; };
+const texClone = t => { const c = t.clone(); c.isCompressedTexture = t.isCompressedTexture; TEX_CLONES.has(t) ? TEX_CLONES.get(t).push(c) : TEX_CLONES.set(t, [c]); return c; };
 TEX_CLONES.set(OAK_TEX, [OAK_TEX_V]);   // V1.12: the doors' upright oak, cloned before this list (it kept the drawn oak's texture: the site check's WebGL error)
 /* V1.12: dispose first: WebGL2 keeps a texture at its first size, so a photo sent into its 4 × 4 stand-in never showed */
-function texPut(tex, img) { const bmp = typeof ImageBitmap !== "undefined" && img instanceof ImageBitmap;   // V1.30: a bitmap comes flipped already
+function texPut(tex, img) { const bmp = typeof ImageBitmap !== "undefined" && img instanceof ImageBitmap, k2 = img.isCompressedTexture;   // V1.30: a bitmap comes flipped already, a KTX2 stored so
   const all = [tex, ...(TEX_CLONES.get(tex) || [])];
   all.forEach(t => t.dispose());   // every one first: a clone with the same settings shares the stand-in's storage until it's let go too
-  for (const t of all) { t.image = img; t.flipY = !bmp; t.needsUpdate = true; gl.initTexture(t); } }
+  for (const t of all) { if (k2) Object.assign(t, { isCompressedTexture: true, mipmaps: img.mipmaps, format: img.format, type: img.type, generateMipmaps: false });   // N196: its own colour space kept
+    t.image = k2 ? img.image : img; t.flipY = !bmp && !k2; t.needsUpdate = true; gl.initTexture(t); } }
 /* V2.64, V2.67 (N15): a photo waits its turn, sent ahead of the frame that shows it (initTexture), the shadows redrawn once at the end;
    none while you move, as many as fit in 6 ms once still 0.2 s; on a walk over 3 s one a second */
 const UPQ = []; let upShade = false, upT = 0, upMv = 0, upGo = 0;
@@ -218,7 +220,14 @@ function upStep(now, busy) {   // from the frame loop, every frame
 }
 /* V1.30 (U5): decoded off the page's thread (createImageBitmap), flipped as three expects; an <img> where that isn't there */
 const DECODED = new Map();   // V2.47: a photo two textures share (the brick's, the pine's) is fetched and decoded once
-function decodeImg(src) { if (!DECODED.has(src)) DECODED.set(src, decodeOnce(src)); return DECODED.get(src); }
+function decodeImg(src) { if (!DECODED.has(src)) DECODED.set(src, K2_JPG.has(src) ? K2L.then(L => L.loadAsync(src)).catch(() => decodeImg(K2_JPG.get(src))) : decodeOnce(src)); return DECODED.get(src); }
+/* N196: a KTX2 photo (Basis ETC1S) goes to the chip squeezed (ETC2, ASTC, BC7, BC1) where it takes one of those, transcoded off the page's thread */
+const K2_JPG = new Map(); let K2L = null;
+function k2Load(path) {
+  if (typeof WebAssembly !== "object") return false;
+  K2L = import("three/addons/loaders/KTX2Loader.js").then(m => new m.KTX2Loader().setTranscoderPath(path).detectSupport(gl));
+  return K2L.then(L => Object.values(L.workerConfig).some(Boolean), () => false);
+}
 function decodeOnce(src) {
   const tag = () => new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = src; });
   if (!window.createImageBitmap) return tag();
