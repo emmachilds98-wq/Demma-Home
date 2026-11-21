@@ -19,7 +19,8 @@ upgrade that has been ongoing with another team"; "merge it all when green"; "im
     `bpy`, about 8 min, cached by the house file, `bake.py` and the `20_*.js` parts); the page waits up to 2.5 s for it before the house
     is built (`R3D.timing().bake` says on, late or none). The concrete stays out of the bake (V4.36: see "learned").
   - N196 KTX2 photos (V4.36): the iPhones take the 42 colour photos as KTX2 (ETC1S); a PC keeps the exact JPEGs (why: the row).
-  - N193 fewer draws (V4.37): from outside the house a quarter fewer draws on every path (doors, lids and shade bands in its join).
+  - N193 fewer draws (V4.37): from outside the house a quarter fewer draws on every path (doors, lids and shade bands in its join);
+    CI with the bake on: the iPhone path 147 draws (was 197), the RTX 148 (was 195), 0 hitches walking.
   - N194 in part (V4.37): `20_go.js` split into five parts (`docs/NOTES.md` says which holds what); ES modules left (N203).
   - The repo's quality pass (V4.36): the workflow's actions on Node 24; this page made one; dead code and stills gone.
 - **What's left: `docs/REAL_PLAN.md` section 25** (N201–N206, in order): the real devices' check of V4.35–V4.37 (N201, with Emma),
