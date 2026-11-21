@@ -181,7 +181,7 @@ def unwrap(objs, size):
         me = o.data; uv = np.zeros(len(me.loops) * 2, np.float32); me.uv_layers["bake"].data.foreach_get("uv", uv)
         sel = np.zeros(len(me.polygons), bool); me.polygons.foreach_get("select", sel)
         ls = np.zeros(len(me.polygons), np.int32); me.polygons.foreach_get("loop_start", ls); lt = np.zeros(len(me.polygons), np.int32); me.polygons.foreach_get("loop_total", lt)
-        uv = uv.reshape(-1, 2); uv *= 0.99; uv[np.concatenate([np.arange(s, s + n) for s, n, k in zip(ls, lt, sel) if not k] or [np.zeros(0, int)])] = 0.997
+        uv = uv.reshape(-1, 2); uv = 0.006 + uv * 0.984; uv[np.concatenate([np.arange(s, s + n) for s, n, k in zip(ls, lt, sel) if not k] or [np.zeros(0, int)])] = 0.997
         me.uv_layers["bake"].data.foreach_set("uv", uv.ravel())
     return sh
 
@@ -235,7 +235,7 @@ def write(site, maps, uv):
     scale = float(np.percentile(lit, 99.9)) or 1.0
     files = {}
     for tod, m in maps.items():                                   # a fourth root: the rooms' dim corners keep their steps beside a sunlit floor
-        m = smooth(m); n = m.shape[0]; c = int(n * 0.991); m[c:, c:] = m[m.max(2) > 0].mean(0)
+        m = smooth(m); n = m.shape[0]; e = int(n * 0.006) + 1; mean = m[m.max(2) > 0].mean(0); m[:e, :e] = mean; m[:e, n - e:] = mean   # the atlas' top corners (rows top first; islands sit in v 0.006 to 0.99): the unseen faces' and (0,0), the mean bounce
         px = (np.clip(m / scale, 0, 1) ** 0.25 * 255 + 0.5).astype(np.uint8)
         b = Image.fromarray(px); h = hashlib.sha1(px.tobytes()).hexdigest()[:10]; name = f"bake_{tod[:3]}.{h}.jpg"
         b.save(site / "tex" / name, quality=90, optimize=True); files[tod] = name

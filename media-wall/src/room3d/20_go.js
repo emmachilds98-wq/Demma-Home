@@ -611,6 +611,7 @@ function joinBuild() {
   const by = new Map(), G = new THREE.Group(), list = [];
   for (const fk of JOIN_FL) for (const me of (HFLOOR[fk] || { children: [] }).children) if (me.userData.fm) { if (!by.has(me.material)) by.set(me.material, []); by.get(me.material).push(me); }
   for (const [m, L] of by) { if (L.length < 2) continue;
+    if (L.some(q => q.geometry.attributes.uv1)) for (const q of L) if (!q.geometry.attributes.uv1) q.geometry.setAttribute("uv1", new THREE.BufferAttribute(new Uint16Array(q.geometry.attributes.position.count * 2), 2, true));   // N195: a part the bake didn't see joins at the atlas' mean texel
     const mixed = L.some(q => q.geometry.index) && L.some(q => !q.geometry.index), geos = L.map(q => mixed && q.geometry.index ? q.geometry.toNonIndexed() : q.geometry), span = [];
     let at = 0; for (let i = 0; i < L.length; i++) { const q = geos[i], n = q.index ? q.index.count : q.attributes.position.count; span.push([L[i].userData.fm, at, n, L[i]]); at += n; }
     const geo = mergeGeometries(geos); geos.forEach((q, i) => { if (q !== L[i].geometry) q.dispose(); }); if (!geo) continue;
@@ -914,15 +915,17 @@ function bakeApply() {
   let off = 0; const at = {}, pre = new Set(), v = new THREE.Vector3(); for (const [k, n] of j.meshes) { at[k] = [off, n]; off += n * 2; pre.add(k.slice(0, k.lastIndexOf(":"))); }
   houseG.updateMatrixWorld(true);   // each shell found by its material, its corners and where they are (bake.py's key), not by order
   houseG.traverse(m => { if (!m.isMesh || m.isInstancedMesh || Array.isArray(m.material) || !m.material.userData) return;
-    const g0 = m.geometry, P = g0.attributes.position, n = g0.index ? g0.index.count : P.count, k0 = (m.material.userData.hk || "") + ":" + n; if (!pre.has(k0)) return;
-    let sx = 0; for (let c = 0; c < n; c++) { v.fromBufferAttribute(P, g0.index ? g0.index.getX(c) : c).applyMatrix4(m.matrixWorld); sx += v.x + 2 * v.y + 3 * v.z; }
+    const g = m.geometry, P = g.attributes.position, I = g.index, n = I ? I.count : P.count, k0 = (m.material.userData.hk || "") + ":" + n; if (!pre.has(k0)) return;
+    let sx = 0; for (let c = 0; c < n; c++) { v.fromBufferAttribute(P, I ? I.getX(c) : c).applyMatrix4(m.matrixWorld); sx += v.x + 2 * v.y + 3 * v.z; }
     const e = at[k0 + ":" + Math.round(sx)]; if (!e) return;
-    let g = g0; if (g.index) { const u = g.toNonIndexed(); u.userData = g.userData; g.dispose(); g = m.geometry = u; }
-    g.setAttribute("uv1", new THREE.BufferAttribute(j.buf.subarray(e[0], e[0] + e[1] * 2), 2, true)); BAKE.mats.add(m.material); });
-  const corner = new Uint16Array([65535, 65535]);
-  houseG.traverse(m => { if (m.isMesh && BAKE.mats.has(m.material) && !m.geometry.attributes.uv1) m.geometry.setAttribute("uv1", new THREE.InstancedBufferAttribute(corner, 2, true, 1e9)); });
+    const src = j.buf.subarray(e[0], e[0] + e[1] * 2), uv = new Uint16Array(P.count * 2);   // each corner's UVs onto its vertex (the mesh keeps its index)
+    for (let c = 0; c < n; c++) { const vi = I ? I.getX(c) : c; uv[vi * 2] = src[c * 2]; uv[vi * 2 + 1] = src[c * 2 + 1]; }
+    g.setAttribute("uv1", new THREE.BufferAttribute(uv, 2, true)); BAKE.mats.add(m.material); });
+  // the rest of a baked material's meshes (a part the bake didn't see) at the atlas' (0,0), the mean bounce; a piece laid later reads it too
+  houseG.traverse(m => { if (m.isMesh && BAKE.mats.has(m.material) && !m.geometry.attributes.uv1) m.geometry.setAttribute("uv1", new THREE.BufferAttribute(new Uint16Array(m.geometry.attributes.position.count * 2), 2, true)); });
+  const gain = Math.PI * j.scale * (j.gain || 1) * (+(location.search.match(/[?&]bake=([\d.]+)/) || [])[1] || 1);   // ?bake=N to try a level
   for (const mt of BAKE.mats) { const pre = mt.onBeforeCompile, key = mt.customProgramCacheKey;
-    mt.lightMap = S.tod === "evening" ? BAKE.eve : BAKE.day; mt.lightMapIntensity = Math.PI * j.scale * (j.gain || 1) * (+(location.search.match(/[?&]bake=([\d.]+)/) || [])[1] || 1);   // ?bake=N to try a level
+    mt.lightMap = S.tod === "evening" ? BAKE.eve : BAKE.day; mt.lightMapIntensity = gain;
     mt.onBeforeCompile = (sh, r) => { pre.call(mt, sh, r); sh.fragmentShader = sh.fragmentShader.replace("#include <lights_fragment_maps>", THREE.ShaderChunk.lights_fragment_maps.replace("lightMapTexel.rgb", "pow( lightMapTexel.rgb, vec3( 4.0 ) )")); };
     mt.customProgramCacheKey = () => key.call(mt) + "baked"; mt.needsUpdate = true; }
 }
