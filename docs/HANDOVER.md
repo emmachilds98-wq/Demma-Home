@@ -1,13 +1,26 @@
 # Handover (21 Nov 2026, V4.37: the round stopped here; start here)
 
-## Now
-**First (21 Nov, later): Emma's review on the PC is `docs/REAL_PLAN.md` section 26** (N207–N212: the mouse look the wrong way
-round, grey carpet in bedroom 2 and the office, each room's floor from its card, the stairwells' holes covered by the landing's floor,
-the office's plastic ivy out, and a storage and display review). Take it before section 25; each row already says what was found.
+## Now (21 Nov 2026, afternoon: the session stopped near its usage limit; start here)
+The client, 21 Nov: "start closing tasks and get the next team ready to start". Earlier the same day she reviewed on the PC (section
+26), answered questions for the next upgrade (`docs/DECISIONS.md`, "Answers for the next upgrade") and asked to "build everything you
+can with multiple agents".
 
-The client, 21 Nov 2026: "when this batch of work completes i want you to stop working here and summarise where we are and any
-remaining plans in the github repo in good enough detail that another team can pick up". Earlier the same day: "Start and complete the
-upgrade that has been ongoing with another team"; "merge it all when green"; "improve further to further increase quality of the repo".
+- **Open: #312** (V4.38): a light fixture's aim line fixed before any tap (its raycast carries the camera), and her answers recorded in
+  DECISIONS and REAL_PLAN N201, N206, N207, N212. Merge it when CI is green (the project's rule).
+- **Then, in order** (`docs/wip/README.md` has each patch's base and state):
+  1. N203 step 1, finished and checked: `docs/wip/N203-step1-shared-state-DONE.patch` → a PR (V4.39).
+  2. Section 26's quick fixes, fresh: N210 (no floor over the stairwells), N208 (grey carpet in bedroom 2 and the office), N211 (the
+     office's plastic ivy out). One PR each; the rows say exactly what to change.
+  3. N207 mouse look **while a button is held** (her choice), natural direction everywhere: start from
+     `docs/wip/N207-mouse-look-partial.patch` (it includes N203).
+  4. N209 each room's floor from its card: `docs/wip/N209-floor-card-partial.patch`.
+  5. N212 storage designed into the decorating, **as options to look at in the 3D** (her choice), sized for 100–300 records, under 2 m
+     of books and games, clothes, tech and display: `docs/wip/N212-storage-options-partial.patch`.
+  6. N204/N202 the bake (Blender 6's API; the seam): `docs/wip/N204-N202-bake-partial.patch`.
+  7. Waiting on Emma: N201 (lighting later, "when the house is right"), N205 (on hold), N206 (her own colours and swapping furniture
+     first: plan with her).
+
+The earlier state (the round of 20–21 Nov, V4.37), kept for reference:
 
 - **Live:** main at **V4.37** (#309), published to GitHub Pages by the workflow: https://emmachilds98-wq.github.io/Demma-Home/.
   No PR of this round is open. The only open PR is #133 (the old KTX2 start, replaced by N196): the owner can close it.
