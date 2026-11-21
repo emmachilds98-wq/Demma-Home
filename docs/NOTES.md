@@ -58,7 +58,8 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   like a JPEG at 60). ETC1S normal maps flattened the roof's tiles (the gallery showed it): reliefs and roughness stay JPEG. What it buys
   is the chip's memory (a 1024² colour photo 1.4 MB as BC7, 0.7 as ETC2, 5.6 as RGBA with mips) and no decode on the page. To read a
   KTX2 back in Node (to measure it), run three's `basis_transcoder.js` through `new Function(...)`: it declares `BASIS`, exports nothing.
-  SwiftShader takes BC7 (`bptcSupported`); a KTX2's transcode there is slow, so `gallery.py` waits till the photos stop landing.
+  SwiftShader takes BC7 (`bptcSupported`); its transcodes are slow (45–60 s for all on the RTX path with the box loaded), so `gallery.py`
+  waits till the photos stop landing; a test that counts compressed textures must wait as long.
 
 ## 2. Merging when threads run side by side
 - **Versions race.** Each PR takes `VERSION`, a line in `docs/HISTORY.md`, `docs/STATE.md` and its plan row, and main moves every few
