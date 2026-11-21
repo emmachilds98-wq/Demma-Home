@@ -279,7 +279,7 @@ def main(argv):
     print(f"bake: {len(ex['meshes'])} meshes, {sum(m['n'] for m in ex['meshes']) // 3} triangles, {len(ex['lights'])} lights by day, {len(ev['lights'])} by evening ({time.time() - t0:.0f} s)", flush=True)
     objs = scene(ex); sh = unwrap(objs, size)
     maps = {"day": bake(ex, "day", size, samples, sh), "evening": bake(ev, "evening", size, samples, sh)}
-    uv = uvs(sh); CACHE.mkdir(exist_ok=True); np.savez_compressed(CACHE / "maps.npz", **maps)   # the light as baked, to write again without baking
+    uv = uvs(sh); CACHE.mkdir(parents=True, exist_ok=True); np.savez_compressed(CACHE / "maps.npz", **maps)   # the light as baked, to write again without baking
     import pickle; (CACHE / "uv.pkl").write_bytes(pickle.dumps(uv))
     j = write(site, maps, uv)
     print(f"bake: {len(sh)} shells into {size}², scale {j['scale']}, {time.time() - t0:.0f} s in all")

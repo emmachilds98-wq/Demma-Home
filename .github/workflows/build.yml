@@ -28,7 +28,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    timeout-minutes: 40
+    timeout-minutes: 75
     outputs:
       heavy: ${{ steps.changes.outputs.heavy }}
     steps:
@@ -82,6 +82,31 @@ jobs:
         with:
           path: .ktx2cache
           key: ${{ steps.k2.outputs.key }}
+      # N195: the bounced light baked (house/bake.py: Blender's Cycles via bpy, which needs Python 3.13), kept while the house file and
+      # its build are unchanged (a shell it doesn't match takes the mean bounce, so a stale bake never darkens a room)
+      - name: The baked light's key
+        id: bakekey
+        run: echo "key=bake-$(cat _site/data/house.json house/bake.py media-wall/src/room3d/20_go.js | sha1sum | cut -c1-20)" >> "$GITHUB_OUTPUT"
+      - name: The baked light (kept)
+        id: bakecache
+        uses: actions/cache@v4
+        with:
+          path: _bake
+          key: ${{ steps.bakekey.outputs.key }}
+      - uses: actions/setup-python@v5
+        if: steps.bakecache.outputs.cache-hit != 'true'
+        id: py313
+        with:
+          python-version: "3.13"
+          update-environment: false
+      - name: Bake the light (when the house or its build changed)
+        if: steps.bakecache.outputs.cache-hit != 'true'
+        run: |
+          ${{ steps.py313.outputs.python-path }} -m pip install -q bpy==5.3.0 numpy pillow "playwright==${{ steps.install.outputs.pw }}"
+          ${{ steps.py313.outputs.python-path }} house/bake.py _site --size 1024 --samples 128 --keep _bake
+      - name: The baked light into the site
+        if: steps.bakecache.outputs.cache-hit == 'true'
+        run: python house/bake.py _site --put _bake
       - name: The quick checks on the built site (privacy, sizes)
         run: python tools/checks.py --only privacy,repo,sizes
       - name: Only documents changed? (then the browser checks rest)
