@@ -104,6 +104,14 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   standing in it (phone 235): the house round it ~60 (`G#65`, `roomCull`), the record table under the coffee table 19 and the pouf 22
   (07, nested groups `mergeStatic` skips), the shell's suggestion groups ~33 (07, 10), the walls a draw each paint (each wall its own
   material, so Look can colour one). `check_site.py`'s `draws_living` sometimes reads the house's number (185) on the PC and iPhone paths: the view hadn't landed; count a frame yourself. V3.26: its `still()` now waits for a frame drawn since (CI's frames take seconds, so 600 ms read the fly's last frame, house and room both: 770–945).
+- **Fewer draws (N193):** count a frame's draws by owner before changing anything (patch `gl.renderBufferDirect` for one frame from the
+  main camera, name each mesh by its movable, option, part or house material; the shadows' pass left out). From outside the house the
+  doors and lids at rest were 32 of 196 and the shade bands 26 (a transparent `DoubleSide` material draws twice: back, then front);
+  inside the living room nearly every piece has its own material, so a join there saves little. `BatchedMesh` is a new shader variant:
+  merged geometry keeps the count. `forceSinglePass` builds one `DoubleSide` program in place of the back and front pair (no more
+  shaders); only for a material whose two passes blend the same in either order (black shade). A merged copy that a part must leave
+  while it moves: empty its span (degenerate triangles, `addUpdateRange`) and show the part's own meshes, as `joinOut`; map a tap's
+  `faceIndex * 3` back through the spans (`joinSrc`). Hidden insides (a shut cabinet) are free draws: hang the visibility on the doors' anims.
 - **Pieces that move, at rest (V3.77, N153):** `13_edit_room.js` `restMerge(g, live, skip)` copies a piece's parts (its own meshes and
   its moving groups at rest) into one mesh a material and shows it while every part is at rest; the moving groups show only while one
   moves (the sofa bed's `RS`, the chaise's lid). A part's anim must call the switch (`sync()`), or it moves hidden. Nested groups that
