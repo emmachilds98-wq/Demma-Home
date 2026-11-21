@@ -1405,8 +1405,8 @@ def pwa_files():
 // WAIT ms on a weak signal, then the kept copy, the new one saved for next time; cache first for the rest: three.js from its CDN, the fonts
 // and the pictures). V2.46: a file named by its contents (tex/<photo>.<hash>.jpg, three.<hash>.js, a
 // CDN file at its version) is kept across versions (K), so a new round doesn't fetch the photos again; its older copy goes. {LABEL}.
-const C = "demma-{LABEL}", K = "demma-keep", HASHED = /\\.[0-9a-f]{{10}}\\.[a-z]+$|@\\d+\\.\\d+\\.\\d+\\//;
-const stem = u => new URL(u).pathname.replace(/\\.[0-9a-f]{{10}}\\.[a-z]+$/, "");
+const C = "demma-{LABEL}", K = "demma-keep", HASHED = /\\.[0-9a-f]{{10}}\\.[a-z0-9]+$|@\\d+\\.\\d+\\.\\d+\\//;
+const stem = u => new URL(u).pathname.replace(/\\.[0-9a-f]{{10}}(\\.[a-z0-9]+)$/, "$1");   // N196: the KTX2 and the JPEG kept apart
 const WAIT = 2000;
 self.addEventListener("install", e => {{ self.skipWaiting(); e.waitUntil(caches.open(C).then(c => c.addAll(["./", "manifest.webmanifest"]).catch(() => {{}}))); }});
 self.addEventListener("activate", e => {{ e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C && k !== K).map(k => caches.delete(k)))).then(() => self.clients.claim())); }});
@@ -1439,7 +1439,8 @@ def split_photos(html_):
     m = re.search(r'<script type="application/json" id="photo-data">(.*?)</script>', html_, re.S)
     if not m or len(m.group(1)) < 3:
         return html_
-    P, out, made = json.loads(m.group(1)), SITE / "tex", set()
+    import vendor
+    P, out, made, jobs = json.loads(m.group(1)), SITE / "tex", set(), []
     out.mkdir(exist_ok=True)
     for k, t in P.items():
         for f in ("map", "tmap", "nor", "rough"):
@@ -1447,15 +1448,19 @@ def split_photos(html_):
             if isinstance(v, str) and v.startswith("data:"):
                 data = base64.b64decode(v.split(",", 1)[1])
                 name = f"{k}_{f}.{hashlib.sha256(data).hexdigest()[:10]}.jpg"
-                (out / name).write_bytes(data); made.add(name); t[f] = "tex/" + name
+                (out / name).write_bytes(data); made.add(name); t[f] = "tex/" + name; f in ("map", "tmap") and jobs.append((t, f, k, data))
                 im = Image.open(io.BytesIO(data))   # V2.55 (REAL_PLAN N3): a half-size copy for a phone without a strong chip (LOWD)
                 if im.width > 512:
                     b = io.BytesIO(); im.resize((im.width // 2, im.height // 2), Image.Resampling.LANCZOS).save(b, "JPEG", quality=88, optimize=True)
                     small = f"{k}_{f}_half.{hashlib.sha256(b.getvalue()).hexdigest()[:10]}.jpg"
                     (out / small).write_bytes(b.getvalue()); made.add(small); t.setdefault("half", {})[f] = "tex/" + small
-    for old in list(out.glob("*.jpg")) + list(SITE.glob("photos.*.json")):
+    for (t, f, k, _), k2 in zip(jobs, vendor.ktx2([d for *_, d in jobs])):   # N196: a colour photo's KTX2 too, when the encoder's here (not a relief: ETC1S flattened it)
+        if k2:
+            name = f"{k}_{f}.{hashlib.sha256(k2).hexdigest()[:10]}.ktx2"; (out / name).write_bytes(k2); made.add(name); t.setdefault("k2", {})[f] = "tex/" + name
+    for old in list(out.glob("*.jpg")) + list(out.glob("*.ktx2")) + list(SITE.glob("photos.*.json")):
         if old.name not in made: old.unlink()
-    return html_[:m.start()] + '<script type="application/json" id="photo-data">' + json.dumps(P, separators=(",", ":")) + "</script>" + html_[m.end():]
+    basis = any(n.endswith(".ktx2") for n in made) and vendor.transcoder(SITE)
+    return html_[:m.start()] + '<script type="application/json" id="photo-data"' + (f' data-k2="{basis}"' if basis else "") + ">" + json.dumps(P, separators=(",", ":")) + "</script>" + html_[m.end():]
 
 
 def split_sheets(html_):

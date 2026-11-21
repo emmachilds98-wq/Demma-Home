@@ -64,10 +64,24 @@ jobs:
             media-wall/src/*.png
             media-wall/out/*.png
           key: renders-${{ steps.install.outputs.renders }}
+      - name: The KTX2 photos made before (N196, by npm's ktx2-encoder; named by their JPEG, a few minutes to make them all again)
+        uses: actions/cache/restore@v4
+        with:
+          path: .ktx2cache
+          key: ktx2-
+          restore-keys: ktx2-
       - name: The model's checks (fast, before the build)
         run: python tools/checks.py --quick
       - name: Build the site and the PDFs
         run: python tools/build.py ${{ steps.renders.outputs.cache-hit == 'true' && '--keep-renders' || '' }}
+      - id: k2
+        run: echo "key=ktx2-$(ls .ktx2cache 2>/dev/null | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"   # each named by its contents
+      - name: Keep the KTX2 photos (a new entry only when they changed)
+        uses: actions/cache/save@v4
+        continue-on-error: true
+        with:
+          path: .ktx2cache
+          key: ${{ steps.k2.outputs.key }}
       # N195: the bounced light baked (house/bake.py: Blender's Cycles via bpy, which needs Python 3.13), kept while the house file and
       # its build are unchanged (a shell it doesn't match takes the mean bounce, so a stale bake never darkens a room)
       - name: The baked light's key

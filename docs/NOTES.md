@@ -52,6 +52,14 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   meshes (`houseG`, named for it) in the order the page builds them, so a bake belongs to one build of the 3D. Blender's merge drops
   slivers of no area: each corner carries its own index (`oci`) so the UVs map back. The raw light is kept in `_shots/bake/` to write
   again without baking. On for everyone since V4.35: `start()` waits (2.5 s at most) for `BAKE.p` before building anything, and only a bake in hand then (`BAKE.use`) is applied; one that lands later would rebuild every house material (#306's 112 shaders). On CI the bake takes about 8 min (4 cores); here about 16 with other work running. three.js 0.187 lights in physical units: the sun 80 lux beside a lamp of a few candela, hence the fourth-root curve.
+- **KTX2 (N196):** GitHub's basisu can't be built here (cloning works; building it was refused) and its release binaries are blocked; npm's
+  `ktx2-encoder` (basisu 2.x as WebAssembly, MIT) runs under Node, here and on CI alike (`npm ci`). Made from our JPEGs, KTX2 can't be
+  sharper than them: per 1024² photo, UASTC came out 5–9 times the JPEG's bytes (46–56 dB against it), ETC1S about 1.2 times (35–40 dB,
+  like a JPEG at 60). ETC1S normal maps flattened the roof's tiles (the gallery showed it): reliefs and roughness stay JPEG. What it buys
+  is the chip's memory (a 1024² colour photo 1.4 MB as BC7, 0.7 as ETC2, 5.6 as RGBA with mips) and no decode on the page. To read a
+  KTX2 back in Node (to measure it), run three's `basis_transcoder.js` through `new Function(...)`: it declares `BASIS`, exports nothing.
+  SwiftShader takes BC7 (`bptcSupported`); its transcodes are slow (45–60 s for all on the RTX path with the box loaded), so `gallery.py`
+  waits till the photos stop landing; a test that counts compressed textures must wait as long.
 
 ## 2. Merging when threads run side by side
 - **Versions race.** Each PR takes `VERSION`, a line in `docs/HISTORY.md`, `docs/STATE.md` and its plan row, and main moves every few
@@ -119,9 +127,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `sw.js` waits 2 s for the page (`WAIT`), then serves the kept copy (tested with a local server whose delay is set by a `.txt` file).
   N109 (V3.58): `PX` takes one picture of a key too (`road_nor`); `--slim` re-saves in place, then the gallery pixel-diff proves it (mean
   difference under 0.1 of 255). A view's nearest distance decides: a floor 1.6 m, the outside's relief 2–4 m, the road the drive's width.
-- **KTX2 (N22/N31, PR #133, WIP):** basisu 1.16.4 pinned at commit 900e40fb5d25, built in CI (no encoder can be fetched here); three's
-  `KTX2Loader` and its basis transcoder (0.5 MB wasm) copied into `_site`; the compressed data put into the same texture objects so no
-  shader changes; JPEG fallback. The tint must stay at build (compressed textures can't be tinted on the page). Waits on Emma's OK.
+- **KTX2 (N196, was N22/N31 and #133):** the colour photos also as KTX2 (ETC1S), made at build by npm's `ktx2-encoder` (basisu as
+  WebAssembly: no binary to build), cached in `.ktx2cache`; three's `KTX2Loader` (its own file, three from the one bundle) and basis
+  transcoder (0.58 MB) copied into `_site`; the compressed data put into the same texture objects so no shader changes; JPEG fallback.
+  The tint must stay at build (compressed textures can't be tinted on the page). Section 1 has the numbers.
 - **Lean code (N28, N41):** method: join the parts (`room3d_src.js()`), run ESLint 9 `no-unused-vars` on the one file (install ESLint
   in a scratch folder, not the repo), read each part, grep every name across `media-wall/src`, `tools`, `house`, `projects` (`R3D.*`
   hooks are called by `shot3d.py` and `check_site.py`), prove with the gallery. N48 (V3.05) cut 12, 13, 14, 16 and 20's;

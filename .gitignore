@@ -4,6 +4,7 @@ __pycache__/
 .DS_Store
 *.zip
 /_site/
+/.ktx2cache/
 /_shots/
 /_bake/
 # the media wall's renders, diagrams, PDFs and pages (media-wall/src: make_images.py, build_doc.py, build_viewer.py, export3d.py)
