@@ -7,9 +7,9 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 ## 1. Working in the sandbox
 - **three.js:** jsDelivr is blocked. `npm ci` gives the local bundle; for the browser checks set `THREE_LOCAL` to an unpacked
   `three` package (`node_modules/three` after `npm ci`). fonts.googleapis is reachable.
-- **Python:** `pip install -r media-wall/requirements.txt` and `playwright==1.63.0` (it must match the browser in `/opt/pw-browsers`;
+- **Python:** `pip install -r media-wall/requirements.txt` (it pins `playwright==1.63.0` to match the browser in `/opt/pw-browsers`;
   set `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`). Test scripts use `localcdn.route(pg)` and `pw.launch(p, pw.GL)` from `media-wall/src`.
-- **Speed of a run:** the full `tools/checks.py` takes over 10 minutes here: run it in the background. CI takes about 20 minutes.
+- **Speed of a run:** the full `tools/checks.py` takes over 10 minutes here: run it in the background. CI takes about 35 minutes (8 of them the bake, when it runs).
 - **Software graphics:** headless Chromium draws with SwiftShader, 0.25–3 s a frame, and has no `KHR_parallel_shader_compile` (the
   iPhone's Safari has it since 14.5). Frame times mean nothing; count shaders, uploads and draws a frame. Key tests count frames, not sleeps;
   to test frame-time logic, fake the rAF timestamp (+30 ms a frame) in an init script.
@@ -297,8 +297,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **The labels on the room** (V3.70 N117): `15` `placeStickers` places the biggest first, each at the nearest clear spot (12 px steps down and up, then half a label aside), 8 px from the others and off `keepOuts()` (the bars, dock, stick and figure, read twice a second); no room, it's hidden. From above (`RMODE` above/alone or a view with `above` before walking) none fades as `behind`. The stick's knob shows only while held (`.held`); the walk hint is once a device (`demma-walkhint`).
 - **The stick** (V3.15 N59): `14_views_walk.js` `STICK` sets `WALK.stick`; walking reads it in `walkTick`, the map's and the free views in
   `19_view_controls.js` `mapKeys` (with the held keys), a view from the eyes calls `startWalk` (`eyeView`). A mouse drag on it in Playwright
-  is enough to test it (it never reads `pointerType`); check `stick_all`. Note: `pip install -r media-wall/requirements.txt` can lift
-  Playwright past 1.63.0 and its browser; put 1.63.0 back.
+  is enough to test it (it never reads `pointerType`); check `stick_all`.
 - **Moving a breast piece to another wall** (N64): the media wall's groups (`G.*` from `scene3d.json`) and the ideas (`IDEA_G`) are built
   in the breast's place; turning one round onto the window wall is a group transform, not a rebuild: rotation.y = π, x = −(old centre +
   new centre)·M, z = the new wall's z·M (`06` `placeCorner`; x is mirrored in `v3`). The plan's layout is one name (`geometry.PLANT_LAYOUT`),
