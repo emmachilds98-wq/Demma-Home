@@ -1,36 +1,48 @@
-# Handover (brought to now 21 Nov 2026, V4.36)
+# Handover (21 Nov 2026, V4.37: the round stopped here; start here)
 
-## Now (21 Nov 2026: start here)
-The client, 21 Nov 2026: "Merge current work to main and stop the upgrade. Leave a clear upgrade plan for next team with the right
-context and plans to not drop anything from our round." Later the same day it was picked up again ("Start and complete the upgrade
-that has been ongoing with another team"); what's still open is below and in section 24.
+## Now
+The client, 21 Nov 2026: "when this batch of work completes i want you to stop working here and summarise where we are and any
+remaining plans in the github repo in good enough detail that another team can pick up". Earlier the same day: "Start and complete the
+upgrade that has been ongoing with another team"; "merge it all when green"; "improve further to further increase quality of the repo".
 
-- **Live:** main at **V4.35** (#307, which carried #306), published to GitHub Pages by the workflow. **V4.36** (N196, KTX2) is in
-  draft PR **#308**. The only other open PR is #133, the old KTX2 start: N196 replaced it, so the owner can close it.
+- **Live:** main at **V4.37** (#309), published to GitHub Pages by the workflow: https://emmachilds98-wq.github.io/Demma-Home/.
+  No PR of this round is open. The only open PR is #133 (the old KTX2 start, replaced by N196): the owner can close it.
 - **The round (20–21 Nov, `docs/REAL_PLAN.md` section 24, N190–N200), the client's words:** "the house is an improvement plan so it
   shouldnt look the same as my house currently only in sizing and some furniture im keeping ... action everything else"; "but still
   upgrade the furniture we have". So: sizes, layouts and kept pieces stay; the light, materials, furniture detail and finishes they
   haven't chosen are the plan's to upgrade (`docs/DECISIONS.md`).
-- **Done:** N190 the picture check (`tools/gallery.py --diff`); N191 the names check (ESLint, `checks.py` "names"); N192 three.js 0.187
-  (V4.29); N200 the page's tokens (V4.30); N199 each room's scheme (`house/plan_finishes.json`, V4.32); N198 the furniture (V4.32,
-  V4.34); N197 reviewed (nothing to change); N195 the baked light (V4.35: on for everyone on the HD paths, the workflow bakes it,
-  cached); N196 KTX2 photos (V4.36, #308: on the iPhones; a PC keeps the exact JPEGs, the row says why and the one line to change);
-  N193 fewer draws (V4.37: the house 25% fewer on every path); N194 in part (V4.37: `20_go.js` split in five).
-- **Open, in the order to take them** (each row in section 24 has the detail):
-  1. **N194's rest, the 3D as ES modules.** The 28 parts share one scope with about 1,030 top-level names, many of them `let`s
-     that other parts reassign (an import is read-only), so modules need that state moved into one object first; the names check (N191)
-     already catches the clashes the review named. Take it a part at a time, the joined script's names check and `gallery.py --diff` each step.
-  2. **Smaller:** the seam on the master's back wall in the bake (a new row if it shows).
-- **What this round learned** (also in `docs/NOTES.md`): three.js 0.187 keys shaders on `hasPositionAttribute` and `vertexNormals`,
-  and its shadow maps use basic depth packing, so the warm-up's stand-ins must match or shaders get built mid-walk (V4.29). Anything
-  that adds a mesh or a material at the first picture (a scheme's fittings, curtains, prints) shows in the Fast paths' budgets
-  (V4.32). A light map must exist before the house's materials are compiled.
+- **Done in section 24** (each row says how, with its numbers):
+  - N190 the picture check (`tools/gallery.py --diff`); N191 the names check (ESLint over the joined 3D, `checks.py` "names").
+  - N192 three.js 0.187 (V4.29); N200 the page's tokens (V4.30); N199 each room's scheme (`house/plan_finishes.json`, V4.32).
+  - N198 the furniture (V4.32, V4.34); N197 reviewed (their own pieces already real; nothing to change).
+  - N195 the baked bounce light (V4.35): on by default on the HD paths (`?nobake` off), baked by the workflow (Blender's Cycles as
+    `bpy`, about 8 min, cached by the house file, `bake.py` and the `20_*.js` parts); the page waits up to 2.5 s for it before the house
+    is built (`R3D.timing().bake` says on, late or none). The concrete stays out of the bake (V4.36: see "learned").
+  - N196 KTX2 photos (V4.36): the iPhones take the 42 colour photos as KTX2 (ETC1S); a PC keeps the exact JPEGs (why: the row).
+  - N193 fewer draws (V4.37): from outside the house a quarter fewer draws on every path (doors, lids and shade bands in its join);
+    CI with the bake on: the iPhone path 147 draws (was 197), the RTX 148 (was 195), 0 hitches walking.
+  - N194 in part (V4.37): `20_go.js` split into five parts (`docs/NOTES.md` says which holds what); ES modules left (N203).
+  - The repo's quality pass (V4.36): the workflow's actions on Node 24; this page made one; dead code and stills gone.
+- **What's left: `docs/REAL_PLAN.md` section 25** (N201–N206, in order): the real devices' check of V4.35–V4.37 (N201, with Emma),
+  the bake's seam (N202), ES modules (N203), Blender 6's API in `bake.py` (N204), KTX2 on the PC (N205, on hold), customisation (N206,
+  to plan with Emma). Housekeeping for the owner: #133 and the finished branches.
+- **What this round learned** (in `docs/NOTES.md` too):
+  - three.js 0.187 keys shaders on `hasPositionAttribute` and `vertexNormals`, and its shadow maps use basic depth packing, so the
+    warm-up's stand-ins must match or shaders get built mid-walk (V4.29).
+  - Anything added at the first picture (a scheme's fittings, curtains, prints) shows in the Fast paths' budgets (V4.32).
+  - A light map must be on a material before its first compile: one that lands later rebuilds every house material (#306: 112 shaders).
+  - A material that shares another's program on purpose (the concrete's plain key in the living room's view, `garageFloor`) must stay
+    out of the bake: baked, its key is its own and the hitch walk catches it built mid-walk (V4.35's merge, fixed V4.36).
+  - CI's caches are per branch: main bakes again after a merge (8 min), the PR's bake isn't reused.
+  - The hitch check names the material it catches (`check_site.py` `HITCH_INIT`): read its line before guessing.
+  - Local browser checks take 40+ min on this sandbox's 4 cores with helpers running: let CI measure; run `--quick` locally.
 - **How the round ran:** one branch, one PR at a time, each merged when CI was green (about 35 minutes a PR); helper agents worked in
-  their own worktrees and handed back patches only.
+  their own worktrees and handed back commits; work in progress was saved into the repo before every pause (the usage limit once
+  stopped the helpers mid-task; nothing was lost).
 - **Everything is in this repo and its pull requests** (the client, 21 Nov: "Make sure all info needed is available via the GitHub repo
-  as they will not be in this Claude account or file"). Each PR's description (#299–#308) says what changed, why and the checks' lines.
-  Older rows (sections 20–23) mention screenshots "in the project files": those were in a claude.ai project that the next team won't
-  have; they aren't needed, and `python3 tools/gallery.py` (every room's view) or `--diff <main's build>` makes fresh ones.
+  as they will not be in this Claude account or file"). Each PR's description (#299–#309) says what changed, why and the checks' lines.
+  Older rows (sections 20–23) mention screenshots "in the project files": those were in a claude.ai project the next team won't have;
+  `python3 tools/gallery.py` (every room's view) or `--diff <main's build>` makes fresh ones.
 
 Read in this order: `CLAUDE.md` (the client's rules; **privacy first: the address is never written anywhere**), this page,
 `docs/STATE.md` (what's true now), `docs/REAL_PLAN.md` section 24 (every task's state), `docs/NOTES.md` (what the threads learned),
@@ -88,6 +100,7 @@ lists those safe to delete (deleting needs the owner's say). `claude/project-thr
 closed. Every version and its PR is in `docs/HISTORY.md`.
 
 ## Waiting on Emma
+0. **V4.35–V4.37 on her own devices** (N201): the baked light, the iPhone's KTX2 photos, the walk; a Measure → Send link and screenshots.
 1. **The living room door's width** (N152): drawn 67 cm, the sofa bed's biggest box needs 70; the front door's (82, a guess) too.
 2. **Map and Street View screenshots**, names painted out (N160 the road, N161 the neighbours; section 21 says which).
 3. **The sofa bed's price** (about £700–950 is a guess).
@@ -96,5 +109,4 @@ closed. Every version and its PR is in `docs/HISTORY.md`.
    On hold: the outside by evening (N163, "No time of day yet").
 
 ## Suggested next work
-Section 24's open rows (N193, then N194), then customisation (the client's own colours, pieces and saved looks), planned once the
-quality rows are done. A new finding is a new row in `docs/REAL_PLAN.md`; a lesson goes in `docs/NOTES.md`.
+`docs/REAL_PLAN.md` section 25 in its order (N201 first: it needs Emma, so ask early), then customisation (N206). A new finding is a new row in `docs/REAL_PLAN.md`; a lesson goes in `docs/NOTES.md`.

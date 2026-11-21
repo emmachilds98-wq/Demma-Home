@@ -774,3 +774,22 @@ RTX 5070 inside `tools/perf_budget.json`; still lean (fewer lines, not more).
 
 **How to run it.** Stream A first (N190: every later row shows its pictures beside main's). B and C after; D and E after A; F any
 time. One task a PR, the next free version at merge, this table ticked, `docs/STATE.md` rewritten.
+
+## 25. What's left after section 24, for the next team (21 Nov 2026, V4.37)
+
+The client, 21 Nov 2026: "when this batch of work completes i want you to stop working here and summarise where we are and any
+remaining plans in the github repo in good enough detail that another team can pick up". Section 24 ended at V4.37 (#309): every row
+done but N194's second half. These rows carry on its rules (the house is the improvement plan; sizes, layouts and kept pieces stay;
+smooth inside `tools/perf_budget.json`; lean; one task a PR; the next free version at merge). Take them in this order.
+
+| Task | What | Files | Waits for | State |
+|---|---|---|---|---|
+| N201 | See V4.35–V4.37 on the real devices: the baked light (an iPhone 15 Pro and the RTX 5070: the rooms' corners and colour bleed, no dark or bright patch, `?nobake` to compare), the iPhone's KTX2 photos (how long they take to land, how they look beside a PC's JPEGs), the house's walk after N193 (doors swinging, the living room cabinet opened and shut). Software graphics can't show speed or the real formats: ask Emma for a Measure → Send link after moving round (`tools/pull_edits.py --link`) and screenshots | none (a finding is a new row) | Emma | Open |
+| N202 | The bake's seam on the master's back wall (seen once at 2048², not checked at 1024²): shoot the master with and without (`gallery.py`, `?nobake`); if it shows, widen the island margin (`bake.py` `unwrap`, `pack_islands` margin) or bake that wall's shell alone | `house/bake.py` | — | Open |
+| N203 | The 3D as ES modules (N194's second half). The 28 parts share one scope with about 1,030 top-level names; many are `let`s other parts reassign (`started`, `houseG`, `need`, `sun`, `HJOIN`…), and an import is read-only. Step 1: move the reassigned state into one object (`G.houseG` …), a part at a time, the joined script's names check 0 problems and `gallery.py --diff` 0.00% each step. Step 2: `export`/`import` per part, esbuild bundling as now (`room3d_src.py` becomes an entry file). Worth it only if it stays lean: stop at step 1 if step 2 adds more lines than it saves | `room3d/*`, `room3d_src.py`, `tools/checks.py` (names) | — | Open |
+| N204 | Blender 6: `bake.py` uses `Material.use_nodes` and `World.use_nodes`, deprecated in `bpy` 5.3 (removed in 6.0). Pin stays `bpy==5.3.0` in the workflow until this is done | `house/bake.py`, the workflow | — | Open |
+| N205 | KTX2 on the PC too? A one-line gate (`02_textures.js` `loadPhotos`: `GOOD_PHONE`). Made from our JPEGs it can't be sharper, ETC1S is a touch softer (house 2.6% moved); the gain is graphics memory, which a PC has. Only if Emma asks, or N201 finds the PC short of memory | `room3d/02_textures.js` | N201 | Open (on hold) |
+| N206 | Customisation, planned once the quality rows are done (the client's earlier ask): their own colours, pieces and saved looks, in the old design (pills and panels, no lists). Plan it as its own section first, with Emma | — | N201 | Open (to plan) |
+
+**Housekeeping (the owner's say):** close #133 (the old KTX2 start; N196 replaced it) and delete its branch
+`claude/project-thread-tmpz6b`; about 100 finished `claude/*` branches (`git branch -r --merged origin/main` lists them).
