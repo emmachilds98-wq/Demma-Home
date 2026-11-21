@@ -179,7 +179,7 @@ const PHOTOS = !(SMALL && !GOOD_PHONE) && !!(PMETA.lr_oak && PMETA.lr_oak.map);
 let photosIn = null, photosDone = false;
 function loadPhotos() {
   if (photosIn) return photosIn;
-  const el = document.getElementById("photo-data"), src = el && el.dataset.src, txt = el && el.textContent.trim(), k2 = el && el.dataset.k2 && !LOWD && k2Load(el.dataset.k2);
+  const el = document.getElementById("photo-data"), src = el && el.dataset.src, txt = el && el.textContent.trim(), k2 = el && el.dataset.k2 && GOOD_PHONE && k2Load(el.dataset.k2);   // N196: a capable phone only (its memory); a PC keeps the exact JPEGs (ETC1S is a touch softer)
   return (photosIn = Promise.all([(txt ? Promise.resolve(txt) : src ? fetch(src).then(r => r.ok ? r.text() : "{}") : Promise.resolve("{}"))
     .then(t => JSON.parse(t)).catch(() => ({})), k2]).then(([P, k2]) => {
       for (const t of Object.values(P)) for (const f of ["map", "tmap", "nor", "rough"]) if (typeof t[f] === "string" && t[f][0] === "@") { const [k, g] = t[f].slice(1).split("."); t[f] = P[k][g]; for (const s of ["half", "k2"]) if (P[k][s] && P[k][s][g]) (t[s] = t[s] || {})[f] = P[k][s][g]; }   // a shared picture, sent once

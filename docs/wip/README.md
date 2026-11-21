@@ -7,4 +7,3 @@ then merge main in. None has passed the checks; read it as a head start, not a r
 | File | Task (`docs/REAL_PLAN.md` section 24) | What it holds | State when stopped |
 |---|---|---|---|
 | `N193-draws-partial.patch` | N193 fewer draws | Changes to `04_living_shell.js`, `11_lights.js`, `16_cards.js`, `19_controls.js`, `20_go.js` (the floors' join, `joinBuild`) | Mid-edit; no measurement reported. Measure first (the row says how) |
-| `N196-ktx2-inflight.patch` | N196 KTX2 photos | The helper's later state (21 Nov, on b55df3f): the encoder, the build's KTX2 per photo, `KTX2Loader` with the JPEG fallback, checks and budget | Saved mid-work in case the session stops; superseded once N196 lands |

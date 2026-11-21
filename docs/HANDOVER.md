@@ -16,8 +16,7 @@ context and plans to not drop anything from our round."
 - **Not finished, in the order to take them** (each row in section 24 has the detail; `docs/wip/README.md` has head starts made on
   1eac230, unverified):
   1. **N195, the baked light: done V4.35** (#307): on for everyone on the HD paths, the workflow bakes it (cached).
-  2. **N196, KTX2 photos** (the client's yes). `docs/wip/N196-ktx2-partial.patch` (the encoder side from #133, the page's
-     `KTX2Loader` path, the workflow's encoder step); `photos_mb` needs a decision if both formats ship.
+  2. **N196, KTX2 photos: done V4.36** on the iPhones (memory); a PC keeps the exact JPEGs (the row says why, and the one line to change).
   3. **N193, fewer draws.** Measure first (`R3D.perf().calls`; `tools/check_site.py`'s four paths); change only for 10% or more, the
      pictures the same, no shader added. `docs/wip/N193-draws-partial.patch` is an unmeasured start.
   4. **N194, the 3D as modules.** Last and alone: it touches all 24 parts of `media-wall/src/room3d/`. The names check (N191) and the
