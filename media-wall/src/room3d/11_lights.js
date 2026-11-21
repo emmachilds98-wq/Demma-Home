@@ -42,15 +42,17 @@ function outdoor() {
     const LT = houseTex("lawn");
     const mat = reg(new THREE.MeshStandardMaterial({ color: LT ? "#ffffff" : "#56633f", map: LT ? LT.map : null, normalMap: LT && LT.normal || null, roughness: 1, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 4, polygonOffsetUnits: 4 })); mat.clippingPlanes = [];
     const yt = (H.drive ?? -15) - 2, yb = (H.lawn ?? -260) - 2, A0 = -125, A1 = -28, E = 300000, zf = H.front, zb = H.back;   // V1.4: 3 km out (was 80 m), under the haze   // the alley (x -125 to -28)
-    const quad = (x0, x1, z0, y0, z1, y1, alley, slope) => {   // a strip of ground from (z0, y0) to (z1, y1), level across x
+    const Q = [], quad = (x0, x1, z0, y0, z1, y1, alley, slope) => {   // a strip of ground from (z0, y0) to (z1, y1), level across x
       const g2 = new THREE.BufferGeometry(), P = [x0, y0, z0, x1, y0, z0, x1, y1, z1, x0, y1, z1].map((v, i) => i % 3 === 0 ? -v * M : v * M);
       g2.setAttribute("position", new THREE.Float32BufferAttribute(P, 3)); g2.setIndex([0, 1, 2, 0, 2, 3]);
       g2.setAttribute("normal", new THREE.Float32BufferAttribute([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0], 3));   // lit as level ground: the slope doesn't read as a lighter band
       worldUV(g2, "lawn");
-      const m = new THREE.Mesh(g2, mat); m.receiveShadow = true; m.raycast = () => {}; m.userData.alley = !!alley; m.userData.slope = !!slope; g.add(m); };
+      Q.push([g2, !!alley, !!slope]); };
     quad(-E, E, -E, yb, zb, yb);                                                                    // the gardens' side, a storey down
     quad(-E, A0, zb, yb, zf, yt, false, true); quad(A0, A1, zb, yb, zf, yt, true, true); quad(482, E, zb, yb, zf, yt, false, true);   // the slope the terrace is built into (by it, the alley's own steps with Gardens on); V1.47, the client: "the garden green floor can be seen through the window of the kitchen": not across the house (A1 to its party wall, 482), where it ran through the lower floor's rooms
     quad(-E, E, zf, yt, E, yt);                                                                     // the street's side, out to the horizon
+    const lg = mergeGeometries(Q.map(q => q[0])), m = OUT.lawn = new THREE.Mesh(lg, mat); Q.forEach(q => q[0].dispose());   // N193: the strips one draw, those shown first in its index (below)
+    m.receiveShadow = true; m.raycast = () => {}; m.userData.quads = Q.map(q => q.slice(1)); m.userData.idx = lg.index.array.slice(); g.add(m);
     scene.add(g);
   }
   if (OUT.ground && !OUT.hill && (room || S.hgarden)) { OUT.hill = true; buildBeyond(null, OUT.ground); }   // V1.4: the hill opposite and the valley's trees; N181: built the first time they show (Gardens, or a room's windows)
@@ -71,8 +73,10 @@ function outdoor() {
   if (garden3d && !HOUSEV(S.view)) garden3d.visible = room;                     // the house's views set it by Gardens
   if (view) view.visible = !room && !(VIEWS[S.view] || {}).above;
   if (OUT.sky) { OUT.sky.visible = on; OUT.ground.visible = on; const low = INSIDE() && ((R.HOUSE3.rooms || {})[VIEW_ROOM[S.view]] || [])[4] < 0;   // V1.10: the slope runs through the lower floor's rooms
-    OUT.ground.children.forEach(m => { m.visible = !(low && m.userData.slope); if (m.userData.alley && m.visible) m.visible = room || !S.hgarden;   // with Gardens on the alley steps down there
-      if (house && !S.hgarden && (m.name === "hill" || m.isInstancedMesh)) m.visible = false; });   // V4.1 (N157): the house on its own: the hill and the trees come with Gardens
+    OUT.ground.children.forEach(m => { m.visible = !(house && !S.hgarden && (m.name === "hill" || m.isInstancedMesh)); });   // V4.1 (N157): the house on its own: the hill and the trees come with Gardens
+    { const L = OUT.lawn, u = L.userData, A = L.geometry.index, keep = [];   // the slope runs through the lower floor's rooms; with Gardens on the alley steps down there
+      u.quads.forEach(([al, sl], i) => { if (!(low && sl) && (!al || room || !S.hgarden)) keep.push(i); });
+      if (keep.join() !== u.k) { u.k = keep.join(); A.array.set(keep.flatMap(i => [...u.idx.subarray(6 * i, 6 * i + 6)])); A.needsUpdate = true; L.geometry.setDrawRange(0, 6 * keep.length); } L.visible = keep.length > 0; }
     { const st = OUT.ground.getObjectByName("street"); if (st) st.visible = !house || !!S.hstreet; }   // and the street with Next door (from a room's window it's always there)
     const d = house || !liv || !sun ? dayLight.position.clone().sub(dayLight.target.position) : sun.position.clone().sub(sun.target.position);   // the sun the sky shows: the one lighting it
     OUT.sky.material.uniforms.sunPosition.value.copy(d.normalize());

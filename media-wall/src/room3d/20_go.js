@@ -515,8 +515,8 @@ function houseShade(H3, m3) {
   const tex = canvasTex(4, 64, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h);
     gr.addColorStop(0, "rgba(0,0,0,0.36)"); gr.addColorStop(0.35, "rgba(0,0,0,0.13)"); gr.addColorStop(1, "rgba(0,0,0,0)"); g.clearRect(0, 0, w, h); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, false);
   tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
-  const mk = () => { const m = reg(new THREE.MeshBasicMaterial({ color: "#000000", alphaMap: null, map: tex, transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide,
-    polygonOffset: true, polygonOffsetFactor: 0, polygonOffsetUnits: -10 })); m.clippingPlanes = []; return m; };
+  const mk = () => { const m = reg(new THREE.MeshBasicMaterial({ color: "#000000", alphaMap: null, map: tex, transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide, forceSinglePass: true,
+    polygonOffset: true, polygonOffsetFactor: 0, polygonOffsetUnits: -10 })); m.clippingPlanes = []; return m; };   // N193: black, so both sides one draw (either order blends the same)
   const matF = m3.shade_floor = mk(), matC = m3.shade_ceil = mk();
   const band = (pos, uv, a, b, inward, y, w, up) => {   // a quad from the edge a-b (room cm, at height y) w cm towards inward (unit [dx, dz])
     const P = [a, b, [b[0] + inward[0] * w, b[1] + inward[1] * w], [a[0] + inward[0] * w, a[1] + inward[1] * w]].map(([x, z]) => v3(x, y, z));
@@ -524,7 +524,7 @@ function houseShade(H3, m3) {
     for (const i of tri) { pos.push(P[i].x, P[i].y, P[i].z); uv.push(U[i][0], U[i][1]); } };
   const mesh = (pos, uv, mat, into) => { if (!pos.length) return; const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2)); g.computeVertexNormals();
-    const me = new THREE.Mesh(g, mat); me.raycast = () => {}; me.renderOrder = 1; into.add(me); };
+    const me = new THREE.Mesh(g, mat); me.raycast = () => {}; me.renderOrder = 1; me.userData.fm = Object.keys(HFLOOR).find(k => HFLOOR[k] === into); into.add(me); };   // N193: a floor's in the join
   /* V3.35: a band's strip over a stairwell's opening (model.stair_wells) keeps only its parts clear of it */
   const WL = H3.wells || { floor: [], ceil: [] };
   const clear = (holes, y, a, b, n, w) => { const ax = n[0] === 0, k = ax ? 0 : 1, c = 1 - k, lo = Math.min(a[c], a[c] + n[c] * w), hi = Math.max(a[c], a[c] + n[c] * w);
@@ -558,7 +558,7 @@ function pieceShadeMat() {   // houseShade's kind of material (the same shader),
     for (const [t, a] of [[0, 0.24], [0.15, 0.15], [0.35, 0.07], [0.6, 0.025], [1, 0]]) gr.addColorStop(t, `rgba(0,0,0,${a})`);
     g.clearRect(0, 0, w, h); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, false);
   tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
-  const m = reg(new THREE.MeshBasicMaterial({ color: "#000000", map: tex, transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: 0, polygonOffsetUnits: -10 }));
+  const m = reg(new THREE.MeshBasicMaterial({ color: "#000000", map: tex, transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide, forceSinglePass: true, polygonOffset: true, polygonOffsetFactor: 0, polygonOffsetUnits: -10 }));
   m.clippingPlanes = []; return m;
 }
 function pieceShade(F, mat) {
@@ -608,14 +608,20 @@ function edgeShade(F, mat) {
 let HJOIN = null;
 const JOIN_FL = ["lower", "ground", "first", "roof"];
 function joinBuild() {
-  const by = new Map(), G = new THREE.Group(), list = [];
-  for (const fk of JOIN_FL) for (const me of (HFLOOR[fk] || { children: [] }).children) if (me.userData.fm) { if (!by.has(me.material)) by.set(me.material, []); by.get(me.material).push(me); }
-  for (const [m, L] of by) { if (L.length < 2) continue;
+  const by = new Map(), G = new THREE.Group(), list = [], add = me => { if (!by.has(me.material)) by.set(me.material, []); by.get(me.material).push(me); };
+  for (const fk of JOIN_FL) for (const me of (HFLOOR[fk] || { children: [] }).children) if (me.userData.fm) add(me);
+  /* N193: and the parts at rest (doors, lids) at their pose; one that moves leaves (joinOut) */
+  for (const P of Object.values(HPARTS)) { const F = HFLOOR[P.floor]; P.joined = false; if (!F || P.tw || !JOIN_FL.includes(P.floor)) continue; F.updateMatrixWorld(true);
+    const inv = new THREE.Matrix4().copy(F.matrixWorld).invert();
+    P.g.traverseVisible(me => { if (!me.isMesh || me.material.transparent || !me.layers.isEnabled(0)) return;
+      me.userData.jp = P; me.userData.jm = new THREE.Matrix4().multiplyMatrices(inv, me.matrixWorld); add(me); P.joined = true; }); }
+  const fl = q => JOIN_FL.indexOf(q.userData.jp ? q.userData.jp.floor : q.userData.fm);
+  for (const [m, L] of by) { if (L.length < 2) continue; L.sort((p, q) => fl(p) - fl(q));   // by floor, so the floors shown are one run
     if (L.some(q => q.geometry.attributes.uv1)) for (const q of L) if (!q.geometry.attributes.uv1) q.geometry.setAttribute("uv1", new THREE.BufferAttribute(new Uint16Array(q.geometry.attributes.position.count * 2), 2, true));   // N195: a part the bake didn't see joins at the atlas' mean texel
-    const mixed = L.some(q => q.geometry.index) && L.some(q => !q.geometry.index), geos = L.map(q => mixed && q.geometry.index ? q.geometry.toNonIndexed() : q.geometry), span = [];
-    let at = 0; for (let i = 0; i < L.length; i++) { const q = geos[i], n = q.index ? q.index.count : q.attributes.position.count; span.push([L[i].userData.fm, at, n, L[i]]); at += n; }
+    const mixed = L.some(q => q.geometry.index) && L.some(q => !q.geometry.index), geos = L.map(q => { const g = mixed && q.geometry.index ? q.geometry.toNonIndexed() : q.geometry; return q.userData.jm ? (g === q.geometry ? g.clone() : g).applyMatrix4(q.userData.jm) : g; }), span = [];
+    let at = 0; for (let i = 0; i < L.length; i++) { const q = geos[i], n = q.index ? q.index.count : q.attributes.position.count; span.push([JOIN_FL[fl(L[i])], at, n, L[i]]); at += n; }
     const geo = mergeGeometries(geos); geos.forEach((q, i) => { if (q !== L[i].geometry) q.dispose(); }); if (!geo) continue;
-    const me = new THREE.Mesh(geo, m); me.castShadow = L[0].castShadow; me.receiveShadow = true; me.visible = false; me.userData.span = span; G.add(me); list.push(me); }
+    const me = new THREE.Mesh(geo, m); me.castShadow = L[0].castShadow; me.receiveShadow = L[0].receiveShadow; me.renderOrder = L[0].renderOrder; me.raycast = L[0].raycast; me.visible = false; me.userData.span = span; G.add(me); list.push(me); }
   houseG.add(G); return (HJOIN = { G, list });
 }
 function joinDrop() {
@@ -623,6 +629,15 @@ function joinDrop() {
   for (const me of HJOIN.list) { me.geometry.dispose(); for (const sp of me.userData.span) sp[3].layers.enable(0); }
   houseG.remove(HJOIN.G); HJOIN = null;
 }
+function joinOut(P) {   // N193: a part about to move: its span in the join emptied (degenerate), its own meshes drawn
+  if (!HJOIN || !P.joined) return; P.joined = false;
+  for (const me of HJOIN.list) { const g = me.geometry, sp = me.userData.span;
+    for (let i = sp.length - 1; i >= 0; i--) { const [, at, n, src] = sp[i]; if (src.userData.jp !== P) continue;
+      if (g.index) { g.index.array.fill(g.index.array[at], at, at + n); g.index.addUpdateRange(at, n); g.index.needsUpdate = true; }
+      else { const a = g.attributes.position; for (let j = at + 1; j < at + n; j++) a.array.copyWithin(3 * j, 3 * at, 3 * at + 3); a.addUpdateRange(3 * at, 3 * n); a.needsUpdate = true; }
+      src.layers.enable(0); sp.splice(i, 1); } }
+}
+const joinSrc = h => { const sp = h.object.userData.span, i = h.faceIndex * 3; if (sp) for (const s of sp) if (i >= s[1] && i < s[1] + s[2]) return s[3]; return h.object; };   // N193: a tap on the join: the piece under it
 function buildHouse() {
   const HS = R.HOUSE; if (!HS) return;
   houseG = new THREE.Group(); houseG.name = "houseG"; houseG.visible = false; scene.add(houseG);
@@ -809,7 +824,7 @@ function buildHouse() {
       for (const L of F.lathes || []) { const g = new THREE.LatheGeometry(L.p.map(([r, h]) => new THREE.Vector2(r * M, h * M)), LOWD ? 12 : 28);   // v70: the suite's turned shapes (pans, seats, bowls); V2.15: a room's light's in its group
         g.scale(L.s[0], 1, L.s[1]); const c = v3(L.c[0], L.c[1], L.c[2]); g.translate(c.x, c.y, c.z); const r = lid(L.t); add(r ? lgOf(r) : cur, L.m, g); }
       for (const [g, o] of acc) for (const [mk, geos] of Object.entries(o)) { const me = put(g, geos, mat3(mk)); if (me && g === cur) me.userData.fm = fk; }
-      { const ps = pieceShade(F, m3.shade_piece || (m3.shade_piece = pieceShadeMat())); if (ps) cur.add(ps); }   // V2.52 (R2)
+      { const ps = pieceShade(F, m3.shade_piece || (m3.shade_piece = pieceShadeMat())); if (ps) { ps.userData.fm = fk; cur.add(ps); } }   // V2.52 (R2)
       { const es = edgeShade(F, m3.shade_edge || (m3.shade_edge = edgeShadeMat())); if (es) cur.add(es); }   // V3.63 (N112)
       if (fresh) for (const L of F.labels || []) { label([L.name, [L.use, `about ${L.w.toFixed(1)} × ${L.d.toFixed(1)} m`].filter(Boolean).join(" · ")], L.x, L.y, L.z);
         cur.children[cur.children.length - 1].userData.area = L.w * L.d; }   // V1.35: the bigger room's name wins where two overlap
