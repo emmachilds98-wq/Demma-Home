@@ -44,7 +44,7 @@ take one out (to `docs/HISTORY.md`) when they change their mind.
   (`docs/REAL_PLAN.md` section 24). KTX2 is a yes. The plan's scheme for each room is `house/plan_finishes.json` (V4.32); the client's own colours always win.
 - **Answers for the next upgrade** (21 Nov 2026, asked in a session): **Mouse look** only while a mouse button is held (otherwise the
   mouse is free), not game-style (`REAL_PLAN` N207). **Storage**: all of it needs more or better room: clothes and shoes; books, records
-  and games; tech, cables and hobby kit; knick-knacks to show off (N212). **Customisation first**: their own colours for any wall, and
+  and games; tech, cables and hobby kit; knick-knacks to show off; 100 to 300 records with room to grow, under 2 m of books and games; storage designed into the decorating in a unique way, not added room by room ("its more about integrating good storage design in a unique way in how we plan for decorating and upgrading how my house currently is"); display in every way (open shelves and ledges, lit glass cabinets, mixed with closed storage, pegboard and wall systems) (N212). **Customisation first**: their own colours for any wall, and
   swapping and adding furniture per room (N206). **Lighting later**: "we'll look at lighting later when the house is right" (the baked
   light's device check waits, N201).
 
