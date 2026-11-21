@@ -4,7 +4,8 @@
 The client, 21 Nov 2026: "Merge current work to main and stop the upgrade. Leave a clear upgrade plan for next team with the right
 context and plans to not drop anything from our round."
 
-- **Live:** main at **V4.34** (#306), published to GitHub Pages by the workflow. Nothing is open: no PR, no branch with unmerged work.
+- **Live:** main at **V4.35** (#307, which carried #306), published to GitHub Pages by the workflow. The round was picked up again on 21 Nov
+  ("Start and complete the upgrade that has been ongoing with another team"); what's still open is below and in section 24.
 - **The round (20–21 Nov, `docs/REAL_PLAN.md` section 24, N190–N200), the client's words:** "the house is an improvement plan so it
   shouldnt look the same as my house currently only in sizing and some furniture im keeping ... action everything else"; "but still
   upgrade the furniture we have". So: sizes, layouts and kept pieces stay; the light, materials, furniture detail and finishes they
@@ -14,19 +15,14 @@ context and plans to not drop anything from our round."
   V4.34); N197 reviewed (nothing to change).
 - **Not finished, in the order to take them** (each row in section 24 has the detail; `docs/wip/README.md` has head starts made on
   1eac230, unverified):
-  1. **N195, the baked light for everyone.** Built and behind `?bake` (HD paths only). Two tries at switching it on failed CI (#305:
-     the Fast paths' shaders and the floors' join, both fixed; #306: on CI the bake's file landed after the warm-up and the HD paths
-     built 112 shaders first, budget 44). Next: the light map in the page before the house is built
-     (`docs/wip/N195-bake-before-warmup-partial.patch`), then the workflow step (in #306's history). Check: `checks.py --only hitch`
-     and `--only site`, several runs, since CI is slower than a sandbox.
+  1. **N195, the baked light: done V4.35** (#307): on for everyone on the HD paths, the workflow bakes it (cached).
   2. **N196, KTX2 photos** (the client's yes). `docs/wip/N196-ktx2-partial.patch` (the encoder side from #133, the page's
      `KTX2Loader` path, the workflow's encoder step); `photos_mb` needs a decision if both formats ship.
   3. **N193, fewer draws.** Measure first (`R3D.perf().calls`; `tools/check_site.py`'s four paths); change only for 10% or more, the
      pictures the same, no shader added. `docs/wip/N193-draws-partial.patch` is an unmeasured start.
   4. **N194, the 3D as modules.** Last and alone: it touches all 24 parts of `media-wall/src/room3d/`. The names check (N191) and the
      picture check (N190) are its safety net: 0 problems and 0.00% moved.
-  5. **Smaller:** the seam on the master's back wall in the bake; a pinned `playwright` version in `media-wall/requirements.txt`
-     (the hitch job failed once on a fresh runner: #300, passed on its one re-run).
+  5. **Smaller:** the seam on the master's back wall in the bake; Playwright pinned (V4.35).
 - **What this round learned** (also in `docs/NOTES.md`): three.js 0.187 keys shaders on `hasPositionAttribute` and `vertexNormals`,
   and its shadow maps use basic depth packing, so the warm-up's stand-ins must match or shaders get built mid-walk (V4.29). Anything
   that adds a mesh or a material at the first picture (a scheme's fittings, curtains, prints) shows in the Fast paths' budgets
