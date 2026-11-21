@@ -9,7 +9,7 @@ leaner code. V4.6 (N169): the plot's edge soft, the sky hazy. Earlier: `docs/HIS
 The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.28 ↻"): on the
 home-screen app, tap it to get the newest.
 
-**Work from:** `docs/REAL_PLAN.md` section 24 (20 Nov: the full upgrade, N190–N200: the picture check, three.js 0.187, baked light, KTX2 (a yes), every piece's detail, each room's scheme, the UI's tokens; the house is the improvement plan: sizes, layouts and kept pieces stay, the looks are the plan's). Before it, section 23 (14 Nov: the review after V4.21, N183–N188 in four streams: the small rooms' sanitaryware and whites, mirrors, framing, the stairwell's draws); section 22 (13 Nov: the next round after V4.5, N170–N178 in streams A–F: the small rooms' views, finishes,
+**Work from:** `docs/REAL_PLAN.md` section 24 (20 Nov: the full upgrade, N190–N200; the house is the improvement plan: sizes, layouts and kept pieces stay, the looks are the plan's). Done: N190–N192, N195–N200. Open: N193 (fewer draws), N194 (the 3D's parts). A new team starts with `docs/HANDOVER.md`; earlier sections' rows: section 9.
 outside, fewer pills, leaner code, a hitch check; N178 done: `docs/HANDOVER.md` brought to now). Section 21's open rows carry on (N160, N161 on the client's screenshots; N163 on hold:
 the outside by day, as the client asked). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier task's state.
 
@@ -143,7 +143,7 @@ Quality is under View → More (HD or Fast). `?perf` shows the speed in a box ab
 1. Your road and surroundings (N160, N161): a satellite screenshot of the house, the close and the junction; Street View from the
    front door (left, ahead, right, up the hill); about how much higher the main road is; names covered.
 2. The speed from the iPhone 15 Pro and the RTX 5070: open the house, move a moment, then Measure → Send.
-3. KTX2 (N31, #133; section 20's N141): confirm before the workflow builds the encoder. Dark panels on a dark device, or cream.
+3. Dark panels on a dark device, or cream.
 4. The living room door's width (drawn 67, a guess; the sofa bed's biggest box needs 70: "3 short") and the front door's (82, a guess) (N152).
 5. The sofa bed's price (about £700–950; the sandbox shows dollars). A microwave photo, if there is one.
 6. Still to measure (all in Measure): the bathroom door (about 61 in the photo, drawn 68), the boiler cupboard, the bathroom's ceiling
