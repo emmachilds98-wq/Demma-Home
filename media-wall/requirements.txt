@@ -1,5 +1,5 @@
 # Demma's Home V1: what the build and the checks need (python3 -m pip install -r media-wall/requirements.txt; then python3 -m playwright install chromium)
-playwright>=1.40
+playwright==1.63.0   # pinned: CI keys its browser cache on it; matches the sandbox's /opt/pw-browsers
 pillow>=10
 pypdf>=4             # house/privacy_check.py reads the PDFs; media-wall/src/qa.py
 markdown             # house/build_report.py

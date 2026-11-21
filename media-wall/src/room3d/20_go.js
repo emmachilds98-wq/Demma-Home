@@ -908,9 +908,8 @@ function buildHouse() {
    evening's map, its live direct light kept (the map holds what bounces round the room: colour bleed, soft corners, the shade under each piece).
    A mesh of a baked material the bake didn't see points at the atlas' corner texel, the house's mean light */
 function bakeApply() {
-  if (!BAKE.p || BAKE.done) return;
-  if (!BAKE.j) { BAKE.p.then(j => { if (j && houseG) { BAKE.j = j; bakeApply(); compileClipped(camera); need = true; } }); return; }
-  BAKE.done = true; const j = BAKE.j, ld = u => { const x = new THREE.TextureLoader().load("tex/" + u, () => (need = true)); x.colorSpace = THREE.NoColorSpace; x.flipY = false; x.channel = 1; return x; };   // a fourth root of the light (bake.py write)
+  if (!BAKE.use || BAKE.done) return;   // in hand before the house is built (start), never applied after
+  BAKE.done = true; const j = BAKE.use, ld = u => { const x = new THREE.TextureLoader().load("tex/" + u, () => (need = true)); x.colorSpace = THREE.NoColorSpace; x.flipY = false; x.channel = 1; return x; };   // a fourth root of the light (bake.py write)
   BAKE.day = ld(j.day); BAKE.eve = ld(j.eve); BAKE.mats = new Set();
   let off = 0; const at = {}, pre = new Set(), v = new THREE.Vector3(); for (const [k, n] of j.meshes) { at[k] = [off, n]; off += n * 2; pre.add(k.slice(0, k.lastIndexOf(":"))); }
   houseG.updateMatrixWorld(true);   // each shell found by its material, its corners and where they are (bake.py's key), not by order
@@ -948,6 +947,7 @@ function buildSun() {
 }
 const START_MS = {};
 function start() {
+  if (BAKE.p) { if (!BAKE.w) BAKE.w = Promise.race([BAKE.p, new Promise(r => setTimeout(r, 2500))]).then(() => { BAKE.p = null; BAKE.use = BAKE.j; if (!started) start(); }); return; }   // N195: the baked light in hand before the house is built (its shaders built once), never more than 2.5 s
   started = true;
   const t0 = performance.now();
   const pmrem = new THREE.PMREMGenerator(gl);
@@ -985,7 +985,7 @@ function start() {
         if (postLive()) { if (!PRE.rtAO) PRE.rtAO = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType }); gl.setRenderTarget(PRE.rtAO); }
         texWarm(); Promise.race([Promise.all([compileClipped(camera, true), postWarm()]), new Promise(r => setTimeout(r, 8000))]).then(first, first);   // V2.66 (N13): the shade's and glow's too; the textures meanwhile   // V2.64: by cutting planes (01_renderer)
       } catch (e) { first(); } finally { gl.setRenderTarget(was); } };
-    if (BAKE.p) Promise.race([BAKE.p, new Promise(r => setTimeout(r, 2500))]).then(go, go); else go();   // N195: the baked light on first (its shaders warmed with the rest), never more than 2.5 s; without it, at once as before
+    go();
   } else first();
   lookFromHash();                                                                       // v28: a shared #look- link (after the first compile, so its note shows)
   // for the headless stills (shot3d.py): set the options and a view, then take a picture
@@ -999,7 +999,7 @@ function start() {
       if (addp && CATALOGUE[addp.type]) { const a = { id: "a" + Date.now().toString(36), type: addp.type, x: addp.x, z: addp.z }; pushUndo(); addThing(a); if (addp.rot) setLayout(a.id, { rot: addp.rot }); placeAll(); store.set(KEY, S); dirty(); }
       if (showat != null) { showOpen(); if (SH) { SH.own = true; SH.paused = true; SH.t = showat; showPose(SH.t); showCard(); qs("#r3d-show").hidden = true; } }
       if (o.view) setView(o.view, true); if (aim) flyTo(aim.eye, aim.at, aim.fov || 55, !!aim.above, true); },   // v58: "above" lets a look stand off (the house)
-    still, finish, finishes: () => JSON.parse(JSON.stringify(finAll(false))), setFinishes: o => finImport(o), ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { get flying() { return !!tween; }, get warming() { return { busy: !!WARMB, parts: PRE.busy, warmed: [...WARMED] }; }, openAct, finAll, get H3() { return R.HOUSE3; }, get RMODE() { return RMODE; }, spotAt, goStandAt: goStand, HPARTS, PICK, HEDITS, get actId() { return actId; }, swingDoor, WALK, walkMove, collide, bodyBlocked, floorAtCm, HSOLID, livSolids, livFloors,  swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG, warmSwitch, WARMED },
+    still, finish, finishes: () => JSON.parse(JSON.stringify(finAll(false))), setFinishes: o => finImport(o), ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { get flying() { return !!tween; }, get warming() { return { busy: !!WARMB, parts: PRE.busy, warmed: [...WARMED] }; }, openAct, finAll, get H3() { return R.HOUSE3; }, get RMODE() { return RMODE; }, spotAt, goStandAt: goStand, HPARTS, PICK, HEDITS, get actId() { return actId; }, swingDoor, WALK, walkMove, collide, bodyBlocked, floorAtCm, HSOLID, livSolids, livFloors,  swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG, warmSwitch, WARMED, BAKE },
     errors: () => store.get("r3d-errors", []),                                       // v35: what the trap kept
     timing: () => Object.assign({ page: Math.round(performance.now()) }, START_MS),     // V1.31: the start's steps (ms from start()), and the page's age
     perf: perfInfo,                                                                   // v35: the counts to watch each round
