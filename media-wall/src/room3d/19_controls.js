@@ -100,7 +100,7 @@ function liftBed(on) {
   if (actId === "hbed") renderAct();                             // v71: the card follows (where the lid is going)
 }
 function partPose(P, t) {   // three's x is flipped: the foot rises (about z), a door turns into its room (about y); its own parts with it
-  t = t ?? P.t;
+  t = t ?? P.t; joinOut(P);   // N193: out of the house's join first
   if (P.axis === "y") P.g.rotation.y = -t * P.angle * Math.PI / 180; else P.g.rotation.z = -t * P.angle * Math.PI / 180;
   if (livLeaf && P === HPARTS["door.living_door"]) livLeaf.rotation.y = P.g.rotation.y;   // V1.38: the room's own leaf with it
   for (const K of P.kids || []) partPose(K, t);

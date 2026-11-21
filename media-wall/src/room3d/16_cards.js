@@ -9,7 +9,7 @@ function pickItem(e) {
   const cutAway = q => RPLANES.some(pl => pl.distanceToPoint(q) < 0);             // v71: not what a room's view has cut away
   const hit = ray.intersectObjects(scene.children, true).find(h => h.object.isMesh && shown(h.object) && !clippedAt(h) && !(selBox && h.object === selBox) && !cutAway(h.point));
   if (!hit) return null;
-  const o = hit.object, p = hit.point; TAPAT = [-p.x / M, p.y / M, p.z / M];   // V2.46: where a floor was tapped (Add a piece here)
+  const o = joinSrc(hit), p = hit.point; TAPAT = [-p.x / M, p.y / M, p.z / M];   // V2.46: where a floor was tapped (Add a piece here)
   const near = (obj, r) => !!obj && obj.getWorldPosition(new THREE.Vector3()).distanceTo(p) < r * M;
   const BL = HPARTS.bed_lift;                                                    // v71: the master's ottoman bed: its card
   if (BL && houseG && houseG.visible) { const bx = new THREE.Box3().setFromObject(BL.g); bx.min.y -= 0.6; bx.expandByScalar(0.03); if (bx.containsPoint(p)) return "hbed"; }
