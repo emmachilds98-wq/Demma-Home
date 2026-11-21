@@ -20,7 +20,8 @@ import base64, hashlib, json, math, pathlib, sys, time
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "media-wall/src"))
 CACHE = ROOT / "_shots" / "bake"                                 # the last bake (not committed)
-SHELL = ("paint", "ceiling", "stairpaint", "skirting", "tile", "carpet", "laminate", "vinyl", "lvt", "marble", "concrete", "board", "lino", "floor", "artex")
+SHELL = ("paint", "ceiling", "stairpaint", "skirting", "tile", "carpet", "laminate", "vinyl", "lvt", "marble", "board", "lino", "floor", "artex")
+# not the concrete: in the living room's view it shares the photos' plain program (20_go garageFloor); baked, its own was built mid-walk
 
 LIGHTS = """() => { const D = R3D._dbg, T = D.THREE;
   const lights = []; D.scene.updateMatrixWorld(true);

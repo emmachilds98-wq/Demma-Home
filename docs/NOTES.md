@@ -7,9 +7,9 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 ## 1. Working in the sandbox
 - **three.js:** jsDelivr is blocked. `npm ci` gives the local bundle; for the browser checks set `THREE_LOCAL` to an unpacked
   `three` package (`node_modules/three` after `npm ci`). fonts.googleapis is reachable.
-- **Python:** `pip install -r media-wall/requirements.txt` and `playwright==1.63.0` (it must match the browser in `/opt/pw-browsers`;
+- **Python:** `pip install -r media-wall/requirements.txt` (it pins `playwright==1.63.0` to match the browser in `/opt/pw-browsers`;
   set `PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`). Test scripts use `localcdn.route(pg)` and `pw.launch(p, pw.GL)` from `media-wall/src`.
-- **Speed of a run:** the full `tools/checks.py` takes over 10 minutes here: run it in the background. CI takes about 20 minutes.
+- **Speed of a run:** the full `tools/checks.py` takes over 10 minutes here: run it in the background. CI takes about 35 minutes (8 of them the bake, when it runs).
 - **Software graphics:** headless Chromium draws with SwiftShader, 0.25–3 s a frame, and has no `KHR_parallel_shader_compile` (the
   iPhone's Safari has it since 14.5). Frame times mean nothing; count shaders, uploads and draws a frame. Key tests count frames, not sleeps;
   to test frame-time logic, fake the rAF timestamp (+30 ms a frame) in an init script.
@@ -51,7 +51,15 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `python3 house/bake.py --size 2048 --samples 64` after a build; on by default on an HD path (`HI`; `?nobake` to compare). On for everyone it must be in the page before the house's warm-up, or every house material is built twice (#306: 112 shaders on the first picture). A mesh of a baked material without baked UVs reads the atlas' (0,0), kept as the mean bounce, so joins and pieces laid later match. The export reads the page's own
   meshes (`houseG`, named for it) in the order the page builds them, so a bake belongs to one build of the 3D. Blender's merge drops
   slivers of no area: each corner carries its own index (`oci`) so the UVs map back. The raw light is kept in `_shots/bake/` to write
-  again without baking. On for everyone since V4.35: `start()` waits (2.5 s at most) for `BAKE.p` before building anything, and only a bake in hand then (`BAKE.use`) is applied; one that lands later would rebuild every house material (#306's 112 shaders). On CI the bake takes about 8 min (4 cores); here about 16 with other work running. three.js 0.187 lights in physical units: the sun 80 lux beside a lamp of a few candela, hence the fourth-root curve.
+  again without baking. On for everyone since V4.35: `start()` waits (2.5 s at most) for `BAKE.p` before building anything, and only a bake in hand then (`BAKE.use`) is applied; one that lands later would rebuild every house material (#306's 112 shaders). A material that shares another's program on purpose (the concrete's plain key in the living room's view, `garageFloor`) stays out of the bake (`bake.py` `SHELL`): baked, its key was its own and the hitch walk caught it built mid-walk (#307's merge, #308). On CI the bake takes about 8 min (4 cores); here about 16 with other work running. three.js 0.187 lights in physical units: the sun 80 lux beside a lamp of a few candela, hence the fourth-root curve.
+- **KTX2 (N196):** GitHub's basisu can't be built here (cloning works; building it was refused) and its release binaries are blocked; npm's
+  `ktx2-encoder` (basisu 2.x as WebAssembly, MIT) runs under Node, here and on CI alike (`npm ci`). Made from our JPEGs, KTX2 can't be
+  sharper than them: per 1024² photo, UASTC came out 5–9 times the JPEG's bytes (46–56 dB against it), ETC1S about 1.2 times (35–40 dB,
+  like a JPEG at 60). ETC1S normal maps flattened the roof's tiles (the gallery showed it): reliefs and roughness stay JPEG. What it buys
+  is the chip's memory (a 1024² colour photo 1.4 MB as BC7, 0.7 as ETC2, 5.6 as RGBA with mips) and no decode on the page. To read a
+  KTX2 back in Node (to measure it), run three's `basis_transcoder.js` through `new Function(...)`: it declares `BASIS`, exports nothing.
+  SwiftShader takes BC7 (`bptcSupported`); its transcodes are slow (45–60 s for all on the RTX path with the box loaded), so `gallery.py`
+  waits till the photos stop landing; a test that counts compressed textures must wait as long.
 
 ## 2. Merging when threads run side by side
 - **Versions race.** Each PR takes `VERSION`, a line in `docs/HISTORY.md`, `docs/STATE.md` and its plan row, and main moves every few
@@ -119,9 +127,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `sw.js` waits 2 s for the page (`WAIT`), then serves the kept copy (tested with a local server whose delay is set by a `.txt` file).
   N109 (V3.58): `PX` takes one picture of a key too (`road_nor`); `--slim` re-saves in place, then the gallery pixel-diff proves it (mean
   difference under 0.1 of 255). A view's nearest distance decides: a floor 1.6 m, the outside's relief 2–4 m, the road the drive's width.
-- **KTX2 (N22/N31, PR #133, WIP):** basisu 1.16.4 pinned at commit 900e40fb5d25, built in CI (no encoder can be fetched here); three's
-  `KTX2Loader` and its basis transcoder (0.5 MB wasm) copied into `_site`; the compressed data put into the same texture objects so no
-  shader changes; JPEG fallback. The tint must stay at build (compressed textures can't be tinted on the page). Waits on Emma's OK.
+- **KTX2 (N196, was N22/N31 and #133):** the colour photos also as KTX2 (ETC1S), made at build by npm's `ktx2-encoder` (basisu as
+  WebAssembly: no binary to build), cached in `.ktx2cache`; three's `KTX2Loader` (its own file, three from the one bundle) and basis
+  transcoder (0.58 MB) copied into `_site`; the compressed data put into the same texture objects so no shader changes; JPEG fallback.
+  The tint must stay at build (compressed textures can't be tinted on the page). Section 1 has the numbers.
 - **Lean code (N28, N41):** method: join the parts (`room3d_src.js()`), run ESLint 9 `no-unused-vars` on the one file (install ESLint
   in a scratch folder, not the repo), read each part, grep every name across `media-wall/src`, `tools`, `house`, `projects` (`R3D.*`
   hooks are called by `shot3d.py` and `check_site.py`), prove with the gallery. N48 (V3.05) cut 12, 13, 14, 16 and 20's;
@@ -288,8 +297,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **The labels on the room** (V3.70 N117): `15` `placeStickers` places the biggest first, each at the nearest clear spot (12 px steps down and up, then half a label aside), 8 px from the others and off `keepOuts()` (the bars, dock, stick and figure, read twice a second); no room, it's hidden. From above (`RMODE` above/alone or a view with `above` before walking) none fades as `behind`. The stick's knob shows only while held (`.held`); the walk hint is once a device (`demma-walkhint`).
 - **The stick** (V3.15 N59): `14_views_walk.js` `STICK` sets `WALK.stick`; walking reads it in `walkTick`, the map's and the free views in
   `19_view_controls.js` `mapKeys` (with the held keys), a view from the eyes calls `startWalk` (`eyeView`). A mouse drag on it in Playwright
-  is enough to test it (it never reads `pointerType`); check `stick_all`. Note: `pip install -r media-wall/requirements.txt` can lift
-  Playwright past 1.63.0 and its browser; put 1.63.0 back.
+  is enough to test it (it never reads `pointerType`); check `stick_all`.
 - **Moving a breast piece to another wall** (N64): the media wall's groups (`G.*` from `scene3d.json`) and the ideas (`IDEA_G`) are built
   in the breast's place; turning one round onto the window wall is a group transform, not a rebuild: rotation.y = π, x = −(old centre +
   new centre)·M, z = the new wall's z·M (`06` `placeCorner`; x is mirrored in `v3`). The plan's layout is one name (`geometry.PLANT_LAYOUT`),

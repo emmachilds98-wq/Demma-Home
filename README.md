@@ -20,9 +20,9 @@ wall first; each room gets its own in time), and what to buy. It opens on the wh
   go on a GitHub Release.
 
 ```bash
-python3 -m pip install -r media-wall/requirements.txt && python3 -m playwright install chromium
+npm ci && python3 -m pip install -r media-wall/requirements.txt && python3 -m playwright install chromium
 python3 tools/build.py && python3 tools/checks.py      # then open _site/index.html through a local server
 ```
 
-**Agents:** start with `docs/HANDOVER.md` and `CLAUDE.md`, then `docs/REAL_PLAN.md` (the plan; section 9 every task's state) and `docs/STATE.md` (what's true now).
+**Agents:** start with `docs/HANDOVER.md` and `CLAUDE.md`, then `docs/REAL_PLAN.md` (the plan; section 24 the open tasks, section 9 the earlier ones) and `docs/STATE.md` (what's true now).
 The history (rounds 1–82) is in `docs/HISTORY.md` and the old `DIY` repository.

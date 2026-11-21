@@ -1,9 +1,8 @@
 """Builds the plan page (v13.3): the whole plan in tabs (overview, 3D views, media wall, dining, paint and light, network and
 power, build steps, buy list with cost by phase, questions, checks), the sections borrowed from build_doc.py, with
 answers, photos, buy ticks and step ticks saved for both of you. Images live in art/.
-python3 build_viewer.py  -> media_wall_viewer.html (the shared copy, with art/ and files/ alongside it)
-                            and ../../index.html, the same page for GitHub Pages (plain download links; answers and
-                            the tracker fall back to this device, with a copy-your-answers button)
+python3 build_viewer.py  -> _site/index.html, the page for GitHub Pages (plain download links; answers and the tracker on
+                            this device, with a copy-your-answers button). The claude.ai copy went on 4 Nov 2026.
 On claude.ai the page declares: db (answers/, tracker/), user (who saved what), assets (photos, editors), downloads."""
 import hashlib, html, json, pathlib, re, urllib.parse
 import geometry as G
@@ -14,7 +13,6 @@ HERE = pathlib.Path(__file__).parent
 OUT = HERE.parent / "out"
 from build_doc import VERSION, LABEL   # v28: one version for the plan, the guide and the page (it had stuck at 26, so its PDF links broke)
 SITE = pathlib.Path(__import__("os").environ.get("DEMMA_SITE") or HERE.parents[1] / "_site")   # V1: everything a build makes for the site
-DOWNLOADS_ON_GITHUB = True   # v13: the artifact refuses PDFs (and some large images) from an editor outside its organisation
 PAGES = "https://emmachilds98-wq.github.io/Demma-Home/"           # V1: main is built and published to GitHub Pages by the workflow
 GITHUB_OUT = PAGES + "media-wall/out/"
 LPS = G.ALL_LPS   # v19: 291, the wall's 191 and the vinyl stand's 100
@@ -90,10 +88,6 @@ def downloads_html(site):
     lis = "".join(f'<li><a href="{base}{urllib.parse.quote(p.name)}" target="_blank" rel="noopener">{html.escape(label)}</a><small>{kind}</small></li>'
                   for p, label, kind in downloads_list())
     return f'<ul class="dl">{lis}</ul>'
-
-
-def published_name(p):
-    return "files/" + re.sub(r"[^A-Za-z0-9._-]+", "_", p.name)
 
 
 STYLE = """<style>
@@ -1405,8 +1399,8 @@ def pwa_files():
 // WAIT ms on a weak signal, then the kept copy, the new one saved for next time; cache first for the rest: three.js from its CDN, the fonts
 // and the pictures). V2.46: a file named by its contents (tex/<photo>.<hash>.jpg, three.<hash>.js, a
 // CDN file at its version) is kept across versions (K), so a new round doesn't fetch the photos again; its older copy goes. {LABEL}.
-const C = "demma-{LABEL}", K = "demma-keep", HASHED = /\\.[0-9a-f]{{10}}\\.[a-z]+$|@\\d+\\.\\d+\\.\\d+\\//;
-const stem = u => new URL(u).pathname.replace(/\\.[0-9a-f]{{10}}\\.[a-z]+$/, "");
+const C = "demma-{LABEL}", K = "demma-keep", HASHED = /\\.[0-9a-f]{{10}}\\.[a-z0-9]+$|@\\d+\\.\\d+\\.\\d+\\//;
+const stem = u => new URL(u).pathname.replace(/\\.[0-9a-f]{{10}}(\\.[a-z0-9]+)$/, "$1");   // N196: the KTX2 and the JPEG kept apart
 const WAIT = 2000;
 self.addEventListener("install", e => {{ self.skipWaiting(); e.waitUntil(caches.open(C).then(c => c.addAll(["./", "manifest.webmanifest"]).catch(() => {{}}))); }});
 self.addEventListener("activate", e => {{ e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C && k !== K).map(k => caches.delete(k)))).then(() => self.clients.claim())); }});
@@ -1439,7 +1433,8 @@ def split_photos(html_):
     m = re.search(r'<script type="application/json" id="photo-data">(.*?)</script>', html_, re.S)
     if not m or len(m.group(1)) < 3:
         return html_
-    P, out, made = json.loads(m.group(1)), SITE / "tex", set()
+    import vendor
+    P, out, made, jobs = json.loads(m.group(1)), SITE / "tex", set(), []
     out.mkdir(exist_ok=True)
     for k, t in P.items():
         for f in ("map", "tmap", "nor", "rough"):
@@ -1447,15 +1442,19 @@ def split_photos(html_):
             if isinstance(v, str) and v.startswith("data:"):
                 data = base64.b64decode(v.split(",", 1)[1])
                 name = f"{k}_{f}.{hashlib.sha256(data).hexdigest()[:10]}.jpg"
-                (out / name).write_bytes(data); made.add(name); t[f] = "tex/" + name
+                (out / name).write_bytes(data); made.add(name); t[f] = "tex/" + name; f in ("map", "tmap") and jobs.append((t, f, k, data))
                 im = Image.open(io.BytesIO(data))   # V2.55 (REAL_PLAN N3): a half-size copy for a phone without a strong chip (LOWD)
                 if im.width > 512:
                     b = io.BytesIO(); im.resize((im.width // 2, im.height // 2), Image.Resampling.LANCZOS).save(b, "JPEG", quality=88, optimize=True)
                     small = f"{k}_{f}_half.{hashlib.sha256(b.getvalue()).hexdigest()[:10]}.jpg"
                     (out / small).write_bytes(b.getvalue()); made.add(small); t.setdefault("half", {})[f] = "tex/" + small
-    for old in list(out.glob("*.jpg")) + list(SITE.glob("photos.*.json")):
+    for (t, f, k, _), k2 in zip(jobs, vendor.ktx2([d for *_, d in jobs])):   # N196: a colour photo's KTX2 too, when the encoder's here (not a relief: ETC1S flattened it)
+        if k2:
+            name = f"{k}_{f}.{hashlib.sha256(k2).hexdigest()[:10]}.ktx2"; (out / name).write_bytes(k2); made.add(name); t.setdefault("k2", {})[f] = "tex/" + name
+    for old in list(out.glob("*.jpg")) + list(out.glob("*.ktx2")) + list(SITE.glob("photos.*.json")):
         if old.name not in made: old.unlink()
-    return html_[:m.start()] + '<script type="application/json" id="photo-data">' + json.dumps(P, separators=(",", ":")) + "</script>" + html_[m.end():]
+    basis = any(n.endswith(".ktx2") for n in made) and vendor.transcoder(SITE)
+    return html_[:m.start()] + '<script type="application/json" id="photo-data"' + (f' data-k2="{basis}"' if basis else "") + ">" + json.dumps(P, separators=(",", ":")) + "</script>" + html_[m.end():]
 
 
 def split_sheets(html_):
@@ -1482,44 +1481,6 @@ PLAN_REDIRECT = """<!doctype html>
 """
 
 
-def publish_files():
-    """{published path: source} for the Artifact publish: the viewer images and the downloads."""
-    files = {f"art/{p.name}": str(p) for p in sorted((HERE / "art").glob("*.webp"))}
-    if not DOWNLOADS_ON_GITHUB:
-        files.update({published_name(p): str(p) for p, _, kind in downloads_list() if kind != "PDF"})
-    return files
-
-
-DECK_ASSETS = HERE / "deck_assets.json"   # v22: art/ files uploaded to the deck's asset store: {name: {"sha": ..., "url": "/_blob/..."}}
-
-
-def art_sha(p):
-    import hashlib
-    return hashlib.sha256(p.read_bytes()).hexdigest()
-
-
-
-
-def deck_assets_todo():
-    """v22: the art/ files the deck's asset store doesn't hold yet (new, or changed since they were uploaded)."""
-    have = json.loads(DECK_ASSETS.read_text()) if DECK_ASSETS.exists() else {}
-    return [p for p in sorted((HERE / "art").glob("*.webp")) if have.get(p.name, {}).get("sha") != art_sha(p)]
-
-
-def inline_images(html_):
-    """The copy published to the shared deck (media_wall_viewer_inline.html, gitignored). v22: each picture already in the deck's
-    asset store (deck_assets.json, matched by its sha256) is linked by its /_blob/ url; any other is carried as a data URI, so the
-    page always works. With everything uploaded the page is about 2 MB instead of 10.8. (Uploads through `files` were refused in
-    v13 with false "cpio archive" sniffs; the asset store takes them.)"""
-    import base64
-    have = json.loads(DECK_ASSETS.read_text()) if DECK_ASSETS.exists() else {}
-    for p in sorted((HERE / "art").glob("*.webp")):
-        a = have.get(p.name)
-        uri = a["url"] if a and a.get("sha") == art_sha(p) else "data:image/webp;base64," + base64.b64encode(p.read_bytes()).decode()
-        html_ = html_.replace(f"art/{p.name}", uri)
-    return html_
-
-
 def doc_images():
     """The two plan images that aren't renders, as JPEGs in art/ so the page carries each once."""
     from PIL import Image
@@ -1532,8 +1493,6 @@ def doc_images():
 
 if __name__ == "__main__":
     doc_images()
-    (HERE / "media_wall_viewer.html").write_text(page())
-    (HERE / "media_wall_viewer_inline.html").write_text(inline_images(page()))
     SITE.mkdir(parents=True, exist_ok=True)
     import vendor
     vmap = vendor.bundle(SITE)                                               # V1.31 (U4): three.js in one file of its own, if Node is here
@@ -1543,7 +1502,4 @@ if __name__ == "__main__":
     (SITE / "index.html").write_text(html_)
     (SITE / "plan.html").write_text(PLAN_REDIRECT)                            # N25: old links, the view's query and hash kept
     pwa_files()
-    (HERE / "publish_files.json").write_text(json.dumps(publish_files(), indent=1))
-    todo = deck_assets_todo()
-    print("viewer ok", len(publish_files()), "files;", len(todo), "pictures not yet in the deck's asset store" + (" (inlined)" if todo else ""))
-    (HERE / "deck_assets_todo.txt").write_text("".join(str(p) + "\n" for p in todo))
+    print("viewer ok")

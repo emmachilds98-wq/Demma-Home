@@ -188,7 +188,7 @@ PERF = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   R3D.set({ view: "livstand" }); await settle(); const l = await still();
   R3D.set({ view: "landing" }); await settle(); document.querySelector('[data-rmode=stand]').click(); await settle(); const ld = await still();   // V4.27 (N188): standing on the landing, the stairwell in view
   R3D.set({ view: "house" }); await settle();
-  return { first_visit_mb: +(bytes / 1e6).toFixed(2), shaders_first: window.__first ?? -1, draws_house: h, draws_living: l, draws_landing: ld, quality: R3D.perf().quality }; }"""
+  return { first_visit_mb: +(bytes / 1e6).toFixed(2), shaders_first: window.__first ?? -1, draws_house: h, draws_living: l, draws_landing: ld, quality: R3D.perf().quality, bake: R3D.timing().bake || "none" }; }"""
 BUDGET = json.loads((ROOT / "tools/perf_budget.json").read_text())
 # the client's iPhones and PCs (tools/perf_budget.json "paths"): Apple graphics and an RTX start in HD
 HD_PATHS = (("iphone", 393, 852, True, "Apple GPU"), ("rtx", 1280, 800, False, "ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0)"))
@@ -205,7 +205,7 @@ HITCH_INIT = """(() => { const H = window.__H = { on: false, f: {}, what: [] }, 
   const hit = (k, w) => { if (!H.on) return; (H.f[hf] = H.f[hf] || {})[k] = 1; H.what.push(w); };
   const LK = new WeakMap(), lk = P.linkProgram, up = P.useProgram;
   P.linkProgram = function (q) { if (!window.__pre) LK.set(q, hf); return lk.call(this, q); };
-  P.useProgram = function (q) { if (LK.has(q)) { if (LK.get(q) === hf) { const m = window.__mat; hit("shader", "a shader built mid-walk (" + (m ? m.type + " " + (m.name || "") : "?") + ")"); } LK.delete(q); } return up.call(this, q); };
+  P.useProgram = function (q) { if (LK.has(q)) { if (LK.get(q) === hf) { const m = window.__mat; hit("shader", "a shader built mid-walk (" + (m ? m.type + " " + (m.name || (m.userData && m.userData.hk) || "") + (m.lightMap ? ", baked" : "") : "?") + ")"); } LK.delete(q); } return up.call(this, q); };
   for (const n of ["texImage2D", "texSubImage2D"]) { const o = P[n]; P[n] = function (...a) { const s = a.find(x => x && typeof x === "object" && (x.naturalWidth || x.width) && !ArrayBuffer.isView(x));
       if (s && (s.naturalWidth || s.width) * (s.naturalHeight || s.height) >= 65536) hit("photo", "a photo sent mid-walk (" + String(s.currentSrc || s.src || s.constructor.name).split("/").pop() + ")");
       return o.apply(this, a); }; }
@@ -444,7 +444,7 @@ def main():
     (SHOTS / ("perf-hitch.json" if HITCH else "perf.json")).write_text(json.dumps(perf, indent=1))
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
-    speed = "speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room {v.get('draws_landing')} landing" + (f", {v['shaders_spot']} built on the spot into it" if "shaders_spot" in v else "") + (f", {v['hitches']} hitches walking" if "hitches" in v else "") for k, v in perf.items())
+    speed = "speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room {v.get('draws_landing')} landing" + (f", {v['shaders_spot']} built on the spot into it" if "shaders_spot" in v else "") + (f", {v['hitches']} hitches walking" if "hitches" in v else "") + (f", bake {v['bake']}" if v.get("bake", "none") != "none" else "") for k, v in perf.items())
     if HITCH: print(speed); print(f"hitch check: a walk on the PC path (hall, kitchen, living room, landing and back), {perf['rtx']['hitches']} hitches, the speed budget on the iPhone's and the RTX's paths, {len(fails)} failed"); return 1 if fails else 0
     print(speed)
     print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named (shut panels, a card, Edit's list too), Esc one layer a press, Tab the top row then the 3D, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, Back from a room to the house, down to the lower floor and back, the speed budget on the phone's and the PC's Fast paths, {len(fails)} failed; screenshots in _shots/")

@@ -79,6 +79,9 @@ def shoot(site, out, only=None):
         pg = b.new_context(viewport={"width": W, "height": H}, service_workers="block").new_page(); pg.set_default_timeout(300000); localcdn.route(pg)
         pg.goto(f"http://127.0.0.1:{httpd.server_address[1]}/index.html"); pg.wait_for_function("window.R3D && window.R3D.ready", timeout=240000)
         pg.evaluate("() => R3D.photos()"); pg.wait_for_timeout(8000)                      # the photos decoded and on the card
+        pg.evaluate("""async () => { let n = -1, k = 0; for (let i = 0; i < 90 && k < 3; i++) { await new Promise(r => setTimeout(r, 1000));   // N196: till no more land (a KTX2's transcode is slow here)
+          const T = new Set(); R3D._dbg.scene.traverse(o => { for (const m of [].concat(o.material || [])) for (const t of [m.map, m.normalMap, m.roughnessMap]) if (t && t.image && t.image.width > 4) T.add(t); });
+          k = T.size === n ? k + 1 : 0; n = T.size; } }""")
         views = pg.evaluate("() => { const V = R3D._dbg.VIEWS; return [['house', 'The whole house'], ['room', 'The living room']]"
                             ".concat(Object.entries(V).filter(([k, v]) => v.box).map(([k, v]) => [k, v.label || k])); }")
         pg.add_style_tag(content=".r3d-dock, .r3d-mini, .r3d-planbar, .r3d-stickers, header, .brand, .topbar { visibility: hidden !important; }")

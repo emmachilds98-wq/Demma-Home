@@ -947,7 +947,7 @@ function buildSun() {
 }
 const START_MS = {};
 function start() {
-  if (BAKE.p) { if (!BAKE.w) BAKE.w = Promise.race([BAKE.p, new Promise(r => setTimeout(r, 2500))]).then(() => { BAKE.p = null; BAKE.use = BAKE.j; if (!started) start(); }); return; }   // N195: the baked light in hand before the house is built (its shaders built once), never more than 2.5 s
+  if (BAKE.p) { if (!BAKE.w) BAKE.w = Promise.race([BAKE.p, new Promise(r => setTimeout(r, 2500, "t"))]).then(v => { BAKE.p = null; BAKE.use = BAKE.j; START_MS.bake = BAKE.j ? "on" : v === "t" ? "late" : "none"; if (!started) start(); }); return; }   // N195: the baked light in hand before the house is built (its shaders built once), never more than 2.5 s
   started = true;
   const t0 = performance.now();
   const pmrem = new THREE.PMREMGenerator(gl);

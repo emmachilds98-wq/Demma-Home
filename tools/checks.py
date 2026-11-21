@@ -71,8 +71,9 @@ def sizes():
         return True, "no site built"
     mb = lambda f: f.stat().st_size / 1e6
     tex = [f for f in SITE.glob("tex/*.jpg") if "_half." not in f.name]; half = [f for f in SITE.glob("tex/*_half.*.jpg")]; tj = next(SITE.glob("three.*.js"), None)   # V2.45: the photos, a file each
+    k2 = list(SITE.glob("tex/*.ktx2"))   # N196: the colour photos as KTX2, fetched instead of their JPEGs where the chip takes them
     hj = json.loads((SITE / "data/house.json").read_text()) if (SITE / "data/house.json").exists() else {}
-    msg = (f"page {mb(SITE / 'index.html'):.1f} MB, photos {sum(map(mb, tex)):.1f} MB in {len(tex)} files ({sum(map(mb, half)):.1f} MB at half size), three.js " + (f"{mb(tj):.2f} MB own file" if tj else "from the CDN")
+    msg = (f"page {mb(SITE / 'index.html'):.1f} MB, photos {sum(map(mb, tex)):.1f} MB in {len(tex)} files ({sum(map(mb, half)):.1f} MB at half size, {sum(map(mb, k2)):.1f} MB as KTX2), three.js " + (f"{mb(tj):.2f} MB own file" if tj else "from the CDN")
            + f", {len(hj.get('measure', []))} sizes to measure")
     bad = parts_parse()
     # V3.02 (N45): every piece in the "Add a piece" catalogue names the fit.SOURCES row its size comes from
@@ -80,7 +81,7 @@ def sizes():
     refs = re.findall(r'^  (\w+): \{ n: "[^"]+".*?ref: "(\w+)"', (SRC / "room3d/08_house_catalogue.js").read_text(), re.M)
     cite = [f"catalogue {k}: no source {r}" for k, r in refs if r not in fit.SOURCES] + ([] if len(refs) >= 26 else [f"catalogue: {len(refs)} pieces cite a source"])
     # V2.75 (N26): the speed budget's files (tools/perf_budget.json; the site check measures the paths): over it, the round fails
-    got = {"page_mb": mb(SITE / "index.html"), "three_mb": mb(tj) if tj else 0, "photos_mb": sum(map(mb, tex)), "half_mb": sum(map(mb, half))}
+    got = {"page_mb": mb(SITE / "index.html"), "three_mb": mb(tj) if tj else 0, "photos_mb": sum(map(mb, tex)), "half_mb": sum(map(mb, half)), "ktx2_mb": sum(map(mb, k2))}
     want = json.loads((ROOT / "tools/perf_budget.json").read_text())["files"]
     over = [f"{k} {got[k]:.2f} over {v}" for k, v in want.items() if got[k] > v]
     return not bad and not over and not cite, msg + f", the 3D's {len(list((SRC / 'room3d').glob('*.js')))} parts" + (f": these don't parse alone: {bad}" if bad else " each parse alone") + \

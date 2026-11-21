@@ -32,10 +32,10 @@ jobs:
     outputs:
       heavy: ${{ steps.changes.outputs.heavy }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0   # the changes step compares with the base
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -49,14 +49,14 @@ jobs:
           echo "pw=$(python -c 'import importlib.metadata as m; print(m.version("playwright"))')" >> "$GITHUB_OUTPUT"
           echo "renders=$(python tools/render_key.py)" >> "$GITHUB_OUTPUT"
       - name: Playwright's browser (kept between runs)
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.install.outputs.pw }}
       - run: python -m playwright install --with-deps chromium
       - name: The drawn renders (kept while what they're drawn from is unchanged)
         id: renders
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             media-wall/src/art
@@ -64,10 +64,24 @@ jobs:
             media-wall/src/*.png
             media-wall/out/*.png
           key: renders-${{ steps.install.outputs.renders }}
+      - name: The KTX2 photos made before (N196, by npm's ktx2-encoder; named by their JPEG, a few minutes to make them all again)
+        uses: actions/cache/restore@v6
+        with:
+          path: .ktx2cache
+          key: ktx2-
+          restore-keys: ktx2-
       - name: The model's checks (fast, before the build)
         run: python tools/checks.py --quick
       - name: Build the site and the PDFs
         run: python tools/build.py ${{ steps.renders.outputs.cache-hit == 'true' && '--keep-renders' || '' }}
+      - id: k2
+        run: echo "key=ktx2-$(ls .ktx2cache 2>/dev/null | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"   # each named by its contents
+      - name: Keep the KTX2 photos (a new entry only when they changed)
+        uses: actions/cache/save@v6
+        continue-on-error: true
+        with:
+          path: .ktx2cache
+          key: ${{ steps.k2.outputs.key }}
       # N195: the bounced light baked (house/bake.py: Blender's Cycles via bpy, which needs Python 3.13), kept while the house file and
       # its build are unchanged (a shell it doesn't match takes the mean bounce, so a stale bake never darkens a room)
       - name: The baked light's key
@@ -75,11 +89,11 @@ jobs:
         run: echo "key=bake-$(cat _site/data/house.json house/bake.py media-wall/src/room3d/20_go.js | sha1sum | cut -c1-20)" >> "$GITHUB_OUTPUT"
       - name: The baked light (kept)
         id: bakecache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: _bake
           key: ${{ steps.bakekey.outputs.key }}
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         if: steps.bakecache.outputs.cache-hit != 'true'
         id: py313
         with:
@@ -104,23 +118,24 @@ jobs:
           if [ -n "$range" ] && ! git diff --name-only $range | grep -qvE '^docs/|\.md$'; then echo "heavy=false"; else echo "heavy=true"; fi >> "$GITHUB_OUTPUT"
           cat "$GITHUB_OUTPUT"
       - name: Hand the site to the browser checks
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: site
           path: _site
           retention-days: 1
       - name: Keep the PDFs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pdfs
           path: |
             _site/media-wall/out/*.pdf
             _site/house/out/*.pdf
           retention-days: 30
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         if: github.event_name != 'pull_request'
         with:
           path: _site
+          include-hidden-files: true   # v4 on drops dotfiles unless asked; keeps _site/.nojekyll as v3 did
 
   browser:
     needs: build
@@ -132,8 +147,8 @@ jobs:
       matrix:
         check: [site, hitch, page, taps]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
           cache: pip
@@ -144,12 +159,12 @@ jobs:
           sudo apt-get update -q && sudo apt-get install -yq fonts-inter
           python -m pip install -q -r media-wall/requirements.txt
           echo "pw=$(python -c 'import importlib.metadata as m; print(m.version("playwright"))')" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.install.outputs.pw }}
       - run: python -m playwright install --with-deps chromium
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: site
           path: _site
@@ -157,7 +172,7 @@ jobs:
         run: python tools/checks.py --only ${{ matrix.check }}
       - name: Keep the screenshots
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: screenshots-${{ matrix.check }}
           path: _shots/
@@ -177,7 +192,7 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -186,11 +201,11 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: pdfs
           path: pdfs
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           name: Home Plan ${{ github.ref_name }}
           files: pdfs/**/*.pdf
