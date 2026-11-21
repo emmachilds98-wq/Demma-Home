@@ -1,0 +1,401 @@
+diff --git a/.github/workflows/build.yml b/.github/workflows/build.yml
+index faa4c15..730e1ab 100644
+--- a/.github/workflows/build.yml
++++ b/.github/workflows/build.yml
+@@ -64,10 +64,24 @@ jobs:
+             media-wall/src/*.png
+             media-wall/out/*.png
+           key: renders-${{ steps.install.outputs.renders }}
++      - name: The KTX2 photos made before (N196, by npm's ktx2-encoder; named by their JPEG, a few minutes to make them all again)
++        uses: actions/cache/restore@v4
++        with:
++          path: .ktx2cache
++          key: ktx2-
++          restore-keys: ktx2-
+       - name: The model's checks (fast, before the build)
+         run: python tools/checks.py --quick
+       - name: Build the site and the PDFs
+         run: python tools/build.py ${{ steps.renders.outputs.cache-hit == 'true' && '--keep-renders' || '' }}
++      - id: k2
++        run: echo "key=ktx2-$(ls .ktx2cache 2>/dev/null | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"   # each named by its contents
++      - name: Keep the KTX2 photos (a new entry only when they changed)
++        uses: actions/cache/save@v4
++        continue-on-error: true
++        with:
++          path: .ktx2cache
++          key: ${{ steps.k2.outputs.key }}
+       - name: The quick checks on the built site (privacy, sizes)
+         run: python tools/checks.py --only privacy,repo,sizes
+       - name: Only documents changed? (then the browser checks rest)
+diff --git a/.gitignore b/.gitignore
+index b64b036..261d182 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -4,6 +4,7 @@ __pycache__/
+ .DS_Store
+ *.zip
+ /_site/
++/.ktx2cache/
+ /_shots/
+ /_bake/
+ # the media wall's renders, diagrams, PDFs and pages (media-wall/src: make_images.py, build_doc.py, build_viewer.py, export3d.py)
+diff --git a/docs/NOTES.md b/docs/NOTES.md
+index b2d9e31..0255946 100644
+--- a/docs/NOTES.md
++++ b/docs/NOTES.md
+@@ -52,6 +52,13 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
+   meshes (`houseG`, named for it) in the order the page builds them, so a bake belongs to one build of the 3D. Blender's merge drops
+   slivers of no area: each corner carries its own index (`oci`) so the UVs map back. The raw light is kept in `_shots/bake/` to write
+   again without baking. three.js 0.187 lights in physical units: the sun 80 lux beside a lamp of a few candela, hence the fourth-root curve.
++- **KTX2 (N196):** GitHub's basisu can't be built here (cloning works; building it was refused) and its release binaries are blocked; npm's
++  `ktx2-encoder` (basisu 2.x as WebAssembly, MIT) runs under Node, here and on CI alike (`npm ci`). Made from our JPEGs, KTX2 can't be
++  sharper than them: per 1024² photo, UASTC came out 5–9 times the JPEG's bytes (46–56 dB against it), ETC1S about 1.2 times (35–40 dB,
++  like a JPEG at 60). ETC1S normal maps flattened the roof's tiles (the gallery showed it): reliefs and roughness stay JPEG. What it buys
++  is the chip's memory (a 1024² colour photo 1.4 MB as BC7, 0.7 as ETC2, 5.6 as RGBA with mips) and no decode on the page. To read a
++  KTX2 back in Node (to measure it), run three's `basis_transcoder.js` through `new Function(...)`: it declares `BASIS`, exports nothing.
++  SwiftShader takes BC7 (`bptcSupported`); a KTX2's transcode there is slow, so `gallery.py` waits till the photos stop landing.
+ 
+ ## 2. Merging when threads run side by side
+ - **Versions race.** Each PR takes `VERSION`, a line in `docs/HISTORY.md`, `docs/STATE.md` and its plan row, and main moves every few
+@@ -119,9 +126,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
+   `sw.js` waits 2 s for the page (`WAIT`), then serves the kept copy (tested with a local server whose delay is set by a `.txt` file).
+   N109 (V3.58): `PX` takes one picture of a key too (`road_nor`); `--slim` re-saves in place, then the gallery pixel-diff proves it (mean
+   difference under 0.1 of 255). A view's nearest distance decides: a floor 1.6 m, the outside's relief 2–4 m, the road the drive's width.
+-- **KTX2 (N22/N31, PR #133, WIP):** basisu 1.16.4 pinned at commit 900e40fb5d25, built in CI (no encoder can be fetched here); three's
+-  `KTX2Loader` and its basis transcoder (0.5 MB wasm) copied into `_site`; the compressed data put into the same texture objects so no
+-  shader changes; JPEG fallback. The tint must stay at build (compressed textures can't be tinted on the page). Waits on Emma's OK.
++- **KTX2 (N196, was N22/N31 and #133):** the colour photos also as KTX2 (ETC1S), made at build by npm's `ktx2-encoder` (basisu as
++  WebAssembly: no binary to build), cached in `.ktx2cache`; three's `KTX2Loader` (its own file, three from the one bundle) and basis
++  transcoder (0.58 MB) copied into `_site`; the compressed data put into the same texture objects so no shader changes; JPEG fallback.
++  The tint must stay at build (compressed textures can't be tinted on the page). Section 1 has the numbers.
+ - **Lean code (N28, N41):** method: join the parts (`room3d_src.js()`), run ESLint 9 `no-unused-vars` on the one file (install ESLint
+   in a scratch folder, not the repo), read each part, grep every name across `media-wall/src`, `tools`, `house`, `projects` (`R3D.*`
+   hooks are called by `shot3d.py` and `check_site.py`), prove with the gallery. N48 (V3.05) cut 12, 13, 14, 16 and 20's;
+diff --git a/media-wall/src/build_viewer.py b/media-wall/src/build_viewer.py
+index 2ec683e..aef2bac 100644
+--- a/media-wall/src/build_viewer.py
++++ b/media-wall/src/build_viewer.py
+@@ -1405,8 +1405,8 @@ def pwa_files():
+ // WAIT ms on a weak signal, then the kept copy, the new one saved for next time; cache first for the rest: three.js from its CDN, the fonts
+ // and the pictures). V2.46: a file named by its contents (tex/<photo>.<hash>.jpg, three.<hash>.js, a
+ // CDN file at its version) is kept across versions (K), so a new round doesn't fetch the photos again; its older copy goes. {LABEL}.
+-const C = "demma-{LABEL}", K = "demma-keep", HASHED = /\\.[0-9a-f]{{10}}\\.[a-z]+$|@\\d+\\.\\d+\\.\\d+\\//;
+-const stem = u => new URL(u).pathname.replace(/\\.[0-9a-f]{{10}}\\.[a-z]+$/, "");
++const C = "demma-{LABEL}", K = "demma-keep", HASHED = /\\.[0-9a-f]{{10}}\\.[a-z0-9]+$|@\\d+\\.\\d+\\.\\d+\\//;
++const stem = u => new URL(u).pathname.replace(/\\.[0-9a-f]{{10}}(\\.[a-z0-9]+)$/, "$1");   // N196: the KTX2 and the JPEG kept apart
+ const WAIT = 2000;
+ self.addEventListener("install", e => {{ self.skipWaiting(); e.waitUntil(caches.open(C).then(c => c.addAll(["./", "manifest.webmanifest"]).catch(() => {{}}))); }});
+ self.addEventListener("activate", e => {{ e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== C && k !== K).map(k => caches.delete(k)))).then(() => self.clients.claim())); }});
+@@ -1439,7 +1439,8 @@ def split_photos(html_):
+     m = re.search(r'<script type="application/json" id="photo-data">(.*?)</script>', html_, re.S)
+     if not m or len(m.group(1)) < 3:
+         return html_
+-    P, out, made = json.loads(m.group(1)), SITE / "tex", set()
++    import vendor
++    P, out, made, jobs = json.loads(m.group(1)), SITE / "tex", set(), []
+     out.mkdir(exist_ok=True)
+     for k, t in P.items():
+         for f in ("map", "tmap", "nor", "rough"):
+@@ -1447,15 +1448,19 @@ def split_photos(html_):
+             if isinstance(v, str) and v.startswith("data:"):
+                 data = base64.b64decode(v.split(",", 1)[1])
+                 name = f"{k}_{f}.{hashlib.sha256(data).hexdigest()[:10]}.jpg"
+-                (out / name).write_bytes(data); made.add(name); t[f] = "tex/" + name
++                (out / name).write_bytes(data); made.add(name); t[f] = "tex/" + name; f in ("map", "tmap") and jobs.append((t, f, k, data))
+                 im = Image.open(io.BytesIO(data))   # V2.55 (REAL_PLAN N3): a half-size copy for a phone without a strong chip (LOWD)
+                 if im.width > 512:
+                     b = io.BytesIO(); im.resize((im.width // 2, im.height // 2), Image.Resampling.LANCZOS).save(b, "JPEG", quality=88, optimize=True)
+                     small = f"{k}_{f}_half.{hashlib.sha256(b.getvalue()).hexdigest()[:10]}.jpg"
+                     (out / small).write_bytes(b.getvalue()); made.add(small); t.setdefault("half", {})[f] = "tex/" + small
+-    for old in list(out.glob("*.jpg")) + list(SITE.glob("photos.*.json")):
++    for (t, f, k, _), k2 in zip(jobs, vendor.ktx2([d for *_, d in jobs])):   # N196: a colour photo's KTX2 too, when the encoder's here (not a relief: ETC1S flattened it)
++        if k2:
++            name = f"{k}_{f}.{hashlib.sha256(k2).hexdigest()[:10]}.ktx2"; (out / name).write_bytes(k2); made.add(name); t.setdefault("k2", {})[f] = "tex/" + name
++    for old in list(out.glob("*.jpg")) + list(out.glob("*.ktx2")) + list(SITE.glob("photos.*.json")):
+         if old.name not in made: old.unlink()
+-    return html_[:m.start()] + '<script type="application/json" id="photo-data">' + json.dumps(P, separators=(",", ":")) + "</script>" + html_[m.end():]
++    basis = any(n.endswith(".ktx2") for n in made) and vendor.transcoder(SITE)
++    return html_[:m.start()] + '<script type="application/json" id="photo-data"' + (f' data-k2="{basis}"' if basis else "") + ">" + json.dumps(P, separators=(",", ":")) + "</script>" + html_[m.end():]
+ 
+ 
+ def split_sheets(html_):
+diff --git a/media-wall/src/room3d/02_textures.js b/media-wall/src/room3d/02_textures.js
+index 212df6b..1a0a6bb 100644
+--- a/media-wall/src/room3d/02_textures.js
++++ b/media-wall/src/room3d/02_textures.js
+@@ -179,11 +179,12 @@ const PHOTOS = !(SMALL && !GOOD_PHONE) && !!(PMETA.lr_oak && PMETA.lr_oak.map);
+ let photosIn = null, photosDone = false;
+ function loadPhotos() {
+   if (photosIn) return photosIn;
+-  const el = document.getElementById("photo-data"), src = el && el.dataset.src, txt = el && el.textContent.trim();
+-  return (photosIn = (txt ? Promise.resolve(txt) : src ? fetch(src).then(r => r.ok ? r.text() : "{}") : Promise.resolve("{}"))
+-    .then(t => JSON.parse(t)).catch(() => ({})).then(P => {
+-      for (const t of Object.values(P)) for (const f of ["map", "tmap", "nor", "rough"]) if (typeof t[f] === "string" && t[f][0] === "@") { const [k, g] = t[f].slice(1).split("."); t[f] = P[k][g]; if (P[k].half && P[k].half[g]) (t.half = t.half || {})[f] = P[k].half[g]; }   // a shared picture, sent once
++  const el = document.getElementById("photo-data"), src = el && el.dataset.src, txt = el && el.textContent.trim(), k2 = el && el.dataset.k2 && !LOWD && k2Load(el.dataset.k2);
++  return (photosIn = Promise.all([(txt ? Promise.resolve(txt) : src ? fetch(src).then(r => r.ok ? r.text() : "{}") : Promise.resolve("{}"))
++    .then(t => JSON.parse(t)).catch(() => ({})), k2]).then(([P, k2]) => {
++      for (const t of Object.values(P)) for (const f of ["map", "tmap", "nor", "rough"]) if (typeof t[f] === "string" && t[f][0] === "@") { const [k, g] = t[f].slice(1).split("."); t[f] = P[k][g]; for (const s of ["half", "k2"]) if (P[k][s] && P[k][s][g]) (t[s] = t[s] || {})[f] = P[k][s][g]; }   // a shared picture, sent once
+       if (LOWD) for (const t of Object.values(P)) for (const f in t.half || {}) t[f] = t.half[f];   // V2.55 (N3): a phone without a strong chip takes the half-size set
++      else if (k2) for (const t of Object.values(P)) for (const f in t.k2 || {}) { K2_JPG.set(t.k2[f], t[f]); t[f] = t.k2[f]; }   // N196: the KTX2, the JPEG if it fails
+       Object.assign(PHOTO, P); photosDone = true;
+       /* V2.47 (N2): a file a photo, those on the view first */
+       const seen = onScreen(), now = w => w.k === "tile" || texSeen(w.tex, seen), all = PWAIT.splice(0), later = all.filter(w => !now(w));   // V3.59 (N114): the roof's tiles always first (the house opened under a flat beige roof)
+@@ -195,13 +196,14 @@ function onScreen() { const seen = new Set(); scene.traverseVisible(o => { for (
+ const texSeen = (tex, seen) => !tex || [tex, ...(TEX_CLONES.get(tex) || [])].some(t => seen.has(t));
+ const whenPhoto = (k, f, fn, tex) => { if (!(PMETA[k] && PMETA[k][f])) return false; const go = () => PHOTO[k] && PHOTO[k][f] && fn(PHOTO[k][f]); photosDone ? go() : PWAIT.push({ go, tex, k }); return true; };
+ const TEX_CLONES = new WeakMap();   // a clone shares the picture but needs telling it changed (not in userData: three copies that as JSON)
+-const texClone = t => { const c = t.clone(); TEX_CLONES.has(t) ? TEX_CLONES.get(t).push(c) : TEX_CLONES.set(t, [c]); return c; };
++const texClone = t => { const c = t.clone(); c.isCompressedTexture = t.isCompressedTexture; TEX_CLONES.has(t) ? TEX_CLONES.get(t).push(c) : TEX_CLONES.set(t, [c]); return c; };
+ TEX_CLONES.set(OAK_TEX, [OAK_TEX_V]);   // V1.12: the doors' upright oak, cloned before this list (it kept the drawn oak's texture: the site check's WebGL error)
+ /* V1.12: dispose first: WebGL2 keeps a texture at its first size, so a photo sent into its 4 × 4 stand-in never showed */
+-function texPut(tex, img) { const bmp = typeof ImageBitmap !== "undefined" && img instanceof ImageBitmap;   // V1.30: a bitmap comes flipped already
++function texPut(tex, img) { const bmp = typeof ImageBitmap !== "undefined" && img instanceof ImageBitmap, k2 = img.isCompressedTexture;   // V1.30: a bitmap comes flipped already, a KTX2 stored so
+   const all = [tex, ...(TEX_CLONES.get(tex) || [])];
+   all.forEach(t => t.dispose());   // every one first: a clone with the same settings shares the stand-in's storage until it's let go too
+-  for (const t of all) { t.image = img; t.flipY = !bmp; t.needsUpdate = true; gl.initTexture(t); } }
++  for (const t of all) { if (k2) Object.assign(t, { isCompressedTexture: true, mipmaps: img.mipmaps, format: img.format, type: img.type, generateMipmaps: false });   // N196: its own colour space kept
++    t.image = k2 ? img.image : img; t.flipY = !bmp && !k2; t.needsUpdate = true; gl.initTexture(t); } }
+ /* V2.64, V2.67 (N15): a photo waits its turn, sent ahead of the frame that shows it (initTexture), the shadows redrawn once at the end;
+    none while you move, as many as fit in 6 ms once still 0.2 s; on a walk over 3 s one a second */
+ const UPQ = []; let upShade = false, upT = 0, upMv = 0, upGo = 0;
+@@ -218,7 +220,14 @@ function upStep(now, busy) {   // from the frame loop, every frame
+ }
+ /* V1.30 (U5): decoded off the page's thread (createImageBitmap), flipped as three expects; an <img> where that isn't there */
+ const DECODED = new Map();   // V2.47: a photo two textures share (the brick's, the pine's) is fetched and decoded once
+-function decodeImg(src) { if (!DECODED.has(src)) DECODED.set(src, decodeOnce(src)); return DECODED.get(src); }
++function decodeImg(src) { if (!DECODED.has(src)) DECODED.set(src, K2_JPG.has(src) ? K2L.then(L => L.loadAsync(src)).catch(() => decodeImg(K2_JPG.get(src))) : decodeOnce(src)); return DECODED.get(src); }
++/* N196: a KTX2 photo (Basis ETC1S) goes to the chip squeezed (ETC2, ASTC, BC7, BC1) where it takes one of those, transcoded off the page's thread */
++const K2_JPG = new Map(); let K2L = null;
++function k2Load(path) {
++  if (typeof WebAssembly !== "object") return false;
++  K2L = import("three/addons/loaders/KTX2Loader.js").then(m => new m.KTX2Loader().setTranscoderPath(path).detectSupport(gl));
++  return K2L.then(L => Object.values(L.workerConfig).some(Boolean), () => false);
++}
+ function decodeOnce(src) {
+   const tag = () => new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = src; });
+   if (!window.createImageBitmap) return tag();
+diff --git a/media-wall/src/vendor.py b/media-wall/src/vendor.py
+index c4aa104..d6d5033 100644
+--- a/media-wall/src/vendor.py
++++ b/media-wall/src/vendor.py
+@@ -5,7 +5,8 @@
+ The page's import map points "three" and every add-on room3d.js imports at the one file, which exports them all by name (one module,
+ loaded once). Without Node or the packages (`npm ci`, package.json) the build keeps the CDN's import map, as before; the shared page
+ always keeps the CDN's (tools/build.py artifact(): its size limit)."""
+-import hashlib, json, pathlib, re, shutil, subprocess, tempfile
++import hashlib, json, os, pathlib, re, shutil, subprocess, tempfile
++from concurrent.futures import ThreadPoolExecutor
+ import room3d_page, room3d_src
+ 
+ HERE = pathlib.Path(__file__).parent
+@@ -18,6 +19,11 @@ def addons():
+     return re.findall(r'^import \{ (\w+) \} from "(three/addons/[^"]+)";', src, flags=re.M)
+ 
+ 
++def lazy():
++    """N196: every `import("three/addons/...")` in room3d.js: a file of its own, fetched only when used"""
++    return sorted(set(re.findall(r'import\("(three/addons/[^"]+)"\)', room3d_src.js())))
++
++
+ def bundle(site):
+     """writes site/three.<hash>.js and gives back its import map; None when it can't (no Node, no packages)"""
+     esb = ROOT / "node_modules/.bin/esbuild"
+@@ -26,22 +32,30 @@ def bundle(site):
+     ver = json.loads((ROOT / "node_modules/three/package.json").read_text())["version"]
+     if f"three@{ver}/" not in room3d_page.THREE:            # the same three as the CDN's
+         return None
+-    names = addons()
++    names, late = addons(), {}
+     with tempfile.TemporaryDirectory(dir=ROOT / "node_modules") as d:   # inside node_modules' folder, so "three" resolves
+         entry, out = pathlib.Path(d) / "entry.js", pathlib.Path(d) / "out.js"
+-        used = sorted(set(re.findall(r"\bTHREE\.([A-Za-z_]\w*)", room3d_src.js())))   # only the names room3d.js uses (836 KB, was 960 with all of three)
++        esm = lambda *x: subprocess.run([str(esb), str(entry), "--bundle", "--format=esm", "--minify", "--target=es2020", "--legal-comments=none",
++                                         *x, f"--outfile={out}"], capture_output=True, text=True, cwd=ROOT)
++        used = set(re.findall(r"\bTHREE\.([A-Za-z_]\w*)", room3d_src.js()))   # only the names room3d.js uses (836 KB, was 960 with all of three)
++        for s in lazy():   # N196: three itself from the one file (its names added there: 4 KB), not a second copy inside (314 KB, 60 so)
++            entry.write_text(f'export * from "{ROOT}/node_modules/three/examples/jsm/{s[13:]}";\n')
++            if esm("--external:three").returncode == 0:
++                late[s] = out.read_bytes(); used |= {n.split(" as ")[0] for m in re.findall(r'import\{([^}]*)\}from"three"', out.read_text()) for n in m.split(",")}
++        used = sorted(used)
+         entry.write_text(f'export {{ {", ".join(used)} }} from "three";\n' + "".join(f'export {{ {n} }} from "{s}";\n' for n, s in names))
+-        r = subprocess.run([str(esb), str(entry), "--bundle", "--format=esm", "--minify", "--target=es2020", "--legal-comments=none",
+-                            f"--outfile={out}"], capture_output=True, text=True, cwd=ROOT)
++        r = esm()
+         if r.returncode != 0:
+             print("vendor: esbuild failed, the CDN's import map stays:", r.stderr[-400:])
+             return None
+         code = out.read_bytes()
+     name = f"three.{hashlib.sha1(code).hexdigest()[:10]}.js"
+-    for old in site.glob("three.*.js"):
++    for old in [*site.glob("three.*.js"), *site.glob("addon.*.js")]:
+         old.unlink()
+     (site / name).write_bytes(code)
+     imports = {"three": "./" + name, **{s: "./" + name for _, s in names}}
++    for s, c in late.items():
++        n = f"addon.{pathlib.Path(s).stem}.{hashlib.sha1(c).hexdigest()[:10]}.js"; (site / n).write_bytes(c); imports[s] = "./" + n
+     print(f"vendor: {name}, {len(code) // 1024} KB, {len(used)} of three {ver}'s names and {len(names)} add-ons")
+     return '<script type="importmap">' + json.dumps({"imports": imports}) + "</script>"
+ 
+@@ -64,6 +78,57 @@ def minify(html_):
+     return re.sub(r'(<style>)(.*?)(</style>)', lambda m: m.group(1) + run(m.group(2), "css") + m.group(3), html_, flags=re.S)
+ 
+ 
++# N196: the colour photos also as KTX2 (Basis Universal ETC1S, sRGB): the graphics chip keeps them squeezed (ETC2 or ASTC on an iPhone,
++# BC7 or BC1 on a PC), an eighth to a quarter of a JPEG's memory, no decode or upload stall. Made at build by ktx2-encoder (basisu as
++# WebAssembly, package.json); without it the site keeps its JPEGs alone. Bottom row first (isYFlip), as three sends the JPEGs. ETC1S,
++# not UASTC: UASTC is 5 to 9 times a JPEG's bytes, ETC1S about 1.2 (docs/NOTES.md)
++KTX2 = """import { encodeToKTX2 } from "ktx2-encoder"; import fs from "fs";
++const [raw, w, h, o, out] = process.argv.slice(1), data = new Uint8Array(fs.readFileSync(raw));
++fs.writeFileSync(out, await encodeToKTX2(data, { ...JSON.parse(o), imageDecoder: async () => ({ width: +w, height: +h, data }) }));"""
++CACHE = ROOT / ".ktx2cache"   # by the JPEG, the settings and the encoder's version (the workflow keeps it between runs)
++
++
++def ktx2(jpgs):
++    """[JPEG bytes] to [KTX2 bytes or None], side by side; all None without the encoder"""
++    pkg = ROOT / "node_modules/ktx2-encoder/package.json"
++    if not pkg.exists() or not shutil.which("node"):
++        return [None] * len(jpgs)
++    import io
++    from PIL import Image
++    ver, o = json.loads(pkg.read_text())["version"], json.dumps({"isUASTC": False, "qualityLevel": 255, "isYFlip": True})
++    CACHE.mkdir(exist_ok=True)
++    def one(jpg):
++        hit = CACHE / (hashlib.sha256(jpg + (ver + o).encode()).hexdigest()[:16] + ".ktx2")
++        if not hit.exists():
++            with tempfile.TemporaryDirectory() as d:
++                im, src, dst = Image.open(io.BytesIO(jpg)).convert("RGBA"), pathlib.Path(d) / "in.rgba", pathlib.Path(d) / "out.ktx2"
++                src.write_bytes(im.tobytes())
++                r = subprocess.run(["node", "--input-type=module", "-e", KTX2, str(src), str(im.width), str(im.height), o, str(dst)],
++                                   capture_output=True, text=True, cwd=ROOT)
++                if r.returncode or not dst.exists():
++                    print("vendor: KTX2 failed, the JPEG alone:", (r.stdout + r.stderr)[-300:]); return None
++                shutil.move(dst, hit)
++        return hit
++    with ThreadPoolExecutor(os.cpu_count()) as ex:
++        hits = list(ex.map(one, jpgs))
++    for f in CACHE.glob("*.ktx2"):
++        if f not in hits: f.unlink()
++    return [h and h.read_bytes() for h in hits]
++
++
++def transcoder(site):
++    """three's Basis transcoder beside the page (about 580 KB, fetched only by a KTX2 photo's first load): its folder's name, None
++    without it. Named by three's version, so the service worker keeps it across rounds (sw.js HASHED)"""
++    src = ROOT / "node_modules/three/examples/jsm/libs/basis"
++    if not (src / "basis_transcoder.wasm").exists():
++        return None
++    ver = json.loads((ROOT / "node_modules/three/package.json").read_text())["version"]
++    for old in site.glob("basis@*"):
++        shutil.rmtree(old)
++    shutil.copytree(src, site / f"basis@{ver}", ignore=shutil.ignore_patterns("*.md"))
++    return f"basis@{ver}/"
++
++
+ if __name__ == "__main__":
+     import sys
+     print(bundle(pathlib.Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "_site"))
+diff --git a/package-lock.json b/package-lock.json
+index eb517d9..02f29dd 100644
+--- a/package-lock.json
++++ b/package-lock.json
+@@ -9,6 +9,7 @@
+         "esbuild": "0.25.12",
+         "eslint": "9.39.5",
+         "globals": "15.15.0",
++        "ktx2-encoder": "0.6.0",
+         "three": "0.187.0"
+       }
+     },
+@@ -1305,6 +1306,23 @@
+         "json-buffer": "3.0.1"
+       }
+     },
++    "node_modules/ktx-parse": {
++      "version": "1.1.0",
++      "resolved": "https://registry.npmjs.org/ktx-parse/-/ktx-parse-1.1.0.tgz",
++      "integrity": "sha512-mKp3y+FaYgR7mXWAbyyzpa/r1zDWeaunH+INJO4fou3hb45XuNSwar+7llrRyvpMWafxSIi99RNFJ05MHedaJQ==",
++      "dev": true,
++      "license": "MIT"
++    },
++    "node_modules/ktx2-encoder": {
++      "version": "0.6.0",
++      "resolved": "https://registry.npmjs.org/ktx2-encoder/-/ktx2-encoder-0.6.0.tgz",
++      "integrity": "sha512-gEWkw2YUlhKO4hXhqVLQQWJ+fGJObsXIwz0pGjJMclnQ4MQU3SAtN1MzutjFxO3ejWvxHyvFk5kr8+RtLmHiTA==",
++      "dev": true,
++      "license": "MIT",
++      "dependencies": {
++        "ktx-parse": "^1.1.0"
++      }
++    },
+     "node_modules/levn": {
+       "version": "0.4.1",
+       "resolved": "https://registry.npmjs.org/levn/-/levn-0.4.1.tgz",
+diff --git a/package.json b/package.json
+index be8c1c3..dfd85ad 100644
+--- a/package.json
++++ b/package.json
+@@ -6,6 +6,7 @@
+     "esbuild": "0.25.12",
+     "eslint": "9.39.5",
+     "globals": "15.15.0",
++    "ktx2-encoder": "0.6.0",
+     "three": "0.187.0"
+   }
+ }
+diff --git a/tools/checks.py b/tools/checks.py
+index 065ea43..df04424 100644
+--- a/tools/checks.py
++++ b/tools/checks.py
+@@ -71,8 +71,9 @@ def sizes():
+         return True, "no site built"
+     mb = lambda f: f.stat().st_size / 1e6
+     tex = [f for f in SITE.glob("tex/*.jpg") if "_half." not in f.name]; half = [f for f in SITE.glob("tex/*_half.*.jpg")]; tj = next(SITE.glob("three.*.js"), None)   # V2.45: the photos, a file each
++    k2 = list(SITE.glob("tex/*.ktx2"))   # N196: the colour photos as KTX2, fetched instead of their JPEGs where the chip takes them
+     hj = json.loads((SITE / "data/house.json").read_text()) if (SITE / "data/house.json").exists() else {}
+-    msg = (f"page {mb(SITE / 'index.html'):.1f} MB, photos {sum(map(mb, tex)):.1f} MB in {len(tex)} files ({sum(map(mb, half)):.1f} MB at half size), three.js " + (f"{mb(tj):.2f} MB own file" if tj else "from the CDN")
++    msg = (f"page {mb(SITE / 'index.html'):.1f} MB, photos {sum(map(mb, tex)):.1f} MB in {len(tex)} files ({sum(map(mb, half)):.1f} MB at half size, {sum(map(mb, k2)):.1f} MB as KTX2), three.js " + (f"{mb(tj):.2f} MB own file" if tj else "from the CDN")
+            + f", {len(hj.get('measure', []))} sizes to measure")
+     bad = parts_parse()
+     # V3.02 (N45): every piece in the "Add a piece" catalogue names the fit.SOURCES row its size comes from
+@@ -80,7 +81,7 @@ def sizes():
+     refs = re.findall(r'^  (\w+): \{ n: "[^"]+".*?ref: "(\w+)"', (SRC / "room3d/08_house_catalogue.js").read_text(), re.M)
+     cite = [f"catalogue {k}: no source {r}" for k, r in refs if r not in fit.SOURCES] + ([] if len(refs) >= 26 else [f"catalogue: {len(refs)} pieces cite a source"])
+     # V2.75 (N26): the speed budget's files (tools/perf_budget.json; the site check measures the paths): over it, the round fails
+-    got = {"page_mb": mb(SITE / "index.html"), "three_mb": mb(tj) if tj else 0, "photos_mb": sum(map(mb, tex)), "half_mb": sum(map(mb, half))}
++    got = {"page_mb": mb(SITE / "index.html"), "three_mb": mb(tj) if tj else 0, "photos_mb": sum(map(mb, tex)), "half_mb": sum(map(mb, half)), "ktx2_mb": sum(map(mb, k2))}
+     want = json.loads((ROOT / "tools/perf_budget.json").read_text())["files"]
+     over = [f"{k} {got[k]:.2f} over {v}" for k, v in want.items() if got[k] > v]
+     return not bad and not over and not cite, msg + f", the 3D's {len(list((SRC / 'room3d').glob('*.js')))} parts" + (f": these don't parse alone: {bad}" if bad else " each parse alone") + \
+diff --git a/tools/gallery.py b/tools/gallery.py
+index f40ec91..10f3f30 100644
+--- a/tools/gallery.py
++++ b/tools/gallery.py
+@@ -79,6 +79,9 @@ def shoot(site, out, only=None):
+         pg = b.new_context(viewport={"width": W, "height": H}, service_workers="block").new_page(); pg.set_default_timeout(300000); localcdn.route(pg)
+         pg.goto(f"http://127.0.0.1:{httpd.server_address[1]}/index.html"); pg.wait_for_function("window.R3D && window.R3D.ready", timeout=240000)
+         pg.evaluate("() => R3D.photos()"); pg.wait_for_timeout(8000)                      # the photos decoded and on the card
++        pg.evaluate("""async () => { let n = -1, k = 0; for (let i = 0; i < 90 && k < 3; i++) { await new Promise(r => setTimeout(r, 1000));   // N196: till no more land (a KTX2's transcode is slow here)
++          const T = new Set(); R3D._dbg.scene.traverse(o => { for (const m of [].concat(o.material || [])) for (const t of [m.map, m.normalMap, m.roughnessMap]) if (t && t.image && t.image.width > 4) T.add(t); });
++          k = T.size === n ? k + 1 : 0; n = T.size; } }""")
+         views = pg.evaluate("() => { const V = R3D._dbg.VIEWS; return [['house', 'The whole house'], ['room', 'The living room']]"
+                             ".concat(Object.entries(V).filter(([k, v]) => v.box).map(([k, v]) => [k, v.label || k])); }")
+         pg.add_style_tag(content=".r3d-dock, .r3d-mini, .r3d-planbar, .r3d-stickers, header, .brand, .topbar { visibility: hidden !important; }")
+diff --git a/tools/perf_budget.json b/tools/perf_budget.json
+index 1fe0efb..051ae94 100644
+--- a/tools/perf_budget.json
++++ b/tools/perf_budget.json
+@@ -1,10 +1,11 @@
+ {
+- "_": "V2.75 (N26): the speed budget. tools/checks.py fails a round that goes over: 'site' (tools/check_site.py) measures the paths, 'sizes' the built files. Each number is V2.74's plus about 10%. Lower one when a round wins; raise one only on purpose, saying why in the PR. Measured numbers: _shots/perf.json. V2.87 (N35): shaders_first +1 for Fast (phone, computer): the speck that sets a group's cutting planes before its shaders are asked for (one tiny shader, no lights, kept), so none of the group's own is built on the spot. V2.98 (N37): draws_house lowered to the new numbers plus about 10% (188 phone and PC, 189 iPhone, 371 RTX). V3.04 (N46): the RTX's draws lowered to the new numbers plus about 10% (the shade reads the picture's depth: no second pass; 190 house, 387 living room); the iPhone path runs without the shade in software graphics, so its numbers stay. V3.09 (N54): shaders_spot, the HD paths' shaders built on the frame that first drew them, from the whole house into the living room once the house has warmed it (was 58 on the RTX path, 27 on the iPhone's; now 0). V3.12 (N47): draws_living to the new numbers plus about 10%, the living room's fixed parts one draw a material (a frame standing in it: phone 246 to 235, PC 364 to 350, iPhone 260 to 249, RTX 387 to 373). V3.58 (N109): photos_mb 9.5 to 8.7, six pictures no view needs at full size made 512 (the road, the lawn's, brick's, hessian's and cord's relief): 9.5 MB to 7.9. V4.2 (N166): the house on its own (V4.1, N157) draws about 187 on every path (it was about 204) and builds two shaders fewer first: draws_house 210 to 205 on each path; shaders_first phone 21 to 20, computer 22 to 21, iPhone and RTX 54 to 44. The living room's stay (CI reads them higher than a local run). V4.27 (N188): draws_landing, a frame's draws standing on the landing (the stairwell in view), new: the measured numbers plus about 10% (phone 229, PC 232, iPhone 244, RTX 250; it was about 380 before the stairwell's pieces were drawn only where seen).",
++ "_": "V2.75 (N26): the speed budget. tools/checks.py fails a round that goes over: 'site' (tools/check_site.py) measures the paths, 'sizes' the built files. Each number is V2.74's plus about 10%. Lower one when a round wins; raise one only on purpose, saying why in the PR. Measured numbers: _shots/perf.json. V2.87 (N35): shaders_first +1 for Fast (phone, computer): the speck that sets a group's cutting planes before its shaders are asked for (one tiny shader, no lights, kept), so none of the group's own is built on the spot. V2.98 (N37): draws_house lowered to the new numbers plus about 10% (188 phone and PC, 189 iPhone, 371 RTX). V3.04 (N46): the RTX's draws lowered to the new numbers plus about 10% (the shade reads the picture's depth: no second pass; 190 house, 387 living room); the iPhone path runs without the shade in software graphics, so its numbers stay. V3.09 (N54): shaders_spot, the HD paths' shaders built on the frame that first drew them, from the whole house into the living room once the house has warmed it (was 58 on the RTX path, 27 on the iPhone's; now 0). V3.12 (N47): draws_living to the new numbers plus about 10%, the living room's fixed parts one draw a material (a frame standing in it: phone 246 to 235, PC 364 to 350, iPhone 260 to 249, RTX 387 to 373). V3.58 (N109): photos_mb 9.5 to 8.7, six pictures no view needs at full size made 512 (the road, the lawn's, brick's, hessian's and cord's relief): 9.5 MB to 7.9. V4.2 (N166): the house on its own (V4.1, N157) draws about 187 on every path (it was about 204) and builds two shaders fewer first: draws_house 210 to 205 on each path; shaders_first phone 21 to 20, computer 22 to 21, iPhone and RTX 54 to 44. The living room's stay (CI reads them higher than a local run). V4.27 (N188): draws_landing, a frame's draws standing on the landing (the stairwell in view), new: the measured numbers plus about 10% (phone 229, PC 232, iPhone 244, RTX 250; it was about 380 before the stairwell's pieces were drawn only where seen). N196: ktx2_mb, the colour photos also as KTX2 (6.08 MB, plus about 10%), fetched instead of their JPEGs (photos_mb) where the chip takes them: a visit counts only the set it fetched (first_visit_mb); three_mb 0.95 to 0.96, the 4 KB of three's names the KTX2 loader takes from the one file (its own copy of them was 250 KB more).",
+  "files": {
+   "page_mb": 2.25,
+-  "three_mb": 0.95,
++  "three_mb": 0.96,
+   "photos_mb": 8.7,
+-  "half_mb": 2.6
++  "half_mb": 2.6,
++  "ktx2_mb": 6.7
+  },
+  "paths": {
+   "_": "first_visit_mb: what a first visit fetches from the site (the icon font and the like from elsewhere aside); shaders_first: shader programs built by the first picture; draws_house, draws_living, draws_landing: a frame's draws while moving, the whole house as it opens, standing in the living room and on the landing (R3D.perf().calls, the shadows' redraw left out). phone: a phone without a strong chip (Fast, half-size photos); computer: no graphics card, 1920 wide (Fast); iphone: Apple graphics (HD); rtx: an NVIDIA RTX (HD, 1280 wide); shaders_spot (HD paths): shaders built on the spot going from the whole house into the living room, after the house's warm-up; hitches (rtx, N177): frames of a walk (hall, living room, landing, lower floor) that built a shader on the spot or sent a photo, on a 144 Hz clock after the warm-up.",
