@@ -290,7 +290,7 @@ function clearAim() { if (AIMG.g) { scene.remove(AIMG.g); AIMG.g.traverse(o => o
 function showAim(k) {
   clearAim(); const id = k.split(":")[0], l = (lights[id] || []).find(x => x.userData.hk === k); if (!l || !l.isSpotLight) return;
   scene.updateMatrixWorld(); const p = l.getWorldPosition(new THREE.Vector3()), dir = l.target.getWorldPosition(new THREE.Vector3()).sub(p).normalize();
-  const near0 = ray.near; ray.set(p, dir); ray.near = 0.2;
+  const near0 = ray.near; ray.set(p, dir); ray.near = 0.2; ray.camera = camera;   // the house's labels are sprites: a raycast needs the camera (no tap may have set it yet)
   const hit = ray.intersectObjects(scene.children, true).find(h => h.object.isMesh && shown(h.object) && h.object.material !== measMat && !clippedAt(h)); ray.near = near0;
   const end = hit ? hit.point : p.clone().addScaledVector(dir, p.y / Math.max(0.05, -dir.y)), len = end.distanceTo(p);
   const g = AIMG.g = new THREE.Group(); g.renderOrder = 998;
