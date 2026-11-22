@@ -85,7 +85,7 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
                     if b[0] <= cx <= b[3] and b[2] <= cz <= b[5] and abs(b[4] - model.FLOOR_Y[f]) <= 20: best = b[4] if best is None else max(best, b[4])
         return round(best if best is not None else model.FLOOR_Y[f], 1)
     # V2.12 (F7): each room's surfaces' areas (m²), for what a choice takes: {room: {walls: {side: [m², finish]}, ceiling: m², floor: m²}}
-    e["finish_areas"] = {rid: dict(walls={w["side"]: [w["area"], w["finish"]] for w in s["walls"]}, ceiling=(s["ceiling"] or {}).get("area"), floor=(s["floor"] or {}).get("area"))
+    e["finish_areas"] = {rid: dict(walls={w["side"]: [w["area"], w["finish"]] for w in s["walls"]}, ceiling=(s["ceiling"] or {}).get("area"), floor=(s["floor"] or {}).get("area"), fk=(s["floor"] or {}).get("finish"))   # N209: fk, the floor laid now
                          for rid, s in _surf.by_room().items() if rid != "living"}
     _lw, _lc, _lf, _ln = _surf._living()   # N5 (REAL_PLAN R7): the living room's walls by name, for what its colours take
     e["finish_areas"]["living"] = dict(walls={k: [round(a / 1e4, 2), "living"] for k, a in _ln.items()}, ceiling=round(_lc / 1e4, 2), floor=round(_lf / 1e4, 2))
@@ -96,6 +96,8 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
     e["finish_floor_y"] = {f: [_floor_top(f, x0, x1, z0, z1) for rid, x0, x1, z0, z1 in _surf.PIECES[f]] for f in model.FLOOR_Y}
     # N5c (REAL_PLAN R7): the house's windows from inside, for curtains a room can try: [floor, side, x0, x1, sill, head] (cm, the floor's own)
     e["windows_in"] = [[op["floor"], op["side"], *op["x"], op["sill"], op["head"]] for op in model.D.OPENINGS if op["kind"] == "window" and not op.get("skip")]
+    import storage_ideas                                         # N212: the storage ideas, options to look at (built in the 3D only once shown)
+    e["storage"] = storage_ideas.for_3d()
     e["plants"] = getattr(model.D, "PLANTS", [])                # V1.3: the gardens' plants (survey_data.PLANTS: where, how big, the source)
     e["beyond"] = getattr(model.D, "BEYOND", None)               # V1.4: past the far fence (survey_data.BEYOND): the low building, the hill
     e["garden"] = getattr(model.D, "BACK_GARDEN", None)          # V2.89 (N30): the back garden's lawn, path, borders and fences

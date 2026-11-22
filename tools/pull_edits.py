@@ -60,6 +60,16 @@ def speed(raw):
     return line + (f" · {g('err')} errors" if num(p.get("err")) else "")
 
 
+def finishes(raw):
+    """N209: the link's Look rows (23_finish.js finClean checks them again on the page): a room's slots, each a colour or a short key"""
+    import re
+    fin = raw.get("finishes") if isinstance(raw, dict) else None
+    ok = lambda v: isinstance(v, str) and re.fullmatch(r"#[0-9a-fA-F]{6}|[\w.-]{1,24}", v)
+    out = {r: {s: v for s, v in sl.items() if re.fullmatch(r"\d{1,2}", str(s)) and ok(v)} for r, sl in (fin if isinstance(fin, dict) else {}).items()
+           if re.fullmatch(r"[a-z0-9_]{1,30}", str(r)) and isinstance(sl, dict)}
+    return {r: sl for r, sl in out.items() if sl}
+
+
 def tick_val(name, v):
     """A tick as its store keeps it (measure.js tickVal), or None: only booleans and a paid amount are read"""
     if name == "rooms":
@@ -230,11 +240,15 @@ def main(argv):
         if not src:
             print(__doc__); return 2
         raw = json.loads(pathlib.Path(src).read_text())
-    fin = raw.get("finishes") if isinstance(raw, dict) else None   # V2.11 (FINISHES F6): the house's colours, floors and bulbs: kept as they are
+    fin = finishes(raw)   # V2.11 (FINISHES F6): the house's colours, floors and bulbs
     if fin and "--dry-run" not in argv:
         FIN = HOUSE / "client_finishes.json"
         FIN.write_text(json.dumps({"from": f"the client, in the app, {when}", "rooms": fin}, indent=1, ensure_ascii=False) + "\n")
         print(f"kept    the colours, floors and bulbs of {len(fin)} rooms (house/client_finishes.json)")
+    pf = json.loads((HOUSE / "plan_finishes.json").read_text()).get("rooms", {})   # N209: each floor not the plan's, by name
+    fl = [f"{r} {sl['5']}" for r, sl in fin.items() if sl.get("5") and sl["5"] != pf.get(r, {}).get("5")]
+    if fl:
+        print(f"floors  {', '.join(fl)} (their own, over house/plan_finishes.json)")
     tk = raw.get("progress") if isinstance(raw, dict) and isinstance(raw.get("progress"), dict) else None
     if tk:
         have = json.loads(PROGRESS.read_text()) if PROGRESS.exists() else {}

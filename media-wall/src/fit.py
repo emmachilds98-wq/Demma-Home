@@ -1422,6 +1422,19 @@ SOURCES["amelia"] = ("Amazon UK (Nov 2026, B0HDC8WYBT): Lovesofas Amelia L-shape
                      "(the text says three, the photos show five pads that flip up on a hinge: drawn five), the 95 to the headrests lying down (the "
                      "drawing's arrow), black metal feet, a solid wood frame, 172 kg, four boxes (the largest 166 × 101 × 68). About £700–950, to check on the day")
 ORDER.append("amelia")
+# N212 (21 Nov 2026): the storage ideas' pieces (house/storage_ideas.py), options to look at (IKEA UK listings read 22 Nov 2026)
+SOURCES["kallax24"] = ("IKEA UK: KALLAX shelving unit, white stained oak effect, W 77 × D 39 × H 147 cm, 13 kg a shelf, stands either way up, "
+                       "£55 (ikea.com/gb, 003.245.18); with two door inserts £88; LPs: about 50 a cube (r/vinyl, \"1000 vinyl records\", 2025)")
+SOURCES["skadis"] = "IKEA UK: SKÅDIS pegboard, white, 56 × 56 cm, £13; with hooks, a shelf and boxes £35.50 (ikea.com/gb, 003.208.03)"
+SOURCES["helmer"] = "IKEA UK: HELMER drawer unit on castors, white or black, W 28 × D 43 × H 69 cm, six drawers, £39 (ikea.com/gb, 102.510.45)"
+SOURCES["ivar"] = "IKEA UK: IVAR 1 section with shelves, pine, 89 × 30 × 179 cm, the shelves moved to suit, about £96 (ikea.com/gb, 398.963.71)"
+SOURCES["mittled"] = "IKEA UK: MITTLED LED spotlight, dimmable, black, for inside cabinets, £9 (ikea.com/gb, 605.286.59)"
+SOURCES["bergshult"] = ("IKEA UK: BERGSHULT shelf, white, 80 × 20 cm, £12, on two RAMSHULT brackets (18 × 22) at least 70 apart; the pair about £27 "
+                        "(ikea.com/gb, 704.212.38)")
+SOURCES["tjusig"] = "IKEA UK: TJUSIG hat rack, white, W 79 × D 32 × H 25 cm, hooks under a rail shelf, £29 (ikea.com/gb, 401.526.33)"
+SOURCES["paxslide"] = ("IKEA UK: a pair of PAX sliding doors (AULI mirror glass and others) for 200 of frames, 200 × 201 cm, built-in depth 8 cm, "
+                       "£215–320 (ikea.com/gb, 499.303.60, 791.909.50)")
+ORDER.extend(["kallax24", "skadis", "helmer", "ivar", "mittled", "bergshult", "tjusig", "paxslide"])
 # V4 (N152): will the sofa bed go in? Its biggest box (166 × 101 × 68, SOURCES "amelia") carried on its side, the 166 first: it needs
 # its 68 and 2 to spare (hands) across each opening on the way, the front door, the hall past the stair box and the living room door, in
 # line (no turn). A door left on its hinges, open flat, takes about its leaf's thickness (E: 4) more. The doors' widths are Measure's

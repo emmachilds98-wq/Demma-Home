@@ -148,8 +148,11 @@ SWAP = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   if (D.actId) q('#r3d-act .x').click();
   D.openAct('fin:bed2:5'); await sl(600); q('#r3d-act [data-finplant="snake"]').click();   // N5: the room's plant, from Look's floor card
   const planted = await wait(() => D.PICK.first.some(p => p.id === 'plant.bed2')) && JSON.stringify(R3D.finishes().bed2 || {}).includes('snake');
-  q('#r3d-act [data-finplant=""]').click(); const unplanted = await wait(() => !D.PICK.first.some(p => p.id === 'plant.bed2')); if (D.actId) q('#r3d-act .x').click();
-  return { swapped, added, gone, planted, unplanted };
+  q('#r3d-act [data-finplant=""]').click(); const unplanted = await wait(() => !D.PICK.first.some(p => p.id === 'plant.bed2'));
+  const fl = () => [q('#r3d-act-h').textContent, ((JSON.parse(localStorage.getItem('mw18-3d') || '{}').fin || {}).bed2 || {})[5]];   // N209: the floor's card, and what's kept
+  const f0 = fl(); q('#r3d-act [data-finf="oak"]').click(); await sl(300); const f1 = fl(); q('#r3d-act [data-finf="plan"]').click(); await sl(300); const f2 = fl();
+  const floor = [f0[0], f0[1], f1[0], f1[1], f2[1]].join('|'); if (D.actId) q('#r3d-act .x').click();
+  return { swapped, added, gone, planted, unplanted, floor };
 }"""
 OFF = """() => { const W = document.documentElement.clientWidth, out = [];
   for (const el of document.querySelectorAll("body *")) { const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
@@ -271,6 +274,15 @@ def stick_all(pg, w):
     return out
 
 
+def mouse_look(pg, w):
+    """N207, the client: the mouse "feels inverted": on a PC a mouse held down in a room looks the way it moves (right looks right, up looks up)"""
+    dirn = "() => { const D = R3D._dbg, d = D.controls.target.clone().sub(D.camera.position).normalize(); return [d.x, d.y, d.z]; }"
+    pg.evaluate("() => R3D.set({ view: 'hall' })"); pg.wait_for_timeout(3000); pg.evaluate("() => document.querySelector('[data-rmode=in]').click()"); pg.wait_for_timeout(4000)
+    x, y = pg.evaluate("() => { const r = document.querySelector('.r3d canvas').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }")
+    a = pg.evaluate(dirn); pg.mouse.move(x, y); pg.mouse.down(); pg.mouse.move(x + 120, y - 60, steps=4); pg.wait_for_timeout(1500); pg.mouse.up(); pg.wait_for_timeout(800); z = pg.evaluate(dirn)
+    turn = a[2] * z[0] - a[0] * z[2]                                  # the turn round the upright: below 0 is to the right
+    pg.evaluate("() => R3D.set({ view: 'house' })"); pg.wait_for_timeout(1500)
+    return [] if turn < -0.01 and z[1] > a[1] + 0.01 else [f"{w}: a mouse drag right and up in the hall's In it turned {turn:+.3f} and tilted {z[1] - a[1]:+.3f} (want right, below 0, and up)"]
 def names_keys(pg, w):
     """V2.97 (N42): names everywhere (the page as it opens, a door's card in the kitchen, Edit's list), Esc one at a time; on a PC Tab"""
     out, D = [], "R3D._dbg"
@@ -346,6 +358,7 @@ def main():
                 if acc["noname"]: fails.append(f"{w}: controls with no name: {acc['noname']}")
                 if acc["label"]: fails.append(f"{w}: the 3D's label doesn't say where you are: {acc['label']!r}")
                 fails += names_keys(pg, w)
+                if not phone: fails += mouse_look(pg, w)
                 if phone:
                     fails += edit_drag(pg, w) + stick_all(pg, w)
                     bk = pg.evaluate(BACK)
@@ -376,8 +389,9 @@ def main():
                         fails.append(f"{w}: tapping the office desk and widening it: {sz} (want its card, a row of 223.9, the 3D changed, Measure listing it, then back as planned)")
                     pg.screenshot(path=str(SHOTS / f"site-{w}-size.png"))
                     sw = pg.evaluate(SWAP)                          # V2.46 (N7): swap the master's chest for another, add a plant from the catalogue, both back
-                    if sw != {"swapped": True, "added": True, "gone": True, "planted": True, "unplanted": True}:
-                        fails.append(f"{w}: swapping the master bedroom's chest, adding a plant, bedroom 2's plant from Look: {sw} (want each drawn, then gone)")
+                    want = "Bedroom 2 · Grey carpet|carpet_grey|Bedroom 2 · Oak boards|oak|carpet_grey"   # N209: oak from the floor's card, then the plan's
+                    if sw != {"swapped": True, "added": True, "gone": True, "planted": True, "unplanted": True, "floor": want}:
+                        fails.append(f"{w}: swapping the master bedroom's chest, adding a plant, bedroom 2's plant and floor from Look: {sw} (want each drawn, then gone; floor {want})")
                 if phone:                                           # V2.5 (FINISHES_PLAN F2): a room's walls and ceiling through the palette, then back
                     fn = pg.evaluate("() => [R3D.finish('bed2', 'walls', '#3a6b5a'), R3D.finish('bed2', 'ceiling', '#e8c0c8'), R3D.finish('nowhere', 'walls', '#000000'), R3D.finish(null, 'walls', null), R3D.finish(null, 'ceiling', null)]")
                     if fn != [True, True, False, True, True]:

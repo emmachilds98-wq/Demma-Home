@@ -94,7 +94,8 @@ function roomUps(room) {   // [{k, t, lo, hi}]: what's changed in a room
     const ws = [0, 1, 2, 3].filter(s => o[s]);
     if (ws.length) add("w=" + ws.map(s => o[s]).join(), "Walls: " + [...new Set(ws.map(s => finName(o[s])))].join(", "), ws.length > 1 ? UPC.walls : UPC.wall);
     if (o[4]) add("4=" + o[4], "Ceiling: " + finName(o[4]), UPC.ceil);
-    if (o[5]) add("5=" + o[5], "Floor: " + upNm(FIN_FLOORS, o[5]), UPC.floor[o[5]] || [30, 60], m2);
+    const fa = (H.finish_areas || {})[room] || {};   // N209: the floor laid now is no change; a new one by its area
+    if (o[5] && o[5] !== fa.fk) add("5=" + o[5], "Floor: " + upNm(FIN_FLOORS, o[5]), UPC.floor[o[5]] || [30, 60], fa.floor || m2);
     if (o[18]) add("18=" + o[18], o[18] === "none" ? "Rug: none" : "Rug: " + upNm(FIN_RUGS, o[18]), o[18] === "none" ? [0, 0] : UPC.rug);
     if (o[19]) add("19=" + o[19], "Curtains: " + upNm(FIN_CURT, o[19]), UPC.curt);
     if (o[20]) add("20=" + o[20], "Bedding: " + upNm(FIN_BED, o[20]), UPC.bed);
@@ -170,6 +171,7 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id.startsWith("ups:")) return upsCard(id.slice(4));   // N23
   if (id.startsWith("hswap:") || id.startsWith("hadd:")) return hcatCard(id);   // V2.46 (N7): swap a piece, or which piece you've added
   if (id.startsWith("hitem:")) { const k = id.slice(6), it = HIT(k); if (!it) return null;   // V1.50: a piece in the house, its size
+    if (it.idea) return ideaCard(k);   // N212: a storage idea, to look at
     const sw = pieceNow(k).swap;
     return [sw ? HCAT[sw].n : it.n, pieceLine(k), [btn(it.op ? "Change its size" : "Move or resize", { actopen: "hsize:" + k }), ...(it.add ? [btn(it.look ? "Change plant" : "Change piece", { actopen: "hadd:" + k })] : swapKind(k) ? [btn("Swap it", { actopen: "hswap:" + k })] : []),
       ...(pieceDelta(k).some(Boolean) && !it.add ? [btn("As planned", { hreset: k })] : []), ...(it.op ? [] : [btn("Take it out", { hremove: k })]),
@@ -459,6 +461,8 @@ if (act) {
       if (it.look) { const L = plantKeys(); plantSet(it.look, L[((+x % L.length) + L.length) % L.length]); renderAct(); return; }
       const n = HCAT_ADD.length, v = d.haddgo ? HCAT_ADD[((+x % n) + n) % n] : HCAT_ADD.find(q => HCAT[q].k === x), row = ds.rows("edits")[k + "~add"]; if (!row || !v) return;
       ds.put("edits", k + "~add", Object.assign({}, row, { value: v })).then(() => { if (GS.actId) renderAct(); }); return; }
+    if (d.finidea != null && GS.actId && GS.actId.startsWith("fin:")) { ideaSet(GS.actId.split(":")[1], d.finidea); renderAct(); return; }   // N212
+    if (d.hidea) { const [r, q] = d.hidea.split(":"); closeAct(); if (ideaOn(r).includes(q)) ideaSet(r, q); return; }
     if (d.finplant != null && GS.actId && GS.actId.startsWith("fin:")) { plantSet(GS.actId.split(":")[1], d.finplant || null); renderAct(); return; }   // N5
     if (d.hremove && HIT(d.hremove) && HIT(d.hremove).look) { const r = HIT(d.hremove).look; closeAct(); plantSet(r, null); return; }
     if (d.hremove && HIT(d.hremove) && HIT(d.hremove).add) { const k = d.hremove, ds = DS(); closeAct();   // an added piece: its rows go
@@ -477,10 +481,10 @@ if (act) {
     clearTimeout(sizeT); sizeT = setTimeout(() => setPiece(k, f, clampF(f, cmR(v))), 450); });
   let lastPtr = "mouse";
   canvas.addEventListener("pointerdown", e => { lastPtr = e.pointerType; }, true);
-  canvas.addEventListener("dblclick", e => { if (S.edit || MEAS.on || lastPtr !== "mouse") return; clearTimeout(tapT); e.preventDefault(); floorHop(aimed(e)); });   // V1.53: on a PC, a double-click stands you there (a phone's double-tap is the pointerup's: iOS can send a dblclick too)
-  canvas.addEventListener("pointerdown", e => { e = aimed(e); tapDown = (S.edit || e.button > 0) ? null : [e.clientX, e.clientY, e.timeStamp]; if (GS.actId) closeAct(); });   // review after v48: the touch's own time, so a slow frame between down and up can't turn a tap into a long press
+  canvas.addEventListener("dblclick", e => { if (S.edit || MEAS.on || lastPtr !== "mouse") return; clearTimeout(tapT); e.preventDefault(); floorHop(e); });   // V1.53: on a PC, a double-click stands you there (a phone's double-tap is the pointerup's: iOS can send a dblclick too)
+  canvas.addEventListener("pointerdown", e => { tapDown = (S.edit || e.button > 0) ? null : [e.clientX, e.clientY, e.timeStamp]; if (GS.actId) closeAct(); });   // review after v48: the touch's own time, so a slow frame between down and up can't turn a tap into a long press
   canvas.addEventListener("pointerup", e => {
-    e = aimed(e); const t = tapDown; tapDown = null;
+    const t = tapDown; tapDown = null;
     if (!t || S.edit || Math.hypot(e.clientX - t[0], e.clientY - t[1]) > 6 || e.timeStamp - t[2] > Math.max(600, DBL_MS)) return;
     if (MEAS.on) { measureTap(e); return; }                                   // v39: measure in 3D
     const now = e.timeStamp, dbl = lastTap && now - lastTap.t < DBL_MS && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30;
@@ -490,8 +494,7 @@ if (act) {
     let id = pickItem(e); if (!id) return;
     const r = stage.getBoundingClientRect(), xy = [e.clientX - r.left, e.clientY - r.top];
     const go = () => {
-      if (id.startsWith("hdoor:")) { swingDoor(id.slice(6), !doorOpen(HPARTS[id.slice(6)])); if (mlookOn()) return; }   // V1.26: a tap opens or shuts it, its card says which (V2.31: with mouse look, just that)
-      if (mlookOn()) document.exitPointerLock();                              // V2.31: a card needs the pointer
+      if (id.startsWith("hdoor:")) swingDoor(id.slice(6), !doorOpen(HPARTS[id.slice(6)]));   // V1.26: a tap opens or shuts it, its card says which
       if (tryOpts) { const pl = placeOf(id); if (pl) id = `opt:${pl}:${placeIx(pl, id)}`; }           // v39: Try options: what else could go here
       openAct(id, xy); if (mouse) actAt = 0; };   // V1.54: only a finger's tap sends its click onto the card
     /* V2.42: a click's card waits out a double-click, so a double-click walks you there and opens nothing */

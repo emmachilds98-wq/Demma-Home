@@ -346,7 +346,7 @@ function finAt(hit) {   // a tap on a wall or a ceiling of the house: its room a
 function finClean(o) {
   const out = {}, floors = new Set(FIN_FLOORS.map(([k]) => k)), bulbs = new Set(FIN_BULBS.map(([v]) => v)), lux = new Set(FIN_LUX.map(([v]) => v));
   for (const [room, sl] of Object.entries(o && typeof o === "object" ? o : {})) { if (!/^[a-z0-9_]{1,30}$/.test(room) || !sl || typeof sl !== "object") continue;
-    for (const [s, v] of Object.entries(sl)) { const k = +s, ok = k <= 4 || k === 9 || k === 10 || k === 20 || (room === LIVR && k >= 11 && k <= 17) ? /^#[0-9a-f]{6}$/i.test(v) : k === 5 ? floors.has(v) : k === 6 ? bulbs.has(v) : k === 7 ? lux.has(v) : k === 8 ? FIN_FITS.some(([f]) => f === v) : k === 18 ? v === "none" || FIN_RUGS.some(([f]) => f === v) : k === 19 ? [...FIN_CURT, ...LIV_CURT].some(([f]) => f === v) : k === 21 ? FIN_PICS.some(([f]) => f === v) : k === 22 ? ["0", "1", "2", "3"].includes(String(v)) : k === 23 ? !!HCAT[v] && HCAT[v].k === "plant" : k === 24 ? FIN_PAPERS.some(([f]) => f === v) : k === 25 || k === 27 ? ["0", "1", "2", "3"].includes(String(v)) : k === 26 ? FIN_PANELS.some(([f]) => f === v) : false;
+    for (const [s, v] of Object.entries(sl)) { const k = +s, ok = k <= 4 || k === 9 || k === 10 || k === 20 || (room === LIVR && k >= 11 && k <= 17) ? /^#[0-9a-f]{6}$/i.test(v) : k === 5 ? floors.has(v) : k === 6 ? bulbs.has(v) : k === 7 ? lux.has(v) : k === 8 ? FIN_FITS.some(([f]) => f === v) : k === 18 ? v === "none" || FIN_RUGS.some(([f]) => f === v) : k === 19 ? [...FIN_CURT, ...LIV_CURT].some(([f]) => f === v) : k === 21 ? FIN_PICS.some(([f]) => f === v) : k === 22 ? ["0", "1", "2", "3"].includes(String(v)) : k === 23 ? !!HCAT[v] && HCAT[v].k === "plant" : k === 24 ? FIN_PAPERS.some(([f]) => f === v) : k === 25 || k === 27 ? ["0", "1", "2", "3"].includes(String(v)) : k === 26 ? FIN_PANELS.some(([f]) => f === v) : k === 28 ? typeof v === "string" && v.split(",").every(q => IDEAS().some(i => i.id === q && i.room === room)) : false;
       if (ok) (out[room] = out[room] || {})[k] = v; } }
   return out;
 }
@@ -433,10 +433,11 @@ function finSet(room, slot, hex) {   // by the scope: this wall, this room's wal
   if (room === "outside") { const o = S.fin.outside = S.fin.outside || {}; if (hex) o[slot] = hex; else delete o[slot]; if (!Object.keys(o).length) delete S.fin.outside;
     finOut(); store.set(KEY, S); toast(`Outside: ${slot === 9 ? "the window frames" : "the front door"} ${hex ? finName(hex) : "white, as planned"}`); return; }
   const ceil = slot === 4, flr = slot === 5, slots = flr ? [5] : ceil ? [4] : finScope === "wall" ? [slot] : [0, 1, 2, 3];
-  const rooms = finScope === "house" ? FIN.rooms : flr && finScope === "floor" ? finStorey(room) : [room];
-  for (const r of rooms) { const o = S.fin[r] = S.fin[r] || {}; for (const s of slots) { if (hex) o[s] = hex; else delete o[s]; } if (!Object.keys(o).length) delete S.fin[r]; }
+  if (flr && room === FIN_OWN) return;
+  const rooms = finScope === "house" ? FIN.rooms : flr && finScope === "floor" ? finStorey(room).filter(r => r !== FIN_OWN) : [room];
+  for (const r of rooms) { const o = S.fin[r] = S.fin[r] || {}, v = flr && hex === "plan" ? finPlanFloor(r) : hex; for (const s of slots) { if (v) o[s] = v; else delete o[s]; } if (!Object.keys(o).length) delete S.fin[r]; }
   finApplyAll(); store.set(KEY, S);
-  if (flr) { const nm = (FIN_FLOORS.find(([k]) => k === hex) || [0, "as planned"])[1]; toast(`${finScope === "floor" ? "Whole floor" : roomName(room)}: floor ${hex ? nm : "as planned"}`); return; }
+  if (flr) { toast(`${finScope === "floor" ? "Whole floor" : roomName(room)}: ${hex === "plan" ? "the plan's floor" : "floor " + finFloorName(hex)}`); return; }
   const nm = finName(hex);
   toast(`${finScope === "house" ? "Whole house" : roomName(room)}: ${ceil ? "ceiling" : finScope === "wall" ? `the ${finSlotName(room, slot)}` : "walls"} ${hex ? nm : "as planned"}`);
 }
@@ -448,13 +449,20 @@ function finStorey(room) {   // the rooms on the same floor as this one
   for (const f of ["lower", "ground", "first"]) { const ids = [...new Set((P[f] || []).map(p => FIN.rooms[p[0]]))]; if (ids.includes(room)) return ids; }
   return [room];
 }
-function finFloorCard(room) {   // V2.7 (F4): a room's floor: the carpets, laminate, boards and tiles
+/* N209: each room's floor from its card: the plan's (house/plan_finishes.json), the one laid now (finish_areas fk), or theirs; the garage's slab stays its own */
+const FIN_OWN = "garage", FIN_AS = { board: "Floorboards", concrete: "Concrete slab", earth: "Bare earth", vinyl: "Vinyl" };
+const finPlanFloor = room => ((((R.HOUSE3 || {}).plan_finishes || {}).rooms || {})[room] || {})[5] || null;
+const finLaid = room => ((((R.HOUSE3 || {}).finish_areas || {})[room]) || {}).fk || null;
+const finFloorName = k => (FIN_FLOORS.find(([q]) => q === k) || [0, FIN_AS[k] || k || "As it is"])[1];
+function finFloorCard(room) {   // V2.7 (F4): a room's floor: the carpets, laminate, boards and tiles; N209: "Bedroom 2 · Grey carpet"
   if (finScope !== "room" && finScope !== "floor") finScope = "room";
-  const now = finGet(room, 5), nm = now ? (FIN_FLOORS.find(([k]) => k === now) || [0, now])[1] : "As planned";
-  const tray = `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Where it goes">${[["room", "This room"], ["floor", "Whole floor"]].map(([k, t]) => `<button type="button" data-finsc="${k}" aria-pressed="${finScope === k}">${t}</button>`).join("")}</div>`
+  const now = finGet(room, 5), plan = finPlanFloor(room), laid = finLaid(room), own = room === FIN_OWN, u = now && now !== plan && now !== laid && roomUps(room).find(q => q.k === "5=" + now);
+  const st = own ? "Its own" : now && now === plan ? "The plan's" : now && now !== laid ? ["Your pick", u ? upRange(u.lo, u.hi) : ""].filter(Boolean).join(" · ") : "As it is";
+  const bs = [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(now !== plan && !own ? [btn("The plan's", { finf: "plan" })] : []), btn("Hold to compare", { finhold: "1" }, undefined, "", "Hold to compare: the room as it is till you let go"), ...finCopyBtns(room)];
+  const tray = own ? null : `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Where it goes">${[["room", "This room"], ["floor", "Whole floor"]].map(([k, t]) => `<button type="button" data-finsc="${k}" aria-pressed="${finScope === k}">${t}</button>`).join("")}</div>`
     + `<div class="r3d-fintray" role="group" aria-label="Floors">${FIN_FLOORS.map(([k, t]) => `<button type="button" class="sw" data-finf="${k}" style="--c:${finFloorCol(k)}" aria-pressed="${now === k}" title="${t}" aria-label="${t}"><i></i><span>${t}</span></button>`).join("")}</div></div>`;
-  const more = `<div class="r3d-fin">${finRugTray(room)}${room !== LIVR && (R.HOUSE3.rooms || {})[room] ? plantTray(room) : ""}</div>`;   // N5: the rug, a plant (N68: under More)
-  return [`${roomName(room)}: the floor`, nm, finBtns(now, { finf: "" }, room), null, tray, more];
+  const more = `<div class="r3d-fin">${finRugTray(room)}${room !== LIVR && (R.HOUSE3.rooms || {})[room] ? plantTray(room) + ideaTray(room) : ""}</div>`;   // N5: the rug, a plant (N68: under More); N212: its storage ideas
+  return [`${roomName(room)} · ${finFloorName(now || laid)}`, st, bs, null, tray, more];
 }
 function finCard(id) {   // [title, now, buttons, -, the tray]
   const [, room, s] = id.split(":"), slot = +s, ceil = slot === 4, now = finGet(room, slot);
@@ -562,7 +570,7 @@ if (act) {
     if (b.dataset.finsc) finScope = b.dataset.finsc;
     else if (b.dataset.fincopy) { FIN_COPY = { room, sl: Object.assign({}, finAll()[room]) }; toast(`Copied ${roomName(room)}: tap another room, then Paste`); }
     else if (b.dataset.finpaste && FIN_COPY) { finPush(); S.fin = S.fin || {};   // N5: the living room's own six walls and skirting stay its own
-      if (room === LIVR) livSet(FIN_COPY.sl); else S.fin[room] = Object.fromEntries(Object.entries(FIN_COPY.sl).filter(([k]) => +k <= 10 || (+k >= 18 && +k <= 27)));
+      if (room === LIVR) livSet(FIN_COPY.sl); else S.fin[room] = Object.fromEntries(Object.entries(FIN_COPY.sl).filter(([k]) => (+k <= 10 || (+k >= 18 && +k <= 27)) && !(+k === 5 && room === FIN_OWN)));
       finApplyAll(); store.set(KEY, S); toast(`${roomName(room)}: ${roomName(FIN_COPY.room)}'s look`); }
     else if (b.dataset.finundo) { const prev = FIN_UNDO.pop(); if (prev != null) { finRestore(JSON.parse(prev)); finApplyAll(); store.set(KEY, S); toast("Undone"); } }
     else if ("finf" in b.dataset) finSet(room, 5, b.dataset.finf || null);

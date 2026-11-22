@@ -20,6 +20,7 @@ import base64, hashlib, json, math, pathlib, sys, time
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "media-wall/src"))
 CACHE = ROOT / "_shots" / "bake"                                 # the last bake (not committed)
+SIGMA, GAP = 3.0, 10                                           # N202: the smoothing (texels) and the islands' gap: 3σ of blur inside the gap, so no island takes its neighbour's light
 SHELL = ("paint", "ceiling", "stairpaint", "skirting", "tile", "carpet", "laminate", "vinyl", "lvt", "marble", "board", "lino", "floor", "artex")
 # not the concrete: in the living room's view it shares the photos' plain program (20_go garageFloor); baked, its own was built mid-walk
 
@@ -38,7 +39,7 @@ EXPORT = """async ([rooms, shell]) => {
     const c = document.createElement('canvas'); c.width = c.height = 8; const g = c.getContext('2d'); g.drawImage(im, 0, 0, 8, 8); const d = g.getImageData(0, 0, 8, 8).data; let r = 0, gg = 0, bb = 0;
     for (let i = 0; i < d.length; i += 4) { r += d[i]; gg += d[i + 1]; bb += d[i + 2]; } return (avg[k] = [r / 16320, gg / 16320, bb / 16320]); };
   const meshes = [], v = new T.Vector3(); let i = -1;
-  G.traverse(m => { if (!m.isMesh || m.isInstancedMesh || Array.isArray(m.material) || !m.material.userData) return; i++;
+  G.traverse(m => { if (!m.isMesh || m.isInstancedMesh || Array.isArray(m.material) || !m.material.userData || m.userData.span) return; i++;   // not the join (20_3 joinBuild): a copy of the floors' meshes, its uv1 theirs
     const mt = m.material, hk = mt.userData.hk || ''; if (mt.transparent || mt.isMeshBasicMaterial || !m.geometry.attributes.position) return;
     const g = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry, p = g.attributes.position, n = p.count, P = new Float32Array(n * 3);
     for (let j = 0; j < n; j++) { v.fromBufferAttribute(p, j).applyMatrix4(m.matrixWorld); P[j * 3] = v.x; P[j * 3 + 1] = v.y; P[j * 3 + 2] = v.z; }
@@ -81,8 +82,16 @@ def export(site, tod):
                     seen.add(k); lights.append(L)
         out = pg.evaluate(EXPORT, [[], list(SHELL)]); out["lights"] = lights
         b.close()
-    h.shutdown()
+    h.shutdown(); h.server_close()
     return out
+
+
+def nodes(d):
+    """A material's or world's nodes: Blender 5 makes the tree with it (`use_nodes` deprecated in 5.3, gone in 6.0); before 5, switched on."""
+    import bpy
+    if bpy.app.version < (5, 0):
+        d.use_nodes = True
+    return d.node_tree.nodes
 
 
 def scene(ex):
@@ -101,7 +110,7 @@ def scene(ex):
         me.update(); me.validate()
         key = (m["hk"], tuple(round(c, 3) for c in m["col"]), bool(m["emit"]))
         if key not in mats:
-            mt = bpy.data.materials.new(m["hk"] or "x"); mt.use_nodes = True; bs = mt.node_tree.nodes["Principled BSDF"]
+            mt = bpy.data.materials.new(m["hk"] or "x"); bs = nodes(mt)["Principled BSDF"]
             lin = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in m["col"]]
             bs.inputs["Base Color"].default_value = (*lin, 1); bs.inputs["Roughness"].default_value = max(0.35, m["rough"])
             if m["emit"]:
@@ -124,7 +133,7 @@ def lights(ex, tod):
     sc = bpy.context.scene
     for o in [o for o in sc.objects if o.type == "LIGHT"]:
         bpy.data.objects.remove(o)
-    w = sc.world or bpy.data.worlds.new("w"); sc.world = w; w.use_nodes = True; bg = w.node_tree.nodes["Background"]; bg.inputs["Strength"].default_value = 0
+    w = sc.world or bpy.data.worlds.new("w"); sc.world = w; bg = nodes(w)["Background"]; bg.inputs["Strength"].default_value = 0
     for L in ex["lights"]:
         if not L["vis"] or (tod == "evening" and (L["sun"] or L["type"] == "HemisphereLight")):
             continue
@@ -176,7 +185,7 @@ def unwrap(objs, size):
     bpy.ops.object.mode_set(mode="OBJECT")                        # (a sliver of no area goes; its corners take the spare texel)
     bpy.ops.object.mode_set(mode="EDIT")
     bpy.ops.uv.smart_project(angle_limit=math.radians(40), island_margin=0.0, area_weight=0.0, correct_aspect=True, scale_to_bounds=False)
-    bpy.ops.uv.average_islands_scale(); bpy.ops.uv.pack_islands(rotate=True, margin=3 / size)
+    bpy.ops.uv.average_islands_scale(); bpy.ops.uv.pack_islands(rotate=True, margin_method="FRACTION", margin=GAP / size)
     bpy.ops.object.mode_set(mode="OBJECT")
     for o in sh:
         me = o.data; uv = np.zeros(len(me.loops) * 2, np.float32); me.uv_layers["bake"].data.foreach_get("uv", uv)
@@ -218,7 +227,7 @@ def uvs(sh):
     return out
 
 
-def smooth(m, sigma=2.0):
+def smooth(m, sigma=SIGMA):
     """The samples' grain out: a blur that stays inside each island (the light and the island's mask blurred alike, then divided)."""
     import numpy as np
     r = int(3 * sigma); k = np.exp(-0.5 * (np.arange(-r, r + 1) / sigma) ** 2); k /= k.sum()

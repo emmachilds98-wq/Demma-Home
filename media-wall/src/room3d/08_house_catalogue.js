@@ -150,6 +150,47 @@ const HCAT = {
     b: (W, H, D, B, L) => { L("oak", W / 2, D / 2, H - 3, [[0, 0], [W / 2, 0], [W / 2, 3], [0, 3]]); hcLegs("oak", W, D, H - 3, 1.8, 11)(B, L);
       for (const [u0, t0, u1, t1] of [[11, 10, W - 11, 12], [11, D - 12, W - 11, D - 10], [10, 11, 12, D - 11], [W - 12, 11, W - 10, D - 11]]) B("oak", u0, H - 9, t0, u1, H - 3, t1); } },
 };
+/* N212: the storage ideas' pieces (house/storage_ideas.py, an "idea" kind: never swapped or added from the catalogue), the house's own
+   materials only (no new shader when shown) */
+const stBooks = (B, u0, u1, v, h, t0, t1, k = 0) => { for (let u = u0; u < u1 - 2; k++) { const w = 1.4 + (k * 37 % 5) * 0.4, hh = h * (0.8 + (k * 53 % 5) * 0.05);
+  B("book" + (k % 6), u, v, t0, Math.min(u1, u + w), v + hh, t1); u += w + 0.15; } };
+Object.assign(HCAT, {
+  st_records: { n: "Record wall", k: "idea", w: 147, d: 39, h: 77, ref: "kallax24", src: "IKEA KALLAX 77 × 147, 39 deep",
+    b: (W, H, D, B) => { const nu = 4, nv = 2, cu = (W - 3) / nu, cv = (H - 3) / nv;   // on its side: four across, two up; the end two with doors
+      B("oak", 0, 0, 0, W, H, 1); for (let i = 0; i <= nu; i++) B("oak", i * cu, 0, 1, i * cu + 3, H, D); for (let j = 0; j <= nv; j++) B("oak", 0, j * cv, 1, W, j * cv + 3, D);
+      for (let i = 0; i < nu; i++) for (let j = 0; j < nv; j++) { const u = i * cu + 3, v = j * cv + 3;
+        if (i === nu - 1) { B("door_white", u + 0.3, v + 0.3, D - 1.8, u + cu - 3.3, v + cv - 3.3, D - 0.2); B("knob", u + 2, v + cv / 2 - 3, D - 0.2, u + 3.5, v + cv / 2 + 3, D); continue; }
+        stBooks(B, u + 0.5, u + cu - 3.5, v, Math.min(31.5, cv - 4) / 0.95, D - 33, D - 2, i * 13 + j * 7); } } },
+  st_eket: { n: "Lit glass cabinet", k: "idea", w: 35, d: 35, h: 35, ref: "eket", src: "IKEA EKET with glass door 35 × 35 × 35; MITTLED",
+    b: (W, H, D, B) => { const T = 1.5; B("door_white", 0, 0, 0, W, T, D - 1); B("door_white", 0, H - T, 0, W, H, D - 1); B("door_white", 0, T, 0, T, H - T, D - 1); B("door_white", W - T, T, 0, W, H - T, D - 1); B("door_white", T, T, 0, W - T, H - T, 1);
+      B("led", W / 2 - 3, H - T - 0.6, D / 2 - 3, W / 2 + 3, H - T, D / 2 + 3);   // its spotlight
+      B("brass", 5, T, 9, 11, T + 15, 15); B("pot", 14, T, 7, 24, T + 8, 17); B("black", 25, T, 15, 30, T + 20, 20);   // the knick-knacks
+      B("door_white", 0, 0, D - 1, T, H, D); B("door_white", W - T, 0, D - 1, W, H, D); B("door_white", T, 0, D - 1, W - T, T, D); B("door_white", T, H - T, D - 1, W - T, H, D);
+      B("glass", T, T, D - 0.7, W - T, H - T, D - 0.4); } },
+  st_skadis: { n: "Pegboard", k: "idea", w: 56, d: 10, h: 56, ref: "skadis", src: "IKEA SKÅDIS pegboard 56 × 56",
+    b: (W, H, D, B) => { B("pegboard", 0, 0, 0, W, H, 1.2); B("door_white", 5, 8, 1.2, 30, 9.2, D); B("storebox", 34, 6, 1.2, 50, 16, 9);
+      for (const [u, v] of [[8, 40], [16, 40], [24, 40], [40, 44]]) B("steel", u, v, 1.2, u + 0.6, v + 0.6, 5);
+      for (const u of [8.3, 16.3]) B("black", u - 0.5, 22, 2, u + 0.5, 40, 4);   // leads hung on their hooks
+      B("black", 36, 26, 1.5, 46, 44, 7); B("pink", 10, 9.2, 3, 16, 12, 8); } },   // the headphones, a pedal on the shelf
+  st_ledge: { n: "Picture ledge", k: "idea", w: 55, d: 12, h: 30, ref: "mosslanda", src: "IKEA MOSSLANDA",
+    b: (W, H, D, B) => { B("oak", 0, 0, 0, W, 2.2, D); B("oak", 0, 2.2, D - 1.5, W, 4.6, D);
+      for (let u = 3, k = 0; ; k++) { const fw = 10 + (k * 7 % 3) * 4, fh = Math.min(H - 3, 13 + (k * 5 % 3) * 6); if (u + fw > W - 2) break;
+        B(k % 2 ? "oak" : "black", u, 2.2, 1, u + fw, 2.2 + fh, 2.8); B("paper", u + 1.5, 3.7, 2.8, u + fw - 1.5, 0.7 + fh, 3); u += fw + 3; } } },
+  st_float: { n: "Oak floating shelf", k: "idea", w: 90, d: 23, h: 22, ref: "floatshelf", src: "B&Q oak floating shelf 90 × 23",
+    b: (W, H, D, B) => { const t = 3.8, h = H - t - 1; B("oak", 0, 0, 0, W, t, D);
+      stBooks(B, 2, W * 0.4, t, Math.min(h, 22) / 0.95, 2, D - 3); B("storebox", W * 0.45, t, 2, W * 0.45 + 24, t + Math.min(16, h), D - 2);
+      B("jar", W * 0.78, t, D / 2 - 4, W * 0.78 + 8, t + Math.min(12, h), D / 2 + 4); } },
+  st_shelf: { n: "Shelf over the door", k: "idea", w: 80, d: 20, h: 26, ref: "bergshult", src: "IKEA BERGSHULT 80 × 20",
+    b: (W, H, D, B) => { B("door_white", 0, 0, 0, W, 1.8, D); stBooks(B, 1, W - 1, 1.8, Math.min(19, H - 3) / 0.95, 1, D - 2, W); } },
+  st_hooks: { n: "Hat rack with hooks", k: "idea", w: 79, d: 32, h: 25, ref: "tjusig", src: "IKEA TJUSIG 79 × 32 × 25",
+    b: (W, H, D, B) => { B("door_white", 0, 0, 0, W, 8, 2); for (const u of [3, W - 5]) { B("door_white", u, 0, 0, u + 2, H, 4); B("door_white", u, H - 4, 4, u + 2, H, D); }
+      for (const t of [5, 12, 19, 26]) B("steel", 1, H - 2, t, W - 1, H, t + 1.6);
+      for (let u = 9; u < W - 6; u += 10) B("steel", u, 1, 2, u + 0.8, 6, 5); } },
+  st_helmer: { n: "Drawers on castors", k: "idea", w: 28, d: 43, h: 69, ref: "helmer", src: "IKEA HELMER 28 × 43 × 69", b: hcChest("door_white", 1, 6) },
+  st_ivar: { n: "Pine shelves", k: "idea", w: 89, d: 30, h: 179, ref: "ivar", src: "IKEA IVAR 89 × 30 × 179",
+    b: (W, H, D, B) => { for (const u of [0, W - 3]) { for (const t of [0, D - 3]) B("pine", u, 0, t, u + 3, H, t + 3); for (const v of [20, 90, 160]) B("pine", u, v, 3, u + 3, v + 3, D - 3); }
+      const vs = [3, 42, 81, 120, H - 2]; vs.forEach((v, i) => { B("pine", 3, v, 0, W - 3, v + 2, D); if (i < vs.length - 1) for (const u of [6, 46]) B("storebox", u, v + 2, 2, u + 36, v + 2 + Math.min(28, vs[i + 1] - v - 6), D - 2); }); } },
+});
 /* which pieces swap, and for what: by the kind of thing it is (its id), standing on the floor, one that turns (no lid or doors of its own) */
 const HSWAP_OF = [[/(^|\.)bed$|bed_/, "bed"], [/wardrobe/, "wardrobe"], [/bedside/, "bedside"], [/chest/, "chest"], [/desk$/, "desk"],
   [/shelving|kallax|bookcase|shelves/, "shelves"], [/chairbed|bench|armchair/, "seat"]];
@@ -162,6 +203,7 @@ const hcOf = kind => Object.keys(HCAT).filter(k => HCAT[k].k === kind);
 /* a piece's frame in the house: its wall axis, and which way it faces (its back to the nearer wall of its room) */
 function hcFrame(it) {
   const r = (R.HOUSE3.rooms || {})[it.r] || [it.b[0], it.b[3], it.b[2], it.b[5]], b = it.b, a = it.ax === "z" ? 2 : 0, o = 2 - a;
+  if (it.flip != null) return { a, o, flip: it.flip };   // N212: a storage idea's piece knows its wall (the store's shelves back onto the flight)
   const lo = o === 2 ? b[2] - r[2] : b[0] - r[0], hi = o === 2 ? r[3] - b[5] : r[1] - b[3];
   return { a, o, flip: hi < lo };
 }
@@ -199,7 +241,7 @@ function withCatalogue(fk, F) {
 const ADDED = {}, ADDFK = {};   // ADDFK: each added piece's floor, kept once it's gone (its floor is drawn again)
 function syncAdds() {
   const ds = DS(), H3 = R.HOUSE3; if (!ds || !H3) return;
-  syncPlants();
+  syncPlants(); syncIdeas();
   const rows = {}; for (const v of Object.values(ds.rows("edits") || {})) if (v && v.field === "add" && /^add\.[a-z0-9]{1,12}$/.test(v.item || "") && HCAT[v.value] && (H3.rooms || {})[v.room]) rows[v.item] = v;
   for (const id of Object.keys(ADDED)) if (!rows[id]) { delete H3.items[id]; delete ADDED[id]; }
   for (const [id, v] of Object.entries(rows)) { if (ADDED[id] && ADDED[id].k === v.value) continue;
@@ -266,3 +308,34 @@ function plantSet(room, key) {   // Look's floor card (or a plant's own card): t
 const plantTray = room => { const now = finGet(room, 23) || "";
   return `<span class="r3d-finlab">A plant</span><div class="r3d-finsc" role="group" aria-label="A plant">`
     + [["", "None"], ...plantKeys().map(k => [k, HCAT[k].n.split(",")[0]])].map(([v, t]) => `<button type="button" data-finplant="${v}" aria-pressed="${now === v}">${t}</button>`).join("") + `</div>`; };
+/* N212: the storage ideas (R.HOUSE3.storage, house/storage_ideas.py): options to look at, shown a room at a time from its floor card
+   (More), kept as their ids in S.fin[room][28]; each piece an added piece of the house (drawn, tapped), built only once it's shown */
+const IDEAS = () => (R.HOUSE3 && R.HOUSE3.storage) || [];
+const ideasIn = room => IDEAS().filter(i => i.room === room);
+const ideaOn = room => String(finGet(room, 28) || "").split(",").filter(Boolean);
+const IDEA_AT = {};
+function syncIdeas() {
+  const H3 = R.HOUSE3, want = {};
+  for (const i of IDEAS()) if ((H3.rooms || {})[i.room] && ideaOn(i.room).includes(i.id)) i.parts.forEach((p, j) => { if (HCAT[p.cat]) want[`idea.${i.id}.${j}`] = [i, p]; });
+  for (const id of Object.keys(IDEA_AT)) if (!want[id]) { delete H3.items[id]; delete IDEA_AT[id]; }
+  for (const [id, [i, p]] of Object.entries(want)) { if (IDEA_AT[id]) continue;
+    const r = H3.rooms[i.room], a = p.ax === "z" ? 2 : 0, b = p.b.slice(); IDEA_AT[id] = 1; ADDFK[id] = HCFK[String(r[4])];
+    H3.items[id] = { n: i.n, k: "furniture", r: i.room, ax: p.ax, flip: p.flip, b, s: [b[a + 3] - b[a], b[4] - b[1], Math.round((b[1] - r[4]) * 10) / 10], g: false,
+      al: Math.round((b[a] - r[a]) * 10) / 10, op: null, add: p.cat, look: i.room, idea: i.id, fk: ADDFK[id] };
+  }
+}
+function ideaSet(room, id) {   // one idea on or off; "*" all of the room's, "" none
+  finPush(); S.fin = S.fin || {}; const o = S.fin[room] = S.fin[room] || {}, all = ideasIn(room).map(i => i.id), now = ideaOn(room);
+  const L = id === "*" ? all : !id ? [] : now.includes(id) ? now.filter(q => q !== id) : [...now, id], one = IDEAS().find(i => i.id === id);
+  if (L.length) o[28] = all.filter(q => L.includes(q)).join(","); else delete o[28]; if (!Object.keys(o).length) delete S.fin[room];
+  store.set(KEY, S); storeEdits(); finSchDraw();
+  toast(one ? `${one.n}: ${L.includes(id) ? "shown (an idea to look at)" : "hidden"}` : `${roomName(room)}: ${L.length ? "its storage ideas shown" : "no storage ideas"}`);
+}
+const ideaTray = room => { const L = ideasIn(room), on = ideaOn(room); if (!L.length) return "";
+  return `<span class="r3d-finlab">Storage ideas (to look at)</span><div class="r3d-finsc" role="group" aria-label="Storage ideas">`
+    + L.map(i => `<button type="button" data-finidea="${i.id}" aria-pressed="${on.includes(i.id)}">${i.n}</button>`).join("")
+    + (L.length > 1 ? `<button type="button" data-finidea="${on.length === L.length ? "" : "*"}" aria-pressed="false">${on.length === L.length ? "None" : "All"}</button>` : "") + `</div>`; };
+function ideaCard(k) {   // a tapped idea's piece: its one line, hide it
+  const it = HIT(k), I = it && IDEAS().find(i => i.id === it.idea); if (!I) return null;
+  return [I.n + " (an idea)", I.line, [btn("Hide it", { hidea: `${it.look}:${I.id}` }), btn("This room's ideas", { actopen: `fin:${it.look}:5` })]];
+}

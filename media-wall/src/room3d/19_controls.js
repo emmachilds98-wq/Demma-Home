@@ -388,7 +388,7 @@ const ESC = [
   [() => S.edit, () => { setEdit(false); escBack(qs("#r3d-editbar"), qs("#r3d-editbtn")); }],
   [() => document.body.classList.contains("bare"), () => setBare(false)]];
 addEventListener("keydown", e => {
-  if (e.key !== "Escape" || document.pointerLockElement || document.body.matches(".sheet-open, .ov-open") || document.querySelector(".ov:not([hidden]), #lightbox:not([hidden])")) return;
+  if (e.key !== "Escape" || document.body.matches(".sheet-open, .ov-open") || document.querySelector(".ov:not([hidden]), #lightbox:not([hidden])")) return;
   const top = ESC.find(([open]) => open()); if (!top) return;
   e.preventDefault(); e.stopImmediatePropagation(); top[1]();
 }, true);
