@@ -110,7 +110,7 @@ html body .r3d .r3d-stage canvas:focus-visible { outline: 3px solid var(--oak, o
 .r3d-actfields .fld { display: flex; align-items: center; justify-content: space-between; gap: 8px; font: 600 13.5px Figtree, system-ui, sans-serif; }
 .r3d-actfields .stp { display: flex; align-items: center; gap: 4px; }
 .r3d-actfields .stp button { width: 36px; height: 36px; border: 0; border-radius: 50%; background: var(--soft); color: var(--ink); font: 600 18px Fredoka, system-ui, sans-serif; cursor: pointer; }
-.r3d-actfields input { width: 68px; height: 36px; border: 1.5px solid #0002; border-radius: var(--r-s); background: #fff; color: var(--ink); font: 600 15px Figtree, system-ui, sans-serif; text-align: center; }
+.r3d-actfields input { width: 68px; height: 36px; border: 1.5px solid #0002; border-radius: var(--r-s); background: #fff; color: var(--ink); font: 600 16px Figtree, system-ui, sans-serif; text-align: center; }
 .r3d-actfields .note { margin: 2px 0 0; font-size: 12.5px; color: var(--mut); }
 .r3d-act:has(.r3d-actfields) { z-index: 32; }
 .r3d-actfields input { appearance: textfield; -moz-appearance: textfield; }
@@ -477,7 +477,7 @@ body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-ed
 .r3d-momrow button { flex: none; }
 @media (max-width: 899px) { .r3d-planbar { bottom: calc(max(8px, env(safe-area-inset-bottom)) + 84px); } }
 @media (min-width: 900px) { .r3d-panel { top: 80px; } }   /* v39: under Plan · Build · Buy */
-.r3d-find .seg { flex-wrap: nowrap; } .r3d-find input { flex: 1; min-width: 0; min-height: 44px; border: 1.5px solid #e1d6c2; border-radius: var(--r-pill); padding: 0 16px; font: 500 15px Figtree, system-ui, sans-serif; background: #fff; color: var(--ink); }
+.r3d-find .seg { flex-wrap: nowrap; } .r3d-find input { flex: 1; min-width: 0; min-height: 44px; border: 1.5px solid #e1d6c2; border-radius: var(--r-pill); padding: 0 16px; font: 500 16px Figtree, system-ui, sans-serif; background: #fff; color: var(--ink); }
 .r3d-mysc { display: inline-flex; } .r3d-mysc button:first-child { border-radius: var(--r-pill) 0 0 999px !important; } .r3d-myx { border-radius: 0 999px 999px 0 !important; padding: 0 12px !important; }
 .r3d.measuring canvas { cursor: crosshair; }
 /* V2.88 (N33, the phone and PC look-over): every tap a finger's 44 px on a touch screen; the small pills keep their look (a clear
