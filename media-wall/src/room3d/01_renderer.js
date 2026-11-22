@@ -27,7 +27,6 @@ gl.shadowMap.autoUpdate = false;          // v14.1: shadows don't move with the 
 const reshadow = () => { gl.shadowMap.needsUpdate = true; };
 /* v35: the lights the renderer sees are a fixed set per quality (an "off" light at zero; one shadow-casting head a bar in HD), so a
    switch builds no shaders; a light in a hideable group moves to the always-shown lightRig. still() (LIVE false) draws as it always did */
-let LIVE = true;
 const lightRig = new THREE.Group(); lightRig.name = "lightRig";
 const RIGGED = [];
 function shownChain(o) { for (; o && o.parent; o = o.parent) if (!o.visible) return false; return true; }
@@ -200,15 +199,11 @@ function preDraw() {                  // the frame before the first: the shadows
 /* v40: GTAO in HD pictures and live on a real card (aoLive); the warm-up draws into a target of the composer's kind so the shaders
    match. N46: the shade reads that target's depth (no second normals pass) */
 const AO = { c: null, g: null };
-let houseLite = /[?&]houselite\b/.test(location.search);   // v73 (B): a house under 25 fps in HD drops its AO and draws at 1× for the visit (?houselite forces it)
-/* V1.1: a capable phone in HD that runs under 14 ms gets the shade and glow, lighter (phoneAO); off for the visit past 30 ms */
-let phoneAO = GOOD_PHONE, phoneAOoff = false, phoneCap = 2;   // V1.11: on from the start; phoneCap: the phone's sharpness
 /* V2.64: an iPhone starts at 2× (4× anti-aliasing) and in HD always draws through the composer, the shade on or off, so the speed
    check never rebuilds the shaders in sight */
 const PHONE_HD = GOOD_PHONE && !BIG_GPU, dragLite = () => PHONE_HD && postLive();
 /* V3.39 (N91): while you walk, look or drag, a PC skips the shade and the glow as the phone does (same shaders); they come back a
-   quarter of a second after you stop. ?fullmove keeps them on */
-let moveLite = false;
+   quarter of a second after you stop (moveLite). ?fullmove keeps them on */
 const MOVE_LITE = !/[?&]fullmove\b/.test(location.search);
 const postLive = () => S.quality === "hd" && (BIG_GPU || GOOD_PHONE || /[?&]ao\b/.test(location.search)) && !/[?&]noao\b/.test(location.search);   // V2.64: drawn through the composer
 const aoLive = () => postLive() && (BIG_GPU || phoneAO || /[?&]ao\b/.test(location.search)) && !(houseLite && R.HOUSE3 && HOUSEV(S.view)) && !(dragLite() && lowRes) && !moveLite;   // ?ao tries it anywhere; V2.64: a slow phone leaves the shade out while you drag, not the sharpness (no new buffers)

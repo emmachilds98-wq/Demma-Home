@@ -1,5 +1,4 @@
 const BAKE = { p: !HI || /[?&]nobake\b/.test(location.search) ? null : fetch("data/bake.json").then(r => r.ok ? r.json() : null).then(j => j && j.uv && fetch("data/" + j.uv).then(r => r.arrayBuffer()).then(b => (j.buf = new Uint16Array(b), BAKE.j = j))).catch(() => null) };   // N195 (20_go bakeApply): the bounced light baked, HD devices only (?nobake leaves it off)
-let houseG = null;     // v54: the whole house, drafted (The whole house view)
 const studioRoom = () => { const r = new RoomEnvironment(); r.traverse(o => { if (o.isPointLight) o.intensity = 5; if (o.material && o.material.isMeshLambertMaterial) o.material = new THREE.MeshBasicMaterial({ color: o.material.emissive.clone().multiplyScalar(o.material.emissiveIntensity) }); }); return r; };   // N192: three 0.160's room (its light 5, not 900; its lamps plain, no extra shader)
 const HOUSEV = n => n === "house" || (!!R.HOUSE3 && !!(VIEWS[n] || {}).box);   // v60: the views that show the built house (a room's own, from inside it)
 const ROOMV = () => R.HOUSE3 && (VIEWS[S.view] || {}).box;                       // v61: in one of the house's rooms: its walls keep the eye in
@@ -136,7 +135,7 @@ function placeRoomLights() {
   reshadow();
 }
 /* v73: one neutral room reflection, made once, on the house's materials from the start (v69's per-room cube camera froze PCs) */
-let HMATS = null, HENV = null;
+let HENV = null;   // (HMATS, the house's materials: 20_4_house_build.js)
 /* V1.31 (U6): the house's materials one-sided (every piece a closed solid); ?double for the old way */
 const HOUSE_SIDE = /[?&]double\b/.test(location.search) ? THREE.DoubleSide : THREE.FrontSide;
 function houseEnv() {
@@ -213,7 +212,6 @@ function houseEnvK(k) {   // V2.21 (REAL_PLAN R1): the house's reflections scale
   for (const m of Object.values(HMATS)) if (m && m.envMap && "envMapIntensity" in m) m.envMapIntensity = m.userData.real ? 1 : finishEnv(m) * k;   // V3.57: a mirror shows its room as it is
   for (const m of paintMats.values()) if (m && m.envMap && m.userData.hk) m.envMapIntensity = finishEnv(m) * k;
 }
-let hidMode = [], RPLANES = [];   // v71: GS.RMODE, how a room of the house is seen (in it, above, on its own) and what that put away
 const FIN_PEND = {};   // V2.15 (FINISHES F5): each room's own ceiling light, its own group (20_go.js), for a fitting to stand in for it
 const HPARTS = {};     // v68: the house's moving pieces (the master bedroom's ottoman lid), each its own group on its hinge
 /* v55: the floor picker. All lifts the floors apart; First, Ground and Lower show the house up to that floor (Lower takes the living
@@ -570,7 +568,7 @@ document.addEventListener("click", e => {
   const L = ((R.HOUSE3.floors[GS.hfloor] || {}).labels || []).find(l => l.id === id); if (!L) return;
   flyTo([L.x + 30, L.y + 520, L.z + 280], [L.x, L.y - 150, L.z], 50, true);
 });
-let sun, pcGlow, pcLight;
+let pcGlow, pcLight;
 // v17: the PC lit up behind its clear side window: glowing fan rings (three front, one rear), an RGB strip along the top, a light inside
 function pcLit() {
   const [cw, ch, cd] = R.PC_CASE, [cz1, cz0] = R.PC_Z, st = R.PC_SHELF_TOP, x = 2.5 + cw - 4.2;

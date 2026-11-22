@@ -1,6 +1,4 @@
-let HBUILD = null;     // V1: builds (or rebuilds, with edits) one floor of the house
 const HEDITS = {};     // V1 (Phase 3): the client's edits, {item id: {from: box, to: box, op?: the opening's old and new edges}}
-let NOWV = false;      // V3.90 (N151): As it is: the house without your colours and changes, shown only (23_finish.js nowMode)
 const mapAx = (v, f0, f1, t0, t1) => (f1 - f0 < 0.01 ? v + (t0 - f0) : t0 + (v - f0) * (t1 - t0) / (f1 - f0));
 /* V2.33: a quarter turn (E.turn, 1-3) about the new box's centre; a profile's extrusion changes axis (turnPrism) */
 const turnBox = (b, cx, cz) => [cx - (b[5] - cz), b[1], cz + (b[0] - cx), cx - (b[2] - cz), b[4], cz + (b[3] - cx)].map(v => Math.round(v * 10) / 10);
@@ -235,7 +233,6 @@ canvas.addEventListener("pointercancel", () => { if (hdrag) { hdrag = null; if (
 const pieceLine = id => { const it = HIT(id), c = pieceNow(id), ed = pieceDelta(id).some(Boolean);
   const cl = clashes(id);   // V2.46: the fit check, on the card
   return `${cmR(c.w)} wide, ${cmR(c.h)} high` + (it.look && !c.up ? "" : `, ${cmR(c.up)} up`) + (cl.length ? ` · in the way of ${cl.slice(0, 2).join(" and ").replace(/^The /, "the ").replace(/ and The /, " and the ")}` : it.look ? ` · ${roomName(it.look)}'s plant` : it.add ? " · added by you" : ed ? " · changed by you" : it.g ? " · a guess: measure it" : ""); };
-let sizeT = 0;
 async function setPiece(id, field, v) {
   const it = HIT(id), ds = DS(); if (!it || !ds) return;
   const base = field === "along" ? it.al : field === "out" || field === "turn" ? 0 : field === "removed" ? false : field === "swap" ? null : it.s[["w", "h", "up"].indexOf(field)], rid = `${id}~${field}`;

@@ -376,7 +376,6 @@ function collide(p = camera.position) {    // true if it moved the eye
   return moved;
 }
 /* v41: a double-tap on the floor stands you there at eye height (155), facing the room's middle */
-let lastTap = null;
 function floorHop(e) {
   if (R.HOUSE3) { const out = mapOut(e); if (out) return mapCentre(e, out);   // V4.5 (N168): a PC's double-click on the house's outside centres on that spot (19)
     const sp = spotAt(e); return sp ? goStand(sp.x, sp.fy, sp.z) : mapCentre(e); }   // V1.53: from any view, stand where you double-click (V2.74: over the house, no room there: centre on it)

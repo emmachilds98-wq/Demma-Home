@@ -124,7 +124,6 @@ function aimDir(dir, rad, h) {          // a head's aim (world): its plan aim, t
   if (d.y > -0.05) d.y = -0.05;          // a head can aim level, not at the ceiling
   return d.normalize();
 }
-let lookWall = "all";            // Look's paint row: all the walls, or one
 function setWall(id, v) {        // a paint's key, a colour, or "match"; the walls' own paint counts as "match"
   const h = v === "match" ? null : R.PAINTS[v] ? R.PAINTS[v].hex : v;
   if (h && /^#[0-9a-f]{6}$/i.test(h) && h.toLowerCase() !== paintHex().toLowerCase()) S.walls[id] = h; else delete S.walls[id];

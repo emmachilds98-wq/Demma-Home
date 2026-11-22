@@ -1,5 +1,6 @@
 /* V2.6 (F3): tap a wall or ceiling in any room: its card's colour tray, where it goes (wall, room, house), Undo, Hold to compare.
    Kept on this device (S.fin: room -> slot -> colour), drawn through 20_go.js finish. */
+let NOWV = false;      // V3.90 (N151): As it is: the house without your colours and changes, shown only (nowMode)
 let finScope = "room", finHeld = null, livHeld = null;
 /* N5 (F8): the living room on the house's rows, its colours where its Look keeps them: 0-3 walls, 4 ceiling, 11-16 its six named walls,
    17 the skirting, door and frame; so schemes, Undo, Copy, Paste and Send carry it */

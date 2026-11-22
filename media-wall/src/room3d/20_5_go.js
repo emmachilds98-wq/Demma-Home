@@ -1,3 +1,4 @@
+let started = false, sun;   // v14.1: built the first time the room is on screen (start); the sun (buildSun)
 function buildSun() {
   const SN = R.SUN || { az: -12, el: 45 }, az = SN.az * Math.PI / 180, el = SN.el * Math.PI / 180;
   const wc = [(R.WINDOW_X[0] + R.WINDOW_X[1]) / 2, 120, R.WINDOW_Z], L = 700;
