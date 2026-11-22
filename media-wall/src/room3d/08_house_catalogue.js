@@ -1,7 +1,7 @@
 /* V2.46 (N7): swap a piece for another of its kind, or add one, in any room; built from the house's own boxes so it's drawn, tapped,
    moved and turned as the house's are. Rows are Measure's "edits": {item, field: "swap", value: key}; {item: "add.<n>", field: "add",
    value: key, room, x, z, y}. A piece's own frame: u along its wall (0..W), v up (0..H), t out from its back (0..D). */
-const HCAT_KINDS = { bed: "Beds", wardrobe: "Wardrobes", chest: "Chests", bedside: "Bedsides", desk: "Desks", shelves: "Shelves", seat: "Seats", chair: "Desk chairs", rug: "Rugs", plant: "Plants", more: "More" };
+const HCAT_KINDS = { bed: "Beds", wardrobe: "Wardrobes", chest: "Chests", bedside: "Bedsides", desk: "Desks", shelves: "Shelves", cabinet: "Cabinets", table: "Tables", tv: "TV units", seat: "Seats", chair: "Desk chairs", lamp: "Lamps", rug: "Rugs", plant: "Plants" };   // N219: tables, TV units, cabinets and lamps their own
 function hcChest(mat, cols, rows, knob = "knob") {   // drawers: a carcass, its fronts with a shadow gap, a knob each ("grip": MALM's grip along each front's top)
   return (W, H, D, B) => {
     B(mat, 0, 0, 0, W, H, D - 2); B("gap", 1, 6, D - 2.1, W - 1, H - 2, D - 2); B(mat, 1, 0, D - 6, W - 1, 6, D - 5);   // the plinth, set back
@@ -31,6 +31,14 @@ function hcShelves(mat, fill) {   // shelving: two sides, a back, shelves, what'
     for (let i = 0; i <= n; i++) B(mat, 2, 6 + i * gap - (i === n ? 2 : 0), 1, W - 2, 6 + i * gap + (i === n ? 0 : 2), D);
     for (let i = 0; i < n; i++) fill(B, 2, W - 2, 8 + i * gap, gap - 4, D, i);
   };
+}
+function hcCubes(m) {   // cube shelving, every other cube a box, books in the rest (N219: in any colour)
+  return (W, H, D, B) => { const nu = Math.max(1, Math.round(W / 36)), nv = Math.max(1, Math.round(H / 36)), cu = (W - 3) / nu, cv = (H - 3) / nv;
+    B(m, 0, 0, 0, W, H, 1);
+    for (let i = 0; i <= nu; i++) B(m, i * cu, 0, 1, i * cu + 3, H, D);
+    for (let j = 0; j <= nv; j++) B(m, 0, j * cv, 1, W, j * cv + 3, D);
+    for (let i = 0; i < nu; i++) for (let j = 0; j < nv; j++) { const u = i * cu + 3, v = j * cv + 3;
+      if ((i + j) % 2) B("storebox", u + 0.5, v, 3, u + cu - 3.5, v + cv - 3.5, D - 0.5); else if (j) hcBooks(B, u, u + cu - 3, v, cv - 4, D, i + j); } };
 }
 const hcBooks = (B, u0, u1, v, h, D, i) => {   // books along a shelf, every height, a gap now and then
   let u = u0 + 1, k = i * 7;
@@ -107,13 +115,7 @@ const HCAT = {
       B("door_white", W - 37, 0, 1, W - 1, 70, 59); for (const v of [23, 46]) B("door_white", W - 35, v, 3, W - 3, v + 1.6, 57);   // ALEX's open unit, two shelves
       L("door_white", W / 2, 5, 0, [[0, 0], [2, 0], [2, H - 3], [0, H - 3]]); } },
   bookcase: { n: "Oak bookcase", k: "shelves", w: 80, d: 28, h: 202, ref: "hcikea", src: "IKEA BILLY, 80 × 28 × 202", b: hcShelves("oak", hcBooks) },
-  cubes: { n: "Cube shelving with boxes, white", k: "shelves", w: 147, d: 39, h: 147, ref: "hcikea", src: "IKEA KALLAX, 147 × 39 × 147",
-    b: (W, H, D, B) => { const nu = Math.max(1, Math.round(W / 36)), nv = Math.max(1, Math.round(H / 36)), cu = (W - 3) / nu, cv = (H - 3) / nv;
-      B("door_white", 0, 0, 0, W, H, 1);
-      for (let i = 0; i <= nu; i++) B("door_white", i * cu, 0, 1, i * cu + 3, H, D);
-      for (let j = 0; j <= nv; j++) B("door_white", 0, j * cv, 1, W, j * cv + 3, D);
-      for (let i = 0; i < nu; i++) for (let j = 0; j < nv; j++) { const u = i * cu + 3, v = j * cv + 3;
-        if ((i + j) % 2) B("storebox", u + 0.5, v, 3, u + cu - 3.5, v + cv - 3.5, D - 0.5); else if (j) hcBooks(B, u, u + cu - 3, v, cv - 4, D, i + j); } } },
+  cubes: { n: "Cube shelving with boxes, white", k: "shelves", w: 147, d: 39, h: 147, ref: "hcikea", src: "IKEA KALLAX, 147 × 39 × 147", b: hcCubes("door_white") },
   ladder: { n: "Ladder shelf, oak", k: "shelves", w: 60, d: 47, h: 187, ref: "hcmore", src: "Cox & Cox leaning oak, 60 × 47 × 187",
     b: (W, H, D, B) => { const n = 5, vv = i => 20 + i * (H - 24) / (n - 1), dd = i => D * (1 - i * 0.18);   // deeper at the foot, leaning to the wall
       for (let i = 0; i < n; i++) { B("oak", 3, vv(i), 0, W - 3, vv(i) + 2, dd(i)); for (const u of [0, W - 3]) B("oak", u, i ? vv(i) : 0, dd(i + 1) - 3, u + 3, (i < n - 1 ? vv(i + 1) : H - 2) + 2, dd(i)); }
@@ -131,11 +133,11 @@ const HCAT = {
       B("cloth0", 0, 4, 0, W, 30, D); for (const u of [0, W - a]) B("cloth0", u, 30, 0, u + a, 62, D); B("cloth0", a, 30, 0, W - a, H - 6, 14);
       for (let i = 0; i < 3; i++) { const u0 = a + i * 60 + 0.4, u1 = a + (i + 1) * 60 - 0.4;
         B("cloth0", u0, 30, D - 61, u1, 45, D - 1); B("cloth0", u0, 45, 14, u1, H - 2, 30); } } },
-  dresser: { n: "Dressing table with mirror, white", k: "more", w: 100, d: 50, h: 159, ref: "hcmore2", src: "IKEA HEMNES, 100 × 50, 159 with its mirror",
+  dresser: { n: "Dressing table with mirror, white", k: "table", w: 100, d: 50, h: 159, ref: "hcmore2", src: "IKEA HEMNES, 100 × 50, 159 with its mirror",
     b: (W, H, D, B, L) => { hcLegs("door_white", W, D, 71, 2.2, 4)(B, L); B("door_white", 0, 71, 0, W, 74, D);
       B("door_white", 3, 60, 3, W - 3, 71, D - 3); B("door_white", 6, 60.6, D - 3, W - 6, 70.4, D - 2.4); B("knob", W / 2 - 1.5, 64, D - 2.4, W / 2 + 1.5, 67, D - 0.6);   // the drawer under the top
       B("door_white", 12, 74, 2, W - 12, H, 5); B("mirror", 16, 78, 5, W - 16, H - 4, 5.3); } },   // the mirror in its frame, at the back
-  tvbench: { n: "TV bench, white and walnut", k: "more", w: 180, d: 42, h: 38, ref: "hcmore2", src: "IKEA BESTÅ, 180 × 42 × 38",
+  tvbench: { n: "TV bench, white and walnut", k: "tv", w: 180, d: 42, h: 38, ref: "hcmore2", src: "IKEA BESTÅ, 180 × 42 × 38",
     b: (W, H, D, B) => { B("door_white", 0, 0, 0, W, H, D - 2); B("gap", 0.5, 0.5, D - 2.05, W - 0.5, H - 0.5, D - 2);
       for (let i = 0; i < 3; i++) B("door_wood", i * W / 3 + 0.3, 0.3, D - 2, (i + 1) * W / 3 - 0.3, H - 0.3, D); } },   // three push-open doors
   plant: { n: "Fiddle-leaf fig, white pot", k: "plant", w: 50, d: 50, h: 140, ref: "hcplants", src: "Beards & Daisies, 140 tall, 27 pot",
@@ -155,10 +157,10 @@ const HCAT = {
       L("ivy", W / 2, D / 2, H * 0.5, [[0, 0], [W * 0.3, H * 0.06], [W / 2, H * 0.22], [W * 0.4, H * 0.38], [W * 0.12, H * 0.49], [0, H * 0.5]]); } },
   rug: { n: "Rug", k: "rug", w: 160, d: 230, h: 1, ref: "rugsizes", src: "Argos's usual size, 160 × 230",
     b: (W, H, D, B) => { B("rug", 0, 0, 0, W, Math.max(0.6, H), D); B("sisal", 4, Math.max(0.6, H), 4, W - 4, Math.max(0.6, H) + 0.2, 8); B("sisal", 4, Math.max(0.6, H), D - 8, W - 4, Math.max(0.6, H) + 0.2, D - 4); } },
-  floorlamp: { n: "Floor lamp, linen shade", k: "more", w: 45, d: 45, h: 155, ref: "hcmore", src: "Dunelm Marin, 155 tall, 45 shade",
+  floorlamp: { n: "Floor lamp, linen shade", k: "lamp", w: 45, d: 45, h: 155, ref: "hcmore", src: "Dunelm Marin, 155 tall, 45 shade",
     b: (W, H, D, B, L) => { L("black", W / 2, D / 2, 0, [[0, 0], [13, 0], [13, 2.5], [10, 4], [3, 5], [0, 5]]); L("black", W / 2, D / 2, 5, [[0, 0], [1.4, 0], [1, H - 30], [0, H - 30]]);
       L("paper", W / 2, D / 2, H - 28, [[0, 0], [W / 2 - 0.5, 0], [W / 2 - 0.5, 28], [0, 28]]); } },
-  sidetable: { n: "Round side table, oak", k: "more", w: 50, d: 50, h: 56, ref: "hcikea", src: "IKEA LISTERBY, 50 across, 56 high",
+  sidetable: { n: "Round side table, oak", k: "table", w: 50, d: 50, h: 56, ref: "hcikea", src: "IKEA LISTERBY, 50 across, 56 high",
     b: (W, H, D, B, L) => { L("oak", W / 2, D / 2, H - 3, [[0, 0], [W / 2, 0], [W / 2, 3], [0, 3]]); hcLegs("oak", W, D, H - 3, 1.8, 11)(B, L);
       for (const [u0, t0, u1, t1] of [[11, 10, W - 11, 12], [11, D - 12, W - 11, D - 10], [10, 11, 12, D - 11], [W - 12, 11, W - 10, D - 11]]) B("oak", u0, H - 9, t0, u1, H - 3, t1); } },
   /* N217: bedroom 2's desk chair and rug swap too (fit.SOURCES hcswap) */
@@ -209,6 +211,205 @@ Object.assign(HCAT, {
     b: (W, H, D, B) => { for (const u of [0, W - 3]) { for (const t of [0, D - 3]) B("pine", u, 0, t, u + 3, H, t + 3); for (const v of [20, 90, 160]) B("pine", u, v, 3, u + 3, v + 3, D - 3); }
       const vs = [3, 42, 81, 120, H - 2]; vs.forEach((v, i) => { B("pine", 3, v, 0, W - 3, v + 2, D); if (i < vs.length - 1) for (const u of [6, 46]) B("storebox", u, v + 2, 2, u + 36, v + 2 + Math.min(28, vs[i + 1] - v - 6), D - 2); }); } },
 });
+/* N219: a look for any piece by its kind, in one of the house's own materials (no new shader): the shops' pieces and her own, each at
+   its own W × D × H */
+const hcFronts = (m, n, W, v0, v1, D, glass) => B => { const w = W / n, hl = Math.min(30, (v1 - v0) * 0.4), hv = (v0 + v1) / 2 - hl / 2;   // n doors across (glazed: a frame), a handle each
+  if (!glass) B("gap", 0.5, v0, D - 2.1, W - 0.5, v1, D - 2);
+  for (let i = 0; i < n; i++) { const u0 = i * w + 0.3, u1 = (i + 1) * w - 0.3, ku = n > 1 && !(i % 2) ? u1 - 4.5 : u0 + 3;
+    if (glass) { for (const [a, b, c, d] of [[u0, v0, u0 + 3, v1], [u1 - 3, v0, u1, v1], [u0, v0, u1, v0 + 3], [u0, v1 - 3, u1, v1]]) B(m, a, b, D - 2, c, d, D - 0.4);
+      B("glass", u0 + 3, v0 + 3, D - 1.6, u1 - 3, v1 - 3, D - 1.2); } else B(m, u0, v0 + 0.3, D - 2, u1, v1 - 0.3, D - 0.4);
+    B("handle_black", ku, hv, D - 0.4, ku + 1.5, hv + hl, D); } };
+const hcTop = m => (W, H, D, B) => { B(m, 0, H - 3, 0, W, H, D); for (const [u, t] of [[2, 2], [W - 6, 2], [2, D - 6], [W - 6, D - 6]]) B(m, u, 0, t, u + 4, H - 3, t + 4); B(m, 6, H - 9, 2, W - 6, H - 3, 3.5); };   // a top on four legs, an apron at the back
+const hcCab = m => (W, H, D, B) => { const lg = H > 50 ? 10 : 4; for (const [u, t] of [[2, 2], [W - 5, 2], [2, D - 5], [W - 5, D - 5]]) B(m, u, 0, t, u + 3, lg, t + 3);
+  B(m, 0, lg, 0, W, H, D - 2); hcFronts(m, Math.max(1, Math.round(W / 45)), W, lg + 1, H - 1, D)(B); };
+const HLOOK = {
+  box: m => (W, H, D, B) => B(m, 0, 0, 0, W, H, D),
+  bed: m => hcBed((W, H, D, B, L, v) => { B(m, 0, 0, 0, W, H, 6); B(m, 0, 0, D - 5, W, Math.min(H, v + 8), D);   // the headboard, the foot, the sides, the slats
+    for (const u of [0, W - 4]) B(m, u, 8, 6, u + 4, v, D - 5); B("pine", 4, v - 2, 6, W - 4, v, D - 5); }),
+  wardrobe: m => (W, H, D, B) => { B(m, 0, 0, 0, W, H, D - 2); hcFronts(m, W > 120 ? 3 : 2, W, 6, H - 0.5, D)(B); },
+  chest: m => (W, H, D, B) => hcChest(m, W > 110 ? 2 : 1, Math.max(2, Math.min(6, Math.round((H - 8) / 18))))(W, H, D, B),
+  bedside: m => HLOOK.chest(m), shelves: m => hcShelves(m, hcBooks), cubes: hcCubes, desk: hcTop, table: hcTop, cabinet: hcCab, tv: hcCab,
+  glass: m => (W, H, D, B) => { const v = Math.min(H * 0.4, 85), n = Math.max(1, Math.round(W / 45));   // a glass-door cabinet: doors below, glazed above, glass shelves
+    B(m, 0, 0, 0, W, H, 1.5); for (const u of [0, W - 2]) B(m, u, 0, 1.5, u + 2, H, D - 2); B(m, 2, 0, 1.5, W - 2, v, D - 2); B(m, 2, H - 3, 1.5, W - 2, H, D - 2);
+    for (let i = 1; i < 3; i++) B("glass", 2, v + i * (H - v) / 3, 1.5, W - 2, v + i * (H - v) / 3 + 0.8, D - 3);
+    hcFronts(m, n, W, 0.5, v, D)(B); hcFronts(m, n, W, v, H - 3, D, true)(B); B("pot", 8, v, 8, 18, v + 14, 18); B("brass", W - 20, v, 10, W - 12, v + 20, 18); },
+  round: m => (W, H, D, B, L) => { const r = Math.min(W, D) / 2; L(m, W / 2, D / 2, H - 3, [[0, 0], [r, 0], [r, 3], [0, 3]]);   // a round top on a pedestal
+    L(m, W / 2, D / 2, 0, [[0, 0], [r * 0.45, 0], [r * 0.45, 2.5], [5, 7], [4, H - 3], [0, H - 3]]); },
+  seat: m => (W, H, D, B, L) => { const a = Math.min(14, W * 0.15), s = Math.min(45, H * 0.55), bk = Math.min(16, D * 0.2), n = W > 160 ? 3 : W > 115 ? 2 : 1, cw = (W - 2 * a) / n;   // arms, a back, a cushion a seat
+    hcLegs("black", W, D, 8, 1.8, 6)(B, L); B(m, 0, 8, 0, W, s - 10, D); B(m, 0, s - 10, 0, W, H, bk);
+    for (const u of [0, W - a]) B(m, u, s - 10, bk, u + a, Math.min(H - 4, s + 20), D);
+    for (let i = 0; i < n; i++) { const u0 = a + i * cw + 0.4, u1 = a + (i + 1) * cw - 0.4; B(m, u0, s - 10, bk, u1, s, D - 0.5); B(m, u0, s, bk, u1, Math.min(H - 2, s + 30), bk + 12); } },
+  chair: m => hcSwivel(m, 46, true),
+  lamp: m => (W, H, D, B, L) => { const r = Math.min(W, D) / 2, b = Math.min(13, r), sh = Math.min(28, H * 0.35);   // a base, a pole, its shade
+    L(m, W / 2, D / 2, 0, [[0, 0], [b, 0], [b, 2.5], [b * 0.7, 4], [0, 5]]); L(m, W / 2, D / 2, 5, [[0, 0], [1.2, 0], [1, H - 5 - sh], [0, H - 5 - sh]]);
+    L("paper", W / 2, D / 2, H - sh, [[0, 0], [r - 0.5, 0], [r * 0.8, sh], [0, sh]]); },
+  rug: m => (W, H, D, B) => B(m, 0, 0, 0, W, Math.max(0.6, H), D),
+  roundrug: m => (W, H, D, B, L) => { const r = Math.min(W, D) / 2, h = Math.max(0.6, H); L(m, W / 2, D / 2, 0, [[0, 0], [r, 0], [r, h], [0, h]]); },
+};
+/* N219: real pieces from the shops (Emma, 22 Nov 2026: "Use multiple real furniture sites and sources"), each its size and price as published
+   (docs/N219_catalogue.json; fit.SOURCES its key): n its name, k its kind, l its look if not its kind's, p £, s the shop, c its colour, u its page */
+const HSHOP = { ik: ["IKEA", "https://www.ikea.com/gb/en/p/"], hb: ["Habitat", "https://www.habitat.co.uk/product/"], jl: ["John Lewis", "https://www.johnlewis.com/"], du: ["Dunelm", "https://www.dunelm.com/product/"] };
+const HREAL = {
+  ik_malm: { n: "MALM bed frame", k: "bed", w: 150, d: 199, h: 100, ref: "ik_malm", p: 139, s: "ik", c: "door_white", u: "malm-bed-frame-high-white-luroey-s29006978/" },
+  ik_brimnes: { n: "BRIMNES wardrobe", k: "wardrobe", w: 117, d: 50, h: 190, ref: "ik_brimnes", p: 179, s: "ik", c: "door_white", u: "brimnes-wardrobe-with-3-doors-white-40407922/" },
+  ik_kleppstad: { n: "KLEPPSTAD wardrobe", k: "wardrobe", w: 79, d: 55, h: 176, ref: "ik_kleppstad", p: 89, s: "ik", c: "door_white", u: "kleppstad-wardrobe-with-2-doors-white-80437234/" },
+  ik_vilhatten: { n: "VILHATTEN wardrobe", k: "wardrobe", w: 98, d: 57, h: 190, ref: "ik_vilhatten", p: 149, s: "ik", c: "oak", u: "vilhatten-wardrobe-with-2-doors-and-2-drawers-oak-effect-70530609/" },
+  ik_storklinta: { n: "STORKLINTA chest of 6 drawers", k: "chest", w: 140, d: 50, h: 75, ref: "ik_storklinta", p: 139, s: "ik", c: "door_white", u: "storklinta-chest-of-6-drawers-white-70627550/" },
+  ik_fagelfjallet: { n: "FÅGELFJÄLLET chest of 4 drawers", k: "chest", w: 82, d: 51, h: 101, ref: "ik_fagelfjallet", p: 129, s: "ik", c: "door_white", u: "fagelfjaellet-chest-of-4-drawers-off-white-60611639/" },
+  ik_tonstad: { n: "TONSTAD bedside table", k: "bedside", w: 40, d: 40, h: 59, ref: "ik_tonstad", p: 110, s: "ik", c: "oak", u: "tonstad-bedside-table-oak-veneer-80489322/" },
+  ik_radmanso: { n: "RÅDMANSÖ bedside table", k: "bedside", w: 54, d: 38, h: 58, ref: "ik_radmanso", p: 69, s: "ik", c: "timber", u: "radmansoe-bedside-table-brown-walnut-effect-80593597/" },
+  ik_billy: { n: "BILLY bookcase", k: "shelves", w: 80, d: 28, h: 202, ref: "ik_billy", p: 55, s: "ik", c: "door_white", u: "billy-bookcase-white-00263850/" },
+  ik_hemnes: { n: "HEMNES bookcase", k: "shelves", w: 90, d: 37, h: 197, ref: "ik_hemnes", p: 165, s: "ik", c: "birch", u: "hemnes-bookcase-white-stain-light-brown-60413502/" },
+  ik_kallax: { n: "KALLAX shelving unit", k: "shelves", l: "cubes", w: 76.5, d: 39, h: 146.5, ref: "ik_kallax", p: 49, s: "ik", c: "door_white", u: "kallax-shelving-unit-white-80275887/" },
+  ik_micke: { n: "MICKE desk", k: "desk", w: 105, d: 50, h: 75, ref: "ik_micke", p: 79, s: "ik", c: "door_white", u: "micke-desk-white-80213074/" },
+  ik_tonstad2: { n: "TONSTAD desk", k: "desk", w: 140, d: 75, h: 75, ref: "ik_tonstad2", p: 199, s: "ik", c: "oak", u: "tonstad-desk-oak-veneer-30538198/" },
+  ik_mittzon: { n: "MITTZON desk", k: "desk", w: 160, d: 80, h: 85, ref: "ik_mittzon", p: 190, s: "ik", c: "timber", u: "mittzon-desk-walnut-veneer-black-s49513956/" },
+  ik_strandmon: { n: "STRANDMON wing chair", k: "seat", w: 82, d: 96, h: 101, ref: "ik_strandmon", p: 299, s: "ik", c: "cloth1", u: "strandmon-wing-chair-talliden-beige-brown-50628942/" },
+  ik_poang: { n: "POÄNG armchair", k: "seat", w: 68, d: 82, h: 100, ref: "ik_poang", p: 115, s: "ik", c: "cloth6", u: "poaeng-armchair-walnut-effect-kelinge-dark-yellow-s39625285/" },
+  ik_ekenaset: { n: "EKENÄSET armchair", k: "seat", w: 65, d: 74, h: 75, ref: "ik_ekenaset", p: 179, s: "ik", c: "cloth1", u: "ekenaeset-armchair-oak-effect-kilanda-light-beige-00624343/" },
+  ik_markus: { n: "MARKUS office chair", k: "chair", w: 62, d: 60, h: 140, ref: "ik_markus", p: 159, s: "ik", c: "cloth5", u: "markus-office-chair-vissle-dark-grey-30261152/" },
+  ik_alefjall: { n: "ALEFJÄLL office chair", k: "chair", w: 64, d: 64, h: 95, ref: "ik_alefjall", p: 249, s: "ik", c: "cloth6", u: "alefjaell-office-chair-grann-golden-brown-00419984/" },
+  ik_flintan: { n: "FLINTAN office chair", k: "chair", w: 71, d: 71, h: 114, ref: "ik_flintan", p: 79, s: "ik", c: "black", u: "flintan-office-chair-black-50489031/" },
+  ik_stoense: { n: "STOENSE rug", k: "rug", w: 200, d: 300, h: 1.8, ref: "ik_stoense", p: 129, s: "ik", c: "cloth4", u: "stoense-rug-low-pile-off-white-20426808/" },
+  ik_lohals: { n: "LOHALS rug", k: "rug", w: 160, d: 230, h: 1.3, ref: "ik_lohals", p: 129, s: "ik", c: "sisal", u: "lohals-rug-flatwoven-natural-50277393/" },
+  ik_tiphede: { n: "TIPHEDE rug", k: "rug", w: 120, d: 180, h: 0.2, ref: "ik_tiphede", p: 10, s: "ik", c: "cloth4", u: "tiphede-rug-flatwoven-natural-black-40456757/" },
+  ik_besta: { n: "BESTÅ TV bench", k: "tv", w: 180, d: 40, h: 38, ref: "ik_besta", p: 65, s: "ik", c: "door_white", u: "besta-tv-bench-white-00474070/" },
+  ik_hemnes2: { n: "HEMNES TV bench", k: "tv", w: 148, d: 47, h: 57, ref: "ik_hemnes2", p: 179, s: "ik", c: "birch", u: "hemnes-tv-bench-white-stain-light-brown-50413526/" },
+  ik_stockholm: { n: "STOCKHOLM 2025 TV bench", k: "tv", w: 178.8, d: 42, h: 56.2, ref: "ik_stockholm", p: 349, s: "ik", c: "oak", u: "stockholm-2025-tv-bench-with-sliding-doors-oak-veneer-40586508/" },
+  ik_lauters: { n: "LAUTERS tripod floor lamp", k: "lamp", w: 62, d: 62, h: 151, ref: "ik_lauters", p: 50, s: "ik", c: "birch", u: "lauters-floor-lamp-ash-white-40405046/" },
+  ik_arstid: { n: "ÅRSTID floor lamp", k: "lamp", w: 36, d: 36, h: 155, ref: "ik_arstid", p: 50, s: "ik", c: "brass", u: "arstid-floor-lamp-brass-white-40321320/" },
+  ik_lisabo: { n: "LISABO dining table", k: "table", w: 140, d: 78, h: 74, ref: "ik_lisabo", p: 129, s: "ik", c: "birch", u: "lisabo-table-ash-veneer-70294339/" },
+  ik_tonstad3: { n: "TONSTAD extendable dining table", k: "table", w: 140, d: 85, h: 75, ref: "ik_tonstad3", p: 299, s: "ik", c: "oak", u: "tonstad-extendable-table-oak-veneer-40593882/" },
+  ik_lack: { n: "LACK coffee table", k: "table", w: 90, d: 55, h: 45, ref: "ik_lack", p: 19, s: "ik", c: "black", u: "lack-coffee-table-black-brown-40104294/" },
+  ik_stockholm2: { n: "STOCKHOLM coffee table", k: "table", w: 180, d: 59, h: 40, ref: "ik_stockholm2", p: 279, s: "ik", c: "timber", u: "stockholm-coffee-table-walnut-veneer-70239710/" },
+  ik_vittsjo: { n: "VITTSJÖ coffee table", k: "table", l: "round", w: 75, d: 75, h: 45, ref: "ik_vittsjo", p: 49, s: "ik", c: "door_cream", u: "vittsjoe-coffee-table-light-beige-glass-30604348/" },
+  ik_bissa: { n: "BISSA shoe cabinet", k: "cabinet", w: 49, d: 28, h: 135, ref: "ik_bissa", p: 45, s: "ik", c: "door_white", u: "bissa-shoe-cabinet-with-3-compartments-white-10530259/" },
+  ik_trones: { n: "TRONES shoe cabinet/storage", k: "cabinet", w: 52, d: 18, h: 39, ref: "ik_trones", p: 25, s: "ik", c: "door_white", u: "trones-shoe-cabinet-storage-white-00397307/" },
+  ik_radmanso2: { n: "RÅDMANSÖ bed frame", k: "bed", w: 142, d: 210, h: 103, ref: "ik_radmanso2", p: 229, s: "ik", c: "timber", u: "radmansoe-bed-frame-brown-walnut-effect-luroey-s79598647/" },
+  ik_tarva: { n: "TARVA bed frame", k: "bed", w: 144, d: 199, h: 92, ref: "ik_tarva", p: 149, s: "ik", c: "birch", u: "tarva-bed-frame-white-stained-luroey-s49553985/" },
+  ik_slattum: { n: "SLATTUM upholstered bed frame", k: "bed", w: 139, d: 196, h: 85, ref: "ik_slattum", p: 119, s: "ik", c: "cloth5", u: "slattum-upholstered-bed-frame-vissle-dark-grey-50571257/" },
+  ik_hemnes3: { n: "HEMNES glass-door cabinet", k: "cabinet", l: "glass", w: 90, d: 37, h: 197, ref: "ik_hemnes3", p: 279, s: "ik", c: "birch", u: "hemnes-glass-door-cabinet-with-3-drawers-white-stain-light-brown-50413507/" },
+  ik_lommarp: { n: "LOMMARP cabinet", k: "cabinet", l: "glass", w: 86, d: 49, h: 199, ref: "ik_lommarp", p: 399, s: "ik", c: "stairpaint", u: "lommarp-cabinet-with-glass-doors-dark-blue-green-40383737/" },
+  ik_storklinta2: { n: "STORKLINTA bed frame", k: "bed", w: 159, d: 209, h: 101, ref: "ik_storklinta2", p: 184, s: "ik", c: "oak", u: "storklinta-bed-frame-oak-effect-00615621/" },
+  ik_tarva2: { n: "TARVA bed frame", k: "bed", w: 158, d: 209, h: 92, ref: "ik_tarva2", p: 134, s: "ik", c: "birch", u: "tarva-bed-frame-white-stained-50586211/" },
+  ik_hemnes4: { n: "HEMNES sideboard", k: "cabinet", w: 157, d: 47, h: 88, ref: "ik_hemnes4", p: 249, s: "ik", c: "birch", u: "hemnes-sideboard-white-stain-light-brown-70476259/" },
+  ik_stockholm3: { n: "STOCKHOLM 2025 sideboard", k: "cabinet", w: 160.8, d: 42, h: 83.2, ref: "ik_stockholm3", p: 499, s: "ik", c: "oak", u: "stockholm-2025-sideboard-oak-veneer-10586604/" },
+  hb_tatsuma: { n: "Tatsuma Double Wooden Bed Frame", k: "bed", w: 135, d: 201, h: 84, ref: "hb_tatsuma", p: 203, s: "hb", c: "timber", u: "9199606" },
+  hb_kanso: { n: "Kanso Double Metal Bed Frame", k: "bed", w: 142.2, d: 202.9, h: 110, ref: "hb_kanso", p: 100, s: "hb", c: "door_white", u: "8462437" },
+  hb_margot: { n: "Margot Double Bed Frame", k: "bed", w: 151.5, d: 202.5, h: 118.5, ref: "hb_margot", p: 298, s: "hb", c: "oak", u: "4740665" },
+  hb_finchley: { n: "Finchley 2 Door Wardrobe", k: "wardrobe", w: 97, d: 55, h: 187, ref: "hb_finchley", p: 610, s: "hb", c: "oak", u: "7221071" },
+  hb_akio: { n: "Akio 2 Door 2 Drawer Wardrobe", k: "wardrobe", w: 80, d: 50.5, h: 185, ref: "hb_akio", p: 269, s: "hb", c: "pine", u: "3375749" },
+  hb_bronte: { n: "Bronte 2 Door Wardrobe", k: "wardrobe", w: 108.4, d: 58.5, h: 201, ref: "hb_bronte", p: 360, s: "hb", c: "stairpaint", u: "7181214" },
+  hb_bronte2: { n: "Bronte 3 Drawer Chest", k: "chest", w: 90, d: 49, h: 86, ref: "hb_bronte2", p: 200, s: "hb", c: "stairpaint", u: "4583949" },
+  hb_finchley2: { n: "Finchley 4 Drawer Chest", k: "chest", w: 90, d: 45, h: 87, ref: "hb_finchley2", p: 348, s: "hb", c: "oak", u: "7222355" },
+  hb_otto: { n: "Otto 6 Drawer Chest", k: "chest", w: 120, d: 39.5, h: 89, ref: "hb_otto", p: 155, s: "hb", c: "door_white", u: "5828737" },
+  hb_finchley3: { n: "Finchley 3 Drawer Bedside Table", k: "bedside", w: 45, d: 45, h: 68, ref: "hb_finchley3", p: 136, s: "hb", c: "oak", u: "4464886" },
+  hb_cullen: { n: "Cullen Bamboo Bedside Table", k: "bedside", w: 40, d: 35, h: 48, ref: "hb_cullen", p: 26, s: "hb", c: "oak", u: "4358435" },
+  hb_max: { n: "Max Oak Bedside Table", k: "bedside", w: 50, d: 39.5, h: 40, ref: "hb_max", p: 145, s: "hb", c: "oak", u: "8864365" },
+  hb_fynn: { n: "Fynn Bookcase", k: "shelves", w: 79.6, d: 35, h: 180, ref: "hb_fynn", p: 240, s: "hb", c: "oak", u: "2913322" },
+  hb_jessie: { n: "Jessie Tall & Narrow Ladder Shelf", k: "shelves", w: 36.5, d: 31.6, h: 181, ref: "hb_jessie", p: 95, s: "hb", c: "timber", u: "8879068" },
+  hb_jessie2: { n: "Jessie Tall Shelving Unit", k: "shelves", w: 66, d: 35, h: 189, ref: "hb_jessie2", p: 110, s: "hb", c: "oak", u: "8151858" },
+  hb_squares: { n: "Squares Plus 8 Cube Storage Unit", k: "shelves", l: "cubes", w: 75.9, d: 39.1, h: 145.5, ref: "hb_squares", p: 100, s: "hb", c: "door_white", u: "6174260" },
+  hb_sorel: { n: "Sorel Faux Leather Office Chair", k: "chair", w: 54, d: 64, h: 76.5, ref: "hb_sorel", p: 88, s: "hb", c: "black", u: "2252241" },
+  hb_alvar: { n: "Alvar Faux Leather Office Chair", k: "chair", w: 56, d: 57.5, h: 97, ref: "hb_alvar", p: 126, s: "hb", c: "cloth6", u: "4355146" },
+  hb_oxley: { n: "Oxley Mesh Office Chair", k: "chair", w: 71, d: 65.5, h: 124.5, ref: "hb_oxley", p: 94, s: "hb", c: "black", u: "4744001" },
+  hb_matilda: { n: "Matilda Scalloped Office Desk", k: "desk", w: 86, d: 50, h: 86.7, ref: "hb_matilda", p: 103, s: "hb", c: "oak", u: "7916393" },
+  hb_hazel: { n: "Hazel Rattan Round Coffee Table", k: "table", l: "round", w: 81, d: 81, h: 29, ref: "hb_hazel", p: 155, s: "hb", c: "sisal", u: "9208315" },
+  hb_agnes: { n: "Agnes Coffee Table", k: "table", w: 59, d: 59, h: 43.5, ref: "hb_agnes", p: 95, s: "hb", c: "timber", u: "7842515" },
+  hb_nomad: { n: "Nomad Oak Veneer Coffee Table", k: "table", w: 99.6, d: 60, h: 50, ref: "hb_nomad", p: 260, s: "hb", c: "oak", u: "8573209" },
+  hb_nel: { n: "Nel Oak Veneer 4 Seater Dining Table", k: "table", w: 160, d: 85.6, h: 75, ref: "hb_nel", p: 309, s: "hb", c: "oak", u: "9583717" },
+  hb_zela: { n: "Zela Round Glass 4 Seater Dining Table", k: "table", l: "round", w: 110, d: 110, h: 75, ref: "hb_zela", p: 210, s: "hb", c: "door_cream", u: "7311572" },
+  hb_skandi: { n: "Skandi Walnut Veneer Round 4 Seater", k: "table", l: "round", w: 110, d: 110, h: 75, ref: "hb_skandi", p: 165, s: "hb", c: "timber", u: "8386104" },
+  hb_oiled: { n: "Oiled 2 Door Glass Display Cabinet", k: "cabinet", l: "glass", w: 100, d: 45, h: 130, ref: "hb_oiled", p: 525, s: "hb", c: "oak", u: "8390891" },
+  hb_compton: { n: "Compton 1 Door Glass Display Cabinet", k: "cabinet", l: "glass", w: 42, d: 31, h: 180, ref: "hb_compton", p: 155, s: "hb", c: "door_white", u: "9381892" },
+  hb_cornelia: { n: "Cornelia 2 Door Glass Tall Display", k: "cabinet", l: "glass", w: 100, d: 35, h: 180, ref: "hb_cornelia", p: 570, s: "hb", c: "oak", u: "7841107" },
+  hb_cornelia2: { n: "Cornelia 2 Door Oak Sideboard", k: "cabinet", w: 154, d: 47, h: 66, ref: "hb_cornelia2", p: 350, s: "hb", c: "oak", u: "2015282" },
+  hb_scion: { n: "Scion Esala 2 Door 3 Drawer Sideboard", k: "cabinet", w: 150, d: 45, h: 71, ref: "hb_scion", p: 595, s: "hb", c: "timber", u: "4077699" },
+  hb_fala: { n: "Fala 3 Door 2 Drawer Sideboard", k: "cabinet", w: 120, d: 42, h: 71.2, ref: "hb_fala", p: 242, s: "hb", c: "door_cream", u: "7810107" },
+  hb_yassica: { n: "Yassica 2 Door 1 Drawer 65 Inch TV Unit", k: "tv", w: 139.6, d: 42, h: 62.3, ref: "hb_yassica", p: 249, s: "hb", c: "oak", u: "7857122" },
+  hb_kendi: { n: "Kendi 2 Drawers 50 Inch TV Unit", k: "tv", w: 150, d: 42, h: 52, ref: "hb_kendi", p: 357, s: "hb", c: "timber", u: "7786547" },
+  hb_floating: { n: "Floating Top 65 Inch TV Unit", k: "tv", w: 150.3, d: 41.2, h: 45, ref: "hb_floating", p: 192, s: "hb", c: "door_white", u: "9413959" },
+  hb_herringbone: { n: "Herringbone Neutral Border Jute Rug", k: "rug", w: 80, d: 150, h: 1, ref: "hb_herringbone", p: 35, s: "hb", c: "sisal", u: "7353451" },
+  hb_braided: { n: "Braided Grey Border Jute Rug", k: "rug", w: 120, d: 170, h: 1, ref: "hb_braided", p: 45, s: "hb", c: "sisal", u: "7807392" },
+  hb_geometric: { n: "Geometric Round Wool Rug", k: "rug", l: "roundrug", w: 120, d: 120, h: 1, ref: "hb_geometric", p: 80, s: "hb", c: "cloth4", u: "9569975" },
+  hb_scoop: { n: "60 Scoop Fabric Chair", k: "seat", w: 102, d: 103, h: 74, ref: "hb_scoop", p: 275, s: "hb", c: "cloth4", u: "4881012" },
+  hb_callie: { n: "Callie Velvet Wingback Chair", k: "seat", w: 79, d: 95, h: 107, ref: "hb_callie", p: 188, s: "hb", c: "cloth3", u: "8698287" },
+  hb_drape: { n: "Drape Fabric Armchair", k: "seat", w: 62, d: 67.5, h: 73.5, ref: "hb_drape", p: 275, s: "hb", c: "cloth1", u: "8399854" },
+  hb_pillow: { n: "Pillow Single Fabric Chairbed", k: "seat", w: 97, d: 91, h: 84, ref: "hb_pillow", p: 160, s: "hb", c: "cloth0", u: "8117878" },
+  hb_roma: { n: "Roma Double Fabric Chairbed", k: "seat", w: 141, d: 90, h: 81, ref: "hb_roma", p: 233.1, s: "hb", c: "cloth5", u: "8444132" },
+  hb_tapered: { n: "Tapered Wood Floor Lamp", k: "lamp", w: 40, d: 40, h: 155, ref: "hb_tapered", p: 66, s: "hb", c: "timber", u: "7665943" },
+  hb_morris: { n: "Morris & Co. Cane Floor Lamp", k: "lamp", w: 45, d: 45, h: 170, ref: "hb_morris", p: 155, s: "hb", c: "sisal", u: "7571312" },
+  hb_cone: { n: "Cone Adjustable Floor Lamp", k: "lamp", w: 34.5, d: 34.5, h: 150, ref: "hb_cone", p: 36, s: "hb", c: "stairpaint", u: "3118308" },
+  hb_nantes: { n: "Nantes 3 Door Shoe Storage Cabinet", k: "cabinet", w: 92, d: 36, h: 92.8, ref: "hb_nantes", p: 180, s: "hb", c: "oak", u: "7184194" },
+  hb_simone: { n: "Simone 2 Door Shoe Storage Cabinet", k: "cabinet", w: 70, d: 36, h: 80, ref: "hb_simone", p: 158, s: "hb", c: "sisal", u: "4668053" },
+  hb_saffield: { n: "Saffield Shoe Storage Bench", k: "cabinet", w: 101, d: 37.5, h: 45.5, ref: "hb_saffield", p: 158, s: "hb", c: "timber", u: "7632691" },
+  hb_nora: { n: "Nora Fabric 2 Seater Sofa", k: "seat", w: 138.5, d: 85, h: 73, ref: "hb_nora", p: 240, s: "hb", c: "cloth3", u: "7740909" },
+  hb_tatsuma2: { n: "Tatsuma Kingsize Wooden Bed Frame", k: "bed", w: 150, d: 211, h: 84, ref: "hb_tatsuma2", p: 229, s: "hb", c: "timber", u: "9418112" },
+  hb_kanso2: { n: "Kanso Kingsize Metal Bed Frame", k: "bed", w: 157.7, d: 216.9, h: 110, ref: "hb_kanso2", p: 120, s: "hb", c: "door_white", u: "8132509" },
+  jl_wilton: { n: "Wilton 2 Drawer Bedside Cabinet", k: "bedside", w: 43, d: 41, h: 58, ref: "jl_wilton", p: 119, s: "jl", c: "door_white", u: "john-lewis-wilton-2-drawer-bedside-cabinet/white/p3901695" },
+  jl_rattan: { n: "Rattan Storage Bedside Table", k: "bedside", w: 38, d: 42, h: 57, ref: "jl_rattan", p: 175, s: "jl", c: "oak", u: "john-lewis-rattan-storage-bedside-table/oak/p5274268" },
+  jl_pillar: { n: "Pillar 1 Drawer Bedside Table", k: "bedside", w: 43, d: 37, h: 59.5, ref: "jl_pillar", p: 129, s: "jl", c: "cloth2", u: "john-lewis-pillar-1-drawer-bedside-table/rosehip/p113155334" },
+  jl_spindle: { n: "Spindle Desk", k: "desk", w: 95, d: 55, h: 76, ref: "jl_spindle", p: 199, s: "jl", c: "door_wood", u: "john-lewis-spindle-desk/burnt-orange/p5127465" },
+  jl_hairpin: { n: "Hairpin Desk", k: "desk", w: 120, d: 55, h: 76, ref: "jl_hairpin", p: 399, s: "jl", c: "timber", u: "john-lewis-hairpin-desk/dark-oak/p3300533" },
+  jl_wilton2: { n: "Wilton 2 Door Wardrobe", k: "wardrobe", w: 99, d: 56.8, h: 188, ref: "jl_wilton2", p: 399, s: "jl", c: "oak", u: "john-lewis-wilton-2-door-wardrobe/natural/p3901693" },
+  jl_cotswold: { n: "Julian Bowen Cotswold Double Wardrobe", k: "wardrobe", w: 100, d: 56, h: 195, ref: "jl_cotswold", p: 592, s: "jl", c: "oak", u: "julian-bowen-cotswold-double-wardrobe-with-1-drawer-natural/p6357755" },
+  jl_maine: { n: "Julian Bowen Maine 6 Drawer Wide Chest", k: "chest", w: 130, d: 44, h: 74, ref: "jl_maine", p: 328, s: "jl", c: "door_white", u: "julian-bowen-maine-6-drawer-wide-chest-white/p6357600" },
+  jl_abacus: { n: "Abacus 7 Shelf Bookcase", k: "shelves", w: 77, d: 33, h: 210, ref: "jl_abacus", p: 299, s: "jl", c: "oak", u: "john-lewis-abacus-7-shelf-bookcase-fsc-certified/p112057610" },
+  jl_calia: { n: "Calia Bookcase", k: "shelves", w: 90, d: 40, h: 200, ref: "jl_calia", p: 499, s: "jl", c: "oak", u: "john-lewis-calia-bookcase/p2431233" },
+  jl_wilton3: { n: "Wilton Bed Frame", k: "bed", w: 144, d: 202, h: 102, ref: "jl_wilton3", p: 299, s: "jl", c: "door_white", u: "john-lewis-wilton-bed-frame-double/white/p312175" },
+  jl_dorm: { n: "Dorm Metal Bed Frame", k: "bed", w: 144, d: 198, h: 112, ref: "jl_dorm", p: 249, s: "jl", c: "black", u: "john-lewis-dorm-metal-bed-frame-double/black/p111267416" },
+  jl_groove: { n: "Groove 3 Drawer Bedroom Chest", k: "chest", w: 92, d: 43.5, h: 89.5, ref: "jl_groove", p: 399, s: "jl", c: "oak", u: "john-lewis-groove-3-drawer-bedroom-chest/natural/p5912427" },
+  jl_wilton4: { n: "Wilton Bed Frame", k: "bed", w: 159, d: 212, h: 102, ref: "jl_wilton4", p: 399, s: "jl", c: "door_white", u: "john-lewis-wilton-bed-frame-king-size/white/p475262" },
+  jl_rattan2: { n: "Rattan Bed Frame", k: "bed", w: 166.5, d: 219.5, h: 102.5, ref: "jl_rattan2", p: 729, s: "jl", c: "oak", u: "john-lewis-rattan-bed-frame-king-size/oak/p4147243" },
+  jl_seoul: { n: "Desser Seoul Rattan Lounge Chair", k: "seat", w: 92, d: 76, h: 80, ref: "jl_seoul", p: 319, s: "jl", c: "sisal", u: "desser-seoul-rattan-lounge-chair/natural-latte/p111357711" },
+  jl_dorsal: { n: "Dorsal Office Chair", k: "chair", w: 65, d: 63, h: 90, ref: "jl_dorsal", p: 149, s: "jl", c: "black", u: "john-lewis-dorsal-office-chair/black/p5137050" },
+  jl_rowley: { n: "Rowley Swivel Office Chair", k: "chair", w: 61, d: 58.5, h: 91.5, ref: "jl_rowley", p: 179, s: "jl", c: "cloth6", u: "john-lewis-rowley-swivel-office-chair/whisky/p111535524" },
+  jl_harring: { n: "Swoon Harring TV Unit", k: "tv", w: 90, d: 35, h: 38, ref: "jl_harring", p: 223.2, s: "jl", c: "oak", u: "swoon-harring-tv-unit-natural-black/p112908476" },
+  jl_wing: { n: "Wing TV Stand", k: "tv", w: 120, d: 43, h: 42, ref: "jl_wing", p: 349, s: "jl", c: "timber", u: "john-lewis-wing-tv-stand/p5800807" },
+  jl_notch: { n: "Notch 2 Door, 2 Drawer Sideboard", k: "cabinet", w: 165, d: 50, h: 74, ref: "jl_notch", p: 699, s: "jl", c: "oak", u: "john-lewis-notch-2-door-2-drawer-sideboard-oak/p6419730" },
+  jl_wilton5: { n: "Wilton Display Cabinet", k: "cabinet", l: "glass", w: 90, d: 38, h: 180, ref: "jl_wilton5", p: 579, s: "jl", c: "door_cream", u: "john-lewis-wilton-display-cabinet-linen/p113948858" },
+  jl_hector: { n: "Hector Floor Lamp", k: "lamp", w: 106.68, d: 31.75, h: 210, ref: "jl_hector", p: 160, s: "jl", c: "brass", u: "john-lewis-hector-floor-lamp/antique-brass-black/p3689364" },
+  jl_anton: { n: "Anton Coffee Table", k: "table", w: 120, d: 60, h: 45, ref: "jl_anton", p: 179, s: "jl", c: "oak", u: "john-lewis-anton-coffee-table/oak/p6293480" },
+  jl_anton2: { n: "Anton 6-8 Seater Extending Dining Table", k: "table", w: 160, d: 90, h: 75, ref: "jl_anton2", p: 429, s: "jl", c: "oak", u: "john-lewis-anton-6-8-seater-extending-dining-table-oak/p6293478" },
+  jl_notch2: { n: "Notch Round 4-6 Seater Extending Dining", k: "table", l: "round", w: 120, d: 120, h: 75, ref: "jl_notch2", p: 799, s: "jl", c: "oak", u: "john-lewis-notch-round-4-6-seater-extending-dining-table/natural/p6419733" },
+  jl_mid: { n: "Mid Century Shoe Cabinet, 2 Tier", k: "cabinet", w: 62, d: 36, h: 122.5, ref: "jl_mid", p: 299, s: "jl", c: "oak", u: "john-lewis-mid-century-shoe-cabinet-2-tier-natural-honey/p110828820" },
+  jl_rattan3: { n: "Rattan 3 Tier Shoe Storage Unit", k: "cabinet", w: 80, d: 24, h: 127, ref: "jl_rattan3", p: 200, s: "jl", c: "sisal", u: "john-lewis-rattan-3-tier-shoe-storage-unit/p6293068" },
+  jl_brooklyn: { n: "Brooklyn Tripod Floor Lamp", k: "lamp", w: 45, d: 45, h: 160, ref: "jl_brooklyn", p: 200, s: "jl", c: "oak", u: "john-lewis-brooklyn-tripod-floor-lamp/natural/p110199860" },
+  jl_wilton6: { n: "Wilton Wide Sideboard", k: "cabinet", w: 120, d: 40, h: 79.5, ref: "jl_wilton6", p: 479, s: "jl", c: "door_cream", u: "john-lewis-wilton-wide-sideboard-linen/p6396484" },
+  du_mirage: { n: "Mirage Rug", k: "rug", w: 160, d: 230, h: 1.4, ref: "du_mirage", p: 139, s: "du", c: "cloth5", u: "mirage-rug-1000139698" },
+  du_parker: { n: "Parker Rug", k: "rug", w: 160, d: 230, h: 0.8, ref: "du_parker", p: 109, s: "du", c: "cloth0", u: "parker-rug-1000168296" },
+  du_pebble: { n: "Pebble Wool Border Rug", k: "rug", w: 160, d: 230, h: 0.6, ref: "du_pebble", p: 179, s: "du", c: "cloth3", u: "pebble-wool-border-rug-1000181731" },
+  du_scandi: { n: "Scandi Mid Century Wooden Bed", k: "bed", w: 142, d: 204, h: 100, ref: "du_scandi", p: 189, s: "du", c: "oak", u: "scandi-mid-century-wooden-bed-1000147431" },
+  du_scandi2: { n: "Scandi Mid Century Wooden Bed", k: "bed", w: 158, d: 211, h: 100, ref: "du_scandi2", p: 219, s: "du", c: "oak", u: "scandi-mid-century-wooden-bed-1000147431" },
+  du_henry: { n: "Henry Small Display Cabinet", k: "cabinet", l: "glass", w: 80, d: 40, h: 80, ref: "du_henry", p: 149, s: "du", c: "door_cream", u: "henry-small-display-cabinet-1000293223" },
+  du_lowry: { n: "Lowry 2 Door Wardrobe", k: "wardrobe", w: 97, d: 55, h: 190, ref: "du_lowry", p: 679, s: "du", c: "timber", u: "lowry-2-door-wardrobe-1000278905" },
+  du_panama: { n: "Panama 2 Door Wardrobe", k: "wardrobe", w: 80, d: 50, h: 175, ref: "du_panama", p: 229, s: "du", c: "pine", u: "panama-2-door-wardrobe-1000114114" },
+  du_lancaster: { n: "Lancaster Chest of Drawers", k: "chest", w: 79, d: 35, h: 81, ref: "du_lancaster", p: 159, s: "du", c: "steel_dark", u: "lancaster-chest-of-drawers-1000169391" },
+  du_premiere: { n: "Premiere Corona 3 Drawer Bedside Chest", k: "bedside", w: 53, d: 39, h: 67, ref: "du_premiere", p: 69, s: "du", c: "pine", u: "premiere-corona-3-drawer-bedside-chest-1000133634" },
+  du_lynton: { n: "Lynton 2 Drawer Bedside Table", k: "bedside", w: 49, d: 40, h: 61, ref: "du_lynton", p: 69, s: "du", c: "door_white", u: "lynton-2-drawer-bedside-table-1000106940" },
+  du_kendall: { n: "Kendall Velvet Office Chair", k: "chair", w: 57, d: 56, h: 79, ref: "du_kendall", p: 119, s: "du", c: "cloth5", u: "kendall-velvet-office-chair-1000188738" },
+  du_clement: { n: "Clement Faux Leather Office Chair", k: "chair", w: 65, d: 65, h: 90, ref: "du_clement", p: 129, s: "du", c: "black", u: "clement-faux-leather-office-chair-1000277455" },
+  du_georgi: { n: "Georgi Display Cabinet", k: "cabinet", l: "glass", w: 94.5, d: 39.5, h: 160, ref: "du_georgi", p: 319.2, s: "du", c: "door_cream", u: "georgi-display-cabinet-1000251719" },
+  du_belford: { n: "Belford Wooden Bed Frame", k: "bed", w: 141.5, d: 215, h: 100, ref: "du_belford", p: 239, s: "du", c: "door_white", u: "belford-wooden-bed-frame-white-1000241957" },
+  du_franklin: { n: "Franklin Desk", k: "desk", w: 90.2, d: 45.7, h: 76.2, ref: "du_franklin", p: 139, s: "du", c: "steel_dark", u: "franklin-desk-1000166913" },
+};
+for (const [k, C] of Object.entries(HREAL)) HCAT[k] = Object.assign(C, { src: HSHOP[C.s][0], url: HSHOP[C.s][1] + C.u, b: HLOOK[C.l || C.k](C.c) });
+/* N219: a piece of her own: its look (a kind), W × D × H and a colour, kept in its add row's value ("own|desk|120|60|75|oak|Our desk"), so
+   Send and the look link carry it as they do any piece added; made a catalogue piece when first read (hcGet) */
+const HOWN_L = { box: ["Box", "more"], bed: ["Bed", "bed"], wardrobe: ["Wardrobe", "wardrobe"], chest: ["Drawers", "chest"], shelves: ["Shelves", "shelves"], cabinet: ["Cabinet", "cabinet"],
+  desk: ["Desk", "desk"], table: ["Table", "table"], seat: ["Seat", "seat"], chair: ["Desk chair", "chair"], lamp: ["Lamp", "lamp"], rug: ["Rug", "rug"] };
+const HOWN_C = [["white", "door_white", "White"], ["cream", "door_cream", "Cream"], ["oak", "oak", "Oak"], ["pine", "pine", "Pine"], ["walnut", "timber", "Walnut"], ["black", "black", "Black"],
+  ["grey", "cloth5", "Grey"], ["green", "cloth3", "Green"], ["blue", "cloth0", "Blue"], ["rust", "cloth2", "Rust"], ["beige", "cloth1", "Beige"], ["rattan", "sisal", "Rattan"]];
+const HOWN_RE = /^own\|([a-z]{2,9})\|(\d{1,3}(?:\.\d)?)\|(\d{1,3}(?:\.\d)?)\|(\d{1,3}(?:\.\d)?)\|([a-z]{3,7})\|([\p{L}\p{N} '’,.()/+-]{0,24})$/u;
+const ownName = t => String(t || "").replace(/[^\p{L}\p{N} '’,.()/+-]/gu, "").replace(/\s+/g, " ").slice(0, 24);
+const ownKey = O => `own|${O.l}|${cmR(Math.max(5, Math.min(500, O.w)))}|${cmR(Math.max(5, Math.min(500, O.d)))}|${cmR(Math.max(0.5, Math.min(300, O.h)))}|${O.c}|${ownName(O.name)}`;
+function hcGet(v) {   // a catalogue piece, or her own read from its value (checked: its look, colour and sizes)
+  if (typeof v !== "string") return null; if (HCAT[v]) return HCAT[v];
+  const m = HOWN_RE.exec(v), L = m && HOWN_L[m[1]], c = m && HOWN_C.find(q => q[0] === m[5]); if (!L || !c) return null;
+  const [w, d, h] = [m[2], m[3], m[4]].map(Number); if (w < 5 || w > 500 || d < 5 || d > 500 || h < 0.5 || h > 300) return null;
+  const name = m[6].trim();
+  return (HCAT[v] = { n: name || "Your own " + L[0].toLowerCase(), k: L[1], w, d, h, own: { l: m[1], w, d, h, c: m[5], name }, b: HLOOK[m[1]](c[1]) });
+}
 /* which pieces swap, and for what: by the kind of thing it is (its id), standing on the floor, one that turns (no lid or doors of its own) */
 const HSWAP_OF = [[/(^|\.)bed$|bed_/, "bed"], [/wardrobe/, "wardrobe"], [/bedside/, "bedside"], [/chest/, "chest"], [/desk$/, "desk"],
   [/shelving|kallax|bookcase|shelves/, "shelves"], [/chairbed|bench|armchair/, "seat"], [/(^|\.)chair$/, "chair"], [/(^|\.)rug$/, "rug"]];
@@ -217,7 +418,7 @@ function swapKind(id) {
   const k = (HSWAP_OF.find(([re]) => re.test(id)) || [])[1];
   return k && canTurn(id) ? k : null;
 }
-const hcOf = kind => Object.keys(HCAT).filter(k => HCAT[k].k === kind);
+const hcOf = kind => Object.keys(HCAT).filter(k => HCAT[k].k === kind && !HCAT[k].own);
 /* N217: a piece swapped at its own size (W along its wall, D out, H up): its back where the old one's was, along its wall from the same
    end if that stood within 10 of its room's wall, else from its middle, kept in its room; a chair where the old one was, facing the same way */
 function swapBox(id, key) {
@@ -276,7 +477,7 @@ const ADDED = {}, ADDFK = {};   // ADDFK: each added piece's floor, kept once it
 function syncAdds() {
   const ds = DS(), H3 = R.HOUSE3; if (!ds || !H3) return;
   syncPlants(); syncIdeas();
-  const rows = {}; for (const v of Object.values(ds.rows("edits") || {})) if (v && v.field === "add" && /^add\.[a-z0-9]{1,12}$/.test(v.item || "") && HCAT[v.value] && (H3.rooms || {})[v.room]) rows[v.item] = v;
+  const rows = {}; for (const v of Object.values(ds.rows("edits") || {})) if (v && v.field === "add" && /^add\.[a-z0-9]{1,12}$/.test(v.item || "") && hcGet(v.value) && (H3.rooms || {})[v.room]) rows[v.item] = v;   // N219: her own too
   for (const id of Object.keys(ADDED)) if (!rows[id]) { delete H3.items[id]; delete ADDED[id]; }
   for (const [id, v] of Object.entries(rows)) { if (ADDED[id] === `${v.value}@${v.x},${v.z}`) continue;   // N218: a new piece or a new spot
     const C = HCAT[v.value], r = H3.rooms[v.room], x = +v.x, z = +v.z, y = isFinite(+v.y) ? +v.y : r[4]; if (!isFinite(x) || !isFinite(z)) continue;
@@ -319,7 +520,7 @@ function fitWhy(id) {
 /* N218: where an added piece stands: back to a wall of its room (as syncAdds puts it: the row's x, z on that wall), clear of the walls,
    the slope, the swings, the space kept clear and the pieces, nearest the tap; if nowhere, back to the nearest wall at the tap */
 function addSpot(rid, key, x, z, y, self) {
-  const r = R.HOUSE3.rooms[rid], C = HCAT[key], over = (p, q) => [0, 1, 2].every(j => p[j] < q[j + 3] - 1 && p[j + 3] > q[j] + 1); let best = null;
+  const r = R.HOUSE3.rooms[rid], C = hcGet(key), over = (p, q) => [0, 1, 2].every(j => p[j] < q[j + 3] - 1 && p[j + 3] > q[j] + 1); let best = null;
   const busy = Object.keys(R.HOUSE3.items).filter(k => { const o = HIT(k); return k !== self && o.r === rid && !HCSKIP.has(o.k) && !hcSoft(k) && !pieceNow(k).removed; }).map(pieceBox);
   for (const [o, hi] of [[2, 0], [2, 1], [0, 0], [0, 1]]) { const a = 2 - o, w = r[o + hi] + (hi ? -0.5 : 0.5);   // each wall, its back 0.5 off it
     for (let u = r[a]; u <= r[a + 1] - C.w; u += 5) { const b = [0, y, 0, 0, y + C.h, 0]; b[a] = u; b[a + 3] = u + C.w; b[o] = hi ? w - C.d : w; b[o + 3] = b[o] + C.d;

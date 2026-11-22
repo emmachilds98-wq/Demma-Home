@@ -188,7 +188,7 @@ FITS = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
     b.click(); await sl(200); q('#r3d-act [data-hswapgo$=":1"]').click();
     return await wait(() => D.HEDITS[id] && D.HEDITS[id].swap === key && D.PICK.first.some(p => p.id === id)) ? (await sl(300), q('#r3d-act-st').textContent) : 'not swapped'; };
   const fits = await swap('music.chairbed', 'armchair'), big = await swap('music.kallax', 'bookcase'), E = D.HEDITS;
-  D.openAct('hitem:music.desk'); await sl(600); q('#r3d-act [data-actopen^="hswap:"]').click(); await sl(200); q('#r3d-act [data-hswapgo$=":-1"]').click();
+  D.openAct('hitem:music.desk'); await sl(600); q('#r3d-act [data-actopen^="hswap:"]').click(); await sl(200); for (let i = 0; i < 12 && (E['music.desk'] || {}).swap !== 'desklong'; i++) { const was = (E['music.desk'] || {}).swap; q('#r3d-act [aria-label="The next one"]').click(); await wait(() => (E['music.desk'] || {}).swap !== was); await sl(200); }   // N219: › to the long desk (the shops' desks after it)
   const rid = await wait(() => E['music.desk'] && E['music.desk'].swap === 'desklong' && E['music.monitors'])
     && !E['music.monitors'].removed && Math.abs(E['music.monitors'].to[1] - E['music.desk'].to[4]) < 1 && E['music.interface'].removed && E['music.headphones'].removed;
   for (const k of ['music.chairbed', 'music.kallax', 'music.desk']) { D.openAct('hitem:' + k); await sl(400); q('#r3d-act [data-hreset]').click(); await sl(300); }
@@ -213,6 +213,47 @@ ADD = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeou
   navigator.clipboard.writeText = u => { window.__link = u; return Promise.resolve(); }; document.getElementById('r3d-link').click(); await wait(() => window.__link);
   await Promise.all(Object.entries(ds.rows('edits')).filter(([, v]) => v && v.item === id).map(([k]) => ds.del('edits', k)));
   return { card, line, wall, link: window.__link || null, gone: await wait(() => !E[id]) };
+}"""
+# N219: tap the office's floor, Your own piece: 100 × 50 × 75, a desk's look, walnut, "Our desk"; drawn, its card says so (then kept after a reload)
+OWN = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), cv = document.querySelector('.r3d canvas'), q = s => document.querySelector(s), ds = window.DemmaStore;
+  const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
+  R3D.set({ view: 'office' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
+  const pts = []; for (let x = 280; x < 460; x += 25) for (let z = 290; z < 490; z += 25) pts.push([x, z]); pts.sort((p, q) => Math.hypot(p[0] - 365, p[1] - 390) - Math.hypot(q[0] - 365, q[1] - 390));
+  let card = null; for (const [x, z] of pts.slice(0, 30)) {   // a bare bit of its floor on the screen, from its middle out
+    if (D.actId) q('#r3d-act .x').click(); await sl(200);
+    const c = new D.THREE.Vector3(-x / 100, 2.6, z / 100).project(D.camera), r = cv.getBoundingClientRect(); if (Math.abs(c.x) > 0.9 || Math.abs(c.y) > 0.8 || c.z > 1) continue;
+    const o = { clientX: r.left + (c.x + 1) / 2 * cv.clientWidth, clientY: r.top + (1 - c.y) / 2 * cv.clientHeight, bubbles: true, pointerId: 1, button: 0, isPrimary: true };
+    cv.dispatchEvent(new PointerEvent('pointerdown', o)); cv.dispatchEvent(new PointerEvent('pointerup', o)); await sl(600); card = D.actId; if (card === 'fin:bed3:5') break; }
+  const b = q('#r3d-act [data-hown0]'); if (!b) return { card }; b.click(); await sl(300);
+  const id = (D.actId || '').split(':')[1], row = () => ((ds.rows('edits')[id + '~add'] || {}).value || '');
+  const put = async (f, v) => { const el = q(`#r3d-act [data-hfield="${f}"]`); if (!el) return; el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); await wait(() => row().includes(v)); };
+  await put('ow', '100'); await put('od', '50'); await put('oh', '75');
+  q('#r3d-act [data-hownl="desk"]').click(); await wait(() => row().startsWith('own|desk|')); q('#r3d-act [data-hownc="walnut"]').click(); await wait(() => row().includes('|walnut|'));
+  await put('on', 'Our desk');
+  const ok = await wait(() => row() === 'own|desk|100|50|75|walnut|Our desk' && D.HEDITS[id] && D.PICK.first.some(p => p.id === id)); await sl(300);
+  const title = q('#r3d-act-h').textContent, line = q('#r3d-act-st').textContent; if (D.actId) q('#r3d-act .x').click();
+  return { card, id, ok, value: row(), title, line };
+}"""
+OWN_KEPT = """async id => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), ds = window.DemmaStore, v = 'own|desk|100|50|75|walnut|Our desk';
+  const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
+  const drawn = await wait(() => D.HEDITS[id] && D.HEDITS[id].add === v && D.PICK.first.some(p => p.id === id));
+  const kept = (JSON.parse(localStorage.getItem('demma-v1:edits') || '{}')[id + '~add'] || {}).value || null;
+  D.openAct('hitem:' + id); await sl(500); const title = q('#r3d-act-h').textContent; if (D.actId) q('#r3d-act .x').click();
+  await Promise.all(Object.entries(ds.rows('edits')).filter(([, r]) => r && r.item === id).map(([k]) => ds.del('edits', k)));
+  return { drawn, kept, title, gone: await wait(() => !D.HEDITS[id]) };
+}"""
+# N219: bedroom 2's Kallax swapped for IKEA's KALLAX and its desk chair for Habitat's Sorel (› till each): each card says its shop and price, then as planned
+REAL = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), ds = window.DemmaStore;
+  const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
+  R3D.set({ view: 'bed2' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
+  const swap = async (id, re) => { D.openAct('hitem:' + id); await sl(600); const b = q('#r3d-act [data-actopen^="hswap:"]'); if (!b) return ['no Swap it'];
+    b.click(); await sl(200);
+    for (let i = 0; i < 40 && !re.test(q('#r3d-act-h').textContent); i++) { const was = (D.HEDITS[id] || {}).swap; q('#r3d-act [aria-label="The next one"]').click(); await wait(() => (D.HEDITS[id] || {}).swap !== was); await sl(200); }
+    await sl(300); const see = q('#r3d-act [data-actlink]'); return [q('#r3d-act-h').textContent, q('#r3d-act-st').textContent, see ? see.dataset.actlink : null]; };
+  const ik = await swap('music.kallax', /^KALLAX/), hb = await swap('music.chair', /^Sorel/);
+  for (const k of ['music.kallax', 'music.chair']) { D.openAct('hitem:' + k); await sl(400); q('#r3d-act [data-hreset]').click(); await sl(300); }
+  const back = await wait(() => !D.HEDITS['music.kallax'] && !D.HEDITS['music.chair']); if (D.actId) q('#r3d-act .x').click();
+  return { ik, hb, back };
 }"""
 OFF = """() => { const W = document.documentElement.clientWidth, out = [];
   for (const el of document.querySelectorAll("body *")) { const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
@@ -343,6 +384,26 @@ def mouse_look(pg, w):
     turn = a[2] * z[0] - a[0] * z[2]                                  # the turn round the upright: below 0 is to the right
     pg.evaluate("() => R3D.set({ view: 'house' })"); pg.wait_for_timeout(1500)
     return [] if turn < -0.01 and z[1] > a[1] + 0.01 else [f"{w}: a mouse drag right and up in the hall's In it turned {turn:+.3f} and tilted {z[1] - a[1]:+.3f} (want right, below 0, and up)"]
+def own_real(pg, w):
+    """N219: a piece of her own in the office from its floor's card, kept after a reload and in the 3D's edits; real shops' pieces swapped
+    in bedroom 2 say their shop and price, their page a tap away"""
+    out, ow = [], pg.evaluate(OWN)
+    v = "own|desk|100|50|75|walnut|Our desk"
+    kept = {}
+    if ow.get("ok"):
+        pg.reload(); pg.wait_for_function("window.R3D && R3D.ready", timeout=240000); pg.wait_for_timeout(2000); kept = pg.evaluate(OWN_KEPT, ow["id"])
+    if not (ow.get("card") == "fin:bed3:5" and ow.get("ok") and ow.get("title") == "Our desk" and ow.get("line", "").startswith("100 × 50 × 75 cm · ") and ow["line"].endswith(" · Yours")
+            and kept.get("drawn") and kept.get("kept") == v and kept.get("title") == "Our desk" and kept.get("gone")):
+        out.append(f"{w}: a piece of her own in the office from its floor's card: {ow}, after a reload: {kept} (want {v!r} drawn, its card \"Our desk\", "
+                   "\"100 × 50 × 75 cm · … · Yours\", kept after a reload, then gone)")
+    rl = pg.evaluate(REAL)
+    ik, hb = rl.get("ik", []), rl.get("hb", [])
+    if not (len(ik) == 3 and ik[0].startswith("KALLAX") and ik[1].endswith("£49 · IKEA") and "ikea.com/gb" in (ik[2] or "")
+            and len(hb) == 3 and hb[0].startswith("Sorel") and hb[1].endswith("£88 · Habitat") and "habitat.co.uk" in (hb[2] or "") and rl.get("back")):
+        out.append(f"{w}: bedroom 2's Kallax for IKEA's KALLAX and its chair for Habitat's Sorel: {rl} (want each card's shop and price and its page, then as planned)")
+    return out
+
+
 def names_keys(pg, w):
     """V2.97 (N42): names everywhere (the page as it opens, a door's card in the kitchen, Edit's list), Esc one at a time; on a PC Tab"""
     out, D = [], "R3D._dbg"
@@ -474,6 +535,7 @@ def main():
                     if not (ft.get("fits", "").startswith("89 × 89 × 78 cm · Fits") and "cm into the slope" in ft.get("big", "") and ft.get("rid") and ft.get("back")):
                         fails.append(f"{w}: bedroom 2's chair-bed for an armchair, its Kallax for a bookcase, its desk for the long one, then as planned: {ft} "
                                      "(want the armchair \"Fits\", the bookcase into the slope, the monitors on the new top and the interface and headphones hidden, no rows left)")
+                    fails += own_real(pg, w)                        # N219: a piece of her own (kept after a reload), real shops' pieces
                 if phone:                                           # V2.5 (FINISHES_PLAN F2): a room's walls and ceiling through the palette, then back
                     fn = pg.evaluate("() => [R3D.finish('bed2', 'walls', '#3a6b5a'), R3D.finish('bed2', 'ceiling', '#e8c0c8'), R3D.finish('nowhere', 'walls', '#000000'), R3D.finish(null, 'walls', null), R3D.finish(null, 'ceiling', null)]")
                     if fn != [True, True, False, True, True]:

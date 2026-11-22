@@ -1423,6 +1423,32 @@ SOURCES["hcswap"] = ("IKEA UK, read 22 Nov 2026, W × D × H cm (N217: bedroom 2
                      "200 × 60 × 73, a LAGKAPTEN top on an ALEX drawer unit and an ALEX storage unit (each 36 × 70), an ADILS leg, £140 "
                      "(895.216.95, ikea.com/gb/en/p/lagkapten-alex-desk-white-s89521695)")
 ORDER.append("hcswap")
+
+
+def shop_pieces():
+    """N219: the shops' real pieces (docs/N219_catalogue.json, read 22 Nov 2026), each [key, row]: the key the house catalogue's
+    (08_house_catalogue.js HREAL) and its fit.SOURCES row's, the shop's two letters and the name's first word (2, 3 for the next)"""
+    import json, pathlib, re, unicodedata
+    rows = json.loads((pathlib.Path(__file__).resolve().parents[2] / "docs/N219_catalogue.json").read_text())
+    pre, skip, seen, out = {"IKEA": "ik", "Habitat": "hb", "John Lewis": "jl", "Dunelm": "du"}, {"x", "john", "lewis", "julian", "bowen", "swoon", "desser"}, set(), []
+    for p in rows:
+        w = [q for q in re.findall(r"[a-z0-9]+", unicodedata.normalize("NFKD", p["name"]).encode("ascii", "ignore").decode().lower()) if q not in skip and not q.isdigit()]
+        base = pre[p["retailer"]] + "_" + w[0]; k, i = base, 2
+        while k in seen:
+            k, i = f"{base}{i}", i + 1
+        seen.add(k); out.append((k, p))
+    return out
+
+
+# N219: each real piece its own row (options to look at: not in the plan's numbered list, which names them all in one row)
+for _k, _p in shop_pieces():
+    _h = "pile not published, drawn 1" if _p["h"] is None else _p["h"]
+    SOURCES[_k] = (f"{_p['retailer']}: {_p['name']}, {_p['finish']}, {_p['w']} × {_p['d']} × {_h} cm (W × D × H)"
+                   + (f"; {_p['note']}" if _p.get("note") else "") + f", £{_p['price']} ({_p['url']}, read {_p['read']})")
+SOURCES["shops219"] = ("Real pieces to look at (N219), each its size as published (W × D × H cm), its price and its page, read 22 Nov 2026: "
+                       "IKEA 44, Habitat 52, John Lewis 30, Dunelm 16; a bed's depth its frame's length, a rug's height its pile, an adjustable "
+                       "piece at its highest (ikea.com/gb, habitat.co.uk, johnlewis.com, dunelm.com)")
+ORDER.append("shops219")
 SOURCES["amelia"] = ("Amazon UK (Nov 2026, B0HDC8WYBT): Lovesofas Amelia L-shaped corner sofa bed, Blade Green woven chenille, right hand: "
                      "264 W × 165 D × 95 H, seat 43 high and 53 deep, 100 deep at the arm (the listing's drawing), a pull-out bed in the middle, "
                      "a freestanding storage chaise, two footstools under the arm, three adjustable headrests. The 264 × 165 is its two main "
