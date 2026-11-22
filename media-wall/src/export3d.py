@@ -126,7 +126,7 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
 
 def _fit(e):
     """N217: what a swapped piece is checked against in the page (16_cards' swap card): each room's notches (its outline's box less its
-    rectangles), the knee walls (the eaves' profiles), the walks (storage_ideas.reserves) and the roof's slopes (model.headroom)."""
+    rectangles), the knee walls (the eaves' profiles), the space kept clear (storage_ideas.reserves) and the roof's slopes (model.headroom)."""
     import model, storage_ideas
     notch = {}
     for rid in model.room_sizes():
@@ -138,7 +138,7 @@ def _fit(e):
             notch[rid] = cells
     eaves = [[P["a"], min(q[1] for q in P["pts"]), min(q[0] for q in P["pts"]), P["b"], max(q[1] for q in P["pts"]), max(q[0] for q in P["pts"])]
              for F in e["floors"].values() for P in F.get("prisms", []) if P.get("m") == "eaves" and P["axis"] == "x"]
-    return dict(notch=notch, eaves=eaves, walks=[[n, b] for n, b in storage_ideas.reserves() if "walk" in n],
+    return dict(notch=notch, eaves=eaves, keep=[list(q) for q in storage_ideas.reserves()],
                 roof=[model.FLOOR_Y["first"] + model.CEIL, model.RO["n"], model.ROOF_B, model.KB, model.RO["s"], model.ROOF_E, model.K, *model.DM["x"], model.DORMER_BACK])
 
 

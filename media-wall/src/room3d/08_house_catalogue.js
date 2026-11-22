@@ -278,40 +278,54 @@ function syncAdds() {
   syncPlants(); syncIdeas();
   const rows = {}; for (const v of Object.values(ds.rows("edits") || {})) if (v && v.field === "add" && /^add\.[a-z0-9]{1,12}$/.test(v.item || "") && HCAT[v.value] && (H3.rooms || {})[v.room]) rows[v.item] = v;
   for (const id of Object.keys(ADDED)) if (!rows[id]) { delete H3.items[id]; delete ADDED[id]; }
-  for (const [id, v] of Object.entries(rows)) { if (ADDED[id] && ADDED[id].k === v.value) continue;
+  for (const [id, v] of Object.entries(rows)) { if (ADDED[id] === `${v.value}@${v.x},${v.z}`) continue;   // N218: a new piece or a new spot
     const C = HCAT[v.value], r = H3.rooms[v.room], x = +v.x, z = +v.z, y = isFinite(+v.y) ? +v.y : r[4]; if (!isFinite(x) || !isFinite(z)) continue;
     const dz = Math.min(z - r[2], r[3] - z), dx = Math.min(x - r[0], r[1] - x), ax = dz <= dx ? "x" : "z", a = ax === "z" ? 2 : 0, o = 2 - a;
     const c = [x, y, z], b = [0, y, 0, 0, y + C.h, 0], ro = o === 2 ? [r[2], r[3]] : [r[0], r[1]], ra = a === 2 ? [r[2], r[3]] : [r[0], r[1]];
     b[a] = Math.max(ra[0], Math.min(ra[1] - C.w, c[a] - C.w / 2)); b[a + 3] = b[a] + C.w;
     const near = c[o] - ro[0] < ro[1] - c[o], gap = near ? c[o] - C.d / 2 - ro[0] : ro[1] - c[o] - C.d / 2;   // within 30 of its wall: against it
     b[o] = gap < 30 ? (near ? ro[0] + 0.5 : ro[1] - 0.5 - C.d) : c[o] - C.d / 2; b[o + 3] = b[o] + C.d;
-    ADDED[id] = { k: v.value }; ADDFK[id] = HCFK[String(r[4])];
+    ADDED[id] = `${v.value}@${v.x},${v.z}`; ADDFK[id] = HCFK[String(r[4])];
     H3.items[id] = { n: C.n, k: "furniture", r: v.room, ax, b: b.map(q => Math.round(q * 10) / 10), s: [C.w, C.h, 0], g: false, al: Math.round((b[a] - ra[0]) * 10) / 10, op: null, add: v.value, fk: HCFK[String(r[4])] };
   }
 }
 /* N217: does a changed piece fit? Its room's walls (past its outline, into a notch or a knee wall), the slope or the ceiling, the doors'
    swings and the walks (export3d's "fit"), then the pieces in its way; a rug lies under a door and a walk. Each as "12 cm into …" */
-function fitWhy(id) {
-  const it = HIT(id), FT = R.HOUSE3.fit, cl = clashes(id), way = cl.length ? [`in the way of ${cl.slice(0, 2).join(" and ").replace(/^The /, "the ").replace(/ and The /, " and the ")}`] : [];
-  if (!it || it.op || !FT || pieceNow(id).removed || (!it.add && !pieceDelta(id).some(Boolean))) return way;
-  const b = pieceBox(id), r = R.HOUSE3.rooms[it.r], out = [], into = (v, w) => { if (v > 1) out.push(`${Math.round(v)} cm into ${w}`); };
+function roomWhy(b, rid, self) {   // box b in room rid (self: the piece it is, whose own space kept clear it may take)
+  const FT = R.HOUSE3.fit, r = R.HOUSE3.rooms[rid], out = [], into = (v, w) => { if (v > 1) out.push(`${Math.round(v)} cm into ${w}`); }; if (!FT || !r) return out;
   const dig = q => { const x = Math.min(b[3], q[3]) - Math.max(b[0], q[0]), z = Math.min(b[5], q[5]) - Math.max(b[2], q[2]); return x > 0 && z > 0 && b[1] < q[4] && b[4] > q[1] ? Math.min(x, z) : 0; };
-  if (r) into(Math.max(r[0] - b[0], b[3] - r[1], r[2] - b[2], b[5] - r[3], ...(FT.notch[it.r] || []).map(([x0, x1, z0, z1]) => dig([x0, -1e4, z0, x1, 1e4, z1])), ...FT.eaves.map(dig)), "the wall");
-  const [top, zn, yb, kb, zs, yf, kf, dx0, dx1, dz] = FT.roof, first = r && HCFK[String(r[4])] === "first";   // model.headroom
-  const head = z => !first ? r[4] + R.HOUSE3.ceil : b[0] >= dx0 && b[3] <= dx1 && z <= dz ? top : Math.min(top, yb + (z - zn) * kb, yf + (zs - z) * kf), lim = r ? Math.min(head(b[2]), head(b[5])) : 1e4;
+  into(Math.max(r[0] - b[0], b[3] - r[1], r[2] - b[2], b[5] - r[3], ...(FT.notch[rid] || []).map(([x0, x1, z0, z1]) => dig([x0, -1e4, z0, x1, 1e4, z1])), ...FT.eaves.map(dig)), "the wall");
+  const [top, zn, yb, kb, zs, yf, kf, dx0, dx1, dz] = FT.roof, first = HCFK[String(r[4])] === "first";   // model.headroom
+  const head = z => !first ? r[4] + R.HOUSE3.ceil : b[0] >= dx0 && b[3] <= dx1 && z <= dz ? top : Math.min(top, yb + (z - zn) * kb, yf + (zs - z) * kf), lim = Math.min(head(b[2]), head(b[5]));
   into(b[4] - lim, first && lim < top ? "the slope" : "the ceiling");
   if (b[4] - b[1] > 3) {
     let s = 0;   // storage_ideas.checks' swept: the leaf's quarter circle from its hinge, 205 high
-    for (const o of Object.values(R.HOUSE3.items)) { const p = o.op, S = p && p.swing; if (!S || !r || p.y0 !== r[4] || b[1] > p.y0 + 205) continue;
+    for (const o of Object.values(R.HOUSE3.items)) { const p = o.op, S = p && p.swing; if (!S || p.y0 !== r[4] || b[1] > p.y0 + 205) continue;
       const R_ = p.b - p.a, [l0, l1, c0, c1] = p.axis === "x" ? [b[0], b[3], b[2], b[5]] : [b[2], b[5], b[0], b[3]];
       const a0 = Math.max(l0, Math.min(S.hinge, S.hinge + S.u * R_)), a1 = Math.min(l1, Math.max(S.hinge, S.hinge + S.u * R_));
       const e0 = Math.max(c0, Math.min(p.line, p.line + S.side * R_)), e1 = Math.min(c1, Math.max(p.line, p.line + S.side * R_));
       if (a0 >= a1 - 0.5 || e0 >= e1 - 0.5) continue;
       s = Math.max(s, R_ - Math.hypot(Math.min(Math.max(S.hinge, a0), a1) - S.hinge, Math.min(Math.max(p.line, e0), e1) - p.line)); }
     into(s, "the door's swing");
-    for (const [n, q] of FT.walks) into(dig(q), n.replace(/ \(.*\)$/, ""));
+    for (const [n, q, of] of FT.keep) if (of !== self) into(dig(q), n.replace(/ \(.*\)$/, ""));
   }
-  return out.concat(way);
+  return out;
+}
+function fitWhy(id) {
+  const it = HIT(id), cl = clashes(id), way = cl.length ? [`in the way of ${cl.slice(0, 2).join(" and ").replace(/^The /, "the ").replace(/ and The /, " and the ")}`] : [];
+  if (!it || it.op || pieceNow(id).removed || (!it.add && !pieceDelta(id).some(Boolean))) return way;
+  return roomWhy(pieceBox(id), it.r, id).concat(way);
+}
+/* N218: where an added piece stands: back to a wall of its room (as syncAdds puts it: the row's x, z on that wall), clear of the walls,
+   the slope, the swings, the space kept clear and the pieces, nearest the tap; if nowhere, back to the nearest wall at the tap */
+function addSpot(rid, key, x, z, y, self) {
+  const r = R.HOUSE3.rooms[rid], C = HCAT[key], over = (p, q) => [0, 1, 2].every(j => p[j] < q[j + 3] - 1 && p[j + 3] > q[j] + 1); let best = null;
+  const busy = Object.keys(R.HOUSE3.items).filter(k => { const o = HIT(k); return k !== self && o.r === rid && !HCSKIP.has(o.k) && !hcSoft(k) && !pieceNow(k).removed; }).map(pieceBox);
+  for (const [o, hi] of [[2, 0], [2, 1], [0, 0], [0, 1]]) { const a = 2 - o, w = r[o + hi] + (hi ? -0.5 : 0.5);   // each wall, its back 0.5 off it
+    for (let u = r[a]; u <= r[a + 1] - C.w; u += 5) { const b = [0, y, 0, 0, y + C.h, 0]; b[a] = u; b[a + 3] = u + C.w; b[o] = hi ? w - C.d : w; b[o + 3] = b[o] + C.d;
+      const d = Math.hypot((b[0] + b[3]) / 2 - x, (b[2] + b[5]) / 2 - z); if (best && d >= best[2]) continue;
+      if (!roomWhy(b, rid, self).length && !busy.some(q => over(b, q))) best = o ? [u + C.w / 2, w, d] : [w, u + C.w / 2, d]; } }
+  return best ? best.slice(0, 2) : [x, z];
 }
 /* the pieces in its way: a moved, swapped or added piece against the others in the room it now stands in (not chairs and rugs) */
 const HCSKIP = new Set(["decor", "finish", "light", "switch", "socket", "fitting", "window", "door"]), hcSoft = k => /chairs?$|stools?$|rug$/.test(k) || /^(chair|rug)$/.test((HCAT[(HIT(k) || {}).add] || {}).k);   // N217: by its id or what was added

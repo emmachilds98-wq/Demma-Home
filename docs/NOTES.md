@@ -242,6 +242,12 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   hides it when the host is taken out or turned, or the new top is under less than 90% of it (hung: when it no longer meets it). Riders
   are bedroom 2's monitors, interface, 88-key, headphones and mic on the L desk and the office's two screen setups on its desk; not the
   office lamp (its light would stay behind).
+  **Adding** (N218): the add card's kinds are chips, ‹ › goes through that kind (`hcAddOf`); `addSpot` puts a new piece (and each piece
+  picked for it) back to the room's wall nearest the tap where `roomWhy` and the pieces find it clear, stored as the row's `x, z` on the
+  wall line (0.5 in), which `syncAdds` reads back as against that wall. The space kept clear (`fit.keep`, from `reserves()`) names the
+  piece it's for (the Kallax's drawers), which that piece may take. **House edits in the look link** (`he` in `lookOf`): each edits row
+  as `[item, field, value]` (an add with its room, x, z, y), every one checked by `heOk` on the way in (as `pieceNow` and `syncAdds` read
+  rows) and put into Measure's store, once it is up (a link opens before `measure.js` has run).
 - **Lamps:** `survey_data.LAMPS` → `model.room_lamps`; the viewer reuses the room lights' uniforms (no rebuild). **Shade under pieces:**
   `model.piece_shade`, moved with edits (`08_house_edits.js editedFloor`).
   **Shade where walls meet** (V3.63, N112): `model.edge_shade` finds each room's walls from the boxes as built (`EDGE_M` faces within

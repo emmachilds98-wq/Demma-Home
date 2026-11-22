@@ -196,6 +196,24 @@ FITS = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   if (D.actId) q('#r3d-act .x').click();
   return { fits, big, rid, back };
 }"""
+# N218: tap bedroom 2's floor, Add a piece here, Shelves: a bookcase stands back to a wall and fits; the look link (Link) carries it
+ADD = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), cv = document.querySelector('.r3d canvas'), q = s => document.querySelector(s), ds = window.DemmaStore;
+  const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
+  R3D.set({ view: 'bed2' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
+  let card = null; for (const [x, z] of [[90, -100], [100, -60], [60, -140], [200, -80], [150, 20]]) {   // a bare bit of its floor on the screen
+    if (D.actId) q('#r3d-act .x').click(); await sl(200);
+    const c = new D.THREE.Vector3(-x / 100, 2.6, z / 100).project(D.camera), r = cv.getBoundingClientRect(); if (Math.abs(c.x) > 0.9 || Math.abs(c.y) > 0.8 || c.z > 1) continue;
+    const o = { clientX: r.left + (c.x + 1) / 2 * cv.clientWidth, clientY: r.top + (1 - c.y) / 2 * cv.clientHeight, bubbles: true, pointerId: 1, button: 0, isPrimary: true };
+    cv.dispatchEvent(new PointerEvent('pointerdown', o)); cv.dispatchEvent(new PointerEvent('pointerup', o)); await sl(600); card = D.actId; if (card === 'fin:bed2:5') break; }
+  const b = q('#r3d-act [data-hadd]'); if (!b) return { card }; b.click(); await sl(300);
+  const id = (D.actId || '').split(':')[1]; q('#r3d-act [data-hcatk$=":shelves"]').click();
+  const E = D.HEDITS, ok = await wait(() => E[id] && E[id].add === 'bookcase' && D.PICK.first.some(p => p.id === id)); await sl(300);
+  const t = ok && E[id].to, wall = ok && [Math.abs(t[0] - 0.5), Math.abs(t[3] - 269.5), Math.abs(t[2] + 308.5), Math.abs(t[5] - 79)].some(d => d < 1);   // bedroom 2's outline, 0.5 in
+  const line = q('#r3d-act-st').textContent; if (D.actId) q('#r3d-act .x').click();
+  navigator.clipboard.writeText = u => { window.__link = u; return Promise.resolve(); }; document.getElementById('r3d-link').click(); await wait(() => window.__link);
+  await Promise.all(Object.entries(ds.rows('edits')).filter(([, v]) => v && v.item === id).map(([k]) => ds.del('edits', k)));
+  return { card, line, wall, link: window.__link || null, gone: await wait(() => !E[id]) };
+}"""
 OFF = """() => { const W = document.documentElement.clientWidth, out = [];
   for (const el of document.querySelectorAll("body *")) { const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
     if (!r.width || cs.display === "none" || cs.visibility === "hidden" || cs.position === "fixed" || el.closest("[hidden], .sheet, .r3d-panel, .r3d-floors, .lightbox, .r3d-stage")) continue;
@@ -441,6 +459,17 @@ def main():
                     if ea != {"t1": "Master bedroom: the back wall (2 of 2)", "t2": "Master bedroom: the back wall (1 of 2)", "both": ["#3a6b5a", "#c98a5e"], "room": [None, "#dbffc8"],
                               "st": "Bedroom 2: the slopes", "slope": "walls", "restored": True}:
                         fails.append(f"{w}: the master's cupboard face and its alcove each a colour, This room over both, bedroom 2's slopes with the walls, then back: {ea}")
+                    ad = pg.evaluate(ADD)                           # N218: a piece added where it fits, in the look link
+                    seen = None
+                    if ad.get("link"):
+                        c2 = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=True, has_touch=True, service_workers="block")
+                        p2 = c2.new_page(); p2.set_default_timeout(300000); localcdn.route(p2); p2.goto(ad["link"])
+                        p2.wait_for_function("window.R3D && R3D.ready", timeout=240000)
+                        seen = p2.evaluate("async () => { for (let i = 0; i < 200; i++) { if (Object.values(R3D._dbg.HEDITS).some(e => e.add === 'bookcase')) return true; await new Promise(r => setTimeout(r, 150)); } return false; }")
+                        c2.close()
+                    if not (ad.get("card") == "fin:bed2:5" and ad.get("line", "").startswith("80 × 28 × 202 cm · Fits") and ad.get("wall") and ad.get("gone") and seen):
+                        fails.append(f"{w}: adding a bookcase in bedroom 2 from its floor's card: {ad}, in a fresh page from its look link: {seen} "
+                                     "(want it back to a wall, \"Fits\", shown from the link, then gone)")
                     ft = pg.evaluate(FITS)                          # N217: a swap's size and fit on its card, then as planned
                     if not (ft.get("fits", "").startswith("89 × 89 × 78 cm · Fits") and "cm into the slope" in ft.get("big", "") and ft.get("rid") and ft.get("back")):
                         fails.append(f"{w}: bedroom 2's chair-bed for an armchair, its Kallax for a bookcase, its desk for the long one, then as planned: {ft} "
