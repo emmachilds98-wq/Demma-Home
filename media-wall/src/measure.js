@@ -108,6 +108,7 @@ const store = {
   shareLink() {                                            // what's on this device, for the other person (not photos)
     const pick = {}; for (const c of ["measurements", "edits", "notes", "ticks"]) if (Object.keys(cache[c]).length) pick[c] = cache[c];
     try { const f = window.R3D && window.R3D.finishes && window.R3D.finishes(); if (f && Object.keys(f).length) pick.finishes = f; } catch (e) {}   // V2.11: the house's colours, floors and bulbs
+    try { const lk = window.R3D && window.R3D.looks && window.R3D.looks(); if (lk && lk.length) pick.looks = lk; } catch (e) {}   // N221: the saved looks, for the plan
     const tk = ticks(); if (tk) pick.progress = tk.out;   // N118: Build's, Buy's and the rooms' ticks
     const sp = speed(); if (sp) pick.perf = sp;   // V3.04 (N50): this device's speed, for the next round (no place, no name)
     const enc = btoa(unescape(encodeURIComponent(JSON.stringify(pick)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");

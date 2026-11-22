@@ -677,7 +677,7 @@ function drawSetups() {
     return `<button type="button" class="chip" data-setup="${esc(id)}">${esc(d.name) || "A plan"}${when ? ` · ${when}` : ""}</button>`; }).join("");
 }
 qs("#r3d-setups")?.addEventListener("click", e => { const b = e.target.closest("[data-setup]"); if (!b) return; const d = SETUPS[b.dataset.setup];
-  if (d && d.look && applyLook(b64u(JSON.stringify(d.look)))) toast(`Opened: ${d.name || "your plan"}`); });
+  if (d && d.look && applyLook(b64u(JSON.stringify(d.look)), null)) toast(`Opened: ${d.name || "your plan"}`); });
 function shareStatus() {
   const st = qs("#r3d-sharest"), use = qs("#r3d-useshared"); if (!st) return;
   use.disabled = !sharedDoc;
