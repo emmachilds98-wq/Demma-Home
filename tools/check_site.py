@@ -168,6 +168,17 @@ WOOD = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   const restored = kept(0) === was[0] && kept(17) === was[1]; if (D.actId) q('#r3d-act .x').click();
   return { wall, wt, yours, wood, back, restored };
 }"""
+EACH = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s);   // N214: the master's cupboard face and the alcove beside it, each its own; This room; bedroom 2's slopes
+  const kept = r => ((JSON.parse(localStorage.getItem('mw18-3d') || '{}').fin || {})[r] || {}), was = JSON.stringify([kept('master'), kept('bed2')]);
+  const put = async (id, sc, hex) => { D.openAct(id); await sl(600); const b = q(`#r3d-act [data-finsc="${sc}"]`); if (b) { b.click(); await sl(300); }
+    const f = q('#r3d-act [data-finhex]'); f.value = hex; f.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); await sl(600); return q('#r3d-act-h').textContent; };
+  const t1 = await put('fin:master:31', 'wall', '3a6b5a'), t2 = await put('fin:master:30', 'wall', 'c98a5e'), both = [kept('master')[31], kept('master')[30]];
+  await put('fin:master:30', 'room', 'dbffc8'); const room = [kept('master')[31] || null, kept('master')[0]];
+  D.openAct('fin:bed2:29'); await sl(600); const st = q('#r3d-act-h').textContent; q('#r3d-act [data-finslope="walls"]').click(); await sl(500); const slope = kept('bed2')[29];
+  for (let i = 0; i < 4; i++) { const u = q('#r3d-act [data-finundo]'); if (u) u.click(); await sl(400); }   // the four changes undone
+  const restored = JSON.stringify([kept('master'), kept('bed2')]) === was; if (D.actId) q('#r3d-act .x').click();
+  return { t1, t2, both, room, st, slope, restored };
+}"""
 OFF = """() => { const W = document.documentElement.clientWidth, out = [];
   for (const el of document.querySelectorAll("body *")) { const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
     if (!r.width || cs.display === "none" || cs.visibility === "hidden" || cs.position === "fixed" || el.closest("[hidden], .sheet, .r3d-panel, .r3d-floors, .lightbox, .r3d-stage")) continue;
@@ -409,6 +420,10 @@ def main():
                     wd = pg.evaluate(WOOD)                          # N213, N216: a code typed on bedroom 2's wall, then its woodwork from "Yours", then back
                     if wd != {"wall": "#3a6b5a", "wt": "Bedroom 2: the woodwork", "yours": True, "wood": "#3a6b5a", "back": None, "restored": True}:
                         fails.append(f"{w}: bedroom 2's wall by its code, then its woodwork from Yours and back: {wd}")
+                    ea = pg.evaluate(EACH)                          # N214: each wall its own, This room over them, the slopes with the walls, then back
+                    if ea != {"t1": "Master bedroom: the back wall (2 of 2)", "t2": "Master bedroom: the back wall (1 of 2)", "both": ["#3a6b5a", "#c98a5e"], "room": [None, "#dbffc8"],
+                              "st": "Bedroom 2: the slopes", "slope": "walls", "restored": True}:
+                        fails.append(f"{w}: the master's cupboard face and its alcove each a colour, This room over both, bedroom 2's slopes with the walls, then back: {ea}")
                 if phone:                                           # V2.5 (FINISHES_PLAN F2): a room's walls and ceiling through the palette, then back
                     fn = pg.evaluate("() => [R3D.finish('bed2', 'walls', '#3a6b5a'), R3D.finish('bed2', 'ceiling', '#e8c0c8'), R3D.finish('nowhere', 'walls', '#000000'), R3D.finish(null, 'walls', null), R3D.finish(null, 'ceiling', null)]")
                     if fn != [True, True, False, True, True]:

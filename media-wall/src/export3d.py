@@ -85,8 +85,10 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
                     if b[0] <= cx <= b[3] and b[2] <= cz <= b[5] and abs(b[4] - model.FLOOR_Y[f]) <= 20: best = b[4] if best is None else max(best, b[4])
         return round(best if best is not None else model.FLOOR_Y[f], 1)
     # V2.12 (F7): each room's surfaces' areas (m²), for what a choice takes: {room: {walls: {side: [m², finish]}, ceiling: m², floor: m²}}
-    e["finish_areas"] = {rid: dict(walls={w["side"]: [w["area"], w["finish"]] for w in s["walls"]}, ceiling=(s["ceiling"] or {}).get("area"), floor=(s["floor"] or {}).get("area"), fk=(s["floor"] or {}).get("finish"))   # N209: fk, the floor laid now
-                         for rid, s in _surf.by_room().items() if rid != "living"}
+    _br = _surf.by_room()
+    e["finish_areas"] = {rid: dict(walls={w["side"]: [w["area"], w["finish"]] for w in s["walls"]}, ceiling=(s["ceiling"] or {}).get("area"), floor=(s["floor"] or {}).get("area"), fk=(s["floor"] or {}).get("finish"),   # N209: fk, the floor laid now
+                              slope=(s["slope"] or {}).get("area")) for rid, s in _br.items() if rid != "living"}   # N214: its slopes
+    e["finish_walls"] = {rid: s["faces"] for rid, s in _br.items() if s["faces"]}   # N214: each room's walls as built: [side, line from, to, along from, to, m²]
     _lw, _lc, _lf, _ln = _surf._living()   # N5 (REAL_PLAN R7): the living room's walls by name, for what its colours take
     e["finish_areas"]["living"] = dict(walls={k: [round(a / 1e4, 2), "living"] for k, a in _ln.items()}, ceiling=round(_lc / 1e4, 2), floor=round(_lf / 1e4, 2))
     _cf = pathlib.Path(model.__file__).resolve().parent / "client_finishes.json"   # V2.11 (F6): the client's scheme, kept by pull_edits.py
