@@ -78,6 +78,13 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **CI's caches are per branch:** a PR's bake (and renders) aren't reused by main after the merge, so main bakes again (about 8 min). Local browser checks here take 40+ min on 4 cores with helpers running: let CI measure, run `checks.py --quick` locally.
 - **The 3D's parts share one scope** (`room3d_src.py` joins them): a new top-level name can clash (`shown` once stopped `R3D.ready`
   ever firing). Put a `// note` at a line's end only: one put mid-line in a one-line statement commented out the rest of it.
+- **Moving a top-level name between parts (N203):** a `let` (or `const`) moved to an earlier part is always safe (it only leaves its
+  dead zone sooner), unless its starting value needs something made later. Moved to a later part, it is safe only if nothing the script
+  runs while it loads reaches it before the new place: everything else waits (`start()` waits for the bake; listeners, timers and
+  observers run after the script). To check, parse the joined parts with espree and eslint-scope (both from `npm ci`), take the code
+  run at load before the new place (top-level statements, and callbacks handed to `forEach` and the like, not to `addEventListener`,
+  timers, `then` or observers), follow the functions it calls, and look for the name in what is reached. Each part now sets only its
+  own `let`s; what two parts set is in `GS`. Keep it so: a new `let` set from another part goes in `GS` or moves to the part that sets it.
 
 ## 3. Speed: what was done, how, what's left
 - **The hitch walk (N177, V4.9):** its own check (`checks.py --only hitch`, `check_site.py --hitch`, its own CI job: inside the site job it took that past 40 min). `check_site.py` `HITCH_INIT`/`HITCH_WARM`/`HITCH_WALK`. A faked clock must move `performance.now()` with the
