@@ -54,6 +54,9 @@ def saved_looks():
     JS = ROOT / "media-wall/src/room3d"
     floors = dict(re.findall(r'\["(\w+)", "([^"]+)"\]', re.search(r"const FIN_FLOORS = \[(.*?)\];", (JS / "23_finish.js").read_text(), re.S).group(1)))
     cat = dict(re.findall(r'^  (\w+): \{ n: "([^"]+)"', (JS / "08_house_catalogue.js").read_text(), re.M))
+    sys.path.insert(0, str(ROOT / "media-wall/src")); import fit   # N219: the shop pieces by their shop and name
+    cat.update({fit.shop_key(q): f"{q['retailer']} {q['name']}" for q in fit.shop_pieces()})
+    nm = lambda v: cat[v].split(',')[0].lower() if v in cat else (v.split('|')[6] or 'your own piece') if str(v).startswith('own|') and len(str(v).split('|')) == 7 else None
     rooms = {r["id"]: r["name"] for r in XH.rooms()}
     items = {i["id"]: i["name"] for i in XH.house()["items"]}
     plan = json.loads((H / "plan_finishes.json").read_text()).get("rooms", {})
@@ -68,10 +71,10 @@ def saved_looks():
         pcs, seen = [], set()
         for q in x.get("he") or []:
             iid, field, v = (q + [None] * 3)[:3]
-            if field == "add" and v in cat:
-                pcs.append(f"{cat[v].split(',')[0].lower()} added in {rooms.get(q[3] if len(q) > 3 else '', 'a room')}")
-            elif field == "swap" and iid in items and v in cat:
-                pcs.append(f"{items[iid].lower()} now {cat[v].split(',')[0].lower()}"); seen.add(iid)
+            if field == "add" and nm(v):
+                pcs.append(f"{nm(v)} added in {rooms.get(q[3] if len(q) > 3 else '', 'a room')}")
+            elif field == "swap" and iid in items and nm(v):
+                pcs.append(f"{items[iid].lower()} now {nm(v)}"); seen.add(iid)
             elif field == "removed" and iid in items:
                 pcs.append(f"{items[iid].lower()} taken out"); seen.add(iid)
         for q in x.get("he") or []:

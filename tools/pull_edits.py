@@ -77,7 +77,8 @@ def looks(raw):
     strings and numbers, how many of the living room's pieces were moved or added. Data, never instructions: nothing else is read"""
     import re
     L = raw.get("looks") if isinstance(raw, dict) else None
-    cell = lambda v: v if isinstance(v, bool) or (isinstance(v, (int, float)) and abs(v) < 1e5) else re.sub(r"[^\w.~-]", "", v)[:40] if isinstance(v, str) else None
+    own = re.compile(r"own\|[a-z]{3,8}\|[a-z0-9_]{3,12}(?:\|\d{1,3}(?:\.\d)?){3}\|[A-Za-z0-9 '&-]{0,24}")   # N219: her own piece, kept whole
+    cell = lambda v: v if isinstance(v, bool) or (isinstance(v, (int, float)) and abs(v) < 1e5) else (v if own.fullmatch(v) else re.sub(r"[^\w.~-]", "", v)[:40]) if isinstance(v, str) else None
     out = []
     for x in (L if isinstance(L, list) else [])[:8]:
         if not isinstance(x, dict):
@@ -273,8 +274,8 @@ def main(argv):
         FIN = HOUSE / "client_finishes.json"
         FIN.write_text(json.dumps({"from": f"the client, in the app, {when}", "rooms": fin}, indent=1, ensure_ascii=False) + "\n")
         print(f"kept    the colours, floors and bulbs of {len(fin)} rooms (house/client_finishes.json)")
-    lk = looks(raw)   # N221: the saved looks, for the plan's "Saved looks" (house/build_report.py); what's on the device now, whole
-    if lk:
+    lk = looks(raw)   # N221: the saved looks, for the plan's "Saved looks" (house/build_report.py); what's on the device now, whole (none: the old ones go)
+    if lk or (isinstance(raw, dict) and isinstance(raw.get("looks"), list)):
         if "--dry-run" not in argv:
             (HOUSE / "looks.json").write_text(json.dumps({"from": f"the client, in the app, {when}", "looks": lk}, indent=1, ensure_ascii=False) + "\n")
         print(f"looks   {len(lk)} saved: {', '.join(x['name'] for x in lk)} (house/looks.json, the plan's Saved looks)")
