@@ -62,6 +62,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   waits till the photos stop landing; a test that counts compressed textures must wait as long.
 
 ## 2. Merging when threads run side by side
+- **Push everything at once (22 Nov 2026):** three rounds lost work to usage limits (N219's shop pieces, N221's saved looks, an iPhone fix, V4.41 once), each committed or merged only on the machine that stopped. Every commit is pushed when made; helpers push their own branch after each step; a merge is pushed straight away. To keep a running PR's CI, push to another branch (your own, or the helper's) and fold it into the PR with the next push.
 - **Versions race.** Each PR takes `VERSION`, a line in `docs/HISTORY.md`, `docs/STATE.md` and its plan row, and main moves every few
   minutes while CI runs about 20. Take the version **at merge time**: once the code is green, merge `main` in (a merge commit, not a
   rebase), take the next free version, `checks.py --quick` and `build.py --fast`, push, merge straight away. Never take a version below
