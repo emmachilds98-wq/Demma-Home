@@ -330,6 +330,12 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   room's own apart from the house's palette, which waits for the house), `applyHEdits({})` shows the house's pieces as drawn and
   `storeEdits()` brings yours back, `placeAll` reads no layout while it's on. `store.set` skips the room's key while it's on;
   `finPush` and `setEdit(true)` switch it off first.
+- **Saved looks and a look shown** (N221, N222, `23_finish.js` after `FIN_COPY`): a look is `{name, fin, he, lay}` in `dh-fin-schemes`
+  (8 at most); `lookPut` wears one, `lookAside` + `lookPut` + `lookPill` show one over yours (a link, The plan). Set aside = `ASIDE`
+  (the old `S` as JSON, the Send's `fin`) and the edits rows: `window.DemmaStore` swapped for a copy in memory (`lookMem`), so every
+  `DS()` reader draws the shown look and Measure's own rows, `localStorage` and Send stay the device's. `store.set` skips `KEY` while
+  `ASIDE`; `lookMine` puts `S` back key by key (keeping `view`, the layout through `restoreLayout`) and the real store; `lookKeep`
+  writes the shown rows into it. A link opened before Measure's store is up waits for its first `demma-rows` (`lookHe`).
 - **Edit's handle and sheet** (V3.87 N145, `13_edit_room.js` after `select`): `selOverlay()` places `#r3d-turnh` and `#r3d-selmeas`
   from the piece's box projected, a frame at a time while a piece is picked; the handle's drag turns round the box's middle on screen,
   its sign found by projecting the piece's front at two angles (so it follows the finger from any side), 15° a step, and on letting go
