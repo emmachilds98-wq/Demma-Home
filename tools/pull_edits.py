@@ -7,7 +7,8 @@
 3. Each measurement and edit becomes a change to house/survey_data.py's numbers (through house/client_edits.json, which survey_data
    applies at its end), with the source "the client, in the app, <date>". house/check_model.py runs; if a check fails, nothing is kept
    and the failures are listed as questions for the client. Anything this can't place (a size the model draws from a list, a piece
-   taken out, swapped or added from the page's catalogue) is listed as a question too: never silently kept or dropped.
+   taken out, swapped or added from the page's catalogue, a piece of her own, a row it can't read) is listed as a question too: never
+   silently kept or dropped.
 4. V3.04 (N50): a link sent from Measure also carries that device's speed (R3D.perf(): the chip's family, quality, a frame moving and
    still, draws, shaders); it's printed as a "speed" line beside tools/perf_budget.json's draws for that kind of device. Nothing is kept.
 5. V3.60 (N118): a link also carries that device's ticks (Build's, Buy's, the rooms' done), each with the minute it changed. They're
@@ -218,15 +219,43 @@ def plan(raw, when):
     cat = dict(re.findall(r'^  (\w+): \{ n: "([^"]+)"', (ROOT / "media-wall/src/room3d/08_house_catalogue.js").read_text(), re.M))
     sys.path.insert(0, str(ROOT / "media-wall/src")); import fit   # N219: the shops' pieces, by their key
     cat.update({fit.shop_key(p): f"{p['retailer']} {p['name'].split(',')[0]} (£{p['price']:g})" for p in fit.shop_pieces()})
+    # N220: nothing dropped. A piece of her own ("own|look|material|W|D|H|name") is read part by part; an added piece's other rows (moved,
+    # turned, resized, taken out) go with it; a row this can't read is listed by its item's id (checked), never by its value
+    word = lambda s: re.sub(r"[^a-z0-9_.]", "", str(s).lower())[:30]
     for r in rows_of(raw, "edits").values():
-        v, iid = str(r.get("value", "")), str(r.get("item", ""))
+        v = str(r.get("value", ""))
         own = re.fullmatch(r"own\|([a-z]{3,8})\|([a-z0-9_]{3,12})\|(\d{1,3}(?:\.\d)?)\|(\d{1,3}(?:\.\d)?)\|(\d{1,3}(?:\.\d)?)\|([A-Za-z0-9 '&-]{0,24})", v)   # N219: her own piece
         if own:
-            cat[v] = f"her own {own[6] or own[1]} ({own[1]}, {own[2]}, {own[3]} × {own[4]} × {own[5]} cm)"
-        if r.get("field") == "swap" and iid in items and v in cat:
-            questions.append(f"{items[iid]['name']} ({items[iid]['room']}): swapped for the {cat[v].lower()} in the app: fold it in by hand")
-        elif r.get("field") == "add" and re.fullmatch(r"add\.[a-z0-9]{1,12}", iid) and v in cat and num(r.get("x")) is not None and num(r.get("z")) is not None:
-            questions.append(f"{cat[v]} added in {str(r.get('room', ''))[:20]} at x {num(r['x'])}, z {num(r['z'])} in the app: fold it in by hand (moves: its other rows)")
+            cat[v] = f"her own {own[6].strip() or own[1]} ({own[1]}, {own[2]}, {own[3]} × {own[4]} × {own[5]} cm)"
+    adds = {}
+    for r in rows_of(raw, "edits").values():
+        iid = str(r.get("item", ""))
+        if re.fullmatch(r"add\.[a-z0-9]{1,12}", iid):
+            adds.setdefault(iid, {})[word(r.get("field"))] = r
+    for iid, f in sorted(adds.items()):
+        a = f.pop("add", None)
+        v, room = str((a or {}).get("value", "")), word((a or {}).get("room", ""))
+        if not a or v not in cat or num(a.get("x")) is None or num(a.get("z")) is None:
+            questions.append(f"a piece added in the app ({iid}{', ' + room if room else ''}) that this can't read: look at it in the page and fold it in by hand")
+            continue
+        if f.pop("removed", {}).get("value") is True:
+            questions.append(f"{cat[v]} added in {room} in the app, then taken out: nothing to fold in")
+            continue
+        moved = [f"{n} {num(f[k].get('value')):g}" for k, n in (("along", "along"), ("out", "out"), ("up", "up"), ("w", "width"), ("h", "height")) if k in f and num(f[k].get("value")) is not None]
+        if "turn" in f and num(f["turn"].get("value")):
+            moved.append(f"turned {int(num(f['turn']['value'])) % 4 * 90}°")
+        questions.append(f"{cat[v]} added in {room} at x {num(a['x'])}, z {num(a['z'])} in the app{' (' + ', '.join(moved) + ')' if moved else ''}: fold it in by hand")
+    for r in rows_of(raw, "edits").values():
+        iid, fld = str(r.get("item", "")), r.get("field")
+        if iid in adds or (iid in items and fld in ("w", "h", "up", "along", "out", "turn", "removed")):
+            continue
+        v = str(r.get("value", ""))
+        if fld == "swap" and iid in items and v in cat:
+            questions.append(f"{items[iid]['name']} ({items[iid]['room']}): swapped for {cat[v]} in the app: fold it in by hand")
+        elif fld == "swap" and iid in items:
+            questions.append(f"{items[iid]['name']} ({items[iid]['room']}): swapped in the app for a piece this can't read: look at it in the page")
+        else:
+            questions.append(f"an edit in the app this can't read ({word(iid) or 'no item'}, {word(fld) or 'no field'}): look at it in the page")
     for r in rows_of(raw, "notes").values():
         tx = str(r.get("text", ""))[:500]
         if tx:
