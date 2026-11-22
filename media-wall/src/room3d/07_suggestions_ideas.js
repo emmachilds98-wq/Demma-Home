@@ -21,9 +21,9 @@ function lazyVis(o, build, merge = false) {
 }
 /* from outside, a lazily built piece is put away as livingFromOutside does (else 8 more shaders, ~90 draws in the house's picture) */
 function lazyApply() {
-  lazyQ = false; const was = cabSnap, out = livOut; cabSnap = true;
-  if (out) { livOut = false; for (const o of LIVING) if (o.userData.livWas !== undefined) { o.visible = o.userData.livWas; delete o.userData.livWas; } }
-  try { applyState(); } finally { cabSnap = was; if (out) livingFromOutside(); }
+  lazyQ = false; const was = GS.cabSnap, out = GS.livOut; GS.cabSnap = true;
+  if (out) { GS.livOut = false; for (const o of LIVING) if (o.userData.livWas !== undefined) { o.visible = o.userData.livWas; delete o.userData.livWas; } }
+  try { applyState(); } finally { GS.cabSnap = was; if (out) livingFromOutside(); }
 }
 /* a mirror's glass: no live reflection (it would draw the room twice); a soft daylight sheen with two diagonal highlights reads as one */
 const MIRROR_SHEEN = canvasTex(128, 512, (c, w, h) => {

@@ -27,10 +27,10 @@ function start() {
   scene.add(lightRig);                                                                  // v35: the fixed set of lights
   const TM = START_MS, tm = k => { TM[k] = Math.round(performance.now() - t0); }; TM.modAt = Math.round(MOD_AT); TM.startAt = Math.round(t0);   // V1.31 (U4): where the start's time goes (R3D.timing)
   tm("env"); buildShell(); tm("shell"); buildLights(); tm("lights"); buildFurniture(); tm("furniture"); buildSuggest(); tm("suggest"); buildSeatAndPouf();   // v69 (B6): the house is built the first time it's looked at
-  bar1 = buildBar(R.BAR1, lights.bar1, "bar1"); tm("bar");
+  GS.bar1 = buildBar(R.BAR1, lights.bar1, "bar1"); tm("bar");
   scene.children.forEach(o => { if (!o.isLight && o !== lightRig && o !== sun && o !== sun.target) LIVING.push(o); });   // V1.31: the living room's own
   gl.shadowMap.enabled = S.quality === "hd";
-  cabSnap = true; applyState(); cabSnap = false;          // v30: the doors start where they are, no swing
+  GS.cabSnap = true; applyState(); GS.cabSnap = false;          // v30: the doors start where they are, no swing
   syncButtons();
   scene.traverse(o => { if (o.isMesh || o.isPoints || o.isLine) [].concat(o.material).forEach(m => m && !m.clippingPlanes && clipMat(m)); });   // v21: the cutaway
   tm("state"); setView(S.view, true); tm("view");
@@ -64,11 +64,11 @@ function start() {
       const addp = o.addpiece; delete o.addpiece;                                    // v32: the plan page's "Add it to my room": one more piece
       const showat = o.showat; delete o.showat;                                      // v34: a still part way through "Watch it open"
       if (o.merge) { delete o.merge; for (const k of ["sugg", "ideas", "decor"]) if (o[k]) o[k] = Object.assign({}, S[k], o[k]); }   // v32: "Show it in my room" keeps what's already on
-      oldScene(o); Object.assign(S, o); S.decor = Object.assign({}, DEF.decor, o.decor || S.decor); if (o.scene && !o.lv) S.lv = Object.assign({}, SCENES[o.scene].levels); if (o.quality) S.picked = true; cabSnap = true; applyState(); cabSnap = false; syncButtons(); if (lay) { cabSnap = true; restoreLayout(lay); cabSnap = false; }
+      oldScene(o); Object.assign(S, o); S.decor = Object.assign({}, DEF.decor, o.decor || S.decor); if (o.scene && !o.lv) S.lv = Object.assign({}, SCENES[o.scene].levels); if (o.quality) S.picked = true; GS.cabSnap = true; applyState(); GS.cabSnap = false; syncButtons(); if (lay) { GS.cabSnap = true; restoreLayout(lay); GS.cabSnap = false; }
       if (addp && CATALOGUE[addp.type]) { const a = { id: "a" + Date.now().toString(36), type: addp.type, x: addp.x, z: addp.z }; pushUndo(); addThing(a); if (addp.rot) setLayout(a.id, { rot: addp.rot }); placeAll(); store.set(KEY, S); dirty(); }
       if (showat != null) { showOpen(); if (SH) { SH.own = true; SH.paused = true; SH.t = showat; showPose(SH.t); showCard(); qs("#r3d-show").hidden = true; } }
       if (o.view) setView(o.view, true); if (aim) flyTo(aim.eye, aim.at, aim.fov || 55, !!aim.above, true); },   // v58: "above" lets a look stand off (the house)
-    still, finish, finishes: () => JSON.parse(JSON.stringify(finAll(false))), setFinishes: o => finImport(o), ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { get flying() { return !!tween; }, get warming() { return { busy: !!WARMB, parts: PRE.busy, warmed: [...WARMED] }; }, openAct, finAll, get H3() { return R.HOUSE3; }, get RMODE() { return RMODE; }, spotAt, goStandAt: goStand, HPARTS, PICK, HEDITS, get actId() { return actId; }, swingDoor, WALK, walkMove, collide, bodyBlocked, floorAtCm, HSOLID, livSolids, livFloors,  swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG, warmSwitch, WARMED, BAKE },
+    still, finish, finishes: () => JSON.parse(JSON.stringify(finAll(false))), setFinishes: o => finImport(o), ready: true, buildMs: Math.round(performance.now() - t0), _dbg: { get flying() { return !!GS.tween; }, get warming() { return { busy: !!WARMB, parts: PRE.busy, warmed: [...WARMED] }; }, openAct, finAll, get H3() { return R.HOUSE3; }, get RMODE() { return GS.RMODE; }, spotAt, goStandAt: goStand, HPARTS, PICK, HEDITS, get actId() { return GS.actId; }, swingDoor, WALK, walkMove, collide, bodyBlocked, floorAtCm, HSOLID, livSolids, livFloors,  swingAll, gl, scene, lights, get sun() { return sun; }, SUNCFG, get winGlass() { return winGlass; }, AO, ENV, envLevels, bloomLevels, roomEnv, THREE, S, MOV, floorHop, solidBoxes, leafTexture, UNDO, camera, controls, VIEWS, MATS, OAK_TEX, CABP, SUGG_G, IDEA_G, CATALOGUE, BES, WORK, precompile, PRE, AIMG, warmSwitch, WARMED, BAKE },
     errors: () => store.get("r3d-errors", []),                                       // v35: what the trap kept
     timing: () => Object.assign({ page: Math.round(performance.now()) }, START_MS),     // V1.31: the start's steps (ms from start()), and the page's age
     perf: perfInfo,                                                                   // v35: the counts to watch each round

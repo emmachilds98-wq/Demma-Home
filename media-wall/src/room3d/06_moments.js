@@ -68,7 +68,7 @@ function showOpen(kind) {
   showStop(false); if (tourSt) tourEnd(); closeAct();
   const bed = kind === "bed";
   if (bed) Object.assign(S, { sofa: "bed", sbed: false }); else Object.assign(S, { site: "C", dining: "folded", tdoor: false, chairs: "cupboard" });
-  cabSnap = true; applyState(); cabSnap = false; syncButtons();
+  GS.cabSnap = true; applyState(); GS.cabSnap = false; syncButtons();
   const P = bed ? {} : cabP(); if (!P) return;
   CAB_TW.clear();
   const steps = bed ? bedSteps() : showSteps(P), tracks = new Map();   // each part's keyframes: [time s, p, linear], held between its moves

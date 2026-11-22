@@ -284,7 +284,7 @@ function buildHouse() {
    A mesh of a baked material the bake didn't see points at the atlas' corner texel, the house's mean light */
 function bakeApply() {
   if (!BAKE.use || BAKE.done) return;   // in hand before the house is built (start), never applied after
-  BAKE.done = true; const j = BAKE.use, ld = u => { const x = new THREE.TextureLoader().load("tex/" + u, () => (need = true)); x.colorSpace = THREE.NoColorSpace; x.flipY = false; x.channel = 1; return x; };   // a fourth root of the light (bake.py write)
+  BAKE.done = true; const j = BAKE.use, ld = u => { const x = new THREE.TextureLoader().load("tex/" + u, () => (GS.need = true)); x.colorSpace = THREE.NoColorSpace; x.flipY = false; x.channel = 1; return x; };   // a fourth root of the light (bake.py write)
   BAKE.day = ld(j.day); BAKE.eve = ld(j.eve); BAKE.mats = new Set();
   let off = 0; const at = {}, pre = new Set(), v = new THREE.Vector3(); for (const [k, n] of j.meshes) { at[k] = [off, n]; off += n * 2; pre.add(k.slice(0, k.lastIndexOf(":"))); }
   houseG.updateMatrixWorld(true);   // each shell found by its material, its corners and where they are (bake.py's key), not by order

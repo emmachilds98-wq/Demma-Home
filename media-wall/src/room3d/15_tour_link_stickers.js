@@ -57,7 +57,7 @@ const LOOK_BOOL = ["drawers", "curtains", "lbox", "laser", "pc", "grow", "tdoor"
 const HEX = /^#[0-9a-f]{6}$/i;
 const cm = v => [-v.x / M, v.y / M, v.z / M].map(n => Math.round(n));
 function lookOf() {
-  const o = { v: S.view, c: [...cm(camera.position), ...cm(controls.target), Math.round(baseFov)] };
+  const o = { v: S.view, c: [...cm(camera.position), ...cm(controls.target), Math.round(GS.baseFov)] };
   for (const k of Object.keys(LOOK_STR)) o[k] = S[k];
   for (const k of LOOK_BOOL) if (S[k] !== DEF[k]) o[k] = S[k] ? 1 : 0;
   if (S.paint === "custom") o.custom = S.custom;
@@ -144,7 +144,7 @@ function applyLook(tok) {
   applyState(); syncButtons();
   setView(o.v in VIEWS ? o.v : "room", true);
   const c = Array.isArray(o.c) && o.c.length === 7 && o.c.every(Number.isFinite) ? o.c : null;
-  if (c) { camera.position.copy(v3(c[0], c[1], c[2])); controls.target.copy(v3(c[3], c[4], c[5])); baseFov = Math.max(20, Math.min(90, c[6])); camera.fov = fitFov(baseFov); camera.updateProjectionMatrix(); controls.update(); updateCut(); dirty(); }
+  if (c) { camera.position.copy(v3(c[0], c[1], c[2])); controls.target.copy(v3(c[3], c[4], c[5])); GS.baseFov = Math.max(20, Math.min(90, c[6])); camera.fov = fitFov(GS.baseFov); camera.updateProjectionMatrix(); controls.update(); updateCut(); dirty(); }
   store.set(KEY, S);
   return true;
 }
@@ -203,7 +203,7 @@ function placeStickers() {
   if (!HOTS.length || !started || !labelsOn) return;
   const w = stage.clientWidth, h = stage.clientHeight, cx = -camera.position.x / M, cz = camera.position.z / M, ko = keepOuts(), G = 8;
   const placed = [], want = [];
-  const fromAbove = RMODE === "above" || RMODE === "alone" || ((VIEWS[S.view] || {}).above && !walked);
+  const fromAbove = GS.RMODE === "above" || GS.RMODE === "alone" || ((VIEWS[S.view] || {}).above && !walked);
   for (const H of HOTS) {
     const el = stickEls[H.id]; if (!el) continue;
     _p.copy(v3(...H.at)).project(camera);

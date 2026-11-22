@@ -2,12 +2,12 @@
    left-drag moves the ground (the spot stays under the finger; a flick glides), two fingers pinch to zoom, twist to turn and in Angled slide
    to tilt; the wheel zooms to the pointer; a right-drag (or Shift) turns and tilts. Angled 10°–85°, Overhead flat. Arrows or WASD move, Q E
    turn, + − (R F) zoom; a double-tap on the ground centres it */
-const mapMode = () => walking() ? null : S.view === "house" ? (hfview === "top" ? "top" : "angle")   // V3.09: a room's Above too (the living room's is at an angle)
-  : ROOMV() && RMODE === "above" ? "top" : S.view === "room" ? "angle" : null;
+const mapMode = () => walking() ? null : S.view === "house" ? (GS.hfview === "top" ? "top" : "angle")   // V3.09: a room's Above too (the living room's is at an angle)
+  : ROOMV() && GS.RMODE === "above" ? "top" : S.view === "room" ? "angle" : null;
 /* V3.15: the other views from above: the keys and the stick glide too; the orbit keeps its drags */
 const freeMode = () => !walking() && !mapMode() && !eyeView() && !!VIEWS[S.view] ? "free" : null;
 const MAP_POLAR = { top: [0.003, 0.003], angle: [5 * Math.PI / 180, 80 * Math.PI / 180] };   // from straight up: Angled 85° to 10° above the ground
-const mapPolar = m => m === "angle" && S.view === "house" && hfloor === "all" ? [5 * Math.PI / 180, 87 * Math.PI / 180] : MAP_POLAR[m];   // V3.68: Outside down to 3°, eye to eye with the house (a floor's walls would hide it lower)
+const mapPolar = m => m === "angle" && S.view === "house" && GS.hfloor === "all" ? [5 * Math.PI / 180, 87 * Math.PI / 180] : MAP_POLAR[m];   // V3.68: Outside down to 3°, eye to eye with the house (a floor's walls would hide it lower)
 function mapConf(m) {   // the orbit's own drags off over the house (ours below), on again in the rooms
   controls.enablePan = !m; controls.enableZoom = !m && S.cam !== "look"; controls.enableRotate = !m && !inPlace();
   controls.minDistance = m ? 2 : 0.3;
@@ -34,7 +34,7 @@ let mapT = 0, mapFast = false;
 function mapKeys(m) {
   const now = performance.now(), dt = Math.min(0.1, (now - (mapT || now)) / 1000); mapT = now;
   const [sx, sy] = WALK.stick, stk = sx * sx + sy * sy > 0.004;   // V3.15: the phone's stick, as far as it's pushed
-  if ((!MAPK.size && !MAPONCE.size && !stk) || !m || tween) { MAPONCE.clear(); return false; }
+  if ((!MAPK.size && !MAPONCE.size && !stk) || !m || GS.tween) { MAPONCE.clear(); return false; }
   if (typeof PRE !== "undefined") PRE.idleT = now;   // the warm-up waits while you move
   const cam = camera.position, t = controls.target, k = Math.max(dt, MAPONCE.size ? 0.08 : 0) * (mapFast ? 2.5 : 1), on = c => MAPK.has(c) || MAPONCE.has(c) ? 1 : 0;
   const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion).setY(0).normalize();
@@ -116,17 +116,17 @@ function mapStart(e) {
 }
 canvas.addEventListener("pointerdown", () => mapConf(mapMode()), true);   // after the walk's (14), which turns the orbit's drag on
 canvas.addEventListener("pointerdown", e => {   // a piece grabbed in Edit never gets here (13 stops its press on the root)
-  if (!mapMode() || tween) { MAPPT.clear(); MAPD = null; return; }
+  if (!mapMode() || GS.tween) { MAPPT.clear(); MAPD = null; return; }
   mapConf(mapMode()); MAPPT.set(e.pointerId, [e.clientX, e.clientY]); if (MAPPT.size > 2) return;
   try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
-  mapStart(e); moving = true; if (typeof PRE !== "undefined") PRE.idleT = performance.now(); dirty();
+  mapStart(e); GS.moving = true; if (typeof PRE !== "undefined") PRE.idleT = performance.now(); dirty();
 });
 root.addEventListener("pointerdown", e => {   // a finger on a sticker still drags and pinches (the living room's are over the middle); a tap still opens it
-  if (e.pointerType === "touch" && MAPPT.size < 2 && e.target.closest(".stk") && mapMode() && !tween) { MAPPT.set(e.pointerId, [e.clientX, e.clientY]); mapStart(e); moving = true; }
+  if (e.pointerType === "touch" && MAPPT.size < 2 && e.target.closest(".stk") && mapMode() && !GS.tween) { MAPPT.set(e.pointerId, [e.clientX, e.clientY]); mapStart(e); GS.moving = true; }
 }, true);
 addEventListener("pointermove", e => {
   if (!MAPPT.has(e.pointerId)) return; MAPPT.set(e.pointerId, [e.clientX, e.clientY]);
-  if (!MAPD || !mapMode() || tween) return;
+  if (!MAPD || !mapMode() || GS.tween) return;
   const H = Math.max(1, canvas.clientHeight), k = 3.5 / H;   // a turn: about a third of a circle for the screen's height
   if (MAPD.k === "pan") {
     const g = mapGround(e.clientX, e.clientY); if (!g) return;
@@ -160,48 +160,48 @@ for (const ev of ["pointerup", "pointercancel"]) addEventListener(ev, e => {
     const top = 2 * camera.position.distanceTo(controls.target); if (MVEL.length() > top) MVEL.setLength(top); }   // a hard flick: at most 2/5 of the view's distance
   MAPD = null; MTRK.length = 0;
   if (MAPPT.size === 1) { const [id, q] = [...MAPPT][0]; mapStart({ pointerId: id, pointerType: "touch", clientX: q[0], clientY: q[1], button: 0 }); }   // one finger left on: it moves the ground again
-  if (!MAPPT.size) moving = false; dirty();
+  if (!MAPPT.size) GS.moving = false; dirty();
 });
 canvas.addEventListener("wheel", e => {   // towards the spot under the pointer; a trackpad's pinch (Ctrl + wheel) the same, finer steps
-  if (!mapMode() || tween) return; e.preventDefault(); MVEL.set(0, 0, 0);
+  if (!mapMode() || GS.tween) return; e.preventDefault(); MVEL.set(0, 0, 0);
   const dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 400 : 1), g = mapPick(e.clientX, e.clientY) || controls.target.clone();
   mapRound(g, 0, Math.exp(Math.max(-1, Math.min(1, dy * (e.ctrlKey ? 0.01 : 0.0015))))); dirty();
 }, { passive: false });
 let glT = 0;
 function mapGlide() {   // the flick slowing to a stop, frame-rate free
   const now = performance.now(), dt = Math.min(0.1, (now - (glT || now)) / 1000); glT = now;
-  if (MVEL.lengthSq() < 0.01 || MAPPT.size || tween) { MVEL.set(0, 0, 0); return false; }
+  if (MVEL.lengthSq() < 0.01 || MAPPT.size || GS.tween) { MVEL.set(0, 0, 0); return false; }
   mapShift(MVEL.clone().multiplyScalar(dt)); MVEL.multiplyScalar(Math.exp(-5 * dt)); return true;
 }
 /* a double-tap over the house where there's no room: the view glides to centre on it. V4.5 (N168): a PC centres on the spot clicked itself,
    the outside included; a room's floor stands you there. Angle and distance kept */
 const mouseEv = e => !e.pointerType || e.pointerType === "mouse";
 function mapOut(e) {   // a PC's double-click over the house that lands on its outside (or nothing): [the spot] to centre on, else null
-  if (!mapMode() || tween || !mouseEv(e)) return null;
+  if (!mapMode() || GS.tween || !mouseEv(e)) return null;
   const p = mapPick(e.clientX, e.clientY); if (!p) return null;
   const q = p.clone().addScaledVector(p.clone().sub(camera.position).normalize(), -0.05);   // this side of what was hit
   return standRoomAt(-q.x / M, q.y / M - 1, q.z / M) ? null : p;
 }
 function mapCentre(e, at) {
-  if (!mapMode() || tween) return false;
+  if (!mapMode() || GS.tween) return false;
   const t = controls.target, p = at || mapPick(e.clientX, e.clientY);   // a phone's too: what's under the finger (it took the ground's level behind a roof, 10 m off)
   if (!p || p.distanceTo(t) > 60) return false;
   const b = mapBox(); if (b) { p.x = Math.min(b[1], Math.max(b[0], p.x)); p.z = Math.min(b[3], Math.max(b[2], p.z)); }
   p.y = Math.min(6, Math.max(-3, p.y));   // mapHold's limits: nothing jumps when the glide ends
   const d = p.sub(t), cm = v => [-v.x / M, v.y / M, v.z / M];
-  flyTo(cm(camera.position.clone().add(d)), cm(t.clone().add(d)), baseFov, true, false, 450); return true;
+  flyTo(cm(camera.position.clone().add(d)), cm(t.clone().add(d)), GS.baseFov, true, false, 450); return true;
 }
 /* the orbit's own update, each frame: the drags and limits for where you are, the held keys, the glide, and the view kept round the house */
 { const upd = controls.update;
   controls.update = function (dt) {
     const m = mapMode(); mapConf(m);
-    if (m && !tween && S.view === "house" && hfview === "top" && camera.position.clone().sub(controls.target).normalize().y < 0.95) {   // the whole house's own view (H, Whole house): Angled again
-      hfview = "angle"; qsa("[data-hfview]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.hfview === "angle"))); return this.update(dt); }
-    const keyed = mapKeys(m || freeMode()), glid = m && mapGlide(), [lo, hi] = m && !tween ? mapPolar(m) : [0, Math.PI];
+    if (m && !GS.tween && S.view === "house" && GS.hfview === "top" && camera.position.clone().sub(controls.target).normalize().y < 0.95) {   // the whole house's own view (H, Whole house): Angled again
+      GS.hfview = "angle"; qsa("[data-hfview]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.hfview === "angle"))); return this.update(dt); }
+    const keyed = mapKeys(m || freeMode()), glid = m && mapGlide(), [lo, hi] = m && !GS.tween ? mapPolar(m) : [0, Math.PI];
     controls.minPolarAngle = lo; controls.maxPolarAngle = hi;
     const ch = upd.call(this, dt);
     const cut = floorCut();   // V3.68: a floor cut under the eye as it comes down (09)
-    return (m && !tween && mapHold()) || ch || keyed || glid || cut;
+    return (m && !GS.tween && mapHold()) || ch || keyed || glid || cut;
   }; }
 { const T = { angle: "From an angle: drag to swing round (a finger moves), right-drag to move, double-click to centre, scroll or pinch to zoom",
               top: "From straight above: drag to move, right-drag or two fingers to turn, double-click to centre, scroll or pinch to zoom" };
@@ -224,7 +224,7 @@ function mapCentre(e, at) {
    passed in so it comes out the same as on Fast */
 const BACKDROP = { day: "#f1e9da", evening: "#6b645a" };
 const BD = { on: false, key: "", saved: new THREE.Color(), want: new THREE.Color(), set: new THREE.Color() };
-const backdropView = () => !walking() && (LIVV() ? S.view === "room" || S.view === "livalone" : !!ROOMV() && (RMODE === "above" || RMODE === "alone") || S.view === "house" && hfloor !== "all");   // V3.79 (N144): a floor on its own too (it sat on the sky's blue)
+const backdropView = () => !walking() && (LIVV() ? S.view === "room" || S.view === "livalone" : !!ROOMV() && (GS.RMODE === "above" || GS.RMODE === "alone") || S.view === "house" && GS.hfloor !== "all");   // V3.79 (N144): a floor on its own too (it sat on the sky's blue)
 function agxIn(c, e) {   // the colour that three's AgX (r160) at exposure e turns into c (linear), by a few steps of Newton's kind
   const mv = (m, v) => [0, 1, 2].map(i => m[i] * v[0] + m[3 + i] * v[1] + m[6 + i] * v[2]);   // GLSL mat3 (by columns) times v
   const R = [0.6274, 0.0691, 0.0164, 0.3293, 0.9195, 0.0880, 0.0433, 0.0113, 0.8956], S2 = [1.6605, -0.1246, -0.0182, -0.5876, 1.1329, -0.1006, -0.0728, -0.0083, 1.1187];

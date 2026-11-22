@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------- v30: a tap on the room (not a drag, not in Edit room) opens a card of
    what's under it; its buttons are the room's own controls (data-dining, data-chairs, data-drawers, data-tog...), so they stay in step */
 const act = qs("#r3d-act");
-let actId = null, actXY = null, tapDown = null, TAPAT = null;
+let actXY = null, tapDown = null, TAPAT = null;
 const clippedAt = h => [].concat(h.object.material).some(m => m && m.clippingPlanes === CLIP) && CLIP.every(pl => pl.distanceToPoint(h.point) < 0);   // the cutaway hides what's on the far side of both planes (V2.38: only what it cuts: from out front, the front door was let through to the hall behind)
 const under = (o, g) => { if (!g) return false; for (; o; o = o.parent) if (o === g) return true; return false; };
 function pickItem(e) {
@@ -23,7 +23,7 @@ function pickItem(e) {
       return "fin:living:" + (ch === "ceil" ? 4 : ch === "trim" ? 17 : ch.startsWith("w:") ? 11 + Math.max(0, LIV_W.indexOf(ch.slice(2))) : 0); } }
   if (S.site === "C" && under(o, cab)) return "cab";
   if (under(o, lamp)) return "lamp";
-  if (under(o, bar1)) return "bar1";
+  if (under(o, GS.bar1)) return "bar1";
   if (under(o, bar2)) return "bar2";
   if (under(o, curtOpen) || under(o, curtShut)) return "curtains";
   if (o === tvScreen) return "tv";
@@ -159,7 +159,7 @@ function actItems(id) {     // [title, how it is now, buttons]
   const folded = S.dining === "folded", lv = k => (S.lv[k] ?? 0) > 0;
   if (id === "hbed") { const P_ = HPARTS.bed_lift, up = !!(P_ && (P_.tw ? P_.tw.to === 1 : P_.t > 0.5));   // v71, the client: the bed as a card, like the living room's
     return ["Ottoman bed", up ? "Lifted: four storage boxes inside" : "Pine; the base lifts from the foot", [
-      btn(up ? "Lower the bed" : "Lift the bed", { hbed: up ? "down" : "up" }), ...(ROOMV() && RMODE !== "above" ? [btn("View from above", { rmode: "above" })] : [])], null, finBedTray("master")]; }   // N5d: its bedding
+      btn(up ? "Lower the bed" : "Lift the bed", { hbed: up ? "down" : "up" }), ...(ROOMV() && GS.RMODE !== "above" ? [btn("View from above", { rmode: "above" })] : [])], null, finBedTray("master")]; }   // N5d: its bedding
   if (id.startsWith("fin:")) { const c = finCard(id), [, rm, sl] = id.split(":");   // V2.6: a wall's or a ceiling's colours (23_finish.js)
     if (c && sl === "5" && DS() && TAPAT && R.HOUSE3 && (R.HOUSE3.rooms || {})[rm] && rm !== "living") c[2].unshift(btn("Add a piece here", { hadd: rm }));   // V2.46 (N7): from the catalogue
     const outs = sl === "5" ? roomOuts(rm) : []; if (c && outs.length) c[2].splice(1, 0, btn(`Taken out (${outs.length})`, { actopen: "hout:" + rm }));   // V3.80 (N149): what's out of the room, to put back
@@ -302,7 +302,7 @@ function showAim(k) {
 }
 function fixCard(id, on) {
   const d = fixDeg(id), names = headNames(id), i = Math.min(actHead[id] || 0, names.length - 1), k = `${id}:${i}`, h = headOf(k);
-  requestAnimationFrame(() => { if (actId) showAim(k); });                 // v39: where this head lands
+  requestAnimationFrame(() => { if (GS.actId) showAim(k); });                 // v39: where this head lands
   const ci = HEAD_COLS.findIndex(c => c[0] === (h.col || null)), aim = [h.yaw ? `${h.yaw > 0 ? "right" : "left"} ${Math.abs(h.yaw)}°` : "", h.tilt ? `${h.tilt > 0 ? "up" : "down"} ${Math.abs(h.tilt)}°` : ""].filter(Boolean).join(", ");
   const st = `${on ? "On" : "Off"} · ${d ? `turned ${d}°` : "at the plan's angle"} · ${names[i]}: ${h.on === false ? "off" : `${h.lv ?? 100}%`}${aim ? `, aimed ${aim}` : ""}`;
   return [FIX_NAME[id], st, [
@@ -336,7 +336,7 @@ function fixAct(d, fine) {             // the card's fixture and head buttons; t
 /* N68: every card one shape: its name, how it is now, its main tray, three buttons, then More; never past the top pills or the
    dock: it scrolls inside */
 function renderAct() {
-  const items = actId && actItems(actId);
+  const items = GS.actId && actItems(GS.actId);
   if (!items) { closeAct(); return; }
   const [title, st, bs, fields, tray, extra] = items;
   qs("#r3d-act-h").textContent = title; qs("#r3d-act-st").textContent = st;
@@ -347,9 +347,9 @@ function renderAct() {
   if (fields) { const w = document.createElement("div"); w.className = "r3d-actfields";   // V1.50: a piece's sizes, a stepper each
     w.innerHTML = fields.map(([f, t, v]) => `<div class="fld"><span>${t}</span><span class="stp"><button type="button" data-hstep="${f}" data-by="-1" aria-label="${t}: 1 cm less">−</button>`
       + `<input type="number" inputmode="decimal" step="1" value="${v}" data-hfield="${f}" aria-label="${t} in cm"><button type="button" data-hstep="${f}" data-by="1" aria-label="${t}: 1 cm more">+</button></span></div>`).join("")
-      + `<p class="note">${/^hsize:/.test(actId) ? "Drag it on the floor to move it. " : ""}${DS() && DS().mode === "shared" ? "Saved for you both" : "Saved on this device"}</p>`;   // V3.91 (N150)
+      + `<p class="note">${/^hsize:/.test(GS.actId) ? "Drag it on the floor to move it. " : ""}${DS() && DS().mode === "shared" ? "Saved for you both" : "Saved on this device"}</p>`;   // V3.91 (N150)
     box.before(w); }
-  if (/^(hitem|hsize|hswap|hadd):/.test(actId)) selOf(actId.split(":")[1]); else clearSel();
+  if (/^(hitem|hsize|hswap|hadd):/.test(GS.actId)) selOf(GS.actId.split(":")[1]); else clearSel();
   // v39 (the approved redesign): a card shows its first three buttons; everything else sits under More
   let shownN = 0, more = null;
   const fold = () => { if (!more) { more = document.createElement("details"); more.className = "r3d-actmore"; more.open = actMoreOpen;
@@ -399,9 +399,9 @@ function placeAct() {
   act.style.left = left + "px"; act.style.top = top + "px"; act.style.setProperty("--ax", (actXY[0] - left) + "px");
   act.classList.toggle("above", !below);
 }
-addEventListener("resize", () => { if (actId) placeAct(); });
+addEventListener("resize", () => { if (GS.actId) placeAct(); });
 function actTarget() {   // what the open card is for, as drawn (null: a wall, a room, the house)
-  const [k, id] = String(actId || "").split(":"), G_ = k === "sugg" ? SUGG_G[id] : k === "idea" ? IDEA_G[id] : null;
+  const [k, id] = String(GS.actId || "").split(":"), G_ = k === "sugg" ? SUGG_G[id] : k === "idea" ? IDEA_G[id] : null;
   if (k === "mov" && MOV[id]) return MOV[id].pivot;
   if (G_) return G_.pivot || (G_.isObject3D ? G_ : null);
   if (/^(hitem|hsize|hswap|hadd)$/.test(k) && SEL.g) return SEL.g;
@@ -418,13 +418,13 @@ function actTarget() {   // what the open card is for, as drawn (null: a wall, a
 let actMoreOpen = false;
 function openAct(id, xy) {
   if (popId) closePop(); clearAim();
-  if (String(id).split(":").slice(0, 2).join(":") !== String(actId || "").split(":").slice(0, 2).join(":")) actMoreOpen = false;   // v39: a new card opens folded
-  actId = id; actXY = xy; act.hidden = false; actAt = performance.now(); root.classList.add("actopen"); renderAct();   // V2.6: (the figure steps aside on a phone)
+  if (String(id).split(":").slice(0, 2).join(":") !== String(GS.actId || "").split(":").slice(0, 2).join(":")) actMoreOpen = false;   // v39: a new card opens folded
+  GS.actId = id; actXY = xy; act.hidden = false; actAt = performance.now(); root.classList.add("actopen"); renderAct();   // V2.6: (the figure steps aside on a phone)
   if (!act.hidden) { const f = qs("#r3d-acts button"); if (f) f.focus({ preventScroll: true }); }
 }
 const DBL_MS = +(window.__r3dDblMs || 380);   // a double-tap's two taps within this (a test rig whose touches wait on slow frames can widen it)
 let tapT = 0, actAt = 0;   // V2.42: tapT, a click's card waiting out a double-click; V1.54: when the card opened: a phone's click from the same tap lands on it (a sheet at the foot) and mustn't press its button
-function closeAct() { actId = null; root.classList.remove("actopen"); if (act) act.hidden = true; clearAim(); clearSel(); }
+function closeAct() { GS.actId = null; root.classList.remove("actopen"); if (act) act.hidden = true; clearAim(); clearSel(); }
 if (act) {
   act.addEventListener("pointerdown", e => {   // V1.54: the second tap of a double-tap that lands on the card the first one opened: still a double-tap
     // V2.42: a mouse's too (a double-click's second click pressed the card's button under it: the bed's "See it from above", a floor's colour)
@@ -443,42 +443,42 @@ if (act) {
     if (d.actlink) { window.open(d.actlink, "_blank", "noopener"); return; }                              // V3.75: the listing
     if (fixAct(d, e.shiftKey)) return;                                   // v38: a fixture's turn, its heads
     if (d.optcyc) { const [pl, ix] = d.optcyc.split(":"), L = placeOpts(pl), i = ((+ix % L.length) + L.length) % L.length, [g, it] = L[i];   // v39
-      if (!optOn(it)) optPick(g.k, it.v); actId = `opt:${pl}:${i}`; renderAct(); return; }
+      if (!optOn(it)) optPick(g.k, it.v); GS.actId = `opt:${pl}:${i}`; renderAct(); return; }
     if (d.optkeep) { closeAct(); return; }
-    if (d.updone && actId && actId.startsWith("ups:")) { const D = upDone(), k = actId.slice(4) + "|" + decodeURIComponent(d.updone); if (D[k]) delete D[k]; else D[k] = 1;   // N23: a change done, or not yet
+    if (d.updone && GS.actId && GS.actId.startsWith("ups:")) { const D = upDone(), k = GS.actId.slice(4) + "|" + decodeURIComponent(d.updone); if (D[k]) delete D[k]; else D[k] = 1;   // N23: a change done, or not yet
       try { localStorage.setItem(UPK, JSON.stringify(D)); } catch (er) {} renderAct(); return; }
     if (d.upsall) { closeAct(); window.dispatchEvent(new CustomEvent("demma-open", { detail: { sheet: "plan" } })); const u = document.getElementById("ups"); if (u) { u.open = true; setTimeout(() => u.scrollIntoView({ block: "start" }), 80); } return; }
-    if (d.actopen) { actId = d.actopen; renderAct(); if (d.actopen.startsWith("hsize:")) { const f = qs(".r3d-actfields input"); if (f) f.focus({ preventScroll: true }); } return; }
-    if (d.hstep && actId) { const k = actId.split(":")[1], f = d.hstep, v = clampF(f, cmR(pieceNow(k)[f] + +d.by)), inp = qs(`.r3d-actfields [data-hfield="${f}"]`);   // V1.50
+    if (d.actopen) { GS.actId = d.actopen; renderAct(); if (d.actopen.startsWith("hsize:")) { const f = qs(".r3d-actfields input"); if (f) f.focus({ preventScroll: true }); } return; }
+    if (d.hstep && GS.actId) { const k = GS.actId.split(":")[1], f = d.hstep, v = clampF(f, cmR(pieceNow(k)[f] + +d.by)), inp = qs(`.r3d-actfields [data-hfield="${f}"]`);   // V1.50
       if (inp) inp.value = v; setPiece(k, f, v); return; }
     if (d.hadd && TAPAT) { const r = R.HOUSE3.rooms[d.hadd], id = "add." + Math.random().toString(36).slice(2, 10), ds = DS(); if (!r || !ds) return;   // V2.46 (N7)
       ds.put("edits", id + "~add", { item: id, field: "add", value: HCAT_ADD[0], room: d.hadd, x: cmR(TAPAT[0]), z: cmR(TAPAT[2]), y: cmR(Math.max(r[4], Math.min(r[4] + 5, TAPAT[1]))) }).catch(() => toast("That didn't save: try again"));
-      actId = "hadd:" + id; renderAct(); return; }
+      GS.actId = "hadd:" + id; renderAct(); return; }
     if (d.hswapgo || d.haddgo || d.hcatk) { const [k, x] = (d.hswapgo || d.haddgo || d.hcatk).split(":"), it = HIT(k), ds = DS(); if (!it || !ds) return;
-      if (d.hswapgo) { const L = [null, ...hcOf(swapKind(k))], v = L[((+x % L.length) + L.length) % L.length]; setPiece(k, "swap", v).then(() => { if (actId) renderAct(); }); return; }
+      if (d.hswapgo) { const L = [null, ...hcOf(swapKind(k))], v = L[((+x % L.length) + L.length) % L.length]; setPiece(k, "swap", v).then(() => { if (GS.actId) renderAct(); }); return; }
       if (it.look) { const L = plantKeys(); plantSet(it.look, L[((+x % L.length) + L.length) % L.length]); renderAct(); return; }
       const n = HCAT_ADD.length, v = d.haddgo ? HCAT_ADD[((+x % n) + n) % n] : HCAT_ADD.find(q => HCAT[q].k === x), row = ds.rows("edits")[k + "~add"]; if (!row || !v) return;
-      ds.put("edits", k + "~add", Object.assign({}, row, { value: v })).then(() => { if (actId) renderAct(); }); return; }
-    if (d.finplant != null && actId && actId.startsWith("fin:")) { plantSet(actId.split(":")[1], d.finplant || null); renderAct(); return; }   // N5
+      ds.put("edits", k + "~add", Object.assign({}, row, { value: v })).then(() => { if (GS.actId) renderAct(); }); return; }
+    if (d.finplant != null && GS.actId && GS.actId.startsWith("fin:")) { plantSet(GS.actId.split(":")[1], d.finplant || null); renderAct(); return; }   // N5
     if (d.hremove && HIT(d.hremove) && HIT(d.hremove).look) { const r = HIT(d.hremove).look; closeAct(); plantSet(r, null); return; }
     if (d.hremove && HIT(d.hremove) && HIT(d.hremove).add) { const k = d.hremove, ds = DS(); closeAct();   // an added piece: its rows go
       Promise.all(Object.entries(ds.rows("edits")).filter(([, v]) => v && v.item === k).map(([rid]) => ds.del("edits", rid))).then(() => toast("Removed")); return; }
     if (d.hremove) { const k = d.hremove; closeAct(); setPiece(k, "removed", true).then(() => toast(`${HIT(k).n} taken out`, { hputback: k })); return; }   // V2.34; V3.75: Put back on the toast (Measure's Changed list too)
     if (d.hturn) { setPiece(d.hturn, "turn", (pieceNow(d.hturn).turn + 1) % 4); return; }   // V2.33: a quarter turn each press
     if (d.hreset) { const k = d.hreset, ds = DS(); if (!ds) return;
-      Promise.all(Object.entries(ds.rows("edits")).filter(([, v]) => v && v.item === k && v.field !== "add").map(([rid]) => ds.del("edits", rid))).then(() => { if (actId) renderAct(); }); return; }
+      Promise.all(Object.entries(ds.rows("edits")).filter(([, v]) => v && v.item === k && v.field !== "add").map(([rid]) => ds.del("edits", rid))).then(() => { if (GS.actId) renderAct(); }); return; }
     if (d.nowp) { S.nowp = ((S.nowp || 0) + +d.nowp + NOWP.length) % NOWP.length; applyNow(); store.set(KEY, S); renderAct(); return; }
     if (d.nowpic) { pickNowPic(); return; }
     if (d.measure) { if (d.measure === "done") { endMeasure(); closeAct(); } else { clearMeasure(); renderAct(); } return; }
     if (d.view) setTimeout(closeAct, 0);                     // the room flies there; the card has done its job
   });
-  act.addEventListener("input", e => { const el = e.target; if (!el.dataset || !el.dataset.hfield || !actId) return;   // V1.50: a typed size, kept once you pause
-    const k = actId.split(":")[1], f = el.dataset.hfield, v = parseFloat(el.value); if (!isFinite(v)) return;
+  act.addEventListener("input", e => { const el = e.target; if (!el.dataset || !el.dataset.hfield || !GS.actId) return;   // V1.50: a typed size, kept once you pause
+    const k = GS.actId.split(":")[1], f = el.dataset.hfield, v = parseFloat(el.value); if (!isFinite(v)) return;
     clearTimeout(sizeT); sizeT = setTimeout(() => setPiece(k, f, clampF(f, cmR(v))), 450); });
   let lastPtr = "mouse";
   canvas.addEventListener("pointerdown", e => { lastPtr = e.pointerType; }, true);
   canvas.addEventListener("dblclick", e => { if (S.edit || MEAS.on || lastPtr !== "mouse") return; clearTimeout(tapT); e.preventDefault(); floorHop(aimed(e)); });   // V1.53: on a PC, a double-click stands you there (a phone's double-tap is the pointerup's: iOS can send a dblclick too)
-  canvas.addEventListener("pointerdown", e => { e = aimed(e); tapDown = (S.edit || e.button > 0) ? null : [e.clientX, e.clientY, e.timeStamp]; if (actId) closeAct(); });   // review after v48: the touch's own time, so a slow frame between down and up can't turn a tap into a long press
+  canvas.addEventListener("pointerdown", e => { e = aimed(e); tapDown = (S.edit || e.button > 0) ? null : [e.clientX, e.clientY, e.timeStamp]; if (GS.actId) closeAct(); });   // review after v48: the touch's own time, so a slow frame between down and up can't turn a tap into a long press
   canvas.addEventListener("pointerup", e => {
     e = aimed(e); const t = tapDown; tapDown = null;
     if (!t || S.edit || Math.hypot(e.clientX - t[0], e.clientY - t[1]) > 6 || e.timeStamp - t[2] > Math.max(600, DBL_MS)) return;
@@ -497,7 +497,7 @@ if (act) {
     /* V2.42: a click's card waits out a double-click, so a double-click walks you there and opens nothing */
     if (mouse) tapT = setTimeout(go, DBL_MS); else go();
   });
-  document.addEventListener("keydown", e => { if (e.key === "Escape" && actId) closeAct(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && GS.actId) closeAct(); });
 }
 function setAbove(show) {   // the floor above (the stairwell's upper walls) hides in the views from above
   const hs = houseG && houseG.visible;                                         // v72: in the house the house's own stairwell stands there (the

@@ -202,7 +202,7 @@ function buildSofaBed() {
   WORK.lid2 = anim(v => { hinge.rotation.x = -1.5 * v; struts.visible = v > 0.85; fold.visible = v > 0.05; setRest2(!v); });
   movable("chaise2", "Its storage chaise", c, () => ({ x: so.x[0] + C.w / 2, z: so.back + B.sec_d + C.d / 2, rot: 0 }), C.w, C.d, [fabC], false, { when: () => S.sofa === "bed", follow: "sofa2", tints: [[seamC, 0.62], [dimpC, 0.8]] });
 }
-let bar1, bar2;
+let bar2;
 
 /* ---------------------------------------------------------------- apply the options */
 function drop(group, list) {   // take a fixture and its lights out of the scene, freeing their GPU memory
@@ -220,7 +220,7 @@ function setState() {
   G.unit_in.visible = !S.drawers; G.unit_out.visible = S.drawers;
   const b2k = fixKey("bar2"), b1k = fixKey("bar1");   // N120: bar 2's heads are the same whatever the table does (v17)
   if (built.bar2 !== b2k) { if (bar2) drop(bar2, lights.bar2); bar2 = buildBar(R.BAR2, lights.bar2, "bar2"); built.bar2 = b2k; }
-  if (bar1 && built.bar1 !== b1k) { drop(bar1, lights.bar1); bar1 = buildBar(R.BAR1, lights.bar1, "bar1"); }   // v38: turned or aimed
+  if (GS.bar1 && built.bar1 !== b1k) { drop(GS.bar1, lights.bar1); GS.bar1 = buildBar(R.BAR1, lights.bar1, "bar1"); }   // v38: turned or aimed
   built.bar1 = b1k;
   const lk = S.lamp + JSON.stringify(S.layout.lamp || {}) + fixKey("lamp");
   if (built.lamp !== lk) { buildLamp(); built.lamp = lk; }

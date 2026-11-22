@@ -9,7 +9,7 @@ const dayLight = { position: v3(700, 1400, 1100), target: { position: v3(233, 0,
 const OUT = { sky: null, ground: null, sunOut: false };
 const sunLux = () => S.view === "house" || (S.quality === "hd" && S.tod === "day") ? SUNCFG.lux * (OUT.sunOut ? SUNCFG.out : 1) : 0;   // V3.19: the whole house in sun in Fast too (it was a third as bright as in HD; the sun is in every shader already)
 /* V1.5: the same sky and land out of the rooms' windows by day; by evening the dusk plane */
-const INSIDE = () => !!ROOMV() && (RMODE === "in" || RMODE === "stand");   // V1.10: standing in one of the house's rooms (In it, Be there)
+const INSIDE = () => !!ROOMV() && (GS.RMODE === "in" || GS.RMODE === "stand");   // V1.10: standing in one of the house's rooms (In it, Be there)
 const roomOut = () => !!(R.HOUSE3 && ((S.tod === "day" && !HOUSEV(S.view) && !(VIEWS[S.view] || {}).above) || INSIDE()));   // V1.10: and every room's windows; V1.47, the client: "see in and out of the windows at all times": the house's rooms by evening too, through a dusk veil (the living room keeps its dusk picture)
 /* V1.47: by evening the outside through a room's windows is dusk: a see-through dark blue shell just outside the walls, drawn last */
 let VEIL = null;
@@ -31,7 +31,7 @@ if (!Sky.SkyShader.fragmentShader.includes("hazeColor")) Sky.SkyShader.fragmentS
 Sky.SkyShader.uniforms.hazeColor = { value: new THREE.Color() };   // V4.6 (N169): the fog's colour, in the space three gives the fog
 function skyHaze(sk) { sk.onBeforeRender = r => scene.fog.color.getRGB(sk.material.uniforms.hazeColor.value, r.getRenderTarget() ? THREE.LinearSRGBColorSpace : r.outputColorSpace); }   // as three's refreshFogUniforms: the screen's space straight to it, linear into the HD composer
 function outdoor() {
-  const house = !!(R.HOUSE3 && S.view === "house" && hfloor === "all"), room = roomOut(), on = house || room;
+  const house = !!(R.HOUSE3 && S.view === "house" && GS.hfloor === "all"), room = roomOut(), on = house || room;
   if (on && !OUT.sky) {
     const sky = OUT.sky = new Sky(); sky.scale.setScalar(3000); sky.name = "sky";   // V1.4: past the hill (it was 100 m: anything further was behind it)
     const u = sky.material.uniforms; u.turbidity.value = 3.5; u.rayleigh.value = 1.1; u.mieCoefficient.value = 0.004; u.mieDirectionalG.value = 0.8;
@@ -87,7 +87,7 @@ function outdoor() {
   if (sun && house !== OUT.sunOut) {   // outside, the sun where the sky shows it (the living room's sits low by its window), its shadows over house and garden
     const on = house; OUT.sunOut = on; const c = sun.shadow.camera, e = on ? 18 : 5.5;
     if (on) { const t = v3(233, 0, -900); sun.target.position.copy(t); sun.position.copy(t).addScaledVector(dayLight.position.clone().sub(dayLight.target.position).normalize(), 30); }
-    else { sun.position.copy(sun.userData.p0); sun.target.position.copy(sun.userData.t0); roomKey = null; }
+    else { sun.position.copy(sun.userData.p0); sun.target.position.copy(sun.userData.t0); GS.roomKey = null; }
     c.left = c.bottom = -e; c.right = c.top = e; c.far = on ? 60 : 16; c.updateProjectionMatrix(); sun.target.updateMatrixWorld();
     sun.shadow.normalBias = on ? 0.02 : 0.008;   // V1.28: about a texel and a half (2 cm lifted the room's shadows off its joins: light along the skirting)
     sun.intensity = sunLux(); if (!on) placeRoomLights(); reshadow();

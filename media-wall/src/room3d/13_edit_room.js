@@ -516,7 +516,7 @@ function outList() {   // [["mov:id" | "sugg:k" | "idea:k", its name]]: what's o
 const outName = key => { const [kind, id] = key.split(":"); return kind === "mov" ? (MOV[id] || {}).label || id : ((kind === "sugg" ? PD.sugg : PD.ideas)[id] || [id])[0]; };
 function takeOut(key) {
   const [kind, id] = key.split(":"), it = kind === "mov" && MOV[id], name = outName(key).replace(/ \(suggested\)$/, ""); if (kind === "mov" && !it) return;
-  pushUndo(); if (actId) closeAct();
+  pushUndo(); if (GS.actId) closeAct();
   if (it && it.added) { movers.remove(it.pivot); delete MOV[id]; S.added = S.added.filter(a => a.id !== id); delete S.layout[id]; }
   else if (it) { setLayout(id, { off: true }); if (it.lamp) built.lamp = null; if (it.fixed) placeChairs(); }
   else { S.gone = Object.assign({}, S.gone, { [key]: true }); if (kind === "sugg") S.sugg = Object.assign({}, S.sugg, { [id]: false }); else S.ideas = Object.assign({}, S.ideas, { [id]: false }); }

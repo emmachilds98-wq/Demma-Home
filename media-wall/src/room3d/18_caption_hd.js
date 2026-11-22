@@ -14,7 +14,7 @@ function still(w, h) {
   if (!started) start();
   const pr = gl.getPixelRatio(), size = gl.getSize(new THREE.Vector2()), asp = camera.aspect;
   const fov0 = camera.fov;
-  gl.setPixelRatio(1); gl.setSize(w, h, false); camera.aspect = w / h; camera.fov = fitFov(baseFov); camera.clearViewOffset(); camera.updateProjectionMatrix();
+  gl.setPixelRatio(1); gl.setSize(w, h, false); camera.aspect = w / h; camera.fov = fitFov(GS.baseFov); camera.clearViewOffset(); camera.updateProjectionMatrix();
   LIVE = false; syncRig();                                                                 // v35: the lights as they always were, for the picture
   const was = gl.shadowMap.enabled, wasQ = S.quality; gl.shadowMap.enabled = true; gl.shadowMap.type = THREE.PCFShadowMap;
   if (wasQ !== "hd") { S.quality = "hd"; applyLight(); gl.shadowMap.enabled = true; }
@@ -77,7 +77,7 @@ function measureTap(e) {
     MEAS.d = d.length() / M; MEAS.dh = Math.hypot(d.x, d.z) / M; MEAS.dv = Math.abs(d.y) / M;
     const line = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.004, d.length(), 6), measMat);
     line.position.copy(a).add(b).multiplyScalar(0.5); line.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), d.clone().normalize()); line.renderOrder = 999; MEAS.g.add(line); }
-  dirty(); actId = "measure"; act.hidden = false; renderAct();
+  dirty(); GS.actId = "measure"; act.hidden = false; renderAct();
 }
 /* v39: "now playing": the ledge's left LP wears one of these covers or a photo of yours (kept on this device) */
 const NOWP = [{ name: "Sunburst", draw: (g, w) => { const gr = g.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w * 0.7); gr.addColorStop(0, "#ffd36b"); gr.addColorStop(1, "#c8452f"); g.fillStyle = gr; g.fillRect(0, 0, w, w); } },
