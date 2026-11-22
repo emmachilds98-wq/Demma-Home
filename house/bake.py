@@ -21,8 +21,8 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "media-wall/src"))
 CACHE = ROOT / "_shots" / "bake"                                 # the last bake (not committed)
 SIGMA, GAP = 3.0, 10                                           # N202: the smoothing (texels) and the islands' gap: 3σ of blur inside the gap, so no island takes its neighbour's light
-SHELL = ("paint", "ceiling", "stairpaint", "skirting", "tile", "carpet", "laminate", "vinyl", "lvt", "marble", "board", "lino", "floor", "artex")
-# not the concrete: in the living room's view it shares the photos' plain program (20_go garageFloor); baked, its own was built mid-walk
+SHELL = ("paint", "ceiling", "stairpaint", "tile", "carpet", "laminate", "vinyl", "lvt", "marble", "board", "lino", "floor", "artex")
+# not the skirting (N216: the woodwork shares the bedding's program; baked, it built its own on the iPhone's first picture), nor the concrete: in the living room's view it shares the photos' plain program (20_go garageFloor); baked, its own was built mid-walk
 
 LIGHTS = """() => { const D = R3D._dbg, T = D.THREE;
   const lights = []; D.scene.updateMatrixWorld(true);

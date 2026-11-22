@@ -45,13 +45,15 @@ function finSetup() {
   for (const t of [FIN.map, FIN.pal, FIN.walls]) { t.magFilter = t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; t.needsUpdate = true; }
   return FIN.map;
 }
+const FIN_RW = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1); FIN_RW.needsUpdate = true;
 function finPatch(m, k) {   // the walls' and ceilings' materials read the palette (their program keyed apart, so nothing else changes)
   if (!(k in FIN.kind) || !finSetup()) return m;
   const room = -1, scale = m.map ? 1 / 0.95 : 1;
-  m.customProgramCacheKey = () => "finish" + FIN.kind[k] + (room > 0 ? "r" : "");
+  if (FIN.kind[k] >= 2 && !m.roughnessMap) m.roughnessMap = FIN_RW;   // white (roughness × 1): the bedding's program the woodwork's, one shader
+  m.customProgramCacheKey = () => "finish" + Math.min(FIN.kind[k], 2) + (room > 0 ? "r" : "");   // the woodwork shares the bedding's program (its kind a uniform): no shader of its own at the first picture
   m.onBeforeCompile = sh => {
     Object.assign(sh.uniforms, { finMap: { value: FIN.map }, finPal: { value: FIN.pal }, finWalls: { value: FIN.walls }, finKind: { value: FIN.kind[k] }, finRoom: { value: room }, finScale: { value: scale }, finInv: { value: FIN.inv } , finGar: { value: garageAt() } });
-    sh.vertexShader = "uniform mat4 finInv;\nvarying vec3 vFinP;\nvarying vec3 vFinN;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n vFinP = " + (FIN.kind[k] === 2 ? "(finInv * modelMatrix * vec4(transformed, 1.0)).xyz" : FIN.kind[k] === 3 ? "(finInv * modelMatrix * vec4(transformed, 1.0)).xyz; vFinN = (finInv * modelMatrix * vec4(objectNormal, 0.0)).xyz" : "transformed") + (FIN.kind[k] === 3 ? ";" : "; vFinN = objectNormal;"));   // N216: a door's leaf swings: its room from where it is
+    sh.vertexShader = "uniform mat4 finInv;\nvarying vec3 vFinP;\nvarying vec3 vFinN;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n vFinP = " + (FIN.kind[k] >= 2 ? "(finInv * modelMatrix * vec4(transformed, 1.0)).xyz; vFinN = (finInv * modelMatrix * vec4(objectNormal, 0.0)).xyz" : "transformed") + (FIN.kind[k] >= 2 ? ";" : "; vFinN = objectNormal;"));   // N216: a door's leaf swings: its room from where it is
     sh.fragmentShader = "uniform vec2 finGar;\nuniform sampler2D finMap;\nuniform sampler2D finPal;\nuniform sampler2D finWalls;\nuniform float finKind;\nuniform float finRoom;\nuniform float finScale;\nvarying vec3 vFinP;\nvarying vec3 vFinN;\n" +
       `int finAt(vec2 c, int fl) { ivec2 t = ivec2(int(clamp(floor(c.x / 2.0), 0.0, ${FIN.W - 1}.0)), int(clamp(floor((c.y + 309.0) / 2.0), 0.0, ${FIN.H - 1}.0)) + fl * ${FIN.H}); return int(texelFetch(finMap, t, 0).r * 255.0 + 0.5); }\n` +
       sh.fragmentShader.replace("vec4 diffuseColor = vec4( diffuse, opacity );", `vec3 finD = diffuse;
@@ -59,8 +61,8 @@ function finPatch(m, k) {   // the walls' and ceilings' materials read the palet
     int fl = yc < 0.0 ? 0 : (yc < 260.0 ? 1 : 2); int rm = int(finRoom);
     if (rm < 0) { float o = finKind < 0.5 || finKind > 2.5 ? 3.0 : 0.0;
       ivec2 t = ivec2(int(clamp(floor((xc - fn.x * o) / 2.0), 0.0, ${FIN.W - 1}.0)), int(clamp(floor((zc + fn.z * o + 309.0) / 2.0), 0.0, ${FIN.H - 1}.0)) + fl * ${FIN.H});
-      rm = int(texelFetch(finMap, t, 0).r * 255.0 + 0.5); }${FIN.kind[k] === 3 ? `
-    for (int d = 1; d <= 8 && rm == 0; d++) { float s = float(d) * 4.0;   // V4.46: a door's lining, in the opening: the nearest room's
+      rm = int(texelFetch(finMap, t, 0).r * 255.0 + 0.5); }${FIN.kind[k] >= 2 ? `
+    if (finKind > 2.5) for (int d = 1; d <= 8 && rm == 0; d++) { float s = float(d) * 4.0;   // V4.46: a door's lining, in the opening: the nearest room's
       rm = finAt(vec2(xc + s, zc), fl); if (rm == 0) rm = finAt(vec2(xc - s, zc), fl); if (rm == 0) rm = finAt(vec2(xc, zc + s), fl); if (rm == 0) rm = finAt(vec2(xc, zc - s), fl); }` : ""}
     if (rm > 0) { float nx = -fn.x, nz = fn.z; int sl = finKind > 2.5 ? 6 : finKind > 1.5 ? 5 : finKind > 0.5 ? 4 : (abs(nx) > abs(nz) ? (nx > 0.0 ? 2 : 3) : (nz > 0.0 ? 0 : 1));
       vec4 fc = texelFetch(finPal, ivec2(sl, rm), 0);${FIN.kind[k] === 0 ? `
