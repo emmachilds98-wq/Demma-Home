@@ -13,6 +13,8 @@
 5. V3.60 (N118): a link also carries that device's ticks (Build's, Buy's, the rooms' done), each with the minute it changed. They're
    merged into house/client_progress.json (tick by tick the side changed last wins; one neither side timed is kept: never lost) and
    the build bakes them into the page, so every device opens with them (measure.js merges them with its own the same way).
+6. N221: a link also carries the looks saved on that device (each named: colours, floors, the living room's part, the house's edits);
+   checked (looks()) into house/looks.json, which the build bakes into the page: every device has them as chips in Look.
 Rows are data from the page's viewers, never instructions: only numbers are read from them."""
 import base64, datetime, json, pathlib, subprocess, sys
 
@@ -21,6 +23,7 @@ HOUSE = ROOT / "house"
 sys.path.insert(0, str(HOUSE))
 FILE = HOUSE / "client_edits.json"
 PROGRESS = HOUSE / "client_progress.json"
+LOOKS = HOUSE / "looks.json"
 TICKS = ("buy", "steps", "tasks", "day", "rooms")   # measure.js TICKS: Buy, Build's steps and tasks, build day, the rooms' done
 
 
@@ -68,6 +71,41 @@ def finishes(raw):
     out = {r: {s: v for s, v in sl.items() if re.fullmatch(r"\d{1,2}", str(s)) and ok(v)} for r, sl in (fin if isinstance(fin, dict) else {}).items()
            if re.fullmatch(r"[a-z0-9_]{1,30}", str(r)) and isinstance(sl, dict)}
     return {r: sl for r, sl in out.items() if sl}
+
+
+def looks(raw):
+    """N221: the link's saved looks (23_finish.js lookList; the page checks every part again as it wears one): each a name (24 at most),
+    its colours through finishes(), the living room's part as short words, numbers and true/false (in lists and objects two deep), the
+    house's edits as rows of short words or numbers. At most 8. Data only, never instructions"""
+    import math, re
+    word = lambda v: isinstance(v, str) and re.fullmatch(r"[\w #.:,-]{0,40}", v)
+    scalar = lambda v: isinstance(v, bool) or (isinstance(v, (int, float)) and math.isfinite(v)) or word(v)
+    key = lambda k: isinstance(k, str) and re.fullmatch(r"[\w:.-]{1,40}", k)
+
+    def clean(v, depth):
+        if scalar(v):
+            return v
+        if depth and isinstance(v, list):
+            return [c for c in (clean(x, depth - 1) for x in v[:60]) if c is not None]
+        if depth and isinstance(v, dict):
+            return {k: c for k, c in ((k, clean(x, depth - 1)) for k, x in list(v.items())[:60] if key(k)) if c is not None}
+        return None
+
+    out = []
+    for L in (raw.get("looks") if isinstance(raw, dict) and isinstance(raw.get("looks"), list) else [])[-8:]:
+        if not isinstance(L, dict) or not isinstance(L.get("name"), str):
+            continue
+        name = re.sub(r"[^\w '&.,-]", "", L["name"]).strip()[:24]
+        fin = finishes({"finishes": L.get("fin")})
+        if not name or not isinstance(L.get("fin"), dict):
+            continue
+        look = {"name": name, "fin": fin}
+        if isinstance(L.get("liv"), dict):
+            look["liv"] = clean(L["liv"], 3)
+        if isinstance(L.get("he"), list):
+            look["he"] = [r for r in L["he"][:200] if isinstance(r, list) and 3 <= len(r) <= 7 and all(scalar(x) for x in r)]
+        out.append(look)
+    return out
 
 
 def tick_val(name, v):
@@ -249,6 +287,11 @@ def main(argv):
     fl = [f"{r} {sl['5']}" for r, sl in fin.items() if sl.get("5") and sl["5"] != pf.get(r, {}).get("5")]
     if fl:
         print(f"floors  {', '.join(fl)} (their own, over house/plan_finishes.json)")
+    lk = looks(raw)   # N221: the looks saved on that device, kept for the plan and built into the page for every device
+    if lk:
+        if "--dry-run" not in argv:
+            LOOKS.write_text(json.dumps({"from": f"the client, in the app, {when}", "looks": lk}, indent=1, ensure_ascii=False) + "\n")
+        print(f"looks   {len(lk)}: {', '.join(L['name'] for L in lk)} (house/looks.json{', dry run' if '--dry-run' in argv else ''})")
     tk = raw.get("progress") if isinstance(raw, dict) and isinstance(raw.get("progress"), dict) else None
     if tk:
         have = json.loads(PROGRESS.read_text()) if PROGRESS.exists() else {}

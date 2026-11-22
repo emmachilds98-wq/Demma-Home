@@ -830,9 +830,10 @@ def controls(gallery=""):
             '<button type="button" class="btn" id="r3d-plancopy"><span class="ms" aria-hidden="true">content_copy</span> Copy</button>'
             '<button type="button" class="btn" id="r3d-plansave" hidden><span class="ms" aria-hidden="true">cloud_upload</span> Save for us</button></div></div>']),
         "measure": measure_panel(),
-        "look": ('<div class="grp" id="r3d-finsch"><span class="label">The house\'s colours</span><div class="seg" id="r3d-finschl"></div>'
-                 '<div class="seg r3d-find"><input type="text" id="r3d-finschname" placeholder="Our scheme" aria-label="Name for the house\'s colours" maxlength="24">'
-                 '<button type="button" class="chip" id="r3d-finschsave">Save these colours</button></div></div>') + swatches + '<div class="grp"><span class="label">A feature wall</span><div class="seg" role="group" aria-label="A feature wall">'
+        # N221: saved looks (colours, floors and furniture), a tap wears one, a hold shows it (23_finish.js lookList)
+        "look": ('<div class="grp" id="r3d-finsch"><span class="label">Your looks</span><div class="seg" id="r3d-finschl"></div>'
+                 '<div class="seg r3d-find"><input type="text" id="r3d-finschname" placeholder="Ours" aria-label="Name for this look" maxlength="24">'
+                 '<button type="button" class="chip" id="r3d-finschsave">Save this look</button></div></div>') + swatches + '<div class="grp"><span class="label">A feature wall</span><div class="seg" role="group" aria-label="A feature wall">'
                  '<button type="button" data-feature="breast">The breast in Green Smoke</button><button type="button" data-feature="media">The media wall in Green Smoke</button>'
                  '<button type="button" data-feature="none">All one colour</button></div></div>' + decor_main + '<details class="r3d-more r3d-fold"><summary>More: the oak, the floor, cushions, curtains</summary>' + trims + decor_g + '</details>',
     }
@@ -930,6 +931,13 @@ def progress_json():
     return json.dumps(d, separators=(",", ":"), ensure_ascii=False).replace("</", "<\\/")
 
 
+def looks_json():
+    """N221: the saved looks the last round kept (tools/pull_edits.py, house/looks.json), on every device as chips in Look (data only)"""
+    f = HERE.parents[1] / "house" / "looks.json"
+    d = json.loads(f.read_text()) if f.exists() else {}
+    return json.dumps({"looks": d.get("looks", [])[:8]}, separators=(",", ":"), ensure_ascii=False).replace("</", "<\\/")
+
+
 def section(gallery=""):
     """v25: the room as the home screen. The stage fills the screen; the stickers sit on it; the Tools pill (laptop) or the bottom
     bar's Tools button (phone, in build_viewer) opens the five panels; Edit room is a bubble beside them."""
@@ -997,6 +1005,7 @@ def section(gallery=""):
 <script type="application/json" id="opt-data">{opts_json()}</script>
 <script type="application/json" id="tour-data">{json.dumps(dict(stops=tour(), pages=PAGES_URL), separators=(",", ":"))}</script>
 <script type="application/json" id="hotspots-data">{json.dumps(hotspots(), separators=(",", ":"))}</script>
+<script type="application/json" id="looks-data">{looks_json()}</script>
 <script type="module">{room3d_src.js()}</script>
 <script type="application/json" id="progress-data">{progress_json()}</script>
 <script type="module">{(HERE / "measure.js").read_text()}</script>

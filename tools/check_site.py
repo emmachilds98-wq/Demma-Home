@@ -214,6 +214,31 @@ ADD = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeou
   await Promise.all(Object.entries(ds.rows('edits')).filter(([, v]) => v && v.item === id).map(([k]) => ds.del('edits', k)));
   return { card, line, wall, link: window.__link || null, gone: await wait(() => !E[id]) };
 }"""
+# N221: a look saved as "Ours" (bedroom 2's wall by its code), then the wall changed and the Kallax swapped; held, "Ours" shows (nothing
+# saved), let go, the change back; tapped, "Ours" is worn (the wall back, the swap gone, both kept); Send carries it; then deleted
+LOOKS = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), ds = window.DemmaStore;
+  const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
+  const kept = () => ((JSON.parse(localStorage.getItem('mw18-3d') || '{}').fin || {}).bed2 || {})[0] || null, rows = () => localStorage.getItem('demma-v1:edits') || '{}';
+  const wall = async hex => { D.openAct('fin:bed2:0'); await sl(600); const b = q('#r3d-act [data-finsc="room"]'); if (b) { b.click(); await sl(200); }
+    const f = q('#r3d-act [data-finhex]'); f.value = hex; f.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); await sl(500); if (D.actId) q('#r3d-act .x').click(); await sl(200); };
+  const was = R3D.finishes(); try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {}
+  await wall('3a6b5a'); q('#r3d-finschname').value = 'Ours'; q('#r3d-finschsave').click(); await sl(300);
+  const L = R3D.looks(), saved = L.length === 1 && L[0].name === 'Ours' && L[0].fin.bed2[0] === '#3a6b5a' && Array.isArray(L[0].he) && !!L[0].liv;
+  await wall('c98a5e'); await ds.put('edits', 'music.kallax~swap', { item: 'music.kallax', field: 'swap', value: 'bookcase' });
+  const changed = await wait(() => D.HEDITS['music.kallax'] && D.HEDITS['music.kallax'].swap === 'bookcase') && kept() === '#c98a5e';
+  const chip = () => q('#r3d-finschl [data-finsch="0"]'), at = { bubbles: true, pointerId: 1, button: 0, isPrimary: true };
+  const st = () => { const o = JSON.parse(localStorage.getItem('mw18-3d') || '{}'); delete o.view; return JSON.stringify(o) + rows(); }, ls = st();   // all but where it stands
+  chip().dispatchEvent(new PointerEvent('pointerdown', at)); await sl(700);
+  const shown = D.S.fin.bed2[0] === '#3a6b5a' && await wait(() => !D.HEDITS['music.kallax']) && st() === ls;
+  window.dispatchEvent(new PointerEvent('pointerup', at)); await sl(300);
+  const back = D.S.fin.bed2[0] === '#c98a5e' && await wait(() => D.HEDITS['music.kallax'] && D.HEDITS['music.kallax'].swap === 'bookcase') && st() === ls;
+  await sl(600); chip().click();
+  const worn = await wait(() => !D.HEDITS['music.kallax']) && kept() === '#3a6b5a' && !JSON.parse(rows())['music.kallax~swap'] && await wait(() => chip() && chip().getAttribute('aria-pressed') === 'true');
+  const sent = (() => { const s = ds.shareLink().split('#share=')[1].replace(/-/g, '+').replace(/_/g, '/'); const o = JSON.parse(decodeURIComponent(escape(atob(s + '==='.slice((s.length + 3) % 4))))); return (o.looks || []).map(x => x.name).join(); })();
+  q('#r3d-finschl [data-finschdel="0"]').click(); await sl(200);
+  const gone = !R3D.looks().length && !chip(); R3D.setFinishes(was); await sl(300);
+  return { saved, changed, shown, back, worn, sent, gone };
+}"""
 OFF = """() => { const W = document.documentElement.clientWidth, out = [];
   for (const el of document.querySelectorAll("body *")) { const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
     if (!r.width || cs.display === "none" || cs.visibility === "hidden" || cs.position === "fixed" || el.closest("[hidden], .sheet, .r3d-panel, .r3d-floors, .lightbox, .r3d-stage")) continue;
@@ -483,14 +508,11 @@ def main():
                     bad = {k: v for k, v in f3.items() if not v[0] or not v[1]}
                     if bad:
                         fails.append(f"{w}: tapping a wall and a colour in three rooms: {f3} (want each room's walls' card, the colour kept, then undone)")
-                if phone:                                           # V2.13 (FINISHES F6): a scheme saved, another set, the first back in one tap
-                    sc = pg.evaluate("""async () => { const sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), was = R3D.finishes();
-                      try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {}
-                      R3D.setFinishes({ bed2: { 0: '#899081', 5: 'oak', 8: 'dome' } }); await sl(200); q('#r3d-finschname').value = 'A'; q('#r3d-finschsave').click();
-                      R3D.setFinishes({ landing: { 4: '#e8c0c8' } }); await sl(200); q('[data-finsch="0"]').click(); await sl(300);
-                      const got = JSON.stringify(R3D.finishes()); try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {} R3D.setFinishes(was); return got; }""")
-                    if sc != '{"bed2":{"0":"#899081","5":"oak","8":"dome"}}':
-                        fails.append(f"{w}: the house's colours saved as a scheme, others set, the scheme back: {sc} (want bedroom 2's back wall, oak floor and flush dome)")
+                if phone:                                           # N221: a look saved, others set, held to see it, then worn, sent and deleted
+                    lk = pg.evaluate(LOOKS)
+                    if lk != {"saved": True, "changed": True, "shown": True, "back": True, "worn": True, "sent": "Ours", "gone": True}:
+                        fails.append(f"{w}: \"Ours\" saved (bedroom 2's wall), the wall changed and the Kallax swapped, Ours held then let go, tapped, sent, deleted: {lk} "
+                                     "(want it saved with its edits, shown while held with nothing saved, both back on letting go, worn and kept, in Send, then gone)")
                 if phone:                                           # V1.53: the floor from overhead, then the figure dropped in
                     dr = pg.evaluate(DROP)
                     if dr.get("off") or dr.get("said") != "Bedroom 3" or dr.get("view") != "office" or dr.get("mode") != "stand" or abs(dr.get("eye", 0) - 420) > 15:
@@ -543,7 +565,7 @@ def main():
     speed = "speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room {v.get('draws_landing')} landing" + (f", {v['shaders_spot']} built on the spot into it" if "shaders_spot" in v else "") + (f", {v['hitches']} hitches walking" if "hitches" in v else "") + (f", bake {v['bake']}" if v.get("bake", "none") != "none" else "") for k, v in perf.items())
     if HITCH: print(speed); print(f"hitch check: a walk on the PC path (hall, kitchen, living room, landing and back), {perf['rtx']['hitches']} hitches, the speed budget on the iPhone's and the RTX's paths, {len(fails)} failed"); return 1 if fails else 0
     print(speed)
-    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named (shut panels, a card, Edit's list too), Esc one layer a press, Tab the top row then the 3D, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, Back from a room to the house, down to the lower floor and back, the speed budget on the phone's and the PC's Fast paths, {len(fails)} failed; screenshots in _shots/")
+    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named (shut panels, a card, Edit's list too), Esc one layer a press, Tab the top row then the 3D, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, a look saved, held, worn and sent, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, Back from a room to the house, down to the lower floor and back, the speed budget on the phone's and the PC's Fast paths, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
 

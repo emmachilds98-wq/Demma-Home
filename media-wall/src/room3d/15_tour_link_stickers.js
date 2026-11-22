@@ -57,7 +57,18 @@ const LOOK_BOOL = ["drawers", "curtains", "lbox", "laser", "pc", "grow", "tdoor"
 const HEX = /^#[0-9a-f]{6}$/i;
 const cm = v => [-v.x / M, v.y / M, v.z / M].map(n => Math.round(n));
 function lookOf() {
-  const o = { v: S.view, c: [...cm(camera.position), ...cm(controls.target), Math.round(GS.baseFov)] };
+  const o = Object.assign({ v: S.view, c: [...cm(camera.position), ...cm(controls.target), Math.round(GS.baseFov)] }, livLookOf());
+  const fl = Object.fromEntries(Object.entries(S.fin || {}).filter(([r, sl]) => r !== LIVR && sl && sl[5]).map(([r, sl]) => [r, sl[5]])); if (Object.keys(fl).length) o.fl = fl;   // N209: each room's floor
+  const PF = ((R.HOUSE3 || {}).plan_finishes || {}).rooms || {}, fc = {};   // N213: each room's walls, ceiling and the outside's colours, but the plan's; N216: its woodwork; N214: each wall's own, the slopes
+  for (const [r, sl] of Object.entries(S.fin || {})) { if (r === LIVR || !sl) continue;
+    for (const [s, v] of Object.entries(sl)) if (finLook(+s, v) && v !== (PF[r] || {})[s]) (fc[r] = fc[r] || {})[s] = v; }
+  if (Object.keys(fc).length) o.fc = fc;
+  const he = heOf(); if (he.length) o.he = he;   // N218: the house's edits (swaps, moves, pieces added or taken out), as Measure's rows
+  return o;
+}
+/* N221: the living room's part of a look (its Look, lights, Edit room's moves and added pieces) */
+function livLookOf() {
+  const o = {};
   for (const k of Object.keys(LOOK_STR)) o[k] = S[k];
   for (const k of LOOK_BOOL) if (S[k] !== DEF[k]) o[k] = S[k] ? 1 : 0;
   if (S.paint === "custom") o.custom = S.custom;
@@ -77,14 +88,23 @@ function lookOf() {
   if ((S.warm ?? 50) !== DEF.warm) o.warm = S.warm;                                                  // v50: Warmth, and Edit room's moves
   if (Object.keys(S.layout).length) o.layout = S.layout;                                             //      and added pieces
   if (S.added.length) o.added = S.added;
-  const fl = Object.fromEntries(Object.entries(S.fin || {}).filter(([r, sl]) => r !== LIVR && sl && sl[5]).map(([r, sl]) => [r, sl[5]])); if (Object.keys(fl).length) o.fl = fl;   // N209: each room's floor
-  const PF = ((R.HOUSE3 || {}).plan_finishes || {}).rooms || {}, fc = {};   // N213: each room's walls, ceiling and the outside's colours, but the plan's; N216: its woodwork; N214: each wall's own, the slopes
-  for (const [r, sl] of Object.entries(S.fin || {})) { if (r === LIVR || !sl) continue;
-    for (const [s, v] of Object.entries(sl)) if (finLook(+s, v) && v !== (PF[r] || {})[s]) (fc[r] = fc[r] || {})[s] = v; }
-  if (Object.keys(fc).length) o.fc = fc;
-  const he = DS() ? Object.values(DS().rows("edits") || {}).filter(heOk).map(v => [v.item, v.field, v.value, ...(v.field === "add" ? [v.room, v.x, v.z, v.y] : [])]) : [];
-  if (he.length) o.he = he;   // N218: the house's edits (swaps, moves, pieces added or taken out), as Measure's rows
-  return o;
+  return JSON.parse(JSON.stringify(o));
+}
+/* N218, N221: the house's edits as [item, field, value(, room, x, z, y)], sorted; and back to Measure's rows, each checked (heOk) */
+const heOf = () => DS() ? Object.values(DS().rows("edits") || {}).filter(heOk).map(v => [v.item, v.field, v.value, ...(v.field === "add" ? [v.room, v.x, v.z, v.y] : [])])
+  .sort((a, b) => `${a[0]}~${a[1]}`.localeCompare(`${b[0]}~${b[1]}`)) : [];
+function heRows(a) {
+  const out = {};
+  for (const r of (Array.isArray(a) ? a : []).slice(0, 200)) { if (!Array.isArray(r)) continue;
+    const [item, field, value, room, x, z, y] = r, v = field === "add" ? { item, field, value, room, x, z, y } : { item, field, value };
+    if (heOk(v)) out[`${item}~${field}`] = v; }
+  return out;
+}
+async function heWear(a, ds) {   // the look's edits in place of the ones it lacks (rows the page can't read are left as they are)
+  if (!ds) return; const want = heRows(a), have = Object.assign({}, ds.rows("edits") || {}), same = (p, q) => ["value", "room", "x", "z", "y"].every(k => p[k] === q[k]);
+  try { for (const [k, v] of Object.entries(have)) if (heOk(v) && !want[k]) await ds.del("edits", k);
+        for (const [k, v] of Object.entries(want)) if (!have[k] || !same(have[k], v)) await ds.put("edits", k, v); }
+  catch (e) { toast("That didn't save: try again"); }
 }
 /* N218: an edits row as the page reads it (pieceNow, syncAdds): a house piece's size, move, turn, taken out or swap; or a piece added */
 const HE_NUM = { w: [1, 1000], h: [1, 1000], up: [-500, 1000], along: [-500, 1000], out: [-500, 1000], turn: [0, 3] };
@@ -127,10 +147,9 @@ function copyLook() {
   const done = () => { st.textContent = "Copied. Paste it into a message: it opens the room just like this."; toast("Link copied"); };
   try { navigator.clipboard.writeText(url).then(done, shown); } catch (e) { shown(); }
 }
-function applyLook(tok) {
-  let o; try { o = JSON.parse(unb64u(tok)); } catch (e) { return false; }
-  if (!o || typeof o !== "object") return false;
-  const ok = (k, v) => typeof v === "string" && (LOOK_STR[k] ? LOOK_STR[k].includes(v) : k === "scene" ? v in SCENES : k === "plants" ? v in R.PLANT_LAYOUTS : k === "paint" ? (v in R.PAINTS || v === "custom") : /^[a-z0-9_]{1,24}$/i.test(v));
+function livLookSet(o) {   // a look's living room part into S, each key checked (none: as the plan has it)
+  if (!o || typeof o !== "object") o = {};
+  const ok =(k, v) => typeof v === "string" && (LOOK_STR[k] ? LOOK_STR[k].includes(v) : k === "scene" ? v in SCENES : k === "plants" ? v in R.PLANT_LAYOUTS : k === "paint" ? (v in R.PAINTS || v === "custom") : /^[a-z0-9_]{1,24}$/i.test(v));
   for (const k of Object.keys(LOOK_STR)) if (ok(k, o[k])) S[k] = o[k];
   for (const k of LOOK_BOOL) if (k in o) S[k] = !!o[k];
   if (HEX.test(o.custom || "")) S.custom = o.custom;
@@ -150,22 +169,49 @@ function applyLook(tok) {
     for (const [f, lo, hi] of [["lv", 0, 100], ["yaw", -90, 90], ["tilt", -60, 60]]) if (Number.isFinite(+h[f])) c[f] = Math.max(lo, Math.min(hi, +h[f]));
     if (HEX.test(h.col || "")) c.col = h.col; if (Object.keys(c).length) S.head[k] = c; }
   if (Number.isFinite(+o.warm)) S.warm = Math.max(0, Math.min(100, +o.warm)); else S.warm = DEF.warm;   // v50
-  if (o.layout || o.added) {   // v50: the furniture moved or added in Edit room
-    const ID = /^[a-z0-9_:-]{1,40}$/i, lay = {}, add = [];
-    if (o.layout && typeof o.layout === "object") for (const [id, L] of Object.entries(o.layout)) { if (!ID.test(id) || !L || typeof L !== "object") continue;
-      const c = {}; for (const f of ["x", "z", "rot"]) if (Number.isFinite(+L[f])) c[f] = +L[f]; if (HEX.test(L.col || "")) c.col = L.col; if (L.off) c.off = true; lay[id] = c; }
-    if (Array.isArray(o.added)) for (const a of o.added.slice(0, 40)) if (a && CATALOGUE[a.type] && ID.test(a.id || "") && Number.isFinite(+a.x) && Number.isFinite(+a.z))
-      add.push({ type: a.type, id: a.id, x: +a.x, z: +a.z, ...(Number.isFinite(+a.rot) ? { rot: +a.rot } : {}), ...(HEX.test(a.col || "") ? { col: a.col } : {}) });
-    restoreLayout({ layout: lay, added: add });
-  }
+  const ID = /^[a-z0-9_:-]{1,40}$/i, lay = {}, add = [];   // v50: the furniture moved or added in Edit room (none: where the plan has it)
+  if (o.layout && typeof o.layout === "object") for (const [id, L] of Object.entries(o.layout)) { if (!ID.test(id) || !L || typeof L !== "object") continue;
+    const c = {}; for (const f of ["x", "z", "rot"]) if (Number.isFinite(+L[f])) c[f] = +L[f]; if (HEX.test(L.col || "")) c.col = L.col; if (L.off) c.off = true; lay[id] = c; }
+  if (Array.isArray(o.added)) for (const a of o.added.slice(0, 40)) if (a && CATALOGUE[a.type] && ID.test(a.id || "") && Number.isFinite(+a.x) && Number.isFinite(+a.z))
+    add.push({ type: a.type, id: a.id, x: +a.x, z: +a.z, ...(Number.isFinite(+a.rot) ? { rot: +a.rot } : {}), ...(HEX.test(a.col || "") ? { col: a.col } : {}) });
+  restoreLayout({ layout: lay, added: add });
+}
+/* N221: a look ({fin, liv, he}: the house's colours and floors, the living room's part, the house's edits) put on the page; ds: the
+   store its edits go into (the real one when worn, ASIDE's copy when shown). A part it lacks stays as it is (an old scheme: colours) */
+function lookPut(L, ds) {
+  if (!L) return;
+  if (L.liv) livLookSet(L.liv);
+  if (L.fin) finRestore(L.fin);
+  if (Array.isArray(L.he)) { if (ds) heWear(L.he, ds); else addEventListener("demma-rows", () => heWear(L.he, DS()), { once: true }); }
+  applyState(); syncButtons(); finApplyAll();
+}
+/* N221, N222: a look shown over the device's own, nothing saved (ASIDE); lookMine puts the device's own back */
+function lookShow(L) {
+  if (!ASIDE) ASIDE = { s: JSON.stringify(S) };
+  ASIDE.ds = dsCopy(window.DemmaStore || null);
+  lookPut(L, ASIDE.ds);
+}
+function lookMine() {
+  if (!ASIDE) return;
+  const o = JSON.parse(ASIDE.s);
+  restoreLayout({ layout: o.layout || {}, added: o.added || [] });   // first, so the shown look's added pieces go (nothing saves: ASIDE is still set)
+  ASIDE = null;
+  for (const k of Object.keys(S)) if (!(k in o) && k !== "view") delete S[k];
+  for (const [k, v] of Object.entries(o)) if (!["view", "layout", "added"].includes(k)) S[k] = v;
+  if (FIN.mat3) planMerge();
+  applyDecor(); repaint(); updateCaption(); applyState(); syncButtons(); finApplyAll();
+  dispatchEvent(new CustomEvent("demma-rows", { detail: "edits" }));
+}
+function applyLook(tok) {
+  let o; try { o = JSON.parse(unb64u(tok)); } catch (e) { return false; }
+  if (!o || typeof o !== "object") return false;
+  livLookSet(o);
   if (o.fl && typeof o.fl === "object") { const c = finClean(Object.fromEntries(Object.entries(o.fl).map(([r, k]) => [r, { 5: k }]))); delete c[LIVR]; S.fin = S.fin || {};   // N209: their floors
     for (const [r, sl] of Object.entries(c)) S.fin[r] = Object.assign({}, S.fin[r], sl); finApplyAll(); }
   if (o.fc && typeof o.fc === "object") { const c = finClean(Object.fromEntries(Object.entries(o.fc).filter(([, sl]) => sl && typeof sl === "object")   // N213: their walls' colours (colours only)
       .map(([r, sl]) => [r, Object.fromEntries(Object.entries(sl).filter(([s, v]) => finLook(+s, v)))]))); delete c[LIVR]; S.fin = S.fin || {};
     for (const [r, sl] of Object.entries(c)) S.fin[r] = Object.assign({}, S.fin[r], sl); finApplyAll(); }
-  const he = () => { for (const a of o.he.slice(0, 200)) { if (!Array.isArray(a)) continue;   // N218: the house's edits, each checked (once Measure's store is up)
-    const [item, field, value, room, x, z, y] = a, v = field === "add" ? { item, field, value, room, x, z, y } : { item, field, value };
-    if (heOk(v)) DS().put("edits", `${item}~${field}`, v); } };
+  const he = () => { const R2 = heRows(o.he); for (const [k, v] of Object.entries(R2)) DS().put("edits", k, v); };   // N218: the house's edits, each checked (once Measure's store is up)
   if (Array.isArray(o.he)) { if (DS()) he(); else addEventListener("demma-rows", he, { once: true }); }
   applyState(); syncButtons();
   setView(o.v in VIEWS ? o.v : "room", true);

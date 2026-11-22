@@ -132,7 +132,15 @@ function applyHEdits(map) {
     for (const fk of fs) HBUILD(fk, editedFloor(fk, R.HOUSE3.floors[fk])); solidDirty(); reshadow(); dirty(); });
 }
 const HIT = id => (((R.HOUSE3 || {}).items) || {})[id];
-const DS = () => window.DemmaStore || null;
+/* N221, N222: a look shown, not worn (a saved look held, or a look link): the device's own state set aside (ASIDE.s, S as it was) and its
+   edits rows as an in-memory copy (ASIDE.ds), so nothing is saved (store.set skips KEY) and Back to mine puts it all back (lookMine) */
+let ASIDE = null;
+const DS = () => ASIDE ? ASIDE.ds : window.DemmaStore || null;
+function dsCopy(real) {   // a copy of Measure's store: its rows its own, put and del on the copy only, firing demma-rows as the real one does
+  const rows = { edits: JSON.parse(JSON.stringify((real && real.rows("edits")) || {})) }, fire = c => dispatchEvent(new CustomEvent("demma-rows", { detail: c }));
+  return { rows: c => rows[c] || (rows[c] = {}), on() {}, shareLink: () => real ? real.shareLink() : "", get mode() { return "device"; },
+    async put(c, id, v) { (rows[c] = rows[c] || {})[id] = Object.assign({}, v); fire(c); }, async del(c, id) { if (rows[c]) delete rows[c][id]; fire(c); } };
+}
 const FIELDS = [["w", "Width"], ["h", "Height"], ["up", "Up from the floor"], ["along", "Along the wall"], ["out", "Out from the wall"]];   // V2.32: a piece moves out from its wall too; doors and windows stay in their walls
 function pieceNow(id) {
   const e = {}, ds = DS();

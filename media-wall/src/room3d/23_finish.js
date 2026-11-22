@@ -387,23 +387,38 @@ function finTakes() {
   const T = R.HOUSE3 ? upsAll()[1] : { n: 0 }; if (T.n) rows.push(`<div class="ms-erow"><b>All the changes</b> ${T.n}, about ${upRange(T.lo, T.hi) || "£0"}</div>`);   // N40: the house's total, sent with the rest
   list.innerHTML = rows.join(""); box.hidden = !rows.length;
 }
-let FIN_COPY = null;   // V2.13 (F6): Copy / Paste a room's look; the house's colours saved as named schemes on this device
-const FSK = "dh-fin-schemes";
-function finSchemes() { try { const L = JSON.parse(localStorage.getItem(FSK) || "[]"); return Array.isArray(L) ? L : []; } catch (e) { return []; } }
+let FIN_COPY = null;   // V2.13 (F6): Copy / Paste a room's look
+/* N221: saved looks: a look is the house's colours and floors, the living room's part and the house's edits ({name, fin, liv, he}),
+   at most 8 on this device (Look, "Your looks": a tap wears it, a hold shows it till let go), sent with Send (R3D.looks). An old
+   {name, fin} scheme reads as a look of colours only. The plan's (house/looks.json, #looks-data) on every device: wear or hold them */
+const FSK = "dh-fin-schemes", LOOKS_MAX = 8;
+const lookOk = x => !!x && typeof x === "object" && typeof x.name === "string" && !!x.name.trim() && !!x.fin && typeof x.fin === "object";
+function lookList() { try { const L = JSON.parse(localStorage.getItem(FSK) || "[]"); return Array.isArray(L) ? L.filter(lookOk).slice(-LOOKS_MAX) : []; } catch (e) { return []; } }
+const PLAN_LOOKS = (() => { try { const d = JSON.parse((document.getElementById("looks-data") || {}).textContent || "{}"); return (Array.isArray(d.looks) ? d.looks : []).filter(lookOk).slice(0, LOOKS_MAX); } catch (e) { return []; } })();
+const lookIs = x => JSON.stringify(finClean(x.fin)) === JSON.stringify(finClean(finAll(!!x.fin[LIVR]))) && (!x.liv || JSON.stringify(x.liv) === JSON.stringify(livLookOf()))
+  && (!Array.isArray(x.he) || JSON.stringify(x.he) === JSON.stringify(heOf()));
 function finSchDraw() {
-  const box = qs("#r3d-finschl"); if (!box) return; const L = finSchemes(), now = x => JSON.stringify(finClean(finAll(!!(x.fin || {})[LIVR]))), esc = t => String(t).replace(/[<&"]/g, "");
-  box.innerHTML = L.length ? L.map((x, i) => `<span class="r3d-mysc"><button type="button" data-finsch="${i}" aria-pressed="${JSON.stringify(finClean(x.fin)) === now(x)}">${esc(x.name)}</button><button type="button" class="r3d-myx" data-finschdel="${i}" aria-label="Delete ${esc(x.name)}">×</button></span>`).join("")
-    : '<span class="caption">None yet: tap a wall, a ceiling or a floor in any room, then name it here.</span>';
+  const box = qs("#r3d-finschl"); if (!box || ASIDE) return; const L = lookList(), mine = new Set(L.map(x => x.name)), esc = t => String(t).replace(/[<&"]/g, "");
+  const P = PLAN_LOOKS.map((x, i) => [x, i]).filter(([x]) => !mine.has(x.name));
+  box.innerHTML = L.length || P.length ? P.map(([x, i]) => `<button type="button" data-finschp="${i}" aria-pressed="${lookIs(x)}" title="In the plan">${esc(x.name)}</button>`).join("")
+    + L.map((x, i) => `<span class="r3d-mysc"><button type="button" data-finsch="${i}" aria-pressed="${lookIs(x)}">${esc(x.name)}</button><button type="button" class="r3d-myx" data-finschdel="${i}" aria-label="Delete ${esc(x.name)}">×</button></span>`).join("")
+    : '<span class="caption">None yet: change a room, then name it here.</span>';
 }
 function finSchSave() {
-  const inp = qs("#r3d-finschname"), name = ((inp && inp.value.trim()) || `Scheme ${finSchemes().length + 1}`).slice(0, 24);
-  const L = finSchemes().filter(x => x.name !== name); L.push({ name, fin: finClean(finAll()) });
-  try { localStorage.setItem(FSK, JSON.stringify(L.slice(-12))); } catch (e) {} if (inp) inp.value = ""; finSchDraw(); toast(`Saved: ${name}`);
+  if (ASIDE) { toast("Back to mine first"); return; }
+  const inp = qs("#r3d-finschname"), name = ((inp && inp.value.trim()) || `Look ${lookList().length + 1}`).slice(0, 24);
+  const L = lookList().filter(x => x.name !== name); L.push({ name, fin: finClean(finAll()), liv: livLookOf(), he: heOf() });
+  try { localStorage.setItem(FSK, JSON.stringify(L.slice(-LOOKS_MAX))); } catch (e) { toast("That didn't save: try again"); return; }
+  if (inp) inp.value = ""; finSchDraw(); toast(`Saved: ${name}`);
 }
-function finSchUse(i) {
-  const x = finSchemes()[i]; if (!x) return; finPush();
-  finRestore(x.fin); store.set(KEY, S); finApplyAll(); toast(x.name);
+function lookWear(x) {   // worn: into the page and kept, its edits into Measure's rows (so Send carries them)
+  if (!x) return; if (ASIDE) lookMine();
+  if (NOWV) { nowMode(false); setTimeout(() => lookWear(x), 220); return; }
+  finPush(); lookPut(x, DS()); store.set(KEY, S); toast(x.name);
 }
+const lookAt = b => b.dataset.finschp ? PLAN_LOOKS[+b.dataset.finschp] : lookList()[+b.dataset.finsch];
+let lookHold = null, lookQuiet = 0;   // a hold (350 ms) shows it; letting go, yours back (and the click after it does nothing)
+function lookHoldEnd() { const h = lookHold; lookHold = null; if (!h) return; clearTimeout(h.t); if (h.on) { lookMine(); lookQuiet = performance.now() + 500; } }
 function finCopyBtns(room) {   // on a room's card: Copy this room (when it has a look of its own), Paste another's
   const L = [];
   if (FIN_COPY && FIN_COPY.room !== room) L.push(btn(`Paste ${roomName(FIN_COPY.room)}'s look`, { finpaste: "1" }));
@@ -549,13 +564,19 @@ function nowMode(on) {
     requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove("nowfade")));
   }, 160);
 }
-{ const set0 = store.set.bind(store); store.set = (k, v) => { if (NOWV && k === KEY) return; set0(k, v); }; }
+{ const set0 = store.set.bind(store); store.set = (k, v) => { if ((NOWV || ASIDE) && k === KEY) return; set0(k, v); }; }   // N221, N222: nor while a look is shown
 qs("#r3d-now")?.addEventListener("click", () => nowMode(!NOWV));
 qs("#r3d-finschsave")?.addEventListener("click", finSchSave);
 qs("#r3d-finschname")?.addEventListener("keydown", e => { if (e.key === "Enter") finSchSave(); });
-qs("#r3d-finschl")?.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return;
-  if (b.dataset.finschdel) { const L = finSchemes(); L.splice(+b.dataset.finschdel, 1); try { localStorage.setItem(FSK, JSON.stringify(L)); } catch (er) {} finSchDraw(); }
-  else if (b.dataset.finsch) finSchUse(+b.dataset.finsch); });
+qs("#r3d-finschl")?.addEventListener("click", e => { const b = e.target.closest("button"); if (!b || performance.now() < lookQuiet) return;
+  if (b.dataset.finschdel) { const L = lookList(); L.splice(+b.dataset.finschdel, 1); try { localStorage.setItem(FSK, JSON.stringify(L)); } catch (er) {} finSchDraw(); }
+  else if (b.dataset.finsch || b.dataset.finschp) lookWear(lookAt(b)); });
+qs("#r3d-finschl")?.addEventListener("pointerdown", e => { const b = e.target.closest("[data-finsch],[data-finschp]"); if (!b || e.button > 0 || ASIDE || NOWV) return;
+  const x = lookAt(b); if (!x) return; clearTimeout(lookHold && lookHold.t); const h = lookHold = { on: false };
+  h.t = setTimeout(() => { if (lookHold === h && !ASIDE) { h.on = true; lookShow(x); } }, 350); });
+for (const ev of ["pointerup", "pointercancel"]) addEventListener(ev, lookHoldEnd);
+qs("#r3d-finschl")?.addEventListener("contextmenu", e => { if (e.target.closest("[data-finsch],[data-finschp]")) e.preventDefault(); });   // a long press on a phone
+addEventListener("demma-rows", e => { if (e.detail === "edits") finSchDraw(); });
 finSchDraw();
 if (act) {
   act.addEventListener("click", e => {

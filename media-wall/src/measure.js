@@ -108,6 +108,7 @@ const store = {
   shareLink() {                                            // what's on this device, for the other person (not photos)
     const pick = {}; for (const c of ["measurements", "edits", "notes", "ticks"]) if (Object.keys(cache[c]).length) pick[c] = cache[c];
     try { const f = window.R3D && window.R3D.finishes && window.R3D.finishes(); if (f && Object.keys(f).length) pick.finishes = f; } catch (e) {}   // V2.11: the house's colours, floors and bulbs
+    const lk = looks(); if (lk.length) pick.looks = lk;   // N221: the looks saved on this device, for the plan
     const tk = ticks(); if (tk) pick.progress = tk.out;   // N118: Build's, Buy's and the rooms' ticks
     const sp = speed(); if (sp) pick.perf = sp;   // V3.04 (N50): this device's speed, for the next round (no place, no name)
     const enc = btoa(unescape(encodeURIComponent(JSON.stringify(pick)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -116,6 +117,7 @@ const store = {
 };
 /* V3.04 (N50): R3D.perf()'s few numbers, read by tools/pull_edits.py --link: the chip's family, the quality, a frame moving and still,
    draws, shaders. Never a place, a name or the driver's whole string */
+const looks = () => { try { const L = window.R3D && window.R3D.looks && window.R3D.looks(); return Array.isArray(L) ? L : []; } catch (e) { return []; } };
 function speed() {
   try {
     const p = window.R3D && window.R3D.perf && window.R3D.perf(); if (!p || !p.programs) return null;
@@ -177,10 +179,10 @@ document.addEventListener("click", async e => {
   const ids = Object.keys(store.rows("measurements")).filter(id => answer(id).cm != null), ne = new Set(Object.values(store.rows("edits")).map(r => r.item)).size;
   let nf = 0; try { nf = Object.keys((window.R3D && window.R3D.finishes && window.R3D.finishes()) || {}).length; } catch (er) {}   // V2.11: rooms with colours
   const sp = mode === "shared" ? null : speed();   // V3.04 (N50): the speed goes even with nothing typed
-  const nt = mode === "shared" ? 0 : (ticks() || { n: 0 }).n;   // N118
-  if (!ids.length && !ne && !nf && !sp && !nt) { say("Type a number first, or change a piece's size or a room's colours in the 3D."); return; }
+  const nt = mode === "shared" ? 0 : (ticks() || { n: 0 }).n, nl = mode === "shared" ? 0 : looks().length;   // N118; N221
+  if (!ids.length && !ne && !nf && !sp && !nt && !nl) { say("Type a number first, or change a piece's size or a room's colours in the 3D."); return; }
   for (const id of ids) await store.put("measurements", id, Object.assign({}, answer(id), { sent: true }));
-  const n = (k, w) => `${k} ${w}${k === 1 ? "" : "s"}`, what = [ids.length && n(ids.length, "measurement"), ne && n(ne, "change"), nf && `${nf} room${nf === 1 ? "'s" : "s'"} colours`, nt && n(nt, "tick"), sp && "the speed"].filter(Boolean).join(", ");   // V1.51: the 3D's changes go too
+  const n = (k, w) => `${k} ${w}${k === 1 ? "" : "s"}`, what = [ids.length && n(ids.length, "measurement"), ne && n(ne, "change"), nf && `${nf} room${nf === 1 ? "'s" : "s'"} colours`, nl && n(nl, "look"), nt && n(nt, "tick"), sp && "the speed"].filter(Boolean).join(", ");   // V1.51: the 3D's changes go too
   if (mode === "shared") { say(`Sent: ${what}. The next round puts them in.`); return; }
   const url = store.shareLink();
   try { if (navigator.share) { await navigator.share({ title: "Home Plan: measurements", url }); say(`Shared: ${what}.`); return; } } catch (er) { if (er && er.name === "AbortError") return; }
