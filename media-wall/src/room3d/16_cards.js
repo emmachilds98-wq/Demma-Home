@@ -96,6 +96,8 @@ function roomUps(room) {   // [{k, t, lo, hi}]: what's changed in a room
     if (ws.length) add("w=" + ws.map(s => o[s]).join(), "Walls: " + [...new Set(ws.map(s => finName(o[s])))].join(", "), ws.length > 1 ? UPC.walls : UPC.wall);
     if (o[4]) add("4=" + o[4], "Ceiling: " + finName(o[4]), UPC.ceil);
     if (o[17]) add("17=" + o[17], "Woodwork: " + finName(o[17]), UPC.skirt);   // N216
+    finWalls(room).forEach((w, k) => { const h = o[30 + k]; if (h) add(`${30 + k}=${h}`, `${finCap(finSlotName(room, 30 + k))}: ${finName(h)}`, UPC.wall); });   // N214: each wall's own, the slopes
+    if (o[29]) add("29=" + o[29], "Slopes: " + (o[29] === "walls" ? "with the walls" : finName(o[29])), UPC.ceil);
     const fa = (H.finish_areas || {})[room] || {};   // N209: the floor laid now is no change; a new one by its area
     if (o[5] && o[5] !== fa.fk) add("5=" + o[5], "Floor: " + upNm(FIN_FLOORS, o[5]), UPC.floor[o[5]] || [30, 60], fa.floor || m2);
     if (o[18]) add("18=" + o[18], o[18] === "none" ? "Rug: none" : "Rug: " + upNm(FIN_RUGS, o[18]), o[18] === "none" ? [0, 0] : UPC.rug);

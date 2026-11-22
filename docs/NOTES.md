@@ -206,15 +206,25 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 ## 5. The site's features: where they live
 - **Look's rows** (`23_finish.js`, `S.fin[room]`): 0–3 walls, 4 ceiling, 5 floor, 6 bulb, 7 lux, 8 fitting, 9–10 outside, 11–16 the
   living room's walls by name, 17 the woodwork (the living room's skirting and door in its Look; any other room's through the palette, N216), 18 rug, 19 curtains, 20 bedding, 21 picture, 22 picture's wall, 23 plant,
-  24–25 wallpaper, 26–27 panelling (N57; `finWallRun` gives any wall its face, openings and ceiling line). A new slot goes in `finClean`, the Paste filter, `roomUps` and a cost in `UPC`.
+  24–25 wallpaper, 26–27 panelling (N57; `finWallRun` gives any wall its face, openings and ceiling line), 28 storage ideas, 29 the slopes
+  (N214: none with the ceiling, `walls`, or a colour), 30 on each wall as built (N214: 30 + its number in the house file's
+  `finish_walls[room]`, `[side, line from, to, along from, to, m²]` from `surfaces.walls`). A new slot goes in `finClean`, the Paste filter, `roomUps` and a cost in `UPC`.
+  Each wall (N214): `finAt` finds the wall a tap is on as the shader does (its side, then the line within 2 cm and the span within 2);
+  This wall sets it, This room and Whole house set 0–3 and drop the 30s; a side with more than one says "the west wall (2 of 3)"
+  (`finWallName`); a face under 15 cm or 0.1 m² (a return, a strip) is on none and keeps its side's colour. `check_model.py` checks every
+  face lies on one wall. Wallpaper and panelling still go on a side (`finSide`). A ceiling with slopes (`finish_areas[room].slope`) has
+  Slopes on its card; a tap on a slope opens it.
   A floor (N209) has three sources: the plan's (`plan_finishes.json`, merged into `S.fin` once a version, so it reads like a pick), the one
   laid now (`finish_areas[room].fk`, from `surfaces.by_room`) and theirs; Changes counts any but the one laid now, the card prices only theirs. The garage (`FIN_OWN`) keeps its slab.
   Her own colours (N213): a wall's card takes a code (`data-finhex`, `finHex`: `#` optional, three digits doubled; its `change` sets
   it, and Enter sends one: a value set by a script never fires `change` on blur); `finName` calls a colour that's neither a paint nor the plan's (`finPlanHex`) "your colour #3A6B5A"; "Yours"
-  (`finMine`) is read from her rows each time, nothing new kept. The look link's `fc` carries each room's slots 0–4, 9, 10 and 17 that
+  (`finMine`) is read from her rows each time, nothing new kept. The look link's `fc` carries each room's slots 0–4, 9, 10, 17, 29 and the 30s (`finLook`) that
   differ from the plan's (the plan's scheme is merged into `S.fin`, so the link leaves those out); `fl` the floors.
-  The palette (`20_1_house_materials.js` `FIN`): a row a room, 8 columns: 0–3 the sides, 4 ceiling, 5 bedding, 6 woodwork (N216: `skirting`,
-  `door_white`, `woodwork`, FIN.kind 3, found in the house's own frame as the bedding is, so a swinging door keeps its room); 7 is the last free.
+  The palette (`20_1_house_materials.js` `FIN`): a row a room, 32 columns: 0–3 the sides, 4 ceiling, 5 bedding, 6 woodwork (N216: `skirting`,
+  `door_white`, `woodwork`, FIN.kind 3, found in the house's own frame as the bedding is, so a swinging door keeps its room), 7 the slopes
+  (a ceiling's fragment with its normal 0.2–0.95 up), 8 on each wall's own: 8 + side × `FIN.WK` (6) + its number on that side
+  (`FIN.cols[room]`). `FIN.walls` (a float texture, a row a room, `WK` a side) holds each wall's line and span; the walls' shader loops
+  its side's 6 to find it. Same programs, no new draws; more than 6 walls a side would need `WK` raised (`check_model` fails first).
 - **Changes and costs** (`16_cards.js`): `UPC` rough UK costs (E, Nov 2026; a floor per m²), `roomUps(room)` a room's changes, card id
   `ups:<room>`; done ticks in `localStorage` `dh-done` (this device only, not in Send); `upsAll()` gives the total for Plan and Measure.
   The 3D's `qs` is scoped to its root: use `document.getElementById` for the sheets' elements.
