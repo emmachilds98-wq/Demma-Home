@@ -94,6 +94,7 @@ html body .r3d .r3d-stage canvas:focus-visible { outline: 3px solid var(--oak, o
 @media (max-width: 599px) { .r3d.actopen .r3d-peg { display: none; } }
 .r3d-finsc { display: flex; gap: 4px; flex-wrap: wrap; }
 .r3d-finlab { font: 600 12px Figtree, system-ui, sans-serif; color: #6b655c; margin-top: 2px; }
+.r3d-fin > a { justify-self: start; font: 600 13px Figtree, system-ui, sans-serif; color: #2a2723; text-underline-offset: 3px; padding: 6px 0; }   /* N219: a shop's page */
 .r3d-finsc button { font: 600 12.5px Figtree, system-ui, sans-serif; padding: 5px 10px; border-radius: var(--r-pill); border: 1px solid #d9d4ca; background: #fff; color: #2a2723; min-height: 30px; }
 .r3d-finsc button[aria-pressed="true"] { background: #2a2723; color: #fff; border-color: #2a2723; }
 .r3d-fintray { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 6px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }

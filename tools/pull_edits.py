@@ -216,8 +216,13 @@ def plan(raw, when):
     # V2.46 (REAL_PLAN N7): a piece swapped for another of its kind, or one added, from the page's catalogue: for the next round to fold in
     import re
     cat = dict(re.findall(r'^  (\w+): \{ n: "([^"]+)"', (ROOT / "media-wall/src/room3d/08_house_catalogue.js").read_text(), re.M))
+    sys.path.insert(0, str(ROOT / "media-wall/src")); import fit   # N219: the shops' pieces, by their key
+    cat.update({fit.shop_key(p): f"{p['retailer']} {p['name'].split(',')[0]} (£{p['price']:g})" for p in fit.shop_pieces()})
     for r in rows_of(raw, "edits").values():
         v, iid = str(r.get("value", "")), str(r.get("item", ""))
+        own = re.fullmatch(r"own\|([a-z]{3,8})\|([a-z0-9_]{3,12})\|(\d{1,3}(?:\.\d)?)\|(\d{1,3}(?:\.\d)?)\|(\d{1,3}(?:\.\d)?)\|([A-Za-z0-9 '&-]{0,24})", v)   # N219: her own piece
+        if own:
+            cat[v] = f"her own {own[6] or own[1]} ({own[1]}, {own[2]}, {own[3]} × {own[4]} × {own[5]} cm)"
         if r.get("field") == "swap" and iid in items and v in cat:
             questions.append(f"{items[iid]['name']} ({items[iid]['room']}): swapped for the {cat[v].lower()} in the app: fold it in by hand")
         elif r.get("field") == "add" and re.fullmatch(r"add\.[a-z0-9]{1,12}", iid) and v in cat and num(r.get("x")) is not None and num(r.get("z")) is not None:
