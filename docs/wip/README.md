@@ -8,6 +8,5 @@ Delete a file once its task is merged. Rows: `docs/REAL_PLAN.md` sections 25 and
 |---|---|---|---|
 | `N209-floor-card-partial.patch` | N209 | 78b2a4c | The floor card's start (names the room and floor); was running its test at 1280×800 |
 | `N212-storage-options-partial.patch` | N212 | 78b2a4c | Storage options' start (a data file of ideas); was adding their `fit.SOURCES` rows |
-| `N204-N202-bake-partial.patch` | N204, N202 | 01b72c9 | N204 done (Blender 6: `use_nodes` calls removed/guarded in `bake.py`); N202 (the seam) was about to be shot |
 
 N210, N208 and N211 (section 26's quick fixes) were started by an agent that had made no change yet: start them fresh.
