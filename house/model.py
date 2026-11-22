@@ -1243,7 +1243,7 @@ def chalk_doors(o, floor):
 
 def office(o):
     """v61: bedroom 3, the office, as the client plans it: the straight oak desk along the shelf wall, the stacked monitors on a pole,
-    the white PC under the desk, the keyboard, a desk chair; the overhead shelf (it stays) with its ivy, the white pegboard; the radiator
+    the white PC under the desk, the keyboard, a desk chair; the overhead shelf (it stays; its plastic ivy out, 21 Nov), the white pegboard; the radiator
     under the window and the dark roller blind (the photos)."""
     O, y0 = D.OFFICE, FLOOR_Y["first"]
     W = WIDTH                                                      # the party wall's face
@@ -1264,10 +1264,6 @@ def office(o):
     o.box("book2", W - 17, ys, zb + 1, W - 3, ys + 4, zb + 25); o.box("book0", W - 16, ys + 4, zb + 2, W - 4, ys + 7, zb + 24)   # two lying flat
     o.lathe("jar", W - 10, ys, s["z"][0] + 72, [(0, 0), (4.5, 0), (5, 1), (5, 11), (3.5, 12.5), (3.5, 14), (0, 14)])
     o.lathe("pot", W - 10, ys, s["z"][1] - 32, [(0, 0), (4, 0), (5.5, 9), (6, 11), (0, 11)])
-    o.lathe("ivy", W - 10, ys + 11, s["z"][1] - 32, [(0, 0), (6.5, 1), (8, 5), (6, 10), (2, 12), (0, 12)])
-    o.item("office.ivy", "The ivy along the top", "bed3", kind="decor", src="client's photo", measure=False)
-    o.box("ivy", W - 3, y0 + CEIL - 12, BACK + 583, W, y0 + CEIL - 4, FRONT)          # the ivy along the top of the wall
-    o.box("ivy", 283, y0 + CEIL - 12, FRONT - 3, W, y0 + CEIL - 4, FRONT)
     o.item("office.pegboard", "The pegboard", "bed3", src="E (IKEA SKÅDIS size)", data=("OFFICE", "pegboard"), axis="z")
     pb = O["pegboard"]
     o.box("pegboard", W - 1.5, y0 + pb["y"][0], pb["z"][0], W, y0 + pb["y"][1], pb["z"][1])
