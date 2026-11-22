@@ -15,7 +15,7 @@ can with multiple agents".
      `docs/wip/N207-mouse-look-partial.patch` (it includes N203).
   4. N209 each room's floor from its card: `docs/wip/N209-floor-card-partial.patch`.
   5. N212 storage designed into the decorating, **as options to look at in the 3D** (her choice), sized for 100–300 records, under 2 m
-     of books and games, clothes, tech and display: `docs/wip/N212-storage-options-partial.patch`.
+     of books and games, clothes, tech and display: done on branch n212 (`docs/STORAGE.md`, `house/storage_ideas.py`).
   6. N204/N202 the bake (Blender 6's API; the seam): `docs/wip/N204-N202-bake-partial.patch`.
   7. Waiting on Emma: N201 (lighting later, "when the house is right"), N205 (on hold), N206 (her own colours and swapping furniture
      first: plan with her).

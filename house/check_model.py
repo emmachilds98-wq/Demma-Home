@@ -398,6 +398,11 @@ _empty = [f"{rid} {s_.get('side', k)}" for rid, R in _sr.items() for k in ("wall
           if s_["faces"] < 1 or s_["area"] <= 0]
 check("surfaces: every surface has faces and an area", not _empty, "; ".join(_empty) if _empty else f"{sum(len(R['walls']) + bool(R['ceiling']) + bool(R['floor']) for R in _sr.values())} surfaces")
 
+# N212: the storage ideas (options to look at): each piece in its room, clear of the house, the swings, the slopes and the walks
+import storage_ideas as _SI
+for _n, _ok, _note in _SI.checks():
+    check(_n, _ok, _note)
+
 w = max(len(r[1]) for r in rows)
 for st_, n, note in rows:
     print(f"{st_:4}  {n:<{w}}  {note}")

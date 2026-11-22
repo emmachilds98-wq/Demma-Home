@@ -10,6 +10,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 H = ROOT / "house"; IN = ROOT / "media-wall/inputs"; EV = H / "evidence"; OUT = H / "out"
 OUT.mkdir(exist_ok=True)
 sys.path.insert(0, str(H)); import survey_data as D   # V2.93: the garden ideas
+import storage_ideas as SI   # N212: the storage ideas
 TMP = pathlib.Path(tempfile.mkdtemp())
 
 
@@ -75,6 +76,9 @@ def build():
             '<h2>Where the model is now</h2>' + now_pictures(),
             '<h2>Garden ideas (to look at, not in the plan)</h2><table><tr><th>What</th><th>Where</th><th>Size</th><th>Rough cost</th><th>Source</th></tr>'
             + "".join(f"<tr><td>{w}</td><td>{at}</td><td>{sz}</td><td>£{lo:,}–{hi:,}</td><td>{src}</td></tr>" for w, at, sz, (lo, hi), src in D.GARDEN_IDEAS) + "</table>",
+            '<h2>Storage ideas (to look at, not in the plan)</h2><p>Each one in its room in the 3D: tap a floor, More, Storage ideas. The numbers: docs/STORAGE.md.</p>'
+            '<table><tr><th>What</th><th>Where</th><th>Size</th><th>Rough cost</th><th>Source</th></tr>'   # N212
+            + "".join(f"<tr><td>{w}</td><td>{at}</td><td>{sz}</td><td>£{lo:,}–{hi:,}</td><td>{src}</td></tr>" for w, at, sz, (lo, hi), src in SI.rows()) + "</table>",
             '<h2 class="pb">The evidence: your plans</h2>' + "".join(pic(IN / f, c, 1300) for f, c in PLANS),
             '<h2 class="pb">The evidence: photos</h2><div class="grid">' + "".join(pic(IN / f, c, 1100) for f, c in PHOTOS) + "</div>",
             '<h2 class="pb">The evidence in full</h2>' + md(H / "EVIDENCE.md"),
