@@ -619,6 +619,15 @@ def stair_box_x():
     return Gm.STAIR_X[0] - 2.2
 
 
+def stair_well(floor, rs=None):
+    """A floor's open stairwell (x0, x1, z0, z1), or None: the slabs, the floor finishes and the floors laid in Look stop at it (N210)."""
+    if floor == "ground":                                              # v65: open over the lower flight (its top tread showed through the hall's carpet)
+        st = stair(); return (st["x0"], st["x1"], 38.0, st["z1"])
+    if floor == "first":                                               # V3.35: the slabs stop at the stairwell (the landing's stood 5 into it, its grey edge seen up the stairs)
+        fs = next(q for q in rs or rooms(floor) if q["room"] in VOID); return (fs["x0"], fs["x1"], fs["z0"], fs["z1"])
+    return None
+
+
 def floors_and_fittings(o, floor, rs):
     y = FLOOR_Y[floor]
     for r in rs:
@@ -626,11 +635,7 @@ def floors_and_fittings(o, floor, rs):
             continue
         yy = D.LEVELS["garage"] if r["id"] == "garage" else y
         bot = yy - SLAB if floor != "first" else y - SLAB + 1          # clear of the living room's ceiling
-        well = None
-        if floor == "ground":                                          # v65: open over the lower flight (its top tread showed through the hall's carpet)
-            st = stair(); well = (st["x0"], st["x1"], 38.0, st["z1"])
-        elif floor == "first":                                         # V3.35: the slabs stop at the stairwell (the landing's stood 5 into it, its grey edge seen up the stairs)
-            fs = next(q for q in rs if q["room"] in VOID); well = (fs["x0"], fs["x1"], fs["z0"], fs["z1"])
+        well = stair_well(floor, rs)
         for x0, x1, z0, z1 in _minus((r["x0"] - 5, r["x1"] + 5, r["z0"] - 5, r["z1"] + 5), well):
             o.box("slab", x0, bot, z0, x1, yy - 1.5, z1)
         for x0, x1, z0, z1 in _minus((r["x0"], r["x1"], r["z0"], r["z1"]), well):

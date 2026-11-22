@@ -16,7 +16,9 @@ OUT = 1.0                                                       # how far out fr
 def _pieces():
     out = {}
     for f in M.FLOOR_Y:
-        out[f] = [(JOIN.get(p["room"], p["room"]), p["x0"], p["x1"], p["z0"], p["z1"]) for p in M.rooms(f) if p["room"] != "living"]
+        rs, well = M.rooms(f), M.stair_well(f)                         # N210: no floor over a stairwell (the landing's carpet covered its hole)
+        out[f] = [(JOIN.get(p["room"], p["room"]), *q) for p in rs if p["room"] != "living" and p["room"] not in M.VOID
+                  for q in M._minus((p["x0"], p["x1"], p["z0"], p["z1"]), well)]
     return out
 
 
