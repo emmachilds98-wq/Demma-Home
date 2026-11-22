@@ -312,7 +312,7 @@ details.r3d-more[open] > summary::before { content: "– "; }
 .r3d-planbox[hidden], .r3d-setups[hidden] { display: none; }
 .r3d-setups { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .r3d-setups .label { width: 100%; }
-.r3d-planbox input[type=text], .r3d-planbox textarea { width: 100%; box-sizing: border-box; border: 0; border-radius: var(--r-s); padding: 8px 10px; background: var(--soft); color: var(--ink); font: 500 13px/1.4 Figtree, system-ui, sans-serif; }
+.r3d-planbox input[type=text], .r3d-planbox textarea { width: 100%; box-sizing: border-box; border: 0; border-radius: var(--r-s); padding: 8px 10px; background: var(--soft); color: var(--ink); font: 500 16px/1.4 Figtree, system-ui, sans-serif; }
 .r3d-planbox textarea { resize: vertical; min-height: 140px; white-space: pre-wrap; }
 .r3d-planinc { border: 0; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 12px; }
 .r3d-planinc legend { width: 100%; padding: 0; }
