@@ -421,7 +421,19 @@ function finApplyAll() {   // what's kept, into the palette (on start, after Und
 /* V2.38 (F12): the window frames' and front door's outside colours (RAL), S.fin.outside[9] and [10] */
 const FIN_OUT = [["#f5f5f2", "White"], ["#383e42", "Anthracite grey (RAL 7016)"], ["#b5b8b1", "Agate grey (RAL 7038)"], ["#0a0a0a", "Black (RAL 9005)"], ["#fdf4e3", "Cream (RAL 9001)"]];
 const finOut = () => { for (const [s, k] of [[9, "frame_out"], [10, "door_out"]]) { const m = HMATS && HMATS[k]; if (m) m.color.set(!finHeld && finGet("outside", s) || R.HOUSE3.mats[k][0]); } dirty(); };
-const finName = hex => ([...FIN_OUT, ...finSwatches(), ...Object.values(FIN_PAIRS).flat()].find(([h]) => h.toLowerCase() === String(hex).toLowerCase()) || [0, hex])[1];
+const finKnown = hex => [...FIN_OUT, ...finSwatches(), ...Object.values(FIN_PAIRS).flat()].find(([h]) => h.toLowerCase() === String(hex).toLowerCase());
+/* N213: her own colours: a code typed (#dbffc8, dbffc8 or #dbf), named "your colour #DBFFC8"; "Yours" offers each one she's put on a
+   wall, ceiling or outside (not a paint's, not the plan's) on every wall's card; nothing new kept (they're read from her rows) */
+const finHex = v => { let t = String(v || "").trim().replace(/^#/, "").toLowerCase(); if (/^[0-9a-f]{3}$/.test(t)) t = t.replace(/./g, c => c + c); return /^[0-9a-f]{6}$/.test(t) ? "#" + t : null; };
+const finPlanHex = () => new Set(Object.values((((R.HOUSE3 || {}).plan_finishes || {}).rooms) || {}).flatMap(sl => Object.values(sl || {})).filter(v => LIV_HEX.test(v)).map(v => v.toLowerCase()));
+const finName = hex => { const k = finKnown(hex); return k ? k[1] : !LIV_HEX.test(hex || "") ? hex : finPlanHex().has(hex.toLowerCase()) ? "the plan's colour" : "your colour " + hex.toUpperCase(); };
+const finCap = t => t.charAt(0).toUpperCase() + t.slice(1);
+function finMine() {
+  const plan = finPlanHex(), out = new Set();
+  for (const sl of Object.values(finAll(false))) for (const [s, v] of Object.entries(sl || {})) { const k = +s;
+    if ((k <= 4 || k === 9 || k === 10 || (k >= 11 && k <= 17)) && LIV_HEX.test(v || "") && !plan.has(v.toLowerCase()) && !finKnown(v)) out.add(v.toLowerCase()); }
+  return [...out].slice(0, 8);
+}
 const finSw = (L, now) => L.map(([h, t]) => `<button type="button" class="sw" data-finc="${h}" style="--c:${h}" aria-pressed="${!!now && now.toLowerCase() === h.toLowerCase()}" title="${t}" aria-label="${t}"><i></i><span>${finShort(t)}</span></button>`).join("");
 function finSet(room, slot, hex) {   // by the scope: this wall, this room's walls (or ceiling), the whole house's
   finPush(); S.fin = S.fin || {};
@@ -468,18 +480,20 @@ function finCard(id) {   // [title, now, buttons, -, the tray]
   const [, room, s] = id.split(":"), slot = +s, ceil = slot === 4, now = finGet(room, slot);
   if (slot === 5) return finFloorCard(room);
   if (slot === 20) return [`${roomName(room)}: the bedding`, now ? (FIN_BED.find(([h]) => h === now) || [0, now])[1] : "As planned", FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : [], null, finBedTray(room)];
-  if (room === "outside") return [`Outside: ${slot === 9 ? "the window frames" : "the front door"}`, now ? finName(now) : "White, as planned",
+  if (room === "outside") return [`Outside: ${slot === 9 ? "the window frames" : "the front door"}`, now ? finCap(finName(now)) : "White, as planned",
     [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(now ? [btn("As planned", { finc: "" })] : [])], null,
     `<div class="r3d-fin"><div class="r3d-fintray" role="group" aria-label="Colours">${finSw([...FIN_OUT, ...finSwatches().slice(1)], now)}<label class="sw any" title="Any colour"><input type="color" data-finany="1" value="${now || "#f5f5f2"}" aria-label="Any colour"><span>Any</span></label></div></div>`];
   const liv = room === LIVR, named = liv && slot >= 11 && slot <= 16, drawn = liv ? (slot === 0 ? S.paint === DEF.paint && !Object.keys(S.walls).length : named ? !S.walls[LIV_W[slot - 11]] : !now) : !now;
   if (finScope === "floor" || (liv && slot === 17)) finScope = "room";
   if ((ceil || (liv && !named)) && finScope === "wall") finScope = "room";
-  const nm = drawn ? "As planned" : finName(now);
+  const nm = drawn ? "As planned" : finCap(finName(now)), mine = finMine();
   const scopes = liv && slot === 17 ? [] : ceil || (liv && !named) ? [["room", "This room"], ["house", "Whole house"]] : [["wall", "This wall"], ["room", "This room"], ["house", "Whole house"]];
   const tray = `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Where it goes">${scopes.map(([k, t]) => `<button type="button" data-finsc="${k}" aria-pressed="${finScope === k}">${t}</button>`).join("")}</div>`
     + `<div class="r3d-fintray" role="group" aria-label="Colours">${finSw(finSwatches(), now)}`
     + `<label class="sw any" title="Any colour"><input type="color" data-finany="1" value="${now || "#f4f3ef"}" aria-label="Any colour"><span>Any</span></label>`
+    + `<label class="sw hex" title="A colour's code"><input type="text" data-finhex="1" value="${now ? now.toUpperCase() : ""}" placeholder="#hex" maxlength="7" spellcheck="false" autocomplete="off" autocapitalize="characters" enterkeyhint="done" aria-label="A colour's code, like #DBFFC8"><span>Code</span></label>`
     + `<label class="sw pic" title="A colour from a photo"><i><span class="ms" aria-hidden="true">photo_camera</span></i><input type="file" accept="image/*" data-finpic="1" aria-label="A colour from a photo"><span>Photo</span></label></div>`
+    + (mine.length ? `<span class="r3d-finlab">Yours</span><div class="r3d-fintray" role="group" aria-label="Your colours">${finSw(mine.map(h => [h, h.toUpperCase()]), now)}</div>` : "")
     + (now ? `<span class="r3d-finlab">Shades of it</span><div class="r3d-fintray" role="group" aria-label="Shades of it">${finShades(now).map(([h, t]) => `<button type="button" class="sw" data-finc="${h}" style="--c:${h}" aria-pressed="false" title="${t}, ${h}" aria-label="${t}, ${h}"><i></i><span>${t}</span></button>`).join("")}</div>` : "")
     + (finPairs(now).length ? `<span class="r3d-finlab">Goes with it (its maker's pick)</span><div class="r3d-fintray" role="group" aria-label="Goes with it">${finSw(finPairs(now), null)}</div>` : "")
     + (FIN_PIC ? `<div class="r3d-finpic"><img src="${FIN_PIC.url}" data-finpicimg="1" alt="Your photo: tap a colour in it"><span class="r3d-finlab">Tap a colour in your photo</span></div>` : "")
@@ -577,7 +591,10 @@ if (act) {
     else finSet(room, +s, b.dataset.finc || null);
     renderAct();
   }, true);
-  act.addEventListener("change", e => { if (e.target.dataset.finpic) { finPicLoad(e.target.files && e.target.files[0]); return; } if (e.target.dataset.finany && GS.actId && GS.actId.startsWith("fin:")) { const [, room, s] = GS.actId.split(":"); finSet(room, +s, e.target.value); renderAct(); } });
+  act.addEventListener("change", e => { if (e.target.dataset.finpic) { finPicLoad(e.target.files && e.target.files[0]); return; } if ((e.target.dataset.finany || e.target.dataset.finhex) && GS.actId && GS.actId.startsWith("fin:")) {
+    const [, room, s] = GS.actId.split(":"), hex = e.target.dataset.finhex ? finHex(e.target.value) : e.target.value; if (!hex) { toast("A colour's code, like #DBFFC8"); return; }
+    finSet(room, +s, hex); renderAct(); } });
+  act.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.dataset && e.target.dataset.finhex) { e.preventDefault(); e.target.blur(); } });   // N213: Enter sets the code (its change)
   act.addEventListener("pointerdown", e => { if (e.target.closest("[data-finhold]")) { e.preventDefault(); finHold(true); } });
   for (const ev of ["pointerup", "pointerleave", "pointercancel"]) act.addEventListener(ev, () => finHold(false));
   act.addEventListener("keydown", e => { if ((e.key === " " || e.key === "Enter") && e.target.closest("[data-finhold]")) { e.preventDefault(); finHold(true); } });
