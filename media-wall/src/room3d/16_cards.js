@@ -115,6 +115,7 @@ function roomUps(room) {   // [{k, t, lo, hi}]: what's changed in a room
     for (const k of Object.keys(DEF.decor)) if (S.decor[k] !== DEF.decor[k] && PD.decor[k]) { const c = k === "rug" ? UPC.rug : k === "curtains" ? UPC.curt : k === "cushions" && PD.ideas.cushions ? PD.ideas.cushions.slice(1) : [0, 0];
       add(`d${k}=${S.decor[k]}`, `${PD.decor[k][0]}: ${PD.decor[k][1][S.decor[k]] || S.decor[k]}`, c); }
     picks().filter(i => !i.plan && i.kind !== "Decor").forEach(i => add("i=" + i.name, i.name, [i.lo, i.hi]));
+    for (const it of Object.values(MOV)) if (it.swk && !(S.layout[it.id] || {}).off) add(it.id + "~s=" + it.swk, `${it.label.replace(/ \(suggested\)$/, "")}: ${HCAT[it.swk].n}`, upCat(it.swk, HCAT[it.swk]));   // N220: a swap
   } else {
     const ws = [0, 1, 2, 3].filter(s => o[s]);
     if (ws.length) add("w=" + ws.map(s => o[s]).join(), "Walls: " + [...new Set(ws.map(s => finName(o[s])))].join(", "), ws.length > 1 ? UPC.walls : UPC.wall);
