@@ -78,6 +78,13 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **CI's caches are per branch:** a PR's bake (and renders) aren't reused by main after the merge, so main bakes again (about 8 min). Local browser checks here take 40+ min on 4 cores with helpers running: let CI measure, run `checks.py --quick` locally.
 - **The 3D's parts share one scope** (`room3d_src.py` joins them): a new top-level name can clash (`shown` once stopped `R3D.ready`
   ever firing). Put a `// note` at a line's end only: one put mid-line in a one-line statement commented out the rest of it.
+- **Moving a top-level name between parts (N203):** a `let` (or `const`) moved to an earlier part is always safe (it only leaves its
+  dead zone sooner), unless its starting value needs something made later. Moved to a later part, it is safe only if nothing the script
+  runs while it loads reaches it before the new place: everything else waits (`start()` waits for the bake; listeners, timers and
+  observers run after the script). To check, parse the joined parts with espree and eslint-scope (both from `npm ci`), take the code
+  run at load before the new place (top-level statements, and callbacks handed to `forEach` and the like, not to `addEventListener`,
+  timers, `then` or observers), follow the functions it calls, and look for the name in what is reached. Each part now sets only its
+  own `let`s; what two parts set is in `GS`. Keep it so: a new `let` set from another part goes in `GS` or moves to the part that sets it.
 
 ## 3. Speed: what was done, how, what's left
 - **The hitch walk (N177, V4.9):** its own check (`checks.py --only hitch`, `check_site.py --hitch`, its own CI job: inside the site job it took that past 40 min). `check_site.py` `HITCH_INIT`/`HITCH_WARM`/`HITCH_WALK`. A faked clock must move `performance.now()` with the
@@ -202,6 +209,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   24–25 wallpaper, 26–27 panelling (N57; `finWallRun` gives any wall its face, openings and ceiling line). A new slot goes in `finClean`, the Paste filter, `roomUps` and a cost in `UPC`.
   A floor (N209) has three sources: the plan's (`plan_finishes.json`, merged into `S.fin` once a version, so it reads like a pick), the one
   laid now (`finish_areas[room].fk`, from `surfaces.by_room`) and theirs; Changes counts any but the one laid now, the card prices only theirs. The garage (`FIN_OWN`) keeps its slab.
+  Her own colours (N213): a wall's card takes a code (`data-finhex`, `finHex`: `#` optional, three digits doubled; its `change` sets
+  it, and Enter sends one: a value set by a script never fires `change` on blur); `finName` calls a colour that's neither a paint nor the plan's (`finPlanHex`) "your colour #3A6B5A"; "Yours"
+  (`finMine`) is read from her rows each time, nothing new kept. The look link's `fc` carries each room's slots 0–4, 9 and 10 that
+  differ from the plan's (the plan's scheme is merged into `S.fin`, so the link leaves those out); `fl` the floors.
 - **Changes and costs** (`16_cards.js`): `UPC` rough UK costs (E, Nov 2026; a floor per m²), `roomUps(room)` a room's changes, card id
   `ups:<room>`; done ticks in `localStorage` `dh-done` (this device only, not in Send); `upsAll()` gives the total for Plan and Measure.
   The 3D's `qs` is scoped to its root: use `document.getElementById` for the sheets' elements.

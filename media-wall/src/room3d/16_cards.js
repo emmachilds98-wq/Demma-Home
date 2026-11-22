@@ -1,5 +1,6 @@
 /* ---------------------------------------------------------------- v30: a tap on the room (not a drag, not in Edit room) opens a card of
    what's under it; its buttons are the room's own controls (data-dining, data-chairs, data-drawers, data-tog...), so they stay in step */
+let sizeT = 0, lastTap = null;   // the size card's typing timer; v41: the last tap on the floor (floorHop)
 const act = qs("#r3d-act");
 let actXY = null, tapDown = null, TAPAT = null;
 const clippedAt = h => [].concat(h.object.material).some(m => m && m.clippingPlanes === CLIP) && CLIP.every(pl => pl.distanceToPoint(h.point) < 0);   // the cutaway hides what's on the far side of both planes (V2.38: only what it cuts: from out front, the front door was let through to the hall behind)

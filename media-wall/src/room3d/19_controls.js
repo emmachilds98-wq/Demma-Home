@@ -1,4 +1,6 @@
 /* ---------------------------------------------------------------- the controls */
+let lookWall = "all";            // Look's paint row: all the walls, or one
+let hidMode = [], RPLANES = [];   // v71: GS.RMODE, how a room of the house is seen (in it, above, on its own) and what that put away
 function press(attr, val) { qsa(`[data-${attr}]`).forEach(b => b.setAttribute("aria-pressed", String(b.dataset[attr] === String(val)))); }
 const sameAsScene = () => LAYERS.every(k => (S.lv[k] ?? 0) === (SCENES[S.scene].levels[k] ?? 0));
 /* v36: Extras opens on a row per need (ideas.OPTION_GROUPS); picking shows it and flies there; the caption says where, its size, a rough cost */

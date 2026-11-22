@@ -1,4 +1,4 @@
-# Handover (22 Nov 2026, V4.43: start here)
+# Handover (22 Nov 2026, V4.44: start here)
 
 ## Now (22 Nov 2026)
 The client, 21–22 Nov: her review on the PC (`docs/REAL_PLAN.md` section 26: "the movement to look around on mouse feels inverted",
@@ -11,13 +11,15 @@ ivy, storage "for all our things and displays / knick nacks"); her answers in `d
   - V4.41 (#315): N210 no floor over the stairwells (the landing's over the hole down, the hall's over the lower flight); a model check.
   - V4.42: N207 a mouse held down looks the way it moves, the orbit views too, Mouse look's pointer lock out (her choice: only while a
     button is held); a site check (`check_site.py` `mouse_look`). N209 each room's floor from its card ("Bedroom 2 · Grey carpet",
-    "The plan's", the cost by its laid area, in a look link and Measure → Send). N204 the bake ready for Blender 6; N202 in part (the
-    islands 10 texels apart, the smoothing inside the gap; the master's wall still to shoot after CI's fresh bake).
+    "The plan's", the cost by its laid area, in a look link and Measure → Send). N204 the bake ready for Blender 6; N202 the seam (the
+    islands 10 texels apart, the smoothing inside the gap; the master's back wall checked even, 22 Nov).
+  - V4.44: N213 her own colour on any wall (section 27's first row); N202 checked (the master's back wall even).
   - V4.43: N212 storage ideas to look at (`house/storage_ideas.py`: 12 ideas, 18 pieces, each one line with a cited source; a
     room's floor card → More → "Storage ideas"; checked clear of walks, doors and slopes; `docs/STORAGE.md` has each room's numbers;
     a table in the plan's PDF). Her pick comes next: only then a build and a buy list (CLAUDE.md, core plan vs options).
-  - V4.39 (#313): N203 step 1, the 3D's shared state in one object (`GS`); step 2 (ES modules) is open.
-- **Open, in order:** N202's check (shoot the master with and without the bake); N203 step 2; then section 25 (N201 the real devices'
+  - V4.39 and V4.44: N203 step 1, every top-level `let` set only in the part that declares it (`GS` for what two parts share);
+    step 2 (ES modules) set aside: about 400 lines more and none saved (the row says what it would take).
+- **Open, in order:** customisation, `docs/REAL_PLAN.md` section 27 (N213 her own colour on any wall done; N214–N222 next, several waiting on its seven questions for Emma); then section 25 (N201 the real devices'
   check, "lighting later when the house is right"; N205 on hold; N206 her own colours and swapping furniture, to plan with her).
 - **Waiting on Emma:** which storage ideas she wants (N212), then sizes for them; the master's frames' sliding doors need a measurement
   first (they'd cut about 2 cm into the room door's swing as drawn).

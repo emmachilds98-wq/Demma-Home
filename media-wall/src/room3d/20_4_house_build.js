@@ -1,3 +1,5 @@
+let houseG = null, HMATS = null;   // v54: the whole house, drafted (The whole house view); v73: its materials
+let HBUILD = null;     // V1: builds (or rebuilds, with edits) one floor of the house
 function buildHouse() {
   const HS = R.HOUSE; if (!HS) return;
   houseG = new THREE.Group(); houseG.name = "houseG"; houseG.visible = false; scene.add(houseG);

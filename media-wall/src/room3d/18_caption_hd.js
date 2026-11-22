@@ -1,4 +1,5 @@
 /* ---------------------------------------------------------------- caption and HD save */
+let LIVE = true;   // v35: false while still() draws a picture (01_renderer.js's lights)
 function updateCaption() {
   try { updatePicks(); } catch (e) {}   // v22
   const sc = SCENES[S.scene];

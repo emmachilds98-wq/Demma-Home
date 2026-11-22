@@ -137,8 +137,6 @@ function showStop(finish = true) {
   else if (finish) { Object.assign(S, { site: "C", dining: "six", tdoor: false, chairs: "cupboard" }); applyState(); syncButtons(); }
 }
 const IDEA_G = {};   // v17: the ideas (ideas.py), each its own group, all hidden until its button is on
-let ideaLed;
-let rugMesh, curtCloth, caseFrameM, cushG, coffeeG, floorMat, shelfMat;   // v20: the decor to try (S.decor): set by applyDecor()
 const SUGG_G = {};   // v21: suggested furniture and decor (ideas.SUGGEST, the same keys), each on or off (S.sugg); the floor pieces move in Edit room
 const caseOn = () => S.site !== "A" && !(S.plants === "breast" && S.sugg.alcoveshelves);   // v34: the glass display case is on the breast whenever the table isn't (site A, set aside)
 const caseBreast = () => caseOn() && S.plants !== "breast";   // V3.14: with the plants on the breast (the plan) the case and the "now playing" ledge hang over the vinyl stand left of the window

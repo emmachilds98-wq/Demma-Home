@@ -1,5 +1,4 @@
 /* ---------------------------------------------------------------- go: built the first time the room is on screen (v14.1) */
-let started = false;
 /* v48 §6, v49: the sun through the window casts the frame, bars and sill plants onto the sill, sofa and floor; its direction geometry.SUN
    (7 am in June, low from the right: the back faces 14° east of north). Always in the scene (no shader rebuilds), dark by night and in Fast */
 const SUNCFG = { lux: 80, out: 0.5 };   // tuned on stills: the bars' shadows read on the sofa, the ottoman and the rug, the floor not washed out; outside (V1.3), higher in the sky, half

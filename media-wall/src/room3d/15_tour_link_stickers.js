@@ -78,6 +78,10 @@ function lookOf() {
   if (Object.keys(S.layout).length) o.layout = S.layout;                                             //      and added pieces
   if (S.added.length) o.added = S.added;
   const fl = Object.fromEntries(Object.entries(S.fin || {}).filter(([r, sl]) => r !== LIVR && sl && sl[5]).map(([r, sl]) => [r, sl[5]])); if (Object.keys(fl).length) o.fl = fl;   // N209: each room's floor
+  const PF = ((R.HOUSE3 || {}).plan_finishes || {}).rooms || {}, fc = {};   // N213: each room's walls, ceiling and the outside's colours, but the plan's
+  for (const [r, sl] of Object.entries(S.fin || {})) { if (r === LIVR || !sl) continue;
+    for (const [s, v] of Object.entries(sl)) if ((+s <= 4 || +s === 9 || +s === 10) && HEX.test(v || "") && v !== (PF[r] || {})[s]) (fc[r] = fc[r] || {})[s] = v; }
+  if (Object.keys(fc).length) o.fc = fc;
   return o;
 }
 const b64u = t => btoa(unescape(encodeURIComponent(t))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -143,6 +147,9 @@ function applyLook(tok) {
     restoreLayout({ layout: lay, added: add });
   }
   if (o.fl && typeof o.fl === "object") { const c = finClean(Object.fromEntries(Object.entries(o.fl).map(([r, k]) => [r, { 5: k }]))); delete c[LIVR]; S.fin = S.fin || {};   // N209: their floors
+    for (const [r, sl] of Object.entries(c)) S.fin[r] = Object.assign({}, S.fin[r], sl); finApplyAll(); }
+  if (o.fc && typeof o.fc === "object") { const c = finClean(Object.fromEntries(Object.entries(o.fc).filter(([, sl]) => sl && typeof sl === "object")   // N213: their walls' colours (colours only)
+      .map(([r, sl]) => [r, Object.fromEntries(Object.entries(sl).filter(([s, v]) => (+s <= 4 || +s === 9 || +s === 10) && HEX.test(v || "")))]))); delete c[LIVR]; S.fin = S.fin || {};
     for (const [r, sl] of Object.entries(c)) S.fin[r] = Object.assign({}, S.fin[r], sl); finApplyAll(); }
   applyState(); syncButtons();
   setView(o.v in VIEWS ? o.v : "room", true);
