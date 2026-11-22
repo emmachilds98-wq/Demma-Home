@@ -52,20 +52,36 @@ const btn = (label, attrs, on, cls, aria) => ({ label, attrs, on, cls, aria });
 /* V2.46 (N7): a swap's card (‹ › its kind's pieces) and an added piece's (‹ › the catalogue, its kinds to jump to); shown at once */
 const HCAT_ADD = ["plant", "snake", "monstera", "olive", "armchair", "sidetable", "floorlamp", "rug", "bookcase", "cubes", "ladder", "chest3", "chest6", "tallboy", "bsdrawer", "bswhite", "bslegs",
   "desklegs", "deskdrawers", "trestle", "bench", "pouffe", "wardrobe2", "sliding", "openrail", "divan", "oakbed", "metalbed", "markus", "langfjall", "stoense", "lohals", "desklong"];
+HCAT_ADD.push(...Object.keys(HCAT).filter(q => HCAT[q].shop));   // N219: the shops' pieces too
 const hcAddOf = kind => HCAT_ADD.filter(q => HCAT[q].k === kind);
-const hcLine = (k, C) => { const why = fitWhy(k); return `${[C.w, C.d, C.h].map(Math.round).join(" × ")} cm · ${why.length ? why.slice(0, 2).join(" · ") : "Fits"} · ${C.src.split(",")[0]}`; };   // N217: its size, whether it fits
+const hcLine = (k, C) => { const why = fitWhy(k);   // N217: its size, whether it fits; N219: a shop's price and name, or hers
+  return `${[C.w, C.d, C.h].map(v => Math.round(v * 10) / 10).join(" × ")} cm · ${why.length ? why.slice(0, 2).join(" · ") : "Fits"} · ${C.shop ? `£${C.p} · ${C.shop}` : C.src.split(",")[0]}`; };
+const hcShopTray = (k, L, C, at) => { const shops = [...new Set(L.map(q => q && HCAT[q].shop).filter(Boolean))];   // a chip a shop (its first piece of this kind), its page
+  return (shops.length ? `<div class="r3d-finsc" role="group" aria-label="Shops">${shops.map(s => `<button type="button" data-${at}="${k}:${L.findIndex(q => q && HCAT[q].shop === s)}" aria-pressed="${!!C && C.shop === s}">${s}</button>`).join("")}</div>` : "")
+    + (C && C.url ? `<a href="${C.url}" target="_blank" rel="noopener">See it at ${C.shop}</a>` : ""); };
+/* N219: her own piece's card: its name, its size, its look and its colour (twelve of the house's materials), kept in its row's value */
+const ownOf = v => { const q = String(v).split("|"); return { look: q[1], m: q[2], w: +q[3], d: +q[4], h: +q[5], n: q[6] || "" }; };
+function ownCard(k, C) {
+  const o = ownOf(HIT(k).add), f = (x, t, v, a) => `<div class="fld"><span>${t}</span><span class="stp"><input ${a} value="${v}" data-hown="${x}" aria-label="${t}"></span></div>`;
+  return [C.n, hcLine(k, C), [btn("Keep it", { actopen: "hitem:" + k }, true), btn("Remove", { hremove: k })], null,
+    `<div class="r3d-fin"><div class="r3d-actfields">${f("n", "Its name", o.n, 'type="text" maxlength="24" placeholder="Your own piece" style="width:150px"')}`
+    + [["w", "Width"], ["d", "Depth"], ["h", "Height"]].map(([x, t]) => f(x, t + " (cm)", o[x], 'type="number" inputmode="decimal" step="1" min="1" max="400"')).join("") + `</div>`
+    + `<span class="r3d-finlab">Its look</span><div class="r3d-finsc" role="group" aria-label="Its look">${OWN_LOOKS.map(q => `<button type="button" data-hownl="${q}" aria-pressed="${o.look === q}">${HCAT_KINDS[q]}</button>`).join("")}</div>`
+    + `<span class="r3d-finlab">Its colour</span><div class="r3d-fintray" role="group" aria-label="Its colour">${OWN_MATS.map(([q, t, h]) => `<button type="button" class="sw" data-hownm="${q}" style="--c:${h}" aria-pressed="${o.m === q}" title="${t}" aria-label="${t}"><i></i><span>${t}</span></button>`).join("")}</div></div>`];
+}
 function hcatCard(id) {
   const k = id.split(":")[1], it = HIT(k); if (!it) return null;
   const nav = (i, at) => [btn("‹", { [at]: `${k}:${i - 1}` }, false, "q", "The one before"), btn("›", { [at]: `${k}:${i + 1}` }, false, "q", "The next one")];
   if (id.startsWith("hswap:")) { const kind = swapKind(k); if (!kind) return null;
     const L = [null, ...hcOf(kind)], i = Math.max(0, L.indexOf(pieceNow(k).swap)), C = HCAT[L[i]];
     return [C ? C.n : it.n + " (yours)", C ? hcLine(k, C) : `${HCAT_KINDS[kind]} · as planned`,
-      [...nav(i, "hswapgo"), btn("Keep it", { actopen: "hitem:" + k }, true)]]; }
+      [...nav(i, "hswapgo"), btn("Keep it", { actopen: "hitem:" + k }, true)], null, `<div class="r3d-fin">${hcShopTray(k, L, C, "hswapgo")}</div>`]; }
   if (it.look) { const L = plantKeys(), i = Math.max(0, L.indexOf(it.add)), C = HCAT[it.add];   // N5: a room's plant, from Look
     return [C.n, `${roomName(it.look)}'s plant · ${i + 1} of ${L.length} · ${C.src}`, [...nav(i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Remove", { hremove: k })]]; }
-  const C = HCAT[it.add], i = Math.max(0, hcAddOf(C.k).indexOf(it.add));   // N218: its kind first (the chips), then ‹ › through that kind
+  const C = HCAT[it.add]; if (C.own) return ownCard(k, C);
+  const L = hcAddOf(C.k), i = Math.max(0, L.indexOf(it.add));   // N218: its kind first (the chips), then ‹ › through that kind
   return [C.n, hcLine(k, C), [...nav(i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Remove", { hremove: k })], null,
-    `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Kinds">${Object.entries(HCAT_KINDS).map(([q, t]) => `<button type="button" data-hcatk="${k}:${q}" aria-pressed="${C.k === q}">${t}</button>`).join("")}</div></div>`];
+    `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Kinds">${Object.entries(HCAT_KINDS).map(([q, t]) => `<button type="button" data-hcatk="${k}:${q}" aria-pressed="${C.k === q}">${t}</button>`).join("")}</div>${hcShopTray(k, L, C, "haddgo")}</div>`];
 }
 /* N23: a room's card of its changes (Look's and Edit's), a tap each to tick done, with a rough cost; Plan has the house's total. Ticks in
    dh-done (N118); a tick's key carries the choice. Costs E: UK retail and trade, Nov 2026, a floor by its area */
@@ -73,14 +89,15 @@ const UPC = { walls: [40, 80], wall: [15, 35], ceil: [20, 40], skirt: [15, 35], 
   frames: [150, 600], door_out: [30, 150], door: [150, 500], window: [400, 1500],
   floor: { carpet_grey: [20, 45], carpet: [20, 45], laminate: [20, 40], oak: [50, 90], pine: [30, 60], tile_f: [35, 70], marble: [80, 150], quarry: [45, 85], herring: [70, 115], lvt_grey: [45, 75], porcelain: [60, 110] },   // a m², laid (N56: fit.SOURCES upfloors)
   fit: { bare: [5, 15], drum: [20, 60], globe: [25, 70], dome: [15, 45], spots: [40, 120] },
-  kind: { bed: [200, 550], wardrobe: [150, 450], chest: [60, 220], bedside: [30, 100], desk: [60, 220], shelves: [40, 160], seat: [100, 350], chair: [60, 200], rug: [40, 160], plant: [10, 45], more: [25, 120] },
+  kind: { bed: [200, 550], wardrobe: [150, 450], chest: [60, 220], bedside: [30, 100], desk: [60, 220], shelves: [40, 160], seat: [100, 350], chair: [60, 200], rug: [40, 160], plant: [10, 45],
+    table: [40, 300], unit: [60, 300], lamp: [25, 120], more: [25, 120] },
   piece: { sofa3: [449, 590], dresser: [155, 200], tvbench: [120, 185], desklong: [140, 155], markus: [159, 159], langfjall: [115, 115], stoense: [49, 49], lohals: [129, 129] },   // N58: each its own (fit.SOURCES hcmore2, hcswap), delivery in the top
   plant: { plant: [35, 90], snake: [15, 40], monstera: [30, 90], olive: [60, 160] },   // N40: each plant in its pot, as big as the catalogue's
   paper: [10, 200], panel: [40, 300] };   // N57: on top of the packs: glue, caulk, paint, up to a carpenter's day   // N40: on top of the rolls (the tray's count and price): paste and a brush, up to a decorator's day
 const UPK = "dh-done";
 const upDone = () => { try { return JSON.parse(localStorage.getItem(UPK) || "{}") || {}; } catch (e) { return {}; } };
 const upNm = (L, k) => (L.find(r => r[0] === k) || [0, k])[1];
-const upCat = (key, C) => UPC.piece[key] || C.k === "plant" && UPC.plant[key] || UPC.kind[C.k];
+const upCat = (key, C) => C.own ? [0, 0] : C.shop ? [C.p, C.p] : UPC.piece[key] || C.k === "plant" && UPC.plant[key] || UPC.kind[C.k];   // N219: a shop's own price; hers, none
 function roomUps(room) {   // [{k, t, lo, hi}]: what's changed in a room
   const H = R.HOUSE3 || {}, L = [], add = (k, t, c = [0, 0], n = 1) => L.push({ k, t, lo: Math.round(c[0] * n), hi: Math.round(c[1] * n) });
   if (room === "outside") { const o = (S.fin || {}).outside || {};
@@ -169,7 +186,7 @@ function actItems(id) {     // [title, how it is now, buttons]
     return ["Ottoman bed", up ? "Lifted: four storage boxes inside" : "Pine; the base lifts from the foot", [
       btn(up ? "Lower the bed" : "Lift the bed", { hbed: up ? "down" : "up" }), ...(ROOMV() && GS.RMODE !== "above" ? [btn("View from above", { rmode: "above" })] : [])], null, finBedTray("master")]; }   // N5d: its bedding
   if (id.startsWith("fin:")) { const c = finCard(id), [, rm, sl] = id.split(":");   // V2.6: a wall's or a ceiling's colours (23_finish.js)
-    if (c && sl === "5" && DS() && TAPAT && R.HOUSE3 && (R.HOUSE3.rooms || {})[rm] && rm !== "living") c[2].unshift(btn("Add a piece here", { hadd: rm }));   // V2.46 (N7): from the catalogue
+    if (c && sl === "5" && DS() && TAPAT && R.HOUSE3 && (R.HOUSE3.rooms || {})[rm] && rm !== "living") c[2].unshift(btn("Add a piece here", { hadd: rm }), btn("Your own piece", { hownadd: rm }));   // V2.46 (N7): from the catalogue; N219: hers
     const outs = sl === "5" ? roomOuts(rm) : []; if (c && outs.length) c[2].splice(1, 0, btn(`Taken out (${outs.length})`, { actopen: "hout:" + rm }));   // V3.80 (N149): what's out of the room, to put back
     if (c) c[2].push(...upsBtn(rm));   // N23: the room's changes (N68: after the card's own buttons)
     return c; }
@@ -464,6 +481,11 @@ if (act) {
       const y = cmR(Math.max(r[4], Math.min(r[4] + 5, TAPAT[1]))), [x, z] = addSpot(d.hadd, HCAT_ADD[0], TAPAT[0], TAPAT[2], y);   // N218: back to a wall, where it fits
       ds.put("edits", id + "~add", { item: id, field: "add", value: HCAT_ADD[0], room: d.hadd, x: cmR(x), z: cmR(z), y }).catch(() => toast("That didn't save: try again"));
       GS.actId = "hadd:" + id; renderAct(); return; }
+    if (d.hownadd && TAPAT) { const rm = d.hownadd, r = R.HOUSE3.rooms[rm], id = "add." + Math.random().toString(36).slice(2, 10), ds = DS(); if (!r || !ds) return;   // N219: her own, where it fits
+      const v = hcOwn(ownVal("chest", "oak", 80, 45, 80, "")), y = cmR(Math.max(r[4], Math.min(r[4] + 5, TAPAT[1]))), [x, z] = addSpot(rm, v, TAPAT[0], TAPAT[2], y);
+      ds.put("edits", id + "~add", { item: id, field: "add", value: v, room: rm, x: cmR(x), z: cmR(z), y }).catch(() => toast("That didn't save: try again"));
+      GS.actId = "hadd:" + id; renderAct(); return; }
+    if ((d.hownl || d.hownm) && GS.actId && GS.actId.startsWith("hadd:")) { ownPut(GS.actId.slice(5), d.hownl ? { look: d.hownl } : { m: d.hownm }).then(() => { if (GS.actId) renderAct(); }); return; }
     if (d.hswapgo || d.haddgo || d.hcatk) { const [k, x] = (d.hswapgo || d.haddgo || d.hcatk).split(":"), it = HIT(k), ds = DS(); if (!it || !ds) return;
       if (d.hswapgo) { const L = [null, ...hcOf(swapKind(k))], v = L[((+x % L.length) + L.length) % L.length];   // N217: the new piece at its own size, where the old one stood
         Promise.all(["w", "h", "along"].filter(f => ds.rows("edits")[`${k}~${f}`]).map(f => ds.del("edits", `${k}~${f}`))).then(() => setPiece(k, "swap", v)).then(() => { if (GS.actId) renderAct(); }); return; }
@@ -486,6 +508,10 @@ if (act) {
     if (d.measure) { if (d.measure === "done") { endMeasure(); closeAct(); } else { clearMeasure(); renderAct(); } return; }
     if (d.view) setTimeout(closeAct, 0);                     // the room flies there; the card has done its job
   });
+  const ownIn = (e, now) => { const el = e.target, f = el.dataset && el.dataset.hown; if (!f || !GS.actId || !GS.actId.startsWith("hadd:")) return;   // N219: her piece's name or size, kept once you pause
+    const v = f === "n" ? ownName(el.value) : parseFloat(el.value); if (f !== "n" && !(v >= 1 && v <= 400)) return;
+    clearTimeout(sizeT); sizeT = setTimeout(() => ownPut(GS.actId.slice(5), { [f]: f === "n" ? v : cmR(v) }).then(() => { if (now && GS.actId) renderAct(); }), now ? 0 : 450); };
+  act.addEventListener("input", e => ownIn(e, false)); act.addEventListener("change", e => ownIn(e, true));
   act.addEventListener("input", e => { const el = e.target; if (!el.dataset || !el.dataset.hfield || !GS.actId) return;   // V1.50: a typed size, kept once you pause
     const k = GS.actId.split(":")[1], f = el.dataset.hfield, v = parseFloat(el.value); if (!isFinite(v)) return;
     clearTimeout(sizeT); sizeT = setTimeout(() => setPiece(k, f, clampF(f, cmR(v))), 450); });
@@ -511,6 +537,13 @@ if (act) {
     if (mouse) tapT = setTimeout(go, DBL_MS); else go();
   });
   document.addEventListener("keydown", e => { if (e.key === "Escape" && GS.actId) closeAct(); });
+}
+/* N219: her own piece's row, changed (its look, colour, size or name), standing back where it fits nearest where it was */
+async function ownPut(k, patch) {
+  const ds = DS(), row = ds && ds.rows("edits")[k + "~add"]; if (!row || !hcOwn(row.value)) return;
+  const o = Object.assign(ownOf(row.value), patch), v = hcOwn(ownVal(o.look, o.m, o.w, o.d, o.h, o.n)); if (!v || v === row.value) return;
+  const [x, z] = addSpot(row.room, v, +row.x, +row.z, +row.y, k);
+  try { await ds.put("edits", k + "~add", Object.assign({}, row, { value: v, x: cmR(x), z: cmR(z) })); } catch (e) { toast("That didn't save: try again"); }
 }
 function setAbove(show) {   // the floor above (the stairwell's upper walls) hides in the views from above
   const hs = houseG && houseG.visible;                                         // v72: in the house the house's own stairwell stands there (the

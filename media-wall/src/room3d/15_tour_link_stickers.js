@@ -91,7 +91,7 @@ const HE_NUM = { w: [1, 1000], h: [1, 1000], up: [-500, 1000], along: [-500, 100
 function heOk(v) {
   if (!v || typeof v.item !== "string") return false;
   const add = /^add\.[a-z0-9]{1,12}$/.test(v.item), H = R.HOUSE3 || {};
-  if (v.field === "add") return add && HCAT_ADD.includes(v.value) && !!(H.rooms || {})[v.room] && [v.x, v.z, v.y].every(Number.isFinite);
+  if (v.field === "add") return add && (HCAT_ADD.includes(v.value) || !!hcOwn(v.value)) && !!(H.rooms || {})[v.room] && [v.x, v.z, v.y].every(Number.isFinite);   // N219: her own piece too
   if (!add && !(H.items || {})[v.item]) return false;
   const L = HE_NUM[v.field];
   return L ? Number.isFinite(v.value) && v.value >= L[0] && v.value <= L[1] : v.field === "removed" ? v.value === true : v.field === "swap" && !add && !!HCAT[v.value] && swapKind(v.item) === HCAT[v.value].k;

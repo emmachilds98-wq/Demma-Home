@@ -1438,6 +1438,22 @@ SOURCES["skadis"] = "IKEA UK: SKÅDIS pegboard, white, 56 × 56 cm, £13; with h
 SOURCES["helmer"] = "IKEA UK: HELMER drawer unit on castors, white or black, W 28 × D 43 × H 69 cm, six drawers, £39 (ikea.com/gb, 102.510.45)"
 SOURCES["ivar"] = "IKEA UK: IVAR 1 section with shelves, pine, 89 × 30 × 179 cm, the shelves moved to suit, about £96 (ikea.com/gb, 398.963.71)"
 SOURCES["mittled"] = "IKEA UK: MITTLED LED spotlight, dimmable, black, for inside cabinets, £9 (ikea.com/gb, 605.286.59)"
+# N219 (22 Nov 2026): real pieces from four shops (docs/N219_catalogue.json, read 22 Nov 2026), each its own row, to swap or add in
+# the 3D (options to look at: nothing to buy until she picks). Keyed by its page and name (shop_key), so a row in Send or a look link keeps it.
+def shop_key(p):   # its page and name (one page can sell two sizes)
+    import hashlib
+    return "sh" + hashlib.sha1((p["url"] + "|" + p["name"]).encode()).hexdigest()[:6]
+
+
+def shop_pieces():
+    import json, pathlib
+    return json.loads((pathlib.Path(__file__).resolve().parents[2] / "docs/N219_catalogue.json").read_text())
+
+
+for _p in shop_pieces():
+    SOURCES[shop_key(_p)] = (f"{_p['retailer']}: {_p['name']}, {_p['finish']}, W {_p['w']:g} × D {_p['d']:g}"
+                                    + (f" × H {_p['h']:g}" if _p.get("h") else "") + f" cm, £{_p['price']:g} ({_p['url']}, read {_p['read']})")
+    ORDER.append(shop_key(_p))
 SOURCES["bergshult"] = ("IKEA UK: BERGSHULT shelf, white, 80 × 20 cm, £12, on two RAMSHULT brackets (18 × 22) at least 70 apart; the pair about £27 "
                         "(ikea.com/gb, 704.212.38)")
 SOURCES["tjusig"] = "IKEA UK: TJUSIG hat rack, white, W 79 × D 32 × H 25 cm, hooks under a rail shelf, £29 (ikea.com/gb, 401.526.33)"
