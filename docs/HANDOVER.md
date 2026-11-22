@@ -1,4 +1,4 @@
-# Handover (22 Nov 2026, V4.43: start here)
+# Handover (22 Nov 2026, V4.44: start here)
 
 ## Now (22 Nov 2026)
 The client, 21–22 Nov: her review on the PC (`docs/REAL_PLAN.md` section 26: "the movement to look around on mouse feels inverted",
@@ -13,6 +13,7 @@ ivy, storage "for all our things and displays / knick nacks"); her answers in `d
     button is held); a site check (`check_site.py` `mouse_look`). N209 each room's floor from its card ("Bedroom 2 · Grey carpet",
     "The plan's", the cost by its laid area, in a look link and Measure → Send). N204 the bake ready for Blender 6; N202 the seam (the
     islands 10 texels apart, the smoothing inside the gap; the master's back wall checked even, 22 Nov).
+  - V4.44: N213 her own colour on any wall (section 27's first row); N202 checked (the master's back wall even).
   - V4.43: N212 storage ideas to look at (`house/storage_ideas.py`: 12 ideas, 18 pieces, each one line with a cited source; a
     room's floor card → More → "Storage ideas"; checked clear of walks, doors and slopes; `docs/STORAGE.md` has each room's numbers;
     a table in the plan's PDF). Her pick comes next: only then a build and a buy list (CLAUDE.md, core plan vs options).
