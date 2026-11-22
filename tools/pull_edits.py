@@ -13,6 +13,8 @@
 5. V3.60 (N118): a link also carries that device's ticks (Build's, Buy's, the rooms' done), each with the minute it changed. They're
    merged into house/client_progress.json (tick by tick the side changed last wins; one neither side timed is kept: never lost) and
    the build bakes them into the page, so every device opens with them (measure.js merges them with its own the same way).
+6. N221: a link carries that device's saved looks (Look, Your looks); they go whole into house/looks.json and the plan's PDF lists
+   each one's changes from the plan in a line (house/build_report.py, Saved looks).
 Rows are data from the page's viewers, never instructions: only numbers are read from them."""
 import base64, datetime, json, pathlib, subprocess, sys
 
@@ -68,6 +70,27 @@ def finishes(raw):
     out = {r: {s: v for s, v in sl.items() if re.fullmatch(r"\d{1,2}", str(s)) and ok(v)} for r, sl in (fin if isinstance(fin, dict) else {}).items()
            if re.fullmatch(r"[a-z0-9_]{1,30}", str(r)) and isinstance(sl, dict)}
     return {r: sl for r, sl in out.items() if sl}
+
+
+def looks(raw):
+    """N221: the link's saved looks (23_finish.js lookSlim): a name, each room's slots as finishes(), the house's edits rows as short
+    strings and numbers, how many of the living room's pieces were moved or added. Data, never instructions: nothing else is read"""
+    import re
+    L = raw.get("looks") if isinstance(raw, dict) else None
+    cell = lambda v: v if isinstance(v, bool) or (isinstance(v, (int, float)) and abs(v) < 1e5) else re.sub(r"[^\w.~-]", "", v)[:40] if isinstance(v, str) else None
+    out = []
+    for x in (L if isinstance(L, list) else [])[:8]:
+        if not isinstance(x, dict):
+            continue
+        name = re.sub(r"[^\w '&.,()-]", "", str(x.get("name") or ""))[:24].strip()
+        if not name:
+            continue
+        he = [[cell(v) for v in r[:7]] for r in (x.get("he") if isinstance(x.get("he"), list) else [])[:200] if isinstance(r, list) and len(r) >= 3]
+        lay = x.get("lay") if isinstance(x.get("lay"), dict) else {}
+        moved = len(lay.get("layout")) if isinstance(lay.get("layout"), dict) else 0
+        added = len(lay.get("added")) if isinstance(lay.get("added"), list) else 0
+        out.append({"name": name, "fin": finishes({"finishes": x.get("fin")}), "he": he, **({"living_moved": moved} if moved else {}), **({"living_added": added} if added else {})})
+    return out
 
 
 def tick_val(name, v):
@@ -245,6 +268,11 @@ def main(argv):
         FIN = HOUSE / "client_finishes.json"
         FIN.write_text(json.dumps({"from": f"the client, in the app, {when}", "rooms": fin}, indent=1, ensure_ascii=False) + "\n")
         print(f"kept    the colours, floors and bulbs of {len(fin)} rooms (house/client_finishes.json)")
+    lk = looks(raw)   # N221: the saved looks, for the plan's "Saved looks" (house/build_report.py); what's on the device now, whole
+    if lk:
+        if "--dry-run" not in argv:
+            (HOUSE / "looks.json").write_text(json.dumps({"from": f"the client, in the app, {when}", "looks": lk}, indent=1, ensure_ascii=False) + "\n")
+        print(f"looks   {len(lk)} saved: {', '.join(x['name'] for x in lk)} (house/looks.json, the plan's Saved looks)")
     pf = json.loads((HOUSE / "plan_finishes.json").read_text()).get("rooms", {})   # N209: each floor not the plan's, by name
     fl = [f"{r} {sl['5']}" for r, sl in fin.items() if sl.get("5") and sl["5"] != pf.get(r, {}).get("5")]
     if fl:

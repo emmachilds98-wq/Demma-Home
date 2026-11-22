@@ -82,8 +82,7 @@ function lookOf() {
   for (const [r, sl] of Object.entries(S.fin || {})) { if (r === LIVR || !sl) continue;
     for (const [s, v] of Object.entries(sl)) if (finLook(+s, v) && v !== (PF[r] || {})[s]) (fc[r] = fc[r] || {})[s] = v; }
   if (Object.keys(fc).length) o.fc = fc;
-  const he = DS() ? Object.values(DS().rows("edits") || {}).filter(heOk).map(v => [v.item, v.field, v.value, ...(v.field === "add" ? [v.room, v.x, v.z, v.y] : [])]) : [];
-  if (he.length) o.he = he;   // N218: the house's edits (swaps, moves, pieces added or taken out), as Measure's rows
+  const he = heOf(); if (he.length) o.he = he;   // N218: the house's edits (swaps, moves, pieces added or taken out), as Measure's rows
   return o;
 }
 /* N218: an edits row as the page reads it (pieceNow, syncAdds): a house piece's size, move, turn, taken out or swap; or a piece added */
@@ -127,10 +126,11 @@ function copyLook() {
   const done = () => { st.textContent = "Copied. Paste it into a message: it opens the room just like this."; toast("Link copied"); };
   try { navigator.clipboard.writeText(url).then(done, shown); } catch (e) { shown(); }
 }
-function applyLook(tok) {
+function applyLook(tok, title = "Emma's look") {   // N222: a title: shown, not kept; none (your own saved plan): worn and kept
   let o; try { o = JSON.parse(unb64u(tok)); } catch (e) { return false; }
   if (!o || typeof o !== "object") return false;
-  const ok = (k, v) => typeof v === "string" && (LOOK_STR[k] ? LOOK_STR[k].includes(v) : k === "scene" ? v in SCENES : k === "plants" ? v in R.PLANT_LAYOUTS : k === "paint" ? (v in R.PAINTS || v === "custom") : /^[a-z0-9_]{1,24}$/i.test(v));
+  if (title) lookAside(title); else if (ASIDE) lookMine();   // N222: Dave only looks: his own set aside, not overwritten
+  const ok =(k, v) => typeof v === "string" && (LOOK_STR[k] ? LOOK_STR[k].includes(v) : k === "scene" ? v in SCENES : k === "plants" ? v in R.PLANT_LAYOUTS : k === "paint" ? (v in R.PAINTS || v === "custom") : /^[a-z0-9_]{1,24}$/i.test(v));
   for (const k of Object.keys(LOOK_STR)) if (ok(k, o[k])) S[k] = o[k];
   for (const k of LOOK_BOOL) if (k in o) S[k] = !!o[k];
   if (HEX.test(o.custom || "")) S.custom = o.custom;
@@ -150,7 +150,7 @@ function applyLook(tok) {
     for (const [f, lo, hi] of [["lv", 0, 100], ["yaw", -90, 90], ["tilt", -60, 60]]) if (Number.isFinite(+h[f])) c[f] = Math.max(lo, Math.min(hi, +h[f]));
     if (HEX.test(h.col || "")) c.col = h.col; if (Object.keys(c).length) S.head[k] = c; }
   if (Number.isFinite(+o.warm)) S.warm = Math.max(0, Math.min(100, +o.warm)); else S.warm = DEF.warm;   // v50
-  if (o.layout || o.added) {   // v50: the furniture moved or added in Edit room
+  {   // v50: the furniture moved or added in Edit room (N222: none, none shown)
     const ID = /^[a-z0-9_:-]{1,40}$/i, lay = {}, add = [];
     if (o.layout && typeof o.layout === "object") for (const [id, L] of Object.entries(o.layout)) { if (!ID.test(id) || !L || typeof L !== "object") continue;
       const c = {}; for (const f of ["x", "z", "rot"]) if (Number.isFinite(+L[f])) c[f] = +L[f]; if (HEX.test(L.col || "")) c.col = L.col; if (L.off) c.off = true; lay[id] = c; }
@@ -158,25 +158,24 @@ function applyLook(tok) {
       add.push({ type: a.type, id: a.id, x: +a.x, z: +a.z, ...(Number.isFinite(+a.rot) ? { rot: +a.rot } : {}), ...(HEX.test(a.col || "") ? { col: a.col } : {}) });
     restoreLayout({ layout: lay, added: add });
   }
-  if (o.fl && typeof o.fl === "object") { const c = finClean(Object.fromEntries(Object.entries(o.fl).map(([r, k]) => [r, { 5: k }]))); delete c[LIVR]; S.fin = S.fin || {};   // N209: their floors
-    for (const [r, sl] of Object.entries(c)) S.fin[r] = Object.assign({}, S.fin[r], sl); finApplyAll(); }
-  if (o.fc && typeof o.fc === "object") { const c = finClean(Object.fromEntries(Object.entries(o.fc).filter(([, sl]) => sl && typeof sl === "object")   // N213: their walls' colours (colours only)
-      .map(([r, sl]) => [r, Object.fromEntries(Object.entries(sl).filter(([s, v]) => finLook(+s, v)))]))); delete c[LIVR]; S.fin = S.fin || {};
-    for (const [r, sl] of Object.entries(c)) S.fin[r] = Object.assign({}, S.fin[r], sl); finApplyAll(); }
-  const he = () => { for (const a of o.he.slice(0, 200)) { if (!Array.isArray(a)) continue;   // N218: the house's edits, each checked (once Measure's store is up)
-    const [item, field, value, room, x, z, y] = a, v = field === "add" ? { item, field, value, room, x, z, y } : { item, field, value };
-    if (heOk(v)) DS().put("edits", `${item}~${field}`, v); } };
-  if (Array.isArray(o.he)) { if (DS()) he(); else addEventListener("demma-rows", he, { once: true }); }
+  const fin = planFin();   // N222: the plan's scheme with their floors (N209) and walls' colours (N213, colours only) over it
+  if (o.fl && typeof o.fl === "object") { const c = finClean(Object.fromEntries(Object.entries(o.fl).map(([r, k]) => [r, { 5: k }]))); delete c[LIVR];
+    for (const [r, sl] of Object.entries(c)) fin[r] = Object.assign({}, fin[r], sl); }
+  if (o.fc && typeof o.fc === "object") { const c = finClean(Object.fromEntries(Object.entries(o.fc).filter(([, sl]) => sl && typeof sl === "object")
+      .map(([r, sl]) => [r, Object.fromEntries(Object.entries(sl).filter(([s, v]) => finLook(+s, v)))]))); delete c[LIVR];
+    for (const [r, sl] of Object.entries(c)) fin[r] = Object.assign({}, fin[r], sl); }
+  S.fin = fin; finApplyAll();
+  lookHe(Array.isArray(o.he) ? o.he : []);   // N218: the house's edits, each checked (heOk), into the copy set aside (once Measure's store is up)
   applyState(); syncButtons();
   setView(o.v in VIEWS ? o.v : "room", true);
   const c = Array.isArray(o.c) && o.c.length === 7 && o.c.every(Number.isFinite) ? o.c : null;
   if (c) { camera.position.copy(v3(c[0], c[1], c[2])); controls.target.copy(v3(c[3], c[4], c[5])); GS.baseFov = Math.max(20, Math.min(90, c[6])); camera.fov = fitFov(GS.baseFov); camera.updateProjectionMatrix(); controls.update(); updateCut(); dirty(); }
-  store.set(KEY, S);
+  if (title) lookPill(); else store.set(KEY, S);   // shown: nothing saved till Keep it or Back to mine (23_finish.js)
   return true;
 }
 function lookFromHash() {
   const m = (location.hash || "").match(/^#look-([A-Za-z0-9_-]+)$/); if (!m) return;
-  if (applyLook(m[1])) toast("Opened the shared view");
+  applyLook(m[1]);
   try { history.replaceState(history.state, "", "#room"); } catch (e) {}
 }
 addEventListener("hashchange", () => { if (started) lookFromHash(); });

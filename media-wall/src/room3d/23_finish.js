@@ -387,22 +387,85 @@ function finTakes() {
   const T = R.HOUSE3 ? upsAll()[1] : { n: 0 }; if (T.n) rows.push(`<div class="ms-erow"><b>All the changes</b> ${T.n}, about ${upRange(T.lo, T.hi) || "£0"}</div>`);   // N40: the house's total, sent with the rest
   list.innerHTML = rows.join(""); box.hidden = !rows.length;
 }
-let FIN_COPY = null;   // V2.13 (F6): Copy / Paste a room's look; the house's colours saved as named schemes on this device
-const FSK = "dh-fin-schemes";
-function finSchemes() { try { const L = JSON.parse(localStorage.getItem(FSK) || "[]"); return Array.isArray(L) ? L : []; } catch (e) { return []; } }
+let FIN_COPY = null;   // V2.13 (F6): Copy / Paste a room's look
+/* N221: saved looks: the colours, floors and furniture edits together ({name, fin, he, lay}), named, a few on this device as chips in
+   Look (an old {name, fin} is a look of colours only); a tap wears one (Put back on its toast), As it is and The plan always there.
+   Send carries them (R3D.looks, Measure's link) to the plan (tools/pull_edits.py: house/looks.json, the PDF's Saved looks).
+   N222: a look shown, not worn (a link from another device, The plan): the device's own set aside (ASIDE: its S, its edits rows in a
+   copy), nothing saved till Keep it; Back to mine (or Esc) puts it back as it was */
+const FSK = "dh-fin-schemes", LOOK_MAX = 8;
+let ASIDE = null, LOOK_PREV = null;
+function finSchemes() { try { const L = JSON.parse(localStorage.getItem(FSK) || "[]"); return Array.isArray(L) ? L.filter(x => x && typeof x.name === "string" && x.fin && typeof x.fin === "object") : []; } catch (e) { return []; } }
+const heRow = q => { if (!Array.isArray(q)) return null; const [item, field, value, room, x, z, y] = q, v = field === "add" ? { item, field, value, room, x, z, y } : { item, field, value }; return heOk(v) ? v : null; };
+const heOf = () => DS() ? Object.values(DS().rows("edits") || {}).filter(heOk).map(v => [v.item, v.field, v.value, ...(v.field === "add" ? [v.room, v.x, v.z, v.y] : [])]).sort((a, b) => `${a[0]}~${a[1]}` < `${b[0]}~${b[1]}` ? -1 : 1) : [];
+function heWear(a, ds) {   // the house's edits rows as the look has them: the page's own rows it lacks taken out, its rows put in
+  const want = {}, have = ds.rows("edits") || {}, F = ["item", "field", "value", "room", "x", "z", "y"];
+  for (const q of (Array.isArray(a) ? a : []).slice(0, 200)) { const v = heRow(q); if (v) want[`${v.item}~${v.field}`] = v; }
+  for (const [id, v] of Object.entries(have)) if (heOk(v) && !want[id]) ds.del("edits", id);
+  for (const [id, v] of Object.entries(want)) if (!have[id] || F.some(k => have[id][k] !== v[k])) ds.put("edits", id, v);
+}
+function lookMem() {   // N222: while a look is shown the edits rows are a copy in memory (Measure's own store, and Send, untouched)
+  const real = window.DemmaStore; if (!ASIDE || ASIDE.real || !real) return;
+  const mem = JSON.parse(JSON.stringify(real.rows("edits") || {})), fire = () => dispatchEvent(new CustomEvent("demma-rows", { detail: "edits" }));
+  ASIDE.real = real;
+  window.DemmaStore = { rows: c => c === "edits" ? mem : real.rows(c), put: async (c, id, d) => { if (c === "edits") { mem[id] = Object.assign({}, d); fire(); } },
+    del: async (c, id) => { if (c === "edits") { delete mem[id]; fire(); } }, on: real.on, shareLink: real.shareLink, get mode() { return real.mode; } };
+}
+function lookHe(a) { const go = () => { lookMem(); if (DS()) heWear(a, DS()); }; if (DS()) go(); else addEventListener("demma-rows", go, { once: true }); }   // a link opens before Measure's store is up
+const layNow = () => JSON.parse(JSON.stringify({ layout: S.layout || {}, added: S.added || [] }));
+const lookNow = () => ({ fin: finClean(finAll()), he: heOf(), lay: layNow() });
+const lookKey = (x, now) => JSON.stringify([finClean(now ? finAll(!!(x.fin || {})[LIVR]) : x.fin), x.he ? (now ? heOf() : x.he) : 0, x.lay ? (now ? layNow() : x.lay) : 0]);
+function planFin() { const c = finClean((((R.HOUSE3 || {}).plan_finishes || {}).rooms) || {}); delete c[LIVR]; return c; }
+function nowOff() { if (!NOWV) return; finHold(false); NOWV = false; root.classList.remove("nowfade"); const b = qs("#r3d-now"); if (b) b.setAttribute("aria-pressed", "false"); placeAll(); }
+function lookPut(L) {   // a look onto the page: its colours and floors, the living room's moves, the house's edits (saved unless one is shown)
+  nowOff(); finRestore(L.fin || {}); if (L.lay) restoreLayout({ layout: L.lay.layout || {}, added: Array.isArray(L.lay.added) ? L.lay.added : [] });
+  if (Array.isArray(L.he)) lookHe(L.he); store.set(KEY, S); finApplyAll();
+}
+function lookAside(title, plan) {   // N222: the device's own set aside, once, before a look is shown over it
+  nowOff();
+  if (!ASIDE) { ASIDE = { s: JSON.stringify(S), fin: JSON.parse(JSON.stringify(finAll(false))) }; lookMem(); }
+  ASIDE.title = title; ASIDE.plan = !!plan;
+}
+function lookPill() {
+  root.classList.toggle("theirs", !!ASIDE); const p = document.getElementById("r3d-theirs");
+  if (p) { p.hidden = !ASIDE; if (ASIDE) p.querySelector("b").textContent = ASIDE.title; } finSchDraw();
+}
+function lookMine() {   // Back to mine: the device's own as it was (its S, its rows); nothing was saved while the look showed
+  if (!ASIDE) return; nowOff(); const A = ASIDE, s = JSON.parse(A.s); ASIDE = null; if (A.real) window.DemmaStore = A.real;
+  restoreLayout({ layout: s.layout || {}, added: s.added || [] });
+  for (const [k, v] of Object.entries(s)) if (k !== "view" && k !== "layout" && k !== "added") S[k] = v;
+  applyDecor(); repaint(); applyState(); syncButtons(); updateCaption(); finApplyAll();
+  dispatchEvent(new CustomEvent("demma-rows", { detail: "edits" })); lookPill(); toast("Yours");
+}
+function lookKeep() {   // Keep it: the shown look becomes this device's own
+  if (!ASIDE) return; const A = ASIDE, he = heOf(); ASIDE = null;
+  if (A.real) { window.DemmaStore = A.real; heWear(he, A.real); }
+  store.set(KEY, S); lookPill(); toast("Kept: it's yours now");
+}
+const finSent = () => JSON.parse(JSON.stringify(ASIDE ? ASIDE.fin : finAll(false)));   // Send carries the device's own, even while a look shows
+function lookSlim(x) {   // for Send: each room's slots but the plan's (the living room's whole), the edits and the living room's moves
+  const P = planFin(), fin = {};
+  for (const [r, sl] of Object.entries(finClean(x.fin))) { const o = r === LIVR ? sl : Object.fromEntries(Object.entries(sl).filter(([s, v]) => (P[r] || {})[s] !== v)); if (Object.keys(o).length) fin[r] = o; }
+  return Object.assign({ name: x.name, fin }, x.he && x.he.length ? { he: x.he } : {}, x.lay && (Object.keys(x.lay.layout || {}).length || (x.lay.added || []).length) ? { lay: x.lay } : {});
+}
 function finSchDraw() {
-  const box = qs("#r3d-finschl"); if (!box) return; const L = finSchemes(), now = x => JSON.stringify(finClean(finAll(!!(x.fin || {})[LIVR]))), esc = t => String(t).replace(/[<&"]/g, "");
-  box.innerHTML = L.length ? L.map((x, i) => `<span class="r3d-mysc"><button type="button" data-finsch="${i}" aria-pressed="${JSON.stringify(finClean(x.fin)) === now(x)}">${esc(x.name)}</button><button type="button" class="r3d-myx" data-finschdel="${i}" aria-label="Delete ${esc(x.name)}">×</button></span>`).join("")
-    : '<span class="caption">None yet: tap a wall, a ceiling or a floor in any room, then name it here.</span>';
+  const box = qs("#r3d-finschl"); if (!box) return; const L = finSchemes(), esc = t => String(t).replace(/[<&"]/g, "");
+  box.innerHTML = `<button type="button" data-lookas="now" aria-pressed="${NOWV}">As it is</button><button type="button" data-lookas="plan" aria-pressed="${!!ASIDE && ASIDE.plan}">The plan</button>`
+    + L.map((x, i) => `<span class="r3d-mysc"><button type="button" data-finsch="${i}" aria-pressed="${!ASIDE && !NOWV && lookKey(x) === lookKey(x, true)}">${esc(x.name)}</button><button type="button" class="r3d-myx" data-finschdel="${i}" aria-label="Delete ${esc(x.name)}">×</button></span>`).join("");
 }
 function finSchSave() {
-  const inp = qs("#r3d-finschname"), name = ((inp && inp.value.trim()) || `Scheme ${finSchemes().length + 1}`).slice(0, 24);
-  const L = finSchemes().filter(x => x.name !== name); L.push({ name, fin: finClean(finAll()) });
-  try { localStorage.setItem(FSK, JSON.stringify(L.slice(-12))); } catch (e) {} if (inp) inp.value = ""; finSchDraw(); toast(`Saved: ${name}`);
+  const inp = qs("#r3d-finschname"), name = ((inp && inp.value.trim()) || `Look ${finSchemes().length + 1}`).slice(0, 24);
+  const L = finSchemes().filter(x => x.name !== name); L.push(Object.assign({ name }, lookNow()));
+  try { localStorage.setItem(FSK, JSON.stringify(L.slice(-LOOK_MAX))); } catch (e) { toast("That didn't save: this device is full"); return; }
+  if (inp) inp.value = ""; finSchDraw(); toast(`Saved: ${name}`);
 }
-function finSchUse(i) {
-  const x = finSchemes()[i]; if (!x) return; finPush();
-  finRestore(x.fin); store.set(KEY, S); finApplyAll(); toast(x.name);
+function finSchUse(i) {   // one tap wears it; Put back on the toast for what was on before
+  const x = finSchemes()[i]; if (!x) return; if (ASIDE) lookMine(); nowOff(); LOOK_PREV = lookNow(); finPush();
+  lookPut(x); toast(x.name, { lookback: "1" });
+}
+function lookPlan() {   // The plan: shown over yours (set aside), tap again or Back to mine
+  if (ASIDE && ASIDE.plan) { lookMine(); return; }
+  lookAside("The plan", true); lookPut({ fin: Object.assign(planFin(), { [LIVR]: {} }), he: [], lay: { layout: {}, added: [] } }); lookPill();
 }
 function finCopyBtns(room) {   // on a room's card: Copy this room (when it has a look of its own), Paste another's
   const L = [];
@@ -544,18 +607,23 @@ function nowMode(on) {
     if (on) { NOWV = true; finHold(true); applyHEdits({}); }
     else { finHold(false); NOWV = false; storeEdits(); }
     placeAll(); syncButtons(); dirty();
-    const b = qs("#r3d-now"); if (b) b.setAttribute("aria-pressed", String(on));
+    const b = qs("#r3d-now"); if (b) b.setAttribute("aria-pressed", String(on)); finSchDraw();
     toast(on ? "As it is now (tap again for your plan)" : "Your plan");
     requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove("nowfade")));
   }, 160);
 }
-{ const set0 = store.set.bind(store); store.set = (k, v) => { if (NOWV && k === KEY) return; set0(k, v); }; }
+{ const set0 = store.set.bind(store); store.set = (k, v) => { if ((NOWV || ASIDE) && k === KEY) return; set0(k, v); }; }
 qs("#r3d-now")?.addEventListener("click", () => nowMode(!NOWV));
 qs("#r3d-finschsave")?.addEventListener("click", finSchSave);
 qs("#r3d-finschname")?.addEventListener("keydown", e => { if (e.key === "Enter") finSchSave(); });
 qs("#r3d-finschl")?.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return;
   if (b.dataset.finschdel) { const L = finSchemes(); L.splice(+b.dataset.finschdel, 1); try { localStorage.setItem(FSK, JSON.stringify(L)); } catch (er) {} finSchDraw(); }
-  else if (b.dataset.finsch) finSchUse(+b.dataset.finsch); });
+  else if (b.dataset.finsch) finSchUse(+b.dataset.finsch);
+  else if (b.dataset.lookas === "now") nowMode(!NOWV); else if (b.dataset.lookas === "plan") lookPlan(); });
+document.addEventListener("click", e => { const b = e.target.closest("[data-lookkeep],[data-lookmine],[data-lookback]"); if (!b) return;   // N221, N222: the pill, the toast's Put back
+  if (b.dataset.lookkeep) lookKeep(); else if (b.dataset.lookmine) lookMine();
+  else if (LOOK_PREV) { const p = LOOK_PREV; LOOK_PREV = null; lookPut(p); toast("Put back"); } });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && ASIDE && !e.defaultPrevented && !/^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || "")) { e.preventDefault(); lookMine(); } });
 finSchDraw();
 if (act) {
   act.addEventListener("click", e => {

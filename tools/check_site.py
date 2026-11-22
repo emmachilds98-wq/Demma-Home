@@ -214,6 +214,34 @@ ADD = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeou
   await Promise.all(Object.entries(ds.rows('edits')).filter(([, v]) => v && v.item === id).map(([k]) => ds.del('edits', k)));
   return { card, line, wall, link: window.__link || null, gone: await wait(() => !E[id]) };
 }"""
+LOOKS = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), ds = window.DemmaStore, was = R3D.finishes();   // N221
+  const id = Object.keys(D.H3.items).find(k => D.H3.items[k].r === 'bed2' && !D.H3.items[k].op && !D.H3.items[k].add && !D.H3.items[k].on), rid = id + '~removed', bed = () => (D.finAll().bed2 || {});
+  try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {}
+  R3D.setFinishes({ bed2: { 0: '#3a6b5a', 5: 'oak' } }); await ds.put('edits', rid, { item: id, field: 'removed', value: true }); await sl(300);
+  q('#r3d-finschname').value = 'Ours'; q('#r3d-finschsave').click(); await sl(200);
+  R3D.setFinishes({ bed2: { 0: '#c98a5e' } }); await ds.del('edits', rid); await sl(300);
+  q('[data-lookas="now"]').click(); await sl(500); const now = q('#r3d-now').getAttribute('aria-pressed'); q('[data-lookas="now"]').click(); await sl(500);
+  const other = [bed()[0], !!ds.rows('edits')[rid]];
+  q('[data-finsch="0"]').click(); await sl(500);
+  const worn = [bed()[0], bed()[5], !!ds.rows('edits')[rid], q('[data-finsch="0"]').getAttribute('aria-pressed')];
+  navigator.clipboard.writeText = u => { window.__link = u; return Promise.resolve(); }; window.__link = null; document.getElementById('r3d-link').click();
+  for (let i = 0; i < 40 && !window.__link; i++) await sl(100);
+  const link = window.__link; await ds.del('edits', rid); try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {} R3D.setFinishes(was);
+  return { now, other, worn, link, looks: !!R3D.looks };
+}"""
+# N222: a fresh page with its own colour opens the look's link: shown as Emma's look, its own kept aside (localStorage untouched), Back to mine, then Keep it
+LOOKS2 = """async link => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), bed = () => (D.finAll().bed2 || {});
+  R3D.setFinishes({ bed2: { 0: '#e8c0c8' } }); await sl(300); const ls = () => [localStorage.getItem('mw18-3d'), localStorage.getItem('demma-v1:edits') || '{}'], before = JSON.stringify(ls());
+  const hid = Object.values(D.HEDITS).filter(e => e.removed).length;
+  location.hash = link.split('#')[1]; for (let i = 0; i < 60 && q('#r3d-theirs').hidden; i++) await sl(100); await sl(600);
+  const shown = [q('#r3d-theirs').hidden ? null : q('#r3d-theirs b').textContent, bed()[0], bed()[5], Object.values(D.HEDITS).filter(e => e.removed).length - hid, JSON.stringify(ls()) === before, (R3D.finishes().bed2 || {})[0]];
+  q('#r3d-theirs [data-lookmine]').click(); await sl(600);
+  const mine = [q('#r3d-theirs').hidden, bed()[0], Object.values(D.HEDITS).filter(e => e.removed).length - hid, JSON.stringify(ls()) === before];
+  location.hash = link.split('#')[1]; for (let i = 0; i < 60 && q('#r3d-theirs').hidden; i++) await sl(100); await sl(600);
+  q('#r3d-theirs [data-lookkeep]').click(); await sl(600);
+  const kept = [q('#r3d-theirs').hidden, (JSON.parse(localStorage.getItem('mw18-3d') || '{}').fin || {}).bed2, Object.values(JSON.parse(localStorage.getItem('demma-v1:edits') || '{}')).filter(v => v.field === 'removed').length];
+  return { shown, mine, kept };
+}"""
 OFF = """() => { const W = document.documentElement.clientWidth, out = [];
   for (const el of document.querySelectorAll("body *")) { const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
     if (!r.width || cs.display === "none" || cs.visibility === "hidden" || cs.position === "fixed" || el.closest("[hidden], .sheet, .r3d-panel, .r3d-floors, .lightbox, .r3d-stage")) continue;
@@ -470,6 +498,18 @@ def main():
                     if not (ad.get("card") == "fin:bed2:5" and ad.get("line", "").startswith("80 × 28 × 202 cm · Fits") and ad.get("wall") and ad.get("gone") and seen):
                         fails.append(f"{w}: adding a bookcase in bedroom 2 from its floor's card: {ad}, in a fresh page from its look link: {seen} "
                                      "(want it back to a wall, \"Fits\", shown from the link, then gone)")
+                    lk = pg.evaluate(LOOKS)                         # N221: a look saved (a wall, a floor, a piece taken out), others set, As it is, the look back
+                    l2 = None
+                    if lk.get("link"):                              # N222: its link on another device with its own colour: shown, set aside, Back to mine, Keep it
+                        c2 = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=True, has_touch=True, service_workers="block")
+                        p2 = c2.new_page(); p2.set_default_timeout(300000); localcdn.route(p2); p2.goto(base + "index.html")
+                        p2.wait_for_function("window.R3D && R3D.ready", timeout=240000); p2.wait_for_timeout(1500)
+                        l2 = p2.evaluate(LOOKS2, lk["link"]); c2.close()
+                    if not (lk.get("now") == "true" and lk.get("other") == ["#c98a5e", False] and lk.get("worn") == ["#3a6b5a", "oak", True, "true"] and lk.get("looks")
+                            and l2 and l2["shown"] == ["Emma's look", "#3a6b5a", "oak", 1, True, "#e8c0c8"] and l2["mine"] == [True, "#e8c0c8", 0, True]
+                            and l2["kept"][0] and (l2["kept"][1] or {}).get("0") == "#3a6b5a" and l2["kept"][2] == 1):
+                        fails.append(f"{w}: a look saved, others set, As it is, the look worn: {lk}; its link on a device with its own colour: {l2} "
+                                     "(want Emma's look shown, nothing of its own saved over, Back to mine its own, Keep it hers)")
                     ft = pg.evaluate(FITS)                          # N217: a swap's size and fit on its card, then as planned
                     if not (ft.get("fits", "").startswith("89 × 89 × 78 cm · Fits") and "cm into the slope" in ft.get("big", "") and ft.get("rid") and ft.get("back")):
                         fails.append(f"{w}: bedroom 2's chair-bed for an armchair, its Kallax for a bookcase, its desk for the long one, then as planned: {ft} "
