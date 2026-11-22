@@ -80,6 +80,10 @@ def sizes():
     sys.path.insert(0, str(SRC)); import fit
     refs = re.findall(r'^  (\w+): \{ n: "[^"]+".*?ref: "(\w+)"', (SRC / "room3d/08_house_catalogue.js").read_text(), re.M)
     cite = [f"catalogue {k}: no source {r}" for k, r in refs if r not in fit.SOURCES] + ([] if len(refs) >= 26 else [f"catalogue: {len(refs)} pieces cite a source"])
+    # N219: each shop's piece in the catalogue at its size and price as researched (docs/N219_catalogue.json, fit.shop_pieces)
+    shop, got_ = dict(fit.shop_pieces()), {k: [float(q) for q in v] for k, *v in re.findall(
+        r'^  (\w+): \{ n: "[^"]+", k: "\w+",(?: l: "\w+",)? w: ([\d.]+), d: ([\d.]+), h: ([\d.]+), ref: "\w+", p: ([\d.]+), s: "', (SRC / "room3d/08_house_catalogue.js").read_text(), re.M)}
+    cite += [f"catalogue {k}: not as researched" for k, r in shop.items() if got_.get(k) != [r["w"], r["d"], r["h"] or 1, r["price"]]][:4]
     # V2.75 (N26): the speed budget's files (tools/perf_budget.json; the site check measures the paths): over it, the round fails
     got = {"page_mb": mb(SITE / "index.html"), "three_mb": mb(tj) if tj else 0, "photos_mb": sum(map(mb, tex)), "half_mb": sum(map(mb, half)), "ktx2_mb": sum(map(mb, k2))}
     want = json.loads((ROOT / "tools/perf_budget.json").read_text())["files"]
