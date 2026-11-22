@@ -179,6 +179,20 @@ EACH = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   const restored = JSON.stringify([kept('master'), kept('bed2')]) === was; if (D.actId) q('#r3d-act .x').click();
   return { t1, t2, both, room, st, slope, restored };
 }"""
+# N217: in bedroom 2, the chair-bed swapped for an armchair (its card says it fits), the Kallax for a bookcase (it says the slope), then
+# both back as planned: no edits rows left
+FITS = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), ds = window.DemmaStore;
+  const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
+  R3D.set({ view: 'bed2' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
+  const swap = async (id, key) => { D.openAct('hitem:' + id); await sl(600); const b = q('#r3d-act [data-actopen^="hswap:"]'); if (!b) return 'no Swap it';
+    b.click(); await sl(200); q('#r3d-act [data-hswapgo$=":1"]').click();
+    return await wait(() => D.HEDITS[id] && D.HEDITS[id].swap === key && D.PICK.first.some(p => p.id === id)) ? (await sl(300), q('#r3d-act-st').textContent) : 'not swapped'; };
+  const fits = await swap('music.chairbed', 'armchair'), big = await swap('music.kallax', 'bookcase');
+  for (const k of ['music.chairbed', 'music.kallax']) { D.openAct('hitem:' + k); await sl(400); q('#r3d-act [data-hreset]').click(); await sl(300); }
+  const back = await wait(() => !D.HEDITS['music.chairbed'] && !D.HEDITS['music.kallax']) && !Object.values(ds.rows('edits')).some(v => v && /^music[.]/.test(v.item));
+  if (D.actId) q('#r3d-act .x').click();
+  return { fits, big, back };
+}"""
 OFF = """() => { const W = document.documentElement.clientWidth, out = [];
   for (const el of document.querySelectorAll("body *")) { const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
     if (!r.width || cs.display === "none" || cs.visibility === "hidden" || cs.position === "fixed" || el.closest("[hidden], .sheet, .r3d-panel, .r3d-floors, .lightbox, .r3d-stage")) continue;
@@ -424,6 +438,9 @@ def main():
                     if ea != {"t1": "Master bedroom: the back wall (2 of 2)", "t2": "Master bedroom: the back wall (1 of 2)", "both": ["#3a6b5a", "#c98a5e"], "room": [None, "#dbffc8"],
                               "st": "Bedroom 2: the slopes", "slope": "walls", "restored": True}:
                         fails.append(f"{w}: the master's cupboard face and its alcove each a colour, This room over both, bedroom 2's slopes with the walls, then back: {ea}")
+                    ft = pg.evaluate(FITS)                          # N217: a swap's size and fit on its card, then as planned
+                    if not (ft.get("fits", "").startswith("89 × 89 × 78 cm · Fits") and "cm into the slope" in ft.get("big", "") and ft.get("back")):
+                        fails.append(f"{w}: bedroom 2's chair-bed for an armchair, its Kallax for a bookcase, then as planned: {ft} (want the armchair \"Fits\", the bookcase into the slope, no rows left)")
                 if phone:                                           # V2.5 (FINISHES_PLAN F2): a room's walls and ceiling through the palette, then back
                     fn = pg.evaluate("() => [R3D.finish('bed2', 'walls', '#3a6b5a'), R3D.finish('bed2', 'ceiling', '#e8c0c8'), R3D.finish('nowhere', 'walls', '#000000'), R3D.finish(null, 'walls', null), R3D.finish(null, 'ceiling', null)]")
                     if fn != [True, True, False, True, True]:
