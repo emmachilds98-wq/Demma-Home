@@ -59,7 +59,9 @@ function finPatch(m, k) {   // the walls' and ceilings' materials read the palet
     int fl = yc < 0.0 ? 0 : (yc < 260.0 ? 1 : 2); int rm = int(finRoom);
     if (rm < 0) { float o = finKind < 0.5 || finKind > 2.5 ? 3.0 : 0.0;
       ivec2 t = ivec2(int(clamp(floor((xc - fn.x * o) / 2.0), 0.0, ${FIN.W - 1}.0)), int(clamp(floor((zc + fn.z * o + 309.0) / 2.0), 0.0, ${FIN.H - 1}.0)) + fl * ${FIN.H});
-      rm = int(texelFetch(finMap, t, 0).r * 255.0 + 0.5); }
+      rm = int(texelFetch(finMap, t, 0).r * 255.0 + 0.5); }${FIN.kind[k] === 3 ? `
+    for (int d = 1; d <= 8 && rm == 0; d++) { float s = float(d) * 4.0;   // V4.46: a door's lining, in the opening: the nearest room's
+      rm = finAt(vec2(xc + s, zc), fl); if (rm == 0) rm = finAt(vec2(xc - s, zc), fl); if (rm == 0) rm = finAt(vec2(xc, zc + s), fl); if (rm == 0) rm = finAt(vec2(xc, zc - s), fl); }` : ""}
     if (rm > 0) { float nx = -fn.x, nz = fn.z; int sl = finKind > 2.5 ? 6 : finKind > 1.5 ? 5 : finKind > 0.5 ? 4 : (abs(nx) > abs(nz) ? (nx > 0.0 ? 2 : 3) : (nz > 0.0 ? 0 : 1));
       vec4 fc = texelFetch(finPal, ivec2(sl, rm), 0);${FIN.kind[k] === 0 ? `
       { float ln = sl < 2 ? zc : xc, al = sl < 2 ? xc : zc;   // N214: the wall it's on (its line and span), its own colour if it has one

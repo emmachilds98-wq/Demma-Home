@@ -346,7 +346,9 @@ function finAt(hit) {   // a tap on a wall or a ceiling of the house: its room a
   let ri;
   { const o = ceil ? 0 : 3, fl = yc < 0 ? 0 : yc < 260 ? 1 : 2;
     const i = Math.max(0, Math.min(FIN.W - 1, Math.floor((xc - n.x * o) / 2))), j = Math.max(0, Math.min(FIN.H - 1, Math.floor((zc + n.z * o + 309) / 2)));
-    ri = FIN.map.image.data[(fl * FIN.H + j) * FIN.W + i]; }
+    const at = (x, z) => FIN.map.image.data[(fl * FIN.H + Math.max(0, Math.min(FIN.H - 1, Math.floor((z + 309) / 2)))) * FIN.W + Math.max(0, Math.min(FIN.W - 1, Math.floor(x / 2)))];
+    ri = FIN.map.image.data[(fl * FIN.H + j) * FIN.W + i];
+    for (let d = 4; wood && !ri && d <= 32; d += 4) ri = at(xc + d, zc) || at(xc - d, zc) || at(xc, zc + d) || at(xc, zc - d); }   // V4.46: a door's lining, as the shader finds it
   if (!ri) return null;
   const nx = -n.x, nz = n.z, slot = wood ? 17 : ceil ? 4 : Math.abs(nx) > Math.abs(nz) ? (nx > 0 ? 2 : 3) : (nz > 0 ? 0 : 1), room = FIN.rooms[ri - 1];
   if (ceil) return { room, slot: Math.abs(n.y) > 0.2 && Math.abs(n.y) < 0.95 && ((R.HOUSE3.finish_areas || {})[room] || {}).slope ? 29 : 4 };   // N214: a slope's own card
