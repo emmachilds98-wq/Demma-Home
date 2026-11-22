@@ -594,7 +594,7 @@ if (act) {
   act.addEventListener("change", e => { if (e.target.dataset.finpic) { finPicLoad(e.target.files && e.target.files[0]); return; } if ((e.target.dataset.finany || e.target.dataset.finhex) && GS.actId && GS.actId.startsWith("fin:")) {
     const [, room, s] = GS.actId.split(":"), hex = e.target.dataset.finhex ? finHex(e.target.value) : e.target.value; if (!hex) { toast("A colour's code, like #DBFFC8"); return; }
     finSet(room, +s, hex); renderAct(); } });
-  act.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.dataset && e.target.dataset.finhex) { e.preventDefault(); e.target.blur(); } });   // N213: Enter sets the code (its change)
+  act.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.dataset && e.target.dataset.finhex) { e.preventDefault(); e.target.dispatchEvent(new Event("change", { bubbles: true })); } });   // N213: Enter sets the code
   act.addEventListener("pointerdown", e => { if (e.target.closest("[data-finhold]")) { e.preventDefault(); finHold(true); } });
   for (const ev of ["pointerup", "pointerleave", "pointercancel"]) act.addEventListener(ev, () => finHold(false));
   act.addEventListener("keydown", e => { if ((e.key === " " || e.key === "Enter") && e.target.closest("[data-finhold]")) { e.preventDefault(); finHold(true); } });

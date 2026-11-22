@@ -202,8 +202,8 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   24–25 wallpaper, 26–27 panelling (N57; `finWallRun` gives any wall its face, openings and ceiling line). A new slot goes in `finClean`, the Paste filter, `roomUps` and a cost in `UPC`.
   A floor (N209) has three sources: the plan's (`plan_finishes.json`, merged into `S.fin` once a version, so it reads like a pick), the one
   laid now (`finish_areas[room].fk`, from `surfaces.by_room`) and theirs; Changes counts any but the one laid now, the card prices only theirs. The garage (`FIN_OWN`) keeps its slab.
-  Her own colours (N213): a wall's card takes a code (`data-finhex`, `finHex`: `#` optional, three digits doubled; Enter blurs, the
-  `change` sets it); `finName` calls a colour that's neither a paint nor the plan's (`finPlanHex`) "your colour #3A6B5A"; "Yours"
+  Her own colours (N213): a wall's card takes a code (`data-finhex`, `finHex`: `#` optional, three digits doubled; its `change` sets
+  it, and Enter sends one: a value set by a script never fires `change` on blur); `finName` calls a colour that's neither a paint nor the plan's (`finPlanHex`) "your colour #3A6B5A"; "Yours"
   (`finMine`) is read from her rows each time, nothing new kept. The look link's `fc` carries each room's slots 0–4, 9 and 10 that
   differ from the plan's (the plan's scheme is merged into `S.fin`, so the link leaves those out); `fl` the floors.
 - **Changes and costs** (`16_cards.js`): `UPC` rough UK costs (E, Nov 2026; a floor per m²), `roomUps(room)` a room's changes, card id
