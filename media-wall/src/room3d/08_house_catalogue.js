@@ -277,7 +277,7 @@ function swapKind(id) {
   const k = (HSWAP_OF.find(([re]) => re.test(id)) || [])[1];
   return k && canTurn(id) ? k : null;
 }
-const hcOf = kind => Object.keys(HCAT).filter(k => HCAT[k].k === kind);
+const hcOf = kind => Object.keys(HCAT).filter(k => HCAT[k].k === kind && !HCAT[k].own);   // not her own pieces: a swap to one would hang on its add row (lost after a reload or on a link)
 /* N217: a piece swapped at its own size (W along its wall, D out, H up): its back where the old one's was, along its wall from the same
    end if that stood within 10 of its room's wall, else from its middle, kept in its room; a chair where the old one was, facing the same way */
 function swapBox(id, key) {
