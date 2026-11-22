@@ -86,6 +86,8 @@ def items(export):
             f, dd = doors[iid]
             size.update(w=round(dd["b"] - dd["a"], 1), h=D.DOOR_H, up=0.0)
             row["opening"] = dict(axis=dd["axis"], line=dd["line"], a=dd["a"], b=dd["b"], y0=M.FLOOR_Y[f], y1=M.FLOOR_Y[f] + D.DOOR_H, frame=FRAME)
+            H = M.hang(f, dd, 1.75)                                   # N217: its leaf's swing, for the page's fit check
+            row["opening"]["swing"] = dict(hinge=round(H["hinge"], 1), u=H["u"], side=H["side"])
         if iid in ops:                                            # a window or an outside door: its opening in the wall
             op = ops[iid]
             size.update(w=round(op["x"][1] - op["x"][0], 1), h=round(op["head"] - op["sill"], 1), up=op["sill"])

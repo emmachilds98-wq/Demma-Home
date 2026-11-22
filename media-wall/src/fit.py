@@ -1414,6 +1414,13 @@ SOURCES["hcmore2"] = ("IKEA UK (Nov 2026), assembled W × D × H cm: KIVIK three
                       "(ikea.com/gb, 794.828.35; shopbam.co.uk review, 3 Oct 2026); HEMNES dressing table with mirror, white, 100 × 50 × 159, £155 "
                       "(303.744.13); BESTÅ TV bench with doors, 180 × 42 × 38, £120–185 (ikea.com/gb)")
 ORDER.append("hcmore2")
+SOURCES["hcswap"] = ("IKEA UK, read 22 Nov 2026, W × D × H cm (N217: bedroom 2's desk chair and rug swap): MARKUS office chair, Vissle dark grey, "
+                     "62 × 60, 129–140 high, seat 53 × 47 at 46–57, £159 (302.611.52, ikea.com/gb/en/p/markus-office-chair-vissle-dark-grey-30261152); "
+                     "LÅNGFJÄLL conference chair, Gunnared beige/black, 68 × 68, 92 high at most, seat 43–53, £115 (695.671.56, "
+                     "ikea.com/gb/en/p/langfjaell-conference-chair-gunnared-beige-black-s69567156); STOENSE rug, low pile, off-white, 133 × 195, "
+                     "18 mm thick, £49 (104.255.26, ikea.com/gb/en/p/stoense-rug-low-pile-off-white-10425526); LOHALS rug, flatwoven jute, "
+                     "160 × 230, 13 mm thick, £129 (502.773.93, ikea.com/gb/en/p/lohals-rug-flatwoven-natural-50277393)")
+ORDER.append("hcswap")
 SOURCES["amelia"] = ("Amazon UK (Nov 2026, B0HDC8WYBT): Lovesofas Amelia L-shaped corner sofa bed, Blade Green woven chenille, right hand: "
                      "264 W × 165 D × 95 H, seat 43 high and 53 deep, 100 deep at the arm (the listing's drawing), a pull-out bed in the middle, "
                      "a freestanding storage chaise, two footstools under the arm, three adjustable headrests. The 264 × 165 is its two main "

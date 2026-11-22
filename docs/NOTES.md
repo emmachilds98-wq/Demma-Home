@@ -218,6 +218,14 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   The 3D's `qs` is scoped to its root: use `document.getElementById` for the sheets' elements.
 - **The catalogue** (`08_house_catalogue.js`): every piece has a `ref` to a `fit.SOURCES` row and a short `src`; `checks.py` sizes fails
   a piece with none. Soft edges come from the material (`20_go.js` `ROUND`/`CLOTH`).
+  **A swap** (N217) is drawn at the new piece's own size (`swapBox`/`pieceBase`: its back where the old one's was, from the same end of
+  its wall if that was within 10 of the room's, else from its middle; a chair centred and facing as the old one did), so a swapped piece's
+  `w`, `h`, `along` rows read from that base (`pieceNow`, `pieceDelta`, `setPiece`) and a new swap clears them. What swaps is
+  `HSWAP_OF` by id (a decor `rug` too). `fitWhy(id)` is the page's fit check for any changed piece (the swap card and `pieceLine`): the
+  room's walls (its box, the notches where it's L-shaped, the knee walls), the slope or ceiling (`model.headroom`), the doors' swings
+  (`opening.swing` in the house file, a quarter circle as `storage_ideas.checks`) and the walks (`storage_ideas.reserves()` named "walk"),
+  all from `R.HOUSE3.fit` (`export3d._fit`), then `clashes`; a rug only the walls. A new walk goes in `reserves()` (the model check keeps
+  the storage ideas clear of it too).
 - **Lamps:** `survey_data.LAMPS` → `model.room_lamps`; the viewer reuses the room lights' uniforms (no rebuild). **Shade under pieces:**
   `model.piece_shade`, moved with edits (`08_house_edits.js editedFloor`).
   **Shade where walls meet** (V3.63, N112): `model.edge_shade` finds each room's walls from the boxes as built (`EDGE_M` faces within

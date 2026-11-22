@@ -51,13 +51,15 @@ function pickItem(e) {
 const btn = (label, attrs, on, cls, aria) => ({ label, attrs, on, cls, aria });
 /* V2.46 (N7): a swap's card (‹ › its kind's pieces) and an added piece's (‹ › the catalogue, its kinds to jump to); shown at once */
 const HCAT_ADD = ["plant", "snake", "monstera", "olive", "armchair", "sidetable", "floorlamp", "rug", "bookcase", "cubes", "ladder", "chest3", "chest6", "tallboy", "bsdrawer", "bswhite", "bslegs",
-  "desklegs", "deskdrawers", "trestle", "bench", "pouffe", "wardrobe2", "sliding", "openrail", "divan", "oakbed", "metalbed"];
+  "desklegs", "deskdrawers", "trestle", "bench", "pouffe", "wardrobe2", "sliding", "openrail", "divan", "oakbed", "metalbed", "markus", "langfjall", "stoense", "lohals"];
 function hcatCard(id) {
   const k = id.split(":")[1], it = HIT(k); if (!it) return null;
   const nav = (i, at) => [btn("‹", { [at]: `${k}:${i - 1}` }, false, "q", "The one before"), btn("›", { [at]: `${k}:${i + 1}` }, false, "q", "The next one")];
   if (id.startsWith("hswap:")) { const kind = swapKind(k); if (!kind) return null;
     const L = [null, ...hcOf(kind)], i = Math.max(0, L.indexOf(pieceNow(k).swap)), C = HCAT[L[i]];
-    return [C ? C.n : it.n + " (yours)", `${HCAT_KINDS[kind]} · ${i + 1} of ${L.length} · ${C ? C.src : "as planned"}`, [...nav(i, "hswapgo"), btn("Keep it", { actopen: "hitem:" + k }, true)]]; }
+    const why = fitWhy(k);   // N217: its size, and whether it fits
+    return [C ? C.n : it.n + " (yours)", C ? `${[C.w, C.d, C.h].map(Math.round).join(" × ")} cm · ${why.length ? why.slice(0, 2).join(" · ") : "Fits"} · ${C.src.split(",")[0]}` : `${HCAT_KINDS[kind]} · as planned`,
+      [...nav(i, "hswapgo"), btn("Keep it", { actopen: "hitem:" + k }, true)]]; }
   if (it.look) { const L = plantKeys(), i = Math.max(0, L.indexOf(it.add)), C = HCAT[it.add];   // N5: a room's plant, from Look
     return [C.n, `${roomName(it.look)}'s plant · ${i + 1} of ${L.length} · ${C.src}`, [...nav(i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Remove", { hremove: k })]]; }
   const i = Math.max(0, HCAT_ADD.indexOf(it.add)), C = HCAT[it.add];
@@ -70,8 +72,8 @@ const UPC = { walls: [40, 80], wall: [15, 35], ceil: [20, 40], skirt: [15, 35], 
   frames: [150, 600], door_out: [30, 150], door: [150, 500], window: [400, 1500],
   floor: { carpet_grey: [20, 45], carpet: [20, 45], laminate: [20, 40], oak: [50, 90], pine: [30, 60], tile_f: [35, 70], marble: [80, 150], quarry: [45, 85], herring: [70, 115], lvt_grey: [45, 75], porcelain: [60, 110] },   // a m², laid (N56: fit.SOURCES upfloors)
   fit: { bare: [5, 15], drum: [20, 60], globe: [25, 70], dome: [15, 45], spots: [40, 120] },
-  kind: { bed: [200, 550], wardrobe: [150, 450], chest: [60, 220], bedside: [30, 100], desk: [60, 220], shelves: [40, 160], seat: [100, 350], plant: [10, 45], more: [25, 120] },
-  piece: { sofa3: [449, 590], dresser: [155, 200], tvbench: [120, 185] },   // N58: each its own (fit.SOURCES hcmore2), delivery in the top
+  kind: { bed: [200, 550], wardrobe: [150, 450], chest: [60, 220], bedside: [30, 100], desk: [60, 220], shelves: [40, 160], seat: [100, 350], chair: [60, 200], rug: [40, 160], plant: [10, 45], more: [25, 120] },
+  piece: { sofa3: [449, 590], dresser: [155, 200], tvbench: [120, 185], markus: [159, 159], langfjall: [115, 115], stoense: [49, 49], lohals: [129, 129] },   // N58: each its own (fit.SOURCES hcmore2, hcswap), delivery in the top
   plant: { plant: [35, 90], snake: [15, 40], monstera: [30, 90], olive: [60, 160] },   // N40: each plant in its pot, as big as the catalogue's
   paper: [10, 200], panel: [40, 300] };   // N57: on top of the packs: glue, caulk, paint, up to a carpenter's day   // N40: on top of the rolls (the tray's count and price): paste and a brush, up to a decorator's day
 const UPK = "dh-done";
@@ -458,7 +460,8 @@ if (act) {
       ds.put("edits", id + "~add", { item: id, field: "add", value: HCAT_ADD[0], room: d.hadd, x: cmR(TAPAT[0]), z: cmR(TAPAT[2]), y: cmR(Math.max(r[4], Math.min(r[4] + 5, TAPAT[1]))) }).catch(() => toast("That didn't save: try again"));
       GS.actId = "hadd:" + id; renderAct(); return; }
     if (d.hswapgo || d.haddgo || d.hcatk) { const [k, x] = (d.hswapgo || d.haddgo || d.hcatk).split(":"), it = HIT(k), ds = DS(); if (!it || !ds) return;
-      if (d.hswapgo) { const L = [null, ...hcOf(swapKind(k))], v = L[((+x % L.length) + L.length) % L.length]; setPiece(k, "swap", v).then(() => { if (GS.actId) renderAct(); }); return; }
+      if (d.hswapgo) { const L = [null, ...hcOf(swapKind(k))], v = L[((+x % L.length) + L.length) % L.length];   // N217: the new piece at its own size, where the old one stood
+        Promise.all(["w", "h", "along"].filter(f => ds.rows("edits")[`${k}~${f}`]).map(f => ds.del("edits", `${k}~${f}`))).then(() => setPiece(k, "swap", v)).then(() => { if (GS.actId) renderAct(); }); return; }
       if (it.look) { const L = plantKeys(); plantSet(it.look, L[((+x % L.length) + L.length) % L.length]); renderAct(); return; }
       const n = HCAT_ADD.length, v = d.haddgo ? HCAT_ADD[((+x % n) + n) % n] : HCAT_ADD.find(q => HCAT[q].k === x), row = ds.rows("edits")[k + "~add"]; if (!row || !v) return;
       ds.put("edits", k + "~add", Object.assign({}, row, { value: v })).then(() => { if (GS.actId) renderAct(); }); return; }

@@ -1,7 +1,7 @@
 /* V2.46 (N7): swap a piece for another of its kind, or add one, in any room; built from the house's own boxes so it's drawn, tapped,
    moved and turned as the house's are. Rows are Measure's "edits": {item, field: "swap", value: key}; {item: "add.<n>", field: "add",
    value: key, room, x, z, y}. A piece's own frame: u along its wall (0..W), v up (0..H), t out from its back (0..D). */
-const HCAT_KINDS = { bed: "Beds", wardrobe: "Wardrobes", chest: "Chests", bedside: "Bedsides", desk: "Desks", shelves: "Shelves", seat: "Seats", plant: "Plants", more: "More" };
+const HCAT_KINDS = { bed: "Beds", wardrobe: "Wardrobes", chest: "Chests", bedside: "Bedsides", desk: "Desks", shelves: "Shelves", seat: "Seats", chair: "Desk chairs", rug: "Rugs", plant: "Plants", more: "More" };
 function hcChest(mat, cols, rows, knob = "knob") {   // drawers: a carcass, its fronts with a shadow gap, a knob each ("grip": MALM's grip along each front's top)
   return (W, H, D, B) => {
     B(mat, 0, 0, 0, W, H, D - 2); B("gap", 1, 6, D - 2.1, W - 1, H - 2, D - 2); B(mat, 1, 0, D - 6, W - 1, 6, D - 5);   // the plinth, set back
@@ -37,6 +37,14 @@ const hcBooks = (B, u0, u1, v, h, D, i) => {   // books along a shelf, every hei
   while (u < u1 - 4) { const w = 2 + (k * 37 % 5) * 0.6, hh = h * (0.62 + (k * 53 % 7) * 0.045); if (k % 9 === 4) { u += 6; k++; continue; }
     B("book" + (k % 6), u, v, D - 4 - 18, Math.min(u1 - 1, u + w), v + Math.min(hh, h - 1), D - 4); u += w + 0.2; k++; }
 };
+function hcSwivel(m, sy, arms) {   // N217: a swivel chair: a star base (four arms here) on castors, the lift, the seat, its back (t 0) to its top
+  return (W, H, D, B, L) => { const c = W / 2, tc = D / 2, r = Math.min(W, D) / 2 - 3;
+    B("black", c - r, 5, tc - 2.5, c + r, 8.5, tc + 2.5); B("black", c - 2.5, 5, tc - r, c + 2.5, 8.5, tc + r);
+    for (const [u, t] of [[c - r + 3, tc], [c + r - 3, tc], [c, tc - r + 3], [c, tc + r - 3]]) L("black", u, t, 0, [[0, 0], [2.6, 0.4], [2.8, 2.6], [2.2, 5], [0, 5]]);
+    L("steel", c, tc, 8.5, [[0, 0], [2.4, 0], [2.4, sy - 16], [0, sy - 16]]);
+    B(m, c - 26, sy - 8, 8, c + 26, sy, D - 4); B(m, c - 24, sy - 2, 3, c + 24, H, 10); B("black", c - 3, sy - 10, 1, c + 3, sy + 14, 4);
+    if (arms) for (const u of [c - 27, c + 23]) { B("black", u + 1, sy, D - 24, u + 3, sy + 20, D - 21); B("black", u, sy + 20, D - 30, u + 4, sy + 23, D - 12); } };
+}
 /* V3.02 (N45): each piece a real one's size (fit.SOURCES hcikea, hcbeds, hcplants, hcmore, rugsizes: its "ref"), built to its shape */
 const hcLegs = (m, W, D, h, r, i = 3) => (B, L) => { for (const [u, t] of [[i, i], [W - i, i], [i, D - i], [W - i, D - i]]) L(m, u, t, 0, [[0, 0], [r, 0], [r * 0.8, h], [0, h]]); };   // four turned legs, tapering
 const HCAT = {
@@ -141,7 +149,7 @@ const HCAT = {
     b: (W, H, D, B, L) => { L("concrete", W / 2, D / 2, 0, [[0, 0], [20, 0], [22.5, 36], [22.5, 38], [0, 38]]);
       L("timber", W / 2, D / 2, 38, [[0, 0], [2.5, 0], [2, H * 0.4], [0, H * 0.4]]);
       L("ivy", W / 2, D / 2, H * 0.5, [[0, 0], [W * 0.3, H * 0.06], [W / 2, H * 0.22], [W * 0.4, H * 0.38], [W * 0.12, H * 0.49], [0, H * 0.5]]); } },
-  rug: { n: "Rug", k: "more", w: 160, d: 230, h: 1, ref: "rugsizes", src: "Argos's usual size, 160 × 230",
+  rug: { n: "Rug", k: "rug", w: 160, d: 230, h: 1, ref: "rugsizes", src: "Argos's usual size, 160 × 230",
     b: (W, H, D, B) => { B("rug", 0, 0, 0, W, Math.max(0.6, H), D); B("sisal", 4, Math.max(0.6, H), 4, W - 4, Math.max(0.6, H) + 0.2, 8); B("sisal", 4, Math.max(0.6, H), D - 8, W - 4, Math.max(0.6, H) + 0.2, D - 4); } },
   floorlamp: { n: "Floor lamp, linen shade", k: "more", w: 45, d: 45, h: 155, ref: "hcmore", src: "Dunelm Marin, 155 tall, 45 shade",
     b: (W, H, D, B, L) => { L("black", W / 2, D / 2, 0, [[0, 0], [13, 0], [13, 2.5], [10, 4], [3, 5], [0, 5]]); L("black", W / 2, D / 2, 5, [[0, 0], [1.4, 0], [1, H - 30], [0, H - 30]]);
@@ -149,6 +157,12 @@ const HCAT = {
   sidetable: { n: "Round side table, oak", k: "more", w: 50, d: 50, h: 56, ref: "hcikea", src: "IKEA LISTERBY, 50 across, 56 high",
     b: (W, H, D, B, L) => { L("oak", W / 2, D / 2, H - 3, [[0, 0], [W / 2, 0], [W / 2, 3], [0, 3]]); hcLegs("oak", W, D, H - 3, 1.8, 11)(B, L);
       for (const [u0, t0, u1, t1] of [[11, 10, W - 11, 12], [11, D - 12, W - 11, D - 10], [10, 11, 12, D - 11], [W - 12, 11, W - 10, D - 11]]) B("oak", u0, H - 9, t0, u1, H - 3, t1); } },
+  /* N217: bedroom 2's desk chair and rug swap too (fit.SOURCES hcswap) */
+  markus: { n: "Office chair, dark grey", k: "chair", w: 62, d: 60, h: 129, ref: "hcswap", src: "IKEA MARKUS, 62 × 60 × 129–140", b: hcSwivel("cloth5", 46, true) },
+  langfjall: { n: "Swivel chair, beige and black", k: "chair", w: 68, d: 68, h: 92, ref: "hcswap", src: "IKEA LÅNGFJÄLL, 68 × 68 × 92", b: hcSwivel("cloth1", 48, false) },
+  stoense: { n: "Low-pile rug, off-white", k: "rug", w: 133, d: 195, h: 1.8, ref: "hcswap", src: "IKEA STOENSE, 133 × 195", b: (W, H, D, B) => B("cloth4", 0, 0, 0, W, H, D) },
+  lohals: { n: "Flatwoven jute rug", k: "rug", w: 160, d: 230, h: 1.3, ref: "hcswap", src: "IKEA LOHALS, 160 × 230",
+    b: (W, H, D, B) => { B("sisal", 0, 0, 0, W, H, D); for (const t of [6, D - 8]) B("knob", 4, H, t, W - 4, H + 0.15, t + 2); } },   // its two woven bands
 };
 /* N212: the storage ideas' pieces (house/storage_ideas.py, an "idea" kind: never swapped or added from the catalogue), the house's own
    materials only (no new shader when shown) */
@@ -193,13 +207,28 @@ Object.assign(HCAT, {
 });
 /* which pieces swap, and for what: by the kind of thing it is (its id), standing on the floor, one that turns (no lid or doors of its own) */
 const HSWAP_OF = [[/(^|\.)bed$|bed_/, "bed"], [/wardrobe/, "wardrobe"], [/bedside/, "bedside"], [/chest/, "chest"], [/desk$/, "desk"],
-  [/shelving|kallax|bookcase|shelves/, "shelves"], [/chairbed|bench|armchair/, "seat"]];
+  [/shelving|kallax|bookcase|shelves/, "shelves"], [/chairbed|bench|armchair/, "seat"], [/(^|\.)chair$/, "chair"], [/(^|\.)rug$/, "rug"]];
 function swapKind(id) {
-  const it = HIT(id); if (!it || it.op || it.k !== "furniture" || (it.s[2] || 0) > 20) return null;
+  const it = HIT(id); if (!it || it.op || (it.k !== "furniture" && !/rug$/.test(id)) || (it.s[2] || 0) > 20) return null;
   const k = (HSWAP_OF.find(([re]) => re.test(id)) || [])[1];
   return k && canTurn(id) ? k : null;
 }
 const hcOf = kind => Object.keys(HCAT).filter(k => HCAT[k].k === kind);
+/* N217: a piece swapped at its own size (W along its wall, D out, H up): its back where the old one's was, along its wall from the same
+   end if that stood within 10 of its room's wall, else from its middle, kept in its room; a chair where the old one was, facing the same way */
+function swapBox(id, key) {
+  const it = HIT(id), C = HCAT[key], { a, o, flip } = hcFrame(it), b = it.b.slice(), r = (R.HOUSE3.rooms || {})[it.r], ch = C.k === "chair";
+  const [r0, r1] = r ? (a === 2 ? [r[2], r[3]] : [r[0], r[1]]) : [b[a], b[a + 3]];
+  const u0 = !ch && b[a] - r0 < 10 ? b[a] : !ch && r1 - b[a + 3] < 10 ? b[a + 3] - C.w : (b[a] + b[a + 3] - C.w) / 2;
+  b[a] = Math.max(r0, Math.min(r1 - C.w, u0)); b[a + 3] = b[a] + C.w; b[4] = b[1] + C.h;
+  if (ch) { b[o] = (b[o] + b[o + 3] - C.d) / 2; b[o + 3] = b[o] + C.d; } else if (flip) b[o] = b[o + 3] - C.d; else b[o + 3] = b[o] + C.d;
+  return b.map(v => Math.round(v * 10) / 10);
+}
+function pieceBase(id, key) {   // the piece as planned, or the one swapped in where it stood (a chair turned to face as the old one did)
+  const it = HIT(id); if (!key || !HCAT[key]) return it;
+  const b = swapBox(id, key), k = it.ax === "z" ? 2 : 0;
+  return Object.assign({}, it, { b, s: [b[k + 3] - b[k], b[4] - b[1], it.s[2]], al: cmR(it.al + b[k] - it.b[k]), flip: hcFrame(it).flip !== (HCAT[key].k === "chair") });
+}
 /* a piece's frame in the house: its wall axis, and which way it faces (its back to the nearer wall of its room) */
 function hcFrame(it) {
   const r = (R.HOUSE3.rooms || {})[it.r] || [it.b[0], it.b[3], it.b[2], it.b[5]], b = it.b, a = it.ax === "z" ? 2 : 0, o = 2 - a;
@@ -230,12 +259,13 @@ function withCatalogue(fk, F) {
   const boxes = {}, bt = {};
   for (const [m, list] of Object.entries(F.boxes)) [boxes[m], bt[m]] = keep(list, (F.bt || {})[m]);
   const lathes = (F.lathes || []).filter(L => !gone.has(L.t)), prisms = (F.prisms || []).filter(P => !gone.has(P.t));
-  const put = (id, key) => { let t = nt.indexOf(id); if (t < 0) { t = nt.length; nt.push(id); }
-    const P = hcBuild(key, HIT(id), t);
+  const put = (id, key, it) => { let t = nt.indexOf(id); if (t < 0) { t = nt.length; nt.push(id); }
+    const P = hcBuild(key, it, t);
     for (const [m, list] of Object.entries(P.boxes)) { (boxes[m] = boxes[m] || []).push(...list); (bt[m] = bt[m] || []).push(...P.bt[m]); }
     lathes.push(...P.lathes); };
-  sw.forEach(id => put(id, HEDITS[id].swap)); ad.forEach(id => put(id, HEDITS[id].add));
-  return Object.assign({}, F, { boxes, bt, lathes, prisms, tags: nt });
+  const sb = {}; sw.forEach(id => { const P = pieceBase(id, HEDITS[id].swap); sb[tags.indexOf(id)] = P.b; put(id, HEDITS[id].swap, P); }); ad.forEach(id => put(id, HEDITS[id].add, HIT(id)));
+  const shade = (F.shade || []).map(q => { const b = sb[q[0]]; return b ? [q[0], b[0], b[2], b[3], b[5], b[1], b[4] - b[1]] : q; });
+  return Object.assign({}, F, { boxes, bt, lathes, prisms, tags: nt, shade });
 }
 /* the added pieces, from Measure's rows: each a piece of the house (HIT) at the spot the floor was tapped, its back to the nearer wall */
 const ADDED = {}, ADDFK = {};   // ADDFK: each added piece's floor, kept once it's gone (its floor is drawn again)
@@ -255,8 +285,32 @@ function syncAdds() {
     H3.items[id] = { n: C.n, k: "furniture", r: v.room, ax, b: b.map(q => Math.round(q * 10) / 10), s: [C.w, C.h, 0], g: false, al: Math.round((b[a] - ra[0]) * 10) / 10, op: null, add: v.value, fk: HCFK[String(r[4])] };
   }
 }
-/* the fit check: a moved, swapped or added piece against the others in the room it now stands in (not chairs and rugs) */
-const HCSKIP = new Set(["decor", "finish", "light", "switch", "socket", "fitting", "window", "door"]), hcSoft = k => /chairs?$|stools?$|rug/.test(k + " " + ((HIT(k) || {}).add || ""));
+/* N217: does a changed piece fit? Its room's walls (past its outline, into a notch or a knee wall), the slope or the ceiling, the doors'
+   swings and the walks (export3d's "fit"), then the pieces in its way; a rug lies under a door and a walk. Each as "12 cm into …" */
+function fitWhy(id) {
+  const it = HIT(id), FT = R.HOUSE3.fit, cl = clashes(id), way = cl.length ? [`in the way of ${cl.slice(0, 2).join(" and ").replace(/^The /, "the ").replace(/ and The /, " and the ")}`] : [];
+  if (!it || it.op || !FT || pieceNow(id).removed || (!it.add && !pieceDelta(id).some(Boolean))) return way;
+  const b = pieceBox(id), r = R.HOUSE3.rooms[it.r], out = [], into = (v, w) => { if (v > 1) out.push(`${Math.round(v)} cm into ${w}`); };
+  const dig = q => { const x = Math.min(b[3], q[3]) - Math.max(b[0], q[0]), z = Math.min(b[5], q[5]) - Math.max(b[2], q[2]); return x > 0 && z > 0 && b[1] < q[4] && b[4] > q[1] ? Math.min(x, z) : 0; };
+  if (r) into(Math.max(r[0] - b[0], b[3] - r[1], r[2] - b[2], b[5] - r[3], ...(FT.notch[it.r] || []).map(([x0, x1, z0, z1]) => dig([x0, -1e4, z0, x1, 1e4, z1])), ...FT.eaves.map(dig)), "the wall");
+  const [top, zn, yb, kb, zs, yf, kf, dx0, dx1, dz] = FT.roof, first = r && HCFK[String(r[4])] === "first";   // model.headroom
+  const head = z => !first ? r[4] + R.HOUSE3.ceil : b[0] >= dx0 && b[3] <= dx1 && z <= dz ? top : Math.min(top, yb + (z - zn) * kb, yf + (zs - z) * kf), lim = r ? Math.min(head(b[2]), head(b[5])) : 1e4;
+  into(b[4] - lim, first && lim < top ? "the slope" : "the ceiling");
+  if (b[4] - b[1] > 3) {
+    let s = 0;   // storage_ideas.checks' swept: the leaf's quarter circle from its hinge, 205 high
+    for (const o of Object.values(R.HOUSE3.items)) { const p = o.op, S = p && p.swing; if (!S || !r || p.y0 !== r[4] || b[1] > p.y0 + 205) continue;
+      const R_ = p.b - p.a, [l0, l1, c0, c1] = p.axis === "x" ? [b[0], b[3], b[2], b[5]] : [b[2], b[5], b[0], b[3]];
+      const a0 = Math.max(l0, Math.min(S.hinge, S.hinge + S.u * R_)), a1 = Math.min(l1, Math.max(S.hinge, S.hinge + S.u * R_));
+      const e0 = Math.max(c0, Math.min(p.line, p.line + S.side * R_)), e1 = Math.min(c1, Math.max(p.line, p.line + S.side * R_));
+      if (a0 >= a1 - 0.5 || e0 >= e1 - 0.5) continue;
+      s = Math.max(s, R_ - Math.hypot(Math.min(Math.max(S.hinge, a0), a1) - S.hinge, Math.min(Math.max(p.line, e0), e1) - p.line)); }
+    into(s, "the door's swing");
+    for (const [n, q] of FT.walks) into(dig(q), n.replace(/ \(.*\)$/, ""));
+  }
+  return out.concat(way);
+}
+/* the pieces in its way: a moved, swapped or added piece against the others in the room it now stands in (not chairs and rugs) */
+const HCSKIP = new Set(["decor", "finish", "light", "switch", "socket", "fitting", "window", "door"]), hcSoft = k => /chairs?$|stools?$|rug$/.test(k) || /^(chair|rug)$/.test((HCAT[(HIT(k) || {}).add] || {}).k);   // N217: by its id or what was added
 function clashes(id) {
   const it = HIT(id); if (!it || pieceNow(id).removed || hcSoft(id) || (!it.add && !pieceDelta(id).some(Boolean))) return [];
   const b = pieceBox(id), over = (p, q) => [0, 1, 2].every(j => p[j] < q[j + 3] - 1 && p[j + 3] > q[j] + 1);
