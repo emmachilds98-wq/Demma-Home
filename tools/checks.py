@@ -80,13 +80,15 @@ def sizes():
     sys.path.insert(0, str(SRC)); import fit
     refs = re.findall(r'^  (\w+): \{ n: "[^"]+".*?ref: "(\w+)"', (SRC / "room3d/08_house_catalogue.js").read_text(), re.M)
     cite = [f"catalogue {k}: no source {r}" for k, r in refs if r not in fit.SOURCES] + ([] if len(refs) >= 26 else [f"catalogue: {len(refs)} pieces cite a source"])
+    shop = fit.shop_pieces()   # N219: each shop's piece its own row, with its size, price and page
+    cite += [f"shop piece {q.get('name')}: no size, price or page" for q in shop if not (q.get("w") and q.get("d") and q.get("price") and str(q.get("url", "")).startswith("https://") and fit.shop_key(q) in fit.SOURCES)]
     # V2.75 (N26): the speed budget's files (tools/perf_budget.json; the site check measures the paths): over it, the round fails
     got = {"page_mb": mb(SITE / "index.html"), "three_mb": mb(tj) if tj else 0, "photos_mb": sum(map(mb, tex)), "half_mb": sum(map(mb, half)), "ktx2_mb": sum(map(mb, k2))}
     want = json.loads((ROOT / "tools/perf_budget.json").read_text())["files"]
     over = [f"{k} {got[k]:.2f} over {v}" for k, v in want.items() if got[k] > v]
     return not bad and not over and not cite, msg + f", the 3D's {len(list((SRC / 'room3d').glob('*.js')))} parts" + (f": these don't parse alone: {bad}" if bad else " each parse alone") + \
         (f"; over the speed budget: {', '.join(over)}" if over else ", within the speed budget") + \
-        (f"; {', '.join(cite)}" if cite else f", the {len(refs)} catalogue pieces' sizes cited")
+        (f"; {', '.join(cite)}" if cite else f", the {len(refs)} catalogue pieces' and {len(shop)} shop pieces' sizes cited")
 
 
 def parts_parse():

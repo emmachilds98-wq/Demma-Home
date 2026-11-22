@@ -188,7 +188,9 @@ FITS = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
     b.click(); await sl(200); q('#r3d-act [data-hswapgo$=":1"]').click();
     return await wait(() => D.HEDITS[id] && D.HEDITS[id].swap === key && D.PICK.first.some(p => p.id === id)) ? (await sl(300), q('#r3d-act-st').textContent) : 'not swapped'; };
   const fits = await swap('music.chairbed', 'armchair'), big = await swap('music.kallax', 'bookcase'), E = D.HEDITS;
-  D.openAct('hitem:music.desk'); await sl(600); q('#r3d-act [data-actopen^="hswap:"]').click(); await sl(200); q('#r3d-act [data-hswapgo$=":-1"]').click();
+  D.openAct('hitem:music.desk'); await sl(600); q('#r3d-act [data-actopen^="hswap:"]').click(); await sl(200);
+  for (let i = 0; i < 20 && (E['music.desk'] || {}).swap !== 'desklong'; i++) { const was = (E['music.desk'] || {}).swap;   // N219: › to the long desk (the shops' desks come after it)
+    q('#r3d-act [aria-label="The next one"]').click(); await wait(() => (E['music.desk'] || {}).swap !== was); await sl(200); }
   const rid = await wait(() => E['music.desk'] && E['music.desk'].swap === 'desklong' && E['music.monitors'])
     && !E['music.monitors'].removed && Math.abs(E['music.monitors'].to[1] - E['music.desk'].to[4]) < 1 && E['music.interface'].removed && E['music.headphones'].removed;
   for (const k of ['music.chairbed', 'music.kallax', 'music.desk']) { D.openAct('hitem:' + k); await sl(400); q('#r3d-act [data-hreset]').click(); await sl(300); }

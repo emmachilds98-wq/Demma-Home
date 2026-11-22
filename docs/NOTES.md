@@ -245,7 +245,16 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   **Adding** (N218): the add card's kinds are chips, ‹ › goes through that kind (`hcAddOf`); `addSpot` puts a new piece (and each piece
   picked for it) back to the room's wall nearest the tap where `roomWhy` and the pieces find it clear, stored as the row's `x, z` on the
   wall line (0.5 in), which `syncAdds` reads back as against that wall. The space kept clear (`fit.keep`, from `reserves()`) names the
-  piece it's for (the Kallax's drawers), which that piece may take. **House edits in the look link** (`he` in `lookOf`): each edits row
+  piece it's for (the Kallax's drawers), which that piece may take. **Real pieces and her own** (N219): `docs/N219_catalogue.json` (the
+  research, 142 pieces) is read by `fit.shop_pieces()`: each its own `fit.SOURCES` row under `fit.shop_key` (a hash of its page and name,
+  so a row in Send or a link keeps meaning it; one page can sell two sizes), and by `export3d.shop_row` into `R.SHOP` (its kind, a look for
+  the builder, its materials from the finish's words, a door or drawer count). `08_house_catalogue.js` puts them in `HCAT` (`shop`, `p`,
+  `url`), drawn by `hcMake` with the house's materials only (no new shader at the first picture); they join the swap lists by kind and
+  `HCAT_ADD`. A card's line is `hcLine` ("86 × 50 × 87 cm · Fits · £103 · Habitat"), its tray a chip a shop and the shop's page
+  (`hcShopTray`). Her own piece lives in its row's value, `own|<look>|<material>|W|D|H|<name>` (`hcOwn` checks each part and registers it
+  in `HCAT` the first time it's read: `syncAdds`, `heOk`), so the look link and Send carry it with no new row shape; `ownPut` rewrites it
+  and stands it back where it fits (`addSpot`). Twelve materials (`OWN_MATS`, hex from `house/model.py`); `pull_edits` lists both.
+  **House edits in the look link** (`he` in `lookOf`): each edits row
   as `[item, field, value]` (an add with its room, x, z, y), every one checked by `heOk` on the way in (as `pieceNow` and `syncAdds` read
   rows) and put into Measure's store, once it is up (a link opens before `measure.js` has run).
 - **Lamps:** `survey_data.LAMPS` → `model.room_lamps`; the viewer reuses the room lights' uniforms (no rebuild). **Shade under pieces:**
