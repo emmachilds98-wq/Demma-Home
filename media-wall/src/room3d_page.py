@@ -491,6 +491,7 @@ body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-ed
   .ms-go { min-width: 44px; }
   .stk, .ms-go, .r3d-wallsel, .r3d-ui .seg button, .r3d-ui .chip, .r3d-ui .btn, .r3d-edit button, .r3d-edit .chip, .r3d-actmore > summary, .r3d-editmore > summary { min-height: 44px; }
   .r3d-actfields .stp button, .r3d-actfields input { width: 44px; height: 44px; } .r3d-actfields input { width: 68px; }
+  .r3d-theirs button { min-height: 44px; }   /* N222's Keep it · Back to mine */
 }
 @media (pointer: coarse) and (max-width: 899px) {
   .r3d .r3d-mini .r3d-minib, body:not(.bare) .r3d .r3d-mini .r3d-minib.r3d-bare { width: 44px; height: 44px; }
