@@ -417,6 +417,9 @@ def walls_for(o, floor, rs, ds, y0, y1):
                             c0, c1 = (zf - 2.2, zf + 1.2) if out_dir > 0 else (zf, zf + 3.4)
                             cap = (lambda xa, ya, xb, yb: o.box("woodwork", xa, ya, c0, xb, yb, c1)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("woodwork", c0, ya, xa, c1, yb, xb))
                             cap(d["a"] - 8.5, y0 + D.DOOR_H + 6, d["b"] + 8.5, y0 + D.DOOR_H + 9.5)
+                    # V4.46: the lining through the wall's thickness, the jambs and the head (woodwork, as the frame: the opening drew in wall paint)
+                    lin = (lambda xa, ya, xb, yb: o.box("woodwork", xa, ya, l0, xb, yb, l1)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("woodwork", l0, ya, xa, l1, yb, xb))
+                    lin(d["a"], y0, d["a"] + 0.6, y0 + D.DOOR_H); lin(d["b"] - 0.6, y0, d["b"], y0 + D.DOOR_H); lin(d["a"] + 0.6, y0 + D.DOOR_H - 0.6, d["b"] - 0.6, y0 + D.DOOR_H)
 
 
 def _covers(spans, a0, a1):
