@@ -96,6 +96,8 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
     e["finish_floor_y"] = {f: [_floor_top(f, x0, x1, z0, z1) for rid, x0, x1, z0, z1 in _surf.PIECES[f]] for f in model.FLOOR_Y}
     # N5c (REAL_PLAN R7): the house's windows from inside, for curtains a room can try: [floor, side, x0, x1, sill, head] (cm, the floor's own)
     e["windows_in"] = [[op["floor"], op["side"], *op["x"], op["sill"], op["head"]] for op in model.D.OPENINGS if op["kind"] == "window" and not op.get("skip")]
+    import storage_ideas                                         # N212: the storage ideas, options to look at (built in the 3D only once shown)
+    e["storage"] = storage_ideas.for_3d()
     e["plants"] = getattr(model.D, "PLANTS", [])                # V1.3: the gardens' plants (survey_data.PLANTS: where, how big, the source)
     e["beyond"] = getattr(model.D, "BEYOND", None)               # V1.4: past the far fence (survey_data.BEYOND): the low building, the hill
     e["garden"] = getattr(model.D, "BACK_GARDEN", None)          # V2.89 (N30): the back garden's lawn, path, borders and fences

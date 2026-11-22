@@ -1,23 +1,27 @@
-# Handover (21 Nov 2026, V4.37: the round stopped here; start here)
+# Handover (22 Nov 2026, V4.43: start here)
 
-## Now (21 Nov 2026, afternoon: the session stopped near its usage limit; start here)
-The client, 21 Nov: "start closing tasks and get the next team ready to start". Earlier the same day she reviewed on the PC (section
-26), answered questions for the next upgrade (`docs/DECISIONS.md`, "Answers for the next upgrade") and asked to "build everything you
-can with multiple agents".
+## Now (22 Nov 2026)
+The client, 21–22 Nov: her review on the PC (`docs/REAL_PLAN.md` section 26: "the movement to look around on mouse feels inverted",
+grey carpet in bedroom 2 and the office, each room's floor from a card, the stairwell's floor covering the hole, the office's plastic
+ivy, storage "for all our things and displays / knick nacks"); her answers in `docs/DECISIONS.md` ("Answers for the next upgrade");
+"Start the plan from recent work" (22 Nov), after the session that did V4.38–V4.40 stopped on its usage limit.
 
-- **Open: #312** (V4.38): a light fixture's aim line fixed before any tap (its raycast carries the camera), and her answers recorded in
-  DECISIONS and REAL_PLAN N201, N206, N207, N212. Merge it when CI is green (the project's rule).
-- **Then, in order** (`docs/wip/README.md` has each patch's base and state):
-  1. N203 step 1, finished and checked: `docs/wip/N203-step1-shared-state-DONE.patch` → a PR (V4.39).
-  2. Section 26's quick fixes, fresh: N210 (no floor over the stairwells), N208 (grey carpet in bedroom 2 and the office), N211 (the
-     office's plastic ivy out). One PR each; the rows say exactly what to change.
-  3. N207 mouse look: done V4.42 (a mouse held down looks the way it moves; the orbit views too).
-  4. N209 each room's floor from its card: done V4.42 (`REAL_PLAN` N209).
-  5. N212 storage designed into the decorating, **as options to look at in the 3D** (her choice), sized for 100–300 records, under 2 m
-     of books and games, clothes, tech and display: `docs/wip/N212-storage-options-partial.patch`.
-  6. N204/N202 the bake (Blender 6's API; the seam): `docs/wip/N204-N202-bake-partial.patch`.
-  7. Waiting on Emma: N201 (lighting later, "when the house is right"), N205 (on hold), N206 (her own colours and swapping furniture
-     first: plan with her).
+- **Section 26 is done** (each row says how and with what checks):
+  - V4.40 (#314): N208 grey carpet in bedroom 2 and the office; N211 the office's plastic ivy out.
+  - V4.41 (#315): N210 no floor over the stairwells (the landing's over the hole down, the hall's over the lower flight); a model check.
+  - V4.42: N207 a mouse held down looks the way it moves, the orbit views too, Mouse look's pointer lock out (her choice: only while a
+    button is held); a site check (`check_site.py` `mouse_look`). N209 each room's floor from its card ("Bedroom 2 · Grey carpet",
+    "The plan's", the cost by its laid area, in a look link and Measure → Send). N204 the bake ready for Blender 6; N202 in part (the
+    islands 10 texels apart, the smoothing inside the gap; the master's wall still to shoot after CI's fresh bake).
+  - V4.43: N212 storage ideas to look at (`house/storage_ideas.py`: 12 ideas, 18 pieces, each one line with a cited source; a
+    room's floor card → More → "Storage ideas"; checked clear of walks, doors and slopes; `docs/STORAGE.md` has each room's numbers;
+    a table in the plan's PDF). Her pick comes next: only then a build and a buy list (CLAUDE.md, core plan vs options).
+  - V4.39 (#313): N203 step 1, the 3D's shared state in one object (`GS`); step 2 (ES modules) is open.
+- **Open, in order:** N202's check (shoot the master with and without the bake); N203 step 2; then section 25 (N201 the real devices'
+  check, "lighting later when the house is right"; N205 on hold; N206 her own colours and swapping furniture, to plan with her).
+- **Waiting on Emma:** which storage ideas she wants (N212), then sizes for them; the master's frames' sliding doors need a measurement
+  first (they'd cut about 2 cm into the room door's swing as drawn).
+- `docs/wip/` is gone: every saved patch was finished and merged.
 
 The earlier state (the round of 20–21 Nov, V4.37), kept for reference:
 

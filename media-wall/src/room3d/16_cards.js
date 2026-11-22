@@ -171,6 +171,7 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id.startsWith("ups:")) return upsCard(id.slice(4));   // N23
   if (id.startsWith("hswap:") || id.startsWith("hadd:")) return hcatCard(id);   // V2.46 (N7): swap a piece, or which piece you've added
   if (id.startsWith("hitem:")) { const k = id.slice(6), it = HIT(k); if (!it) return null;   // V1.50: a piece in the house, its size
+    if (it.idea) return ideaCard(k);   // N212: a storage idea, to look at
     const sw = pieceNow(k).swap;
     return [sw ? HCAT[sw].n : it.n, pieceLine(k), [btn(it.op ? "Change its size" : "Move or resize", { actopen: "hsize:" + k }), ...(it.add ? [btn(it.look ? "Change plant" : "Change piece", { actopen: "hadd:" + k })] : swapKind(k) ? [btn("Swap it", { actopen: "hswap:" + k })] : []),
       ...(pieceDelta(k).some(Boolean) && !it.add ? [btn("As planned", { hreset: k })] : []), ...(it.op ? [] : [btn("Take it out", { hremove: k })]),
@@ -460,6 +461,8 @@ if (act) {
       if (it.look) { const L = plantKeys(); plantSet(it.look, L[((+x % L.length) + L.length) % L.length]); renderAct(); return; }
       const n = HCAT_ADD.length, v = d.haddgo ? HCAT_ADD[((+x % n) + n) % n] : HCAT_ADD.find(q => HCAT[q].k === x), row = ds.rows("edits")[k + "~add"]; if (!row || !v) return;
       ds.put("edits", k + "~add", Object.assign({}, row, { value: v })).then(() => { if (GS.actId) renderAct(); }); return; }
+    if (d.finidea != null && GS.actId && GS.actId.startsWith("fin:")) { ideaSet(GS.actId.split(":")[1], d.finidea); renderAct(); return; }   // N212
+    if (d.hidea) { const [r, q] = d.hidea.split(":"); closeAct(); if (ideaOn(r).includes(q)) ideaSet(r, q); return; }
     if (d.finplant != null && GS.actId && GS.actId.startsWith("fin:")) { plantSet(GS.actId.split(":")[1], d.finplant || null); renderAct(); return; }   // N5
     if (d.hremove && HIT(d.hremove) && HIT(d.hremove).look) { const r = HIT(d.hremove).look; closeAct(); plantSet(r, null); return; }
     if (d.hremove && HIT(d.hremove) && HIT(d.hremove).add) { const k = d.hremove, ds = DS(); closeAct();   // an added piece: its rows go

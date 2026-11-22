@@ -402,6 +402,11 @@ _over = [f"{f} {rid}" for f in Mo.FLOOR_Y for (rid, x0, x1, z0, z1) in _S.PIECES
          and min(x1, w_[1]) - max(x0, w_[0]) > 0.2 and min(z1, w_[3]) - max(z0, w_[2]) > 0.2]
 check("surfaces: no floor laid over a stairwell (N210)", not _over, "; ".join(_over) if _over else "the stairwells open on the ground and first floors")
 
+# N212: the storage ideas (options to look at): each piece in its room, clear of the house, the swings, the slopes and the walks
+import storage_ideas as _SI
+for _n, _ok, _note in _SI.checks():
+    check(_n, _ok, _note)
+
 w = max(len(r[1]) for r in rows)
 for st_, n, note in rows:
     print(f"{st_:4}  {n:<{w}}  {note}")
