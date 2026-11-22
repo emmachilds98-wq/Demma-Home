@@ -51,6 +51,7 @@
           "project": { "type": ["string", "null"] },
           "size": { "type": "object", "required": ["w", "h", "d", "up"],
             "properties": { "w": { "type": "number" }, "h": { "type": "number" }, "d": { "type": "number" }, "up": { "type": "number", "description": "up from its floor" } } },
+          "on": { "type": "string", "description": "N217: the item it stands on or hangs from: it goes where that goes, hidden if that's taken out" },
           "opening": { "type": "object", "description": "a door's or window's hole in its wall: the viewer moves the wall's edges with it",
             "required": ["axis", "line", "a", "b", "y0", "y1"],
             "properties": { "swing": { "type": "object", "description": "N217: a door's leaf: its hinge along the wall, the way the leaf runs from it (u), the side it opens to",

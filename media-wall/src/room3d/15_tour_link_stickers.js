@@ -82,7 +82,19 @@ function lookOf() {
   for (const [r, sl] of Object.entries(S.fin || {})) { if (r === LIVR || !sl) continue;
     for (const [s, v] of Object.entries(sl)) if (finLook(+s, v) && v !== (PF[r] || {})[s]) (fc[r] = fc[r] || {})[s] = v; }
   if (Object.keys(fc).length) o.fc = fc;
+  const he = DS() ? Object.values(DS().rows("edits") || {}).filter(heOk).map(v => [v.item, v.field, v.value, ...(v.field === "add" ? [v.room, v.x, v.z, v.y] : [])]) : [];
+  if (he.length) o.he = he;   // N218: the house's edits (swaps, moves, pieces added or taken out), as Measure's rows
   return o;
+}
+/* N218: an edits row as the page reads it (pieceNow, syncAdds): a house piece's size, move, turn, taken out or swap; or a piece added */
+const HE_NUM = { w: [1, 1000], h: [1, 1000], up: [-500, 1000], along: [-500, 1000], out: [-500, 1000], turn: [0, 3] };
+function heOk(v) {
+  if (!v || typeof v.item !== "string") return false;
+  const add = /^add\.[a-z0-9]{1,12}$/.test(v.item), H = R.HOUSE3 || {};
+  if (v.field === "add") return add && HCAT_ADD.includes(v.value) && !!(H.rooms || {})[v.room] && [v.x, v.z, v.y].every(Number.isFinite);
+  if (!add && !(H.items || {})[v.item]) return false;
+  const L = HE_NUM[v.field];
+  return L ? Number.isFinite(v.value) && v.value >= L[0] && v.value <= L[1] : v.field === "removed" ? v.value === true : v.field === "swap" && !add && !!HCAT[v.value] && swapKind(v.item) === HCAT[v.value].k;
 }
 const b64u = t => btoa(unescape(encodeURIComponent(t))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 const unb64u = t => decodeURIComponent(escape(atob(t.replace(/-/g, "+").replace(/_/g, "/"))));
@@ -151,6 +163,10 @@ function applyLook(tok) {
   if (o.fc && typeof o.fc === "object") { const c = finClean(Object.fromEntries(Object.entries(o.fc).filter(([, sl]) => sl && typeof sl === "object")   // N213: their walls' colours (colours only)
       .map(([r, sl]) => [r, Object.fromEntries(Object.entries(sl).filter(([s, v]) => finLook(+s, v)))]))); delete c[LIVR]; S.fin = S.fin || {};
     for (const [r, sl] of Object.entries(c)) S.fin[r] = Object.assign({}, S.fin[r], sl); finApplyAll(); }
+  const he = () => { for (const a of o.he.slice(0, 200)) { if (!Array.isArray(a)) continue;   // N218: the house's edits, each checked (once Measure's store is up)
+    const [item, field, value, room, x, z, y] = a, v = field === "add" ? { item, field, value, room, x, z, y } : { item, field, value };
+    if (heOk(v)) DS().put("edits", `${item}~${field}`, v); } };
+  if (Array.isArray(o.he)) { if (DS()) he(); else addEventListener("demma-rows", he, { once: true }); }
   applyState(); syncButtons();
   setView(o.v in VIEWS ? o.v : "room", true);
   const c = Array.isArray(o.c) && o.c.length === 7 && o.c.every(Number.isFinite) ? o.c : null;
