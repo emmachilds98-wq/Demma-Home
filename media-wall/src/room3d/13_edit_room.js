@@ -33,7 +33,8 @@ function livSwap(id, key) {   // Swap it: its back where the old one's was, agai
   livSwapDraw(it, key); const { hx, hz } = halfOf(it, p.rot), k = (d0 - it.d) / 2;
   let x = p.x + Math.sin(a) * k, z = p.z - Math.cos(a) * k;
   if (on.x0) x = hx; if (on.xW) x = R.W - hx; if (on.zmin) z = R.WINDOW_Z + hz; if (on.zmax) z = zmaxAt(x, hx) - hz;
-  const c = clampItem(it, x, z, p.rot); setLayout(id, { x: c.x, z: c.z }); if (key) S.layout[id].sw = key; else delete S.layout[id].sw;
+  const c = clampItem(it, x, z, p.rot); setLayout(id, { x: c.x, z: c.z });
+  if (key) S.layout[id].sw = key; else { const L = S.layout[id], a = S.added.find(q => q.id === id); delete L.sw; if (!a) { delete L.x; delete L.z; } }   // as planned: where the plan has it (as N217's)
   placeAll(); store.set(KEY, S); dirty();
 }
 const livThe = s => (s = s.replace(/ \((suggested|an option)\)$/, ""), (/^(Your|The) /.test(s) ? "" : "the ") + s[0].toLowerCase() + s.slice(1));

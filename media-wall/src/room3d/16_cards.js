@@ -282,7 +282,7 @@ function actItems(id) {     // [title, how it is now, buttons]
       ...(k === "recordtable" ? [btn(S.ctop ? "Close the lid" : "Lift the lid", { ctop: S.ctop ? "down" : "up" })] : []),   // v38
       ...(k === "stairscurtain" ? [btn(S.scopen ? "Draw it across" : "Open it", { scopen: S.scopen ? "shut" : "open" })] : []),   // V3.31
       ...(k === "stairdrawers" ? [btn(S.sdraw ? "Push the drawers in" : "Pull the drawers out", { sdraw: S.sdraw ? "in" : "out" })] : []),   // v37
-      ...(sg ? (SVAR[k] || []).map(([v, n]) => btn(n, { svar: `${k}:${v}` }, svarOf(k) === v)) : []),
+      ...(sg && !C ? (SVAR[k] || []).map(([v, n]) => btn(n, { svar: `${k}:${v}` }, svarOf(k) === v)) : []),
       ...(it && !it.fixed ? [btn("Move", { actedit: it.id }), btn("Turn", { turnit: it.id })] : []), ...(it && livSwapKind(it.id) ? [btn("Swap it", { actopen: "lswap:" + it.id })] : []),
       ...(k === "liftcoffee" || k === "recordtable" ? [btn("Move", { actedit: "coffee" })] : []),
       btn("Take it out", { takeout: k === "liftcoffee" || k === "recordtable" ? "mov:coffee" : (sg ? "sugg:" : "idea:") + k }),   // V3.75: the table goes, not just its top (Room → Taken out)
