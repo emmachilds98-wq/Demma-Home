@@ -87,10 +87,11 @@ function lookOf() {
 }
 /* N218: an edits row as the page reads it (pieceNow, syncAdds): a house piece's size, move, turn, taken out or swap; or a piece added */
 const HE_NUM = { w: [1, 1000], h: [1, 1000], up: [-500, 1000], along: [-500, 1000], out: [-500, 1000], turn: [0, 3] };
+const inRoom = (r, v) => v.x > r[0] - 50 && v.x < r[1] + 50 && v.z > r[2] - 50 && v.z < r[3] + 50 && v.y > r[4] - 50 && v.y < r[4] + 300;
 function heOk(v) {
   if (!v || typeof v.item !== "string") return false;
   const add = /^add\.[a-z0-9]{1,12}$/.test(v.item), H = R.HOUSE3 || {};
-  if (v.field === "add") return add && (HCAT_ADD.includes(v.value) || !!hcOwn(v.value)) && !!(H.rooms || {})[v.room] && [v.x, v.z, v.y].every(Number.isFinite);   // N219: her own piece too
+  if (v.field === "add") return add && (HCAT_ADD.includes(v.value) || !!hcOwn(v.value)) && !!(H.rooms || {})[v.room] && [v.x, v.z, v.y].every(Number.isFinite) && inRoom(H.rooms[v.room], v);   // N219: her own piece too; a link's piece in its own room (50 cm slack), not far outside the house
   if (!add && !(H.items || {})[v.item]) return false;
   const L = HE_NUM[v.field];
   return L ? Number.isFinite(v.value) && v.value >= L[0] && v.value <= L[1] : v.field === "removed" ? v.value === true : v.field === "swap" && !add && !!HCAT[v.value] && swapKind(v.item) === HCAT[v.value].k;
