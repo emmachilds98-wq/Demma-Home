@@ -847,6 +847,32 @@ swatches, "The plan's" to go back, kept per room in `S.fin`, in the look link an
 **Order:** N213 first, then N214, N215 and N216 as Emma answers (22 Nov: N216, N214 done, N215 closed); then N217, N218, N219, N220; N221 and N222 later, as she said. Each
 row's check is a `check_site.py` tap, as N209's is.
 
+**A design for N221 and N222** (22 Nov, read from the code, not yet built; line numbers as at V4.48):
+- *Shared:* one state that sets the device's own aside. `let ASIDE = null` in `08_house_edits.js` before `DS`, and
+  `DS = () => ASIDE ? ASIDE.ds : window.DemmaStore || null` (every reader of the edits rows goes through `DS()`: `pieceNow`, `storeEdits`,
+  `syncAdds`, `paintEdits`, the cards); `ASIDE.ds` an in-memory copy of the store (its `rows("edits")` its own copy, `put`/`del` async on
+  the copy, firing `demma-rows` "edits"); the `store.set` wrapper (`23_finish.js` ~552) skips `KEY` while `NOWV || ASIDE`. Split
+  `applyLook` (`15_tour_link_stickers.js` ~125–175) into `livLookOf()`/`livLookSet(o)` (the living room's part; always `restoreLayout(o.layout || {}, o.added || [])`),
+  `heOf()` (edits rows as sorted `[item, field, value, room, x, z, y]`), `heRows(a)` (back to rows through `heOk`, keyed `item~field`),
+  `heWear(a, ds)` (delete the accepted rows the look lacks, put the look's), and `lookPut({fin, liv, he})` (livLookSet, `finRestore`,
+  heWear, `applyState`, `syncButtons`, `finApplyAll`). `lookShow(L)`: `ASIDE = {s: JSON.stringify(S)}` if not set, `ASIDE.ds` a copy of
+  the real rows, `lookPut(L)` unsaved. `lookMine()`: restoreLayout from the saved state first (so the shown look's added pieces go),
+  `ASIDE = null`, the other keys back into `S` (keep `view`), `applyDecor`, `repaint`, `updateCaption`, `finApplyAll`, fire `demma-rows`;
+  no `store.set`. Move the plan scheme's merge (`20_4_house_build.js` ~54) into a function and run it again there.
+- *N221:* a look `{name, fin: finClean(finAll()), liv: livLookOf(), he: heOf()}`, kept under the old `dh-fin-schemes` key (old
+  `{name, fin}` entries read as looks of colours only: that's the migration), at most 8. "The house's colours" (`room3d_page.py` ~833,
+  `#r3d-finsch…`) becomes "Your looks": chips with ×, a name field, "Save this look". A tap wears it (`finPush`, `lookPut` into the real
+  store so Send carries the edits, `store.set`); a ~350 ms hold shows it (`lookShow`), letting go `lookMine`. `R3D.looks()`;
+  `measure.js` `shareLink` adds `pick.looks`; `tools/pull_edits.py` `looks(raw)` checked as `finishes()` (a name ≤ 24, `fin` through the
+  same filter, `he` short strings or numbers) into `house/looks.json` (data only). Replace `check_site.py`'s V2.13 scheme step: save "Ours",
+  change a wall and swap a piece, wear "Ours", both back, delete it. Open: whether "in the plan" also means baking `house/looks.json` into
+  the page for every device.
+- *N222:* `applyLook` builds `L` (`fin`: the plan's scheme with the link's `fl` and `fc` over it; `liv`: the link; `he`: `o.he || []`)
+  and calls `lookShow(L)`, sets the view and camera, saves nothing (no `DS().put` loop, no `store.set`); old links still work. A pill
+  `#r3d-theirs` "Their look" with "Back to mine" (and Esc), styled beside `.r3d-toast` with the tokens. While it shows, Send must carry the
+  device's own (or be blocked). Check: a page with its own colour and an edit opens a link with another colour and a swap: shown,
+  `localStorage` (`mw18-3d`, `demma-v1:edits`) unchanged; Back to mine restores it.
+
 **Questions for Emma** (all seven answered 22 Nov, `docs/DECISIONS.md`):
 1. Your own colour: by the picker, by typing a colour's code from a paint chart, by a paint's name (which makers: Dulux, Crown, Valspar,
    Farrow & Ball, Little Greene?), or from a photo (there now)?
