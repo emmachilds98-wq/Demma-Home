@@ -212,13 +212,13 @@ class Out:
         self.boxes, self.prisms, self.labels, self.parts, self.lathes = {}, [], [], {}, []
         self.floor, self.tag, self.tags, self.bt, self.shade, self.edge = floor, None, [], {}, [], []   # V1: the item each box belongs to (bt: per material, an index into tags)
 
-    def item(self, iid, name, room, kind="furniture", src="E", data=None, axis=None, measure=None):
+    def item(self, iid, name, room, kind="furniture", src="E", data=None, axis=None, measure=None, on=None):
         """V1 (Phase 1): every box drawn from here on (until the next item, or end()) belongs to this piece, so the app can tap it, name it,
         measure it and edit it. src: where its size comes from (M measured, P the plans, F/B the photos, client, E our estimate); data: the
         survey_data entry it's drawn from (a path), which tools/pull_edits.py writes the client's edits back to; axis: the way its wall runs
-        (x or z), so "along the wall" means something."""
+        (x or z), so "along the wall" means something; on: the piece it stands on or hangs from (N217's riders: they go where it goes)."""
         if iid not in ITEMS:                                 # the first call names it; later ones (a loop's next piece) only tag
-            ITEMS[iid] = dict(name=name, room=room, kind=kind, src=src, data=data, axis=axis, floor=self.floor,
+            ITEMS[iid] = dict(name=name, room=room, kind=kind, src=src, data=data, axis=axis, floor=self.floor, on=on,
                               measure=(src.strip().startswith("E") or src == "fitted") if measure is None else measure)
         if iid not in self.tags:
             self.tags.append(iid)
@@ -1277,7 +1277,7 @@ def office(o):
     o.box("pegboard", W - 1.5, y0 + pb["y"][0], pb["z"][0], W, y0 + pb["y"][1], pb["z"][1])
     for i, z in enumerate((pb["z"][0] + 12, pb["z"][0] + 36, pb["z"][0] + 58)):
         o.box("upvc", W - 9, y0 + pb["y"][0] + 10 + i * 12, z, W - 1.5, y0 + pb["y"][0] + 20 + i * 12, z + 9)
-    o.item("office.monitors", "The stacked monitors", "bed3", src="E (27-inch)", data=("OFFICE", "monitors"), axis="z")
+    o.item("office.monitors", "The stacked monitors", "bed3", src="E (27-inch)", data=("OFFICE", "monitors"), axis="z", on="office.desk")
     m = O["monitors"]; zc = (m["z"][0] + m["z"][1]) / 2
     o.box("black", W - 12, y0 + d["h"], zc - 2, W - 8, y0 + m["y0"] + 2 * m["h"] + m["gap"] + 2, zc + 2)   # the pole
     for k in range(2):
@@ -1286,7 +1286,7 @@ def office(o):
         o.box("monitor_back", W - 17, yb + 3, m["z"][0] + 4, W - 13.5, yb + m["h"] - 3, m["z"][1] - 4)
         o.box("screen", W - 18.3, yb + 0.8, m["z"][0] + 0.8, W - 18, yb + m["h"] - 0.8, m["z"][1] - 0.8)
     keyboard(o, "pink", "key_pink", d["x"][0] + 6, d["x"][0] + 19, zc - 18, zc + 18, y0 + d["h"])             # its pink keyboard
-    o.item("office.dual", "The side-by-side setup", "bed3", src="E (24-inch)", data=("OFFICE", "dual"), axis="z")
+    o.item("office.dual", "The side-by-side setup", "bed3", src="E (24-inch)", data=("OFFICE", "dual"), axis="z", on="office.desk")
     du = O["dual"]; zm = (du["z"][0] + du["z"][1]) / 2                # v66: the second setup, side by side, by the window
     o.box("black", W - 22, y0 + d["h"], zm - 12, W - 6, y0 + d["h"] + 1.5, zm + 12)                          # the stand's foot
     o.box("black", W - 15, y0 + d["h"], zm - 2, W - 11, y0 + du["y0"] + du["h"] / 2, zm + 2)
@@ -1587,7 +1587,7 @@ def music(o):
     o.box("birch", rt["x"][0], y, rt["z"][1] - 2, rt["x"][1], dy - dk["t"], rt["z"][1])  # the return's end panel
     o.box("birch", rt["x"][0], y, dz0, rt["x"][0] + 2, dy - dk["t"], dz0 + 8)      # a leg in the corner's front
     o.box("birch", dx0 + 2, dy - dk["t"] - 8, dz0, dx1, dy - dk["t"], dz0 + 2)      # the modesty rail at the back
-    o.item("music.keyboard", "The 88-key on its tray", "bed2", src="E (88-key)", data=("MUSIC", "keyboard"), axis="x")
+    o.item("music.keyboard", "The 88-key on its tray", "bed2", src="E (88-key)", data=("MUSIC", "keyboard"), axis="x", on="music.desk")
     tr = dk["tray"]; kb = Mu["keyboard"]                                        # the pull-out tray, the 88-key on it, half out
     tz1 = dz1 + 18
     o.box("birch", kb["x"][0] - 4, y + tr["y"], tz1 - tr["d"], kb["x"][1] + 4, y + tr["y"] + 2, tz1)
@@ -1599,7 +1599,7 @@ def music(o):
     for k in range(52):
         xx = kb["x"][0] + 3 + (kb["x"][1] - kb["x"][0] - 6) * k / 52
         o.box("black", xx - 0.3, ky0 + kb["h"] - 4, tz1 - 2 - 15, xx + 0.3, ky0 + kb["h"] - 3, tz1 - 8) if k % 7 not in (2, 6) else None
-    o.item("music.monitors", "The riser and monitors", "bed2", src="E", data=("MUSIC", "monitors"), axis="x")
+    o.item("music.monitors", "The riser and monitors", "bed2", src="E", data=("MUSIC", "monitors"), axis="x", on="music.desk")
     o.box("black", dx0 + 2, dy + dk["riser"] - 2, dz0 + 1, dx1 - 2, dy + dk["riser"], dz0 + 26)   # the riser, the monitors, the screen
     for lx in (dx0 + 4, (dx0 + dx1) / 2 - 2, dx1 - 8):
         o.box("black", lx, dy, dz0 + 3, lx + 4, dy + dk["riser"] - 2, dz0 + 24)
@@ -1615,9 +1615,10 @@ def music(o):
     cx_ = (dx0 + dx1) / 2
     o.box("screen", cx_ - 28, my + 6, dz0 + 4, cx_ + 28, my + 38, dz0 + 6)
     o.box("black", cx_ - 22, dy, dz1 - 20, cx_ + 22, dy + 2.5, dz1 - 6)              # a computer keyboard
-    o.box("red_gloss", rt["x"][0] + 20, dy, rt["z"][0] + 30, rt["x"][0] + 42, dy + 4.5, rt["z"][0] + 50)   # the interface on the return
+    o.item("music.interface", "The audio interface", "bed2", kind="decor", src="E", measure=False, on="music.desk")   # N217: its own, on the return
+    o.box("red_gloss", rt["x"][0] + 20, dy, rt["z"][0] + 30, rt["x"][0] + 42, dy + 4.5, rt["z"][0] + 50)
     if "headphones" in Mu:                                         # V3.73: headphones on a hook at the return's end
-        o.item("music.headphones", "Headphones on a hook", "bed2", kind="decor", src="E (closed-back studio headphones)", measure=False)
+        o.item("music.headphones", "Headphones on a hook", "bed2", kind="decor", src="E (closed-back studio headphones)", measure=False, on="music.desk")
         hp = Mu["headphones"]; hx_, hz_, hy_ = hp["x"], hp["z"], y + hp["y"]
         o.box("steel", hx_ - 1, hy_ + 6, hz_, hx_ + 1, hy_ + 8, hz_ + 4)                 # the hook
         o.box("black", hx_ - 9, hy_ + 5, hz_ + 2, hx_ + 9, hy_ + 7.5, hz_ + 5)           # the band over it
@@ -1625,7 +1626,7 @@ def music(o):
             o.box("black", hx_ + sx * 9 - 1.5, hy_ - 4, hz_ + 1.5, hx_ + sx * 9 + 1.5, hy_ + 6, hz_ + 5.5)   # the band's sides
             o.box("amp_grille", hx_ + sx * 9 - 4.5 * (sx > 0) - 0.5 * (sx < 0), hy_ - 11, hz_ + 1, hx_ + sx * 9 + 0.5 * (sx > 0) + 4.5 * (sx < 0), hy_ - 1, hz_ + 9)   # the ear cups
     if "mic" in Mu:                                                # V3.73: a vocal mic on a boom arm clamped at the desk's corner, swung aside
-        o.item("music.mic", "A mic on a boom arm", "bed2", kind="decor", src="E (a desk boom arm, about 80 reach)", measure=False)
+        o.item("music.mic", "A mic on a boom arm", "bed2", kind="decor", src="E (a desk boom arm, about 80 reach)", measure=False, on="music.desk")
         mc = Mu["mic"]; mx_, mz_, my_ = mc["x"], mc["z"], y + mc["y"]
         o.box("black", mx_ - 3, dy - 6, mz_ - 3, mx_ + 3, dy + 3, mz_ + 3)              # the clamp
         o.box("steel", mx_ - 1, dy + 3, mz_ - 1, mx_ + 1, my_, mz_ + 1)                 # the post

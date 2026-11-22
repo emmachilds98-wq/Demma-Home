@@ -237,7 +237,11 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   room's walls (its box, the notches where it's L-shaped, the knee walls), the slope or ceiling (`model.headroom`), the doors' swings
   (`opening.swing` in the house file, a quarter circle as `storage_ideas.checks`) and the walks (`storage_ideas.reserves()` named "walk"),
   all from `R.HOUSE3.fit` (`export3d._fit`), then `clashes`; a rug only the walls. A new walk goes in `reserves()` (the model check keeps
-  the storage ideas clear of it too).
+  the storage ideas clear of it too). **Riders:** a piece that stands on or hangs from another is `o.item(..., on="host")` (the house
+  file's `on`); `riderBox` moves it with its host (the same offset from the host's back-left corner, the same height over its top) and
+  hides it when the host is taken out or turned, or the new top is under less than 90% of it (hung: when it no longer meets it). Riders
+  are bedroom 2's monitors, interface, 88-key, headphones and mic on the L desk and the office's two screen setups on its desk; not the
+  office lamp (its light would stay behind).
 - **Lamps:** `survey_data.LAMPS` → `model.room_lamps`; the viewer reuses the room lights' uniforms (no rebuild). **Shade under pieces:**
   `model.piece_shade`, moved with edits (`08_house_edits.js editedFloor`).
   **Shade where walls meet** (V3.63, N112): `model.edge_shade` finds each room's walls from the boxes as built (`EDGE_M` faces within

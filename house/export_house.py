@@ -78,6 +78,8 @@ def items(export):
         src, meas = _src(it)
         row = dict(id=iid, name=it["name"], room=it["room"], floor=it["floor"] if it["floor"] in M.FLOOR_Y else "first", kind=it["kind"],
                    box=b, src=src, measure=bool(meas), axis=it["axis"], data=list(it["data"]) if it["data"] else None)
+        if it.get("on"):                                          # N217: the piece it stands on or hangs from
+            row["on"] = it["on"]
         ax = it["axis"]
         w = (b[3] - b[0]) if ax != "z" else (b[5] - b[2])
         d = (b[5] - b[2]) if ax != "z" else (b[3] - b[0])

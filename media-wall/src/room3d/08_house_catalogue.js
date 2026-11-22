@@ -102,6 +102,10 @@ const HCAT = {
     b: (W, H, D, B) => { B("door_white", 0, H - 3.4, 0, W, H, D);
       for (const u of [8, W - 54]) { for (const uu of [u, u + 42]) { B("birch", uu, 0, 4, uu + 4, H - 3.4, 7); B("birch", uu, 0, D - 7, uu + 4, H - 3.4, D - 4); B("birch", uu, H - 8, 4, uu + 4, H - 3.4, D - 4); }
         B("birch", u, 18, 4, u + 46, 20, D - 4); } } },   // each trestle's shelf
+  desklong: { n: "Long desk on two drawer units, white", k: "desk", w: 200, d: 60, h: 73, ref: "hcswap", src: "IKEA LAGKAPTEN / ALEX, 200 × 60 × 73",   // N217: room for bedroom 2's riser
+    b: (W, H, D, B, L) => { B("door_white", 0, H - 3, 0, W, H, D); hcChest("door_white", 1, 5, "grip")(36, 70, 58, (m, a, b, c, d, e, f) => B(m, 1 + a, b, 1 + c, 1 + d, e, 1 + f));
+      B("door_white", W - 37, 0, 1, W - 1, 70, 59); for (const v of [23, 46]) B("door_white", W - 35, v, 3, W - 3, v + 1.6, 57);   // ALEX's open unit, two shelves
+      L("door_white", W / 2, 5, 0, [[0, 0], [2, 0], [2, H - 3], [0, H - 3]]); } },
   bookcase: { n: "Oak bookcase", k: "shelves", w: 80, d: 28, h: 202, ref: "hcikea", src: "IKEA BILLY, 80 × 28 × 202", b: hcShelves("oak", hcBooks) },
   cubes: { n: "Cube shelving with boxes, white", k: "shelves", w: 147, d: 39, h: 147, ref: "hcikea", src: "IKEA KALLAX, 147 × 39 × 147",
     b: (W, H, D, B) => { const nu = Math.max(1, Math.round(W / 36)), nv = Math.max(1, Math.round(H / 36)), cu = (W - 3) / nu, cv = (H - 3) / nv;
@@ -314,7 +318,7 @@ const HCSKIP = new Set(["decor", "finish", "light", "switch", "socket", "fitting
 function clashes(id) {
   const it = HIT(id); if (!it || pieceNow(id).removed || hcSoft(id) || (!it.add && !pieceDelta(id).some(Boolean))) return [];
   const b = pieceBox(id), over = (p, q) => [0, 1, 2].every(j => p[j] < q[j + 3] - 1 && p[j + 3] > q[j] + 1);
-  return Object.keys(R.HOUSE3.items).filter(k => { const o = HIT(k); return k !== id && o.r === it.r && !HCSKIP.has(o.k) && !hcSoft(k) && !pieceNow(k).removed
+  return Object.keys(R.HOUSE3.items).filter(k => { const o = HIT(k); return k !== id && o.r === it.r && !HCSKIP.has(o.k) && !hcSoft(k) && !pieceNow(k).removed && (!o.on || riderBox(k) === undefined)
     && !(!it.add && !o.add && over(it.b, o.b)) && over(b, pieceBox(k)); }).map(k => { const c = pieceNow(k).swap; return c ? HCAT[c].n : HIT(k).n; });
 }
 /* N5: a plant in any room (Look's floor card, the room's row [23]): in the free corner farthest from its doors, clear of the furniture,
