@@ -1,11 +1,10 @@
 /* ---------------------------------------------------------------- render loop, only when something changed */
-let need = 2, moving = false, still_t = 0, lowRes = false, dragT = 0, slowDev = !HI, capDue = false;   // v35: slowDev until the speed check says otherwise (v39: not on a real graphics card)
+let still_t = 0, lowRes = false, dragT = 0, slowDev = !HI, capDue = false;   // v35: slowDev until the speed check says otherwise (v39: not on a real graphics card)
 const MV = []; let mvLast = 0;   // v39: the gaps between frames while the room moves: slow ones turn on the lower resolution while you drag
-function dirty() { need = Math.max(need, 2); }
+function dirty() { GS.need = Math.max(GS.need, 2); }
 function fullRatio() { const d = window.devicePixelRatio || 1; if (SMALL && !BIG_GPU) return Math.min(d, GOOD_PHONE ? phoneCap : 1.5); if (S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view) && !BIG_GPU) return houseLite ? 1 : Math.min(d, 1.5);   // V2.25: a real card draws the house as sharp as a room   // V1.11: a real graphics card draws the house at 2× too   // v73: the house at the screen's own sharpness (no supersampling: it's many times the living room's drawing)
   return S.quality === "hd" ? (BIG_GPU ? Math.min(d, 2) : Math.min(d, 1.5)) : Math.min(d, 1); }   // V2.30: a real card at the screen's own sharpness, as a game (4× anti-aliasing smooths the edges; it drew 1.5× on top: 2.25 times the pixels)   // v39: phones at their own sharpness; v44: a real graphics card draws HD at 1.5–2×; v50: Fast on a PC at full size (was 0.85×)
-let baseFov = 50;   // v21: narrower screens (phones show the room at 4:3) widen the field of view so every view takes in as much of the room across as at 16:9
-const fitFov = (fov, asp = camera.aspect) => asp >= 16 / 9 ? fov : Math.min(95, 2 * Math.atan(Math.tan(fov * Math.PI / 360) * (asp < 0.8 ? 1.45 : 16 / 9) / asp) * 180 / Math.PI);   // v33: portrait, tighter
+const fitFov = (fov, asp = camera.aspect) => asp >= 16 / 9 ? fov : Math.min(95, 2 * Math.atan(Math.tan(fov * Math.PI / 360) * (asp < 0.8 ? 1.45 : 16 / 9) / asp) * 180 / Math.PI);   // v21: narrower screens widen the field of view to take in as much of the room as at 16:9 (v33: portrait, tighter)
 function sizeRenderer() {
   const w = canvas.clientWidth, h = canvas.clientHeight;
   if (!w || !h) return;
@@ -13,7 +12,7 @@ function sizeRenderer() {
   // v14.1: while you drag, the picture renders at a lower resolution; it sharpens again as soon as you stop
   gl.setPixelRatio(lowRes && !dragLite() ? Math.max(0.5, fullRatio() * 0.5) : fullRatio());   // V2.64: a phone in HD keeps its sharpness (aoLive)
   gl.setSize(w, h, false);
-  camera.aspect = w / h; if (!tween) camera.fov = fitFov(baseFov); applyShift(); dirty();
+  camera.aspect = w / h; if (!GS.tween) camera.fov = fitFov(GS.baseFov); applyShift(); dirty();
 }
 /* v26: with the Tools panel open, the room slides into the space beside it (laptop: left of the panel; phone: above it, half way) */
 const shift = { x: 0, y: 0 }; let cover = null;   // cover: the open panel's box, so stickers under it hide
@@ -42,20 +41,20 @@ addEventListener("demma-tools", e => requestAnimationFrame(() => measureShift(!!
 addEventListener("resize", () => measureShift(!!(window.DemmaTools && window.DemmaTools.isOpen())));
 requestAnimationFrame(() => { measureShift(false); setLabels(labelsOn); });
 new ResizeObserver(sizeRenderer).observe(canvas);
-controls.addEventListener("start", () => { moving = true; });
-controls.addEventListener("end", () => { moving = false; });
-const LIVING = []; let livOut = false;   // V1.31 (U4): from outside, the living room's furniture, lights and fittings are left out unless the eye is near its window
+controls.addEventListener("start", () => { GS.moving = true; });
+controls.addEventListener("end", () => { GS.moving = false; });
+const LIVING = [];   // V1.31 (U4): from outside, the living room's furniture, lights and fittings are left out unless the eye is near its window
 function livingFromOutside() {
   const x = -camera.position.x / M, z = camera.position.z / M, wx = (R.WINDOW_X[0] + R.WINDOW_X[1]) / 2;
-  const want = !!R.HOUSE3 && S.view === "house" && hfloor === "all" && !tween && !(z < R.WINDOW_Z - 20 && Math.hypot(x - wx, z - R.WINDOW_Z) < 4000);   // V1.47, the client: "see in and out of the windows at all times": from anywhere behind the house (the garden is 25 m; was 14)
-  if (want === livOut) return false;
-  livOut = want;
+  const want = !!R.HOUSE3 && S.view === "house" && GS.hfloor === "all" && !GS.tween && !(z < R.WINDOW_Z - 20 && Math.hypot(x - wx, z - R.WINDOW_Z) < 4000);   // V1.47, the client: "see in and out of the windows at all times": from anywhere behind the house (the garden is 25 m; was 14)
+  if (want === GS.livOut) return false;
+  GS.livOut = want;
   for (const o of LIVING) { if (o === view) continue; if (want) { o.userData.livWas = o.visible; o.visible = false; } else if (o.userData.livWas !== undefined) { o.visible = o.userData.livWas; delete o.userData.livWas; } }
   if (!want) applyFloors();   // the floor or the room you've gone to hides what it hides (Lower, a room's own view) again
   reshadow(); return true;
 }
 function livShow() {   // V2.98 (N37): what's put away shown again for a moment (applyState sets what shows), then put back by livingFromOutside
-  if (!livOut) return false; livOut = false;
+  if (!GS.livOut) return false; GS.livOut = false;
   for (const o of LIVING) if (o.userData.livWas !== undefined) { o.visible = o.userData.livWas; delete o.userData.livWas; }
   return true;
 }
@@ -77,29 +76,29 @@ function declutter() {
 const SPIN = { t0: 0, at: 0 };
 function frame(now) {
   requestAnimationFrame(frame);
-  if (livingFromOutside()) need = 2;
+  if (livingFromOutside()) GS.need = 2;
   if (!canvas.clientWidth) return;
   if (controls.autoRotate && (now - SPIN.t0 > 60000 || !document.hasFocus())) controls.autoRotate = false;   // at rest after a minute, or with the window behind another
-  const spin = controls.autoRotate && !moving && !tween && !walking();
+  const spin = controls.autoRotate && !GS.moving && !GS.tween && !walking();
   if (spin && now - SPIN.at < 14.5) return; if (spin) SPIN.at = now;   // 60 a second at most (the frames between skipped whole: no update, no draw)
-  if (tween) {
-    const k = Math.min(1, (now - tween.t0) / (tween.dur || 900)), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-    camera.position.lerpVectors(tween.from.eye, tween.to.eye, e);
-    controls.target.lerpVectors(tween.from.at, tween.to.at, e);
-    camera.fov = tween.from.fov + (tween.to.fov - tween.from.fov) * e; camera.updateProjectionMatrix();
-    if (k >= 1) { tween = null; if (S.cam === "look") seatLook(); syncEye(); }   // v31: looking round, the turning point comes back in front of you
-    need = 2;
+  if (GS.tween) {
+    const k = Math.min(1, (now - GS.tween.t0) / (GS.tween.dur || 900)), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    camera.position.lerpVectors(GS.tween.from.eye, GS.tween.to.eye, e);
+    controls.target.lerpVectors(GS.tween.from.at, GS.tween.to.at, e);
+    camera.fov = GS.tween.from.fov + (GS.tween.to.fov - GS.tween.from.fov) * e; camera.updateProjectionMatrix();
+    if (k >= 1) { GS.tween = null; if (S.cam === "look") seatLook(); syncEye(); }   // v31: looking round, the turning point comes back in front of you
+    GS.need = 2;
   }
   const dt = Math.min(0.1, (now - (frame.last || now)) / 1000); frame.last = now;
   controls.dampingFactor = 1 - Math.pow(1 - DAMP, Math.max(dt, 1 / 240) * 60);   // V2.60: the glide eases the same fifth each 60th of a second, at any frame rate
   const changed = controls.update(spin ? dt : null);   // V3.41: the turn by the time passed (three's own is a step a frame)
-  if (changed) { need = 2; lostCheck(); }
-  if (cabTween(now)) need = 2;                                    // v30: the cabinet's doors swinging or sliding
-  if (liftTick(now)) need = 2;                                    // v68: Lift the bed
-  if (showTick(now)) need = 2;                                    // v32: "Watch it open"
-  const walked = walkTick(dt) | lookTick(dt); if (walked) { need = 2; syncEye(); }   // V3.28: and a mouse's look round, let out frame by frame   // V1.32 (U7)   // V2.30: dt to 100 ms (it held each step to 50: a slow frame slowed the walk)
-  if (!tween && !freeAbove() && !walking() && (clampRoom(camera.position) | clampRoom(controls.target, true) | collide())) need = 2;   // v17: never outside the room; v41: nor in the furniture
-  const active = moving || changed || !!tween || walked;   // V2.73 (N17): a walk too
+  if (changed) { GS.need = 2; lostCheck(); }
+  if (cabTween(now)) GS.need = 2;                                    // v30: the cabinet's doors swinging or sliding
+  if (liftTick(now)) GS.need = 2;                                    // v68: Lift the bed
+  if (showTick(now)) GS.need = 2;                                    // v32: "Watch it open"
+  const walked = walkTick(dt) | lookTick(dt); if (walked) { GS.need = 2; syncEye(); }   // V3.28: and a mouse's look round, let out frame by frame   // V1.32 (U7)   // V2.30: dt to 100 ms (it held each step to 50: a slow frame slowed the walk)
+  if (!GS.tween && !freeAbove() && !walking() && (clampRoom(camera.position) | clampRoom(controls.target, true) | collide())) GS.need = 2;   // v17: never outside the room; v41: nor in the furniture
+  const active = GS.moving || changed || !!GS.tween || walked;   // V2.73 (N17): a walk too
   if (active && mvLast && now - mvLast < 1000) { const g_ = now - mvLast; if (now - (FT.worstT || 0) > 3000 || g_ >= (FT.worst || 0)) { FT.worst = g_; FT.worstT = now; } }   // V3.29: the longest gap while moving (the last 3 s), for ?perf
   if (active && mvLast && now - mvLast < 250) { MV.push(now - mvLast); if (MV.length >= 24) { const m = MV.sort((a, b) => a - b)[12]; MV.length = 0; FT.mv = m;
     if (m > 28 && (!BIG_GPU || MASKED)) slowDev = true; else if (m < 14 && !lowRes && HI) slowDev = false;
@@ -107,23 +106,23 @@ function frame(now) {
     if (m > 40 && !BIG_GPU && !houseLite && S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view)) { houseLite = true; sizeRenderer(); toast("A lighter drawing for the house on this computer"); } } }
   mvLast = active ? now : 0;
   // v35: lower resolution only while a drag on a slow device has lasted a moment (each switch is a new drawing buffer)
-  const go = moving || (walked && dragLite());   // V2.73 (N17): a phone's walk draws without the shade and glow as a drag does; past 24 ms a frame it drops to 1.5× once, while still
+  const go = GS.moving || (walked && dragLite());   // V2.73 (N17): a phone's walk draws without the shade and glow as a drag does; past 24 ms a frame it drops to 1.5× once, while still
   if (go && slowDev) { if (!dragT) dragT = now; still_t = now; if (!lowRes && now - dragT > 150) { lowRes = true; dragLite() ? dirty() : sizeRenderer(); } }
   else { dragT = 0; if (active) still_t = now; else if (lowRes && now - still_t > 250) { lowRes = false; if (capDue) { capDue = false; phoneCap = 1.5; sizeRenderer(); } else dragLite() ? dirty() : sizeRenderer(); } }
   /* V3.54 (N106): an iPhone in HD leaves out the shade and glow while it moves too (the same shaders), back a quarter second after */
-  if (MOVE_LITE && (BIG_GPU || PHONE_HD)) { if (active || walking() && (WALK.v.lengthSq() > 1e-5 || WALK.keys.size)) { if (!moveLite) moveLite = true; } else if (moveLite && now - still_t > 250) { moveLite = false; need = Math.max(need, 1); } }   // V3.39 (N91)
-  if (updateCut()) need = 2;
+  if (MOVE_LITE && (BIG_GPU || PHONE_HD)) { if (active || walking() && (WALK.v.lengthSq() > 1e-5 || WALK.keys.size)) { if (!moveLite) moveLite = true; } else if (moveLite && now - still_t > 250) { moveLite = false; GS.need = Math.max(GS.need, 1); } }   // V3.39 (N91)
+  if (updateCut()) GS.need = 2;
   upStep(now, active || walking());                                // V2.64: the photos onto the graphics chip a few at a time
-  if (probe > 0 && !lowRes) need = Math.max(need, 1);                 // v35: the speed check's three frames come first, at the start
-  if (need === 0 && !active && !SH && probe === 0 && now - preT > 120 && now - PRE.idleT > 400) {   // v35: hidden parts' shaders, off screen
-    if (mirrorStep()) need = Math.max(need, 1);   // V3.57 (N107): a mirror's room, a face a still frame
+  if (probe > 0 && !lowRes) GS.need = Math.max(GS.need, 1);                 // v35: the speed check's three frames come first, at the start
+  if (GS.need === 0 && !active && !SH && probe === 0 && now - preT > 120 && now - PRE.idleT > 400) {   // v35: hidden parts' shaders, off screen
+    if (mirrorStep()) GS.need = Math.max(GS.need, 1);   // V3.57 (N107): a mirror's room, a face a still frame
     else if (PARALLEL()) { if (!WARMB && now - PRE.idleT > 400 && !warmSwitch()) precompileBatch(); }   // V3.23: rooms first, then the hidden parts, built beside the page
     else { const t0 = performance.now(); while (precompileStep() && performance.now() - t0 < 10) {} if (!PRE.queue.length && now - PRE.idleT > 1500) warmSwitch(); }
     preT = now; }   // V2.42: a room's visit only after a real pause   // v39: as many as fit in 10 ms, sooner
-  if (glLost || (document.body.classList.contains("sheet-open") && !SH && !tween)) return;   // v35: nothing drawn behind the Plan's sheets (the last picture stays)
-  if (need > 0) {
+  if (glLost || (document.body.classList.contains("sheet-open") && !SH && !GS.tween)) return;   // v35: nothing drawn behind the Plan's sheets (the last picture stays)
+  if (GS.need > 0) {
     const t = probe > 0 && !lowRes ? performance.now() : 0;
-    const f0 = performance.now(); syncRig(); declutter(); const shq = shStag(active || walking() && (WALK.v.lengthSq() > 1e-5 || WALK.keys.size > 0)); try { draw(); } finally { shStagEnd(shq); } if (!START_MS.firstAt) { START_MS.firstAt = Math.round(performance.now()); START_MS.firstMs = Math.round(performance.now() - f0); dispatchEvent(new Event("r3d-first")); } FT.calls = gl.info.render.calls; FT.tris = gl.info.render.triangles; need--; placeStickers(); FT[FT.n++ % 60] = performance.now() - f0;   // V2.66 (N13): r3d-first, the first picture (the landing's first screen goes)
+    const f0 = performance.now(); syncRig(); declutter(); const shq = shStag(active || walking() && (WALK.v.lengthSq() > 1e-5 || WALK.keys.size > 0)); try { draw(); } finally { shStagEnd(shq); } if (!START_MS.firstAt) { START_MS.firstAt = Math.round(performance.now()); START_MS.firstMs = Math.round(performance.now() - f0); dispatchEvent(new Event("r3d-first")); } FT.calls = gl.info.render.calls; FT.tris = gl.info.render.triangles; GS.need--; placeStickers(); FT[FT.n++ % 60] = performance.now() - f0;   // V2.66 (N13): r3d-first, the first picture (the landing's first screen goes)
     if (t) { const c = gl.getContext(); c.readPixels(0, 0, 1, 1, c.RGBA, c.UNSIGNED_BYTE, PX); probeT.push(performance.now() - t); probe--; if (!probe) autoQuality(); }
   }
 }
@@ -141,7 +140,7 @@ function shStag(moving_) {   // the lights left out this frame (their autoUpdate
 function shStagEnd(ls) {
   if (!ls) return;
   for (const l of ls) l.shadow.autoUpdate = true;
-  if (shStag.left) need = Math.max(need, 2);   // the next light next frame (2: this frame's own need-- follows)
+  if (shStag.left) GS.need = Math.max(GS.need, 2);   // the next light next frame (2: this frame's own need-- follows)
 }
 let probe = 3; const probeT = [], PX = new Uint8Array(4);   // v14.1: if this device takes too long over a full HD frame, drop to Fast (unless you picked a quality yourself)
 let preT = 0;

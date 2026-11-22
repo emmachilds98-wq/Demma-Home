@@ -7,7 +7,7 @@ const ROOMV = () => R.HOUSE3 && (VIEWS[S.view] || {}).box;                      
 const LIV_RMODE = { in: "window", stand: "livstand", above: "room", alone: "livalone" };
 /* V1.6: Be there, in every room: from its door at eye height, a wide lens, level; a drag looks round from there */
 const STAND_FOV = 80, STAND_EYE = 160, GO_MS = 550;   // V2.42: a double-click's glide there (0.9 s before)
-let standCam = null, standSpot = null;   // V1.53: standSpot, where a double-click or the figure puts you down ([x, z, dx, dz], room cm)
+let standCam = null;   // V1.53: GS.standSpot, where a double-click or the figure puts you down ([x, z, dx, dz], room cm)
 function standLook(on) {
   if (on) { if (standCam === null) standCam = S.cam; S.cam = "look"; }
   else if (standCam !== null) { S.cam = standCam; standCam = null; } else return;
@@ -16,10 +16,10 @@ function standLook(on) {
 function standIn() {
   const v = VIEWS[S.view], rr = ((R.HOUSE3 && R.HOUSE3.rooms) || {})[VIEW_ROOM[S.view]], fy = rr ? rr[4] : 0;
   standLook(true);
-  if (standSpot) { const [x, z, dx, dz, ms] = standSpot; standSpot = null;   // V2.42: as quick as asked (it was always 0.9 s: the client, "no slow change of view")
+  if (GS.standSpot) { const [x, z, dx, dz, ms] = GS.standSpot; GS.standSpot = null;   // V2.42: as quick as asked (it was always 0.9 s: the client, "no slow change of view")
     flyTo([x, fy + STAND_EYE, z], [x + dx * 100, fy + STAND_EYE - 10, z + dz * 100], STAND_FOV, false, false, ms || GO_MS); return; }
   const [x, z] = R.HOUSE3 ? freeSpot(v.eye[0], fy, v.eye[2]) : [v.eye[0], v.eye[2]];   // V1.59: not inside a worktop or a desk
-  hereRoom = ((R.HOUSE3 && standRoomAt(x, fy + 1, z)) || [VIEW_ROOM[S.view]])[0]; brandPlace();
+  GS.hereRoom = ((R.HOUSE3 && standRoomAt(x, fy + 1, z)) || [VIEW_ROOM[S.view]])[0]; brandPlace();
   flyTo([x, fy + STAND_EYE, z], [v.at[0] + x - v.eye[0], fy + STAND_EYE - 10, v.at[2] + z - v.eye[2]], STAND_FOV, false, false, 600);
 }
 const LIVV = () => !HOUSEV(S.view) && !!VIEWS[S.view];
@@ -30,7 +30,7 @@ function goRoom(v, now, after) {
   if (!now) return readyThen(v, () => { goRoom(v, true); if (after) after(); });   // V3.23: its shaders built first where they aren't (no freeze on a PC)
   const far = S.view === "house" || !HOUSEV(S.view) !== !HOUSEV(v);
   setView(v); if (VIEWS[v] && VIEWS[v].box) setRmode("stand");
-  if (tween && far) tween.dur = Math.max(tween.dur, 1100);   // from the whole house, a glide in, not a dive
+  if (GS.tween && far) GS.tween.dur = Math.max(GS.tween.dur, 1100);   // from the whole house, a glide in, not a dive
 }
 /* V2.96 (N39): a room is a step in the history, so Back brings you out to the house, not off the site (setView calls roomHist) */
 const HIST = Math.random().toString(36).slice(2);
@@ -54,15 +54,14 @@ addEventListener("popstate", e => {
 function syncRmode() {
   if (typeof syncStick === "function") try { syncStick(); } catch (e) {}   // V1.32: the walk's stick
   const rm = qs("#r3d-rmode"); if (!rm) return;
-  const liv = LIVV(), cur = liv ? (S.view === "room" ? "above" : S.view === "livalone" ? "alone" : S.view === "livstand" ? "stand" : "in") : RMODE;
+  const liv = LIVV(), cur = liv ? (S.view === "room" ? "above" : S.view === "livalone" ? "alone" : S.view === "livstand" ? "stand" : "in") : GS.RMODE;
   rm.hidden = !(ROOMV() || liv); qsa("[data-rmode]", rm).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.rmode === cur)));
 }
 const HFLOOR = {};     // v55: its floors (lower, ground, first) and the outside (gardens, the alley), for the floor picker
 const OUTLAZY = {};   // N181: what's built the first time it shows (20_go buildHouse: the gardens, next door's things)
 function outNeed(k) { const f = OUTLAZY[k]; if (!f) return; delete OUTLAZY[k]; f(); reshadow(); }
-let hfloor = "all", hidReal = [], hidLay = [], hfview = "angle";   // v74: a floor seen from an angle or from straight above
+let hidReal = [], hidLay = [];   // v74: GS.hfview, a floor seen from an angle or from straight above
 const ROOMLIGHTS = [], WINLIGHTS = [];   // v69 (B3): warm ceiling lights round the room you're in (a fixed set: no shader rebuilds); V2.39: and windows'. V3.57: six and three (Fast four and none)
-let roomKey = "";
 /* V3.57 (N108): every room's lights on, each at its own room's level, whichever room you're in: the set holds the room's own and its
    nearest neighbours' (its floor first), so nothing dims or brightens through a door; each light reaches about its own room */
 const LK = 0.65, WK = 40;   // V3.57: the ceiling lights and the windows with the neighbours on: about as bright as before, one room lit alone
@@ -94,7 +93,7 @@ function bulbHalos() {
 }
 function haloShow() {
   const h = bulbHalos(); if (!h) return;
-  const on = !!ROOMV() && (RMODE === "in" || RMODE === "stand") && !(HMATS && HMATS.ceiling && !HMATS.ceiling.visible), day = S.tod === "day";
+  const on = !!ROOMV() && (GS.RMODE === "in" || GS.RMODE === "stand") && !(HMATS && HMATS.ceiling && !HMATS.ceiling.visible), day = S.tod === "day";
   for (const me of h.ms) me.visible = on; if (!on) return;
   h.mat.color.copy(warmColour()); h.mat.opacity = day ? 0.1 : 0.26;
 }
@@ -127,7 +126,7 @@ function placeRoomLights() {
     l.width = (o.b - o.a) * M; l.height = (o.y1 - o.y0) * M; l.position.copy(v3(cx, cy, o.line + d * 3)); l.lookAt(v3(cx, cy - 40, o.line + d * 100));
     l.intensity = day ? WK : 3; l.color.set(day ? "#eef0f2" : "#7d89b8"); });   // V3.57: WK, the neighbours' windows on too
   const key = b ? b.join() : "";
-  if (key === roomKey || OUT.sunOut) return; roomKey = key;   // N189: outside, the sun is the whole house's (outdoor()): a room's left it over the living room with the house's box
+  if (key === GS.roomKey || OUT.sunOut) return; GS.roomKey = key;   // N189: outside, the sun is the whole house's (outdoor()): a room's left it over the living room with the house's box
   const d = b ? v3((b[0] + b[1]) / 2, 0, (b[4] + b[5]) / 2).sub(sun.userData.t0).setY(0) : new THREE.Vector3();
   sun.position.copy(sun.userData.p0).add(d); sun.target.position.copy(sun.userData.t0).add(d);
   /* V3.33 (N85): a room whose biggest window looks out of the front has the front's sun, its patch on the floor */
@@ -150,8 +149,8 @@ const MIR = { done: {}, face: 0, key: null, cc: null, rt: null, white: null };
 const NOMIR = /[?&]nomirror\b/.test(location.search);   // ?nomirror: the painted sheen, as before
 const MIRROR_AT = { hall: "hall.mirror", bathroom: "bath.mirror" };
 function mirrorStep() {
-  const here = RMODE === "stand" ? hereRoom : VIEW_ROOM[S.view], m = HMATS && HMATS.mirror, it = MIRROR_AT[here], b = it && R.HOUSE3 && R.HOUSE3.items && R.HOUSE3.items[it] && R.HOUSE3.items[it].b;
-  if (!m || !b || !postLive() || NOMIR || !ROOMV() || !(RMODE === "in" || RMODE === "stand") || !m.envMap) return false;
+  const here = GS.RMODE === "stand" ? GS.hereRoom : VIEW_ROOM[S.view], m = HMATS && HMATS.mirror, it = MIRROR_AT[here], b = it && R.HOUSE3 && R.HOUSE3.items && R.HOUSE3.items[it] && R.HOUSE3.items[it].b;
+  if (!m || !b || !postLive() || NOMIR || !ROOMV() || !(GS.RMODE === "in" || GS.RMODE === "stand") || !m.envMap) return false;
   const key = here + S.tod;
   if (MIR.done[here] && MIR.done[here].key === key) { if (m.envMap === MIR.done[here].tex) return false; mirrorUse(m, MIR.done[here].tex); return true; }
   if (MIR.key !== key) { MIR.key = key; MIR.face = 0; }
@@ -214,14 +213,14 @@ function houseEnvK(k) {   // V2.21 (REAL_PLAN R1): the house's reflections scale
   for (const m of Object.values(HMATS)) if (m && m.envMap && "envMapIntensity" in m) m.envMapIntensity = m.userData.real ? 1 : finishEnv(m) * k;   // V3.57: a mirror shows its room as it is
   for (const m of paintMats.values()) if (m && m.envMap && m.userData.hk) m.envMapIntensity = finishEnv(m) * k;
 }
-let RMODE = "in", hidMode = [], RPLANES = [];   // v71: how a room of the house is seen (in it, above, on its own) and what that put away
+let hidMode = [], RPLANES = [];   // v71: GS.RMODE, how a room of the house is seen (in it, above, on its own) and what that put away
 const FIN_PEND = {};   // V2.15 (FINISHES F5): each room's own ceiling light, its own group (20_go.js), for a fitting to stand in for it
 const HPARTS = {};     // v68: the house's moving pieces (the master bedroom's ottoman lid), each its own group on its hinge
 /* v55: the floor picker. All lifts the floors apart; First, Ground and Lower show the house up to that floor (Lower takes the living
    room off too); only the top floor's labels show, or every floor's in All */
 function applyFloors() {
   if (!houseG) return;
-  const on = S.view === "house", sel = on ? hfloor : "all", ex = sel === "all" && !R.HOUSE3 ? 330 : 0;   // v58: Outside, the house closed (no lifting)
+  const on = S.view === "house", sel = on ? GS.hfloor : "all", ex = sel === "all" && !R.HOUSE3 ? 330 : 0;   // v58: Outside, the house closed (no lifting)
   if (houseG.visible) { if (!on || S.hgarden) outNeed("out"); if (!on || S.hstreet) outNeed("nextThings"); }   // N181: built the first time they show
   /* V2.10: the first floor on its own keeps its roof's group (gable, dormer cheeks, slopes), only the coverings and ceilings off */
   const roofWalls = sel === "first";
@@ -244,7 +243,7 @@ function applyFloors() {
   roomUncull();   // V2.71 (N16)
   if (HMATS && HMATS.earth) HMATS.earth.visible = !(on && sel === "lower");   // V1.53: the earth over the secret room (under the garage) off, so the lower floor shows
   if (on && sel === "lower") scene.children.forEach(o => { if (o !== houseG && o !== garden3d && o !== lightRig && !o.isLight && o !== (sun && sun.target) && o.visible) { o.visible = false; hidReal.push(o); } });
-  qsa("[data-hfloor]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.hfloor === hfloor)));
+  qsa("[data-hfloor]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.hfloor === GS.hfloor)));
   const fl = qs("#r3d-floors"); if (fl) fl.hidden = !on;
   // v64: in The whole house the gardens and next door only when switched on; inside a room they show through its windows
   const showG = !on || !!S.hgarden;
@@ -253,7 +252,7 @@ function applyFloors() {
   if (HFLOOR.street) HFLOOR.street.visible = !!S.hstreet;
   if (HFLOOR.nextThings) HFLOOR.nextThings.visible = !!S.hstreet;
   qsa("[data-htog]").forEach(b => b.setAttribute("aria-pressed", String(!!S[b.dataset.htog])));
-  const fv = qs("#r3d-fview"); if (fv) { fv.hidden = !on; qsa("[data-hfview]", fv).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.hfview === hfview))); }   // v74
+  const fv = qs("#r3d-fview"); if (fv) { fv.hidden = !on; qsa("[data-hfview]", fv).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.hfview === GS.hfview))); }   // v74
   syncRmode();   // v71
   /* v73: standing in a room, only what can be seen from it is drawn: its floor, the group with its ceiling, the floor its stairs lead to,
      the outside through its windows; the living room only from the landing (v81: down the stairwell) */
@@ -397,7 +396,7 @@ function roomCull(again) {   // again: a door swung (only this part of applyFloo
   houseJoin(!liv && !(INSIDE() && houseG && R.HOUSE3 && R.HOUSE3.rooms));
   if (!liv && !(INSIDE() && houseG && R.HOUSE3 && R.HOUSE3.rooms)) { if (again) dirty(); if (cullKey) { cullKey = ""; reshadow(); } return; }
   const seeds = liv ? ["landing", doorOpen(HPARTS["door.living_door"]) && "hall"]   // from the living room: up its stairs, and the hall through its door
-    : [VIEW_ROOM[S.view], hereRoom, ...Object.keys(WALK_VIEW).filter(k => WALK_VIEW[k] === S.view)];
+    : [VIEW_ROOM[S.view], GS.hereRoom, ...Object.keys(WALK_VIEW).filter(k => WALK_VIEW[k] === S.view)];
   const see = roomSees(seeds), { out } = roomDoors();
   if (![...see].some(r => r === "out" || out.has(r))) for (const k of ["out", "street", "nextThings"]) { const g = HFLOOR[k]; if (g && g.visible) { g.visible = false; CULLG.push(g); } }
   const twin = me => { const g = new THREE.BufferGeometry(), src = me.geometry;
@@ -431,7 +430,7 @@ function roomCull(again) {   // again: a door swung (only this part of applyFloo
 /* V3.68 (N125): a floor on its own is cut at its ceiling, and below that a metre under the eye in 20 cm steps, so you look in over its
    walls. One plane moved: no shader built */
 function floorCut(now) {
-  const fy = { first: 260, ground: 0, lower: -260 }[hfloor]; if (!FLCLIP || fy == null || S.view !== "house") return false;
+  const fy = { first: 260, ground: 0, lower: -260 }[GS.hfloor]; if (!FLCLIP || fy == null || S.view !== "house") return false;
   const top = fy + (R.HOUSE3.ceil || 235) + 3, c = Math.min(top, Math.max(fy + 90, Math.round((camera.position.y / M - 100) / 20) * 20)) * M;
   if (Math.abs(FLCLIP[0].constant - c) < 1e-4) return false;
   FLCLIP[0].constant = c; if (!now) reshadow(); return true;
@@ -463,7 +462,6 @@ function fadeRows(show) {   // V3.79 (N144): a fade at either end with more; sho
 }
 document.addEventListener("scroll", e => { if (e.target.classList && e.target.classList.contains("r3d-floors")) fadeRows(); }, true);
 /* V1.2: the brand's second line says where you are: the whole house, a floor, a room */
-let hereRoom = null;                                   // V1.60: the room you stand in (walkRoom, goStand)
 const HERE_NAME = { lower_landing: "Lower landing", lower_stairs: "Lower stairs" };
 function brandPlace() {
   /* V1.30 (U3): only the tools that work where you are: in the house's views Room and Edit step aside and Look keeps the house's colours;
@@ -472,9 +470,9 @@ function brandPlace() {
   if (hv && window.DemmaTools && DemmaTools.isOpen() && ["room"].some(k => { const d = qs("#r3d-dp-" + k); return d && !d.hidden; })) DemmaTools.close();
   const el = document.getElementById("brand-place"); if (!el) return;
   let t = "The living room";
-  if (S.view === "house") t = { first: "The first floor", ground: "The ground floor", lower: "The lower floor" }[hfloor] || "The whole house";
-  else if (ROOMV() && RMODE === "stand" && hereRoom && hereRoom !== "living" && (ROOM_VIEW[hereRoom] || WALK_VIEW[hereRoom]) === S.view)
-    t = HERE_NAME[hereRoom] || roomName(hereRoom) || t;   // V1.60: standing, the room you're in (the lower landing has the kitchen's view)
+  if (S.view === "house") t = { first: "The first floor", ground: "The ground floor", lower: "The lower floor" }[GS.hfloor] || "The whole house";
+  else if (ROOMV() && GS.RMODE === "stand" && GS.hereRoom && GS.hereRoom !== "living" && (ROOM_VIEW[GS.hereRoom] || WALK_VIEW[GS.hereRoom]) === S.view)
+    t = HERE_NAME[GS.hereRoom] || roomName(GS.hereRoom) || t;   // V1.60: standing, the room you're in (the lower landing has the kitchen's view)
   else if (ROOMV()) { const id = VIEW_ROOM[S.view], L = id && id !== "living" && Object.values(R.HOUSE3.floors).flatMap(F => F.labels || []).find(l => l.id === id); t = (L && L.name) || (VIEWS[S.view] || {}).label || t; }
   el.textContent = t;
   canvas.setAttribute("aria-label", `${t} in 3D: drag to look round; in a room, scroll or W and S walk, the left and right arrows or Q and E turn, A and D step aside, Ctrl + scroll the lens`);   // V1.43: says where you are (it always said the living room)
@@ -526,7 +524,7 @@ function fitRoomView() {
    N171: its walls up to the ridge; N187: by frameFit, so the lens is the house's (from a room it was the room's: a PC came in far too
    close by Whole house, or further off by R3D.set) and every way in frames it the same; measureShift centres it between the rows */
 function fitHouseView() {
-  if (!R.HOUSE3 || hfloor !== "all") return false;
+  if (!R.HOUSE3 || GS.hfloor !== "all") return false;
   const H = VIEWS.house, F = fitHouseView; if (!F.e0) { F.e0 = H.eye.slice(); F.a0 = H.at.slice(); }
   const rs = [...Object.values(R.HOUSE3.rooms || {}), [0, R.W, R.WINDOW_Z, R.RECESS_Z, 0]], tall = camera.aspect < 1;
   const walls = rs.flatMap(r => [r[0], r[1]].flatMap(x => [r[2], r[3]].flatMap(z => [0, 780].map(y => [x, y, z]))));
@@ -536,40 +534,40 @@ function fitHouseView() {
 }
 function floorCam() {
   if (S.view !== "house" || !R.HOUSE3) return;
-  if (hfloor === "all" && hfview === "angle") { setView("house"); return; }
-  const fy = { first: 260, ground: 0, lower: -260 }[hfloor] ?? 0;
+  if (GS.hfloor === "all" && GS.hfview === "angle") { setView("house"); return; }
+  const fy = { first: 260, ground: 0, lower: -260 }[GS.hfloor] ?? 0;
   // v80: the living room too (it's drawn on its own, not in the house's rooms): the ground floor's Overhead left it out of the picture
-  const rs = [...Object.values(R.HOUSE3.rooms || {}), [0, R.W, R.WINDOW_Z, R.RECESS_Z, 0]].filter(r => hfloor === "all" || r[4] === fy);
+  const rs = [...Object.values(R.HOUSE3.rooms || {}), [0, R.W, R.WINDOW_Z, R.RECESS_Z, 0]].filter(r => GS.hfloor === "all" || r[4] === fy);
   if (!rs.length) return;
   const x0 = Math.min(...rs.map(r => r[0])), x1 = Math.max(...rs.map(r => r[1])), z0 = Math.min(...rs.map(r => r[2])), z1 = Math.max(...rs.map(r => r[3]));
-  const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0, y = hfloor === "all" ? 540 : fy;
+  const cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0, y = GS.hfloor === "all" ? 540 : fy;
   const fit = (fov, sx, sy) => { const v = fitFov(fov) * Math.PI / 360, h = Math.atan(Math.tan(v) * camera.aspect); return (camera.aspect < 1 ? 1.12 : 1.25) * Math.max(sx / 2 / Math.tan(h), sy / 2 / Math.tan(v)); };
   // V1.53: overhead a long lens from high up (the walls straight); flyTo's fourth is "above" (REDUCE held the eye to 6 m)
-  if (hfview === "top") { fromAbove(cx, y, cz, 60 + fit(26, w, d), 26); return; }   // V1.29 (U2): flown, not cut
+  if (GS.hfview === "top") { fromAbove(cx, y, cz, 60 + fit(26, w, d), 26); return; }   // V1.29 (U2): flown, not cut
   const H = VIEWS.house, dir = new THREE.Vector3(H.eye[0] - H.at[0], H.eye[1] - H.at[1], H.eye[2] - H.at[2]).normalize();
   const r = 0.5 * Math.hypot(w, d, 235), v = 25 * Math.PI / 180, hh = Math.atan(Math.tan(v) * camera.aspect), D = (camera.aspect < 1 ? 0.5 : 0.9) * r / Math.sin(Math.min(v, hh));   // the floors below show under it too (V1.53: a phone closer, now it's not held to 6 m)
   flyTo([cx + dir.x * D, y + dir.y * D, cz + dir.z * D], [cx, y + 40, cz], 50, true, REDUCE);
 }
 function drawRooms() {
   const box = qs("#r3d-hrooms"); if (!box) return;
-  const on = S.view === "house" && hfloor !== "all" && !!R.HOUSE3;
+  const on = S.view === "house" && GS.hfloor !== "all" && !!R.HOUSE3;
   box.hidden = !on; if (!on) return;
-  const list = ((R.HOUSE3.floors[hfloor] || {}).labels || []).slice();
-  if (hfloor === "ground") list.unshift({ id: "living", name: "Living room" });
-  const key = hfloor + list.length;
+  const list = ((R.HOUSE3.floors[GS.hfloor] || {}).labels || []).slice();
+  if (GS.hfloor === "ground") list.unshift({ id: "living", name: "Living room" });
+  const key = GS.hfloor + list.length;
   if (box.dataset.k === key) return;
   box.dataset.k = key;
   box.innerHTML = list.map(L => `<button type="button" data-hroom="${L.id}">${L.name}</button>`).join("");
 }
 document.addEventListener("click", e => {
-  const b = e.target.closest("[data-hfloor]"); if (b) { hfloor = b.dataset.hfloor; applyFloors(); floorCam(); return; }
-  const fvb = e.target.closest("[data-hfview]"); if (fvb) { hfview = fvb.dataset.hfview; applyFloors(); floorCam(); return; }   // v74
+  const b = e.target.closest("[data-hfloor]"); if (b) { GS.hfloor = b.dataset.hfloor; applyFloors(); floorCam(); return; }
+  const fvb = e.target.closest("[data-hfview]"); if (fvb) { GS.hfview = fvb.dataset.hfview; applyFloors(); floorCam(); return; }   // v74
   if (e.target.closest("#r3d-pick")) { setBare(!document.body.classList.contains("bare")); return; }
-  const tg = e.target.closest("[data-htog]"); if (tg) { S[tg.dataset.htog] = !S[tg.dataset.htog]; store.set(KEY, S); applyFloors(); if (S.view === "house" && hfloor === "all") setView("house"); return; }   // N171: and stand back for them
+  const tg = e.target.closest("[data-htog]"); if (tg) { S[tg.dataset.htog] = !S[tg.dataset.htog]; store.set(KEY, S); applyFloors(); if (S.view === "house" && GS.hfloor === "all") setView("house"); return; }   // N171: and stand back for them
   const r = e.target.closest("[data-hroom]"); if (!r || !R.HOUSE3) return;
   const id = r.dataset.hroom, v = ROOM_VIEW[id];
   if (v) { goRoom(v); return; }
-  const L = ((R.HOUSE3.floors[hfloor] || {}).labels || []).find(l => l.id === id); if (!L) return;
+  const L = ((R.HOUSE3.floors[GS.hfloor] || {}).labels || []).find(l => l.id === id); if (!L) return;
   flyTo([L.x + 30, L.y + 520, L.z + 280], [L.x, L.y - 150, L.z], 50, true);
 });
 let livLeaf = null;   // V1.38: the living room door's leaf (turned with the house's door.living_door)

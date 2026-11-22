@@ -216,13 +216,12 @@ function rebuildCab() {
   CAB_TW.clear();
   scene.remove(cab); cab.traverse(o => { if (o.geometry) o.geometry.dispose(); });
   buildCab(cabC()); clipGroup(cab); applySuggest();
-  const was = cabSnap; cabSnap = true; cabGo(CABP.compact); cabSnap = was;
+  const was = GS.cabSnap; GS.cabSnap = true; cabGo(CABP.compact); GS.cabSnap = was;
 }
-const CAB_TW = new Map();   // the cabinets' tween: each entry eases an anim's p to a target, after a wait (delay) if it has one; a still snaps them (cabSnap)
-let cabSnap = false;
+const CAB_TW = new Map();   // the cabinets' tween: each entry eases an anim's p to a target, after a wait (delay) if it has one; a still snaps them (GS.cabSnap)
 function twTo(a, to, dur = 700, delay = 0, lin = false) {
   if (!a) return;
-  if (cabSnap || REDUCE_M || Math.abs(a.p - to) < 1e-4 || (dur <= 0 && delay <= 0)) { CAB_TW.delete(a); a.set(to); return; }
+  if (GS.cabSnap || REDUCE_M || Math.abs(a.p - to) < 1e-4 || (dur <= 0 && delay <= 0)) { CAB_TW.delete(a); a.set(to); return; }
   CAB_TW.set(a, { from: a.p, to, t0: performance.now() + delay, dur, lin });
 }
 function cabTween(now) {     // from the frame loop: true while anything is still moving (or waiting to)
@@ -439,7 +438,7 @@ function placeWork() {      // v34
   // the trolley parks behind the table door's line: back it goes once the door has shut (the open door lies over its spot)
   if (WORK.trolley) {
     if (S.beside !== "trolley") twTo(WORK.trolley, 0, 0);
-    else if (!cabSnap && S.site === "C" && cabDoors().table && cabP() && cabP().doorT.p > 0.02) {}   // the door's over its spot: it waits (a still or a link just puts it there)
+    else if (!GS.cabSnap && S.site === "C" && cabDoors().table && cabP() && cabP().doorT.p > 0.02) {}   // the door's over its spot: it waits (a still or a link just puts it there)
     else twTo(WORK.trolley, S.trolley === "out" ? 1 : 0, 3200, Math.max(0, cabStill - performance.now()));
   }
 }

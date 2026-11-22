@@ -188,10 +188,10 @@ document.addEventListener("click", e => {
   if (x) { Object.entries(ds.rows("edits")).filter(([, v]) => v && v.item === id).forEach(([rid]) => ds.del("edits", rid)); return; }
   const v = ROOM_VIEW[HIT(id).r]; if (window.DemmaTools) window.DemmaTools.close();
   if (v && v !== S.view) setView(v);
-  let n = 0; const mark = () => (tween && n++ < 60) ? setTimeout(mark, 150) : selOf(id); setTimeout(mark, 300);   // outlined once the fly ends
+  let n = 0; const mark = () => (GS.tween && n++ < 60) ? setTimeout(mark, 150) : selOf(id); setTimeout(mark, 300);   // outlined once the fly ends
 });
 window.addEventListener("demma-rows", e => { if (e.detail !== "edits") return; storeEdits(); paintEdits();
-  if (actId && /^hsize:|^hitem:|^hswap:|^hadd:/.test(actId)) { const id = actId.split(":")[1]; selOf(id); const st = qs("#r3d-act-st"), ai = actItems(actId); if (!ai) closeAct(); else if (st) st.textContent = ai[1]; } });
+  if (GS.actId && /^hsize:|^hitem:|^hswap:|^hadd:/.test(GS.actId)) { const id = GS.actId.split(":")[1]; selOf(id); const st = qs("#r3d-act-st"), ai = actItems(GS.actId); if (!ai) closeAct(); else if (st) st.textContent = ai[1]; } });
 const cmR = v => Math.round(v * 10) / 10;
 const clampF = (f, v) => Math.max(f === "along" || f === "up" || f === "out" ? -500 : 1, Math.min(1000, v));
 function selOf(id) { const it = HIT(id); if (!it) { clearSel(); return; } const c = pieceNow(id); selPiece({ box: pieceBox(id), label: `${Math.round(c.w)} × ${Math.round(c.h)}` }); }
@@ -206,8 +206,8 @@ function hdragOn(e, id) {
 }
 function hfloorAt(e, y) { ray.setFromCamera(ndc(e), camera); const p = new THREE.Vector3(); return ray.ray.intersectPlane(new THREE.Plane(new THREE.Vector3(0, 1, 0), -y), p) ? { x: -p.x / M, z: p.z / M } : null; }
 root.addEventListener("pointerdown", e => {
-  if (S.edit || e.target !== canvas || e.button > 0 || !e.isPrimary || !actId || !String(actId).startsWith("hsize:")) return;
-  const id = actId.slice(6), it = HIT(id); if (!it || !DS() || !hdragOn(e, id)) return;
+  if (S.edit || e.target !== canvas || e.button > 0 || !e.isPrimary || !GS.actId || !String(GS.actId).startsWith("hsize:")) return;
+  const id = GS.actId.slice(6), it = HIT(id); if (!it || !DS() || !hdragOn(e, id)) return;
   const b0 = pieceBox(id), f = hfloorAt(e, b0[1] * M); if (!f) return;
   const c = pieceNow(id); hdrag = { id, f, b0, along: c.along, out: c.out, k: it.ax === "z" ? 2 : 0, x: e.clientX, y: e.clientY, moved: false, dA: 0, dO: 0 };
   e.stopPropagation(); canvas.setPointerCapture(e.pointerId);
@@ -229,7 +229,7 @@ async function hdragEnd() {
   if (!D.moved || (!D.dA && !D.dO)) { if (SEL.g) SEL.g.position.set(0, 0, 0); dirty(); return; }
   if (D.dA) await setPiece(D.id, "along", clampF("along", cmR(D.along + D.dA)));
   if (D.dO) await setPiece(D.id, "out", clampF("out", cmR(D.out + D.dO)));
-  if (actId === "hsize:" + D.id) renderAct();
+  if (GS.actId === "hsize:" + D.id) renderAct();
 }
 canvas.addEventListener("pointerup", hdragEnd);
 canvas.addEventListener("pointercancel", () => { if (hdrag) { hdrag = null; if (SEL.g) SEL.g.position.set(0, 0, 0); dirty(); } });

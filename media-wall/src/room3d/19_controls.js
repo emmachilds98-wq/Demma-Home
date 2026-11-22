@@ -88,16 +88,16 @@ function updatePlanBar() {
 /* v40.2, v68: back to a good view whenever you're lost: the whole house, every floor */
 function wholeRoom() {
   if (SH) showStop(true);
-  if (actId) closeAct();
+  if (GS.actId) closeAct();
   if (S.cam === "look") { S.cam = "orbit"; applyCam(false); syncButtons(); }
-  if (R.HOUSE) hfloor = "all";
+  if (R.HOUSE) GS.hfloor = "all";
   setView(R.HOUSE ? "house" : "room"); qs("#r3d-home")?.classList.remove("lost");
 }
 /* v68, the client: the lift-up bed: Lift the bed raises the ottoman's lid from the foot on its struts (the four boxes inside), again lowers it */
 function liftBed(on) {
   const P = HPARTS.bed_lift; if (!P) return;
   P.tw = { a: P.t, to: on ? 1 : 0, t0: performance.now() }; dirty();
-  if (actId === "hbed") renderAct();                             // v71: the card follows (where the lid is going)
+  if (GS.actId === "hbed") renderAct();                             // v71: the card follows (where the lid is going)
 }
 function partPose(P, t) {   // three's x is flipped: the foot rises (about z), a door turns into its room (about y); its own parts with it
   t = t ?? P.t; joinOut(P);   // N193: out of the house's join first
@@ -124,26 +124,26 @@ function swingDoor(k, on) {
   else setTimeout(() => roomCull(true), on ? 0 : 950);   // V2.71 (N16): the room behind it drawn (left out once it's shut)
   if (typeof placeRoomLights === "function") setTimeout(() => { placeRoomLights(); dirty(); }, on ? 0 : 950);   // V3.57 (N108): the room behind it lit (its lights already on at their level)
 }
-function swingAll(on) { for (const k of Object.keys(HPARTS)) if (k.startsWith("door.") && !(on && BINS.includes(k))) swingDoor(k, on); if (actId) renderAct(); }
+function swingAll(on) { for (const k of Object.keys(HPARTS)) if (k.startsWith("door.") && !(on && BINS.includes(k))) swingDoor(k, on); if (GS.actId) renderAct(); }
 /* v71: three ways to view a room: in it, from above (cut away over it), on its own (the house cut to its walls) */
 const VIEW_ROOM = Object.fromEntries(Object.entries(ROOM_VIEW).map(([r, v]) => [v, r]));
 /* v72 (B5): Above writes the room's name faint on its floor; On its own a soft shadow under it. One small group, rebuilt on each change */
 let rmodeG = null;
 function rmodeDress(rr, rid) {
   if (rmodeG) { rmodeG.traverse(o => { if (o.material) { o.material.map && o.material.map.dispose(); o.material.dispose(); o.geometry.dispose(); } }); rmodeG.parent && rmodeG.parent.remove(rmodeG); rmodeG = null; }
-  if (!rr || !houseG || RMODE === "in") return;
+  if (!rr || !houseG || GS.RMODE === "in") return;
   const [x0, x1, z0, z1, fy] = rr, w = x1 - x0, d = z1 - z0, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
   rmodeG = new THREE.Group(); houseG.add(rmodeG);
   const flat = (tex, sw, sd, y, op) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(sw * M, sd * M), new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: op, depthWrite: false, toneMapped: false }));
     m.rotation.x = -Math.PI / 2; m.position.copy(v3(cx, y, cz)); m.raycast = () => {}; rmodeG.add(m); return m; };   // never in a tap's way
-  if (RMODE === "alone") {
+  if (GS.RMODE === "alone") {
     const tex = canvasTex(256, 256, (g, W, H) => { g.clearRect(0, 0, W, H);   // a pale floor fading out, the room's shadow darker in its middle
       let gr = g.createRadialGradient(W / 2, H / 2, 4, W / 2, H / 2, W / 2); gr.addColorStop(0, "rgba(226,221,211,0.9)"); gr.addColorStop(0.55, "rgba(226,221,211,0.55)"); gr.addColorStop(1, "rgba(226,221,211,0)");
       g.fillStyle = gr; g.fillRect(0, 0, W, H);
       gr = g.createRadialGradient(W / 2, H / 2, 4, W / 2, H / 2, W * 0.36); gr.addColorStop(0, "rgba(40,36,30,0.55)"); gr.addColorStop(0.7, "rgba(40,36,30,0.3)"); gr.addColorStop(1, "rgba(40,36,30,0)");
       g.fillStyle = gr; g.fillRect(0, 0, W, H); });
     flat(tex, w * 2.2 + 80, d * 2.2 + 80, fy - 31, 1).renderOrder = -1;
-  } else if (RMODE === "above") {
+  } else if (GS.RMODE === "above") {
     const fk = { "-260": "lower", "0": "ground", "260": "first" }[String(fy)], Ls = ((R.HOUSE3.floors[fk] || {}).labels || []);
     const L = Ls.filter(l => l.x >= x0 - 5 && l.x <= x1 + 5 && l.z >= z0 - 5 && l.z <= z1 + 5).sort((a, b) => Math.hypot(a.x - cx, a.z - cz) - Math.hypot(b.x - cx, b.z - cz))[0];
     const name = (L && L.name) || rid; if (!name) return;
@@ -154,30 +154,30 @@ function rmodeDress(rr, rid) {
   }
 }
 function setRmode(m, quiet) {
-  RMODE = ROOMV() && m !== "in" ? m : "in";
-  if (RMODE !== "stand") standLook(false);
+  GS.RMODE = ROOMV() && m !== "in" ? m : "in";
+  if (GS.RMODE !== "stand") standLook(false);
   if (typeof brandPlace === "function") brandPlace();   // V1.60: standing names the room you're in
-  const rid = VIEW_ROOM[S.view], rr = (RMODE === "above" || RMODE === "alone") && R.HOUSE3 && (R.HOUSE3.rooms || {})[rid];
+  const rid = VIEW_ROOM[S.view], rr = (GS.RMODE === "above" || GS.RMODE === "alone") && R.HOUSE3 && (R.HOUSE3.rooms || {})[rid];
   const planes = [];
   if (rr) { const [x0, x1, z0, z1, fy] = rr, top = fy + (R.HOUSE3.ceil || 235) - 3, g = 15, P = (x, y, z, c) => new THREE.Plane(new THREE.Vector3(x, y, z), c * M);
     planes.push(P(0, -1, 0, top));                                                    // the ceiling and everything over it off
-    if (RMODE === "alone") planes.push(P(1, 0, 0, x1 + g), P(-1, 0, 0, -(x0 - g)), P(0, 1, 0, -(fy - 30)), P(0, 0, 1, -(z0 - g)), P(0, 0, -1, z1 + g)); }
+    if (GS.RMODE === "alone") planes.push(P(1, 0, 0, x1 + g), P(-1, 0, 0, -(x0 - g)), P(0, 1, 0, -(fy - 30)), P(0, 0, 1, -(z0 - g)), P(0, 0, -1, z1 + g)); }
   RPLANES = planes;
   for (const m_ of Object.values(HMATS || {})) houseClip(m_, planes, false);   // union: outside any plane goes (V2.64: padded to 6, the same shaders)
   for (const k of ["tile", "ceiling", "shade_ceil"]) if (HMATS && HMATS[k]) HMATS[k].visible = !rr;   // V1.33: and the ceilings' shade   // v81: the roof's tiles off too (its low eaves lay over the bathroom's corner from above); v82 the ceilings and slopes below the cut (the bathroom's dormer ceiling)
   hidMode.forEach(o => o.visible = true); hidMode = []; applyFloors();
-  if (rr && (RMODE === "alone" || rr[4] < 0)) scene.children.forEach(o => { if (o !== houseG && o !== lightRig && !o.isLight && o !== (sun && sun.target) && o.visible) { o.visible = false; hidMode.push(o); } });
-  if (rr && RMODE === "alone") { const fk = { "-260": "lower", "0": "ground", "260": "first" }[String(rr[4])];   // only the room's own floor
+  if (rr && (GS.RMODE === "alone" || rr[4] < 0)) scene.children.forEach(o => { if (o !== houseG && o !== lightRig && !o.isLight && o !== (sun && sun.target) && o.visible) { o.visible = false; hidMode.push(o); } });
+  if (rr && GS.RMODE === "alone") { const fk = { "-260": "lower", "0": "ground", "260": "first" }[String(rr[4])];   // only the room's own floor
     for (const [k, g] of Object.entries(HFLOOR)) if (k !== fk && !(fk === "first" && k === "roof") && g.visible) { g.visible = false; hidMode.push(g); } }   // V2.10, the client: "walls are clipping out when not necessary": a first-floor room's walls under the roof (its gable, dormer cheeks, slopes) are in the roof's group: kept, the planes trim it
   rmodeDress(rr, rid); if (typeof haloShow === "function") haloShow();   // V3.76 (N116): the bulbs' glow only seen from in the room
   if (rr) { const [x0, x1, z0, z1, fy] = rr, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0;
     // far enough that the room fills the screen, whatever its shape (a phone stands it up the screen's long side)
     const fit = (fov, sx, sy) => { const v = fitFov(fov) * Math.PI / 360, h = Math.atan(Math.tan(v) * camera.aspect); return 1.35 * Math.max(sx / 2 / Math.tan(h), sy / 2 / Math.tan(v)); };   // V1.53: a margin, the room clear of the buttons
-    if (RMODE === "above") fromAbove(cx, fy, cz + d * 0.04, 40 + fit(32, w, d), 32);   // V1.54: between a phone's buttons   // V1.29 (U2): flown, not cut; V1.53: a longer lens, from above (it was held to 6 m)
+    if (GS.RMODE === "above") fromAbove(cx, fy, cz + d * 0.04, 40 + fit(32, w, d), 32);   // V1.54: between a phone's buttons   // V1.29 (U2): flown, not cut; V1.53: a longer lens, from above (it was held to 6 m)
     else { const r = 0.5 * Math.hypot(w, d, 235), v = 22.5 * Math.PI / 180, h = Math.atan(Math.tan(v) * camera.aspect), D = (camera.aspect < 1 ? 0.62 : 0.85) * r / Math.sin(Math.min(v, h));   // the room's sphere in the narrower side (v72: a phone stands closer)
       const sx = Math.sign(233 - cx) || 1, sz = Math.sign(95 - cz) || 1;   // from the house's middle: over its inside walls, the outside wall behind
       flyTo([cx + sx * D * 0.4, fy + 60 + D * 0.78, cz + sz * D * 0.48], [cx, fy + 50, cz], 45, true, REDUCE); } }
-  else if (RMODE === "stand") standIn();
+  else if (GS.RMODE === "stand") standIn();
   else if (!quiet) setView(S.view);
   reshadow(); dirty();
 }
@@ -253,7 +253,7 @@ function syncButtons() {
   qsa("[data-col]").forEach(i => { i.value = S.col[i.dataset.col] || WARM; });
   syncOpts();                                                                                       // v36
   outRow();                                                                                         // V3.75: Room → Taken out
-  if (actId) renderAct();                                                                           // v30: the item's card follows
+  if (GS.actId) renderAct();                                                                           // v30: the item's card follows
 }
 root.addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b || !root.contains(b)) return;
@@ -263,12 +263,12 @@ root.addEventListener("click", e => {
   if (d.view) { setView(d.view); return; }
   if (d.takeout) { takeOut(d.takeout); return; }                             // V3.75: a piece out of the room (Room → Taken out puts it back)
   if (d.outback) { putBack(d.outback); return; }
-  if (d.hputback) { const k = d.hputback; setPiece(k, "removed", null).then(() => { toast(`${HIT(k).n} is back`); if (actId) renderAct(); }); return; }   // V3.75: a house piece back, from the toast (V3.80: or its room's floor card)
-  if (d.hputall) { const rm = d.hputall, ks = roomOuts(rm); Promise.all(ks.map(k => setPiece(k, "removed", null))).then(() => { toast(`Everything's back in ${roomName(rm)}`); if (actId) renderAct(); }); return; }   // V3.80 (N149)
-  if (d.turnit) { const id = d.turnit; if (!MOV[id]) return; pushUndo(); turnItem(id, 90); placeAll(); store.set(KEY, S); dirty(); if (actId) renderAct(); return; }   // V3.75: a quarter turn from its card
-  if (d.rmode) { if (LIVV()) setView(LIV_RMODE[d.rmode]); else setRmode(d.rmode); if (actId) closeAct(); return; }   // v71: in it, from above, on its own (v78b: the living room's views)
+  if (d.hputback) { const k = d.hputback; setPiece(k, "removed", null).then(() => { toast(`${HIT(k).n} is back`); if (GS.actId) renderAct(); }); return; }   // V3.75: a house piece back, from the toast (V3.80: or its room's floor card)
+  if (d.hputall) { const rm = d.hputall, ks = roomOuts(rm); Promise.all(ks.map(k => setPiece(k, "removed", null))).then(() => { toast(`Everything's back in ${roomName(rm)}`); if (GS.actId) renderAct(); }); return; }   // V3.80 (N149)
+  if (d.turnit) { const id = d.turnit; if (!MOV[id]) return; pushUndo(); turnItem(id, 90); placeAll(); store.set(KEY, S); dirty(); if (GS.actId) renderAct(); return; }   // V3.75: a quarter turn from its card
+  if (d.rmode) { if (LIVV()) setView(LIV_RMODE[d.rmode]); else setRmode(d.rmode); if (GS.actId) closeAct(); return; }   // v71: in it, from above, on its own (v78b: the living room's views)
   if (d.hbed) { liftBed(d.hbed === "up"); return; }                          // v71: the bed's card
-  if (d.hdoor) { swingDoor(d.hdoor, !doorOpen(HPARTS[d.hdoor])); if (actId) renderAct(); return; }   // V1.26: a door's card
+  if (d.hdoor) { swingDoor(d.hdoor, !doorOpen(HPARTS[d.hdoor])); if (GS.actId) renderAct(); return; }   // V1.26: a door's card
   if (d.hdoors) { swingAll(d.hdoors === "open"); return; }
   if (d.walk) { if (e.detail === 0) walk(d.walk); return; }   // v31: a pointer moves on pointerdown (held, it repeats); Enter or Space here
   if (d.eye) { lift(+d.eye); return; }
@@ -379,7 +379,7 @@ const escBack = (el, to) => { if (to && (!document.activeElement || document.act
 const ESC = [
   [() => WEL && !WEL.hidden, () => { welcome(false); escBack(WEL, BRAND); }],
   [() => popId, () => { const was = popId; closePop(); stickEls[was]?.focus(); }],
-  [() => actId, () => { closeAct(); escBack(act, canvas); }],
+  [() => GS.actId, () => { closeAct(); escBack(act, canvas); }],
   [() => MEAS.on, endMeasure],
   [() => S.edit && !qs("#r3d-addlist").hidden, () => { qs("#r3d-addlist").hidden = true; escBack(qs("#r3d-addlist"), qs("#r3d-add")); }],
   [() => S.edit && selId, () => select(null)],
