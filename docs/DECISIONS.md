@@ -50,7 +50,9 @@ take one out (to `docs/HISTORY.md`) when they change their mind.
 - **Customisation's questions** (22 Nov 2026, asked in a session; `REAL_PLAN` section 27): her own colour by the picker, a photo or its
   code is enough, no paint names (N215 closed); "any wall" means **each wall on its own** (a chimney breast and its alcoves, the dormer,
   the knee walls; N214); **skirting, doors, frames and radiators their own colour in every room** (N216, V4.45); furniture: **bedroom 2
-  first** (N217). Questions 5–7 (shops, saved looks, Dave) still to ask, before N219, N221, N222.
+  first** (N217). Then 5–7: **real pieces from several shops**, each with its real size and price ("Use multiple real furniture
+  sites and sources", N219); saved looks **on the phone and in the plan** (sent with Send, N221); **Dave only looks** at her link (his
+  phone shows her look; nothing of his is changed or kept, N222).
 
 - **Floors for now (21 Nov 2026):** bedroom 2 and the office in grey carpet ("im not planning a floor change here just yet"); the office's plastic ivy out (she'll decorate again soon).
 

@@ -23,7 +23,7 @@ ivy, storage "for all our things and displays / knick nacks"); her answers in `d
     a table in the plan's PDF). Her pick comes next: only then a build and a buy list (CLAUDE.md, core plan vs options).
   - V4.39 and V4.44: N203 step 1, every top-level `let` set only in the part that declares it (`GS` for what two parts share);
     step 2 (ES modules) set aside: about 400 lines more and none saved (the row says what it would take).
-- **Open, in order:** customisation, `docs/REAL_PLAN.md` section 27 (N213, N214, N216, N217 done, N215 closed; N218 next; questions 5–7 still to ask before N219, N221, N222); then section 25 (N201 the real devices'
+- **Open, in order:** customisation, `docs/REAL_PLAN.md` section 27 (N213, N214, N216, N217 done, N215 closed; N218 next; all seven questions answered 22 Nov: real pieces from several shops, saved looks in the plan too, Dave only looks); then section 25 (N201 the real devices'
   check, "lighting later when the house is right"; N205 on hold; N206 her own colours and swapping furniture, to plan with her).
 - **Waiting on Emma:** which storage ideas she wants (N212), then sizes for them; the master's frames' sliding doors need a measurement
   first (they'd cut about 2 cm into the room door's swing as drawn).

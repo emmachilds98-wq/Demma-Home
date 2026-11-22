@@ -9,7 +9,7 @@ leaner code. V4.6 (N169): the plot's edge soft, the sky hazy. Earlier: `docs/HIS
 The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.28 ↻"): on the
 home-screen app, tap it to get the newest.
 
-**Work from:** `docs/HANDOVER.md` "Now", then `docs/REAL_PLAN.md` section 27 (customisation: N218 adding a piece where it fits next, then N219, N220; questions 5–7 still to ask), then section 25 (N201, N205). Earlier sections' rows: section 9.
+**Work from:** `docs/HANDOVER.md` "Now", then `docs/REAL_PLAN.md` section 27 (customisation: N218 adding a piece where it fits next, then N219, N220; all seven questions answered), then section 25 (N201, N205). Earlier sections' rows: section 9.
 outside, fewer pills, leaner code, a hitch check; N178 done: `docs/HANDOVER.md` brought to now). Section 21's open rows carry on (N160, N161 on the client's screenshots; N163 on hold:
 the outside by day, as the client asked). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier task's state.
 
