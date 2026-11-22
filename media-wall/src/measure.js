@@ -176,6 +176,7 @@ document.addEventListener("change", async e => {
 });
 document.addEventListener("click", async e => {
   if (!e.target.closest("#ms-send")) return;
+  const th = document.getElementById("r3d-theirs"); if (th && !th.hidden) { say("This is their look: Back to mine first, then Send."); return; }   // N222: Send carries this device's own
   const ids = Object.keys(store.rows("measurements")).filter(id => answer(id).cm != null), ne = new Set(Object.values(store.rows("edits")).map(r => r.item)).size;
   let nf = 0; try { nf = Object.keys((window.R3D && window.R3D.finishes && window.R3D.finishes()) || {}).length; } catch (er) {}   // V2.11: rooms with colours
   const sp = mode === "shared" ? null : speed();   // V3.04 (N50): the speed goes even with nothing typed

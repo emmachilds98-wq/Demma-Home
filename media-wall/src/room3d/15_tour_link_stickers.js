@@ -199,33 +199,36 @@ function lookMine() {
   for (const k of Object.keys(S)) if (!(k in o) && k !== "view") delete S[k];
   for (const [k, v] of Object.entries(o)) if (!["view", "layout", "added"].includes(k)) S[k] = v;
   if (FIN.mat3) planMerge();
-  applyDecor(); repaint(); updateCaption(); applyState(); syncButtons(); finApplyAll();
+  applyDecor(); repaint(); updateCaption(); applyState(); syncButtons(); finApplyAll(); theirs(false);
   dispatchEvent(new CustomEvent("demma-rows", { detail: "edits" }));
 }
+/* N222: a look link (Dave only looks): shown as "Their look" over the device's own, nothing of the device's changed or kept; Back to
+   mine (or Esc) puts it back. Its colours: the plan's scheme, the link's floors (fl) and colours (fc) over it; old links still open */
+const theirs = on => { const p = qs("#r3d-theirs"); if (p) p.hidden = !on; };
 function applyLook(tok) {
   let o; try { o = JSON.parse(unb64u(tok)); } catch (e) { return false; }
   if (!o || typeof o !== "object") return false;
-  livLookSet(o);
-  if (o.fl && typeof o.fl === "object") { const c = finClean(Object.fromEntries(Object.entries(o.fl).map(([r, k]) => [r, { 5: k }]))); delete c[LIVR]; S.fin = S.fin || {};   // N209: their floors
-    for (const [r, sl] of Object.entries(c)) S.fin[r] = Object.assign({}, S.fin[r], sl); finApplyAll(); }
+  const fin = finClean(((R.HOUSE3 || {}).plan_finishes || {}).rooms || {}); delete fin[LIVR];
+  if (o.fl && typeof o.fl === "object") { const c = finClean(Object.fromEntries(Object.entries(o.fl).map(([r, k]) => [r, { 5: k }]))); delete c[LIVR];   // N209: their floors
+    for (const [r, sl] of Object.entries(c)) fin[r] = Object.assign({}, fin[r], sl); }
   if (o.fc && typeof o.fc === "object") { const c = finClean(Object.fromEntries(Object.entries(o.fc).filter(([, sl]) => sl && typeof sl === "object")   // N213: their walls' colours (colours only)
-      .map(([r, sl]) => [r, Object.fromEntries(Object.entries(sl).filter(([s, v]) => finLook(+s, v)))]))); delete c[LIVR]; S.fin = S.fin || {};
-    for (const [r, sl] of Object.entries(c)) S.fin[r] = Object.assign({}, S.fin[r], sl); finApplyAll(); }
-  const he = () => { const R2 = heRows(o.he); for (const [k, v] of Object.entries(R2)) DS().put("edits", k, v); };   // N218: the house's edits, each checked (once Measure's store is up)
-  if (Array.isArray(o.he)) { if (DS()) he(); else addEventListener("demma-rows", he, { once: true }); }
-  applyState(); syncButtons();
+      .map(([r, sl]) => [r, Object.fromEntries(Object.entries(sl).filter(([s, v]) => finLook(+s, v)))]))); delete c[LIVR];
+    for (const [r, sl] of Object.entries(c)) fin[r] = Object.assign({}, fin[r], sl); }
+  lookShow({ fin, liv: o, he: Array.isArray(o.he) ? o.he : [] }); theirs(true);   // N218: the house's edits, each checked
   setView(o.v in VIEWS ? o.v : "room", true);
   const c = Array.isArray(o.c) && o.c.length === 7 && o.c.every(Number.isFinite) ? o.c : null;
   if (c) { camera.position.copy(v3(c[0], c[1], c[2])); controls.target.copy(v3(c[3], c[4], c[5])); GS.baseFov = Math.max(20, Math.min(90, c[6])); camera.fov = fitFov(GS.baseFov); camera.updateProjectionMatrix(); controls.update(); updateCut(); dirty(); }
-  store.set(KEY, S);
   return true;
 }
 function lookFromHash() {
   const m = (location.hash || "").match(/^#look-([A-Za-z0-9_-]+)$/); if (!m) return;
-  if (applyLook(m[1])) toast("Opened the shared view");
+  applyLook(m[1]);   // N222: the pill says it
   try { history.replaceState(history.state, "", "#room"); } catch (e) {}
 }
 addEventListener("hashchange", () => { if (started) lookFromHash(); });
+const lookBack = () => { if (!ASIDE) return; lookMine(); toast("Your plan"); };
+qs("#r3d-mine")?.addEventListener("click", lookBack);
+document.addEventListener("keydown", e => { if (e.key === "Escape" && ASIDE && !qs("#r3d-theirs")?.hidden) { e.preventDefault(); lookBack(); } });
 
 let cutSide = "";
 function updateCut() {        // which wall the camera is outside of, if any (only in the views from above, before you walk)

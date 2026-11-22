@@ -239,6 +239,25 @@ LOOKS = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTime
   const gone = !R3D.looks().length && !chip(); R3D.setFinishes(was); await sl(300);
   return { saved, changed, shown, back, worn, sent, gone };
 }"""
+# N222: this phone's own (bedroom 2's wall, its chair-bed swapped) opens a look link with another wall and the Kallax swapped: shown as
+# "Their look", nothing saved (mw18-3d, demma-v1:edits as they were), Send held back; Back to mine puts its own back; again, Esc does
+THEIRS = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), ds = window.DemmaStore;
+  const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
+  const was = R3D.finishes(); D.openAct('fin:bed2:0'); await sl(600); const sc = q('#r3d-act [data-finsc="room"]'); if (sc) { sc.click(); await sl(200); }
+  const f = q('#r3d-act [data-finhex]'); f.value = '3a6b5a'; f.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); await sl(500); if (D.actId) q('#r3d-act .x').click();
+  await ds.put('edits', 'music.chairbed~swap', { item: 'music.chairbed', field: 'swap', value: 'armchair' }); await wait(() => D.HEDITS['music.chairbed']);
+  const ls = () => [localStorage.getItem('mw18-3d'), localStorage.getItem('demma-v1:edits')].join('|'), ls0 = ls(), pill = () => !q('#r3d-theirs').hidden;
+  const lv = t => { const [a, e] = t.split('|'), o = JSON.parse(a || '{}'); delete o.view; return JSON.stringify(o) + e; }, own = () => lv(ls()) === lv(ls0);   // all but where it stands
+  const mine = () => D.S.fin.bed2[0] === '#3a6b5a' && !!D.HEDITS['music.chairbed'] && D.HEDITS['music.chairbed'].swap === 'armchair' && !D.HEDITS['music.kallax'];
+  const link = { v: 'bed2', fc: { bed2: { 0: '#c98a5e', 1: '#c98a5e', 2: '#c98a5e', 3: '#c98a5e' } }, he: [['music.kallax', 'swap', 'bookcase']] };
+  const open = async () => { location.hash = '#look-' + btoa(JSON.stringify(link)).replace(/\\+/g, '-').replace(/\\//g, '_').replace(/=+$/, ''); await wait(pill);
+    return pill() && D.S.fin.bed2[0] === '#c98a5e' && await wait(() => D.HEDITS['music.kallax'] && D.HEDITS['music.kallax'].swap === 'bookcase' && !D.HEDITS['music.chairbed']); };
+  const shown = await open(); q('#ms-send').click(); await sl(300); const held = /their look/i.test(q('#ms-st').textContent);
+  const kept = own(); q('#r3d-mine').click(); const back = !pill() && await wait(mine) && own();
+  await open(); document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })); const esc = !pill() && await wait(mine) && own();
+  await ds.del('edits', 'music.chairbed~swap'); R3D.setFinishes(was); await wait(() => !D.HEDITS['music.chairbed']);
+  return { shown, held, kept, back, esc };
+}"""
 OFF = """() => { const W = document.documentElement.clientWidth, out = [];
   for (const el of document.querySelectorAll("body *")) { const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
     if (!r.width || cs.display === "none" || cs.visibility === "hidden" || cs.position === "fixed" || el.closest("[hidden], .sheet, .r3d-panel, .r3d-floors, .lightbox, .r3d-stage")) continue;
@@ -513,6 +532,10 @@ def main():
                     if lk != {"saved": True, "changed": True, "shown": True, "back": True, "worn": True, "sent": "Ours", "gone": True}:
                         fails.append(f"{w}: \"Ours\" saved (bedroom 2's wall), the wall changed and the Kallax swapped, Ours held then let go, tapped, sent, deleted: {lk} "
                                      "(want it saved with its edits, shown while held with nothing saved, both back on letting go, worn and kept, in Send, then gone)")
+                    th = pg.evaluate(THEIRS)                        # N222: a look link shown over this phone's own, nothing kept, Back to mine
+                    if th != {"shown": True, "held": True, "kept": True, "back": True, "esc": True}:
+                        fails.append(f"{w}: a look link (another wall, the Kallax swapped) on a phone with its own wall and swap: {th} "
+                                     "(want Their look shown, Send held back, mw18-3d and demma-v1:edits unchanged, Back to mine and Esc each putting its own back)")
                 if phone:                                           # V1.53: the floor from overhead, then the figure dropped in
                     dr = pg.evaluate(DROP)
                     if dr.get("off") or dr.get("said") != "Bedroom 3" or dr.get("view") != "office" or dr.get("mode") != "stand" or abs(dr.get("eye", 0) - 420) > 15:
@@ -565,7 +588,7 @@ def main():
     speed = "speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room {v.get('draws_landing')} landing" + (f", {v['shaders_spot']} built on the spot into it" if "shaders_spot" in v else "") + (f", {v['hitches']} hitches walking" if "hitches" in v else "") + (f", bake {v['bake']}" if v.get("bake", "none") != "none" else "") for k, v in perf.items())
     if HITCH: print(speed); print(f"hitch check: a walk on the PC path (hall, kitchen, living room, landing and back), {perf['rtx']['hitches']} hitches, the speed budget on the iPhone's and the RTX's paths, {len(fails)} failed"); return 1 if fails else 0
     print(speed)
-    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named (shut panels, a card, Edit's list too), Esc one layer a press, Tab the top row then the 3D, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, a look saved, held, worn and sent, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, Back from a room to the house, down to the lower floor and back, the speed budget on the phone's and the PC's Fast paths, {len(fails)} failed; screenshots in _shots/")
+    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named (shut panels, a card, Edit's list too), Esc one layer a press, Tab the top row then the 3D, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, a look saved, held, worn and sent, a look link shown over the phone's own, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, Back from a room to the house, down to the lower floor and back, the speed budget on the phone's and the PC's Fast paths, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
 
