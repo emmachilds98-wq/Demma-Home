@@ -48,6 +48,8 @@ take one out (to `docs/HISTORY.md`) when they change their mind.
   swapping and adding furniture per room (N206). **Lighting later**: "we'll look at lighting later when the house is right" (the baked
   light's device check waits, N201).
 
+- **Floors for now (21 Nov 2026):** bedroom 2 and the office in grey carpet ("im not planning a floor change here just yet"); the office's plastic ivy out (she'll decorate again soon).
+
 ## The living room (the media wall project)
 
 - **The artisan oak media wall** is the plan (18 Oct 2026): oak uprights, through-tenons, the record ledge over the TV, the oak face frame,
