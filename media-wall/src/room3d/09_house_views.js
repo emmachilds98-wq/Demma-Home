@@ -570,8 +570,7 @@ document.addEventListener("click", e => {
   const L = ((R.HOUSE3.floors[GS.hfloor] || {}).labels || []).find(l => l.id === id); if (!L) return;
   flyTo([L.x + 30, L.y + 520, L.z + 280], [L.x, L.y - 150, L.z], 50, true);
 });
-let livLeaf = null;   // V1.38: the living room door's leaf (turned with the house's door.living_door)
-let winGlass, sun, view, ledMat, ceilGlow, ceilMat, lboxFace, laserDots, runLed, curtOpen, curtShut, pcGlow, pcLight;
+let sun, pcGlow, pcLight;
 // v17: the PC lit up behind its clear side window: glowing fan rings (three front, one rear), an RGB strip along the top, a light inside
 function pcLit() {
   const [cw, ch, cd] = R.PC_CASE, [cz1, cz0] = R.PC_Z, st = R.PC_SHELF_TOP, x = 2.5 + cw - 4.2;

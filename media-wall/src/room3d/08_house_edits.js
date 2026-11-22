@@ -1,4 +1,3 @@
-let garden3d = null;   // v53: the back garden as ground, in the views from above
 let HBUILD = null;     // V1: builds (or rebuilds, with edits) one floor of the house
 const HEDITS = {};     // V1 (Phase 3): the client's edits, {item id: {from: box, to: box, op?: the opening's old and new edges}}
 let NOWV = false;      // V3.90 (N151): As it is: the house without your colours and changes, shown only (23_finish.js nowMode)

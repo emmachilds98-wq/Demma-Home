@@ -55,6 +55,10 @@ function flushCubes(parent) {
   for (const b of BUCKET.values()) { const me = shadow(new THREE.Mesh(mergeGeometries(b.geos), b.mat), b.cast); me.name = "livFixed"; parent.add(me); }
   BUCKET.clear();
 }
+let rugMesh, curtCloth, coffeeG, floorMat, shelfMat, coffeePlain = null;   // v20: the decor to try (S.decor), made here (N203: a let lives in the part that sets it)
+let garden3d = null;   // v53: the back garden as ground, in the views from above
+let livLeaf = null;   // V1.38: the living room door's leaf (turned with the house's door.living_door)
+let winGlass, view, ledMat, ceilGlow, ceilMat, lboxFace, laserDots, runLed, curtOpen, curtShut, plantBG = null;
 function buildShell() {
   const wP = id => paintMat(lum("#2d5a46") / BASE_L, false, false, "w:" + id), rP = id => paintMat(lum("#264c3a") / BASE_L, false, false, "w:" + id);   // v38: per wall
   const wallP = wP("window"), ceilP = paintMat(lum("#33604a") / BASE_L, false, false, "ceil");
