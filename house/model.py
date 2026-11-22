@@ -405,17 +405,17 @@ def walls_for(o, floor, rs, ds, y0, y1):
                     # v65: on this room's own face only (the next room's wall carries the other), lapping 0.8 into the opening
                     o.item(d["id"], *DOOR_NAMES.get(d["id"], (d["id"], r["room"])), kind="door", src=door_src(d["id"]), data=door_data(d["id"]), axis=axis)
                     for zf in ((l0 - 1.2,) if out_dir > 0 else (l1,)):
-                        put = (lambda xa, ya, xb, yb: o.box("upvc", xa, ya, zf, xb, yb, zf + 1.2)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("upvc", zf, ya, xa, zf + 1.2, yb, xb))
+                        put = (lambda xa, ya, xb, yb: o.box("woodwork", xa, ya, zf, xb, yb, zf + 1.2)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("woodwork", zf, ya, xa, zf + 1.2, yb, xb))
                         put(d["a"] - 6, y0, d["a"] + 0.8, y0 + D.DOOR_H + 6); put(d["b"] - 0.8, y0, d["b"] + 6, y0 + D.DOOR_H + 6)
                         put(d["a"] - 6, y0 + D.DOOR_H - 0.8, d["b"] + 6, y0 + D.DOOR_H + 6)
                         # v72 (B4): a torus profile: a raised round by the opening, 3 wide, 0.8 proud (E: a 69 × 18 torus architrave)
                         r0, r1 = (zf - 0.75, zf) if out_dir > 0 else (zf + 1.2, zf + 1.95)   # (its face 0.05 off any wall's end)
-                        rid = (lambda xa, ya, xb, yb: o.box("upvc", xa, ya, r0, xb, yb, r1)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("upvc", r0, ya, xa, r1, yb, xb))
+                        rid = (lambda xa, ya, xb, yb: o.box("woodwork", xa, ya, r0, xb, yb, r1)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("woodwork", r0, ya, xa, r1, yb, xb))
                         rid(d["a"] - 3.2, y0, d["a"] - 0.2, y0 + D.DOOR_H + 2.8); rid(d["b"] + 0.2, y0, d["b"] + 3.2, y0 + D.DOOR_H + 2.8)
                         rid(d["a"] - 0.2, y0 + D.DOOR_H - 0.2, d["b"] + 0.2, y0 + D.DOOR_H + 2.8)
                         if D.HEAD_CAP.get(d["id"]) == r["id"]:   # V1.25: a moulded cap over the head, past the legs (survey_data.HEAD_CAP)
                             c0, c1 = (zf - 2.2, zf + 1.2) if out_dir > 0 else (zf, zf + 3.4)
-                            cap = (lambda xa, ya, xb, yb: o.box("upvc", xa, ya, c0, xb, yb, c1)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("upvc", c0, ya, xa, c1, yb, xb))
+                            cap = (lambda xa, ya, xb, yb: o.box("woodwork", xa, ya, c0, xb, yb, c1)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("woodwork", c0, ya, xa, c1, yb, xb))
                             cap(d["a"] - 8.5, y0 + D.DOOR_H + 6, d["b"] + 8.5, y0 + D.DOOR_H + 9.5)
 
 
@@ -663,7 +663,7 @@ def floors_and_fittings(o, floor, rs):
             o.box("door_white", dx0 + 0.8, y + 0.5, zl1 + 0.2, dx1 - 0.8, y + D.DOOR_H - 0.8, zl1 + 1.6)
             o.box("chrome", dx0 + 4, y + 100, zl1 + 1.6, dx0 + 13, y + 102, zl1 + 5)
         for xa, xb, ya, yb in ((dx0 - 6, dx0 + 0.8, y, y + D.DOOR_H + 6), (dx1 - 0.8, dx1 + 6, y, y + D.DOOR_H + 6), (dx0 - 6, dx1 + 6, y + D.DOOR_H - 0.8, y + D.DOOR_H + 6)):
-            o.box("upvc", xa, ya, zl1 + 1.8, xb, yb, zl1 + 3.0)
+            o.box("woodwork", xa, ya, zl1 + 1.8, xb, yb, zl1 + 3.0)
         o.box("grille", dx0 + 8, y + D.DOOR_H + 9, zl1 + 1.8, dx1 - 8, y + D.DOOR_H + 27, zl1 + 2.4)
         stair_soffit(o, st, zl1)
     cx, cz, *_ = cal(floor)
@@ -2212,16 +2212,16 @@ def radiator(o, axis, wall, out, a0, a1, y0, y1):
             o.box(m, p0, ya, wall + out * d0, p1, yb, wall + out * d1)
         else:
             o.box(m, wall + out * d0, ya, p0, wall + out * d1, yb, p1)
-    put("upvc", a0, a1, 3.0, 5.0, y0, y1)                          # the back panel, the convector fins, the front panel
+    put("woodwork", a0, a1, 3.0, 5.0, y0, y1)                          # the back panel, the convector fins, the front panel
     n = max(4, int((a1 - a0) / 3.0))
     for k in range(n):
         p = a0 + 1 + (a1 - a0 - 2) * k / n
         put("rib", p, p + 0.8, 5.0, 8.0, y0 + 3, y1 - 2)
-    put("upvc", a0, a1, 8.0, 10.0, y0, y1)
+    put("woodwork", a0, a1, 8.0, 10.0, y0, y1)
     for k in range(int((a1 - a0) / 4.5)):                          # the front panel's vertical pressings
         p = a0 + 2 + k * 4.5
         put("gap", p, p + 0.4, 10.0, 10.25, y0 + 2, y1 - 2)
-    put("upvc", a0 + 0.5, a1 - 0.5, 4.5, 9.5, y1, y1 + 0.6)       # the grille on top
+    put("woodwork", a0 + 0.5, a1 - 0.5, 4.5, 9.5, y1, y1 + 0.6)       # the grille on top
     for p in (a0 - 4, a1 + 1):                                     # the valves
         put("chrome", p, p + 3, 5.0, 8.0, y0 - 6, y0 + 2)
 
@@ -2465,7 +2465,7 @@ def landing(o):
         d = next(d_ for d_ in doors("first") if d_["id"] == did)
         for za_, zb_ in faces:
             o.box("glass", d["a"], y + fa, za_, d["b"], y + fb, zb_)
-            o.box("upvc", d["a"] - 6, y + fb, za_ - 0.4, d["b"] + 6, y + fb + 5, zb_ + 0.4)
+            o.box("woodwork", d["a"] - 6, y + fb, za_ - 0.4, d["b"] + 6, y + fb + 5, zb_ + 0.4)
 
 
 def pendants(o, floor):
@@ -2579,7 +2579,7 @@ def build():
 
 MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textures)
     "brick": ("#9a4b36", 0.92), "party": ("#9a4b36", 0.92), "soldier": ("#83402e", 0.9), "paint": ("#f1ede5", 0.85), "stairpaint": ("#2d5a46", 0.92),
-    "upvc": ("#f5f5f2", 0.35), "frame_out": ("#f5f5f2", 0.35), "door_out": ("#f5f5f2", 0.35), "glass": ("#dfe9ee", 0.03), "glass_frost": ("#e8edef", 0.5), "artex": ("#f3f2ee", 0.97), "door_cream": ("#e8ddc2", 0.4), "mirror": ("#eef2f3", 0.04), "brass": ("#c9b58a", 0.3), "rib": ("#e2e2de", 0.5),
+    "upvc": ("#f5f5f2", 0.35), "woodwork": ("#f5f5f2", 0.35), "frame_out": ("#f5f5f2", 0.35), "door_out": ("#f5f5f2", 0.35), "glass": ("#dfe9ee", 0.03), "glass_frost": ("#e8edef", 0.5), "artex": ("#f3f2ee", 0.97), "door_cream": ("#e8ddc2", 0.4), "mirror": ("#eef2f3", 0.04), "brass": ("#c9b58a", 0.3), "rib": ("#e2e2de", 0.5),
     "tile": ("#7b5a4b", 0.85), "ridge": ("#6d4c3f", 0.85), "hung": ("#6f4636", 0.85), "felt": ("#3d3b3a", 0.9),
     "slab": ("#cfc8bb", 0.95), "carpet": ("#cdbfa6", 1.0), "tile_f": ("#d9d4cb", 0.6), "vinyl": ("#cdd8da", 0.6), "concrete": ("#b1afaa", 0.85),
     "earth": ("#8a8173", 1.0), "brick_buff": ("#d6c7a3", 0.92), "chipboard": ("#c8ad80", 0.85), "porch_in": ("#a7a49c", 0.9), "bin": ("#2f3236", 0.6), "recycle": ("#2b5d9a", 0.6), "quarry": ("#b25a43", 0.7), "board": ("#c4b79f", 0.9), "fitting": ("#ecedea", 0.07),

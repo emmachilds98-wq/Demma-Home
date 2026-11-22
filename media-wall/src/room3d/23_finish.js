@@ -26,7 +26,7 @@ function livFin(slot, hex, one) {   // one surface of the living room to a colou
 const finAll = (all = true) => Object.assign({}, S.fin || {}, all || livChanged() ? { [LIVR]: livRow() } : {});   // every room's row, the living room's too
 function finRestore(o) { const c = finClean(o), L = c[LIVR]; delete c[LIVR]; S.fin = c; livSet(L); }
 const finPush = () => { if (NOWV) nowMode(false); FIN_UNDO.push(JSON.stringify(finAll())); if (FIN_UNDO.length > 20) FIN_UNDO.shift(); };   // V3.90: a colour picked works on your plan
-const finSlotName = (room, slot) => room === LIVR && slot >= 11 && slot <= 16 ? WALLS[slot - 11][1].toLowerCase() : room === LIVR && slot === 17 ? "skirting and door" : `${FIN_NAMES[slot]} wall`;
+const finSlotName = (room, slot) => room === LIVR && slot >= 11 && slot <= 16 ? WALLS[slot - 11][1].toLowerCase() : slot === 17 ? (room === LIVR ? "skirting and door" : "woodwork") : `${FIN_NAMES[slot]} wall`;
 const FIN_UNDO = [];
 const FIN_NAMES = ["back", "front", "east", "west", "ceiling", "floor"];
 /* V2.7 (F4): the floors: the house's own floor photos; each swatch the photo's mean colour */
@@ -334,20 +334,20 @@ function finAt(hit) {   // a tap on a wall or a ceiling of the house: its room a
     const p = hit.point, fl = p.y / M < 0 ? 0 : p.y / M < 260 ? 1 : 2, ri = FIN.map.image.data[(fl * FIN.H + Math.max(0, Math.min(FIN.H - 1, Math.floor((p.z / M + 309) / 2)))) * FIN.W + Math.max(0, Math.min(FIN.W - 1, Math.floor(-p.x / M / 2)))];
     return ri ? { room: FIN.rooms[ri - 1], slot: 20 } : null; }
   if (!(hk in FIN.kind) || !finSetup() || !hit.face) return null;
-  const p = hit.point, n = hit.face.normal, xc = -p.x / M, zc = p.z / M, yc = p.y / M, ceil = FIN.kind[hk] === 1;
+  const p = hit.point, n = hit.face.normal, xc = -p.x / M, zc = p.z / M, yc = p.y / M, ceil = FIN.kind[hk] === 1, wood = FIN.kind[hk] === 3;
   let ri;
   { const o = ceil ? 0 : 3, fl = yc < 0 ? 0 : yc < 260 ? 1 : 2;
     const i = Math.max(0, Math.min(FIN.W - 1, Math.floor((xc - n.x * o) / 2))), j = Math.max(0, Math.min(FIN.H - 1, Math.floor((zc + n.z * o + 309) / 2)));
     ri = FIN.map.image.data[(fl * FIN.H + j) * FIN.W + i]; }
   if (!ri) return null;
-  const nx = -n.x, nz = n.z, slot = ceil ? 4 : Math.abs(nx) > Math.abs(nz) ? (nx > 0 ? 2 : 3) : (nz > 0 ? 0 : 1);
+  const nx = -n.x, nz = n.z, slot = wood ? 17 : ceil ? 4 : Math.abs(nx) > Math.abs(nz) ? (nx > 0 ? 2 : 3) : (nz > 0 ? 0 : 1);
   return { room: FIN.rooms[ri - 1], slot };
 }
 /* V2.11 (F6): the finishes ride Measure's Send link; checked as data coming in */
 function finClean(o) {
   const out = {}, floors = new Set(FIN_FLOORS.map(([k]) => k)), bulbs = new Set(FIN_BULBS.map(([v]) => v)), lux = new Set(FIN_LUX.map(([v]) => v));
   for (const [room, sl] of Object.entries(o && typeof o === "object" ? o : {})) { if (!/^[a-z0-9_]{1,30}$/.test(room) || !sl || typeof sl !== "object") continue;
-    for (const [s, v] of Object.entries(sl)) { const k = +s, ok = k <= 4 || k === 9 || k === 10 || k === 20 || (room === LIVR && k >= 11 && k <= 17) ? /^#[0-9a-f]{6}$/i.test(v) : k === 5 ? floors.has(v) : k === 6 ? bulbs.has(v) : k === 7 ? lux.has(v) : k === 8 ? FIN_FITS.some(([f]) => f === v) : k === 18 ? v === "none" || FIN_RUGS.some(([f]) => f === v) : k === 19 ? [...FIN_CURT, ...LIV_CURT].some(([f]) => f === v) : k === 21 ? FIN_PICS.some(([f]) => f === v) : k === 22 ? ["0", "1", "2", "3"].includes(String(v)) : k === 23 ? !!HCAT[v] && HCAT[v].k === "plant" : k === 24 ? FIN_PAPERS.some(([f]) => f === v) : k === 25 || k === 27 ? ["0", "1", "2", "3"].includes(String(v)) : k === 26 ? FIN_PANELS.some(([f]) => f === v) : k === 28 ? typeof v === "string" && v.split(",").every(q => IDEAS().some(i => i.id === q && i.room === room)) : false;
+    for (const [s, v] of Object.entries(sl)) { const k = +s, ok = k <= 4 || k === 9 || k === 10 || k === 17 || k === 20 || (room === LIVR && k >= 11 && k <= 16) ? /^#[0-9a-f]{6}$/i.test(v) : k === 5 ? floors.has(v) : k === 6 ? bulbs.has(v) : k === 7 ? lux.has(v) : k === 8 ? FIN_FITS.some(([f]) => f === v) : k === 18 ? v === "none" || FIN_RUGS.some(([f]) => f === v) : k === 19 ? [...FIN_CURT, ...LIV_CURT].some(([f]) => f === v) : k === 21 ? FIN_PICS.some(([f]) => f === v) : k === 22 ? ["0", "1", "2", "3"].includes(String(v)) : k === 23 ? !!HCAT[v] && HCAT[v].k === "plant" : k === 24 ? FIN_PAPERS.some(([f]) => f === v) : k === 25 || k === 27 ? ["0", "1", "2", "3"].includes(String(v)) : k === 26 ? FIN_PANELS.some(([f]) => f === v) : k === 28 ? typeof v === "string" && v.split(",").every(q => IDEAS().some(i => i.id === q && i.room === room)) : false;
       if (ok) (out[room] = out[room] || {})[k] = v; } }
   return out;
 }
@@ -414,9 +414,9 @@ function finPicAt(el, e) {   // the colour under a tap on the photo
 }
 function finGet(room, slot) { return ((room === LIVR ? livRow() : (S.fin || {})[room]) || {})[slot] || null; }
 function finApplyAll() {   // what's kept, into the palette (on start, after Undo)
-  if (!finSetup()) return; finish(null, "walls", null); finish(null, "ceiling", null); finish(null, "bedding", null);
+  if (!finSetup()) return; finish(null, "walls", null); finish(null, "ceiling", null); finish(null, "bedding", null); finish(null, "woodwork", null);
   if (houseG) { houseG.updateMatrixWorld(true); FIN.inv.copy(houseG.matrixWorld).invert(); }   // N5d: the bedding finds its room in the house's own frame
-  for (const [room, sl] of Object.entries(S.fin || {})) for (const [s, hex] of Object.entries(sl)) if ((+s < 5 || +s === 20) && FIN.rooms.includes(room)) finish(room, +s === 20 ? "bedding" : FIN_NAMES[+s], hex);
+  for (const [room, sl] of Object.entries(S.fin || {})) for (const [s, hex] of Object.entries(sl)) if ((+s < 5 || +s === 20 || (+s === 17 && room !== LIVR)) && FIN.rooms.includes(room)) finish(room, +s === 20 ? "bedding" : +s === 17 ? "woodwork" : FIN_NAMES[+s], hex);   // N216: each room's woodwork
   finFloorApply(); finOut(); storeEdits(); if (typeof placeRoomLights === "function") { GS.roomKey = ""; placeRoomLights(); } finTakes(); finSchDraw();
 }
 /* V2.38 (F12): the window frames' and front door's outside colours (RAL), S.fin.outside[9] and [10] */
@@ -445,14 +445,15 @@ function finSet(room, slot, hex) {   // by the scope: this wall, this room's wal
     if (slot >= 11) slot = 0; }
   if (room === "outside") { const o = S.fin.outside = S.fin.outside || {}; if (hex) o[slot] = hex; else delete o[slot]; if (!Object.keys(o).length) delete S.fin.outside;
     finOut(); store.set(KEY, S); toast(`Outside: ${slot === 9 ? "the window frames" : "the front door"} ${hex ? finName(hex) : "white, as planned"}`); return; }
-  const ceil = slot === 4, flr = slot === 5, slots = flr ? [5] : ceil ? [4] : finScope === "wall" ? [slot] : [0, 1, 2, 3];
+  const ceil = slot === 4, flr = slot === 5, wood = slot === 17, slots = flr ? [5] : ceil ? [4] : wood ? [17] : finScope === "wall" ? [slot] : [0, 1, 2, 3];
   if (flr && room === FIN_OWN) return;
-  const rooms = finScope === "house" ? FIN.rooms : flr && finScope === "floor" ? finStorey(room).filter(r => r !== FIN_OWN) : [room];
+  if (wood && finScope === "house") livFin(17, hex);   // N216: Whole house's woodwork takes the living room's skirting and door too
+  const rooms = finScope === "house" ? FIN.rooms.filter(r => !wood || r !== LIVR) : flr && finScope === "floor" ? finStorey(room).filter(r => r !== FIN_OWN) : [room];
   for (const r of rooms) { const o = S.fin[r] = S.fin[r] || {}, v = flr && hex === "plan" ? finPlanFloor(r) : hex; for (const s of slots) { if (v) o[s] = v; else delete o[s]; } if (!Object.keys(o).length) delete S.fin[r]; }
   finApplyAll(); store.set(KEY, S);
   if (flr) { toast(`${finScope === "floor" ? "Whole floor" : roomName(room)}: ${hex === "plan" ? "the plan's floor" : "floor " + finFloorName(hex)}`); return; }
   const nm = finName(hex);
-  toast(`${finScope === "house" ? "Whole house" : roomName(room)}: ${ceil ? "ceiling" : finScope === "wall" ? `the ${finSlotName(room, slot)}` : "walls"} ${hex ? nm : "as planned"}`);
+  toast(`${finScope === "house" ? "Whole house" : roomName(room)}: ${ceil ? "ceiling" : wood ? "woodwork" : finScope === "wall" ? `the ${finSlotName(room, slot)}` : "walls"} ${hex ? nm : "as planned"}`);
 }
 function finBtns(changed, reset, room) {   // N68: a colour or floor card's buttons, the same on each: Undo, As planned, Hold to compare, then (under More) Copy, Paste
   return [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(changed ? [btn("As planned", reset)] : []), btn("Hold to compare", { finhold: "1" }, undefined, "", "Hold to compare: the room as planned till you let go"), ...finCopyBtns(room)];
@@ -486,9 +487,10 @@ function finCard(id) {   // [title, now, buttons, -, the tray]
     `<div class="r3d-fin"><div class="r3d-fintray" role="group" aria-label="Colours">${finSw([...FIN_OUT, ...finSwatches().slice(1)], now)}<label class="sw any" title="Any colour"><input type="color" data-finany="1" value="${now || "#f5f5f2"}" aria-label="Any colour"><span>Any</span></label></div></div>`];
   const liv = room === LIVR, named = liv && slot >= 11 && slot <= 16, drawn = liv ? (slot === 0 ? S.paint === DEF.paint && !Object.keys(S.walls).length : named ? !S.walls[LIV_W[slot - 11]] : !now) : !now;
   if (finScope === "floor" || (liv && slot === 17)) finScope = "room";
-  if ((ceil || (liv && !named)) && finScope === "wall") finScope = "room";
+  const wood = slot === 17;   // N216: a room's skirting, door leaves, frames and radiators
+  if ((ceil || wood || (liv && !named)) && finScope === "wall") finScope = "room";
   const nm = drawn ? "As planned" : finCap(finName(now)), mine = finMine();
-  const scopes = liv && slot === 17 ? [] : ceil || (liv && !named) ? [["room", "This room"], ["house", "Whole house"]] : [["wall", "This wall"], ["room", "This room"], ["house", "Whole house"]];
+  const scopes = liv && slot === 17 ? [] : ceil || wood || (liv && !named) ? [["room", "This room"], ["house", "Whole house"]] : [["wall", "This wall"], ["room", "This room"], ["house", "Whole house"]];
   const tray = `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Where it goes">${scopes.map(([k, t]) => `<button type="button" data-finsc="${k}" aria-pressed="${finScope === k}">${t}</button>`).join("")}</div>`
     + `<div class="r3d-fintray" role="group" aria-label="Colours">${finSw(finSwatches(), now)}`
     + `<label class="sw any" title="Any colour"><input type="color" data-finany="1" value="${now || "#f4f3ef"}" aria-label="Any colour"><span>Any</span></label>`
@@ -499,9 +501,9 @@ function finCard(id) {   // [title, now, buttons, -, the tray]
     + (finPairs(now).length ? `<span class="r3d-finlab">Goes with it (its maker's pick)</span><div class="r3d-fintray" role="group" aria-label="Goes with it">${finSw(finPairs(now), null)}</div>` : "")
     + (FIN_PIC ? `<div class="r3d-finpic"><img src="${FIN_PIC.url}" data-finpicimg="1" alt="Your photo: tap a colour in it"><span class="r3d-finlab">Tap a colour in your photo</span></div>` : "")
     + `</div>`;
-  const more = (ceil && !liv ? `<span class="r3d-finlab">Bulbs</span>${finBulbTray(room)}${finFitTray(room)}` : "") + (ceil || (liv && slot === 17) ? "" : finCurtTray(room) + (liv ? "" : finPicTray(room, slot) + finPaperTray(room, slot) + finPanelTray(room, slot)));   // N68: under More
-  return [`${roomName(room)}: ${ceil ? "the ceiling" : liv && slot === 17 ? "skirting and door" : finScope === "wall" ? `the ${finSlotName(room, slot)}` : "the walls"}`, nm,
-    finBtns(!drawn, { finc: "" }, room), null, tray, more && `<div class="r3d-fin">${more}</div>`];
+  const more = (ceil && !liv ? `<span class="r3d-finlab">Bulbs</span>${finBulbTray(room)}${finFitTray(room)}` : "") + (ceil || wood ? "" : finCurtTray(room) + (liv ? "" : finPicTray(room, slot) + finPaperTray(room, slot) + finPanelTray(room, slot)));   // N68: under More
+  return [`${roomName(room)}: ${ceil ? "the ceiling" : wood ? (liv ? "skirting and door" : "the woodwork") : finScope === "wall" ? `the ${finSlotName(room, slot)}` : "the walls"}`, nm,
+    [...finBtns(!drawn, { finc: "" }, room), ...(!liv && !ceil && !wood ? [btn("Woodwork", { actopen: `fin:${room}:17` })] : [])], null, tray, more && `<div class="r3d-fin">${more}</div>`];   // N216: its skirting, doors, frames and radiators
 }
 function finHold(on) {   // Hold to compare: while held, the palette empty (the house as drawn); let go, your colours back
   // V3.90: the living room's own colours, rug and curtains held apart from the house's palette (that waits for the house; As it is doesn't)

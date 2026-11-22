@@ -154,6 +154,20 @@ SWAP = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   const floor = [f0[0], f0[1], f1[0], f1[1], f2[1]].join('|'); if (D.actId) q('#r3d-act .x').click();
   return { swapped, added, gone, planted, unplanted, floor };
 }"""
+WOOD = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s);   // N213, N216: a code typed on a wall's card, then the room's woodwork
+  const kept = s => ((JSON.parse(localStorage.getItem('mw18-3d') || '{}').fin || {}).bed2 || {})[s] || null, was = [kept(0), kept(17)];
+  D.openAct('fin:bed2:0'); await sl(600); const h = q('#r3d-act [data-finhex]'); if (!h) return { err: 'no code field' };
+  q('#r3d-act [data-finsc="wall"]') && q('#r3d-act [data-finsc="wall"]').click(); await sl(200);
+  const f = q('#r3d-act [data-finhex]'); f.value = '3a6b5a'; f.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); await sl(500);
+  const wall = kept(0), title = q('#r3d-act-h').textContent;
+  const wb = [...document.querySelectorAll('#r3d-act button')].find(b => b.textContent.trim() === 'Woodwork'); if (!wb) return { wall, err: 'no Woodwork button' };
+  wb.click(); await sl(500); const wt = q('#r3d-act-h').textContent, yours = !!q('#r3d-act [aria-label="Your colours"] [data-finc="#3a6b5a"]');
+  q('#r3d-act [aria-label="Your colours"] [data-finc="#3a6b5a"]').click(); await sl(400); const wood = kept(17);
+  const ab = [...document.querySelectorAll('#r3d-act button')].find(b => b.textContent.trim() === 'As planned'); ab && ab.click(); await sl(300);
+  const back = kept(17); for (let i = 0; i < 3; i++) { const u = q('#r3d-act [data-finundo]'); if (u) u.click(); await sl(300); }   // the three changes undone
+  const restored = kept(0) === was[0] && kept(17) === was[1]; if (D.actId) q('#r3d-act .x').click();
+  return { wall, wt, yours, wood, back, restored };
+}"""
 OFF = """() => { const W = document.documentElement.clientWidth, out = [];
   for (const el of document.querySelectorAll("body *")) { const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
     if (!r.width || cs.display === "none" || cs.visibility === "hidden" || cs.position === "fixed" || el.closest("[hidden], .sheet, .r3d-panel, .r3d-floors, .lightbox, .r3d-stage")) continue;
@@ -392,6 +406,9 @@ def main():
                     want = "Bedroom 2 · Grey carpet|carpet_grey|Bedroom 2 · Oak boards|oak|carpet_grey"   # N209: oak from the floor's card, then the plan's
                     if sw != {"swapped": True, "added": True, "gone": True, "planted": True, "unplanted": True, "floor": want}:
                         fails.append(f"{w}: swapping the master bedroom's chest, adding a plant, bedroom 2's plant and floor from Look: {sw} (want each drawn, then gone; floor {want})")
+                    wd = pg.evaluate(WOOD)                          # N213, N216: a code typed on bedroom 2's wall, then its woodwork from "Yours", then back
+                    if wd != {"wall": "#3a6b5a", "wt": "Bedroom 2: the woodwork", "yours": True, "wood": "#3a6b5a", "back": None, "restored": True}:
+                        fails.append(f"{w}: bedroom 2's wall by its code, then its woodwork from Yours and back: {wd}")
                 if phone:                                           # V2.5 (FINISHES_PLAN F2): a room's walls and ceiling through the palette, then back
                     fn = pg.evaluate("() => [R3D.finish('bed2', 'walls', '#3a6b5a'), R3D.finish('bed2', 'ceiling', '#e8c0c8'), R3D.finish('nowhere', 'walls', '#000000'), R3D.finish(null, 'walls', null), R3D.finish(null, 'ceiling', null)]")
                     if fn != [True, True, False, True, True]:

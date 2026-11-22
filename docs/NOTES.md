@@ -205,14 +205,16 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 
 ## 5. The site's features: where they live
 - **Look's rows** (`23_finish.js`, `S.fin[room]`): 0–3 walls, 4 ceiling, 5 floor, 6 bulb, 7 lux, 8 fitting, 9–10 outside, 11–16 the
-  living room's walls by name, 17 its skirting and door, 18 rug, 19 curtains, 20 bedding, 21 picture, 22 picture's wall, 23 plant,
+  living room's walls by name, 17 the woodwork (the living room's skirting and door in its Look; any other room's through the palette, N216), 18 rug, 19 curtains, 20 bedding, 21 picture, 22 picture's wall, 23 plant,
   24–25 wallpaper, 26–27 panelling (N57; `finWallRun` gives any wall its face, openings and ceiling line). A new slot goes in `finClean`, the Paste filter, `roomUps` and a cost in `UPC`.
   A floor (N209) has three sources: the plan's (`plan_finishes.json`, merged into `S.fin` once a version, so it reads like a pick), the one
   laid now (`finish_areas[room].fk`, from `surfaces.by_room`) and theirs; Changes counts any but the one laid now, the card prices only theirs. The garage (`FIN_OWN`) keeps its slab.
   Her own colours (N213): a wall's card takes a code (`data-finhex`, `finHex`: `#` optional, three digits doubled; its `change` sets
   it, and Enter sends one: a value set by a script never fires `change` on blur); `finName` calls a colour that's neither a paint nor the plan's (`finPlanHex`) "your colour #3A6B5A"; "Yours"
-  (`finMine`) is read from her rows each time, nothing new kept. The look link's `fc` carries each room's slots 0–4, 9 and 10 that
+  (`finMine`) is read from her rows each time, nothing new kept. The look link's `fc` carries each room's slots 0–4, 9, 10 and 17 that
   differ from the plan's (the plan's scheme is merged into `S.fin`, so the link leaves those out); `fl` the floors.
+  The palette (`20_1_house_materials.js` `FIN`): a row a room, 8 columns: 0–3 the sides, 4 ceiling, 5 bedding, 6 woodwork (N216: `skirting`,
+  `door_white`, `woodwork`, FIN.kind 3, found in the house's own frame as the bedding is, so a swinging door keeps its room); 7 is the last free.
 - **Changes and costs** (`16_cards.js`): `UPC` rough UK costs (E, Nov 2026; a floor per m²), `roomUps(room)` a room's changes, card id
   `ups:<room>`; done ticks in `localStorage` `dh-done` (this device only, not in Send); `upsAll()` gives the total for Plan and Measure.
   The 3D's `qs` is scoped to its root: use `document.getElementById` for the sheets' elements.
