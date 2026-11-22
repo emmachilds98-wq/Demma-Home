@@ -254,7 +254,15 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `HCAT_ADD`. A card's line is `hcLine` ("86 × 50 × 87 cm · Fits · £103 · Habitat"), its tray a chip a shop and the shop's page
   (`hcShopTray`). Her own piece lives in its row's value, `own|<look>|<material>|W|D|H|<name>` (`hcOwn` checks each part and registers it
   in `HCAT` the first time it's read: `syncAdds`, `heOk`), so the look link and Send carry it with no new row shape; `ownPut` rewrites it
-  and stands it back where it fits (`addSpot`). Twelve materials (`OWN_MATS`, hex from `house/model.py`); `pull_edits` lists both.
+  and stands it back where it fits (`addSpot`). Twelve materials (`OWN_MATS`, hex from `house/model.py`); `pull_edits` lists both,
+  with an added piece's other rows, and lists any row it can't read by its item's id (never its value).
+  **The living room's swaps** (N220, `13_edit_room.js` top): the house file has no living-room items, so a swap there is
+  `S.layout[id].sw` (an `HCAT` key of the piece's kind: `LIV_SWAP` by movable id, `LIV_SWAP_T` by an added piece's `CATALOGUE` type),
+  drawn by `livSwapDraw` from the catalogue piece's own builder (`C.b`, as `hcBuild` calls it) into the movable's pivot, in
+  `livHm` materials (the house material's colour on the room's kinds: oak grain, cloth weave; made on the first swap, so nothing new at
+  the first picture). `placeAll` draws what `S.layout` says, so undo, reload, As it is and the look link (`sw`, checked) follow.
+  `livWhy` is its fit line (the room's walls, the pieces it wasn't over as planned). The card is N217's `swapCard` (`lswap:`,
+  `data-lswapgo`). Not in Send: the living room's Edit never was (its layout rides the look link and Save my plan).
   **House edits in the look link** (`he` in `lookOf`): each edits row
   as `[item, field, value]` (an add with its room, x, z, y), every one checked by `heOk` on the way in (as `pieceNow` and `syncAdds` read
   rows) and put into Measure's store, once it is up (a link opens before `measure.js` has run).
