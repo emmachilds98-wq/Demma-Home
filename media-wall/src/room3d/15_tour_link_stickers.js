@@ -153,7 +153,7 @@ function applyLook(tok) {
   if (o.layout || o.added) {   // v50: the furniture moved or added in Edit room
     const ID = /^[a-z0-9_:-]{1,40}$/i, lay = {}, add = [];
     if (o.layout && typeof o.layout === "object") for (const [id, L] of Object.entries(o.layout)) { if (!ID.test(id) || !L || typeof L !== "object") continue;
-      const c = {}; for (const f of ["x", "z", "rot"]) if (Number.isFinite(+L[f])) c[f] = +L[f]; if (HEX.test(L.col || "")) c.col = L.col; if (L.off) c.off = true; lay[id] = c; }
+      const c = {}; for (const f of ["x", "z", "rot"]) if (Number.isFinite(+L[f])) c[f] = +L[f]; if (HEX.test(L.col || "")) c.col = L.col; if (L.off) c.off = true; if (typeof L.sw === "string" && HCAT[L.sw] && !HCAT[L.sw].own) c.sw = L.sw; lay[id] = c; }   // N220: a swap (its kind checked in placeAll)
     if (Array.isArray(o.added)) for (const a of o.added.slice(0, 40)) if (a && CATALOGUE[a.type] && ID.test(a.id || "") && Number.isFinite(+a.x) && Number.isFinite(+a.z))
       add.push({ type: a.type, id: a.id, x: +a.x, z: +a.z, ...(Number.isFinite(+a.rot) ? { rot: +a.rot } : {}), ...(HEX.test(a.col || "") ? { col: a.col } : {}) });
     restoreLayout({ layout: lay, added: add });

@@ -178,9 +178,9 @@ function planReport(inc) {
   if (inc.moves) { const n = head("Furniture moved or added");
     for (const [id, L] of Object.entries(S.layout)) { const it = MOV[id]; if (!it || it.added) continue; const bits = [];
       if (L.off) bits.push("taken out"); else { if (L.x !== undefined) bits.push(`moved to ${Math.round(L.x)} from the east wall, ${Math.round(L.z - R.WINDOW_Z)} from the window`); if (L.rot) bits.push(`turned ${Math.round(L.rot)}°`); }
-      if (L.col) bits.push(`colour ${L.col}`); if (bits.length) line(`${it.label}: ${bits.join(", ")}`, true); }
-    for (const a of S.added) { const C = CATALOGUE[a.type], L = S.layout[a.id] || a;
-      line(`Added: ${C ? C.label : a.type}, at ${Math.round(L.x ?? a.x)} from the east wall, ${Math.round((L.z ?? a.z) - R.WINDOW_Z)} from the window${L.rot ? `, turned ${Math.round(L.rot)}°` : ""}${L.col ? `, ${L.col}` : ""}`, true); }
+      if (L.col) bits.push(`colour ${L.col}`); if (it.swk) bits.unshift(`swapped for ${HCAT[it.swk].n}`); if (bits.length) line(`${it.label}: ${bits.join(", ")}`, true); }   // N220
+    for (const a of S.added) { const C = CATALOGUE[a.type], L = S.layout[a.id] || a, sw = MOV[a.id] && MOV[a.id].swk;
+      line(`Added: ${C ? C.label : a.type}${sw ? ` (swapped for ${HCAT[sw].n})` : ""}, at ${Math.round(L.x ?? a.x)} from the east wall, ${Math.round((L.z ?? a.z) - R.WINDOW_Z)} from the window${L.rot ? `, turned ${Math.round(L.rot)}°` : ""}${L.col ? `, ${L.col}` : ""}`, true); }
     end(n); }
   if (inc.link) out.push("", "THE ROOM, JUST LIKE THIS", lookUrl());
   return out.join("\n").trim();

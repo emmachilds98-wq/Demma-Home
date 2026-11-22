@@ -54,7 +54,7 @@ const HCAT_ADD = ["plant", "snake", "monstera", "olive", "armchair", "sidetable"
   "desklegs", "deskdrawers", "trestle", "bench", "pouffe", "wardrobe2", "sliding", "openrail", "divan", "oakbed", "metalbed", "markus", "langfjall", "stoense", "lohals", "desklong"];
 HCAT_ADD.push(...Object.keys(HCAT).filter(q => HCAT[q].shop));   // N219: the shops' pieces too
 const hcAddOf = kind => HCAT_ADD.filter(q => HCAT[q].k === kind);
-const hcLine = (k, C) => { const why = fitWhy(k);   // N217: its size, whether it fits; N219: a shop's price and name, or hers
+const hcLine = (k, C, why = fitWhy(k)) => {   // N217: its size, whether it fits; N219: a shop's price and name, or hers (N220: the living room's why)
   return `${[C.w, C.d, C.h].map(v => Math.round(v * 10) / 10).join(" × ")} cm · ${why.length ? why.slice(0, 2).join(" · ") : "Fits"} · ${C.shop ? `£${C.p} · ${C.shop}` : C.src.split(",")[0]}`; };
 const hcShopTray = (k, L, C, at) => { const shops = [...new Set(L.map(q => q && HCAT[q].shop).filter(Boolean))];   // a chip a shop (its first piece of this kind), its page
   return (shops.length ? `<div class="r3d-finsc" role="group" aria-label="Shops">${shops.map(s => `<button type="button" data-${at}="${k}:${L.findIndex(q => q && HCAT[q].shop === s)}" aria-pressed="${!!C && C.shop === s}">${s}</button>`).join("")}</div>` : "")
@@ -69,13 +69,17 @@ function ownCard(k, C) {
     + `<span class="r3d-finlab">Its look</span><div class="r3d-finsc" role="group" aria-label="Its look">${OWN_LOOKS.map(q => `<button type="button" data-hownl="${q}" aria-pressed="${o.look === q}">${HCAT_KINDS[q]}</button>`).join("")}</div>`
     + `<span class="r3d-finlab">Its colour</span><div class="r3d-fintray" role="group" aria-label="Its colour">${OWN_MATS.map(([q, t, h]) => `<button type="button" class="sw" data-hownm="${q}" style="--c:${h}" aria-pressed="${o.m === q}" title="${t}" aria-label="${t}"><i></i><span>${t}</span></button>`).join("")}</div></div>`];
 }
+/* N217's swap card: ‹ › through its kind (the first: as planned), its line, a chip a shop; N220: the living room's too (at: its buttons' data-) */
+const hcNav = (k, i, at) => [btn("‹", { [at]: `${k}:${i - 1}` }, false, "q", "The one before"), btn("›", { [at]: `${k}:${i + 1}` }, false, "q", "The next one")];
+function swapCard(k, kind, cur, name, why, at, back) {
+  const L = [null, ...hcOf(kind)], i = Math.max(0, L.indexOf(cur)), C = HCAT[L[i]];
+  return [C ? C.n : name, C ? hcLine(k, C, why()) : `${HCAT_KINDS[kind]} · as planned`, [...hcNav(k, i, at), btn("Keep it", { actopen: back }, true)], null, `<div class="r3d-fin">${hcShopTray(k, L, C, at)}</div>`];
+}
+const livCardOf = k => k.startsWith("sg_") ? "sg:" + k.slice(3) : "mov:" + k;
 function hcatCard(id) {
   const k = id.split(":")[1], it = HIT(k); if (!it) return null;
-  const nav = (i, at) => [btn("‹", { [at]: `${k}:${i - 1}` }, false, "q", "The one before"), btn("›", { [at]: `${k}:${i + 1}` }, false, "q", "The next one")];
-  if (id.startsWith("hswap:")) { const kind = swapKind(k); if (!kind) return null;
-    const L = [null, ...hcOf(kind)], i = Math.max(0, L.indexOf(pieceNow(k).swap)), C = HCAT[L[i]];
-    return [C ? C.n : it.n + " (yours)", C ? hcLine(k, C) : `${HCAT_KINDS[kind]} · as planned`,
-      [...nav(i, "hswapgo"), btn("Keep it", { actopen: "hitem:" + k }, true)], null, `<div class="r3d-fin">${hcShopTray(k, L, C, "hswapgo")}</div>`]; }
+  const nav = (i, at) => hcNav(k, i, at);
+  if (id.startsWith("hswap:")) { const kind = swapKind(k); return kind ? swapCard(k, kind, pieceNow(k).swap, it.n + " (yours)", () => fitWhy(k), "hswapgo", "hitem:" + k) : null; }
   if (it.look) { const L = plantKeys(), i = Math.max(0, L.indexOf(it.add)), C = HCAT[it.add];   // N5: a room's plant, from Look
     return [C.n, `${roomName(it.look)}'s plant · ${i + 1} of ${L.length} · ${C.src}`, [...nav(i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Remove", { hremove: k })]]; }
   const C = HCAT[it.add]; if (C.own) return ownCard(k, C);
@@ -193,6 +197,8 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id.startsWith("hout:")) { const rm = id.slice(5), outs = roomOuts(rm); if (!outs.length) return null;   // V3.80 (N149): a room's taken-out pieces, a tap each to put back
     return [`${roomName(rm)}: taken out`, outs.length === 1 ? "1 piece" : `${outs.length} pieces`, [...outs.map(k => btn("↩ " + HIT(k).n, { hputback: k })), ...(outs.length > 1 ? [btn("Put all back", { hputall: rm })] : [])]]; }
   if (id.startsWith("ups:")) return upsCard(id.slice(4));   // N23
+  if (id.startsWith("lswap:")) { const k = id.slice(6), kind = livSwapKind(k);   // N220: a living-room piece, swapped as the house's are
+    return kind ? swapCard(k, kind, MOV[k].swk, MOV[k].label.replace(/ \(suggested\)$/, ""), () => livWhy(k), "lswapgo", livCardOf(k)) : null; }
   if (id.startsWith("hswap:") || id.startsWith("hadd:")) return hcatCard(id);   // V2.46 (N7): swap a piece, or which piece you've added
   if (id.startsWith("hitem:")) { const k = id.slice(6), it = HIT(k); if (!it) return null;   // V1.50: a piece in the house, its size
     if (it.idea) return ideaCard(k);   // N212: a storage idea, to look at
@@ -261,12 +267,13 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id === "records") return ["Vinyl stand", S.lp ? "Front records lifted out" : "Two face-out bays, LPs filed below", [
       btn(S.lp ? "Put the records back" : "Lift out the front records", { lp: S.lp ? "in" : "out" }),
       btn(S.ideas.clean ? "Remove the record caddy" : "Add a record caddy", { idea: "clean" }, !!S.ideas.clean),
-      btn("Move it", { actedit: "records" }), btn("Take it out", { takeout: "mov:records" })]];
+      btn("Move", { actedit: "records" }), btn("Take it out", { takeout: "mov:records" })]];
   if (id.startsWith("sg:") || id.startsWith("id:")) {
     const sg = id.startsWith("sg:"), k = id.slice(3), nm = ((sg ? PD.sugg : PD.ideas)[k] || [k])[0], it = sg && MOV["sg_" + k];
     if (!(sg ? S.sugg : S.ideas)[k]) return null;                        // taken away: the card closes
     const firm = R.FIRM && (sg ? R.FIRM.sugg : R.FIRM.ideas || []).includes(k);   // v38: the client's picks are the plan (v43: the C-table too)
-    return [nm, firm ? "In your plan" : sg ? "An option, not costed" : "An idea, not costed", [
+    const C = it && HCAT[it.swk];   // N220: swapped
+    return [C ? C.n : nm, C ? hcLine(it.id, C, livWhy(it.id)) : firm ? "In your plan" : sg ? "An option, not costed" : "An idea, not costed", [
       ...(firm && MAKE_CARD[k] ? [btn("How to make it", { actmk: MAKE_CARD[k] })] : []),   // v44: its card in Build
       ...(k === "blind" ? [btn(S.blind === "up" ? "Pull it down" : "Roll it up", { blind: S.blind === "up" ? "down" : "up" })] : []),
       ...(k === "barcase" || k === "barside" ? [btn(S.barflap ? "Close the bar" : "Open the bar", { barflap: S.barflap ? "shut" : "open" })] : []),
@@ -275,13 +282,14 @@ function actItems(id) {     // [title, how it is now, buttons]
       ...(k === "stairscurtain" ? [btn(S.scopen ? "Draw it across" : "Open it", { scopen: S.scopen ? "shut" : "open" })] : []),   // V3.31
       ...(k === "stairdrawers" ? [btn(S.sdraw ? "Push the drawers in" : "Pull the drawers out", { sdraw: S.sdraw ? "in" : "out" })] : []),   // v37
       ...(sg ? (SVAR[k] || []).map(([v, n]) => btn(n, { svar: `${k}:${v}` }, svarOf(k) === v)) : []),
-      ...(it && !it.fixed ? [btn("Move it", { actedit: it.id })] : []), ...(k === "liftcoffee" || k === "recordtable" ? [btn("Move it", { actedit: "coffee" })] : []),
+      ...(it && !it.fixed ? [btn("Move", { actedit: it.id }), btn("Turn", { turnit: it.id })] : []), ...(it && livSwapKind(it.id) ? [btn("Swap it", { actopen: "lswap:" + it.id })] : []),
+      ...(k === "liftcoffee" || k === "recordtable" ? [btn("Move", { actedit: "coffee" })] : []),
       btn("Take it out", { takeout: k === "liftcoffee" || k === "recordtable" ? "mov:coffee" : (sg ? "sugg:" : "idea:") + k }),   // V3.75: the table goes, not just its top (Room → Taken out)
       btn("Read about it", { actideas: (sg ? "sugg-" : "idea-") + k })]]; }
   if (id === "mov:pouf") return ["Storage ottoman", S.lid ? "Lid off: games in three layers, cards along one side" : "Navy velvet: games and cards inside", [   // v34
-      btn(S.lid ? "Put the lid back" : "Lift the lid", { lid: S.lid ? "on" : "off" }), btn("Move it", { actedit: "pouf" }), btn("Take it out", { takeout: "mov:pouf" }), btn("Read about it", { actgo: "c-room" })]];
+      btn(S.lid ? "Put the lid back" : "Lift the lid", { lid: S.lid ? "on" : "off" }), btn("Move", { actedit: "pouf" }), btn("Take it out", { takeout: "mov:pouf" }), btn("Read about it", { actgo: "c-room" })]];
   if (id === "mov:sofa") return ["Your sofa", "Blue corduroy, as now", [   // V3.71: the swap is on its card
-      btn("Try the green sofa bed", { sofa: "bed" }), btn("Move it", { actedit: "sofa" }), btn("Take it out", { takeout: "mov:sofa" }), btn("From above", { view: "plan" })]];
+      btn("Try the green sofa bed", { sofa: "bed" }), btn("Move", { actedit: "sofa" }), btn("Take it out", { takeout: "mov:sofa" }), btn("From above", { view: "plan" })]];
   if (id === "mov:sofa2" || id === "mov:chaise2") { const B = R.SOFABED, ch = id === "mov:chaise2", up = Object.values(S.hr || {}).some(Boolean);
     /* V3.75: what it does first (the bed, the headrests a row of their own, the stools), then the chaise, the show, moving it, taking it out, the listing */
     const heads = `<div class="r3d-fin"><span class="r3d-finlab">Headrests: tap one to flip it up or down</span><div class="r3d-finsc" role="group" aria-label="Headrests">${
@@ -296,11 +304,11 @@ function actItems(id) {     // [title, how it is now, buttons]
       btn(up ? "Headrests down" : "Headrests up", { hrall: up ? "down" : "up" }),
       btn(S.stools ? "Push the stools in" : "Pull the stools out", { stools: S.stools ? "in" : "out" }),   // V3.74
       btn(S.lid ? "Shut the chaise" : "Open the chaise", { lid: S.lid ? "on" : "off" }), btn("Watch the bed open", { showopen: "bed" }),
-      btn("Move it", { actedit: "sofa2" }), btn("Take it out", { takeout: id }), btn("Back to my sofa", { sofa: "mine" }),
+      btn("Move", { actedit: "sofa2" }), btn("Take it out", { takeout: id }), btn("Back to my sofa", { sofa: "mine" }),
       btn("The listing", { actlink: "https://www.amazon.co.uk/dp/B0HDC8WYBT" }), btn("From above", { view: "plan" })], null, heads]; }
-  if (id.startsWith("mov:")) { const it = MOV[id.slice(4)]; if (!it) return null;
-    return [it.label.replace(/ \(suggested\)$/, ""), it.fixed ? "Built in: it comes off, but doesn't move" : `${Math.round(it.w)} × ${Math.round(it.d)} cm`, [   // V3.75: its size; turn or take it out from here
-      btn(it.fixed ? "Take off or put back" : "Move it", { actedit: it.id }), ...(it.fixed || it.lamp ? [] : [btn("Turn it", { turnit: it.id })]), btn("Take it out", { takeout: "mov:" + it.id })]]; }
+  if (id.startsWith("mov:")) { const it = MOV[id.slice(4)]; if (!it) return null; const C = HCAT[it.swk];   // N220: Move, Turn, Swap it, Take it out, as the house's
+    return [C ? C.n : it.label.replace(/ \(suggested\)$/, ""), it.fixed ? "Built in: it comes off, but doesn't move" : C ? hcLine(it.id, C, livWhy(it.id)) : `${Math.round(it.w)} × ${Math.round(it.d)} cm`, [   // V3.75: its size; turn or take it out from here
+      btn(it.fixed ? "Take off or put back" : "Move", { actedit: it.id }), ...(it.fixed || it.lamp ? [] : [btn("Turn", { turnit: it.id })]), ...(livSwapKind(it.id) ? [btn("Swap it", { actopen: "lswap:" + it.id })] : []), btn("Take it out", { takeout: "mov:" + it.id })]]; }
   return null;
 }
 /* v38: a fixture's card: on or off, turn it as a whole (15° a tap, 5° with Shift held), then one head at a time */
@@ -344,7 +352,7 @@ function fixCard(id, on) {
     btn("←", { headaim: `${k}:yaw:-10` }, undefined, "q", "Aim it left"), btn("→", { headaim: `${k}:yaw:10` }, undefined, "q", "Aim it right"),
     btn("↑", { headaim: `${k}:tilt:10` }, undefined, "q", "Aim it up"), btn("↓", { headaim: `${k}:tilt:-10` }, undefined, "q", "Aim it down"),
     btn(`Colour: ${HEAD_COLS[Math.max(0, ci)][1]}`, { headcol: k }),
-    ...(id === "lamp" ? [btn("Move it", { actedit: "lamp" }), btn("Take it out", { takeout: "mov:lamp" })] : [])]];
+    ...(id === "lamp" ? [btn("Move", { actedit: "lamp" }), btn("Take it out", { takeout: "mov:lamp" })] : [])]];
 }
 function fixAct(d, fine) {             // the card's fixture and head buttons; true if one was handled
   const keyOf = v => v.split(":").slice(0, 2).join(":"), edit = (k, f) => { const h = Object.assign({}, headOf(k)); f(h); if (Object.keys(h).length) S.head[k] = h; else delete S.head[k]; };
@@ -486,6 +494,8 @@ if (act) {
       ds.put("edits", id + "~add", { item: id, field: "add", value: v, room: rm, x: cmR(x), z: cmR(z), y }).catch(() => toast("That didn't save: try again"));
       GS.actId = "hadd:" + id; renderAct(); return; }
     if ((d.hownl || d.hownm) && GS.actId && GS.actId.startsWith("hadd:")) { ownPut(GS.actId.slice(5), d.hownl ? { look: d.hownl } : { m: d.hownm }).then(() => { if (GS.actId) renderAct(); }); return; }
+    if (d.lswapgo) { const [k, x] = d.lswapgo.split(":"), kind = livSwapKind(k); if (!kind) return;   // N220: the living room's
+      const L = [null, ...hcOf(kind)]; livSwap(k, L[((+x % L.length) + L.length) % L.length]); if (GS.actId) renderAct(); return; }
     if (d.hswapgo || d.haddgo || d.hcatk) { const [k, x] = (d.hswapgo || d.haddgo || d.hcatk).split(":"), it = HIT(k), ds = DS(); if (!it || !ds) return;
       if (d.hswapgo) { const L = [null, ...hcOf(swapKind(k))], v = L[((+x % L.length) + L.length) % L.length];   // N217: the new piece at its own size, where the old one stood
         Promise.all(["w", "h", "along"].filter(f => ds.rows("edits")[`${k}~${f}`]).map(f => ds.del("edits", `${k}~${f}`))).then(() => setPiece(k, "swap", v)).then(() => { if (GS.actId) renderAct(); }); return; }
