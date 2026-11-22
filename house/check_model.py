@@ -397,6 +397,10 @@ check("surfaces: each floor and ceiling about its room's area", not _off, "; ".j
 _empty = [f"{rid} {s_.get('side', k)}" for rid, R in _sr.items() for k in ("walls", "ceiling", "floor") for s_ in (R[k] if k == "walls" else [R[k]] if R[k] else [])
           if s_["faces"] < 1 or s_["area"] <= 0]
 check("surfaces: every surface has faces and an area", not _empty, "; ".join(_empty) if _empty else f"{sum(len(R['walls']) + bool(R['ceiling']) + bool(R['floor']) for R in _sr.values())} surfaces")
+# N210: no room's floor (the plan's scheme or one laid in Look) over a stairwell: the landing's carpet once covered the hole down
+_over = [f"{f} {rid}" for f in Mo.FLOOR_Y for (rid, x0, x1, z0, z1) in _S.PIECES[f] if (w_ := Mo.stair_well(f))
+         and min(x1, w_[1]) - max(x0, w_[0]) > 0.2 and min(z1, w_[3]) - max(z0, w_[2]) > 0.2]
+check("surfaces: no floor laid over a stairwell (N210)", not _over, "; ".join(_over) if _over else "the stairwells open on the ground and first floors")
 
 w = max(len(r[1]) for r in rows)
 for st_, n, note in rows:
