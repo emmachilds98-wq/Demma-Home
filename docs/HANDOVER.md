@@ -1,5 +1,20 @@
 # Handover (22 Nov 2026, V4.48: start here)
 
+## Pick up here (22 Nov 2026, evening: the client stopped for usage limits)
+The client: "Merge all work and plans into GitHub so I can work with another time". Everything is in this repo; nothing lives elsewhere.
+
+- **Done this evening** (PR #318, V4.45–V4.48, each row in `docs/REAL_PLAN.md` section 27 says how and with what checks): N216 the
+  woodwork in every room; N214 each wall on its own (and the slopes); the doors' linings; N217 bedroom 2's swaps at their own size
+  with a fit check on the card; N218 adding a piece where it fits, the house's edits in the look link; riders (what's on a desk goes
+  with it). Emma answered all seven of section 27's questions (`docs/DECISIONS.md`, "Customisation's questions").
+- **Next, in order:** N219 real pieces from several shops (Emma: "Use multiple real furniture sites and sources"); N221 saved looks
+  (phone and the plan); N222 Dave only looks; N220 the living room like the other rooms; then section 25 (N201 with Emma).
+  In progress when the session stopped: N221/N222 (a helper, its work merged below if finished) and N219's research (real pieces from several UK shops, sizes and prices read from their pages).
+- **How this round ran:** helper agents in their own git worktrees, one task each, files kept apart (the wall colours in
+  `23_finish.js`/`20_1_house_materials.js`, the furniture in `08_house_*.js`/`16_cards.js`); the lead merged their commits, ran
+  `checks.py --quick` and the new `check_site.py` steps together in one Playwright script (the full `check_site.py` is 40+ min here;
+  CI runs it), looked at the screenshots, wrote the docs and pushed. Each push cancels the branch's previous CI run, so push in batches.
+
 ## Now (22 Nov 2026)
 The client, 21–22 Nov: her review on the PC (`docs/REAL_PLAN.md` section 26: "the movement to look around on mouse feels inverted",
 grey carpet in bedroom 2 and the office, each room's floor from a card, the stairwell's floor covering the hole, the office's plastic

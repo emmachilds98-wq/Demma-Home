@@ -401,3 +401,13 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **A queue of stacked PRs** (each PR's head merging the one before, to land as V3.63, V3.64, ...): the last one carries all of them, so
   merging it lands them all and a failure in an earlier one (#228's `draws_house 211`) holds every later one. When taking over one of
   them, cherry-pick its own commit onto `main` instead.
+
+## Lessons of 22 Nov 2026 (V4.45–V4.48)
+- A material that newly reads the palette is a new program (its own `customProgramCacheKey`): the Fast paths' `shaders_first`
+  counts it (V4.45: +1, budget raised on purpose in `tools/perf_budget.json`). Adding columns or a data texture to an existing
+  program (N214's 32-column palette and wall table) costs no program.
+- Splitting a shared material (`upvc` → `woodwork` for frames and radiators) is how a few pieces take a room's colour without the
+  rest (the window frames); a model material name must be new (`trim` was taken by the dormer).
+- CI cancels a branch's running workflow on each push: batch pushes, or a run never finishes.
+- Worktree agents: give each a task whose files don't overlap; merge with `git merge <their branch>`; `check_site.py`'s step
+  strings (`WOOD`, `EACH`, `FITS`, `ADD`, `SWAP`) can be run alone by a small Playwright script that pulls them out with a regex.
