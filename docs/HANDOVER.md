@@ -1,19 +1,20 @@
-# Handover (22 Nov 2026, V4.48: start here)
+# Handover (23 Nov 2026, V4.49: start here)
 
-## Pick up here (22 Nov 2026, evening: the client stopped for usage limits)
-The client: "Merge all work and plans into GitHub so I can work with another time". Everything is in this repo; nothing lives elsewhere.
+## Pick up here (23 Nov 2026)
+The client, 22–23 Nov: "Keep working on the upgrade and ensure nothing can be lost outside github"; "stop things working locally and work
+directly in GitHub to stop these losses" (CLAUDE.md: nothing stays local; push every commit, helpers after every step).
 
-- **Done this evening** (PR #318, V4.45–V4.48, each row in `docs/REAL_PLAN.md` section 27 says how and with what checks): N216 the
-  woodwork in every room; N214 each wall on its own (and the slopes); the doors' linings; N217 bedroom 2's swaps at their own size
-  with a fit check on the card; N218 adding a piece where it fits, the house's edits in the look link; riders (what's on a desk goes
-  with it). Emma answered all seven of section 27's questions (`docs/DECISIONS.md`, "Customisation's questions").
-- **Next, in order:** N219 real pieces from several shops (Emma: "Use multiple real furniture sites and sources"); N221 saved looks
-  (phone and the plan); N222 Dave only looks; N220 the living room like the other rooms; then section 25 (N201 with Emma).
-  In progress when the session stopped: N221/N222, not started in code; a design for both from the code is in `docs/REAL_PLAN.md` section 27 under the table and N219's research, saved as `docs/N219_catalogue.json`: 142 real pieces (IKEA 44, Habitat 52, John Lewis 30, Dunelm 16; each kind, size W × D × H cm as published, price, URL, read 22 Nov 2026) for N219 to turn into cited `HCAT` pieces (`fit.SOURCES` rows) by kind. Its notes: beds' `d` is the frame's outside length; rugs `w` × `d` with `h` the pile; adjustable pieces `h` the maximum; record storage thin (2, both cube units); check before use: Dunelm Henry and Georgi cabinets' glass doors, John Lewis Hector lamp's width (its arm), Habitat Tatsuma's 135 width. Next for it: a 4th shop (Oak Furnitureland for wood; Dunelm for TV units, lamps, tables, shoes).
-- **How this round ran:** helper agents in their own git worktrees, one task each, files kept apart (the wall colours in
-  `23_finish.js`/`20_1_house_materials.js`, the furniture in `08_house_*.js`/`16_cards.js`); the lead merged their commits, ran
-  `checks.py --quick` and the new `check_site.py` steps together in one Playwright script (the full `check_site.py` is 40+ min here;
-  CI runs it), looked at the screenshots, wrote the docs and pushed. Each push cancels the branch's previous CI run, so push in batches.
+- **V4.49 (PR #318, with V4.45–V4.48):** section 27 is built: N216 woodwork, N214 each wall, N217 and N218 swap and add with a fit
+  check, N219 142 real shop pieces (IKEA, Habitat, John Lewis, Dunelm; size, fit, price, a link) and her own piece, N220 the living
+  room's pieces swap too, N221 saved looks (chips in Look, into the plan through Send), N222 a look link shown as "Emma's look" (Keep it ·
+  Back to mine). The iPhone's first picture back inside 44 shaders (the woodwork shares the bedding's program; the skirting out of the
+  bake). A review's seven findings fixed (see `docs/HISTORY.md` V4.49).
+- **Lost and rebuilt:** an earlier session's N219, N221, N222, N220 start and shader fix were only on its machine when it hit its usage
+  limit; they were rebuilt from the plan and `docs/N219_catalogue.json`. Hence the rule.
+- **Open:** Emma's choices: which storage ideas (N212), whether Dave may Keep it (N222 keeps the button; one line to take it out); N201
+  (the real devices' check, "lighting later"); N205 on hold. Smaller: a shop piece's own card has no shop link after a swap; the
+  shop pieces are drawn by generic builders (some won't look like the real thing); N219/N220/N221 steps in `check_site.py` (the helpers'
+  scripts were run by hand).
 
 ## Now (22 Nov 2026)
 The client, 21–22 Nov: her review on the PC (`docs/REAL_PLAN.md` section 26: "the movement to look around on mouse feels inverted",
