@@ -158,14 +158,16 @@ function applyLook(tok, title = "Emma's look") {   // N222: a title: shown, not 
       add.push({ type: a.type, id: a.id, x: +a.x, z: +a.z, ...(Number.isFinite(+a.rot) ? { rot: +a.rot } : {}), ...(HEX.test(a.col || "") ? { col: a.col } : {}) });
     restoreLayout({ layout: lay, added: add });
   }
-  const fin = planFin();   // N222: the plan's scheme with their floors (N209) and walls' colours (N213, colours only) over it
+  const own = JSON.parse(JSON.stringify(S.fin || {})), soft = q => !(+q <= 5 || +q === 9 || +q === 10 || +q === 17 || +q >= 29);   // bulbs, rugs, curtains, pictures, wallpaper, plants: what a link doesn't carry
+  const fin = title ? planFin() : own;   // a shown look (N222): the plan's scheme, the device's own soft things kept under it; her own saved plan: what's on now; their floors (N209) and colours (N213) over either
+  if (title) for (const [r, sl] of Object.entries(own)) for (const [q, v] of Object.entries(sl || {})) if (soft(q)) (fin[r] = fin[r] || {})[q] = v;
   if (o.fl && typeof o.fl === "object") { const c = finClean(Object.fromEntries(Object.entries(o.fl).map(([r, k]) => [r, { 5: k }]))); delete c[LIVR];
     for (const [r, sl] of Object.entries(c)) fin[r] = Object.assign({}, fin[r], sl); }
   if (o.fc && typeof o.fc === "object") { const c = finClean(Object.fromEntries(Object.entries(o.fc).filter(([, sl]) => sl && typeof sl === "object")
       .map(([r, sl]) => [r, Object.fromEntries(Object.entries(sl).filter(([s, v]) => finLook(+s, v)))]))); delete c[LIVR];
     for (const [r, sl] of Object.entries(c)) fin[r] = Object.assign({}, fin[r], sl); }
   S.fin = fin; finApplyAll();
-  lookHe(Array.isArray(o.he) ? o.he : []);   // N218: the house's edits, each checked (heOk), into the copy set aside (once Measure's store is up)
+  if (title || Array.isArray(o.he)) lookHe(Array.isArray(o.he) ? o.he : []);   // a saved plan from before N218 (no he) leaves her edits alone; N218: the house's edits, each checked (heOk), into the copy set aside (once Measure's store is up)
   applyState(); syncButtons();
   setView(o.v in VIEWS ? o.v : "room", true);
   const c = Array.isArray(o.c) && o.c.length === 7 && o.c.every(Number.isFinite) ? o.c : null;
