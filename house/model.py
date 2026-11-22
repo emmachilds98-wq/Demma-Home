@@ -663,7 +663,7 @@ def floors_and_fittings(o, floor, rs):
         dx0, dx1 = D.HALL["door"]
         wall(o, "paint", "x", zl1, zl1 + 1.8, xs, WIDTH, y - SLAB, y + CEIL, [(dx0, dx1, y - SLAB, y + D.DOOR_H)])
         if D.HALL.get("door_leaf", True):   # V1.12, the client's photos: the frame stands empty (its hinges' marks only)
-            o.box("door_white", dx0 + 0.8, y + 0.5, zl1 + 0.2, dx1 - 0.8, y + D.DOOR_H - 0.8, zl1 + 1.6)
+            o.box("door_leaf", dx0 + 0.8, y + 0.5, zl1 + 0.2, dx1 - 0.8, y + D.DOOR_H - 0.8, zl1 + 1.6)
             o.box("chrome", dx0 + 4, y + 100, zl1 + 1.6, dx0 + 13, y + 102, zl1 + 5)
         for xa, xb, ya, yb in ((dx0 - 6, dx0 + 0.8, y, y + D.DOOR_H + 6), (dx1 - 0.8, dx1 + 6, y, y + D.DOOR_H + 6), (dx0 - 6, dx1 + 6, y + D.DOOR_H - 0.8, y + D.DOOR_H + 6)):
             o.box("woodwork", xa, ya, zl1 + 1.8, xb, yb, zl1 + 3.0)
@@ -1807,8 +1807,8 @@ def bathroom(o):
 
 SKIRT_ROOMS = {"hall", "landing", "landing_top", "bed3", "master", "master_b", "master_1", "bed2", "kitchen", "kitchen_1", "kitchen_2", "wc", "lower_landing"}
 SKIRT_H, SKIRT_T = 10.0, 1.5                                       # E: a 94 mm torus skirting
-DOOR_LEAF = {"wc_door": "door_white", "bath_door": "door_white", "bed2_door": "door_white",
-             "master_door": "door_white", "bed3_door": "door_white"}   # v73, the client: the bathroom's is white too (the wood was an old photo)
+DOOR_LEAF = {"wc_door": "door_leaf", "bath_door": "door_leaf", "bed2_door": "door_leaf",
+             "master_door": "door_leaf", "bed3_door": "door_leaf"}   # v73, the client: the bathroom's is white too (the wood was an old photo)
 # V3.03 (N44): the kitchen's door frame stands empty (photo_kitchen_from_door_25oct, _wide_ and _bar_boiler_30oct: no leaf either way, a
 # hinge's plate on its frame; one opening in would stand over the bar or across the switch, one opening out across the stairs' foot)
 
@@ -1980,7 +1980,7 @@ def door_leaves(o, floor):
             hinges(p, "z", H["hinge"] + H["u"] * 0.4, L - 1.75, L + 1.75, y)
             for s_ in (-1, 1):
                 lever(p, "z", L + s_ * 1.75, s_, lat, hy + 1, -H["u"])
-        if m == "door_white":                                        # v72 (B4): cottage doors (the landing photos): six boards, five V-joints a face
+        if m == "door_leaf":                                         # v72 (B4): cottage doors (the landing photos): six boards, five V-joints a face
             for k in range(1, 6):
                 c = a + (b - a) * k / 6
                 for s_ in (-1, 1):
@@ -2355,7 +2355,7 @@ def hall(o):
     # V1.38 (Next 1, a walk into the living room): it opens, hinged at the breast's end (geometry.OVERDOOR's open_gap) into the living
     # room, about the room's own leaf's hinge (its room face, z RECESS_Z + 1), so the viewer turns that leaf with it
     p = o.part("door.living_door", (ld["a"], y, Gm.BREAST_D_WEST + 1.0), "y", 90.0, label=DOOR_NAMES["living_door"][0])
-    p.box("door_white", ld["a"], y + 0.5, hz - 0.6, ld["b"], y + D.DOOR_H - 0.8, hz - 0.1)
+    p.box("door_leaf", ld["a"], y + 0.5, hz - 0.6, ld["b"], y + D.DOOR_H - 0.8, hz - 0.1)
     p.box("chrome", ld["b"] - 12, y + 100, hz - 0.1, ld["b"] - 3, y + 102, hz + 3.7)
 
 
@@ -2590,7 +2590,7 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "eaves": ("#e7e1d6", 0.9), "garage_blue": ("#2c3b63", 0.45), "garage_white": ("#ecebe7", 0.4), "garage_black": ("#26282a", 0.45), "timber": ("#8a5a35", 0.8), "pane": ("#3a4550", 0.08),
     "gloss": ("#ebeae6", 0.16), "gap": ("#9b9a95", 0.6), "black": ("#1d1d1f", 0.5), "black_app": ("#1f2023", 0.35), "glass_dark": ("#17191c", 0.1),
     "ring": ("#2b2c2e", 0.6), "steel": ("#c8cacc", 0.25), "steel_dark": ("#8e9195", 0.35), "worktop": ("#26282a", 0.22), "metro": ("#111214", 0.1),
-    "chrome": ("#e4e6e9", 0.06), "sanitary": ("#e7e8e6", 0.05), "primrose": ("#e3cf5c", 0.06), "tile_w": ("#f2f2ef", 0.12), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "rug": ("#8e4a32", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
+    "chrome": ("#e4e6e9", 0.06), "sanitary": ("#e7e8e6", 0.05), "primrose": ("#e3cf5c", 0.06), "tile_w": ("#f2f2ef", 0.12), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_leaf": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "rug": ("#8e4a32", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
     "cloth0": ("#3d4a5c", 0.95), "cloth1": ("#b9b2a6", 0.95), "cloth2": ("#7a2f2f", 0.95), "cloth3": ("#2f3b2f", 0.95), "cloth4": ("#d8d2c4", 0.95), "cloth5": ("#555555", 0.95), "cloth6": ("#9b8b6e", 0.95), "curtain": ("#f4f3ef", 0.9), "stone": ("#cbc6bd", 0.35), "marble": ("#141416", 0.1), "led": ("#ffffff", 0.3), "bulb": ("#fff3e2", 0.25), "lamp_purple": ("#c9a6ff", 0.3), "chalk": ("#222423", 0.85), "storebox": ("#c9c1b2", 0.95), "contact": ("#000000", 1.0), "mattress": ("#f0eee8", 0.9), "pillow": ("#f1efea", 0.95), "trim": ("#5a5d60", 0.5), "gutter": ("#f2f2ef", 0.4), "lead": ("#6c7072", 0.55), "birch": ("#dcc8a2", 0.7), "lycksele": ("#5b6b78", 0.95), "grille": ("#e8dcc4", 0.6), "ceiling": ("#f3f2ee", 0.95),
     "laminate": ("#a9a39a", 0.5), "oak": ("#b8844f", 0.55), "artisan": ("#fff1df", 0.55),   # V4.3: artisan oak (bedroom 3's cube shelves): the oak's grain, a hair warmer
     "herring": ("#b48a5c", 0.6), "lvt_grey": ("#8e8b87", 0.5), "porcelain": ("#d6d0c4", 0.5),   # V3.14 (N56): the upgrade floors

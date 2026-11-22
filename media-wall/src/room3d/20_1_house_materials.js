@@ -8,7 +8,7 @@ const SUNCFG = { lux: 80, out: 0.5 };   // tuned on stills: the bars' shadows re
    lawn, concrete, paving, road, carpet, tiles, boards. Each: the canvas and the metres it covers */
 const HTEX = {}, HI_T = new Set(["tile_w", "tile_f", "door_wood", "chalk"]);
 /* V2.56 (R3): finishes without a photo take one of ours (build_textures.finishes), their own colour over a white detail map (TINT) */
-const HTEX_AS = { artisan: "oak", frame_out: "upvc", door_out: "upvc", gutter: "upvc", sill_board: "upvc", skirting: "gloss", door_white: "joinery", door_cream: "joinery", door_wood: "joinery", woodwork: "upvc", newel: "joinery", rail_white: "gloss", steel: "brushed", steel_dark: "brushed", wardrobe: "melamine" };   // N142 (V4.12): the white units' foil
+const HTEX_AS = { artisan: "oak", frame_out: "upvc", door_out: "upvc", gutter: "upvc", sill_board: "upvc", skirting: "gloss", door_white: "joinery", door_leaf: "joinery", door_cream: "joinery", door_wood: "joinery", woodwork: "upvc", newel: "joinery", rail_white: "gloss", steel: "brushed", steel_dark: "brushed", wardrobe: "melamine" };   // N142 (V4.12): the white units' foil
 const HTEX_TINT = new Set(["upvc", "gloss", "brushed", "joinery", "melamine"]);   // N111: the doors' painted timber, its grain up the leaf (the skirting's strokes along it, gloss)
 const BED_TINT = new Set(["duvet", "pillow", "artisan"]);   // V4.3: and artisan oak, a hair warmer than the oak it shares   // V3.66 (N113): the bedding's own colour over its cotton photo, a hair below white (it drew the photo at full white: clipped on a phone)
 /* V3.36 (N87): the soft things in their own colours over the cotton's white, each with a relief of its kind (blinds woven, felt knitted,
@@ -26,7 +26,7 @@ function hceilApply() {
    side from its normal; an empty pixel leaves it as drawn. R3D.finish(room, "walls" | side | "ceiling", "#hex" | null) writes one.
    N214: each wall as built its own (columns 8 on, WK a side; the house file's finish_walls in a small table, finWalls: its line and
    span), the slopes theirs (column 7) */
-const FIN = { W: 234, H: 404, WK: 6, cols: {}, map: null, pal: null, walls: null, rooms: [], kind: { paint: 0, ceiling: 1, artex: 1, duvet: 2, pillow: 2, skirting: 3, door_white: 3, woodwork: 3 }, inv: new THREE.Matrix4() };   // N5d: the bedding (palette slot 5; its room from where it is in the house, as a bed's lid moves)   // V2.8: not the stair wall: it's the living room's (Look)
+const FIN = { W: 234, H: 404, WK: 6, cols: {}, map: null, pal: null, walls: null, rooms: [], kind: { paint: 0, ceiling: 1, artex: 1, duvet: 2, pillow: 2, skirting: 3, door_leaf: 3, woodwork: 3 }, inv: new THREE.Matrix4() };   // N5d: the bedding (palette slot 5; its room from where it is in the house, as a bed's lid moves)   // V2.8: not the stair wall: it's the living room's (Look)
 function finSetup() {
   if (FIN.map || !R.HOUSE3 || !R.HOUSE3.finish_pieces) return FIN.map;
   FIN.rooms = R.HOUSE3.finish_rooms;
