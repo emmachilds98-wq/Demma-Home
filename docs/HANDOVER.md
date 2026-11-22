@@ -16,8 +16,9 @@ ivy, storage "for all our things and displays / knick nacks"); her answers in `d
   - V4.43: N212 storage ideas to look at (`house/storage_ideas.py`: 12 ideas, 18 pieces, each one line with a cited source; a
     room's floor card → More → "Storage ideas"; checked clear of walks, doors and slopes; `docs/STORAGE.md` has each room's numbers;
     a table in the plan's PDF). Her pick comes next: only then a build and a buy list (CLAUDE.md, core plan vs options).
-  - V4.39 (#313): N203 step 1, the 3D's shared state in one object (`GS`); step 2 (ES modules) is open.
-- **Open, in order:** N203 (step 1's rest, then step 2); customisation, `docs/REAL_PLAN.md` section 27 (N213 her own colour on any wall done; N214–N222 next, several waiting on its seven questions for Emma); then section 25 (N201 the real devices'
+  - V4.39 and V4.44: N203 step 1, every top-level `let` set only in the part that declares it (`GS` for what two parts share);
+    step 2 (ES modules) set aside: about 400 lines more and none saved (the row says what it would take).
+- **Open, in order:** customisation, `docs/REAL_PLAN.md` section 27 (N213 her own colour on any wall done; N214–N222 next, several waiting on its seven questions for Emma); then section 25 (N201 the real devices'
   check, "lighting later when the house is right"; N205 on hold; N206 her own colours and swapping furniture, to plan with her).
 - **Waiting on Emma:** which storage ideas she wants (N212), then sizes for them; the master's frames' sliding doors need a measurement
   first (they'd cut about 2 cm into the room door's swing as drawn).

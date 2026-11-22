@@ -95,7 +95,7 @@ function capShadows(n) {   // the brightest n spotlights cast shadows; the rest 
   sp.forEach((l, i) => { l.castShadow = i < n; });
 }
 // a pot with a plant in it, in a movable's coordinates
-let plantBG = null;   // v15's hanging plant as a builder: a pot at x on a shelf top, its strands falling from the given edges
+// v15's hanging plant as a builder: a pot at x on a shelf top, its strands falling from the given edges
 function hangPlant(par, x, top, z, edges, seed, gapZ) {   // v38: gapZ [the shelf's end, the boxing's face]: the strands fall through that gap
   const PB = R.PLANT_B, pot = FLORA_POTS !== "mine" ? potFinish(FLORA_POTS) : (hangPlant.pot = hangPlant.pot || reg(new THREE.MeshStandardMaterial({ color: "#e9e4da", roughness: 0.3 })));   // v40: a glazed pot, a real pothos
   const hold = { userData: {} }, B = floraBatch(hold), pg = potGeo(PB.pot / 2, 12); pg.translate(-x * M, top * M, z * M); floraAdd(B, pot, pg);

@@ -1,3 +1,5 @@
+let ideaLed, caseFrameM, cushG;   // v17, v20: the ideas' LED strip, the decor's case frame and cushions (N203: a let lives in the part that sets it)
+let FLORA_STYLE = "mix", FLORA_POTS = "mine";   // Look's plant style ("mix", the plan; "lush"; "easy") and pot finish ("mine" or one for all)
 const SVAR = JSON.parse((document.getElementById("svar-data") || {}).textContent || "{}");   // v28: the suggestions' versions (ideas.SUGG_VARS): colour i goes on SVAR_MATS[k][i], a material or a light of that piece's own
 const SVAR_MATS = {};
 const svarOf = k => (SVAR[k] && SVAR[k].some(x => x[0] === S.svar[k])) ? S.svar[k] : (SVAR[k] ? SVAR[k][0][0] : "");
@@ -158,7 +160,7 @@ function buildSuggest() {
   if (R.BAR_SIDE) { const B = R.BAR_SIDE, pv = SUGG_G.barside = new THREE.Group(); lazyVis(pv, () => pv.add(drinksCab(B, B.z[1], B.z[0], "barside", "barflap2", 73))); pv.rotation.y = Math.PI / 2; shell.add(pv); }
   buildStorage();
 }
-let coffeePlain = null;   // v36: the storage suggestions (the third bar is drinksCab; the blanket rail a "beside" option, buildBeside)
+// v36: the storage suggestions (the third bar is drinksCab; the blanket rail a "beside" option, buildBeside)
 function buildStorage() {
   const W = R.W, own = c => reg(new THREE.MeshStandardMaterial({ color: c, roughness: 0.6 })), bamboo = reg(new THREE.MeshStandardMaterial({ color: "#c9a46a", roughness: 0.55 }));
   const kuggis = (g, x0, y, z0, along, deep, h, m, alongZ) => {     // a lidded box: its body, a bamboo lid 1 thick

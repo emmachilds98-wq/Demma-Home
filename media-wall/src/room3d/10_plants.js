@@ -210,7 +210,6 @@ function potGeo(rad, h) {            // a turned pot (cm): a rolled rim, a sligh
   const p = [[0, 0], [rad * 0.78, 0], [rad * 0.8, h * 0.04], [rad * 0.95, h * 0.82], [rad * 1.04, h * 0.84], [rad * 1.05, h], [rad * 0.94, h], [rad * 0.93, h * 0.88], [0, h * 0.88]];
   return new THREE.LatheGeometry(p.map(([x, y]) => new THREE.Vector2(x * M, y * M)), 28);
 }
-let FLORA_STYLE = "mix", FLORA_POTS = "mine";   // Look's plant style ("mix", the plan; "lush"; "easy") and pot finish ("mine" or one for all)
 const POT_FINISH = { white: ["#f1eee8", 0.25], black: ["#26262a", 0.85] };
 function potFinish(k) { if (k === "terracotta") return floraMat("terracotta"); const key = "pot_" + k;
   if (!FLORA.has(key)) FLORA.set(key, clipMat(reg(new THREE.MeshStandardMaterial({ color: POT_FINISH[k][0], roughness: POT_FINISH[k][1] })))); return FLORA.get(key); }
