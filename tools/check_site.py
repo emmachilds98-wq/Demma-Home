@@ -271,6 +271,15 @@ def stick_all(pg, w):
     return out
 
 
+def mouse_look(pg, w):
+    """N207, the client: the mouse "feels inverted": on a PC a mouse held down in a room looks the way it moves (right looks right, up looks up)"""
+    dirn = "() => { const D = R3D._dbg, d = D.controls.target.clone().sub(D.camera.position).normalize(); return [d.x, d.y, d.z]; }"
+    pg.evaluate("() => R3D.set({ view: 'hall' })"); pg.wait_for_timeout(3000); pg.evaluate("() => document.querySelector('[data-rmode=in]').click()"); pg.wait_for_timeout(4000)
+    x, y = pg.evaluate("() => { const r = document.querySelector('.r3d canvas').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }")
+    a = pg.evaluate(dirn); pg.mouse.move(x, y); pg.mouse.down(); pg.mouse.move(x + 120, y - 60, steps=4); pg.wait_for_timeout(1500); pg.mouse.up(); pg.wait_for_timeout(800); z = pg.evaluate(dirn)
+    turn = a[2] * z[0] - a[0] * z[2]                                  # the turn round the upright: below 0 is to the right
+    pg.evaluate("() => R3D.set({ view: 'house' })"); pg.wait_for_timeout(1500)
+    return [] if turn < -0.01 and z[1] > a[1] + 0.01 else [f"{w}: a mouse drag right and up in the hall's In it turned {turn:+.3f} and tilted {z[1] - a[1]:+.3f} (want right, below 0, and up)"]
 def names_keys(pg, w):
     """V2.97 (N42): names everywhere (the page as it opens, a door's card in the kitchen, Edit's list), Esc one at a time; on a PC Tab"""
     out, D = [], "R3D._dbg"
@@ -346,6 +355,7 @@ def main():
                 if acc["noname"]: fails.append(f"{w}: controls with no name: {acc['noname']}")
                 if acc["label"]: fails.append(f"{w}: the 3D's label doesn't say where you are: {acc['label']!r}")
                 fails += names_keys(pg, w)
+                if not phone: fails += mouse_look(pg, w)
                 if phone:
                     fails += edit_drag(pg, w) + stick_all(pg, w)
                     bk = pg.evaluate(BACK)

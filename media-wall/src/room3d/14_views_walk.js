@@ -357,20 +357,8 @@ STICK.addEventListener("pointerup", stickEnd); STICK.addEventListener("pointerca
 if (!COARSE) { addEventListener("keydown", e => { if (/^(Key[WASDQE]|Arrow)/.test(e.code) && !/input|textarea|select/i.test(e.target.tagName)) root.classList.add("keyed"); });
   addEventListener("mousemove", e => { if (!root.classList.contains("keyed")) return; const r = STICK.getBoundingClientRect();
     if (Math.hypot(e.clientX - r.left - r.width / 2, e.clientY - r.top - r.height / 2) < 170) root.classList.remove("keyed"); }); }
-/* V2.31: Mouse look (or M) on a computer while walking: the mouse turns you, WASD walk, a click opens what's under the dot (a card lets
-   the pointer go), a double-click walks you there, Esc stops it */
-const MLOOK = qs("#r3d-mlook"), mlookOn = () => document.pointerLockElement === canvas;
-const mlook = on => { if (on && !COARSE && walking() && canvas.requestPointerLock) { const p = canvas.requestPointerLock(); if (p && p.catch) p.catch(() => {}); } else if (!on && mlookOn()) document.exitPointerLock(); };
-const aimed = e => { if (!mlookOn()) return e; const r = canvas.getBoundingClientRect();   // where the dot is, for a click while the pointer is held
-  return { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2, pointerType: "mouse", button: e.button, timeStamp: e.timeStamp, preventDefault: () => e.preventDefault() }; };
-MLOOK?.addEventListener("click", () => mlook(!mlookOn()));
-document.addEventListener("keydown", e => { if ((e.key === "m" || e.key === "M") && !e.ctrlKey && !e.metaKey && !e.altKey && !/input|textarea|select/i.test(e.target.tagName) && walking()) mlook(!mlookOn()); });
-document.addEventListener("pointerlockchange", () => { const on = mlookOn(); root.classList.toggle("mlook", on); MLOOK?.setAttribute("aria-pressed", String(on));
-  if (on) toast("Mouse look: move to look, W A S D to walk, click to open, Esc to stop"); });
-addEventListener("mousemove", e => { if (mlookOn() && (e.movementX || e.movementY)) lookPend(-e.movementX, -e.movementY); });
 function syncStick() {
   const on = GS.RMODE === "stand" && !!ROOMV() || S.view === "livstand"; STICK.hidden = false; root.classList.toggle("walking", on && COARSE);   // V3.15: the stick in every view; V3.28: on a computer too (the mouse drags it), as on the phone
-  if (MLOOK) MLOOK.hidden = COARSE || !on; if (!on && mlookOn()) document.exitPointerLock();
   if (on && !WALK.hinted) { WALK.hinted = true;   // V3.56 (N117): once on a device again, and short (V2.42 had it each visit)
     let seen = false; try { seen = localStorage.getItem("demma-walkhint") === "1"; localStorage.setItem("demma-walkhint", "1"); } catch (e) {}
     if (!seen) setTimeout(() => toast(COARSE ? "Stick to walk, drag to look" : "W A S D to walk, drag to look"), 700); }
@@ -578,12 +566,15 @@ function applyCam(reseat = true) {
   controls.enableRotate = !inPlace();   // V1.47: turning on the spot is ours (lookTurn), not the orbit's
   if (reseat) seatLook();
 }
-/* V1.47: in the house's rooms a drag turns the view where you stand, as a photo sphere: a pixel of drag a pixel of view, the tilt short of
-   straight up or down; two fingers pinch the lens; the whole house and the living room's views orbit */
+/* V1.47: in the house's rooms a finger's drag turns the view where you stand as a photo sphere (you drag the world, a pixel of drag a
+   pixel of view), the tilt short of straight up or down; two fingers pinch the lens; the whole house and the living room's views orbit.
+   N207: a mouse held down looks the way it moves (right looks right, up looks up), MLOOK_DEG a pixel whatever the screen; let go and it's
+   free. An orbit's mouse drag moves the eye the way you drag, as the whole house's swing (V4.1) */
 const inPlace = () => S.cam === "look" || (!!ROOMV() && GS.RMODE === "in");
 const LD_ = { ids: new Set(), id: null, x: 0, y: 0 };
-function lookTurn(dx, dy) {
-  const k = camera.fov / Math.max(1, canvas.clientHeight) * Math.PI / 180, cam = camera.position;
+const MLOOK_DEG = 0.1;   // a mouse: degrees a pixel at a 70° lens (a narrower lens finer)
+function lookTurn(dx, dy, deg = camera.fov / Math.max(1, canvas.clientHeight)) {
+  const k = deg * Math.PI / 180, cam = camera.position;
   const d = controls.target.clone().sub(cam), len = d.length() || 0.35; d.normalize();
   d.applyAxisAngle(new THREE.Vector3(0, 1, 0), dx * k);                                   // drag right: the room comes with it (you turn left)
   const r = new THREE.Vector3().crossVectors(d, new THREE.Vector3(0, 1, 0)).normalize(), el = Math.asin(Math.max(-1, Math.min(1, d.y)));
@@ -591,19 +582,20 @@ function lookTurn(dx, dy) {
   controls.target.copy(cam).addScaledVector(d, len); controls.update(); dirty(); syncEye();
 }
 canvas.addEventListener("pointerdown", e => { LD_.ids.add(e.pointerId); controls.enableRotate = !inPlace();   // before the orbit sees it (capture)
+  controls.rotateSpeed = Math.abs(controls.rotateSpeed) * (e.pointerType === "mouse" ? -1 : 1);
   if (!inPlace() || GS.tween || LD_.ids.size > 1 || (e.pointerType === "mouse" && e.button !== 0)) { LD_.id = null; return; }
   LD_.id = e.pointerId; LD_.x = e.clientX; LD_.y = e.clientY; }, true);
 addEventListener("pointermove", e => { if (e.pointerId !== LD_.id || !inPlace()) return; const dx = e.clientX - LD_.x, dy = e.clientY - LD_.y; LD_.x = e.clientX; LD_.y = e.clientY; if (dx || dy) (e.pointerType === "mouse" ? lookPend : lookTurn)(dx, dy); });
-/* V3.28: a mouse's bursty moves gather and are let out over the next frames (a 35 ms ease) */
+/* V3.28: a mouse's bursty moves gather and are let out over the next frames (a 35 ms ease); N207: turned the way it moved */
 const LOOKP = [0, 0];
 function lookPend(dx, dy) { LOOKP[0] += dx; LOOKP[1] += dy; dirty(); }
 function lookTick(dt) {
   if (!LOOKP[0] && !LOOKP[1]) return false;
-  if (GS.tween || !(inPlace() || mlookOn())) { LOOKP[0] = LOOKP[1] = 0; return false; }
+  if (GS.tween || !inPlace()) { LOOKP[0] = LOOKP[1] = 0; return false; }
   const f = 1 - Math.exp(-Math.max(dt, 1 / 240) / 0.035);
   let dx = LOOKP[0] * f, dy = LOOKP[1] * f;
   if (Math.abs(LOOKP[0] - dx) < 0.05 && Math.abs(LOOKP[1] - dy) < 0.05) { dx = LOOKP[0]; dy = LOOKP[1]; }
-  LOOKP[0] -= dx; LOOKP[1] -= dy; lookTurn(dx, dy); return true;
+  LOOKP[0] -= dx; LOOKP[1] -= dy; lookTurn(-dx, -dy, MLOOK_DEG * camera.fov / 70); return true;
 }
 for (const ev of ["pointerup", "pointercancel"]) addEventListener(ev, e => { LD_.ids.delete(e.pointerId); if (e.pointerId === LD_.id) LD_.id = null; });
 let eyeT = 0;
@@ -626,7 +618,7 @@ canvas.addEventListener("pointerdown", e => { if (e.pointerType === "touch") PIN
 canvas.addEventListener("pointermove", e => { if (!PINCH.has(e.pointerId)) return; PINCH.set(e.pointerId, [e.clientX, e.clientY]);
   if (pinch0 && PINCH.size === 2 && S.cam === "look" && (GS.RMODE === "stand" || S.view === "livstand")) { const [a, b] = [...PINCH.values()], d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (d > 10) lens(pinch0[1] * pinch0[0] / d); } });
 ["pointerup", "pointercancel", "pointerleave"].forEach(t => canvas.addEventListener(t, e => { PINCH.delete(e.pointerId); if (PINCH.size < 2) pinch0 = null; }));
-["pointerdown", "pointermove", "keydown", "wheel"].forEach(t => root.addEventListener(t, e => { if (t !== "pointermove" || e.buttons || mlookOn()) PRE.idleT = performance.now(); }, { passive: true, capture: true }));   // V2.42: mouse look is moving too   // v39: a mouse just moving over the room doesn't hold up the warm-up   // v35: the shader warm-up waits while you use the room
+["pointerdown", "pointermove", "keydown", "wheel"].forEach(t => root.addEventListener(t, e => { if (t !== "pointermove" || e.buttons) PRE.idleT = performance.now(); }, { passive: true, capture: true }));   // v39: a mouse just moving over the room doesn't hold up the warm-up   // v35: the shader warm-up waits while you use the room
 let padT = null;             // a move button held down keeps moving, in smaller steps
 const padStop = () => { if (padT) { if (padT.k) WALK.keys.delete(padT.k); clearTimeout(padT.t); clearInterval(padT.i); padT = null; } };
 root.addEventListener("pointerdown", e => {
