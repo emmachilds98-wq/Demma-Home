@@ -13,7 +13,7 @@ can with multiple agents".
      office's plastic ivy out). One PR each; the rows say exactly what to change.
   3. N207 mouse look **while a button is held** (her choice), natural direction everywhere: start from
      `docs/wip/N207-mouse-look-partial.patch` (it includes N203).
-  4. N209 each room's floor from its card: `docs/wip/N209-floor-card-partial.patch`.
+  4. N209 each room's floor from its card: done (`REAL_PLAN` N209).
   5. N212 storage designed into the decorating, **as options to look at in the 3D** (her choice), sized for 100–300 records, under 2 m
      of books and games, clothes, tech and display: `docs/wip/N212-storage-options-partial.patch`.
   6. N204/N202 the bake (Blender 6's API; the seam): `docs/wip/N204-N202-bake-partial.patch`.
