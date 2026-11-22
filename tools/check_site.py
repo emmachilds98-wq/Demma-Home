@@ -148,8 +148,11 @@ SWAP = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   if (D.actId) q('#r3d-act .x').click();
   D.openAct('fin:bed2:5'); await sl(600); q('#r3d-act [data-finplant="snake"]').click();   // N5: the room's plant, from Look's floor card
   const planted = await wait(() => D.PICK.first.some(p => p.id === 'plant.bed2')) && JSON.stringify(R3D.finishes().bed2 || {}).includes('snake');
-  q('#r3d-act [data-finplant=""]').click(); const unplanted = await wait(() => !D.PICK.first.some(p => p.id === 'plant.bed2')); if (D.actId) q('#r3d-act .x').click();
-  return { swapped, added, gone, planted, unplanted };
+  q('#r3d-act [data-finplant=""]').click(); const unplanted = await wait(() => !D.PICK.first.some(p => p.id === 'plant.bed2'));
+  const fl = () => [q('#r3d-act-h').textContent, ((JSON.parse(localStorage.getItem('mw18-3d') || '{}').fin || {}).bed2 || {})[5]];   // N209: the floor's card, and what's kept
+  const f0 = fl(); q('#r3d-act [data-finf="oak"]').click(); await sl(300); const f1 = fl(); q('#r3d-act [data-finf="plan"]').click(); await sl(300); const f2 = fl();
+  const floor = [f0[0], f0[1], f1[0], f1[1], f2[1]].join('|'); if (D.actId) q('#r3d-act .x').click();
+  return { swapped, added, gone, planted, unplanted, floor };
 }"""
 OFF = """() => { const W = document.documentElement.clientWidth, out = [];
   for (const el of document.querySelectorAll("body *")) { const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
@@ -386,8 +389,9 @@ def main():
                         fails.append(f"{w}: tapping the office desk and widening it: {sz} (want its card, a row of 223.9, the 3D changed, Measure listing it, then back as planned)")
                     pg.screenshot(path=str(SHOTS / f"site-{w}-size.png"))
                     sw = pg.evaluate(SWAP)                          # V2.46 (N7): swap the master's chest for another, add a plant from the catalogue, both back
-                    if sw != {"swapped": True, "added": True, "gone": True, "planted": True, "unplanted": True}:
-                        fails.append(f"{w}: swapping the master bedroom's chest, adding a plant, bedroom 2's plant from Look: {sw} (want each drawn, then gone)")
+                    want = "Bedroom 2 · Grey carpet|carpet_grey|Bedroom 2 · Oak boards|oak|carpet_grey"   # N209: oak from the floor's card, then the plan's
+                    if sw != {"swapped": True, "added": True, "gone": True, "planted": True, "unplanted": True, "floor": want}:
+                        fails.append(f"{w}: swapping the master bedroom's chest, adding a plant, bedroom 2's plant and floor from Look: {sw} (want each drawn, then gone; floor {want})")
                 if phone:                                           # V2.5 (FINISHES_PLAN F2): a room's walls and ceiling through the palette, then back
                     fn = pg.evaluate("() => [R3D.finish('bed2', 'walls', '#3a6b5a'), R3D.finish('bed2', 'ceiling', '#e8c0c8'), R3D.finish('nowhere', 'walls', '#000000'), R3D.finish(null, 'walls', null), R3D.finish(null, 'ceiling', null)]")
                     if fn != [True, True, False, True, True]:

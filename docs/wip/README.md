@@ -6,7 +6,6 @@ Delete a file once its task is merged. Rows: `docs/REAL_PLAN.md` sections 25 and
 
 | File | Task | Base | State when stopped |
 |---|---|---|---|
-| `N209-floor-card-partial.patch` | N209 | 78b2a4c | The floor card's start (names the room and floor); was running its test at 1280×800 |
 | `N212-storage-options-partial.patch` | N212 | 78b2a4c | Storage options' start (a data file of ideas); was adding their `fit.SOURCES` rows |
 
 N210, N208 and N211 (section 26's quick fixes) were started by an agent that had made no change yet: start them fresh.

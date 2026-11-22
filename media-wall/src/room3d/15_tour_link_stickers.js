@@ -77,6 +77,7 @@ function lookOf() {
   if ((S.warm ?? 50) !== DEF.warm) o.warm = S.warm;                                                  // v50: Warmth, and Edit room's moves
   if (Object.keys(S.layout).length) o.layout = S.layout;                                             //      and added pieces
   if (S.added.length) o.added = S.added;
+  const fl = Object.fromEntries(Object.entries(S.fin || {}).filter(([r, sl]) => r !== LIVR && sl && sl[5]).map(([r, sl]) => [r, sl[5]])); if (Object.keys(fl).length) o.fl = fl;   // N209: each room's floor
   return o;
 }
 const b64u = t => btoa(unescape(encodeURIComponent(t))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -141,6 +142,8 @@ function applyLook(tok) {
       add.push({ type: a.type, id: a.id, x: +a.x, z: +a.z, ...(Number.isFinite(+a.rot) ? { rot: +a.rot } : {}), ...(HEX.test(a.col || "") ? { col: a.col } : {}) });
     restoreLayout({ layout: lay, added: add });
   }
+  if (o.fl && typeof o.fl === "object") { const c = finClean(Object.fromEntries(Object.entries(o.fl).map(([r, k]) => [r, { 5: k }]))); delete c[LIVR]; S.fin = S.fin || {};   // N209: their floors
+    for (const [r, sl] of Object.entries(c)) S.fin[r] = Object.assign({}, S.fin[r], sl); finApplyAll(); }
   applyState(); syncButtons();
   setView(o.v in VIEWS ? o.v : "room", true);
   const c = Array.isArray(o.c) && o.c.length === 7 && o.c.every(Number.isFinite) ? o.c : null;
