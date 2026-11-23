@@ -292,22 +292,22 @@ const HC_PAN = [[0, 0], [8, 0], [9, 3], [8.5, 14], [10.5, 24], [14, 33], [16, 39
   HC_SEAT = [[11.5, 0], [16, 0], [16.8, 1.2], [16, 2.6], [11.5, 2.6], [11, 1.3], [11.5, 0]],
   HC_BOWL = [[0, 0], [4, 0], [5, 1.5], [13, 12], [16, 15], [16, 16], [14.5, 16], [12, 13], [4, 3.5], [0, 3.5]];   // house/model.py PAN, SEAT, BOWL
 function hcToilet(look, m, ch) { return (W, H, D, B, L) => {
-  const back = look === "cc" ? 17 : look === "hung" ? 16 : 0, v0 = look === "hung" ? 40 - 33 : 0, sy = look === "hung" ? 40 : Math.min(41, H - 1), hx = Math.min(W, 37) / 2 - 1, hz = (D - back - 2) / 2, tc = back + 1 + hz;
+  const back = look === "cc" ? 17 : look === "hung" ? 16 : 0, v0 = 0, sy = look === "hung" ? 40 : Math.min(41, H - 1), hx = Math.min(W, 37) / 2 - 1, hz = (D - back - 2) / 2, tc = back + 1 + hz;
   if (look === "cc") { B(m, W / 2 - 17, 38, 0.5, W / 2 + 17, H - 3, back); B(m, W / 2 - 18, H - 3, 0, W / 2 + 18, H, back + 1); L(ch, W / 2, back / 2, H, [[0, 0], [2.2, 0], [2.2, 0.5], [0, 0.5]]); }
   if (look === "btw") B(m, W / 2 - 10, 0, 0, W / 2 + 10, sy - 2, 12);   // its foot to the wall
   if (look === "hung") { B("paint", 0, 0, 0, W, H, back); B(ch, W / 2 - 12, H - 30, back, W / 2 + 12, H - 14, back + 0.6); B(ch, W / 2 - 0.2, H - 27, back + 0.6, W / 2 + 0.2, H - 17, back + 0.8); }   // the frame boxed in, its flush plate
-  L(m, W / 2, tc, v0, HC_PAN.map(([r, h]) => [r, h * (sy - v0) / 41.5]), [hx / 16, hz / 16]);   // the pan and its seat
+  L(m, W / 2, tc, v0, look === "hung" ? [[0, 20], [8, 21], ...HC_PAN.filter(([, h]) => h >= 24)].map(([r, h]) => [r, h - v0]) : HC_PAN.map(([r, h]) => [r, h * sy / 41.5]), [hx / 16, hz / 16]);   // the pan (hung: its bowl only, off the floor) and its seat
   L(m, W / 2, tc, sy, HC_SEAT, [(hx + 0.5) / 16, (hz + 0.5) / 16]);
   B(m, W / 2 - hx + 2, sy + 2.6, back + 1, W / 2 + hx - 2, sy + 2.6 + Math.min(40, hz * 2), back + 3.4); }; }   // the lid up
-function hcBasin(look, m, ch) { return (W, H, D, B, L) => {
-  const corner = look === "corner", bh = Math.min(16, H), r = (corner ? Math.min(W, D) * 0.4 : Math.min(W, D * 1.2) / 2 - 1), cu = corner ? W * 0.42 : W / 2, ct = corner ? D * 0.42 : D / 2 + 1, top = H - bh;
+function hcBasin(look, m, ch) { return (W, H, D, B, L, n, end) => {
+  const corner = look === "corner", bh = Math.min(16, H), r = (corner ? Math.min(W, D) * 0.4 : Math.min(W, D * 1.2) / 2 - 1), cu = corner ? (end ? W * 0.58 : W * 0.42) : W / 2, ct = corner ? D * 0.42 : D / 2 + 1, top = H - bh;
   if (look === "vanity") { B("gloss", 0, 0, 0, W, top, D - 1.8); B("gloss", 0.3, 0.6, D - 1.8, W - 0.3, top - 0.4, D); B(ch, W - 6, top - 22, D, W - 4.8, top - 6, D + 2.2); }   // its unit, its door, a bar handle
   if (look === "ped") L(m, W / 2, D * 0.42, 0, [[0, 0], [10, 0], [9, 3], [7, 12], [6.5, top - 4], [9, top], [0, top]], [1, 0.8]);   // the pedestal
   if (look === "semi") L(m, W / 2, D * 0.38, top - 30, [[0, 0], [5, 0], [6.5, 20], [9, 30], [0, 30]], [1, 0.8]);
-  if (corner) { B(m, 0, H - 2, 0, W, H, 3); B(m, 0, H - 2, 0, 3, H, D); }   // its back rims along both walls
+  if (corner) { B(m, 0, H - 2, 0, W, H, 3); B(m, end ? W - 3 : 0, H - 2, 0, end ? W : 3, H, D); }   // its back rims along both walls
   else B(m, 0, H - 2, 0, W, H, 6);   // the deck at the back for the tap
   L(m, cu, ct, top, HC_BOWL.map(([q, h]) => [q, h * bh / 16]), [r / 16, (corner ? r : Math.min(r, D / 2 - 1)) / 16]);
-  const tu = corner ? 7 : W / 2, tt = corner ? 7 : 3;   // the mixer at the back: its body, the spout over the bowl
+  const tu = corner ? (end ? W - 7 : 7) : W / 2, tt = corner ? 7 : 3;   // the mixer at the back: its body, the spout over the bowl
   L(ch, tu, tt, H, [[0, 0], [2, 0], [1.6, 1], [1.4, 13], [0, 13]]); B(ch, tu - 1, H + 10.5, tt, tu + 1, H + 12.5, tt + 10); }; }
 /* N230: a bar stool (seat 62-63 high: the listings), its back at t 0, facing +t as the chairs do: on a chrome pedestal (a swivel), on thin
    legs with a padded seat and back, a wooden one with a spindle back, or a metal frame with a back band */
@@ -380,7 +380,7 @@ function swapBox(id, key) {
   b[a] = Math.max(r0, Math.min(r1 - C.w, u0)); b[a + 3] = b[a] + C.w; b[4] = b[1] + C.h;
   if (ch) { b[o] = (b[o] + b[o + 3] - C.d) / 2; b[o + 3] = b[o] + C.d; } else if (flip) b[o] = b[o + 3] - C.d; else b[o + 3] = b[o] + C.d;
   if (SUITE_OF[id] && r) { b[1] = C.k === "basin" && C.h < 75 ? r[4] + (SUITE_RIM[it.r] || 82) - C.h : r[4]; b[4] = b[1] + C.h;   // N225: a toilet or standing basin from the floor, a hung basin's rim at the old one's
-    if (C.k === "basin" && C.w > 44 && C.d > 44) { b[a] = r0 + 0.5; b[a + 3] = b[a] + C.w; } }   // a corner basin into its wall's first corner (its builder's)
+    if (C.k === "basin" && C.w > 44 && C.d > 44) { const lo = (it.b[a] + it.b[a + 3]) / 2 - r0 < r1 - (it.b[a] + it.b[a + 3]) / 2; b[a] = lo ? r0 + 0.5 : r1 - 0.5 - C.w; b[a + 3] = b[a] + C.w; } }   // a corner basin into the nearer corner
   return b.map(v => Math.round(v * 10) / 10);
 }
 function pieceBase(id, key) {   // the piece as planned, or the one swapped in where it stood (a chair turned to face as the old one did)
@@ -404,7 +404,8 @@ function hcBuild(key, it, t) {
     if (bx[3] - bx[0] < 0.05 || bx[4] - bx[1] < 0.05 || bx[5] - bx[2] < 0.05) return;
     (out.boxes[m] = out.boxes[m] || []).push(bx.map(v => Math.round(v * 10) / 10)); (out.bt[m] = out.bt[m] || []).push(t); };
   const L = (m, u, w, v, p, sc) => out.lathes.push({ c: at(u, v, w), p, s: sc ? (a === 0 ? sc : [sc[1], sc[0]]) : [1, 1], m, t });   // N225: oval: sc along its wall, out   // a turned part round (u, w), its profile [radius, up]
-  C.b(W, H, D, B, L, Math.abs(Math.round(b[0] * 3 + b[1] / 7 + b[2] * 5)));   // N236: where it stands, for a piece that draws each copy its own
+  const rr = (R.HOUSE3.rooms || {})[it.r], end = !!rr && (a === 2 ? rr[3] : rr[1]) - b[a + 3] < 2;   // N225: it stands in its wall's far corner (a corner basin's side)
+  C.b(W, H, D, B, L, Math.abs(Math.round(b[0] * 3 + b[1] / 7 + b[2] * 5)), end);   // N236: where it stands, for a piece that draws each copy its own
   return out;
 }
 const HCFK = { "-260": "lower", "0": "ground", "260": "first" };   // the floor as drawn, with the pieces swapped (their own boxes out, the new one's in their place) and those added (a new tag each)

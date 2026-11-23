@@ -237,6 +237,28 @@ STORE = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTime
   const hidden = await wait(() => !ids().length) && !(D.finAll().bed2 || {})[28]; if (D.actId) q('#r3d-act .x').click();
   return { n, inway, hidden };
 }"""
+# N225: the WC's tiles from their card: zellige, then charcoal grout (the material's own map swapped, costed), held: the plan's, The
+# plan's, Undo, The plan's; then its toilet swapped for Wickes's first (a close coupled one from the floor) and its basin for the corner
+# one (hung at the old one's rim, into the back corner), then as planned
+TILE = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), E = D.HEDITS, ds = window.DemmaStore;
+  const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); }, kept = () => D.finAll().wc || {};
+  R3D.set({ view: 'wc' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
+  let m = null; D.scene.traverse(o => { if (!m && o.isMesh && o.material && (o.material.userData || {}).hk === 'tile_w') m = o.material; }); if (!m) return { err: 'no WC tiles' };
+  const map0 = m.map; D.openAct('fin:wc:90'); await sl(600); const title = q('#r3d-act-h').textContent, plan = q('#r3d-act-st').textContent;
+  q('#r3d-act [data-tile="zellige"]').click(); await sl(400); q('#r3d-act [data-grout="charcoal"]').click(); await sl(400);
+  const st = q('#r3d-act-st').textContent, kp = [kept()[90], kept()[91]], drawn = m.map !== map0 && m.map.image.width >= 512;
+  q('#r3d-act [data-finhold]').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true })); await sl(200); const held = m.map === map0;
+  q('#r3d-act').dispatchEvent(new PointerEvent('pointerup', { bubbles: true })); await sl(200); const again = m.map !== map0;
+  q('#r3d-act [data-tileplan]').click(); await sl(300); const gone = !kept()[90] && m.map === map0;
+  q('#r3d-act [data-finundo]').click(); await sl(300); const undone = kept()[90]; q('#r3d-act [data-tileplan]').click(); await sl(300);
+  const swap = async (id, n) => { D.openAct('hitem:' + id); await sl(600); const b = q('#r3d-act [data-actopen^="hswap:"]'); if (!b) return 'no Swap it';
+    b.click(); await sl(300); q(`#r3d-act [data-hswapgo="${id}:${n}"]`).click();
+    return await wait(() => E[id] && E[id].swap && D.PICK.first.some(p => p.id === id)) ? (await sl(300), [q('#r3d-act-h').textContent, q('#r3d-act-st').textContent]) : 'not swapped'; };
+  const toilet = await swap('wc.toilet', 1), basin = await swap('wc.basin', 3), H = D.H3, fl = H.rooms.wc[4], bb = (D.PICK.first.find(p => p.id === 'wc.basin') || {}).b;
+  for (const k of ['wc.toilet', 'wc.basin']) { D.openAct('hitem:' + k); await sl(400); q('#r3d-act [data-hreset]').click(); await sl(300); }
+  const back = await wait(() => !E['wc.toilet'] && !E['wc.basin']) && !Object.values(ds.rows('edits')).some(v => v && /^wc[.]/.test(v.item)); if (D.actId) q('#r3d-act .x').click();
+  return { title, plan, st, kp, drawn, held, again, gone, undone, toilet, basin, back };
+}"""
 # N218: tap bedroom 2's floor, Add a piece here, Shelves: a bookcase stands back to a wall and fits; the look link (Link) carries it
 ADD = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), cv = document.querySelector('.r3d canvas'), q = s => document.querySelector(s), ds = window.DemmaStore;
   const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
@@ -564,6 +586,11 @@ def main():
                     ls = pg.evaluate(LIVSWAP)                       # N233 (N220): the living room's rug swapped as the house's pieces are, then as planned
                     want = {"sofa": False, "swapped": True, "line": "160 × 230 × 1 cm · Fits · Argos's usual size", "kept": True, "back": True}
                     if ls != want: fails.append(f"{w}: the living room's rug swapped (Swap it, ›), then as planned; their sofa no Swap it: {ls} (want {want})")
+                    tl = pg.evaluate(TILE)                          # N225: the WC's tiles and grout, held, The plan's, Undo; its toilet and basin swapped, then as planned
+                    want = {"title": "WC: the tiles", "plan": "The plan's: white 15 × 15", "st": "Zellige, charcoal grout · £28–38", "kp": ["zellige", "charcoal"], "drawn": True, "held": True,
+                            "again": True, "gone": True, "undone": "zellige", "back": True}
+                    if {k: tl.get(k) for k in want} != want or not str(tl.get("toilet", [""])[1]).startswith("35 × 66 × 79 cm") or "Wickes" not in str(tl.get("basin")):
+                        fails.append(f"{w}: the WC's tiles from their card, held, The plan's, Undo; its toilet and basin swapped, then as planned: {tl} (want {want}, Wickes's toilet and corner basin)")
                 if phone:                                           # V2.5 (FINISHES_PLAN F2): a room's walls and ceiling through the palette, then back
                     fn = pg.evaluate("() => [R3D.finish('bed2', 'walls', '#3a6b5a'), R3D.finish('bed2', 'ceiling', '#e8c0c8'), R3D.finish('nowhere', 'walls', '#000000'), R3D.finish(null, 'walls', null), R3D.finish(null, 'ceiling', null)]")
                     if fn != [True, True, False, True, True]:
