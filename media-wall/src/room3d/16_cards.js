@@ -15,6 +15,7 @@ function pickItem(e) {
   const BL = HPARTS.bed_lift;                                                    // v71: the master's ottoman bed: its card
   if (BL && houseG && houseG.visible) { const bx = new THREE.Box3().setFromObject(BL.g); bx.min.y -= 0.6; bx.expandByScalar(0.03); if (bx.containsPoint(p)) return "hbed"; }
   if (houseG && houseG.visible) for (const [k, P] of Object.entries(HPARTS)) if (k.startsWith("door.") && under(o, P.g)) return "hdoor:" + k;   // V1.26
+  if (houseG && houseG.visible && under(o, houseG)) { const w = winAt(o, p); if (w) return w; }   // N227: a window, dressed on its own
   if (houseG && houseG.visible && o.material && /^blind/.test(o.material.userData.hk || "")) return "hblinds";   // V1.47: a blind (or its roller): its card
   if (houseG && houseG.visible && DS() && under(o, houseG)) { const k = housePiece([hit], q => cutAway(q)); if (k && HIT(k)) return "hitem:" + k; }   // V1.50: a piece: its size
   if (houseG && houseG.visible && under(o, houseG)) { const fa = finAt(hit); if (fa) return "fin:" + fa.room + ":" + fa.slot; }   // V2.6 (FINISHES F3): a wall or a ceiling: its colour
@@ -91,6 +92,7 @@ function hcatCard(id) {
    dh-done (N118); a tick's key carries the choice. Costs E: UK retail and trade, Nov 2026, a floor by its area */
 const UPC = { walls: [40, 80], wall: [15, 35], ceil: [20, 40], skirt: [15, 35], bulbs: [10, 30], rug: [40, 160], curt: [30, 100], bed: [25, 70], pic: [15, 60],
   frames: [150, 600], door_out: [30, 150], door: [150, 500], window: [400, 1500],
+  roller: [25, 90], roman: [45, 130], shut: [180, 300],   // N227: a window's (fit.SOURCES windress; shutters a m² of window, fitted)
   floor: { carpet_grey: [20, 45], carpet: [20, 45], laminate: [20, 40], oak: [50, 90], pine: [30, 60], tile_f: [35, 70], marble: [80, 150], quarry: [45, 85], herring: [70, 115], lvt_grey: [45, 75], porcelain: [60, 110] },   // a m², laid (N56: fit.SOURCES upfloors)
   fit: { bare: [5, 15], drum: [20, 60], globe: [25, 70], dome: [15, 45], spots: [40, 120] },
   kind: { bed: [200, 550], wardrobe: [150, 450], chest: [60, 220], bedside: [30, 100], desk: [60, 220], shelves: [40, 160], seat: [100, 350], chair: [60, 200], rug: [40, 160], plant: [10, 45],
@@ -127,6 +129,7 @@ function roomUps(room) {   // [{k, t, lo, hi}]: what's changed in a room
     if (o[5] && o[5] !== fa.fk) add("5=" + o[5], "Floor: " + upNm(FIN_FLOORS, o[5]), UPC.floor[o[5]] || [30, 60], fa.floor || m2);
     if (o[18]) add("18=" + o[18], o[18] === "none" ? "Rug: none" : "Rug: " + upNm(FIN_RUGS, o[18]), o[18] === "none" ? [0, 0] : UPC.rug);
     if (o[19]) add("19=" + o[19], "Curtains: " + upNm(FIN_CURT, o[19]), UPC.curt);
+    winsOf(room).forEach((w, j) => { const v = o[70 + j]; if (v) add(`${70 + j}=${v}`, `${w.n}: ${winSay(...v.split("."))}`, winCost(w, v)); });   // N227: each window's own
     if (o[20]) add("20=" + o[20], "Bedding: " + upNm(FIN_BED, o[20]), UPC.bed);
     if (o[21]) add("21=" + o[21], "Picture: " + upNm(FIN_PICS, o[21]), UPC.pic);
     if (o[23] && HCAT[o[23]]) add("23=" + o[23], "Plant: " + HCAT[o[23]].n, UPC.plant[o[23]] || UPC.kind.plant);
@@ -198,6 +201,7 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id.startsWith("hout:")) { const rm = id.slice(5), outs = roomOuts(rm); if (!outs.length) return null;   // V3.80 (N149): a room's taken-out pieces, a tap each to put back
     return [`${roomName(rm)}: taken out`, outs.length === 1 ? "1 piece" : `${outs.length} pieces`, [...outs.map(k => btn("↩ " + HIT(k).n, { hputback: k })), ...(outs.length > 1 ? [btn("Put all back", { hputall: rm })] : [])]]; }
   if (id.startsWith("ups:")) return upsCard(id.slice(4));   // N23
+  if (id.startsWith("win:")) return winCard(id);   // N227
   if (id.startsWith("lswap:")) { const k = id.slice(6), kind = livSwapKind(k);   // N220: a living-room piece, swapped as the house's are
     return kind ? swapCard(k, kind, MOV[k].swk, MOV[k].label.replace(/ \(suggested\)$/, ""), () => livWhy(k), "lswapgo", livCardOf(k)) : null; }
   if (id.startsWith("hswap:") || id.startsWith("hadd:")) return hcatCard(id);   // V2.46 (N7): swap a piece, or which piece you've added
@@ -206,7 +210,7 @@ function actItems(id) {     // [title, how it is now, buttons]
     const sw = pieceNow(k).swap;
     return [sw ? HCAT[sw].n : it.n, pieceLine(k), [btn(it.op ? "Change its size" : "Move or resize", { actopen: "hsize:" + k }), ...(it.add ? [btn(it.look ? "Change plant" : "Change piece", { actopen: "hadd:" + k })] : swapKind(k) ? [btn("Swap it", { actopen: "hswap:" + k })] : []),
       ...(pieceDelta(k).some(Boolean) && !it.add ? [btn("As planned", { hreset: k })] : []), ...(it.op ? [] : [btn("Take it out", { hremove: k })]),
-      ...(it.k === "window" || /^(back|garage)_door$/.test(k) ? [btn("Colour outside", { actopen: "fin:outside:9" })] : []), ...upsBtn(it.r)], null,   // V2.38 (F12): its frame's outside
+      ...(it.k === "window" || /^(back|garage)_door$/.test(k) ? [btn("Colour outside", { actopen: "fin:outside:9" })] : []), ...(it.k === "window" && winOf(k) ? [btn("Dress it", { actopen: winOf(k) })] : []), ...upsBtn(it.r)], null,   // V2.38 (F12): its frame's outside
       it.k === "light" && it.r ? `<div class="r3d-fin"><span class="r3d-finlab">The bulbs</span>${finBulbTray(it.r)}${finFitTray(it.r)}</div>` : /\.bed$/.test(k) && it.r ? finBedTray(it.r) : null]; }   // N5d: a bed's bedding   // V2.9: a light's bulbs; V2.15: its fitting
   if (id.startsWith("hsize:")) { const k = id.slice(6), it = HIT(k); if (!it) return null; const c = pieceNow(k), door = it.k === "door";
     return [it.n, pieceLine(k), [btn("Done", { actopen: "hitem:" + k }), ...(canTurn(k) ? [btn("Turn", { hturn: k })] : []), ...(it.add ? [] : [btn("As planned", { hreset: k })])],
