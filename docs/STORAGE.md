@@ -77,10 +77,10 @@ flip-up table; the N223 idea of oak drawers under the desk):
 |---|---|---|---|---|
 | Drying | A ceiling pulley airer over the radiator, by the window: hoisted to 17 under the ceiling when not in use, lowered to load. The office is the house's best drying room: a radiator, a window to open, a door to shut | Across the window, over the radiator (0.9 m, the window's width) | 90 × 35, 4 laths; £75–99 | Clothesmaid 0.9–2 m £74.99 (clothesmaid.com); Cast in Style 6-lath £99 (castinstyle.co.uk) |
 | Drying (or) | A wall-mounted radial airer that folds flat: ten laths fan out over the radiator | Beside the window, over the radiator's end | 120 × 60 open, 20 × 10 shut; £56 | Pulley Maid radial airer £55.99 (pulleymaid.com) |
-| Books | A frieze shelf round the top of the room: oak, 20 deep, on tenoned brackets over the window and the bifold door, books spine-out above head height | 205–215 up, over the window and the door | 2 runs of about 95; £60–90 | oak board |
+| Books | A slim oak book tower, six shelves of books and games (about 3 m of spines), in the corner between the cube shelves and the window (a shelf over the door or the window won't go: the bifold's swing and fanlight, the airer) | The window's corner | 50 × 30 × 200; £145–185 | oak board |
 | Tech | Oak drawers on castors under the desk, between the PCs (N223), and a steel cable tray under the desk's back edge | Under the desk | 28 × 43 × 69; £145–160, the tray £20–30 | oak board; a cable tray (E) |
 | Headsets, controllers | Oak pegs along the overhead shelf's front, a headset and a controller each | The overhead shelf | 6 pegs; £15–20 | Willow & Stone oak pegs £2.75 each ("pegrail") |
 
-**My picks for you:** the office pulley airer (the most drying for the least room, out of sight overhead), the radiator shelf with
-fold-down rails in the living room (it doubles as a sill), the frieze shelf for books in the office, and the window seat's drawers for
-games. To see them in the 3D, they can be added to Storage ideas (each checked clear of walks, doors and slopes) when you say.
+**My picks** (in the 3D as options, 23 Nov: Emma "add your picks into the 3D as options"): the office pulley airer and the book tower
+(bedroom 3's floor card, More, Storage ideas), the living room's radiator shelf with fold-down rails and the window seat's drawers (the
+living room's options).
