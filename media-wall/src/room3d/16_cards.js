@@ -515,6 +515,8 @@ if (act) {
       const [nx, nz] = addSpot(row.room, v, +row.x, +row.z, +row.y, k);   // N218: the new piece's own spot, nearest the last
       ds.put("edits", k + "~add", Object.assign({}, row, { value: v, x: cmR(nx), z: cmR(nz) })).then(() => { if (GS.actId) renderAct(); }); return; }
     if (d.finidea != null && GS.actId && GS.actId.startsWith("fin:")) { ideaSet(GS.actId.split(":")[1], d.finidea); renderAct(); return; }   // N212
+    if (d.hideago) { const [k, x] = d.hideago.split(":"), it = HIT(k), I = it && IDEAS().find(i => i.id === it.idea); if (!I) return;   // N242: the plan's idea or a shop's
+      const L = [null, ...(I.o || []).map(r => r[0])]; ideaChoose(it.look, I.id, L[((+x % L.length) + L.length) % L.length]); GS.actId = `hitem:idea.${I.id}.0`; renderAct(); return; }
     if (d.hidea) { const [r, q] = d.hidea.split(":"); closeAct(); if (ideaOn(r).includes(q)) ideaSet(r, q); return; }
     if (d.finplant != null && GS.actId && GS.actId.startsWith("fin:")) { plantSet(GS.actId.split(":")[1], d.finplant || null); renderAct(); return; }   // N5
     if (d.hremove && HIT(d.hremove) && HIT(d.hremove).look) { const r = HIT(d.hremove).look; closeAct(); plantSet(r, null); return; }
