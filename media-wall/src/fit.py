@@ -1464,6 +1464,19 @@ SOURCES["paxslide"] = ("IKEA UK: a pair of PAX sliding doors (AULI mirror glass 
 SOURCES["pegrail"] = ("Willow & Stone: Oak Backplate for Creating Hook/Peg Rails, natural solid oak, 91.5 × 7 × 2 cm £35 (56 × 7 £23.50); "
                       "Single Shaker Style Oak Peg, 7 × 2 cm, £2.75 (willowandstone.co.uk, read 23 Nov 2026)")
 ORDER.extend(["kallax24", "paxslide", "pegrail"])
+# N225 (23 Nov 2026, read that day): the bathroom's and the WC's tiles to choose from, and the WC's toilet and basin to swap (options only)
+SOURCES["n225tiles"] = ("Wall tiles, W × H cm, £ a m²: Mini Metro Gloss White 15 × 7.5, £23.00 inc VAT (tile.co.uk/products/7-5x15cm-mini-metro-gloss-white-wall-tile); "
+                        "Maremar Pearl White Gloss 10 × 10, £48 (B&Q diy.com, 8435063119987); Wickes White Gloss Ceramic 60 × 30, £16 (wickes.co.uk p/346840); "
+                        "Mini Underground Sage Gloss 15 × 7.5, £21.33 (tilewarehouse.co.uk, 750863); Zellige Mini White Square Gloss Rustic 10 × 10, £36.86 "
+                        "(wallsandfloors.co.uk, 800406). Grout: UltraTrade Flexible White 3 kg £11 (Wickes p/346683), Mapei Flexible Grey and Charcoal "
+                        "2.5 kg £10 each (Wickes p/252716, p/252717). A tiler, labour only, £20–50 a m² (checkatrade.com, hiring guide: tiler)")
+SOURCES["n225suites"] = ("Toilets, W × D × H cm: Wickes Portland close coupled 35 × 66 × 79, £75 (p/223115); Wickes Cleveland close coupled 36.5 × 62 × 80.5, "
+                         "£150 (p/279081); Nuie Bliss back to wall pan, concealed cistern and seat 35 × 52 × 40, £205 (Wickes p/323330); Wickes Siena wall "
+                         "hung pan 36 × 52 × 42, £120 (p/233341) on a Roca Duplo One 820 under-window frame 52.5 × 82 × 16, £233.32 (sanctuary-bathrooms.co.uk). "
+                         "Basins: Wickes Emma 420 full pedestal 42 × 32 × 85, £309 (p/233351); Wickes Galeria 450 semi pedestal 45 × 37 × 45, £189 (p/233362); "
+                         "Wickes Newport corner 45 × 46 × 16.5, wall hung, £45 (p/161904); Wickes White Gloss Compact Vanity Unit & Basin 40.5 × 22.5 × 90.5, "
+                         "floor standing, £97 (p/301110)")
+ORDER.extend(["n225tiles", "n225suites"])
 # V4 (N152): will the sofa bed go in? Its biggest box (166 × 101 × 68, SOURCES "amelia") carried on its side, the 166 first: it needs
 # its 68 and 2 to spare (hands) across each opening on the way, the front door, the hall past the stair box and the living room door, in
 # line (no turn). A door left on its hinges, open flat, takes about its leaf's thickness (E: 4) more. The doors' widths are Measure's
