@@ -460,7 +460,20 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   into `worldUV`, which turns each face's picture so its grain (up the picture) runs the face's longer way; any other material keeps
   the world's directions (up a wall, along z on a top).
 
-## N225, started 23 Nov 2026 (stopped at the usage limit: research and design only, no code yet)
+## N225, built 23 Nov 2026 (V4.52)
+- **Where it is:** `room3d/22_bath.js` (the tiles: `TILE_ROOMS`, `tileTex`, `tileApply`, `tileCard`, `tileUps`), hooked in one line each
+  in `23_finish.js` (`finAt`, `finCard`, `finClean`, `finApplyAll`, `finHold`) and `16_cards.js` (`roomUps`). Numbered 22, not 24 as
+  first planned: `23_finish.js` runs code at load (`finSchDraw`) that reaches `finClean`, and a `const` of a later part is not yet made then.
+- **The suites:** shop pieces like N219's (`docs/N219_catalogue.json`, kinds `toilet` and `basin`), so their size, price, page and
+  `fit.SOURCES` row come for free; `HCAT_KINDS` names them non-enumerably (no chips in the add card: a suite is swapped, never added);
+  `SUITE_OF` lets the four pieces swap though hung or lidded (`swapKind`'s first line), `swapBox` sets their height. `hcBuild` passes
+  a 7th argument, `end` (the piece stands in its wall's far corner), and `L` an oval (`sc`, along its wall and out).
+- **Learned:** swapping a material's `map`, `normalMap` and `roughnessMap` for canvas textures (only the slots it already has) builds no
+  new program (checked on the software path; the iPhones' KTX2 maps are swapped the same way); its `roughness` set to 1 while shown (the drawn map holds the absolute value), its own back after. A test's
+  `pointerup` on a card's button that a re-render has replaced never reaches the card: send it to `#r3d-act`. The view for the bathroom is
+  `bath` (`ROOM_VIEW`).
+
+### The design, as researched (kept for reference)
 - **Found:** the bathroom's wall tiles are model material `stone` (60 × 30, `build_textures.TILED`, only the bathroom uses it), the WC's
   splashback `tile_w` (15 × 15, one panel, `gridFrom`). Both are items of kind `finish` (`bath.tiles`, `wc.tiles`), not in the house file's
   `items` (`export_house.EDITABLE`), so a tap on them opens no card today (`pickItem`: `HIT` misses, `finAt` skips non-palette keys).
