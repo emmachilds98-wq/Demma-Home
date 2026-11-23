@@ -1,6 +1,14 @@
 # Handover (23 Nov 2026, V4.52: start here)
 
-## Pick up here (23 Nov 2026, V4.53)
+## Pick up here (23 Nov 2026, V4.56)
+V4.56: Emma's notes on V4.54 (`docs/REAL_PLAN.md` section 30: N238 the stairs from the front door, N239 the same light from a distance,
+N240 the PC's choppy picture), the bathroom's taps and panel (N225), her storage picks in the 3D as options (N241, `docs/STORAGE.md`).
+**Waiting on Emma:** a Measure → Send link from the PC after a short walk (N240: no regression was found; the speed line now says the chip,
+the sharpness, the moving and worst frame and any step down); which storage picks to build (N241). **Next:** N237, then N228, N229, N234,
+N235 as she says. Helpers worked in their own worktrees and branches (`claude/n238-stairs`, `n239-light`, `n240-speed`, `n241-living`),
+the lead merged them; when the usage limit stopped them, their pushed commits were all there was to lose.
+
+## Before that (23 Nov 2026, V4.53)
 V4.53: N224's splashback, N231 (a look's cost), N232 (shop pieces by form, merged and checked on screen), N233's WIN and STOOL steps.
 V4.54: N226 (each door's leaf and handle, one door or all). V4.55: N224's units, handles and worktop. **Next, in order:** N237 (the first
 picture back under the old budgets); N225's taps, mirror and bath panel, N228, N229, N234, N235 as Emma says.
