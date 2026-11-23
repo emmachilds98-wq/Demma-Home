@@ -209,7 +209,15 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   living room's walls by name, 17 the woodwork (the living room's skirting and door in its Look; any other room's through the palette, N216), 18 rug, 19 curtains, 20 bedding, 21 picture, 22 picture's wall, 23 plant,
   24–25 wallpaper, 26–27 panelling (N57; `finWallRun` gives any wall its face, openings and ceiling line), 28 storage ideas, 29 the slopes
   (N214: none with the ceiling, `walls`, or a colour), 30 on each wall as built (N214: 30 + its number in the house file's
-  `finish_walls[room]`, `[side, line from, to, along from, to, m²]` from `surfaces.walls`). A new slot goes in `finClean`, the Paste filter, `roomUps` and a cost in `UPC`.
+  `finish_walls[room]`, `[side, line from, to, along from, to, m²]` from `surfaces.walls`), 70 on each window (N227: 70 + its number
+  among its room's windows, `winsOf`, from the house file's `windows_in` matched to its window item; `"kind.finish"` or `"none"`, no colon:
+  `pull_edits` keeps `[\w.-]` only). A new slot goes in `finClean`, the Paste filter, `roomUps` and a cost in `UPC`; a slot that isn't a
+  colour must stay out of `finApplyAll`'s palette loop and This room's clearing of the 30s (both now stop at 70).
+  **A window** (N227): a tap on its glass, frame or what's on it opens `win:<room>:<j>` (`winAt`, before the piece's card; The frame
+  goes to that). None set, a window shows the room's old curtains (19), else the plan's (bedroom 2's and the office's roller blinds:
+  `winPlan`). Her own hides the plan's blind by folding its vertices to a point (`winPlanHide`, the blind is merged into the floor's
+  mesh; back while Hold to compare). Its inside face is the window item's room side (a dormer's frame sits 25 in from the room's edge).
+  `HBUILD` is wrapped so a floor rebuilt by an edit (it clears the floor's group) gets what's laid on it again (`finFloorApply`).
   Each wall (N214): `finAt` finds the wall a tap is on as the shader does (its side, then the line within 2 cm and the span within 2);
   This wall sets it, This room and Whole house set 0–3 and drop the 30s; a side with more than one says "the west wall (2 of 3)"
   (`finWallName`); a face under 15 cm or 0.1 m² (a return, a strip) is on none and keeps its side's colour. `check_model.py` checks every
