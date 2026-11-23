@@ -460,7 +460,8 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   into `worldUV`, which turns each face's picture so its grain (up the picture) runs the face's longer way; any other material keeps
   the world's directions (up a wall, along z on a top).
 
-## N225, started 23 Nov 2026 (stopped at the usage limit: research and design only, no code yet)
+## N225, built 23 Nov 2026 (`24_bath.js`; REAL_PLAN N225's row)
+- **Lifting a plan's piece into another material** (`bathFold`): a floor's merged mesh keeps its built positions (a WeakMap on the attribute); the region's triangles are copied into a new mesh of the house's own material (no new shader) and their vertices folded to a point, then `joinDrop` and `roomCull(true)` as `winPlanHide`. A material's own maps swapped for canvas ones (same slots only) cost no program either. `winAt` asks `bathAt` first, so a tap on the WC's suite opens its card before the piece's.
 - **Found:** the bathroom's wall tiles are model material `stone` (60 × 30, `build_textures.TILED`, only the bathroom uses it), the WC's
   splashback `tile_w` (15 × 15, one panel, `gridFrom`). Both are items of kind `finish` (`bath.tiles`, `wc.tiles`), not in the house file's
   `items` (`export_house.EDITABLE`), so a tap on them opens no card today (`pickItem`: `HIT` misses, `finAt` skips non-palette keys).

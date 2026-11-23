@@ -412,6 +412,20 @@ def mouse_look(pg, w):
     turn = a[2] * z[0] - a[0] * z[2]                                  # the turn round the upright: below 0 is to the right
     pg.evaluate("() => R3D.set({ view: 'house' })"); pg.wait_for_timeout(1500)
     return [] if turn < -0.01 and z[1] > a[1] + 0.01 else [f"{w}: a mouse drag right and up in the hall's In it turned {turn:+.3f} and tilted {z[1] - a[1]:+.3f} (want right, below 0, and up)"]
+def bath_step(pg, w):   # N225: the bathroom's tiles and the WC's toilet from their cards, drawn with no new shader, then the plan's
+    got = pg.evaluate("""async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s);
+      const kept = (r, s) => ((JSON.parse(localStorage.getItem('mw18-3d') || '{}').fin || {})[r] || {})[s] || null, laid = id => { let n = 0; D.scene.traverse(o => { if (o.userData.bath === id) n++; }); return n; };
+      const pick = async (id, v) => { D.openAct(id); await sl(600); q(`#r3d-act [data-bath="${v}"]`).click(); await sl(600); return q('#r3d-act-st').textContent; };
+      const p0 = D.gl.info.programs.length, tiles = await pick('fin:bathroom:90', '90:metro'), loo = await pick('fin:wc:92', '92:siena'), drawn = laid('fin:wc:92') > 0;
+      const got = [kept('bathroom', 90), kept('bathroom', 91), kept('wc', 92)]; await sl(1500); const p1 = D.gl.info.programs.length;
+      for (const id of ['fin:wc:92', 'fin:bathroom:90']) { D.openAct(id); await sl(600); q('#r3d-act [data-bath$=":"]').click(); await sl(500); }
+      if (D.actId) q('#r3d-act .x').click();
+      return { tiles: tiles.startsWith('White metro · 15 × 7.5 cm, grey grout · £'), loo: loo.startsWith('Siena wall hung · 36 × 52 × 42 cm · Fits'), drawn, got, shaders: p1 - p0,
+        back: !kept('bathroom', 90) && !kept('wc', 92) && laid('fin:wc:92') === 0 }; }""")
+    want = {"tiles": True, "loo": True, "drawn": True, "got": ["metro", "grey", "siena"], "shaders": 0, "back": True}
+    return [] if got == want else [f"{w}: the bathroom's metro tiles and the WC's wall-hung toilet from their cards, then the plan's: {got} (want {want})"]
+
+
 def names_keys(pg, w):
     """V2.97 (N42): names everywhere (the page as it opens, a door's card in the kitchen, Edit's list), Esc one at a time; on a PC Tab"""
     out, D = [], "R3D._dbg"
@@ -528,7 +542,8 @@ def main():
                     if ea != {"t1": "Master bedroom: the back wall (2 of 2)", "t2": "Master bedroom: the back wall (1 of 2)", "both": ["#3a6b5a", "#c98a5e"], "room": [None, "#dbffc8"],
                               "st": "Bedroom 2: the slopes", "slope": "walls", "restored": True}:
                         fails.append(f"{w}: the master's cupboard face and its alcove each a colour, This room over both, bedroom 2's slopes with the walls, then back: {ea}")
-                    ad = pg.evaluate(ADD)                           # N218: a piece added where it fits, in the look link
+                    fails += bath_step(pg, w)                       # N225
+                    ad = pg.evaluate(ADD)                         # N218: a piece added where it fits, in the look link
                     seen = None
                     if ad.get("link"):
                         c2 = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=True, has_touch=True, service_workers="block")

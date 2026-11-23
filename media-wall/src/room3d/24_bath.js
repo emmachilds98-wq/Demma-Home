@@ -97,7 +97,8 @@ function bathFold(regs) {   // each floor mesh of a key named: as built, then it
           for (const i of v) { off.add(i); if (to) { pos.push(a[3 * i], a[3 * i + 1], a[3 * i + 2]); nor.push(N.getX(i), N.getY(i), N.getZ(i)); } } }
         if (!to) for (let i = 0; i < P.count; i++) { const q = at(i); if (bathIn(b, ...q)) off.add(i); }
         if (to && pos.length) { const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute("normal", new THREE.Float32BufferAttribute(nor, 3));
-          geo.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(pos.length / 3 * 2), 2)); bathLay(g, geo, to, card); }
+          geo.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(pos.length / 3 * 2), 2)); const me2 = bathLay(g, geo, to, card);
+          if (test && me2.material.map) { const U = geo.attributes.uv; for (let i = 0; i < U.count; i++) U.setXY(i, U.getY(i), U.getX(i)); } } // a panel's grain along it
         const k0 = [...off][0]; if (k0 !== undefined) for (const i of off) P.array.copyWithin(3 * i, 3 * k0, 3 * k0 + 3); }
       P.needsUpdate = true; if (!use.length) BATH_ORIG.delete(P); } }
   return n;
@@ -172,7 +173,7 @@ function bathAt(o, p) {
 function bathCard(room, k) {
   if (!BATH_ROOMS[room] || !BATH_LIST[k] || (k === 95 && room !== "bathroom") || ((k === 92 || k === 93) && room !== "wc")) return null;
   if (k === 91) k = 90;
-  const v = finGet(room, k), r = bathOk(room, k, v) ? bathRow(k, v) : null, u = r && roomUps(room).find(q => q.k === `${k}=${v}`), cost = u ? upRange(u.lo, u.hi) : "";
+  const v = finGet(room, k), r = bathOk(room, k, v) ? bathRow(k, v) : null, cost = r ? upRange(...bathCost(room, k, v).map(Math.round)) : "";
   const plan = { 90: room === "wc" ? "White 15 × 15" : "Stone-effect 60 × 30", 92: "Primrose, low level", 93: "Primrose, wall hung", 94: room === "wc" ? "Chrome" : "Black and chrome", 95: "White" }[k];
   let st = r ? [k === 90 ? `${r[2]} × ${r[3]} cm, ${(bathRow(91, finGet(room, 91)) || BATH_GROUT[1])[1].toLowerCase()}` : "", cost].filter(Boolean).join(" · ") : `The plan's: ${plan.toLowerCase()}`;
   if (r && (k === 92 || k === 93)) { const b = bathGeo().boxes[k === 92 ? "loo" : "bas"], why = b ? roomWhy(b, "wc", k === 92 ? "wc.toilet" : "wc.basin") : [];
