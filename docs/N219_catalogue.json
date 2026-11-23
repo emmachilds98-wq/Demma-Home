@@ -1779,5 +1779,57 @@
 "price": 139,
 "url": "https://www.dunelm.com/product/franklin-desk-1000166913",
 "read": "2026-11-22"
+},
+{
+"kind": "stool",
+"retailer": "IKEA",
+"name": "STIG bar stool with backrest, counter height",
+"finish": "black/black (metal)",
+"w": 40,
+"d": 42,
+"h": 90,
+"price": 15,
+"url": "https://www.ikea.com/gb/en/p/stig-bar-stool-with-backrest-counter-height-black-black-30498418/",
+"read": "2026-11-23",
+"note": "seat 63 high, 36 × 34; 304.984.18"
+},
+{
+"kind": "stool",
+"retailer": "IKEA",
+"name": "NORDVIKEN bar stool with backrest, counter height",
+"finish": "black (solid wood)",
+"w": 40,
+"d": 45,
+"h": 88,
+"price": 75,
+"url": "https://www.ikea.com/gb/en/p/nordviken-bar-stool-with-backrest-counter-height-black-00424693/",
+"read": "2026-11-23",
+"note": "seat 62 high, 40 × 34; 004.246.93"
+},
+{
+"kind": "stool",
+"retailer": "IKEA",
+"name": "BERGMUND bar stool with backrest, counter height",
+"finish": "Gunnared medium grey fabric/black legs",
+"w": 45,
+"d": 48,
+"h": 97,
+"price": 95,
+"url": "https://www.ikea.com/gb/en/p/bergmund-bar-stool-with-backrest-counter-height-black-gunnared-medium-grey-s99384693/",
+"read": "2026-11-23",
+"note": "seat 62 high, 45 × 37, upholstered; 993.846.93"
+},
+{
+"kind": "stool",
+"retailer": "IKEA",
+"name": "LILLÅNÄS bar stool, swivel",
+"finish": "Gunnared dark grey fabric/chrome-plated",
+"w": 47,
+"d": 51,
+"h": 94,
+"price": 95,
+"url": "https://www.ikea.com/gb/en/p/lillanaes-bar-stool-chrome-plated-gunnared-dark-grey-80534796/",
+"read": "2026-11-23",
+"note": "seat 63 high, 40 × 35, on a chrome pedestal; 805.347.96"
 }
 ]

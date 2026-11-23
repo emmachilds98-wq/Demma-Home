@@ -2,7 +2,7 @@
    moved and turned as the house's are. Rows are Measure's "edits": {item, field: "swap", value: key}; {item: "add.<n>", field: "add",
    value: key, room, x, z, y}. A piece's own frame: u along its wall (0..W), v up (0..H), t out from its back (0..D). */
 const HCAT_KINDS = { bed: "Beds", wardrobe: "Wardrobes", chest: "Chests", bedside: "Bedsides", desk: "Desks", shelves: "Shelves", seat: "Seats", chair: "Desk chairs",
-  table: "Tables", unit: "Units", lamp: "Lamps", rug: "Rugs", plant: "Plants", more: "More" };   // N219: tables, units (TV, sideboards, shoes) and lamps their own
+  table: "Tables", unit: "Units", shoes: "Shoe storage", stool: "Bar stools", lamp: "Lamps", rug: "Rugs", plant: "Plants", more: "More" };   // N219: tables, units (TV, sideboards) and lamps their own; N230: shoe storage, bar stools
 function hcChest(mat, cols, rows, knob = "knob") {   // drawers: a carcass, its fronts with a shadow gap, a knob each ("grip": MALM's grip along each front's top)
   return (W, H, D, B) => {
     B(mat, 0, 0, 0, W, H, D - 2); B("gap", 1, 6, D - 2.1, W - 1, H - 2, D - 2); B(mat, 1, 0, D - 6, W - 1, 6, D - 5);   // the plinth, set back
@@ -172,8 +172,25 @@ const HCAT = {
 };
 /* N212, N223: the storage ideas' pieces (house/storage_ideas.py, an "idea" kind: never swapped or added from the catalogue), in the house's
    own materials only (no new shader when shown): the artisan oak of the media wall and the office's cubes, its ledges' lip, its tenons */
-const stBooks = (B, u0, u1, v, h, t0, t1, k = 0) => { for (let u = u0; u < u1 - 2; k++) { const w = 1.4 + (k * 37 % 5) * 0.4, hh = h * (0.8 + (k * 53 % 5) * 0.05);
-  B("book" + (k % 6), u, v, t0, Math.min(u1, u + w), v + hh, t1); u += w + 0.15; } };
+/* N236: books as the office's shelf has them (house/model.py, office.shelf: its nine widths and heights, a pair lying flat), each with its
+   spine: the pages' cream showing over the boards, a band near its head (gilt on the dark ones), a label on some; h the tallest */
+const ST_BK = [[3.2, 22], [2.4, 20], [4.1, 24], [2.8, 19], [3.6, 23], [2.2, 21], [3.0, 18], [4.4, 24], [2.6, 22]];
+const stBook = (B, c, u, w, v, hh, t0, t1, k) => { const dark = c !== 2 && c !== 5;
+  B("book" + c, u, v, t0, u + w, v + hh, t1); B("paper", u + 0.1, v + hh, t0 + 0.3, u + w - 0.1, v + hh + 0.1, t1 - 0.3);
+  if (w > 1.2) { B(dark ? "brass" : "book4", u + 0.2, v + hh * 0.86, t1, u + w - 0.2, v + hh * 0.86 + 0.4, t1 + 0.1);
+    if (k % 3 === 1) B(dark ? "paper" : "book1", u + 0.3, v + hh * 0.48, t1, u + w - 0.3, v + hh * 0.66, t1 + 0.1); } };
+const stBooks = (B, u0, u1, v, h, t0, t1, k = 0) => { const s = Math.min(1, h / 24);
+  for (let u = u0; u < u1 - 2; k++) { const [bw, bh] = ST_BK[k % 9], w = Math.round(bw * Math.max(0.7, s) * 10) / 10, hh = bh * s, c = k * 5 % 6;
+    if (k % 11 === 10 && u + bh * s + 1 < u1 && t1 - t0 > 10) {   // a pair lying flat, the longer under
+      B("book2", u + 0.5, v, t0 + 1, u + 0.5 + bh * s, v + 3.4, t1 - 0.5); B("book0", u + 1.2, v + 3.4, t0 + 1.5, u + bh * s - 0.2, v + 6.2, t1 - 1); u += bh * s + 1.5; continue; }
+    if (u + w > u1) break; stBook(B, c, u, w, v, hh, t0, t1, k); u += w + 0.1; } };
+/* N236: the living room's record set (render.now_playing's three sleeves, the vinyl stand's four) in the house's own colours: a sleeve's
+   ground, then its art as [material, across from, to, down from the top, to] */
+const ST_SLEEVES = [["paper", ["quarry", 0.12, 0.88, 0.12, 0.62], ["book4", 0.38, 0.62, 0.7, 0.9]], ["book1", ["jar", 0, 1, 0.78, 1], ["book2", 0.2, 0.8, 0.2, 0.66]],
+  ["book3", ["pink", 0.1, 0.5, 0.1, 0.9], ["book2", 0.55, 0.9, 0.1, 0.9]], ["paper", ["book1", 0.15, 0.85, 0.15, 0.7]], ["quarry", ["jar", 0.1, 0.9, 0.62, 0.9]],
+  ["book4", ["book2", 0.3, 0.7, 0.3, 0.7]], ["book3", ["paper", 0.1, 0.9, 0.1, 0.45]]];
+const stSleeve = (B, n, u, v, t, S = 31.4) => { const [g, ...art] = ST_SLEEVES[n % ST_SLEEVES.length]; B(g, u, v, t, u + S, v + S, t + 0.6);
+  for (const [m, a0, a1, d0, d1] of art) B(m, u + a0 * S, v + S * (1 - d1), t + 0.6, u + a1 * S, v + S * (1 - d0), t + 0.8); };
 const stLPs = (B, u0, u1, v, t0, k = 0) => { for (let u = u0; u < u1 - 1; k++) { const w = 2.5 + (k * 37 % 4);   // LPs on edge, in runs of sleeves, a gap to flip
   B("book" + (k * 5 % 6), u, v, t0, Math.min(u1, u + w), v + 31.4 - (k % 3) * 0.3, t0 + 31.4); u += w + (k % 4 === 3 ? 2.5 : 0.1); } };
 const ST = "artisan", stLip = (B, W, D, v) => { B(ST, 0, v, 0, W, v + 1.8, D); B(ST, 0, v + 1.8, D - 1.5, W, v + 3.6, D); };   // a ledge with its lip (the media wall's record ledge)
@@ -192,9 +209,8 @@ Object.assign(HCAT, {
         if (j === 1 && i === 2) { B(ST, u + 0.3, v + 0.8, D - 2, u + bw - 0.3, v + 33, D - 0.4); B("oak", u + 2, v + 14, D - 0.4, u + 3.4, v + 20, D); continue; }   // the deck's kit, shut
         stLPs(B, u + 0.4, u + bw - 0.4, v + 0.8, 1, i * 11 + j * 5); } }); } },
   st_faceout: { n: "Face-out record ledge", k: "idea", w: 110, d: 9, h: 34, ref: "snowdonoak", src: "Made to the spot, 18 mm oak",
-    b: (W, H, D, B, L, k = 0) => { stLip(B, W, D, 0); const g = (W - 3 * 31.4) / 4;
-      for (let i = 0; i < 3; i++) { const u = g + i * (31.4 + g), c = (i * 2 + Math.round(W)) % 6;   // a sleeve leaning on the wall, its picture
-        B("book" + c, u, 1.8, 1.6, u + 31.4, 33.2, 2.2); B("book" + ((c + 3) % 6), u + 5, 7, 2.2, u + 26.4, 28, 2.4); B("paper", u + 12, 15, 2.4, u + 19.4, 20, 2.5); } } },
+    b: (W, H, D, B, L, k = 0) => { stLip(B, W, D, 0); const g = (W - 3 * 31.4) / 4;   // N236: each ledge its own three of the record set (k: where it hangs)
+      for (let i = 0; i < 3; i++) stSleeve(B, k * 3 + i * 2, g + i * (31.4 + g), 1.8, 1.6); } },
   st_oakpeg: { n: "Oak pegboard", k: "idea", w: 56, d: 10, h: 56, ref: "snowdonoak", src: "Made to the spot, 18 mm oak, oak pegs",
     b: (W, H, D, B) => { B(ST, 0, 0, 0, W, H, 1.8);
       for (let i = 0; i < 7; i++) for (let j = 0; j < 7; j++) B("gap", 4.5 + i * 7.8 - 0.6, 4.5 + j * 7.8 - 0.6, 1.8, 4.5 + i * 7.8 + 0.6, 4.5 + j * 7.8 + 0.6, 1.88);
@@ -257,6 +273,7 @@ const hcMake = (k, look, m, m2, c) => {
     hcLegs(m2, W, D, H - t, H < 55 ? 2.4 : 2.2, 4)(B, L); };
   if (k === "seat") return look === "sofa" ? hcSofa(m, m2) : hcArmchair(m, m2);
   if (k === "chair") return hcSwivel(m, 46, true);
+  if (k === "stool") return hcStool(look, m, m2);
   if (k === "rug") return (W, H, D, B, L) => look === "round" ? L(m, W / 2, D / 2, 0, [[0, 0], [W / 2, 0], [W / 2, H], [0, H]]) : B(m, 0, 0, 0, W, H, D);
   if (k === "lamp") return (W, H, D, B, L) => { const r = Math.min(W, D) / 2 - 0.5, sh = m === "sisal" ? "sisal" : "paper";
     L(m2, W / 2, D / 2, 0, [[0, 0], [Math.min(13, r), 0], [Math.min(13, r), 2.5], [Math.min(10, r), 4], [3, 5], [0, 5]]); L(m, W / 2, D / 2, 5, [[0, 0], [1.4, 0], [1, H - 30], [0, H - 30]]);
@@ -265,6 +282,25 @@ const hcMake = (k, look, m, m2, c) => {
     B(m, 0, 0, 0, W, H, D - 2); B("gap", 0.5, 4, D - 2.05, W - 0.5, H - 0.5, D - 2); B(m2 === m ? "black" : m2, 1.5, 0, D - 5, W - 1.5, 4, D - 4);
     for (let i = 0; i < n; i++) { B(m, i * dw + 0.3, 4.3, D - 2, (i + 1) * dw - 0.3, H - 0.3, D); B(grip === "grip" ? "handle_black" : "knob", (i + 0.5) * dw - 6, H - 8, D, (i + 0.5) * dw + 6, H - 6.8, D + 0.6); } };
 };
+/* N230: a bar stool (seat 62-63 high: the listings), its back at t 0, facing +t as the chairs do: on a chrome pedestal (a swivel), on thin
+   legs with a padded seat and back, a wooden one with a spindle back, or a metal frame with a back band */
+function hcStool(look, m, m2) { return (W, H, D, B, L) => { const sh = Math.min(63, H - 24), c = W / 2, tc = D / 2;
+  if (look === "swivel") { const r = Math.min(W, D) / 2 - 2;
+    L(m2, c, tc, 0, [[0, 0], [r - 2, 0], [r - 2, 0.8], [r - 6, 2.2], [3, 3], [0, 3]]); L(m2, c, tc, 3, [[0, 0], [2.5, 0], [2.5, sh - 10], [0, sh - 10]]);
+    L(m2, c, tc, 24, [[r - 6, 0], [r - 4.5, 0], [r - 4.5, 1.5], [r - 6, 1.5]]);
+    L(m, c, tc, sh - 7, [[0, 0], [W / 2 - 4, 0], [W / 2 - 2, 3], [W / 2 - 2.5, 7], [0, 6.5]]);
+    B(m, 4, sh - 2, 1, W - 4, H, 7); B(m, 2, sh - 2, 5, 6, sh + 18, D * 0.6); B(m, W - 6, sh - 2, 5, W - 2, sh + 18, D * 0.6); return; }   // its shell: the back, low arms
+  const lg = look === "wood" ? 3.6 : look === "uph" ? 2.4 : 2, legs = [[1.5, 1.5], [W - 1.5 - lg, 1.5], [1.5, D - 1.5 - lg], [W - 1.5 - lg, D - 1.5 - lg]], fm = look === "uph" ? m2 : m;
+  for (const [u, t] of legs) B(fm, u, 0, t, u + lg, sh - (look === "wood" ? 3 : 2), t + lg);
+  const rail = (v, k) => { B(fm, 1.5, v, D - 1.5 - k, W - 1.5, v + k, D - 1.5); B(fm, 1.5, v, 1.5, 1.5 + k, v + k, D - 1.5); B(fm, W - 1.5 - k, v, 1.5, W - 1.5, v + k, D - 1.5); };
+  rail(24, look === "wood" ? 2.4 : 1.8);   // the foot rail, front and sides
+  if (look === "wood") { B(m, 0, sh - 3, 0, W, sh, D);   // the seat, back legs up into the back, spindles under its top rail
+    for (const u of [1.5, W - 5.1]) B(m, u, sh, 1.5, u + 3.6, H, 5.1); B(m, 5.1, H - 7, 2, W - 5.1, H, 4.6);
+    for (let u = 8; u < W - 9; u += (W - 16) / 4) B(m, u, sh, 2.6, u + 1.6, H - 7, 4); return; }
+  if (look === "uph") { B(m2, 1, sh - 4, 1, W - 1, sh - 2, D - 1); B(m, 0.5, sh - 2, 0.5, W - 0.5, sh + 6, D - 0.5);   // its padded seat on a frame, its padded back on two posts
+    for (const u of [3, W - 5.4]) B(m2, u, sh, 2, u + 2.4, sh + 12, 4.4); B(m, 1, sh + 12, 0.5, W - 1, H, 6.5); return; }
+  B(m, 0.5, sh - 2, 0.5, W - 0.5, sh, D - 0.5); for (const u of [2, W - 4]) B(m, u, sh, 2, u + 2, H, 4);   // metal: a seat on the frame, two uprights, a band
+  B(m, 2, H - 12, 1.5, W - 2, H, 3.5); }; }
 function hcArmchair(m, legs) { return (W, H, D, B, L) => { const a = Math.min(14, W * 0.15), s = Math.min(46, H * 0.48);   // the LANDSKRONA's shape at any size
   hcLegs(legs, W, D, 12, 2, 6)(B, L); B(m, 0, 12, 0, W, s - 10, D); B(m, 0, s - 10, 0, W, H - 6, 12); B(m, 0, s - 10, 12, a, s + 16, D); B(m, W - a, s - 10, 12, W, s + 16, D);
   B(m, a + 0.5, s - 10, 28, W - a - 0.5, s, D - 0.5); B(m, a + 0.5, s - 10, 12, W - a - 0.5, H, 28); }; }
@@ -298,7 +334,7 @@ function hcOwn(v) {   // her own piece's catalogue entry from its value (made on
 }
 /* which pieces swap, and for what: by the kind of thing it is (its id), standing on the floor, one that turns (no lid or doors of its own) */
 const HSWAP_OF = [[/(^|\.)bed$|bed_/, "bed"], [/wardrobe/, "wardrobe"], [/bedside/, "bedside"], [/chest/, "chest"], [/desk$/, "desk"],
-  [/shelving|kallax|bookcase|shelves/, "shelves"], [/chairbed|bench|armchair/, "seat"], [/(^|\.)chair$/, "chair"], [/(^|\.)rug$/, "rug"]];
+  [/shelving|kallax|bookcase|shelves/, "shelves"], [/chairbed|bench|armchair/, "seat"], [/(^|\.)chair\d?$/, "chair"], [/(^|\.)stool\d?$/, "stool"], [/(^|\.)rack\d?$|shoe/, "shoes"], [/(^|\.)rug$/, "rug"]];   // N230: the office's two chairs, the kitchen's stools, the hall's shoe racks
 function swapKind(id) {
   const it = HIT(id); if (!it || it.op || (it.k !== "furniture" && !/rug$/.test(id)) || (it.s[2] || 0) > 20) return null;
   const k = (HSWAP_OF.find(([re]) => re.test(id)) || [])[1];
@@ -307,8 +343,9 @@ function swapKind(id) {
 const hcOf = kind => Object.keys(HCAT).filter(k => HCAT[k].k === kind && !HCAT[k].own);   // not her own pieces: a swap to one would hang on its add row (lost after a reload or on a link)
 /* N217: a piece swapped at its own size (W along its wall, D out, H up): its back where the old one's was, along its wall from the same
    end if that stood within 10 of its room's wall, else from its middle, kept in its room; a chair where the old one was, facing the same way */
+const hcSeat = k => k === "chair" || k === "stool";   // sat on facing the desk or the bar: centred where the old one stood, facing as it did
 function swapBox(id, key) {
-  const it = HIT(id), C = HCAT[key], { a, o, flip } = hcFrame(it), b = it.b.slice(), r = (R.HOUSE3.rooms || {})[it.r], ch = C.k === "chair";
+  const it = HIT(id), C = HCAT[key], { a, o, flip } = hcFrame(it), b = it.b.slice(), r = (R.HOUSE3.rooms || {})[it.r], ch = hcSeat(C.k);
   const [r0, r1] = r ? (a === 2 ? [r[2], r[3]] : [r[0], r[1]]) : [b[a], b[a + 3]];
   const u0 = !ch && b[a] - r0 < 10 ? b[a] : !ch && r1 - b[a + 3] < 10 ? b[a + 3] - C.w : (b[a] + b[a + 3] - C.w) / 2;
   b[a] = Math.max(r0, Math.min(r1 - C.w, u0)); b[a + 3] = b[a] + C.w; b[4] = b[1] + C.h;
@@ -318,7 +355,7 @@ function swapBox(id, key) {
 function pieceBase(id, key) {   // the piece as planned, or the one swapped in where it stood (a chair turned to face as the old one did)
   const it = HIT(id); if (!key || !HCAT[key]) return it;
   const b = swapBox(id, key), k = it.ax === "z" ? 2 : 0;
-  return Object.assign({}, it, { b, s: [b[k + 3] - b[k], b[4] - b[1], it.s[2]], al: cmR(it.al + b[k] - it.b[k]), flip: hcFrame(it).flip !== (HCAT[key].k === "chair") });
+  return Object.assign({}, it, { b, s: [b[k + 3] - b[k], b[4] - b[1], it.s[2]], al: cmR(it.al + b[k] - it.b[k]), flip: hcFrame(it).flip !== hcSeat(HCAT[key].k) });
 }
 /* a piece's frame in the house: its wall axis, and which way it faces (its back to the nearer wall of its room) */
 function hcFrame(it) {
@@ -336,7 +373,7 @@ function hcBuild(key, it, t) {
     if (bx[3] - bx[0] < 0.05 || bx[4] - bx[1] < 0.05 || bx[5] - bx[2] < 0.05) return;
     (out.boxes[m] = out.boxes[m] || []).push(bx.map(v => Math.round(v * 10) / 10)); (out.bt[m] = out.bt[m] || []).push(t); };
   const L = (m, u, w, v, p) => out.lathes.push({ c: at(u, v, w), p, s: [1, 1], m, t });   // a turned part round (u, w), its profile [radius, up]
-  C.b(W, H, D, B, L);
+  C.b(W, H, D, B, L, Math.abs(Math.round(b[0] * 3 + b[1] / 7 + b[2] * 5)));   // N236: where it stands, for a piece that draws each copy its own
   return out;
 }
 const HCFK = { "-260": "lower", "0": "ground", "260": "first" };   // the floor as drawn, with the pieces swapped (their own boxes out, the new one's in their place) and those added (a new tag each)
@@ -386,17 +423,29 @@ function roomWhy(b, rid, self) {   // box b in room rid (self: the piece it is, 
   const head = z => !first ? r[4] + R.HOUSE3.ceil : b[0] >= dx0 && b[3] <= dx1 && z <= dz ? top : Math.min(top, yb + (z - zn) * kb, yf + (zs - z) * kf), lim = Math.min(head(b[2]), head(b[5]));
   into(b[4] - lim, first && lim < top ? "the slope" : "the ceiling");
   if (b[4] - b[1] > 3) {
-    let s = 0;   // storage_ideas.checks' swept: the leaf's quarter circle from its hinge, 205 high
-    for (const o of Object.values(R.HOUSE3.items)) { const p = o.op, S = p && p.swing; if (!S || p.y0 !== r[4] || b[1] > p.y0 + 205) continue;
-      const R_ = p.b - p.a, [l0, l1, c0, c1] = p.axis === "x" ? [b[0], b[3], b[2], b[5]] : [b[2], b[5], b[0], b[3]];
-      const a0 = Math.max(l0, Math.min(S.hinge, S.hinge + S.u * R_)), a1 = Math.min(l1, Math.max(S.hinge, S.hinge + S.u * R_));
-      const e0 = Math.max(c0, Math.min(p.line, p.line + S.side * R_)), e1 = Math.min(c1, Math.max(p.line, p.line + S.side * R_));
-      if (a0 >= a1 - 0.5 || e0 >= e1 - 0.5) continue;
-      s = Math.max(s, R_ - Math.hypot(Math.min(Math.max(S.hinge, a0), a1) - S.hinge, Math.min(Math.max(p.line, e0), e1) - p.line)); }
+    let s = 0;   // storage_ideas.checks' swept (model.swing_into): each door's leaf as it opens, 205 high
+    for (const o of Object.values(R.HOUSE3.items)) { const p = o.op; if (p && p.swing && p.y0 === r[4] && b[1] <= p.y0 + 205) s = Math.max(s, swingInto(p, b)); }
     into(s, "the door's swing");
     for (const [n, q, of] of FT.keep) if (of !== self) into(dig(q), n.replace(/ \(.*\)$/, ""));
   }
   return out;
+}
+/* N230: how far box b reaches into a door's swing, as it really opens (model.swing_into): rays from its hinge every 2° to the angle it opens
+   (the bathroom's 84°), and the box's nearest point; the reach a leaf's width, or a bifold's (its halves fold back along the track: half
+   its width past 45°, the astroid its far half sweeps below that) */
+const swingReach = (S, w, a) => { if (a < -0.01 || a > (S.deg ?? 90) + 0.01) return 0; if (!S.fold) return w; if (a >= 45) return w / 2;
+  const t = a * Math.PI / 180; return Math.max(w / 2, w / Math.pow(Math.cos(t) ** (2 / 3) + Math.sin(t) ** (2 / 3), 1.5)); };
+function swingInto(p, b) {
+  const S = p.swing, w = p.b - p.a, deg = S.deg ?? 90, [al0, al1, ac0, ac1] = p.axis === "x" ? [b[0], b[3], b[2], b[5]] : [b[2], b[5], b[0], b[3]];
+  const l0 = Math.min((al0 - S.hinge) * S.u, (al1 - S.hinge) * S.u), l1 = Math.max((al0 - S.hinge) * S.u, (al1 - S.hinge) * S.u);   // along the leaf's way
+  const c0 = Math.min((ac0 - p.line) * S.side, (ac1 - p.line) * S.side), c1 = Math.max((ac0 - p.line) * S.side, (ac1 - p.line) * S.side);   // out the way it opens
+  if (l1 <= 0.5 || c1 <= 0.5) return 0;
+  const enter = t => { let lo = 0, hi = 1e9; for (const [p0, p1, dv] of [[l0, l1, Math.cos(t)], [c0, c1, Math.sin(t)]]) {
+    if (Math.abs(dv) < 1e-9) { if (p0 > 0 || p1 < 0) return null; continue; } lo = Math.max(lo, Math.min(p0 / dv, p1 / dv)); hi = Math.min(hi, Math.max(p0 / dv, p1 / dv)); }
+    return lo <= hi ? lo : null; };
+  const nl = Math.min(Math.max(0, l0), l1), nc = Math.min(Math.max(0, c0), c1); let s = swingReach(S, w, Math.atan2(nc, nl) * 180 / Math.PI) - Math.hypot(nl, nc);
+  for (let a = 0; ; a = Math.min(deg, a + 2)) { const e = enter(a * Math.PI / 180); if (e != null) s = Math.max(s, swingReach(S, w, a) - e); if (a >= deg) break; }
+  return Math.max(0, s);
 }
 function fitWhy(id) {
   const it = HIT(id), cl = clashes(id), way = cl.length ? [`in the way of ${cl.slice(0, 2).join(" and ").replace(/^The /, "the ").replace(/ and The /, " and the ")}`] : [];
@@ -415,7 +464,7 @@ function addSpot(rid, key, x, z, y, self) {
   return best ? best.slice(0, 2) : [x, z];
 }
 /* the pieces in its way: a moved, swapped or added piece against the others in the room it now stands in (not chairs and rugs) */
-const HCSKIP = new Set(["decor", "finish", "light", "switch", "socket", "fitting", "window", "door"]), hcSoft = k => /chairs?$|stools?$|rug$/.test(k) || /^(chair|rug)$/.test((HCAT[(HIT(k) || {}).add] || {}).k);   // N217: by its id or what was added
+const HCSKIP = new Set(["decor", "finish", "light", "switch", "socket", "fitting", "window", "door"]), hcSoft = k => /chairs?\d?$|stools?\d?$|rug$/.test(k) || /^(chair|stool|rug)$/.test((HCAT[(HIT(k) || {}).add] || {}).k);   // N217: by its id or what was added
 function clashes(id) {
   const it = HIT(id); if (!it || pieceNow(id).removed || hcSoft(id) || (!it.add && !pieceDelta(id).some(Boolean))) return [];
   const b = pieceBox(id), over = (p, q) => [0, 1, 2].every(j => p[j] < q[j + 3] - 1 && p[j + 3] > q[j] + 1);

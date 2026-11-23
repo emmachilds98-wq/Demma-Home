@@ -158,24 +158,30 @@ function turnFit(id, b, t) {
 }
 /* N217: a rider (a piece on, or hung from, its host: the house file's "on") goes where its host goes: the same way along the host's wall
    from its back-left corner, the same way out from its back, the same height over its top; kept inside it along its wall if it fits there.
-   Hidden when its host is taken out or turned, or when the host's top is no longer under 90% of it (or, hung, it no longer meets it).
-   undefined: as planned (its host unchanged, or the rider changed itself) */
+   Hidden when its host is taken out, or when the host's top is no longer under 90% of it (or, hung, it no longer meets it). N230: a turned
+   host turns its riders with it, round its own middle (the box returned carries the quarter turns, as an edit's). undefined: as planned
+   (its host unchanged, or the rider changed itself) */
 function riderBox(id) {
   const it = HIT(id), H = it && HIT(it.on); if (!H || pieceDelta(id).some(Boolean) || !pieceDelta(it.on).some(Boolean)) return undefined;
-  const c = pieceNow(it.on); if (c.removed || c.turn % 4) return null;
-  const hb = H.b, rb = it.b, nb = pieceBox(it.on), { a, o, flip } = hcFrame(H), b = rb.slice(), W = rb[a + 3] - rb[a], D = rb[o + 3] - rb[o];
+  const c = pieceNow(it.on); if (c.removed) return null;
+  const q = c.turn % 4, pb = pieceBox(it.on), cx = (pb[0] + pb[3]) / 2, cz = (pb[2] + pb[5]) / 2, nb = q % 2 ? turnBox(pb, cx, cz) : pb;   // the host before its turn, where it stands
+  const hb = H.b, rb = it.b, { a, o, flip } = hcFrame(H), b = rb.slice(), W = rb[a + 3] - rb[a], D = rb[o + 3] - rb[o];
   b[a] = nb[a] + rb[a] - hb[a]; if (W <= nb[a + 3] - nb[a]) b[a] = Math.max(nb[a], Math.min(nb[a + 3] - W, b[a])); b[a + 3] = b[a] + W;
   if (flip) { b[o + 3] = nb[o + 3] - (hb[o + 3] - rb[o + 3]); b[o] = b[o + 3] - D; } else { b[o] = nb[o] + rb[o] - hb[o]; b[o + 3] = b[o] + D; }
   b[1] = nb[4] + rb[1] - hb[4]; b[4] = b[1] + rb[4] - rb[1];
   const g = rb[1] >= hb[4] - 2 ? 0 : 2, ov = q => Math.max(0, Math.min(b[q + 3], nb[q + 3] + g) - Math.max(b[q], nb[q] - g));   // on its top: 90% of it over the top
-  return g ? (ov(0) && ov(2) ? b : null) : ov(0) * ov(2) >= 0.9 * (b[3] - b[0]) * (b[5] - b[2]) ? b : null;
+  if (!(g ? ov(0) && ov(2) : ov(0) * ov(2) >= 0.9 * (b[3] - b[0]) * (b[5] - b[2]))) return null;
+  if (!q) return b;
+  let t = b; for (let i = 0; i < q; i++) t = turnBox(t, cx, cz);   // where it ends up turned with its host; drawn turned round its own middle there
+  const dx = (t[0] + t[3] - b[0] - b[3]) / 2, dz = (t[2] + t[5] - b[2] - b[5]) / 2;
+  return Object.assign([b[0] + dx, b[1], b[2] + dz, b[3] + dx, b[4], b[5] + dz].map(v => Math.round(v * 10) / 10), { turn: q });
 }
 function storeEdits() {   // Measure's rows, as the engine's edits (HEDITS)
   if (!DS() || !R.HOUSE3 || NOWV) return;
   syncAdds();
   const out = {};
   for (const [id, it] of Object.entries(R.HOUSE3.items || {})) {
-    const rd = it.on && riderBox(id); if (rd !== undefined) { out[id] = { from: it.b, to: rd || it.b, removed: !rd }; continue; }   // N217
+    const rd = it.on && riderBox(id); if (rd !== undefined) { out[id] = { from: it.b, to: rd || it.b, removed: !rd, turn: (rd && rd.turn) || 0 }; continue; }   // N217, N230: turned with its host
     if (!it.add && !pieceDelta(id).some(Boolean)) continue; const [dA, dW, dH, dU] = pieceDelta(id);
     if (pieceNow(id).removed) { out[id] = { from: it.b, to: it.b, removed: true }; continue; }   // V2.34: taken out (Measure's As planned puts it back)
     const q = pieceNow(id).turn, to = pieceBox(id), E = { from: pieceBase(id, pieceNow(id).swap).b, to: q % 2 ? turnBox(to, (to[0] + to[3]) / 2, (to[2] + to[5]) / 2) : to, turn: q, swap: pieceNow(id).swap, add: it.add }, o = it.op;   // to: before the turn (editXf turns it)

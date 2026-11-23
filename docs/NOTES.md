@@ -244,13 +244,16 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `w`, `h`, `along` rows read from that base (`pieceNow`, `pieceDelta`, `setPiece`) and a new swap clears them. What swaps is
   `HSWAP_OF` by id (a decor `rug` too). `fitWhy(id)` is the page's fit check for any changed piece (the swap card and `pieceLine`): the
   room's walls (its box, the notches where it's L-shaped, the knee walls), the slope or ceiling (`model.headroom`), the doors' swings
-  (`opening.swing` in the house file, a quarter circle as `storage_ideas.checks`) and the walks (`storage_ideas.reserves()` named "walk"),
+  (`opening.swing` in the house file; N230: as it opens, `model.swing_into` and the page's `swingInto` the same sums: rays from the hinge every 2° to `deg`, a bifold's reach half its width past 45°, the astroid below) and the walks (`storage_ideas.reserves()` named "walk"),
   all from `R.HOUSE3.fit` (`export3d._fit`), then `clashes`; a rug only the walls. A new walk goes in `reserves()` (the model check keeps
   the storage ideas clear of it too). **Riders:** a piece that stands on or hangs from another is `o.item(..., on="host")` (the house
   file's `on`); `riderBox` moves it with its host (the same offset from the host's back-left corner, the same height over its top) and
-  hides it when the host is taken out or turned, or the new top is under less than 90% of it (hung: when it no longer meets it). Riders
+  hides it when the host is taken out, or the new top is under less than 90% of it (hung: when it no longer meets it); a turned host
+  turns it too (N230: worked out on the host's box before its turn, turned round the host's middle, drawn as an edit with that `turn`). Riders
   are bedroom 2's monitors, interface, 88-key, headphones and mic on the L desk and the office's two screen setups on its desk; not the
-  office lamp (its light would stay behind).
+  office lamp (its light would stay behind). N230: two of a thing are two items (`kitchen.stool`, `kitchen.stool2`; a number on the id:
+  `HSWAP_OF`, `hcSoft` and the walk's soft pieces allow it); a seat kind (`hcSeat`: chairs, stools) swaps centred, facing as before.
+  A kind with no house pieces (bar stools) gets real ones as rows in `docs/N219_catalogue.json` (read date, the listing's W × D × H).
   **Adding** (N218): the add card's kinds are chips, ‹ › goes through that kind (`hcAddOf`); `addSpot` puts a new piece (and each piece
   picked for it) back to the room's wall nearest the tap where `roomWhy` and the pieces find it clear, stored as the row's `x, z` on the
   wall line (0.5 in), which `syncAdds` reads back as against that wall. The space kept clear (`fit.keep`, from `reserves()`) names the
@@ -449,3 +452,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - CI cancels a branch's running workflow on each push: batch pushes, or a run never finishes.
 - Worktree agents: give each a task whose files don't overlap; merge with `git merge <their branch>`; `check_site.py`'s step
   strings (`WOOD`, `EACH`, `FITS`, `ADD`, `SWAP`) can be run alone by a small Playwright script that pulls them out with a regex.
+
+## Lessons of 23 Nov 2026 (N230, N236, N232)
+- **A made piece's details** (N236): a catalogue builder gets a 6th argument, a number from where the piece stands (`hcBuild`), so
+  copies of one idea differ (the face-out ledges' sleeves). The house's boxes are rounded to 1 mm (`hcBuild`): a detail proud of a face
+  by less than that vanishes, so labels and bands stand 1 mm out. A material in `GRAIN_ALONG` (`artisan`) carries its boxes' sizes
+  into `worldUV`, which turns each face's picture so its grain (up the picture) runs the face's longer way; any other material keeps
+  the world's directions (up a wall, along z on a top).
