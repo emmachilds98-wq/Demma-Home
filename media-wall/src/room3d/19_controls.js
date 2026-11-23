@@ -18,7 +18,7 @@ function extrasRule(kind, k, on) {
   if (!on) return;
   const off = (...ks) => { S.sugg = Object.assign({}, S.sugg); ks.forEach(x => { if (x !== k) S.sugg[x] = false; }); };
   if (kind === "sugg") {
-    if (["windowseat", "hallbench", "wardrobe"].includes(k)) off("windowseat", "hallbench", "wardrobe");
+    if (["windowseat", "seatdrawers", "hallbench", "wardrobe"].includes(k)) off("windowseat", "seatdrawers", "hallbench", "wardrobe");   // N241: the seat with drawers too
     if (k === "wardrobe") { off("alcoveshelves", "bartrolley"); if (S.beside !== "clear") { S.beside = "clear"; toast("The cupboard takes the wall beside the cabinet"); } }
     if (k === "alcoveshelves") off("wardrobe");
   }
@@ -303,7 +303,7 @@ root.addEventListener("click", e => {
     if (on && keys.includes("bartrolley")) { S.beside = "trolley"; S.site = "C"; S.cab = "compact"; }   // v34: it's the slim trolley, dressed
     if (keys.includes("barcase")) S.plants = on ? "corner" : DEF.plants;                               // v34: under the case, on a free breast
     if (d.sugg) extrasRule("sugg", d.sugg, on);                                                        // v37: one thing per place
-    else if (on) { S.sugg.hallbench = S.sugg.wardrobe = false; S.sugg.windowseat = true; S.sugg.alcoveshelves = true; }   // all on: the corner takes the seat
+    else if (on) { S.sugg.hallbench = S.sugg.wardrobe = S.sugg.seatdrawers = false; S.sugg.windowseat = true; S.sugg.alcoveshelves = true; }   // all on: the corner takes the seat
     applyState(); }
   else if (d.optclear) {                                                                               // v37: every extra off, back to the plan
     backToPlan(); closeAct(); toast("Back to your plan"); }                                            // v39: your picks stay (they're the plan)
