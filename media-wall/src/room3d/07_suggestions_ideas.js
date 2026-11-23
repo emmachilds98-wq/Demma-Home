@@ -286,8 +286,8 @@ function buildStorage37(own) {
     const [xa, xb] = S_.x, w = xb - xa, t = S_.t, zf = WZ + S_.d - t, dark = own("#1c1a18"), r = rnd(242), [fw, fh] = D.front, [bw, bd, bh] = D.box;
     ibox(g, xa + 1.5, 0, WZ + 1.5, w - 3, D.plinth, S_.d - 3.5, own("#3a2e24"));                              // a recessed plinth
     ibox(g, xa, D.plinth, WZ, w, S_.box_h - D.plinth, S_.d - t, carc);                                          // the box, its fixed top under the cushion
-    const books = ["#a65a38", "#2f4e6e", "#d9a441", "#8b9878", "#efe7d8", "#34507f", "#7a4a2a"].map(c => own(c)), games = ["#c7643a", "#2f4a6e", "#e9e1cf"].map(c => own(c));
-    [18, 26].forEach((open, i) => {
+    const books = ["#a65a38", "#2f4e6e", "#d9a441", "#8b9878", "#efe7d8", "#34507f", "#7a4a2a"].map(c => own(c)), games = ["#e9e1cf", "#2f4a6e", "#c7643a"].map(c => own(c));
+    [28, 22].forEach((open, i) => {
       const ox = xa + t + i * (D.opening[0] + t), oy = D.plinth + t;
       ibox(g, ox, oy, zf, D.opening[0], D.opening[1], 0.1, dark, false);                                       // the opening's shadow
       const fx = xa + D.gap + i * (fw + D.gap), z1 = zf + open, bx = ox + D.allow, by = oy + 0.5, bz = z1 - bd;
@@ -315,8 +315,8 @@ function buildStorage37(own) {
       c.rotation.z = Math.PI / 2; c.position.copy(v3((xa + xb) / 2, y, zc)); g.add(shadow(c)); rails.push(y); }
     const towel = (x, wd, yr, drop, m) => { const top = yr + A.rail_d / 2, zb = zc - A.rail_d / 2 - 0.4, zfr = z1;   // over a rail: the front down over the radiator's face
       ibox(g, x, top, zb, wd, 0.35, zfr + 0.35 - zb, m); ibox(g, x, top - drop, zfr, wd, drop, 0.35, m); ibox(g, x, Math.max(R.RADIATOR_Y[1] + 0.2, top - 6), zb, wd, top - Math.max(R.RADIATOR_Y[1] + 0.2, top - 6), 0.35, m); };
-    towel(268, 24, rails[3], 29, cloth("#efe7d8"));                                                             // a bath towel, past the sofa's end
-    towel(190, 32, rails[1], 24, cloth("#8b9878"));                                                             // a tea towel
+    towel(268, 24, rails[3], 29, cloth("#d9a441"));                                                             // a bath towel, past the sofa's end
+    towel(190, 32, rails[1], 24, cloth("#c7643a"));                                                             // a tea towel
     for (const [x, rad, h] of [[172, 2.8, 7], [226, 3, 9], [287, 2.6, 6]]) potPlant(g, x, A.top, z1 - 3.8, rad, h, 0, r, own("#c46c45"), null);   // a sill for plants
   }, true); }
   if (R.HALL_BENCH) { const H = R.HALL_BENCH, body = oakOf("#b07d4f"), pad = cloth("#8f8a80"); SVAR_MATS.hallbench = [body];   // the bench with cubbies: ten open cubbies (shoes, a basket) under a padded seat; free-standing, so it moves in Edit room
