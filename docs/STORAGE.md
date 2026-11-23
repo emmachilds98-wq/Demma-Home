@@ -65,8 +65,8 @@ shelves, the shelf over the door, the lift-top table, the blanket basket):
 
 | For | Idea | Where | About | Source |
 |---|---|---|---|---|
-| Drying | An oak shelf over the radiator with four drying rails that fold down under its front edge: a sill for plants by day, warm rails on wash day, folded flat behind the curtains | Under the window, over the radiator (137 long) | 145 × 16, rails fold to 3 deep; £70–110 | oak board, brass hinges (E) |
-| Books, games | The window seat with two deep drawers instead of a lift-up lid: books spine-up, board games flat | The window corner (in place of the plant stand: one or the other) | the seat's width × 45 deep; £180–260 | oak board, 450 runners (E) |
+| Drying | An oak shelf over the radiator with four drying rails that fold down under its front edge: a sill for plants by day, warm rails on wash day, folded flat behind the curtains | Under the window, over the radiator (137 long) | 145 × 10 (behind the drawn curtains), rails fold to 3 deep; £70–110 | oak board, brass hinges (E) |
+| Books, games | The window seat with two deep drawers instead of a lift-up lid: books spine-up, board games flat | The window corner (in place of the plant stand: one or the other) | 98 × 46 × 45, drawers 43.8 × 40; £180–260 | oak board, 400 runners (E) |
 | Books | The alcove shelves as book ledges: a 2 cm oak lip and an oak bookend at each end, so books stand without falling and a few lie face-out | The two shelves over the plant stand (already picked) | 90 × 23 each; £15–25 more | oak board |
 | Small things | A shallow oak tray drawer under the lift-top table's top for remotes, controllers and coasters | The coffee table (already picked) | 70 × 35 × 5; £30–45 | oak board, runners (E) |
 

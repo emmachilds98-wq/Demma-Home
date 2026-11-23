@@ -276,7 +276,7 @@ def scene():
     # v37: the built-in bar beside the cabinet, its glass rail, the shoe cabinets, the window corner's three, the alcove shelves, the
     # wall cabinets, the step drawers, the over-door rail
     for k in ("BAR_BUILT", "BAR_RAIL", "BAR_GLASS_H", "TRONES", "CORNER", "WINDOW_SEAT", "HALL_BENCH", "WARDROBE", "ALCOVE_SHELVES", "EKET", "WALL_CABS",
-              "STAIR_DRAWERS", "OVERDOOR", "STAIR_CURTAIN", "FIRM", "ENHET", "PLANT_THROUGH_GAP"):   # v38: FIRM, the client's plan
+              "STAIR_DRAWERS", "OVERDOOR", "STAIR_CURTAIN", "FIRM", "ENHET", "PLANT_THROUGH_GAP", "RAD_SHELF", "SEAT_DRAWERS"):   # N241: the radiator shelf, the seat's drawers   # v38: FIRM, the client's plan
         room_spec[k] = getattr(G, k)
     return {"room": room_spec, "groups": groups}
 

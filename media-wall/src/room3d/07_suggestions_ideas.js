@@ -241,7 +241,7 @@ function buildStorage() {
   buildStorage37(own);                                                                              // v37
   // v39: the storage pieces merged as each is built (lazyVis; the step drawers' boxes nested, so they stay)
 }
-function cornerTaken() { return ["windowseat", "hallbench", "wardrobe"].some(k => S.sugg[k]); }   // v37: the storage options; the window corner takes one of the seat, the bench or the cupboard (cornerTaken hides the stand there)
+function cornerTaken() { return ["windowseat", "seatdrawers", "hallbench", "wardrobe"].some(k => S.sugg[k]); }   // v37: the storage options; the window corner takes one of the seat, the bench or the cupboard (cornerTaken hides the stand there)
 function cornerHides(id) {             // your plant stand or your vinyl stand, whichever stands in the window corner, unless you've moved it
   const inCorner = id === "plants" ? S.plants === "corner" : S.plants === "breast", L = S.layout[id] || {};
   return inCorner && cornerTaken() && L.x === undefined;
@@ -281,6 +281,44 @@ function buildStorage37(own) {
     const seat = new THREE.Mesh(new RoundedBoxGeometry((w - 2) * M, S_.cushion * M, (S_.d - 2) * M, 3, 0.02), cush); seat.position.copy(v3((xa + xb) / 2, S_.box_h + S_.cushion / 2, WZ + S_.d / 2)); g.add(shadow(seat));
     for (const xc of [xa + w * 0.27, xa + w * 0.73]) { const bc = new THREE.Mesh(new RoundedBoxGeometry(S_.back_cush[0] * M, 38 * M, S_.back_cush[1] * M, 3, 0.04), cloth("#e9e1cf"));
       bc.position.copy(v3(xc, S_.h + 18, WZ + S_.back_cush[1] / 2 + 1)); bc.rotation.x = 0.12; g.add(shadow(bc)); } }, true); }
+  // N241: the same seat with two deep drawers for the lid, pulled out: books spine-up in one, board games flat in the other
+  if (R.WINDOW_SEAT && R.SEAT_DRAWERS) { const g = SUGG_G.seatdrawers = new THREE.Group(); shell.add(g); lazyVis(g, () => { const S_ = R.WINDOW_SEAT, D = R.SEAT_DRAWERS, wood = oakOf("#c48c57"), carc = oakOf("#b5845a"), cush = cloth("#d9a441"); SVAR_MATS.seatdrawers = [cush];
+    const [xa, xb] = S_.x, w = xb - xa, t = S_.t, zf = WZ + S_.d - t, dark = own("#1c1a18"), r = rnd(242), [fw, fh] = D.front, [bw, bd, bh] = D.box;
+    ibox(g, xa + 1.5, 0, WZ + 1.5, w - 3, D.plinth, S_.d - 3.5, own("#3a2e24"));                              // a recessed plinth
+    ibox(g, xa, D.plinth, WZ, w, S_.box_h - D.plinth, S_.d - t, carc);                                          // the box, its fixed top under the cushion
+    const books = ["#a65a38", "#2f4e6e", "#d9a441", "#8b9878", "#efe7d8", "#34507f", "#7a4a2a"].map(c => own(c)), games = ["#e9e1cf", "#2f4a6e", "#c7643a"].map(c => own(c));
+    [28, 22].forEach((open, i) => {
+      const ox = xa + t + i * (D.opening[0] + t), oy = D.plinth + t;
+      ibox(g, ox, oy, zf, D.opening[0], D.opening[1], 0.1, dark, false);                                       // the opening's shadow
+      const fx = xa + D.gap + i * (fw + D.gap), z1 = zf + open, bx = ox + D.allow, by = oy + 0.5, bz = z1 - bd;
+      ibox(g, fx, D.plinth + D.gap, z1, fw, fh, t, wood);                                                       // the front
+      ibox(g, fx + 8, D.plinth + D.gap + fh - 3, z1 + t, fw - 16, 0.6, 0.1, dark, false);                       // its finger-pull
+      for (const sx of [bx, bx + bw - D.side]) ibox(g, sx, by, bz, D.side, bh, bd, carc);                       // the drawer's sides
+      ibox(g, bx, by, bz, bw, 0.6, bd, carc); ibox(g, bx, by, bz, bw, bh, D.side, carc);                        // its floor and back
+      const x0 = bx + D.side, y0 = by + 0.6, z0 = bz + D.side, zi = bd - 2 * D.side;
+      if (i === 0) for (const row of [0, 1]) { let z = z0 + 0.3; while (z < z0 + zi - 3.6) { const th = 1.8 + r() * 1.6;   // B-format books, spine-up, two rows
+        ibox(g, x0 + 0.6 + row * 20.2, y0, z, 19.8, 12.9, th, books[Math.floor(r() * books.length)]); z += th + 0.1; } }
+      else games.forEach((m, j) => ibox(g, x0 + (D.inside[0] - 30) / 2 + j * 0.6, y0 + j * 8, z0 + (zi - 30) / 2 + (j % 2) * 0.8, 30, 8, 30, m));   // three games flat
+    });
+    const seat = new THREE.Mesh(new RoundedBoxGeometry((w - 2) * M, S_.cushion * M, (S_.d - 2) * M, 3, 0.02), cush); seat.position.copy(v3((xa + xb) / 2, S_.box_h + S_.cushion / 2, WZ + S_.d / 2)); g.add(shadow(seat));
+    for (const xc of [xa + w * 0.27, xa + w * 0.73]) { const bc = new THREE.Mesh(new RoundedBoxGeometry(S_.back_cush[0] * M, 38 * M, S_.back_cush[1] * M, 3, 0.04), cloth("#e9e1cf"));
+      bc.position.copy(v3(xc, S_.h + 18, WZ + S_.back_cush[1] / 2 + 1)); bc.rotation.x = 0.12; g.add(shadow(bc)); } }, true); }
+  // N241: an oak shelf over the radiator, plants on it; four oak rails on two brass arms folded down under its front edge, towels over two
+  if (R.RAD_SHELF) { const g = SUGG_G.radshelf = new THREE.Group(); shell.add(g); lazyVis(g, () => { const A = R.RAD_SHELF, wood = oakOf("#c48c57"); SVAR_MATS.radshelf = [wood];
+    const [xa, xb] = A.x, [z0, z1] = A.z, under = A.top - A.t, brass = own("#b8913f"), r = rnd(241), zc = z1 - A.rail_d / 2 - 0.1;
+    ibox(g, xa, under, z0, A.w, A.t, A.d, wood);                                                                // the shelf
+    ibox(g, xa, under - 2, z0, A.w, 2, 2, wood, false);                                                         // its batten on the wall
+    for (const x of [xa, xb - A.t]) ibox(g, x, under - A.cheek, z0, A.t, A.cheek, A.d, wood);                  // the cheeks, past the radiator's ends
+    for (const x of [xa + A.t + 0.1, xb - A.t - 0.5]) ibox(g, x, under - A.arm, zc - 0.6, 0.4, A.arm, 1.2, brass);   // the drop arms, down
+    const len = A.w - 2 * A.t - 0.2, rails = [];
+    for (let i = 0; i < A.rails; i++) { const y = under - 1.2 - i * A.pitch, c = new THREE.Mesh(new THREE.CylinderGeometry(A.rail_d / 2 * M, A.rail_d / 2 * M, len * M, 12), wood);
+      c.rotation.z = Math.PI / 2; c.position.copy(v3((xa + xb) / 2, y, zc)); g.add(shadow(c)); rails.push(y); }
+    const towel = (x, wd, yr, drop, m) => { const top = yr + A.rail_d / 2, zb = zc - A.rail_d / 2 - 0.4, zfr = z1;   // over a rail: the front down over the radiator's face
+      ibox(g, x, top, zb, wd, 0.35, zfr + 0.35 - zb, m); ibox(g, x, top - drop, zfr, wd, drop, 0.35, m); ibox(g, x, Math.max(R.RADIATOR_Y[1] + 0.2, top - 6), zb, wd, top - Math.max(R.RADIATOR_Y[1] + 0.2, top - 6), 0.35, m); };
+    towel(268, 24, rails[3], 29, cloth("#d9a441"));                                                             // a bath towel, past the sofa's end
+    towel(190, 32, rails[1], 24, cloth("#c7643a"));                                                             // a tea towel
+    for (const [x, rad, h] of [[172, 2.8, 7], [226, 3, 9], [287, 2.6, 6]]) potPlant(g, x, A.top, z1 - 3.8, rad, h, 0, r, own("#c46c45"), null);   // a sill for plants
+  }, true); }
   if (R.HALL_BENCH) { const H = R.HALL_BENCH, body = oakOf("#b07d4f"), pad = cloth("#8f8a80"); SVAR_MATS.hallbench = [body];   // the bench with cubbies: ten open cubbies (shoes, a basket) under a padded seat; free-standing, so it moves in Edit room
     const g = new THREE.Group(), cx = (H.x[0] + H.x[1]) / 2, cz = WZ + H.d / 2 + 0.5;
     SUGG_G.hallbench = movable("sg_hallbench", "Bench with cubbies (suggested)", g, () => ({ x: cx, z: cz, rot: 0 }), H.w, H.d, [body], false, { when: () => !!S.sugg.hallbench });
@@ -438,7 +476,7 @@ function applySuggest() {
   for (const k of ["art", "clock", "tray", "fairy", "hanger", "trail", "throw", "pclamp", "candles", "mirror", "shelfled", "blind", "cablights", "bartrolley"]) if (SUGG_G[k]) SUGG_G[k].visible = !!S.sugg[k];
   if (SUGG_G.barcase) SUGG_G.barcase.visible = !!S.sugg.barcase && caseBreast();                          // v34: under the case
   for (const k of ["barside", "doorshelf", "shelfboxes"]) if (SUGG_G[k]) SUGG_G[k].visible = !!S.sugg[k];   // v36
-  for (const k of ["stairdrawers", "alcoveshelves", "windowseat", "wardrobe", "wallcabs", "overdoor"]) if (SUGG_G[k]) SUGG_G[k].visible = !!S.sugg[k];   // v37
+  for (const k of ["stairdrawers", "alcoveshelves", "windowseat", "seatdrawers", "radshelf", "wardrobe", "wallcabs", "overdoor"]) if (SUGG_G[k]) SUGG_G[k].visible = !!S.sugg[k];   // v37
   for (const k of ["growlights", "curtainmotor", "lpledges", "cordlamp", "stairscurtain"]) if (SUGG_G[k]) SUGG_G[k].visible = !!S.sugg[k];   // v43: the four new options; v78 the stair curtain
   if (SUGG_G.alcoveshelves && S.sugg.wardrobe) SUGG_G.alcoveshelves.visible = false;                  // v37: the cupboard fills that corner
   if (SUGG_G.clock && S.sugg.doorshelf) SUGG_G.clock.visible = false;                                 // the shelf takes the clock's place

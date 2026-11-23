@@ -1162,6 +1162,7 @@ def more_storage_zone():
     drawers and the over-door rail (suggestions: out of the counts)."""
     g = G
     B, C, ws, hb, wd, al, wc, sd, od = g.BAR_BUILT, g.CORNER, g.WINDOW_SEAT, g.HALL_BENCH, g.WARDROBE, g.ALCOVE_SHELVES, g.WALL_CABS, g.STAIR_DRAWERS, g.OVERDOOR
+    rs, sd2 = g.RAD_SHELF, g.SEAT_DRAWERS                                 # N241
     return ("More storage, and a bar built in (suggestions)", "beside the cabinet, the window corner, the walls, the steps, the door", [
         ("D, the built-in bar: its slot", f"{r1(B['w'])} wide, scribed", ref("room"), f"the cabinet's end z {r1(g.CAB['z'][1])} to the boxing {r1(g.PIPE_BOX['z'][1])}",
          "fixed to the wall and the floor, the boxing and the cabinet's end", PASS),
@@ -1195,6 +1196,15 @@ def more_storage_zone():
          "each tread needs a bearer under it once its riser comes out: a joiner's job, or build them into the new stairs", CHECK),
         ("The hook rail over the door", f"{r1(od['w'])} × {r1(od['d'])} × {r1(od['h'])}", ref("overdoor"), f"the open door stands {r1(od['open_gap'])} off the breast's side",
          f"slim things only on the room side ({r1(od['open_gap'] - od['d'])} left), or hang it on the hall side", TIGHT),
+        # N241: the radiator shelf with drying rails, and the window seat with two drawers
+        ("The radiator shelf", f"{r1(rs['w'])} × {r1(rs['d'])}, its top at {r1(rs['top'])}", ref("snowdonoak", "room"), f"the radiator {r1(g.RADIATOR_X[1] - g.RADIATOR_X[0])} long, its face {r1(g.RADIATOR_FACE - g.WINDOW_Z)} off the wall",
+         f"{r1(rs['over_rad'])} over it, {r1(rs['cheek_gap'])} past each end; two lengths of the 120 board, joined on its wall batten", PASS),
+        ("Its rails and the drawn curtains", f"four {r1(rs['rail_d'] * 10)} mm rails, {r1(rs['arm'])} arms", ref("oakdowel"), f"the curtains {r1(g.CURTAIN['z'] - g.WINDOW_Z)} off the wall",
+         f"{r1(rs['to_curtain'])} behind them; folded down, the rails hang in front of the radiator's top; {r1(rs['over_sofa'])} over your sofa's back", TIGHT),
+        ("The window seat's drawers", f"two, {r1(sd2['box'][0])} × {r1(sd2['box'][1])} × {r1(sd2['box'][2])} on 400 runners", ref("runners", "seat"), f"the seat inside {r1(ws['inside'][0])} × {r1(ws['inside'][1])}",
+         f"{r1(sd2['spare_d'])} behind the runners; inside {r1(sd2['inside'][0])} × {r1(sd2['inside'][1])} × {r1(sd2['inside'][2])}", PASS),
+        ("What they hold", f"three {r1(g.GAME_BOX[0])} × {r1(g.GAME_BOX[1])} × {r1(g.GAME_BOX[2])} games flat; B-format books spine-up", ref("ttr", "paperback"),
+         f"inside {r1(sd2['inside'][2])} tall", f"{r1(sd2['inside'][2] - 3 * g.GAME_BOX[2])} over the games; two rows of books across, about {2 * int(sd2['inside'][1] // 2.5)} in all", PASS),
     ])
 
 
@@ -1498,6 +1508,10 @@ SOURCES["pulleyairer"] = ("Ceiling pulley clothes airers (read 23 Nov 2026): Clo
                           "17 cm under the ceiling fully raised, £74.99 (clothesmaid.com); Cast in Style 6-lath Victorian Kitchen Maid £99 "
                           "(castinstyle.co.uk); Pulley Maid wall radial airer, 120 × 60 open, 20 × 10 shut, £55.99 (pulleymaid.com)")
 ORDER.extend(["n225tiles", "n225suites", "n224glass", "n226doors", "n224units", "n225fit", "pulleyairer"])
+# N241 (23 Nov 2026): the living room's radiator shelf and the window seat's drawers (options); books in the drawers spine-up
+SOURCES["paperback"] = ("UK book sizes, w × h: A-format 11.1 × 17.8, B-format 12.9 × 19.8 (the usual paperback novel), Demy 13.8 × 21.6, "
+                        "Royal 15.6 × 23.4 (publishing.co.uk/guides/standard-book-sizes-uk, read 23 Nov 2026)")
+ORDER.append("paperback")
 # V4 (N152): will the sofa bed go in? Its biggest box (166 × 101 × 68, SOURCES "amelia") carried on its side, the 166 first: it needs
 # its 68 and 2 to spare (hands) across each opening on the way, the front door, the hall past the stair box and the living room door, in
 # line (no turn). A door left on its hinges, open flat, takes about its leaf's thickness (E: 4) more. The doors' widths are Measure's
