@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------- render loop, only when something changed */
 let houseLite = /[?&]houselite\b/.test(location.search);   // v73 (B): a house under 25 fps in HD drops its AO and draws at 1× for the visit (?houselite forces it)
 /* N240: a real card under 25 fps while moving in the house (her PC, 23 Nov 2026: "choppy / laggy") steps down for the visit, as the others do:
-   first the house at 1× (cardLite), then without the shade (houseLite); never under a test's software graphics (?autolite tries it) */
+   first at 1× (cardLite, every view), then the house without the shade (houseLite); never under a test's software graphics (?autolite tries it) */
 let cardLite = false, cardT = 0; const AUTO_LITE = !navigator.webdriver || /[?&]autolite\b/.test(location.search);
 /* V1.1: a capable phone in HD that runs under 14 ms gets the shade and glow, lighter (phoneAO); off for the visit past 30 ms */
 let phoneAO = GOOD_PHONE, phoneAOoff = false, phoneCap = 2;   // V1.11: on from the start; phoneCap: the phone's sharpness
@@ -9,7 +9,7 @@ let moveLite = false;   // V3.39 (N91): the shade and glow off while you move (0
 let still_t = 0, lowRes = false, dragT = 0, slowDev = !HI, capDue = false;   // v35: slowDev until the speed check says otherwise (v39: not on a real graphics card)
 const MV = []; let mvLast = 0;   // v39: the gaps between frames while the room moves: slow ones turn on the lower resolution while you drag
 function dirty() { GS.need = Math.max(GS.need, 2); }
-function fullRatio() { const d = window.devicePixelRatio || 1; if (SMALL && !BIG_GPU) return Math.min(d, GOOD_PHONE ? phoneCap : 1.5); if (BIG_GPU && (cardLite || houseLite) && S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view)) return 1;   /* N240 */ if (S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view) && !BIG_GPU) return houseLite ? 1 : Math.min(d, 1.5);   // V2.25: a real card draws the house as sharp as a room   // V1.11: a real graphics card draws the house at 2× too   // v73: the house at the screen's own sharpness (no supersampling: it's many times the living room's drawing)
+function fullRatio() { const d = window.devicePixelRatio || 1; if (SMALL && !BIG_GPU) return Math.min(d, GOOD_PHONE ? phoneCap : 1.5); if (BIG_GPU && S.quality === "hd" && (cardLite || houseLite && R.HOUSE3 && HOUSEV(S.view))) return 1;   /* N240 */ if (S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view) && !BIG_GPU) return houseLite ? 1 : Math.min(d, 1.5);   // V2.25: a real card draws the house as sharp as a room   // V1.11: a real graphics card draws the house at 2× too   // v73: the house at the screen's own sharpness (no supersampling: it's many times the living room's drawing)
   return S.quality === "hd" ? (BIG_GPU ? Math.min(d, 2) : Math.min(d, 1.5)) : Math.min(d, 1); }   // V2.30: a real card at the screen's own sharpness, as a game (4× anti-aliasing smooths the edges; it drew 1.5× on top: 2.25 times the pixels)   // v39: phones at their own sharpness; v44: a real graphics card draws HD at 1.5–2×; v50: Fast on a PC at full size (was 0.85×)
 const fitFov = (fov, asp = camera.aspect) => asp >= 16 / 9 ? fov : Math.min(95, 2 * Math.atan(Math.tan(fov * Math.PI / 360) * (asp < 0.8 ? 1.45 : 16 / 9) / asp) * 180 / Math.PI);   // v21: narrower screens widen the field of view to take in as much of the room as at 16:9 (v33: portrait, tighter)
 function sizeRenderer() {
@@ -111,9 +111,9 @@ function frame(now) {
     if (m > 28 && (!BIG_GPU || MASKED)) slowDev = true; else if (m < 14 && !lowRes && HI) slowDev = false;
     if (PHONE_HD && lowRes && m > 24 && phoneCap > 1.5) capDue = true;   // V2.73 (N17): still slow with the lighter drawing
     if (m > 40 && !BIG_GPU && !houseLite && S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view)) { houseLite = true; sizeRenderer(); toast("A lighter drawing for the house on this computer"); }
-    else if (m > 40 && BIG_GPU && AUTO_LITE && !houseLite && now - cardT > 3000 && S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view)) { cardT = now;   // N240: a step, then 3 s for the next 24 frames
-      if (!cardLite && fullRatio() > 1) { cardLite = true; sizeRenderer(); toast("The house drawn softer to keep it smooth"); }
-      else { houseLite = true; sizeRenderer(); toast("A lighter drawing for the house on this computer"); } } } }
+    else if (m > 40 && BIG_GPU && AUTO_LITE && now - cardT > 3000 && S.quality === "hd") { cardT = now;   // N240: a step, then 3 s for the next 24 frames
+      if (!cardLite && fullRatio() > 1) { cardLite = true; sizeRenderer(); toast("Drawn softer to keep it smooth"); }
+      else if (!houseLite && R.HOUSE3 && HOUSEV(S.view)) { houseLite = true; sizeRenderer(); toast("A lighter drawing for the house on this computer"); } } } }
   mvLast = active ? now : 0;
   // v35: lower resolution only while a drag on a slow device has lasted a moment (each switch is a new drawing buffer)
   const go = GS.moving || (walked && dragLite());   // V2.73 (N17): a phone's walk draws without the shade and glow as a drag does; past 24 ms a frame it drops to 1.5× once, while still
@@ -164,7 +164,7 @@ function perfInfo() {   // v35: the counts to watch each round (R3D.perf())
   return { calls: FT.calls, triangles: FT.tris, geometries: i.memory.geometries, textures: i.memory.textures, programs: i.programs.length,
     lights: ls.length, shadows: ls.filter(l => l.castShadow).length, quality: S.quality, ratio: gl.getPixelRatio(), frameMs: med(FT),
     warm: PRE.queue.length, errors: store.get("r3d-errors", []).length, gpu: GPU.slice(0, 80), bigGpu: BIG_GPU, ao: aoLive(), goodPhone: GOOD_PHONE, slowDev,   // v39: which graphics card, and whether it starts in HD
-    gpuClass: gpuClass(), phone: SMALL, version: R.VERSION || "", moveMs: FT.mv ? +FT.mv.toFixed(1) : null, worstMs: FT.worst ? Math.round(FT.worst) : null, stillMs: med(probeT), view: S.view };   // V3.04 (N50): a frame while moving (24 frames' middle), a whole still frame (the start's check), for Send
+    gpuClass: gpuClass(), phone: SMALL, version: R.VERSION || "", moveMs: FT.mv ? +FT.mv.toFixed(1) : null, worstMs: FT.worst ? Math.round(FT.worst) : null, stillMs: med(probeT), view: S.view, lite: houseLite ? 2 : cardLite ? 1 : 0 };   // N240: the steps down taken   // V3.04 (N50): a frame while moving (24 frames' middle), a whole still frame (the start's check), for Send
 }
 if (/[?&]perf\b/.test(location.search)) {   // v35: ?perf shows the counts in a corner   // V3.04 (N50): in fewer words; Measure's Send carries them too
   const box = document.createElement("div"); box.className = "r3d-perf";
