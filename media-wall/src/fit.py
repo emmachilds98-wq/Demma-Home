@@ -1326,6 +1326,14 @@ SOURCES["upfloors"] = ("Upgrade floors (Nov 2026; N56 draws them to these sizes,
                        "Van Gogh about £33 a m²; Concept Tiles, Evolution Stone porcelain 1200 × 600, £60–64 a m² (concepttiles.co.uk). "
                        "Laid costs add a fitter's (E)")
 ORDER.append("upfloors")
+SOURCES["windress"] = ("Window dressings (N227, read 23 Nov 2026; each window's own, options to look at, a rough cost a window): curtains as the "
+                       "living room's (Dunelm, pencil pleat on a pole), £30–100; a roller blind: IKEA TRETUR block-out roller blind 100 × 195, "
+                       "£45 (ikea.com/gb/en/p/tretur-block-out-roller-blind-light-grey-60380460), £25–90 by size and fabric; a Roman blind: "
+                       "Dunelm made-to-measure Roman blinds about £70–127 (dunelm.com/category/made-to-measure/blinds/roman-blinds), ready-made "
+                       "from about £45 (E); plantation shutters fitted £180–300 a m² of window (Checkatrade, window shutter installation cost, "
+                       "May 2026: checkatrade.com/blog/cost-guides/window-shutter-installation-cost), louvres 63 mm (E). Drawn: a blind face-fixed "
+                       "4 past the window each side, its roller 7 across; shutters in two tiers in an L-frame on the sill (E)")
+ORDER.append("windress")
 SOURCES["panels"] = ("Wall panelling (Nov 2026; N57 draws it to these sizes, options to look at): B&Q, Cheshire Mouldings MDF Shaker wall panelling "
                      "kit, 8 strips 2400 × 97 × 9 mm, moisture resistant, paintable, £36.97 (diy.com, 5055170393310); B&Q (Panels By Sofia), acoustic "
                      "slat wall panel, natural oak veneer, 2400 × 608 × 21 mm on acoustic felt, £71.99 (diy.com, 5061038531787); slats 27 wide, "
