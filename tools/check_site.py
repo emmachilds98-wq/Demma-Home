@@ -255,7 +255,7 @@ TILE = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
     b.click(); await sl(300);
     for (let i = 1; i <= n; i++) { const was = (E[id] || {}).swap, nx = q(`#r3d-act [data-hswapgo="${id}:${i}"]`); if (!nx) return 'no › to ' + i;   // › one at a time (only the next is on the card)
       nx.click(); if (!await wait(() => E[id] && E[id].swap && E[id].swap !== was)) return 'not swapped'; await sl(200); }
-    return await wait(() => (D.PICK.lower || []).some(p => p.id === id)) ? (await sl(300), [q('#r3d-act-h').textContent, q('#r3d-act-st').textContent]) : 'not drawn'; };   // the WC: the lower floor
+    return await wait(() => Object.values(D.PICK).some(L => L.some(p => p.id === id))) ? (await sl(300), [q('#r3d-act-h').textContent, q('#r3d-act-st').textContent]) : 'not drawn'; };
   const toilet = await swap('wc.toilet', 1), basin = await swap('wc.basin', 3);
   for (const k of ['wc.toilet', 'wc.basin']) { D.openAct('hitem:' + k); await sl(400); q('#r3d-act [data-hreset]').click(); await sl(300); }
   const back = await wait(() => !E['wc.toilet'] && !E['wc.basin']) && !Object.values(ds.rows('edits')).some(v => v && /^wc[.]/.test(v.item)); if (D.actId) q('#r3d-act .x').click();
@@ -283,7 +283,7 @@ STOOL = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTime
   R3D.set({ view: 'kitchen' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
   D.openAct('hitem:' + id); await sl(600); const b = q('#r3d-act [data-actopen^="hswap:"]'); if (!b) return { err: 'no Swap it on the stool' }; b.click(); await sl(300);
   const chip = [...document.querySelectorAll('#r3d-act [aria-label="Shops"] button')].find(x => x.textContent === 'IKEA'); if (!chip) return { err: 'no IKEA chip' };
-  chip.click(); const swapped = await wait(() => E[id] && E[id].swap && (D.PICK.ground || []).some(p => p.id === id)); await sl(300);
+  chip.click(); const swapped = await wait(() => E[id] && E[id].swap && Object.values(D.PICK).some(L => L.some(p => p.id === id))); await sl(300);   // whichever floor it's on
   const name = q('#r3d-act-h').textContent, line = q('#r3d-act-st').textContent;
   D.openAct('hitem:' + id); await sl(400); q('#r3d-act [data-hreset]').click();
   const back = await wait(() => !E[id]) && !Object.values(ds.rows('edits')).some(v => v && v.item === id); if (D.actId) q('#r3d-act .x').click();

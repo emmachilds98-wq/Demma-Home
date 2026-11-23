@@ -551,8 +551,8 @@ function lookRows(L) {
   LOOK_ROWS.set(key, out); return out;
 }
 const lookCost = L => lookRows(L).reduce((a, q) => [a[0] + q[2], a[1] + q[3]], [0, 0]);
-function lookDiff(L) {   // Hold to compare's toast: the look against the device's own changes (their middles)
-  const [lo, hi] = lookCost(L), T = R.HOUSE3 ? upsAll()[1] : { lo: 0, hi: 0 }, d = Math.round(((lo + hi) - (T.lo + T.hi)) / 2 / 10) * 10;
+function lookDiff(L) {   // Hold to compare's toast: the look against the device's own (their middles)
+  const [lo, hi] = lookCost(L), [ml, mh] = lookCost(lookNow()), d = Math.round(((lo + hi) - (ml + mh)) / 2 / 10) * 10;   // yours priced the same way (the plan's scheme no change)
   return Math.abs(d) < 20 ? "About the same as yours" : `About £${Math.abs(d).toLocaleString("en-GB")} ${d > 0 ? "more" : "less"} than yours`;
 }
 function finSchDraw() {
