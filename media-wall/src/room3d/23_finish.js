@@ -169,7 +169,7 @@ function winGeos(w, k, c) {   // [[geometries, material]] for a window dressed: 
 function finCurtApply() {
   if (!finSetup() || !houseG) return;
   if (HBUILD && !HBUILD.win) { const b0 = HBUILD; HBUILD = Object.assign((fk, F) => { const r = b0(fk, F);   // N227: a floor rebuilt (an edit) drops what's laid on it: laid again
-    if (!WIN_REDO) { WIN_REDO = 1; Promise.resolve().then(() => { WIN_REDO = 0; finFloorApply(); }); } return r; }, { win: 1 }); }
+    if (!WIN_REDO) { WIN_REDO = 1; Promise.resolve().then(() => { WIN_REDO = 0; finFloorApply(); doorApply(); }); } return r; }, { win: 1 }); }
   for (const m of CURT_LAID) { m.parent && m.parent.remove(m); m.geometry.dispose(); } CURT_LAID = [];
   for (const w of winAll()) { const g = HFLOOR[w.f], j = winsOf(w.room).indexOf(w), now = winNow(w.room, j); if (!g || now.plan || now.k === "none") continue;
     for (const [geos, mat] of winGeos(w, now.k, now.c)) if (geos.length) { const m = mat(), me = new THREE.Mesh(m.map ? worldUV(mergeGeometries(geos), m.userData.hk) : mergeGeometries(geos), m); geos.forEach(q => q.dispose());
@@ -440,7 +440,7 @@ function finAt(hit) {   // a tap on a wall or a ceiling of the house: its room a
 function finClean(o) {
   const out = {}, floors = new Set(FIN_FLOORS.map(([k]) => k)), bulbs = new Set(FIN_BULBS.map(([v]) => v)), lux = new Set(FIN_LUX.map(([v]) => v));
   for (const [room, sl] of Object.entries(o && typeof o === "object" ? o : {})) { if (!/^[a-z0-9_]{1,30}$/.test(room) || !sl || typeof sl !== "object") continue;
-    for (const [s, v] of Object.entries(sl)) { const k = +s, ok = k <= 4 || k === 9 || k === 10 || k === 17 || k === 20 || (room === LIVR && k >= 11 && k <= 16) ? /^#[0-9a-f]{6}$/i.test(v) : k === 5 ? floors.has(v) : k === 6 ? bulbs.has(v) : k === 7 ? lux.has(v) : k === 8 ? FIN_FITS.some(([f]) => f === v) : k === 18 ? v === "none" || FIN_RUGS.some(([f]) => f === v) : k === 19 ? [...FIN_CURT, ...LIV_CURT].some(([f]) => f === v) : k === 21 ? FIN_PICS.some(([f]) => f === v) : k === 22 ? ["0", "1", "2", "3"].includes(String(v)) : k === 23 ? !!HCAT[v] && HCAT[v].k === "plant" : k === 24 ? FIN_PAPERS.some(([f]) => f === v) : k === 25 || k === 27 ? ["0", "1", "2", "3"].includes(String(v)) : k === 26 ? FIN_PANELS.some(([f]) => f === v) : k === 28 ? typeof v === "string" && v.split(",").every(q => IDEAS().some(i => i.id === q && i.room === room)) : k === 29 ? v === "walls" || LIV_HEX.test(v) : k >= 90 ? tileOk(room, k, v) : k >= 70 ? winOk(room, k, v) : k >= 30 ? !!finWalls(room)[k - 30] && LIV_HEX.test(v) : false;   // N214: the slopes, each wall
+    for (const [s, v] of Object.entries(sl)) { const k = +s, ok = room === "doors" ? doorOk(k, v) : k <= 4 || k === 9 || k === 10 || k === 17 || k === 20 || (room === LIVR && k >= 11 && k <= 16) ? /^#[0-9a-f]{6}$/i.test(v) : k === 5 ? floors.has(v) : k === 6 ? bulbs.has(v) : k === 7 ? lux.has(v) : k === 8 ? FIN_FITS.some(([f]) => f === v) : k === 18 ? v === "none" || FIN_RUGS.some(([f]) => f === v) : k === 19 ? [...FIN_CURT, ...LIV_CURT].some(([f]) => f === v) : k === 21 ? FIN_PICS.some(([f]) => f === v) : k === 22 ? ["0", "1", "2", "3"].includes(String(v)) : k === 23 ? !!HCAT[v] && HCAT[v].k === "plant" : k === 24 ? FIN_PAPERS.some(([f]) => f === v) : k === 25 || k === 27 ? ["0", "1", "2", "3"].includes(String(v)) : k === 26 ? FIN_PANELS.some(([f]) => f === v) : k === 28 ? typeof v === "string" && v.split(",").every(q => IDEAS().some(i => i.id === q && i.room === room)) : k === 29 ? v === "walls" || LIV_HEX.test(v) : k >= 90 ? tileOk(room, k, v) : k >= 70 ? winOk(room, k, v) : k >= 30 ? !!finWalls(room)[k - 30] && LIV_HEX.test(v) : false;   // N214: the slopes, each wall
       if (ok) (out[room] = out[room] || {})[k] = v; } }
   return out;
 }
@@ -604,7 +604,7 @@ function finApplyAll() {   // what's kept, into the palette (on start, after Und
   if (houseG) { houseG.updateMatrixWorld(true); FIN.inv.copy(houseG.matrixWorld).invert(); }   // N5d: the bedding finds its room in the house's own frame
   for (const [room, sl] of Object.entries(S.fin || {})) if (FIN.rooms.includes(room)) for (const [s, v] of Object.entries(sl)) { const k = +s;   // N216: each room's woodwork; N214: each wall's own, the slopes
     if (k < 5 || k === 17 || k === 20 || (k >= 29 && k < 70)) finish(room, k === 20 ? "bedding" : k === 17 ? "woodwork" : k === 29 ? "slopes" : k >= 30 ? k : FIN_NAMES[k], k === 29 ? finSlopeHex(room, v) : v); }
-  finFloorApply(); tileApply(); finOut(); storeEdits(); if (typeof placeRoomLights === "function") { GS.roomKey = ""; placeRoomLights(); } finTakes(); finSchDraw();
+  finFloorApply(); tileApply(); doorApply(); finOut(); storeEdits(); if (typeof placeRoomLights === "function") { GS.roomKey = ""; placeRoomLights(); } finTakes(); finSchDraw();
 }
 /* V2.38 (F12): the window frames' and front door's outside colours (RAL), S.fin.outside[9] and [10] */
 const FIN_OUT = [["#f5f5f2", "White"], ["#383e42", "Anthracite grey (RAL 7016)"], ["#b5b8b1", "Agate grey (RAL 7038)"], ["#0a0a0a", "Black (RAL 9005)"], ["#fdf4e3", "Cream (RAL 9001)"]];
@@ -704,7 +704,7 @@ function finHold(on) {   // Hold to compare: while held, the palette empty (the 
   if (!FIN.pal) return;
   if (on && !finHeld) {    finHeld = FIN.pal.image.data.slice(); for (let i = 3; i < finHeld.length; i += 4) FIN.pal.image.data[i] = 0; FIN_LAID.forEach(m => m.visible = false); RUG_LAID.forEach(m => m.visible = false); CURT_LAID.forEach(m => m.visible = false); PIC_LAID.forEach(m => m.visible = false); PAPER_LAID.forEach(m => m.visible = false); PANEL_LAID.forEach(m => m.visible = false); FIT_LAID.forEach(m => m.visible = false); Object.values(FIN_PEND).forEach(g => g.visible = true); }
   else if (!on && finHeld) {    FIN.pal.image.data.set(finHeld); finHeld = null; FIN_LAID.forEach(m => m.visible = true); RUG_LAID.forEach(m => m.visible = true); CURT_LAID.forEach(m => m.visible = true); PIC_LAID.forEach(m => m.visible = true); PAPER_LAID.forEach(m => m.visible = true); PANEL_LAID.forEach(m => m.visible = true); FIT_LAID.forEach(m => m.visible = true); for (const [r, g] of Object.entries(FIN_PEND)) g.visible = !finGet(r, 8); }
-  FIN.pal.needsUpdate = true; finOut(); winPlanHide(); tileApply();   // N227: the plan's blinds back while held; N225: the plan's tiles
+  FIN.pal.needsUpdate = true; finOut(); winPlanHide(); tileApply(); doorApply();   // N227: the plan's blinds back while held; N225: the plan's tiles
 }
 /* V3.90 (N151): As it is: the house without Look's colours, Edit's moves, adds and take-outs (set aside, not changed); tap again for
    your plan. Nothing saves while on (store.set holds off); Edit or a colour picked switches it off first */

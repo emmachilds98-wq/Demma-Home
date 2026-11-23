@@ -473,6 +473,18 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `pointerup` on a card's button that a re-render has replaced never reaches the card: send it to `#r3d-act`. The view for the bathroom is
   `bath` (`ROOM_VIEW`).
 
+## N226 (V4.54)
+- **Where:** `room3d/22_doors.js`; hooks in `23_finish.js` (`finClean`: `room === "doors"` first; `finApplyAll`, `finHold`, the N227 floor
+  rebuild wrapper call `doorApply`) and `16_cards.js` (the door's card's tray and buttons; `roomUps` calls `doorUps`).
+- **How a door is redrawn:** a door is its own part (`HPARTS["door.<id>"]`, a group on its hinge) with a mesh a material: the leaf
+  (`door_leaf`), the boards' V-joints (`gap`), the chrome (its hinges and levers). The leaf's geometry is swapped for boxes made in the
+  part's frame (from the plan's leaf's bounding box and the group's pivot: `doorFrame`), the V-joints hidden, the levers' faces folded to
+  a point (hinges within 20 cm of the pivot kept), new meshes (`userData.door226`) in the group for the mouldings, glass and black
+  handles. A floor rebuilt by an edit makes fresh meshes: `DOOR0` (by mesh) is empty for them and they're styled again. `joinDrop()`
+  after a change, as N227's blinds: the house's outside join holds a copy of the doors.
+- **The rows** need the doors before the house is built (a look link or Send is cleaned before `HBUILD`): `doorIds` reads the house
+  file's parts (a part with `door_leaf` boxes and no nested part: the office's bifold is left out), not `HPARTS`.
+
 ## N224, N231, N232 (V4.53)
 - **The splashback** is `22_bath.js`'s tiles card with `TILE_ROOMS.kitchen = "metro"`; a style's 7th field 2 marks a glass panel (kitchen
   only, `tileStyles`): one flat gloss face a 60 cm panel wide, a seam at each panel's edge, no grout row, costed without a tiler.
