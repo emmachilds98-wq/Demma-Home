@@ -42,6 +42,53 @@ def now_pictures():
     return '<div class="grid">' + "".join(pic(f, c, 1100) for f, c in found) + "</div>"
 
 
+def saved_looks():
+    """N221: the looks saved on the phone (Look, Your looks) and sent with Send (tools/pull_edits.py: house/looks.json), one line each:
+    what it changes from the plan. Their names and rows are data, written out escaped"""
+    import html, json
+    f = H / "looks.json"
+    L = json.loads(f.read_text()).get("looks", []) if f.exists() else []
+    if not L:
+        return ""
+    import export_house as XH
+    JS = ROOT / "media-wall/src/room3d"
+    floors = dict(re.findall(r'\["(\w+)", "([^"]+)"\]', re.search(r"const FIN_FLOORS = \[(.*?)\];", (JS / "23_finish.js").read_text(), re.S).group(1)))
+    cat = dict(re.findall(r'^  (\w+): \{ n: "([^"]+)"', (JS / "08_house_catalogue.js").read_text(), re.M))
+    sys.path.insert(0, str(ROOT / "media-wall/src")); import fit   # N219: the shop pieces by their shop and name
+    cat.update({fit.shop_key(q): f"{q['retailer']} {q['name']}" for q in fit.shop_pieces()})
+    nm = lambda v: cat[v].split(',')[0].lower() if v in cat else (v.split('|')[6] or 'your own piece') if str(v).startswith('own|') and len(str(v).split('|')) == 7 else None
+    rooms = {r["id"]: r["name"] for r in XH.rooms()}
+    items = {i["id"]: i["name"] for i in XH.house()["items"]}
+    plan = json.loads((H / "plan_finishes.json").read_text()).get("rooms", {})
+    hexes = lambda r, sl: sorted({v.upper() for s, v in sl.items() if re.fullmatch(r"#[0-9a-fA-F]{6}", str(v)) and (int(s) <= 4 or int(s) in (9, 10) or 11 <= int(s) <= 17 or int(s) >= 29)
+                                  and v.lower() != (plan.get(r, {}).get(s) or ("#dbffc8" if r == "living" else "")).lower()})
+    few = lambda xs: ", ".join(xs[:6]) + (f" and {len(xs) - 6} more" if len(xs) > 6 else "")
+    lines = []
+    for x in L[:8]:
+        fin, parts = x.get("fin") or {}, []
+        cols = [f"{rooms.get(r, r)} {' '.join(h)}" for r, sl in fin.items() if (h := hexes(r, sl))]
+        fl = [f"{rooms.get(r, r)} {floors.get(sl['5'], sl['5']).lower()}" for r, sl in fin.items() if sl.get("5") and sl["5"] != plan.get(r, {}).get("5")]
+        pcs, seen = [], set()
+        for q in x.get("he") or []:
+            iid, field, v = (q + [None] * 3)[:3]
+            if field == "add" and nm(v):
+                pcs.append(f"{nm(v)} added in {rooms.get(q[3] if len(q) > 3 else '', 'a room')}")
+            elif field == "swap" and iid in items and nm(v):
+                pcs.append(f"{items[iid].lower()} now {nm(v)}"); seen.add(iid)
+            elif field == "removed" and iid in items:
+                pcs.append(f"{items[iid].lower()} taken out"); seen.add(iid)
+        for q in x.get("he") or []:
+            if len(q) >= 3 and q[1] in ("w", "h", "up", "along", "out", "turn") and q[0] in items and q[0] not in seen:
+                pcs.append(f"{items[q[0]].lower()} moved or resized"); seen.add(q[0])
+        if cols: parts.append("colours: " + few(cols))
+        if fl: parts.append("floors: " + few(fl))
+        if pcs: parts.append("pieces: " + few(pcs))
+        if x.get("living_moved") or x.get("living_added"):
+            parts.append("the living room's furniture: " + ", ".join(t for t in (f"{x['living_moved']} moved" if x.get("living_moved") else "", f"{x['living_added']} added" if x.get("living_added") else "") if t))
+        lines.append(f"<li><b>{html.escape(str(x.get('name', ''))[:24])}</b>: {html.escape('; '.join(parts) or 'as the plan')}</li>")
+    return '<h2>Saved looks</h2><p>Saved on the phone (Look, Your looks) and sent with Send; each one\'s changes from the plan.</p><ul>' + "".join(lines) + "</ul>"
+
+
 PLANS = [("plan_lower_ground_corrected_25oct.jpg", "Lower ground floor, your corrections: the kitchen's window (purple), the cupboard by the store (black), the WC's small sink (maroon), the secret room."),
          ("plan_ground_corrected_25oct.jpg", "Ground floor, your corrections: the living room's window (orange), the chimney breast and solid walls (black)."),
          ("plan_first_corrected_25oct.jpg", "First floor, your corrections: the toilet (blue), the sink cabinet (maroon), the landing (green), bedroom 2's roof slope (black).")]
@@ -79,6 +126,7 @@ def build():
             '<h2>Storage ideas (to look at, not in the plan)</h2><p>Each one in its room in the 3D: tap a floor, More, Storage ideas. The numbers: docs/STORAGE.md.</p>'
             '<table><tr><th>What</th><th>Where</th><th>Size</th><th>Rough cost</th><th>Source</th></tr>'   # N212
             + "".join(f"<tr><td>{w}</td><td>{at}</td><td>{sz}</td><td>£{lo:,}–{hi:,}</td><td>{src}</td></tr>" for w, at, sz, (lo, hi), src in SI.rows()) + "</table>",
+            saved_looks(),   # N221
             '<h2 class="pb">The evidence: your plans</h2>' + "".join(pic(IN / f, c, 1300) for f, c in PLANS),
             '<h2 class="pb">The evidence: photos</h2><div class="grid">' + "".join(pic(IN / f, c, 1100) for f, c in PHOTOS) + "</div>",
             '<h2 class="pb">The evidence in full</h2>' + md(H / "EVIDENCE.md"),

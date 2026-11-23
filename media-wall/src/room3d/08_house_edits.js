@@ -135,15 +135,15 @@ const HIT = id => (((R.HOUSE3 || {}).items) || {})[id];
 const DS = () => window.DemmaStore || null;
 const FIELDS = [["w", "Width"], ["h", "Height"], ["up", "Up from the floor"], ["along", "Along the wall"], ["out", "Out from the wall"]];   // V2.32: a piece moves out from its wall too; doors and windows stay in their walls
 function pieceNow(id) {
-  const it = HIT(id), e = {}, ds = DS();
+  const e = {}, ds = DS();
   if (ds) for (const v of Object.values(ds.rows("edits") || {})) if (v && v.item === id && (typeof v.value === "number" || v.field === "removed" || v.field === "swap")) e[v.field] = v.value;
-  return { w: e.w ?? it.s[0], h: e.h ?? it.s[1], up: e.up ?? it.s[2], along: e.along ?? it.al, out: it.op ? 0 : e.out ?? 0, turn: canTurn(id) ? (e.turn ?? 0) % 4 : 0, removed: e.removed === true,
-    swap: HCAT[e.swap] && swapKind(id) === HCAT[e.swap].k ? e.swap : null };   // V2.46: swapped for another of its kind
+  const swap = HCAT[e.swap] && swapKind(id) === HCAT[e.swap].k ? e.swap : null, it = pieceBase(id, swap);   // V2.46: swapped for another of its kind (N217: at its own size)
+  return { w: e.w ?? it.s[0], h: e.h ?? it.s[1], up: e.up ?? it.s[2], along: e.along ?? it.al, out: it.op ? 0 : e.out ?? 0, turn: canTurn(id) ? (e.turn ?? 0) % 4 : 0, removed: e.removed === true, swap };
 }
 const canTurn = id => { const it = HIT(id); return !!it && !it.op && !PARTED.has(id); };
-function pieceDelta(id) { const it = HIT(id), c = pieceNow(id); return [c.along - it.al, c.w - it.s[0], c.h - it.s[1], c.up - it.s[2], c.out, c.turn, c.removed, c.swap]; }
+function pieceDelta(id) { const c = pieceNow(id), it = pieceBase(id, c.swap); return [c.along - it.al, c.w - it.s[0], c.h - it.s[1], c.up - it.s[2], c.out, c.turn, c.removed, c.swap]; }
 function pieceBox(id) {
-  const it = HIT(id), [dA, dW, dH, dU, dO] = pieceDelta(id), k = it.ax === "z" ? 2 : 0, o = 2 - k, b = it.b.slice();
+  const it = pieceBase(id, pieceNow(id).swap), [dA, dW, dH, dU, dO] = pieceDelta(id), k = it.ax === "z" ? 2 : 0, o = 2 - k, b = it.b.slice();
   b[k] += dA; b[k + 3] += dA + dW; b[1] += dU; b[4] += dU + dH; b[o] += dO; b[o + 3] += dO;
   const q = pieceNow(id).turn; if (!(q % 2)) return b;
   const t = turnBox(b, (b[0] + b[3]) / 2, (b[2] + b[5]) / 2), [sx, sz] = turnFit(id, b, t);   // V2.33: its outline turned too
@@ -156,14 +156,29 @@ function turnFit(id, b, t) {
   const sh = (a0, a1, r0, r1) => a1 - a0 > r1 - r0 ? 0 : a0 < r0 ? r0 - a0 : a1 > r1 ? r1 - a1 : 0;
   return [sh(t[0], t[3], r[0], r[1]), sh(t[2], t[5], r[2], r[3])];
 }
+/* N217: a rider (a piece on, or hung from, its host: the house file's "on") goes where its host goes: the same way along the host's wall
+   from its back-left corner, the same way out from its back, the same height over its top; kept inside it along its wall if it fits there.
+   Hidden when its host is taken out or turned, or when the host's top is no longer under 90% of it (or, hung, it no longer meets it).
+   undefined: as planned (its host unchanged, or the rider changed itself) */
+function riderBox(id) {
+  const it = HIT(id), H = it && HIT(it.on); if (!H || pieceDelta(id).some(Boolean) || !pieceDelta(it.on).some(Boolean)) return undefined;
+  const c = pieceNow(it.on); if (c.removed || c.turn % 4) return null;
+  const hb = H.b, rb = it.b, nb = pieceBox(it.on), { a, o, flip } = hcFrame(H), b = rb.slice(), W = rb[a + 3] - rb[a], D = rb[o + 3] - rb[o];
+  b[a] = nb[a] + rb[a] - hb[a]; if (W <= nb[a + 3] - nb[a]) b[a] = Math.max(nb[a], Math.min(nb[a + 3] - W, b[a])); b[a + 3] = b[a] + W;
+  if (flip) { b[o + 3] = nb[o + 3] - (hb[o + 3] - rb[o + 3]); b[o] = b[o + 3] - D; } else { b[o] = nb[o] + rb[o] - hb[o]; b[o + 3] = b[o] + D; }
+  b[1] = nb[4] + rb[1] - hb[4]; b[4] = b[1] + rb[4] - rb[1];
+  const g = rb[1] >= hb[4] - 2 ? 0 : 2, ov = q => Math.max(0, Math.min(b[q + 3], nb[q + 3] + g) - Math.max(b[q], nb[q] - g));   // on its top: 90% of it over the top
+  return g ? (ov(0) && ov(2) ? b : null) : ov(0) * ov(2) >= 0.9 * (b[3] - b[0]) * (b[5] - b[2]) ? b : null;
+}
 function storeEdits() {   // Measure's rows, as the engine's edits (HEDITS)
   if (!DS() || !R.HOUSE3 || NOWV) return;
   syncAdds();
   const out = {};
   for (const [id, it] of Object.entries(R.HOUSE3.items || {})) {
+    const rd = it.on && riderBox(id); if (rd !== undefined) { out[id] = { from: it.b, to: rd || it.b, removed: !rd }; continue; }   // N217
     if (!it.add && !pieceDelta(id).some(Boolean)) continue; const [dA, dW, dH, dU] = pieceDelta(id);
     if (pieceNow(id).removed) { out[id] = { from: it.b, to: it.b, removed: true }; continue; }   // V2.34: taken out (Measure's As planned puts it back)
-    const q = pieceNow(id).turn, to = pieceBox(id), E = { from: it.b, to: q % 2 ? turnBox(to, (to[0] + to[3]) / 2, (to[2] + to[5]) / 2) : to, turn: q, swap: pieceNow(id).swap, add: it.add }, o = it.op;   // to: before the turn (editXf turns it)
+    const q = pieceNow(id).turn, to = pieceBox(id), E = { from: pieceBase(id, pieceNow(id).swap).b, to: q % 2 ? turnBox(to, (to[0] + to[3]) / 2, (to[2] + to[5]) / 2) : to, turn: q, swap: pieceNow(id).swap, add: it.add }, o = it.op;   // to: before the turn (editXf turns it)
     if (o) E.op = { axis: o.axis, line: o.line, a: o.a, b: o.b, y0: o.y0, y1: o.y1, a2: o.a + dA, b2: o.b + dA + dW, y02: o.y0 + dU, y12: o.y1 + dU + dH };
     out[id] = E;
   }
@@ -175,7 +190,7 @@ function paintEdits() {   // V1.51: Measure's list of the sizes changed in the 3
   const ids = [...new Set(Object.values(DS().rows("edits") || {}).map(v => v && v.item))].filter(id => HIT(id) && ((HIT(id).add && !HIT(id).look) || pieceDelta(id).some(Boolean)));
   grp.hidden = !ids.length;
   const W = { w: "wide", h: "high", up: "up", along: "along", out: "out", turn: "quarter turns" };
-  box.innerHTML = ids.map(id => { const it = HIT(id), c = pieceNow(id), was = { w: it.s[0], h: it.s[1], up: it.s[2], along: it.al, out: 0, turn: 0 };
+  box.innerHTML = ids.map(id => { const it = HIT(id), c = pieceNow(id), P = pieceBase(id, c.swap), was = { w: P.s[0], h: P.s[1], up: P.s[2], along: P.al, out: 0, turn: 0 };
     const ch = c.removed ? "taken out" : [it.add && !it.look ? "added" : "", c.swap ? "now " + HCAT[c.swap].n : ""].concat(Object.keys(W).filter(k => Math.abs(c[k] - was[k]) > 0.05).map(k => `${cmR(c[k])} ${W[k]}, was ${cmR(was[k])}`)).filter(Boolean).join(" · ");
     return `<div class="ms-row ms-erow"><button type="button" class="t ms-ego" data-epiece="${id}">${it.n}<small>${ch}</small></button><button type="button" class="btn" data-ereset="${id}">${it.add && !it.look ? "Take it out" : "As planned"}</button></div>`; }).join("");
 }
@@ -231,10 +246,10 @@ async function hdragEnd() {
 canvas.addEventListener("pointerup", hdragEnd);
 canvas.addEventListener("pointercancel", () => { if (hdrag) { hdrag = null; if (SEL.g) SEL.g.position.set(0, 0, 0); dirty(); } });
 const pieceLine = id => { const it = HIT(id), c = pieceNow(id), ed = pieceDelta(id).some(Boolean);
-  const cl = clashes(id);   // V2.46: the fit check, on the card
-  return `${cmR(c.w)} wide, ${cmR(c.h)} high` + (it.look && !c.up ? "" : `, ${cmR(c.up)} up`) + (cl.length ? ` · in the way of ${cl.slice(0, 2).join(" and ").replace(/^The /, "the ").replace(/ and The /, " and the ")}` : it.look ? ` · ${roomName(it.look)}'s plant` : it.add ? " · added by you" : ed ? " · changed by you" : it.g ? " · a guess: measure it" : ""); };
+  const why = fitWhy(id);   // V2.46: the fit check, on the card (N217: the walls, the slope, the swings and the walks too)
+  return `${cmR(c.w)} wide, ${cmR(c.h)} high` + (it.look && !c.up ? "" : `, ${cmR(c.up)} up`) + (why.length ? " · " + why.slice(0, 2).join(" · ") : it.look ? ` · ${roomName(it.look)}'s plant` : it.add ? " · added by you" : ed ? " · changed by you" : it.g ? " · a guess: measure it" : ""); };
 async function setPiece(id, field, v) {
-  const it = HIT(id), ds = DS(); if (!it || !ds) return;
+  const it = HIT(id) && pieceBase(id, pieceNow(id).swap), ds = DS(); if (!it || !ds) return;
   const base = field === "along" ? it.al : field === "out" || field === "turn" ? 0 : field === "removed" ? false : field === "swap" ? null : it.s[["w", "h", "up"].indexOf(field)], rid = `${id}~${field}`;
   try { if (v == null || (typeof v === "number" && Math.abs(v - base) < 0.05)) { if (ds.rows("edits")[rid]) await ds.del("edits", rid); }
         else await ds.put("edits", rid, { item: id, field, value: v }); }

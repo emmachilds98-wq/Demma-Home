@@ -204,20 +204,23 @@ def dead():
 SOFT = {"contact", "shade", "rug", "carpet", "carpet_grey", "laminate", "vinyl", "tile_f", "herring", "lvt_grey", "porcelain", "board"}
 
 
-def _reserves():
-    """Space kept clear: (name, box): the Kallax drawers pulled out, the walk past the master's bed, the loft hatch's opening, the hall's
-    walk from the front door to the living room's, the store's washer dryer corner (the client, 5 Nov) and its walk."""
+def reserves():
+    """Space kept clear: (name, box, the piece it's for or None): the Kallax drawers pulled out, the walk past the master's bed, the loft
+    hatch's opening, the hall's walk from the front door to the living room's, the store's washer dryer corner (the client, 5 Nov) and its
+    walk; bedroom 2's walk from its door to the desk (check_model's "60 to pass" past the chair-bed). N217: the page's swaps and adds keep
+    clear of them too (export3d "fit"), but of a piece's own (a swapped Kallax needn't keep its drawers' space)."""
     y1, yl, yg = FY["first"], FY["lower"], FY["ground"]
     kx, st, h, mb = D.MUSIC["kallax"], _room("lower_store"), D.LANDING["hatch"], _box("master.bed")
     kz = kx["z0"] + kx["d"]
-    hl = _room("hall")
-    return [("the Kallax drawers pulled out", [kx["x"][0], y1, kz, kx["x"][1], y1 + 80, kz + kx["drawer_d"]]),
+    hl, b2, d2 = _room("hall"), _room("bed2"), _door("bed2_door")
+    return [("the Kallax drawers' pull", [kx["x"][0], y1, kz, kx["x"][1], y1 + 80, kz + kx["drawer_d"]], "music.kallax")] + [(n, b, None) for n, b in [
             ("the walk past the master's bed", [mb[3], y1, mb[2], M.room_sizes()["master"]["x1"], y1 + 200, mb[5]]),
+            ("the walk to the desk", [b2["x1"] - 60.0, y1, D.MUSIC["desk"]["ret"]["z"][1], b2["x1"], y1 + 200, d2["b"]]),
             ("the loft hatch's opening", [h["x"][0], y1 + 150, h["z"][0], h["x"][1], y1 + M.CEIL, h["z"][1]]),
             ("the hall's walk (70 wide)", [hl["x0"] + 4.5, yg, hl["z0"], hl["x0"] + 74.5, yg + 200, 260.0]),
             ("the hall's walk to the front door", [330.0, yg, 260.0, 420.0, yg + 200, hl["z1"]]),
             ("the washer dryer's corner (60 × 60)", [st["x0"], yl, st["z1"] - 60.0, st["x0"] + 60.0, yl + 90.0, st["z1"]]),
-            ("the walk into the store (55 wide)", [st["x0"], yl, st["z0"], st["x0"] + 55.0, yl + 200.0, st["z1"] - 60.0])]
+            ("the walk into the store (55 wide)", [st["x0"], yl, st["z0"], st["x0"] + 55.0, yl + 200.0, st["z1"] - 60.0])]]
 
 
 def checks():
@@ -262,7 +265,7 @@ def checks():
                     if over(b, q):
                         bad.append(f"{m} of {tags[t] if t >= 0 else 'the shell'}")
             bad += [f"{d['id']}'s swing" for f, d, H in swings if f == fk and swept(d, H, b, FY[f])]
-            bad += [n for n, q in _reserves() if over(b, q)]
+            bad += [n for n, q, _ in reserves() if over(b, q)]
             if fk == "first":
                 top = min(M.headroom(b[0], b[3], z) for z in (b[2], b[5]))
                 if b[4] > top + 0.5:

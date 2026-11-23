@@ -212,13 +212,13 @@ class Out:
         self.boxes, self.prisms, self.labels, self.parts, self.lathes = {}, [], [], {}, []
         self.floor, self.tag, self.tags, self.bt, self.shade, self.edge = floor, None, [], {}, [], []   # V1: the item each box belongs to (bt: per material, an index into tags)
 
-    def item(self, iid, name, room, kind="furniture", src="E", data=None, axis=None, measure=None):
+    def item(self, iid, name, room, kind="furniture", src="E", data=None, axis=None, measure=None, on=None):
         """V1 (Phase 1): every box drawn from here on (until the next item, or end()) belongs to this piece, so the app can tap it, name it,
         measure it and edit it. src: where its size comes from (M measured, P the plans, F/B the photos, client, E our estimate); data: the
         survey_data entry it's drawn from (a path), which tools/pull_edits.py writes the client's edits back to; axis: the way its wall runs
-        (x or z), so "along the wall" means something."""
+        (x or z), so "along the wall" means something; on: the piece it stands on or hangs from (N217's riders: they go where it goes)."""
         if iid not in ITEMS:                                 # the first call names it; later ones (a loop's next piece) only tag
-            ITEMS[iid] = dict(name=name, room=room, kind=kind, src=src, data=data, axis=axis, floor=self.floor,
+            ITEMS[iid] = dict(name=name, room=room, kind=kind, src=src, data=data, axis=axis, floor=self.floor, on=on,
                               measure=(src.strip().startswith("E") or src == "fitted") if measure is None else measure)
         if iid not in self.tags:
             self.tags.append(iid)
@@ -405,18 +405,21 @@ def walls_for(o, floor, rs, ds, y0, y1):
                     # v65: on this room's own face only (the next room's wall carries the other), lapping 0.8 into the opening
                     o.item(d["id"], *DOOR_NAMES.get(d["id"], (d["id"], r["room"])), kind="door", src=door_src(d["id"]), data=door_data(d["id"]), axis=axis)
                     for zf in ((l0 - 1.2,) if out_dir > 0 else (l1,)):
-                        put = (lambda xa, ya, xb, yb: o.box("upvc", xa, ya, zf, xb, yb, zf + 1.2)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("upvc", zf, ya, xa, zf + 1.2, yb, xb))
+                        put = (lambda xa, ya, xb, yb: o.box("woodwork", xa, ya, zf, xb, yb, zf + 1.2)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("woodwork", zf, ya, xa, zf + 1.2, yb, xb))
                         put(d["a"] - 6, y0, d["a"] + 0.8, y0 + D.DOOR_H + 6); put(d["b"] - 0.8, y0, d["b"] + 6, y0 + D.DOOR_H + 6)
                         put(d["a"] - 6, y0 + D.DOOR_H - 0.8, d["b"] + 6, y0 + D.DOOR_H + 6)
                         # v72 (B4): a torus profile: a raised round by the opening, 3 wide, 0.8 proud (E: a 69 × 18 torus architrave)
                         r0, r1 = (zf - 0.75, zf) if out_dir > 0 else (zf + 1.2, zf + 1.95)   # (its face 0.05 off any wall's end)
-                        rid = (lambda xa, ya, xb, yb: o.box("upvc", xa, ya, r0, xb, yb, r1)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("upvc", r0, ya, xa, r1, yb, xb))
+                        rid = (lambda xa, ya, xb, yb: o.box("woodwork", xa, ya, r0, xb, yb, r1)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("woodwork", r0, ya, xa, r1, yb, xb))
                         rid(d["a"] - 3.2, y0, d["a"] - 0.2, y0 + D.DOOR_H + 2.8); rid(d["b"] + 0.2, y0, d["b"] + 3.2, y0 + D.DOOR_H + 2.8)
                         rid(d["a"] - 0.2, y0 + D.DOOR_H - 0.2, d["b"] + 0.2, y0 + D.DOOR_H + 2.8)
                         if D.HEAD_CAP.get(d["id"]) == r["id"]:   # V1.25: a moulded cap over the head, past the legs (survey_data.HEAD_CAP)
                             c0, c1 = (zf - 2.2, zf + 1.2) if out_dir > 0 else (zf, zf + 3.4)
-                            cap = (lambda xa, ya, xb, yb: o.box("upvc", xa, ya, c0, xb, yb, c1)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("upvc", c0, ya, xa, c1, yb, xb))
+                            cap = (lambda xa, ya, xb, yb: o.box("woodwork", xa, ya, c0, xb, yb, c1)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("woodwork", c0, ya, xa, c1, yb, xb))
                             cap(d["a"] - 8.5, y0 + D.DOOR_H + 6, d["b"] + 8.5, y0 + D.DOOR_H + 9.5)
+                    # V4.46: the lining through the wall's thickness, the jambs and the head (woodwork, as the frame: the opening drew in wall paint)
+                    lin = (lambda xa, ya, xb, yb: o.box("woodwork", xa, ya, l0, xb, yb, l1)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("woodwork", l0, ya, xa, l1, yb, xb))
+                    lin(d["a"], y0, d["a"] + 0.6, y0 + D.DOOR_H); lin(d["b"] - 0.6, y0, d["b"], y0 + D.DOOR_H); lin(d["a"] + 0.6, y0 + D.DOOR_H - 0.6, d["b"] - 0.6, y0 + D.DOOR_H)
 
 
 def _covers(spans, a0, a1):
@@ -660,10 +663,10 @@ def floors_and_fittings(o, floor, rs):
         dx0, dx1 = D.HALL["door"]
         wall(o, "paint", "x", zl1, zl1 + 1.8, xs, WIDTH, y - SLAB, y + CEIL, [(dx0, dx1, y - SLAB, y + D.DOOR_H)])
         if D.HALL.get("door_leaf", True):   # V1.12, the client's photos: the frame stands empty (its hinges' marks only)
-            o.box("door_white", dx0 + 0.8, y + 0.5, zl1 + 0.2, dx1 - 0.8, y + D.DOOR_H - 0.8, zl1 + 1.6)
+            o.box("door_leaf", dx0 + 0.8, y + 0.5, zl1 + 0.2, dx1 - 0.8, y + D.DOOR_H - 0.8, zl1 + 1.6)
             o.box("chrome", dx0 + 4, y + 100, zl1 + 1.6, dx0 + 13, y + 102, zl1 + 5)
         for xa, xb, ya, yb in ((dx0 - 6, dx0 + 0.8, y, y + D.DOOR_H + 6), (dx1 - 0.8, dx1 + 6, y, y + D.DOOR_H + 6), (dx0 - 6, dx1 + 6, y + D.DOOR_H - 0.8, y + D.DOOR_H + 6)):
-            o.box("upvc", xa, ya, zl1 + 1.8, xb, yb, zl1 + 3.0)
+            o.box("woodwork", xa, ya, zl1 + 1.8, xb, yb, zl1 + 3.0)
         o.box("grille", dx0 + 8, y + D.DOOR_H + 9, zl1 + 1.8, dx1 - 8, y + D.DOOR_H + 27, zl1 + 2.4)
         stair_soffit(o, st, zl1)
     cx, cz, *_ = cal(floor)
@@ -1274,7 +1277,7 @@ def office(o):
     o.box("pegboard", W - 1.5, y0 + pb["y"][0], pb["z"][0], W, y0 + pb["y"][1], pb["z"][1])
     for i, z in enumerate((pb["z"][0] + 12, pb["z"][0] + 36, pb["z"][0] + 58)):
         o.box("upvc", W - 9, y0 + pb["y"][0] + 10 + i * 12, z, W - 1.5, y0 + pb["y"][0] + 20 + i * 12, z + 9)
-    o.item("office.monitors", "The stacked monitors", "bed3", src="E (27-inch)", data=("OFFICE", "monitors"), axis="z")
+    o.item("office.monitors", "The stacked monitors", "bed3", src="E (27-inch)", data=("OFFICE", "monitors"), axis="z", on="office.desk")
     m = O["monitors"]; zc = (m["z"][0] + m["z"][1]) / 2
     o.box("black", W - 12, y0 + d["h"], zc - 2, W - 8, y0 + m["y0"] + 2 * m["h"] + m["gap"] + 2, zc + 2)   # the pole
     for k in range(2):
@@ -1283,7 +1286,7 @@ def office(o):
         o.box("monitor_back", W - 17, yb + 3, m["z"][0] + 4, W - 13.5, yb + m["h"] - 3, m["z"][1] - 4)
         o.box("screen", W - 18.3, yb + 0.8, m["z"][0] + 0.8, W - 18, yb + m["h"] - 0.8, m["z"][1] - 0.8)
     keyboard(o, "pink", "key_pink", d["x"][0] + 6, d["x"][0] + 19, zc - 18, zc + 18, y0 + d["h"])             # its pink keyboard
-    o.item("office.dual", "The side-by-side setup", "bed3", src="E (24-inch)", data=("OFFICE", "dual"), axis="z")
+    o.item("office.dual", "The side-by-side setup", "bed3", src="E (24-inch)", data=("OFFICE", "dual"), axis="z", on="office.desk")
     du = O["dual"]; zm = (du["z"][0] + du["z"][1]) / 2                # v66: the second setup, side by side, by the window
     o.box("black", W - 22, y0 + d["h"], zm - 12, W - 6, y0 + d["h"] + 1.5, zm + 12)                          # the stand's foot
     o.box("black", W - 15, y0 + d["h"], zm - 2, W - 11, y0 + du["y0"] + du["h"] / 2, zm + 2)
@@ -1584,7 +1587,7 @@ def music(o):
     o.box("birch", rt["x"][0], y, rt["z"][1] - 2, rt["x"][1], dy - dk["t"], rt["z"][1])  # the return's end panel
     o.box("birch", rt["x"][0], y, dz0, rt["x"][0] + 2, dy - dk["t"], dz0 + 8)      # a leg in the corner's front
     o.box("birch", dx0 + 2, dy - dk["t"] - 8, dz0, dx1, dy - dk["t"], dz0 + 2)      # the modesty rail at the back
-    o.item("music.keyboard", "The 88-key on its tray", "bed2", src="E (88-key)", data=("MUSIC", "keyboard"), axis="x")
+    o.item("music.keyboard", "The 88-key on its tray", "bed2", src="E (88-key)", data=("MUSIC", "keyboard"), axis="x", on="music.desk")
     tr = dk["tray"]; kb = Mu["keyboard"]                                        # the pull-out tray, the 88-key on it, half out
     tz1 = dz1 + 18
     o.box("birch", kb["x"][0] - 4, y + tr["y"], tz1 - tr["d"], kb["x"][1] + 4, y + tr["y"] + 2, tz1)
@@ -1596,7 +1599,7 @@ def music(o):
     for k in range(52):
         xx = kb["x"][0] + 3 + (kb["x"][1] - kb["x"][0] - 6) * k / 52
         o.box("black", xx - 0.3, ky0 + kb["h"] - 4, tz1 - 2 - 15, xx + 0.3, ky0 + kb["h"] - 3, tz1 - 8) if k % 7 not in (2, 6) else None
-    o.item("music.monitors", "The riser and monitors", "bed2", src="E", data=("MUSIC", "monitors"), axis="x")
+    o.item("music.monitors", "The riser and monitors", "bed2", src="E", data=("MUSIC", "monitors"), axis="x", on="music.desk")
     o.box("black", dx0 + 2, dy + dk["riser"] - 2, dz0 + 1, dx1 - 2, dy + dk["riser"], dz0 + 26)   # the riser, the monitors, the screen
     for lx in (dx0 + 4, (dx0 + dx1) / 2 - 2, dx1 - 8):
         o.box("black", lx, dy, dz0 + 3, lx + 4, dy + dk["riser"] - 2, dz0 + 24)
@@ -1612,9 +1615,10 @@ def music(o):
     cx_ = (dx0 + dx1) / 2
     o.box("screen", cx_ - 28, my + 6, dz0 + 4, cx_ + 28, my + 38, dz0 + 6)
     o.box("black", cx_ - 22, dy, dz1 - 20, cx_ + 22, dy + 2.5, dz1 - 6)              # a computer keyboard
-    o.box("red_gloss", rt["x"][0] + 20, dy, rt["z"][0] + 30, rt["x"][0] + 42, dy + 4.5, rt["z"][0] + 50)   # the interface on the return
+    o.item("music.interface", "The audio interface", "bed2", kind="decor", src="E", measure=False, on="music.desk")   # N217: its own, on the return
+    o.box("red_gloss", rt["x"][0] + 20, dy, rt["z"][0] + 30, rt["x"][0] + 42, dy + 4.5, rt["z"][0] + 50)
     if "headphones" in Mu:                                         # V3.73: headphones on a hook at the return's end
-        o.item("music.headphones", "Headphones on a hook", "bed2", kind="decor", src="E (closed-back studio headphones)", measure=False)
+        o.item("music.headphones", "Headphones on a hook", "bed2", kind="decor", src="E (closed-back studio headphones)", measure=False, on="music.desk")
         hp = Mu["headphones"]; hx_, hz_, hy_ = hp["x"], hp["z"], y + hp["y"]
         o.box("steel", hx_ - 1, hy_ + 6, hz_, hx_ + 1, hy_ + 8, hz_ + 4)                 # the hook
         o.box("black", hx_ - 9, hy_ + 5, hz_ + 2, hx_ + 9, hy_ + 7.5, hz_ + 5)           # the band over it
@@ -1622,7 +1626,7 @@ def music(o):
             o.box("black", hx_ + sx * 9 - 1.5, hy_ - 4, hz_ + 1.5, hx_ + sx * 9 + 1.5, hy_ + 6, hz_ + 5.5)   # the band's sides
             o.box("amp_grille", hx_ + sx * 9 - 4.5 * (sx > 0) - 0.5 * (sx < 0), hy_ - 11, hz_ + 1, hx_ + sx * 9 + 0.5 * (sx > 0) + 4.5 * (sx < 0), hy_ - 1, hz_ + 9)   # the ear cups
     if "mic" in Mu:                                                # V3.73: a vocal mic on a boom arm clamped at the desk's corner, swung aside
-        o.item("music.mic", "A mic on a boom arm", "bed2", kind="decor", src="E (a desk boom arm, about 80 reach)", measure=False)
+        o.item("music.mic", "A mic on a boom arm", "bed2", kind="decor", src="E (a desk boom arm, about 80 reach)", measure=False, on="music.desk")
         mc = Mu["mic"]; mx_, mz_, my_ = mc["x"], mc["z"], y + mc["y"]
         o.box("black", mx_ - 3, dy - 6, mz_ - 3, mx_ + 3, dy + 3, mz_ + 3)              # the clamp
         o.box("steel", mx_ - 1, dy + 3, mz_ - 1, mx_ + 1, my_, mz_ + 1)                 # the post
@@ -1803,8 +1807,8 @@ def bathroom(o):
 
 SKIRT_ROOMS = {"hall", "landing", "landing_top", "bed3", "master", "master_b", "master_1", "bed2", "kitchen", "kitchen_1", "kitchen_2", "wc", "lower_landing"}
 SKIRT_H, SKIRT_T = 10.0, 1.5                                       # E: a 94 mm torus skirting
-DOOR_LEAF = {"wc_door": "door_white", "bath_door": "door_white", "bed2_door": "door_white",
-             "master_door": "door_white", "bed3_door": "door_white"}   # v73, the client: the bathroom's is white too (the wood was an old photo)
+DOOR_LEAF = {"wc_door": "door_leaf", "bath_door": "door_leaf", "bed2_door": "door_leaf",
+             "master_door": "door_leaf", "bed3_door": "door_leaf"}   # v73, the client: the bathroom's is white too (the wood was an old photo)
 # V3.03 (N44): the kitchen's door frame stands empty (photo_kitchen_from_door_25oct, _wide_ and _bar_boiler_30oct: no leaf either way, a
 # hinge's plate on its frame; one opening in would stand over the bar or across the switch, one opening out across the stairs' foot)
 
@@ -1976,7 +1980,7 @@ def door_leaves(o, floor):
             hinges(p, "z", H["hinge"] + H["u"] * 0.4, L - 1.75, L + 1.75, y)
             for s_ in (-1, 1):
                 lever(p, "z", L + s_ * 1.75, s_, lat, hy + 1, -H["u"])
-        if m == "door_white":                                        # v72 (B4): cottage doors (the landing photos): six boards, five V-joints a face
+        if m == "door_leaf":                                         # v72 (B4): cottage doors (the landing photos): six boards, five V-joints a face
             for k in range(1, 6):
                 c = a + (b - a) * k / 6
                 for s_ in (-1, 1):
@@ -2212,16 +2216,16 @@ def radiator(o, axis, wall, out, a0, a1, y0, y1):
             o.box(m, p0, ya, wall + out * d0, p1, yb, wall + out * d1)
         else:
             o.box(m, wall + out * d0, ya, p0, wall + out * d1, yb, p1)
-    put("upvc", a0, a1, 3.0, 5.0, y0, y1)                          # the back panel, the convector fins, the front panel
+    put("woodwork", a0, a1, 3.0, 5.0, y0, y1)                          # the back panel, the convector fins, the front panel
     n = max(4, int((a1 - a0) / 3.0))
     for k in range(n):
         p = a0 + 1 + (a1 - a0 - 2) * k / n
         put("rib", p, p + 0.8, 5.0, 8.0, y0 + 3, y1 - 2)
-    put("upvc", a0, a1, 8.0, 10.0, y0, y1)
+    put("woodwork", a0, a1, 8.0, 10.0, y0, y1)
     for k in range(int((a1 - a0) / 4.5)):                          # the front panel's vertical pressings
         p = a0 + 2 + k * 4.5
         put("gap", p, p + 0.4, 10.0, 10.25, y0 + 2, y1 - 2)
-    put("upvc", a0 + 0.5, a1 - 0.5, 4.5, 9.5, y1, y1 + 0.6)       # the grille on top
+    put("woodwork", a0 + 0.5, a1 - 0.5, 4.5, 9.5, y1, y1 + 0.6)       # the grille on top
     for p in (a0 - 4, a1 + 1):                                     # the valves
         put("chrome", p, p + 3, 5.0, 8.0, y0 - 6, y0 + 2)
 
@@ -2351,7 +2355,7 @@ def hall(o):
     # V1.38 (Next 1, a walk into the living room): it opens, hinged at the breast's end (geometry.OVERDOOR's open_gap) into the living
     # room, about the room's own leaf's hinge (its room face, z RECESS_Z + 1), so the viewer turns that leaf with it
     p = o.part("door.living_door", (ld["a"], y, Gm.BREAST_D_WEST + 1.0), "y", 90.0, label=DOOR_NAMES["living_door"][0])
-    p.box("door_white", ld["a"], y + 0.5, hz - 0.6, ld["b"], y + D.DOOR_H - 0.8, hz - 0.1)
+    p.box("door_leaf", ld["a"], y + 0.5, hz - 0.6, ld["b"], y + D.DOOR_H - 0.8, hz - 0.1)
     p.box("chrome", ld["b"] - 12, y + 100, hz - 0.1, ld["b"] - 3, y + 102, hz + 3.7)
 
 
@@ -2465,7 +2469,7 @@ def landing(o):
         d = next(d_ for d_ in doors("first") if d_["id"] == did)
         for za_, zb_ in faces:
             o.box("glass", d["a"], y + fa, za_, d["b"], y + fb, zb_)
-            o.box("upvc", d["a"] - 6, y + fb, za_ - 0.4, d["b"] + 6, y + fb + 5, zb_ + 0.4)
+            o.box("woodwork", d["a"] - 6, y + fb, za_ - 0.4, d["b"] + 6, y + fb + 5, zb_ + 0.4)
 
 
 def pendants(o, floor):
@@ -2579,14 +2583,14 @@ def build():
 
 MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textures)
     "brick": ("#9a4b36", 0.92), "party": ("#9a4b36", 0.92), "soldier": ("#83402e", 0.9), "paint": ("#f1ede5", 0.85), "stairpaint": ("#2d5a46", 0.92),
-    "upvc": ("#f5f5f2", 0.35), "frame_out": ("#f5f5f2", 0.35), "door_out": ("#f5f5f2", 0.35), "glass": ("#dfe9ee", 0.03), "glass_frost": ("#e8edef", 0.5), "artex": ("#f3f2ee", 0.97), "door_cream": ("#e8ddc2", 0.4), "mirror": ("#eef2f3", 0.04), "brass": ("#c9b58a", 0.3), "rib": ("#e2e2de", 0.5),
+    "upvc": ("#f5f5f2", 0.35), "woodwork": ("#f5f5f2", 0.35), "frame_out": ("#f5f5f2", 0.35), "door_out": ("#f5f5f2", 0.35), "glass": ("#dfe9ee", 0.03), "glass_frost": ("#e8edef", 0.5), "artex": ("#f3f2ee", 0.97), "door_cream": ("#e8ddc2", 0.4), "mirror": ("#eef2f3", 0.04), "brass": ("#c9b58a", 0.3), "rib": ("#e2e2de", 0.5),
     "tile": ("#7b5a4b", 0.85), "ridge": ("#6d4c3f", 0.85), "hung": ("#6f4636", 0.85), "felt": ("#3d3b3a", 0.9),
     "slab": ("#cfc8bb", 0.95), "carpet": ("#cdbfa6", 1.0), "tile_f": ("#d9d4cb", 0.6), "vinyl": ("#cdd8da", 0.6), "concrete": ("#b1afaa", 0.85),
     "earth": ("#8a8173", 1.0), "brick_buff": ("#d6c7a3", 0.92), "chipboard": ("#c8ad80", 0.85), "porch_in": ("#a7a49c", 0.9), "bin": ("#2f3236", 0.6), "recycle": ("#2b5d9a", 0.6), "quarry": ("#b25a43", 0.7), "board": ("#c4b79f", 0.9), "fitting": ("#ecedea", 0.07),
     "eaves": ("#e7e1d6", 0.9), "garage_blue": ("#2c3b63", 0.45), "garage_white": ("#ecebe7", 0.4), "garage_black": ("#26282a", 0.45), "timber": ("#8a5a35", 0.8), "pane": ("#3a4550", 0.08),
     "gloss": ("#ebeae6", 0.16), "gap": ("#9b9a95", 0.6), "black": ("#1d1d1f", 0.5), "black_app": ("#1f2023", 0.35), "glass_dark": ("#17191c", 0.1),
     "ring": ("#2b2c2e", 0.6), "steel": ("#c8cacc", 0.25), "steel_dark": ("#8e9195", 0.35), "worktop": ("#26282a", 0.22), "metro": ("#111214", 0.1),
-    "chrome": ("#e4e6e9", 0.06), "sanitary": ("#e7e8e6", 0.05), "primrose": ("#e3cf5c", 0.06), "tile_w": ("#f2f2ef", 0.12), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "rug": ("#8e4a32", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
+    "chrome": ("#e4e6e9", 0.06), "sanitary": ("#e7e8e6", 0.05), "primrose": ("#e3cf5c", 0.06), "tile_w": ("#f2f2ef", 0.12), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_leaf": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "rug": ("#8e4a32", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
     "cloth0": ("#3d4a5c", 0.95), "cloth1": ("#b9b2a6", 0.95), "cloth2": ("#7a2f2f", 0.95), "cloth3": ("#2f3b2f", 0.95), "cloth4": ("#d8d2c4", 0.95), "cloth5": ("#555555", 0.95), "cloth6": ("#9b8b6e", 0.95), "curtain": ("#f4f3ef", 0.9), "stone": ("#cbc6bd", 0.35), "marble": ("#141416", 0.1), "led": ("#ffffff", 0.3), "bulb": ("#fff3e2", 0.25), "lamp_purple": ("#c9a6ff", 0.3), "chalk": ("#222423", 0.85), "storebox": ("#c9c1b2", 0.95), "contact": ("#000000", 1.0), "mattress": ("#f0eee8", 0.9), "pillow": ("#f1efea", 0.95), "trim": ("#5a5d60", 0.5), "gutter": ("#f2f2ef", 0.4), "lead": ("#6c7072", 0.55), "birch": ("#dcc8a2", 0.7), "lycksele": ("#5b6b78", 0.95), "grille": ("#e8dcc4", 0.6), "ceiling": ("#f3f2ee", 0.95),
     "laminate": ("#a9a39a", 0.5), "oak": ("#b8844f", 0.55), "artisan": ("#fff1df", 0.55),   # V4.3: artisan oak (bedroom 3's cube shelves): the oak's grain, a hair warmer
     "herring": ("#b48a5c", 0.6), "lvt_grey": ("#8e8b87", 0.5), "porcelain": ("#d6d0c4", 0.5),   # V3.14 (N56): the upgrade floors

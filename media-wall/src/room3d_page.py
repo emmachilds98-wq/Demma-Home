@@ -94,6 +94,7 @@ html body .r3d .r3d-stage canvas:focus-visible { outline: 3px solid var(--oak, o
 @media (max-width: 599px) { .r3d.actopen .r3d-peg { display: none; } }
 .r3d-finsc { display: flex; gap: 4px; flex-wrap: wrap; }
 .r3d-finlab { font: 600 12px Figtree, system-ui, sans-serif; color: #6b655c; margin-top: 2px; }
+.r3d-fin > a { justify-self: start; font: 600 13px Figtree, system-ui, sans-serif; color: #2a2723; text-underline-offset: 3px; padding: 6px 0; }   /* N219: a shop's page */
 .r3d-finsc button { font: 600 12.5px Figtree, system-ui, sans-serif; padding: 5px 10px; border-radius: var(--r-pill); border: 1px solid #d9d4ca; background: #fff; color: #2a2723; min-height: 30px; }
 .r3d-finsc button[aria-pressed="true"] { background: #2a2723; color: #fff; border-color: #2a2723; }
 .r3d-fintray { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 6px; scrollbar-width: thin; -webkit-overflow-scrolling: touch; }
@@ -109,7 +110,7 @@ html body .r3d .r3d-stage canvas:focus-visible { outline: 3px solid var(--oak, o
 .r3d-actfields .fld { display: flex; align-items: center; justify-content: space-between; gap: 8px; font: 600 13.5px Figtree, system-ui, sans-serif; }
 .r3d-actfields .stp { display: flex; align-items: center; gap: 4px; }
 .r3d-actfields .stp button { width: 36px; height: 36px; border: 0; border-radius: 50%; background: var(--soft); color: var(--ink); font: 600 18px Fredoka, system-ui, sans-serif; cursor: pointer; }
-.r3d-actfields input { width: 68px; height: 36px; border: 1.5px solid #0002; border-radius: var(--r-s); background: #fff; color: var(--ink); font: 600 15px Figtree, system-ui, sans-serif; text-align: center; }
+.r3d-actfields input { width: 68px; height: 36px; border: 1.5px solid #0002; border-radius: var(--r-s); background: #fff; color: var(--ink); font: 600 16px Figtree, system-ui, sans-serif; text-align: center; }
 .r3d-actfields .note { margin: 2px 0 0; font-size: 12.5px; color: var(--mut); }
 .r3d-act:has(.r3d-actfields) { z-index: 32; }
 .r3d-actfields input { appearance: textfield; -moz-appearance: textfield; }
@@ -311,7 +312,7 @@ details.r3d-more[open] > summary::before { content: "– "; }
 .r3d-planbox[hidden], .r3d-setups[hidden] { display: none; }
 .r3d-setups { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .r3d-setups .label { width: 100%; }
-.r3d-planbox input[type=text], .r3d-planbox textarea { width: 100%; box-sizing: border-box; border: 0; border-radius: var(--r-s); padding: 8px 10px; background: var(--soft); color: var(--ink); font: 500 13px/1.4 Figtree, system-ui, sans-serif; }
+.r3d-planbox input[type=text], .r3d-planbox textarea { width: 100%; box-sizing: border-box; border: 0; border-radius: var(--r-s); padding: 8px 10px; background: var(--soft); color: var(--ink); font: 500 16px/1.4 Figtree, system-ui, sans-serif; }
 .r3d-planbox textarea { resize: vertical; min-height: 140px; white-space: pre-wrap; }
 .r3d-planinc { border: 0; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 12px; }
 .r3d-planinc legend { width: 100%; padding: 0; }
@@ -476,7 +477,7 @@ body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-ed
 .r3d-momrow button { flex: none; }
 @media (max-width: 899px) { .r3d-planbar { bottom: calc(max(8px, env(safe-area-inset-bottom)) + 84px); } }
 @media (min-width: 900px) { .r3d-panel { top: 80px; } }   /* v39: under Plan · Build · Buy */
-.r3d-find .seg { flex-wrap: nowrap; } .r3d-find input { flex: 1; min-width: 0; min-height: 44px; border: 1.5px solid #e1d6c2; border-radius: var(--r-pill); padding: 0 16px; font: 500 15px Figtree, system-ui, sans-serif; background: #fff; color: var(--ink); }
+.r3d-find .seg { flex-wrap: nowrap; } .r3d-find input { flex: 1; min-width: 0; min-height: 44px; border: 1.5px solid #e1d6c2; border-radius: var(--r-pill); padding: 0 16px; font: 500 16px Figtree, system-ui, sans-serif; background: #fff; color: var(--ink); }
 .r3d-mysc { display: inline-flex; } .r3d-mysc button:first-child { border-radius: var(--r-pill) 0 0 999px !important; } .r3d-myx { border-radius: 0 999px 999px 0 !important; padding: 0 12px !important; }
 .r3d.measuring canvas { cursor: crosshair; }
 /* V2.88 (N33, the phone and PC look-over): every tap a finger's 44 px on a touch screen; the small pills keep their look (a clear
@@ -490,6 +491,7 @@ body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-ed
   .ms-go { min-width: 44px; }
   .stk, .ms-go, .r3d-wallsel, .r3d-ui .seg button, .r3d-ui .chip, .r3d-ui .btn, .r3d-edit button, .r3d-edit .chip, .r3d-actmore > summary, .r3d-editmore > summary { min-height: 44px; }
   .r3d-actfields .stp button, .r3d-actfields input { width: 44px; height: 44px; } .r3d-actfields input { width: 68px; }
+  .r3d-theirs button { min-height: 44px; }   /* N222's Keep it · Back to mine */
 }
 @media (pointer: coarse) and (max-width: 899px) {
   .r3d .r3d-mini .r3d-minib, body:not(.bare) .r3d .r3d-mini .r3d-minib.r3d-bare { width: 44px; height: 44px; }
@@ -504,7 +506,14 @@ body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-ed
 .r3d-toast { pointer-events: none; }
 .r3d-toast.act { pointer-events: auto; display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 18px; }   /* V3.75: Put back on it */
 .r3d-toast.act[hidden] { display: none; }
-.r3d-toast button { font: 600 14px Fredoka, system-ui, sans-serif; background: var(--cream); color: var(--ink); border: 0; border-radius: var(--r-pill); padding: 8px 14px; min-height: 36px; cursor: pointer; }
+.r3d-toast button, .r3d-theirs button { font: 600 14px Fredoka, system-ui, sans-serif; background: var(--cream); color: var(--ink); border: 0; border-radius: var(--r-pill); padding: 8px 14px; min-height: 36px; cursor: pointer; }
+/* N222: a look shown over yours (a link, The plan): its name, Keep it · Back to mine; the toasts under it */
+.r3d-theirs { position: fixed; left: 50%; top: 18px; transform: translateX(-50%); z-index: 41; display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 18px;
+  background: var(--ink); color: var(--cream); border-radius: var(--r-pill); font: 600 14px Fredoka, system-ui, sans-serif; box-shadow: var(--shade); max-width: calc(100vw - 32px); white-space: nowrap; }
+.r3d-theirs[hidden] { display: none; } .r3d-theirs b { font-weight: 600; margin-right: 4px; overflow: hidden; text-overflow: ellipsis; }
+.r3d.theirs .r3d-toast { margin-top: 54px; }
+@media (max-width: 899px) { .r3d-theirs { top: 132px; } }
+@media (max-width: 599px) { .r3d-theirs { top: 118px; } }   /* under the floors, clear of the stick and the toasts (at the foot on a phone) */
 .r3d-nudge { display: inline-flex; gap: 2px; } .r3d-nudge button { min-width: 36px; padding-left: 0; padding-right: 0; }
 .r3d-nudge[hidden] { display: none; }
 @media (pointer: coarse) {
@@ -830,9 +839,9 @@ def controls(gallery=""):
             '<button type="button" class="btn" id="r3d-plancopy"><span class="ms" aria-hidden="true">content_copy</span> Copy</button>'
             '<button type="button" class="btn" id="r3d-plansave" hidden><span class="ms" aria-hidden="true">cloud_upload</span> Save for us</button></div></div>']),
         "measure": measure_panel(),
-        "look": ('<div class="grp" id="r3d-finsch"><span class="label">The house\'s colours</span><div class="seg" id="r3d-finschl"></div>'
-                 '<div class="seg r3d-find"><input type="text" id="r3d-finschname" placeholder="Our scheme" aria-label="Name for the house\'s colours" maxlength="24">'
-                 '<button type="button" class="chip" id="r3d-finschsave">Save these colours</button></div></div>') + swatches + '<div class="grp"><span class="label">A feature wall</span><div class="seg" role="group" aria-label="A feature wall">'
+        "look": ('<div class="grp" id="r3d-finsch"><span class="label">Your looks</span><div class="seg" id="r3d-finschl"></div>'   # N221: colours, floors and furniture
+                 '<div class="seg r3d-find"><input type="text" id="r3d-finschname" placeholder="Our look" aria-label="Name for this look" maxlength="24">'
+                 '<button type="button" class="chip" id="r3d-finschsave">Save this look</button></div></div>') + swatches + '<div class="grp"><span class="label">A feature wall</span><div class="seg" role="group" aria-label="A feature wall">'
                  '<button type="button" data-feature="breast">The breast in Green Smoke</button><button type="button" data-feature="media">The media wall in Green Smoke</button>'
                  '<button type="button" data-feature="none">All one colour</button></div></div>' + decor_main + '<details class="r3d-more r3d-fold"><summary>More: the oak, the floor, cushions, curtains</summary>' + trims + decor_g + '</details>',
     }
@@ -966,6 +975,7 @@ def section(gallery=""):
       <div class="acts"><button type="button" data-show="prev" aria-label="Back a step"><span class="ms" aria-hidden="true">skip_previous</span></button><button type="button" data-show="pause" aria-label="Pause"><span class="ms" aria-hidden="true">pause</span></button><button type="button" data-show="next" aria-label="Next step"><span class="ms" aria-hidden="true">skip_next</span></button><button type="button" class="end" data-show="stop">Stop</button></div>
       <i class="r3d-tourbar"><b id="r3d-showbar"></b></i></div>
     <div class="r3d-toast" id="r3d-toast" role="status" hidden></div>
+    <div class="r3d-theirs" id="r3d-theirs" role="status" hidden><b>Emma's look</b><button type="button" data-lookkeep="1">Keep it</button><button type="button" data-lookmine="1">Back to mine</button></div>
     <div class="r3d-pad" id="r3d-pad" role="group" aria-label="Move the camera (hold a button to keep moving)" hidden><button type="button" data-walk="tl" aria-label="Turn left" title="Turn left"><span class="ms" aria-hidden="true">rotate_left</span></button><button type="button" data-walk="f" aria-label="Walk forward" title="Walk forward"><span class="ms" aria-hidden="true">arrow_upward</span></button><button type="button" data-walk="tr" aria-label="Turn right" title="Turn right"><span class="ms" aria-hidden="true">rotate_right</span></button><button type="button" data-walk="u" aria-label="Up" title="Up"><span class="ms" aria-hidden="true">keyboard_arrow_up</span></button><button type="button" data-walk="l" aria-label="Step left" title="Step left"><span class="ms" aria-hidden="true">arrow_back</span></button><button type="button" data-walk="b" aria-label="Walk back" title="Walk back"><span class="ms" aria-hidden="true">arrow_downward</span></button><button type="button" data-walk="r" aria-label="Step right" title="Step right"><span class="ms" aria-hidden="true">arrow_forward</span></button><button type="button" data-walk="dn" aria-label="Down" title="Down"><span class="ms" aria-hidden="true">keyboard_arrow_down</span></button></div>
     <div class="r3d-pop" id="r3d-pop" role="dialog" aria-modal="false" aria-labelledby="r3d-pop-h" hidden><button type="button" class="x" aria-label="Close"><span class="ms" aria-hidden="true">close</span></button>
       <h3 id="r3d-pop-h"></h3><ul class="facts"></ul><ul class="r3d-pcs" aria-label="Its pieces"></ul><div class="acts"><button type="button" data-popgo="fly">Fly here</button><button type="button" data-popgo="plan">Read about it</button></div></div>

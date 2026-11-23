@@ -47,6 +47,12 @@ take one out (to `docs/HISTORY.md`) when they change their mind.
   and games; tech, cables and hobby kit; knick-knacks to show off; 100 to 300 records with room to grow, under 2 m of books and games; storage designed into the decorating in a unique way, not added room by room ("its more about integrating good storage design in a unique way in how we plan for decorating and upgrading how my house currently is"); display in every way (open shelves and ledges, lit glass cabinets, mixed with closed storage, pegboard and wall systems) (N212). **Customisation first**: their own colours for any wall, and
   swapping and adding furniture per room (N206). **Lighting later**: "we'll look at lighting later when the house is right" (the baked
   light's device check waits, N201).
+- **Customisation's questions** (22 Nov 2026, asked in a session; `REAL_PLAN` section 27): her own colour by the picker, a photo or its
+  code is enough, no paint names (N215 closed); "any wall" means **each wall on its own** (a chimney breast and its alcoves, the dormer,
+  the knee walls; N214); **skirting, doors, frames and radiators their own colour in every room** (N216, V4.45); furniture: **bedroom 2
+  first** (N217). Then 5–7: **real pieces from several shops**, each with its real size and price ("Use multiple real furniture
+  sites and sources", N219); saved looks **on the phone and in the plan** (sent with Send, N221); **Dave only looks** at her link (his
+  phone shows her look; nothing of his is changed or kept, N222).
 
 - **Floors for now (21 Nov 2026):** bedroom 2 and the office in grey carpet ("im not planning a floor change here just yet"); the office's plastic ivy out (she'll decorate again soon).
 

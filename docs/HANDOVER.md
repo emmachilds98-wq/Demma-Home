@@ -1,4 +1,20 @@
-# Handover (22 Nov 2026, V4.44: start here)
+# Handover (23 Nov 2026, V4.49: start here)
+
+## Pick up here (23 Nov 2026)
+The client, 22–23 Nov: "Keep working on the upgrade and ensure nothing can be lost outside github"; "stop things working locally and work
+directly in GitHub to stop these losses" (CLAUDE.md: nothing stays local; push every commit, helpers after every step).
+
+- **V4.49 (PR #318, with V4.45–V4.48):** section 27 is built: N216 woodwork, N214 each wall, N217 and N218 swap and add with a fit
+  check, N219 142 real shop pieces (IKEA, Habitat, John Lewis, Dunelm; size, fit, price, a link) and her own piece, N220 the living
+  room's pieces swap too, N221 saved looks (chips in Look, into the plan through Send), N222 a look link shown as "Emma's look" (Keep it ·
+  Back to mine). The iPhone's first picture back inside 44 shaders (the woodwork shares the bedding's program; the skirting out of the
+  bake). A review's seven findings fixed (see `docs/HISTORY.md` V4.49).
+- **Lost and rebuilt:** an earlier session's N219, N221, N222, N220 start and shader fix were only on its machine when it hit its usage
+  limit; they were rebuilt from the plan and `docs/N219_catalogue.json`. Hence the rule.
+- **Open:** Emma's choices: which storage ideas (N212), whether Dave may Keep it (N222 keeps the button; one line to take it out); N201
+  (the real devices' check, "lighting later"); N205 on hold. Smaller: a shop piece's own card has no shop link after a swap; the
+  shop pieces are drawn by generic builders (some won't look like the real thing); N219/N220/N221 steps in `check_site.py` (the helpers'
+  scripts were run by hand).
 
 ## Now (22 Nov 2026)
 The client, 21–22 Nov: her review on the PC (`docs/REAL_PLAN.md` section 26: "the movement to look around on mouse feels inverted",
@@ -14,12 +30,17 @@ ivy, storage "for all our things and displays / knick nacks"); her answers in `d
     "The plan's", the cost by its laid area, in a look link and Measure → Send). N204 the bake ready for Blender 6; N202 the seam (the
     islands 10 texels apart, the smoothing inside the gap; the master's back wall checked even, 22 Nov).
   - V4.44: N213 her own colour on any wall (section 27's first row); N202 checked (the master's back wall even).
+  - V4.45: N216 the woodwork in every room (a wall's card → Woodwork); Emma answered section 27's questions 1–4 (`docs/DECISIONS.md`):
+    a typed code is enough (N215 closed), each wall on its own (N214), bedroom 2 first for furniture (N217).
+  - V4.48: N218 a piece added where it fits (`addSpot`, `roomWhy`), the house's edits in the look link (`he`, `heOk`); riders (`on`, `riderBox`).
+  - V4.47: N217 bedroom 2's swaps at their own size with a fit check on the card (`fitWhy`; `R.HOUSE3.fit`, the doors' swings).
+  - V4.46: N214 each wall on its own (`house/surfaces.py` `walls`, the palette 32 columns; `docs/NOTES.md` §5); the doors' linings.
   - V4.43: N212 storage ideas to look at (`house/storage_ideas.py`: 12 ideas, 18 pieces, each one line with a cited source; a
     room's floor card → More → "Storage ideas"; checked clear of walks, doors and slopes; `docs/STORAGE.md` has each room's numbers;
     a table in the plan's PDF). Her pick comes next: only then a build and a buy list (CLAUDE.md, core plan vs options).
   - V4.39 and V4.44: N203 step 1, every top-level `let` set only in the part that declares it (`GS` for what two parts share);
     step 2 (ES modules) set aside: about 400 lines more and none saved (the row says what it would take).
-- **Open, in order:** customisation, `docs/REAL_PLAN.md` section 27 (N213 her own colour on any wall done; N214–N222 next, several waiting on its seven questions for Emma); then section 25 (N201 the real devices'
+- **Open, in order:** customisation, `docs/REAL_PLAN.md` section 27 (N213, N214, N216, N217, N218 done, N215 closed; N219 next; all seven questions answered 22 Nov: real pieces from several shops, saved looks in the plan too, Dave only looks); then section 25 (N201 the real devices'
   check, "lighting later when the house is right"; N205 on hold; N206 her own colours and swapping furniture, to plan with her).
 - **Waiting on Emma:** which storage ideas she wants (N212), then sizes for them; the master's frames' sliding doors need a measurement
   first (they'd cut about 2 cm into the room door's swing as drawn).

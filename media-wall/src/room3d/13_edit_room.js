@@ -2,6 +2,52 @@
    footprint's centre (front to local +z) on a pivot; S.layout[id] its place, turn, colour, removal; S.added what you add */
 const MOV = {};
 const movers = new THREE.Group(); scene.add(movers);
+/* N220: a piece here swaps as the house's do (N217's lists by kind, N219's shops): S.layout[id].sw, drawn at its own size where the old
+   one stood. Only the plan's options and what's added: the media wall and the pieces they keep don't (docs/DECISIONS.md) */
+const LIV_SWAP = { rug: "rug", sg_sidetable: "table", sg_pouffe: "seat", sg_hallbench: "seat" }, LIVHM = {},
+  LIV_SWAP_T = { armchair: "seat", rattan: "seat", beanbag: "seat", footstool: "seat", pouffe: "seat", bench: "seat", sidetable: "table", bookcase: "shelves", ladder: "shelves", arclamp: "lamp" };
+function livSwapKind(id) { const it = MOV[id]; return !it || it.fixed || it.lamp ? null : LIV_SWAP[id] || (it.added && LIV_SWAP_T[(S.added.find(a => a.id === id) || {}).type]) || null; }
+const livSwapOk = (id, key) => !!key && !!HCAT[key] && !HCAT[key].own && HCAT[key].k === livSwapKind(id);
+function livHm(k) {   // a house material's colour in the room's own kinds (no new shader): oak's grain, a cloth's weave
+  if (LIVHM[k]) return LIVHM[k];
+  const [c, r] = (R.HOUSE3 && R.HOUSE3.mats[k]) || ["#cccccc", 0.8], m = new THREE.MeshStandardMaterial({ color: c, roughness: r });
+  if (/oak|birch|pine|wood|timber/.test(k)) Object.assign(m, { map: OAK_TEX, roughness: 0.55 }); else if (/^cloth|lycksele|rug|sisal|jute/.test(k)) fabric(m);
+  if (/glass/.test(k)) Object.assign(m, { transparent: true, opacity: 0.35, roughness: 0.1 });
+  return (LIVHM[k] = reg(m));
+}
+function livSwapDraw(it, key) {   // placeAll: the piece as swapped (key) or as planned; its boxes and lathes as hcBuild's (u along, v up, t out)
+  if (!it.g0) Object.assign(it, { g0: it.pivot.children[0], w0: it.w, d0: it.d });
+  if (it.swg) { it.pivot.remove(it.swg); it.swg.traverse(o => o.geometry && o.geometry.dispose()); it.swg = null; }
+  const C = key && HCAT[key], turn = !!C && C.k === "rug" && (C.w > C.d) !== (it.w0 > it.d0), W = C ? (turn ? C.d : C.w) : it.w0, D = C ? (turn ? C.w : C.d) : it.d0;
+  Object.assign(it, { w: W, d: D, swk: C ? key : null });
+  if (!C) { if (it.g0.parent !== it.pivot) it.pivot.add(it.g0); return; }
+  const g = it.swg = new THREE.Group(); it.pivot.remove(it.g0);
+  C.b(W, C.h, D, (m, u0, v0, t0, u1, v1, t1) => { const w = Math.abs(u1 - u0), h = Math.abs(v1 - v0), d = Math.abs(t1 - t0);
+      if (w > 0.05 && h > 0.05 && d > 0.05) lb(g, (u0 + u1) / 2 - W / 2, Math.min(v0, v1), (t0 + t1) / 2 - D / 2, w, h, d, livHm(m)); },
+    (m, u, t, v, p) => { const q = new THREE.Mesh(new THREE.LatheGeometry(p.map(([r, y]) => new THREE.Vector2(r * M, y * M)), 24), livHm(m)); q.position.copy(v3(u - W / 2, v, t - D / 2)); g.add(shadow(q)); });
+  it.pivot.add(mergeStatic(g));
+}
+function livSwap(id, key) {   // Swap it: its back where the old one's was, against the walls it was against
+  const it = MOV[id]; if (!livSwapKind(id) || (key && !livSwapOk(id, key))) return;
+  pushUndo(); const p = spotOf(id), on = wallsTouched(it, p), d0 = it.d, a = p.rot * Math.PI / 180;
+  livSwapDraw(it, key); const { hx, hz } = halfOf(it, p.rot), k = (d0 - it.d) / 2;
+  let x = p.x + Math.sin(a) * k, z = p.z - Math.cos(a) * k;
+  if (on.x0) x = hx; if (on.xW) x = R.W - hx; if (on.zmin) z = R.WINDOW_Z + hz; if (on.zmax) z = zmaxAt(x, hx) - hz;
+  const c = clampItem(it, x, z, p.rot); setLayout(id, { x: c.x, z: c.z });
+  if (key) S.layout[id].sw = key; else { const L = S.layout[id], a = S.added.find(q => q.id === id); delete L.sw; if (!a) { delete L.x; delete L.z; } }   // as planned: where the plan has it (as N217's)
+  placeAll(); store.set(KEY, S); dirty();
+}
+const livThe = s => (s = s.replace(/ \((suggested|an option)\)$/, ""), (/^(Your|The) /.test(s) ? "" : "the ") + s[0].toLowerCase() + s.slice(1));
+function livWhy(id) {   // the swap card's fit: past the room's walls, or over a piece it wasn't over as planned (a rug only the walls)
+  const it = MOV[id], p = spotOf(id), { hx, hz } = halfOf(it, p.rot), out = [], wall = Math.max(hx - p.x, p.x + hx - R.W, R.WINDOW_Z + hz - p.z, p.z + hz - zmaxAt(p.x, hx));
+  if (wall > 1) out.push(`${Math.round(wall)} cm into the wall`);
+  const rug = q => q === "rug" || (HCAT[MOV[q].swk] || {}).k === "rug"; if (rug(id)) return out;
+  const fp = (q, w, d) => { const s = spotOf(q), h = halfOf({ w, d }, s.rot); return [s.x - h.hx, s.x + h.hx, s.z - h.hz, s.z + h.hz]; };
+  const over = (A, B) => A[0] < B[1] - 1 && A[1] > B[0] + 1 && A[2] < B[3] - 1 && A[3] > B[2] + 1, me = fp(id, it.w, it.d), was = fp(id, it.w0 ?? it.w, it.d0 ?? it.d);
+  const hit = Object.values(MOV).filter(o => o.id !== id && !o.fixed && !rug(o.id) && o.pivot.visible && !(S.layout[o.id] || {}).off && over(me, fp(o.id, o.w, o.d)) && !over(was, fp(o.id, o.w, o.d)));
+  if (hit.length) out.push("in the way of " + hit.slice(0, 2).map(o => livThe(o.label)).join(" and "));
+  return out;
+}
 /* V3.81 (N137): a vertex-coloured material needs a colour on every shape (white: none) or it draws black */
 function vcol(geo, mat) { if (mat && mat.vertexColors && !geo.attributes.color) geo.setAttribute("color", new THREE.Float32BufferAttribute(new Float32Array(geo.attributes.position.count * 3).fill(1), 3)); return geo; }
 function rlb(g, x, y, z, w, h, d, mat, r = 3) {           // v32: the same, its edges rounded (upholstery)
@@ -79,7 +125,8 @@ function placeAll() {
     if (it.lamp) continue;                                  // the lamp is rebuilt where it stands (buildLamp)
     const L = NOWV ? {} : S.layout[it.id] || {};   // V3.90 (N151): As it is: every piece where the plan has it, nothing added or taken out
     if (it.fixed) { it.pivot.visible = !L.off && (!it.when || it.when()); continue; }   // v27: built in where it stands
-    const p = NOWV ? Object.assign({ rot: 0 }, it.def()) : spotOf(it.id);
+    const sw = livSwapOk(it.id, L.sw) ? L.sw : null; if (sw !== (it.swk || null)) livSwapDraw(it, sw);   // N220: swapped, or as planned
+    const p =NOWV ? Object.assign({ rot: 0 }, it.def()) : spotOf(it.id);
     it.pivot.position.copy(v3(p.x, 0, p.z)); it.pivot.rotation.y = (p.rot || 0) * Math.PI / 180;
     it.pivot.visible = !(NOWV && it.added) && !L.off && (!it.when || it.when());
     const col = L.col || (it.follow && !NOWV && (S.layout[it.follow] || {}).col);   // V3.78 (N135): a piece can follow another's colour (the chaise, the sofa bed's)
@@ -677,7 +724,7 @@ function drawSetups() {
     return `<button type="button" class="chip" data-setup="${esc(id)}">${esc(d.name) || "A plan"}${when ? ` · ${when}` : ""}</button>`; }).join("");
 }
 qs("#r3d-setups")?.addEventListener("click", e => { const b = e.target.closest("[data-setup]"); if (!b) return; const d = SETUPS[b.dataset.setup];
-  if (d && d.look && applyLook(b64u(JSON.stringify(d.look)))) toast(`Opened: ${d.name || "your plan"}`); });
+  if (d && d.look && applyLook(b64u(JSON.stringify(d.look)), null)) toast(`Opened: ${d.name || "your plan"}`); });
 function shareStatus() {
   const st = qs("#r3d-sharest"), use = qs("#r3d-useshared"); if (!st) return;
   use.disabled = !sharedDoc;

@@ -78,6 +78,8 @@ def items(export):
         src, meas = _src(it)
         row = dict(id=iid, name=it["name"], room=it["room"], floor=it["floor"] if it["floor"] in M.FLOOR_Y else "first", kind=it["kind"],
                    box=b, src=src, measure=bool(meas), axis=it["axis"], data=list(it["data"]) if it["data"] else None)
+        if it.get("on"):                                          # N217: the piece it stands on or hangs from
+            row["on"] = it["on"]
         ax = it["axis"]
         w = (b[3] - b[0]) if ax != "z" else (b[5] - b[2])
         d = (b[5] - b[2]) if ax != "z" else (b[3] - b[0])
@@ -86,6 +88,8 @@ def items(export):
             f, dd = doors[iid]
             size.update(w=round(dd["b"] - dd["a"], 1), h=D.DOOR_H, up=0.0)
             row["opening"] = dict(axis=dd["axis"], line=dd["line"], a=dd["a"], b=dd["b"], y0=M.FLOOR_Y[f], y1=M.FLOOR_Y[f] + D.DOOR_H, frame=FRAME)
+            H = M.hang(f, dd, 1.75)                                   # N217: its leaf's swing, for the page's fit check
+            row["opening"]["swing"] = dict(hinge=round(H["hinge"], 1), u=H["u"], side=H["side"])
         if iid in ops:                                            # a window or an outside door: its opening in the wall
             op = ops[iid]
             size.update(w=round(op["x"][1] - op["x"][0], 1), h=round(op["head"] - op["sill"], 1), up=op["sill"])

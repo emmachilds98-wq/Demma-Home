@@ -39,11 +39,12 @@ def _in_poly(u, v, pts):
 
 
 def faces():
-    """Every surface face, split by storey and by room: (room, kind, side, area cm², material, floor). A wall's face runs on past rooms
+    """Every surface face, split by storey and by room: (room, kind, side, area cm², material, floor, a wall's (axis, line, u0, u1, y0, y1)). A wall's face runs on past rooms
     (the party wall the house's whole depth), so each room gets the length of it along its own outline."""
     e = M.export()
     raw = []                                                     # (kind, m, axis of the plane, plane, normal sign, u0, u1, y0, y1) or a floor/ceiling rect
     over = []                                                    # the stair wall's profile: the paint behind it isn't counted again
+    slopes = []                                                  # (x, z and y just up from its foot, area, material)
     for g, F in e["floors"].items():
         for m, boxes in F["boxes"].items():
             kind = "wall" if m in WALLS else "ceiling" if m in CEILS else "floor" if m in FLOORS else None
@@ -59,14 +60,22 @@ def faces():
                 else:
                     raw.append((kind, m, x0, x1, z0, z1, y0 if kind == "ceiling" else y1))
         for P in F.get("prisms", []):
+            if P["m"] in CEILS and P["axis"] == "x":             # N214: a sloped ceiling (the roof rooms', the flight's underside): its long edge across
+                L = max(((p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2) ** 0.5 for p, q in zip(P["pts"], P["pts"][1:] + P["pts"][:1]))
+                lo, hi = min(P["pts"], key=lambda q: q[1]), max(P["pts"], key=lambda q: q[1])
+                slopes.append(((P["a"] + P["b"]) / 2, lo[0] + (5 if hi[0] > lo[0] else -5), lo[1], L * (P["b"] - P["a"]), P["m"]))
             if P["m"] not in WALLS or P["axis"] == "y":
-                continue                                         # a sloped ceiling's profile: counted with the slopes' boxes
+                continue
             us = [q[0] for q in P["pts"]]; vs = [q[1] for q in P["pts"]]
             for sgn, c in ((-1, P["a"]), (1, P["b"])):
                 raw.append(("wallp", P["m"], P["axis"], c, sgn, min(us), max(us), min(vs), max(vs), P["pts"]))
             if P["m"] == "stairpaint":
                 over.append((P["axis"], P["a"], P["b"], P["pts"]))
     out = []
+    for x, z, y, a, m in slopes:                                 # its room: the one at its foot
+        f = max((k for k in M.FLOOR_Y if M.FLOOR_Y[k] - 1 <= y), key=lambda k: M.FLOOR_Y[k])
+        rid = next((p[0] for p in PIECES[f] if p[1] <= x <= p[2] and p[3] <= z <= p[4]), None)
+        out.append((rid, "slope", None, a, m, f, None))
     for r in raw:
         if r[0] in ("wall", "wallp"):
             kind, m, ax, c, sgn, u0, u1, y0, y1 = r[:9]
@@ -99,7 +108,7 @@ def faces():
                             uu += step
                         area = n * step * step
                     if area >= 1:
-                        out.append((rid, "wall", SIDE[(sgn, 0) if ax == "x" else (0, sgn)], area, m, f))
+                        out.append((rid, "wall", SIDE[(sgn, 0) if ax == "x" else (0, sgn)], area, m, f, (ax, c, ua, ub, ya, yb)))
         else:
             kind, m, x0, x1, z0, z1, y = r
             if kind == "floor":                                  # the storey it's the floor of (the garage's at the street's level, 15 down)
@@ -113,7 +122,7 @@ def faces():
             for rid, px0, px1, pz0, pz1 in PIECES[f]:
                 a = max(0.0, min(x1, px1) - max(x0, px0)) * max(0.0, min(z1, pz1) - max(z0, pz0))
                 if a >= 1:
-                    out.append((rid, kind, None, a, m, f))
+                    out.append((rid, kind, None, a, m, f, None))
     return out
 
 
@@ -133,13 +142,49 @@ def _living():
     return walls, ceil, (fx1 - fx0) * (fz1 - fz0), named
 
 
+SIDES = ("back", "front", "east", "west")                      # the palette's columns 0-3
+NEAR, WIDE, SMALL = 2.0, 15.0, 1e3                               # a point is on a wall within 2 cm of its line and its span; a wall 15 along and 0.1 m² at least
+
+
+def walls(F=None):
+    """N214: each room's walls as built, each to take its own colour: {room: [[side 0-3, line0, line1, u0, u1, m²], ...]}, by side, then
+    along it. A side's faces join into one wall where their lines lie within 4 cm and their spans meet within 4 (a door or a window leaves
+    its lintel and sill on the line; a lining stands 2 proud of its wall); a chimney breast's face and its alcoves, an L's two walls, a
+    dormer's cheeks are walls of their own. A face under 15 along or 0.1 m² (a wall's end at a door, a strip) keeps its side's colour."""
+    by = {}
+    for rid, kind, side, a, m, f, g in F or faces():
+        if kind == "wall" and m == "paint" and rid:
+            by.setdefault((rid, SIDES.index(side)), []).append([g[1], g[1], g[2], g[3], a])
+    holes = [(d["axis"], d["line"], d["a"] - 8, d["b"] + 8) for f in M.FLOOR_Y for d in M.doors(f)] + \
+            [("x", M.BACK if o["side"] == "n" else M.FRONT, o["x"][0] - 8, o["x"][1] + 8) for o in M.D.OPENINGS]   # with their frames
+    out = {}
+    for (rid, si), L in sorted(by.items()):
+        gs = []
+        for q in L:
+            hit = [w for w in gs if q[0] - w[1] <= 2 * NEAR and w[0] - q[1] <= 2 * NEAR and (
+                (q[2] - w[3] <= 2 * NEAR and w[2] - q[3] <= 2 * NEAR) or any(   # their spans meet, or a door's or window's hole lies between them
+                    ax == "xxzz"[si] and abs(ln - q[0]) < 30 and h0 <= min(q[3], w[3]) + 1 and max(q[2], w[2]) - 1 <= h1 for ax, ln, h0, h1 in holes))]
+            for w in hit:
+                gs.remove(w); q = [min(q[0], w[0]), max(q[1], w[1]), min(q[2], w[2]), max(q[3], w[3]), q[4] + w[4]]
+            gs.append(q)
+        out.setdefault(rid, []).extend([si, round(w[0], 1), round(w[1], 1), round(w[2], 1), round(w[3], 1), round(w[4] / 1e4, 2)]
+                                       for w in sorted(gs, key=lambda w: w[2]) if w[3] - w[2] >= WIDE and w[4] >= SMALL)
+    return out
+
+
+def wall_at(W, rid, si, c, u):
+    """The walls (indices in W[rid]) a point on a side's face lies on, as the page's shader finds them."""
+    return [i for i, w in enumerate(W.get(rid, [])) if w[0] == si and w[1] - NEAR <= c <= w[2] + NEAR and w[3] - NEAR <= u <= w[4] + NEAR]
+
+
 def by_room():
-    """{room: {walls: [{side, area, faces, finish}], ceiling: {area, faces, finish}, floor: {...}}}, areas in m²."""
-    res = {}
-    for rid, kind, side, a, m, f in faces():
+    """{room: {walls: [{side, area, faces, finish}], ceiling, floor, slope: {area, faces, finish}, faces: walls()}}, areas in m²."""
+    res, F = {}, faces()
+    W = walls(F)
+    for rid, kind, side, a, m, f, _ in F:
         if not rid:
             continue
-        R = res.setdefault(rid, {"walls": {}, "ceiling": None, "floor": None})
+        R = res.setdefault(rid, {"walls": {}, "ceiling": None, "floor": None, "slope": None})
         if kind == "wall":
             w = R["walls"].setdefault(side, dict(side=side, area=0.0, faces=0, finish=m))
             w["area"] += a; w["faces"] += 1
@@ -150,13 +195,12 @@ def by_room():
             s["area"] += a; s["faces"] += 1; R[kind] = s
     lw, lc, lf, _ = _living()
     res["living"] = {"walls": {s: dict(side=s, area=a, faces=n, finish="living") for s, (a, n) in lw.items()},
-                     "ceiling": dict(area=lc, faces=len(M.living_shell()["ceiling"]), finish="living"), "floor": dict(area=lf, faces=1, finish="carpet")}
+                     "ceiling": dict(area=lc, faces=len(M.living_shell()["ceiling"]), finish="living"), "floor": dict(area=lf, faces=1, finish="carpet"), "slope": None}
     out = {}
     for rid, R in res.items():
         m2 = lambda v: round(v / 1e4, 2)
         out[rid] = dict(walls=[dict(w, area=m2(w["area"])) for w in sorted(R["walls"].values(), key=lambda w: w["side"])],
-                        ceiling=dict(R["ceiling"], area=m2(R["ceiling"]["area"])) if R["ceiling"] else None,
-                        floor=dict(R["floor"], area=m2(R["floor"]["area"])) if R["floor"] else None)
+                        **{k: dict(R[k], area=m2(R[k]["area"])) if R[k] else None for k in ("ceiling", "floor", "slope")}, faces=W.get(rid, []))
     return out
 
 

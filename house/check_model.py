@@ -402,6 +402,18 @@ _over = [f"{f} {rid}" for f in Mo.FLOOR_Y for (rid, x0, x1, z0, z1) in _S.PIECES
          and min(x1, w_[1]) - max(x0, w_[0]) > 0.2 and min(z1, w_[3]) - max(z0, w_[2]) > 0.2]
 check("surfaces: no floor laid over a stairwell (N210)", not _over, "; ".join(_over) if _over else "the stairwells open on the ground and first floors")
 
+# N214: each wall its own colour: every wall face in a room lies on exactly one of its walls, as the page's shader finds them (a face
+# under 15 along or 0.1 m² on one at most: it keeps its side's colour), and no side has more walls than the palette holds (6)
+_F = _S.faces(); _W = _S.walls(_F); _bad = []
+for rid, kind, side, a, m, f, g in _F:
+    if kind != "wall" or m != "paint" or not rid:
+        continue
+    _n = {len(_S.wall_at(_W, rid, _S.SIDES.index(side), g[1], u)) for u in (g[2] + 1, (g[2] + g[3]) / 2, g[3] - 1)}
+    if _n != {1} and (g[3] - g[2] >= _S.WIDE and a >= _S.SMALL or max(_n) > 1):
+        _bad.append(f"{rid} {side} {g[1]:.0f} {g[2]:.0f}–{g[3]:.0f}: {sorted(_n)}")
+_many = [f"{rid} {_S.SIDES[s]}" for rid, L in _W.items() for s in range(4) if sum(w[0] == s for w in L) > 6]
+check("surfaces: each wall face on one wall of its room (N214)", not _bad and not _many, "; ".join(_bad + _many) if _bad or _many else f"{sum(map(len, _W.values()))} walls in {len(_W)} rooms")
+
 # N212: the storage ideas (options to look at): each piece in its room, clear of the house, the swings, the slopes and the walks
 import storage_ideas as _SI
 for _n, _ok, _note in _SI.checks():

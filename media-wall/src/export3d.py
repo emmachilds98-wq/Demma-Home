@@ -85,8 +85,10 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
                     if b[0] <= cx <= b[3] and b[2] <= cz <= b[5] and abs(b[4] - model.FLOOR_Y[f]) <= 20: best = b[4] if best is None else max(best, b[4])
         return round(best if best is not None else model.FLOOR_Y[f], 1)
     # V2.12 (F7): each room's surfaces' areas (m²), for what a choice takes: {room: {walls: {side: [m², finish]}, ceiling: m², floor: m²}}
-    e["finish_areas"] = {rid: dict(walls={w["side"]: [w["area"], w["finish"]] for w in s["walls"]}, ceiling=(s["ceiling"] or {}).get("area"), floor=(s["floor"] or {}).get("area"), fk=(s["floor"] or {}).get("finish"))   # N209: fk, the floor laid now
-                         for rid, s in _surf.by_room().items() if rid != "living"}
+    _br = _surf.by_room()
+    e["finish_areas"] = {rid: dict(walls={w["side"]: [w["area"], w["finish"]] for w in s["walls"]}, ceiling=(s["ceiling"] or {}).get("area"), floor=(s["floor"] or {}).get("area"), fk=(s["floor"] or {}).get("finish"),   # N209: fk, the floor laid now
+                              slope=(s["slope"] or {}).get("area")) for rid, s in _br.items() if rid != "living"}   # N214: its slopes
+    e["finish_walls"] = {rid: s["faces"] for rid, s in _br.items() if s["faces"]}   # N214: each room's walls as built: [side, line from, to, along from, to, m²]
     _lw, _lc, _lf, _ln = _surf._living()   # N5 (REAL_PLAN R7): the living room's walls by name, for what its colours take
     e["finish_areas"]["living"] = dict(walls={k: [round(a / 1e4, 2), "living"] for k, a in _ln.items()}, ceiling=round(_lc / 1e4, 2), floor=round(_lf / 1e4, 2))
     _cf = pathlib.Path(model.__file__).resolve().parent / "client_finishes.json"   # V2.11 (F6): the client's scheme, kept by pull_edits.py
@@ -116,9 +118,29 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
         s = it["size"]
         e["items"][it["id"]] = dict(n=it["name"], k=it["kind"], r=it["room"], ax=it["axis"], b=it["box"], s=[s["w"], s["h"], s["up"]], g=it["measure"],
                                     al=round(a0 - rbox[it["room"]][k], 1) if it["room"] in rbox else round(a0, 1),
-                                    op=dict((q, it["opening"][q]) for q in ("axis", "line", "a", "b", "y0", "y1")) if it.get("opening") else None)
+                                    op=dict((q, it["opening"][q]) for q in ("axis", "line", "a", "b", "y0", "y1", "swing") if q in it["opening"]) if it.get("opening") else None,
+                                    **({"on": it["on"]} if it.get("on") else {}))
+    e["fit"] = _fit(e)
     e.update(front=model.RO["s"], back=model.RO["n"], garage=[0.0, next(r["x1"] for r in model.rooms("ground") if r["id"] == "garage")], hall=[model.D.WALL_HALL, model.RO["w"]], drive=model.D.LEVELS["drive"], lawn=model.D.LEVELS["lawn"])   # V1.3: the ground beyond, at the street's and the garden's levels
     return e
+
+def _fit(e):
+    """N217: what a swapped piece is checked against in the page (16_cards' swap card): each room's notches (its outline's box less its
+    rectangles), the knee walls (the eaves' profiles), the space kept clear (storage_ideas.reserves) and the roof's slopes (model.headroom)."""
+    import model, storage_ideas
+    notch = {}
+    for rid in model.room_sizes():
+        rs = [p for f in model.FLOOR_Y for p in model.rooms(f) if p["room"] == rid]
+        xs, zs = sorted({v for p in rs for v in (p["x0"], p["x1"])}), sorted({v for p in rs for v in (p["z0"], p["z1"])})
+        cells = [[x0, x1, z0, z1] for x0, x1 in zip(xs, xs[1:]) for z0, z1 in zip(zs, zs[1:])
+                 if not any(p["x0"] <= x0 and x1 <= p["x1"] and p["z0"] <= z0 and z1 <= p["z1"] for p in rs)]
+        if cells:
+            notch[rid] = cells
+    eaves = [[P["a"], min(q[1] for q in P["pts"]), min(q[0] for q in P["pts"]), P["b"], max(q[1] for q in P["pts"]), max(q[0] for q in P["pts"])]
+             for F in e["floors"].values() for P in F.get("prisms", []) if P.get("m") == "eaves" and P["axis"] == "x"]
+    return dict(notch=notch, eaves=eaves, keep=[list(q) for q in storage_ideas.reserves()],
+                roof=[model.FLOOR_Y["first"] + model.CEIL, model.RO["n"], model.ROOF_B, model.KB, model.RO["s"], model.ROOF_E, model.K, *model.DM["x"], model.DORMER_BACK])
+
 
 def _fill(f):
     if f.startswith("url("):
@@ -244,6 +266,7 @@ def scene():
     room_spec["CHAIR"] = G.CHAIR; room_spec["SOFA_POUF"] = G.SOFA_POUF
     room_spec["OTTOMAN"] = G.OTTOMAN; room_spec["DRINKS"] = G.DRINKS   # v34: the storage ottoman; the drinks cabinet under the case
     import fit as _fit
+    room_spec["SHOP"] = [shop_row(q) for q in _fit.shop_pieces()]   # N219: the real pieces to swap or add (08_house_catalogue.js hcShop)
     room_spec["SOFABED_IN"] = _fit.sofabed_fit_line()   # V4 (N152): will it go in (the doors' Measure rows)
     room_spec["SOFABED"] = G.SOFABED; room_spec["LAMP_READ"] = G.LAMP_READ   # V3.73: the lamp's reading spot           # V3.71: the green corner sofa bed, to swap in for the sofa and ottoman
     # v36: a third bar, the ottoman's games and cards, the blankets' basket, more storage, the plant shelf
@@ -256,6 +279,48 @@ def scene():
               "STAIR_DRAWERS", "OVERDOOR", "STAIR_CURTAIN", "FIRM", "ENHET", "PLANT_THROUGH_GAP"):   # v38: FIRM, the client's plan
         room_spec[k] = getattr(G, k)
     return {"room": room_spec, "groups": groups}
+
+
+# N219: a shop's piece for the page: [key, kind, look, name, shop, w, d, h, £, page, its material, its legs' or frame's, a count (drawers or doors)]
+SHOP_KIND = {"deskchair": "chair", "records": "shelves", "display": "shelves", "dining": "table", "coffee": "table", "tv": "unit", "sideboard": "unit", "shoes": "unit"}
+SHOP_MAT = [(r"jute|rattan|cane|bamboo", "sisal"), (r"white stain", "door_white"), (r"green|sage|olive|yellow", "cloth3"), (r"blue", "cloth0"), (r"grey", "cloth5"),
+            (r"black-brown", "black"), (r"walnut", "pine_dark"), (r"mink|beige|latte", "cloth1"), (r"cherry|whisky|\btan\b|golden|honey|brown|leather", "door_wood"),
+            (r"orange|rosehip|\bred\b", "cloth2"), (r"off-white|cream|linen|white fabric|wool|cotton", "cloth4"), (r"brass", "brass"), (r"white", "door_white"),
+            (r"pine", "pine"), (r"ash|rubberwood|natural fabric|light", "birch"), (r"black", "black"), (r"metal", "steel"), (r"oak|natural", "oak")]
+WOODS = {"oak", "pine", "birch", "pine_dark", "door_wood", "sisal"}
+
+
+def shop_row(q):
+    """its finish's first part its own material, a second part (after "/", "with", "&") its legs', frame's or cushion's; a seat shows its cloth"""
+    import fit as _fit
+    n, k = q["name"], SHOP_KIND.get(q["kind"], q["kind"])
+    f = re.sub(r"\(also [^)]*\)", "", q["finish"].lower()).replace("(", " ").replace(")", " ")
+    mat = lambda s: next((v for pat, v in SHOP_MAT if re.search(pat, s)), None)
+    parts = [s for s in re.split(r"/|\bwith\b|&|,", f) if s.strip()]
+    m = mat(parts[0]) or mat(f) or "oak"
+    m2 = (mat(parts[1]) if len(parts) > 1 else None) or ("black" if re.search(r"black|hairpin|metal", f) and m != "black" else "oak" if m.startswith("cloth") else m)
+    if k == "seat" and m2.startswith("cloth") and m in WOODS:   # the cushion in front, the frame its legs
+        m, m2 = m2, m
+    if k == "rug":   # a rug in cloth, not paint or wood
+        m = {"door_white": "cloth4", "black": "cloth5", "oak": "sisal", "birch": "sisal"}.get(m, m)
+    if k == "table" and "glass top" in f:
+        m = "glass"
+    nf = n + " " + f
+    if k == "bed":
+        look = "metal" if re.search(r"metal", nf, re.I) else "uph" if re.search(r"upholster", nf, re.I) else "wood"
+    elif k == "shelves":
+        look = "ladder" if re.search(r"ladder", n, re.I) else "glass" if q["kind"] == "display" else "cubes" if q["kind"] == "records" else "books"
+    elif k == "seat":
+        look = "sofa" if re.search(r"sofa|seater", n, re.I) else "arm"
+    elif k in ("table", "rug"):
+        look = "round" if re.search(r"round", n, re.I) or q["w"] == q["d"] else "box"
+    else:
+        look = k
+    pl = re.findall(r"(\d+)\s*\+\s*(\d+)", n)   # its drawers: "3 Drawer", "6 drawers", "(2+2)"
+    c = sum(map(int, pl[0])) if pl else int((re.findall(r"(\d+)\s*drawer", n, re.I) or [0])[0])
+    if k in ("unit", "wardrobe"):
+        c = int((re.findall(r"(\d+)\s*doors?", n, re.I) or [0])[0])
+    return [_fit.shop_key(q), k, look, n.split(",")[0].replace(" (2 pack)", ""), q["retailer"], q["w"], q["d"], q.get("h") or 1, q["price"], q["url"], m, m2, c]
 
 
 def main():

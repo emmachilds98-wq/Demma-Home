@@ -1414,6 +1414,15 @@ SOURCES["hcmore2"] = ("IKEA UK (Nov 2026), assembled W × D × H cm: KIVIK three
                       "(ikea.com/gb, 794.828.35; shopbam.co.uk review, 3 Oct 2026); HEMNES dressing table with mirror, white, 100 × 50 × 159, £155 "
                       "(303.744.13); BESTÅ TV bench with doors, 180 × 42 × 38, £120–185 (ikea.com/gb)")
 ORDER.append("hcmore2")
+SOURCES["hcswap"] = ("IKEA UK, read 22 Nov 2026, W × D × H cm (N217: bedroom 2's desk chair and rug swap): MARKUS office chair, Vissle dark grey, "
+                     "62 × 60, 129–140 high, seat 53 × 47 at 46–57, £159 (302.611.52, ikea.com/gb/en/p/markus-office-chair-vissle-dark-grey-30261152); "
+                     "LÅNGFJÄLL conference chair, Gunnared beige/black, 68 × 68, 92 high at most, seat 43–53, £115 (695.671.56, "
+                     "ikea.com/gb/en/p/langfjaell-conference-chair-gunnared-beige-black-s69567156); STOENSE rug, low pile, off-white, 133 × 195, "
+                     "18 mm thick, £49 (104.255.26, ikea.com/gb/en/p/stoense-rug-low-pile-off-white-10425526); LOHALS rug, flatwoven jute, "
+                     "160 × 230, 13 mm thick, £129 (502.773.93, ikea.com/gb/en/p/lohals-rug-flatwoven-natural-50277393); LAGKAPTEN / ALEX desk, white, "
+                     "200 × 60 × 73, a LAGKAPTEN top on an ALEX drawer unit and an ALEX storage unit (each 36 × 70), an ADILS leg, £140 "
+                     "(895.216.95, ikea.com/gb/en/p/lagkapten-alex-desk-white-s89521695)")
+ORDER.append("hcswap")
 SOURCES["amelia"] = ("Amazon UK (Nov 2026, B0HDC8WYBT): Lovesofas Amelia L-shaped corner sofa bed, Blade Green woven chenille, right hand: "
                      "264 W × 165 D × 95 H, seat 43 high and 53 deep, 100 deep at the arm (the listing's drawing), a pull-out bed in the middle, "
                      "a freestanding storage chaise, two footstools under the arm, three adjustable headrests. The 264 × 165 is its two main "
@@ -1429,6 +1438,22 @@ SOURCES["skadis"] = "IKEA UK: SKÅDIS pegboard, white, 56 × 56 cm, £13; with h
 SOURCES["helmer"] = "IKEA UK: HELMER drawer unit on castors, white or black, W 28 × D 43 × H 69 cm, six drawers, £39 (ikea.com/gb, 102.510.45)"
 SOURCES["ivar"] = "IKEA UK: IVAR 1 section with shelves, pine, 89 × 30 × 179 cm, the shelves moved to suit, about £96 (ikea.com/gb, 398.963.71)"
 SOURCES["mittled"] = "IKEA UK: MITTLED LED spotlight, dimmable, black, for inside cabinets, £9 (ikea.com/gb, 605.286.59)"
+# N219 (22 Nov 2026): real pieces from four shops (docs/N219_catalogue.json, read 22 Nov 2026), each its own row, to swap or add in
+# the 3D (options to look at: nothing to buy until she picks). Keyed by its page and name (shop_key), so a row in Send or a look link keeps it.
+def shop_key(p):   # its page and name (one page can sell two sizes)
+    import hashlib
+    return "sh" + hashlib.sha1((p["url"] + "|" + p["name"]).encode()).hexdigest()[:6]
+
+
+def shop_pieces():
+    import json, pathlib
+    return json.loads((pathlib.Path(__file__).resolve().parents[2] / "docs/N219_catalogue.json").read_text())
+
+
+for _p in shop_pieces():
+    SOURCES[shop_key(_p)] = (f"{_p['retailer']}: {_p['name']}, {_p['finish']}, W {_p['w']:g} × D {_p['d']:g}"
+                                    + (f" × H {_p['h']:g}" if _p.get("h") else "") + f" cm, £{_p['price']:g} ({_p['url']}, read {_p['read']})")
+    ORDER.append(shop_key(_p))
 SOURCES["bergshult"] = ("IKEA UK: BERGSHULT shelf, white, 80 × 20 cm, £12, on two RAMSHULT brackets (18 × 22) at least 70 apart; the pair about £27 "
                         "(ikea.com/gb, 704.212.38)")
 SOURCES["tjusig"] = "IKEA UK: TJUSIG hat rack, white, W 79 × D 32 × H 25 cm, hooks under a rail shelf, £29 (ikea.com/gb, 401.526.33)"

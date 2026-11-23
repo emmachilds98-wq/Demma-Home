@@ -31,7 +31,10 @@
           "shell": { "type": "object", "description": "V1.44, the living room only: its walls (solids), floors and treads, the foot of its walls (edges), its door and its flight, room cm (house/model.py living_shell)" },
           "surfaces": { "type": ["object", "null"], "description": "V2.4 (docs/FINISHES_PLAN.md F1): its walls by side (back, front, east, west: the way they look into it), its ceiling and its floor, each with its area in m² net of the holes, how many faces and its finish (house/surfaces.py)",
             "properties": { "walls": { "type": "array", "items": { "$ref": "#/$defs/surface" } }, "ceiling": { "oneOf": [{ "$ref": "#/$defs/surface" }, { "type": "null" }] },
-              "floor": { "oneOf": [{ "$ref": "#/$defs/surface" }, { "type": "null" }] } } },
+              "floor": { "oneOf": [{ "$ref": "#/$defs/surface" }, { "type": "null" }] },
+              "slope": { "oneOf": [{ "$ref": "#/$defs/surface" }, { "type": "null" }], "description": "N214: its sloped ceiling under the roof (or a flight), if it has one" },
+              "faces": { "type": "array", "description": "N214: its walls as built, each to take its own colour (the page's slots 30 on): [side 0-3 back, front, east, west; its line from, to; along it from, to (cm); m²]",
+                "items": { "type": "array", "items": { "type": "number" }, "minItems": 6, "maxItems": 6 } } } },
           "to_measure": { "type": "integer" }, "items": { "type": "integer" } } }
     },
     "items": {
@@ -48,8 +51,11 @@
           "project": { "type": ["string", "null"] },
           "size": { "type": "object", "required": ["w", "h", "d", "up"],
             "properties": { "w": { "type": "number" }, "h": { "type": "number" }, "d": { "type": "number" }, "up": { "type": "number", "description": "up from its floor" } } },
+          "on": { "type": "string", "description": "N217: the item it stands on or hangs from: it goes where that goes, hidden if that's taken out" },
           "opening": { "type": "object", "description": "a door's or window's hole in its wall: the viewer moves the wall's edges with it",
-            "required": ["axis", "line", "a", "b", "y0", "y1"] } } }
+            "required": ["axis", "line", "a", "b", "y0", "y1"],
+            "properties": { "swing": { "type": "object", "description": "N217: a door's leaf: its hinge along the wall, the way the leaf runs from it (u), the side it opens to",
+              "required": ["hinge", "u", "side"] } } } } }
     },
     "measure": {
       "type": "array",
