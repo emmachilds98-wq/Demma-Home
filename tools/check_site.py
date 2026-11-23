@@ -239,7 +239,7 @@ STORE = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTime
 }"""
 # N225: the WC's tiles from their card: zellige, then charcoal grout (the material's own map swapped, costed), held: the plan's, The
 # plan's, Undo, The plan's; then its toilet swapped for Wickes's first (a close coupled one from the floor) and its basin for the corner
-# one (hung at the old one's rim, into the back corner), then as planned
+# one (hung at the old one's rim, in the nearer corner: by the door, so its card says the swing), then as planned
 TILE = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), E = D.HEDITS, ds = window.DemmaStore;
   const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); }, kept = () => D.finAll().wc || {};
   R3D.set({ view: 'wc' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
@@ -252,9 +252,11 @@ TILE = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   q('#r3d-act [data-tileplan]').click(); await sl(300); const gone = !kept()[90] && m.map === map0;
   q('#r3d-act [data-finundo]').click(); await sl(300); const undone = kept()[90]; q('#r3d-act [data-tileplan]').click(); await sl(300);
   const swap = async (id, n) => { D.openAct('hitem:' + id); await sl(600); const b = q('#r3d-act [data-actopen^="hswap:"]'); if (!b) return 'no Swap it';
-    b.click(); await sl(300); q(`#r3d-act [data-hswapgo="${id}:${n}"]`).click();
-    return await wait(() => E[id] && E[id].swap && D.PICK.first.some(p => p.id === id)) ? (await sl(300), [q('#r3d-act-h').textContent, q('#r3d-act-st').textContent]) : 'not swapped'; };
-  const toilet = await swap('wc.toilet', 1), basin = await swap('wc.basin', 3), H = D.H3, fl = H.rooms.wc[4], bb = (D.PICK.first.find(p => p.id === 'wc.basin') || {}).b;
+    b.click(); await sl(300);
+    for (let i = 1; i <= n; i++) { const was = (E[id] || {}).swap, nx = q(`#r3d-act [data-hswapgo="${id}:${i}"]`); if (!nx) return 'no › to ' + i;   // › one at a time (only the next is on the card)
+      nx.click(); if (!await wait(() => E[id] && E[id].swap && E[id].swap !== was)) return 'not swapped'; await sl(200); }
+    return await wait(() => (D.PICK.lower || []).some(p => p.id === id)) ? (await sl(300), [q('#r3d-act-h').textContent, q('#r3d-act-st').textContent]) : 'not drawn'; };   // the WC: the lower floor
+  const toilet = await swap('wc.toilet', 1), basin = await swap('wc.basin', 3);
   for (const k of ['wc.toilet', 'wc.basin']) { D.openAct('hitem:' + k); await sl(400); q('#r3d-act [data-hreset]').click(); await sl(300); }
   const back = await wait(() => !E['wc.toilet'] && !E['wc.basin']) && !Object.values(ds.rows('edits')).some(v => v && /^wc[.]/.test(v.item)); if (D.actId) q('#r3d-act .x').click();
   return { title, plan, st, kp, drawn, held, again, gone, undone, toilet, basin, back };
