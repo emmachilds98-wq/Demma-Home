@@ -245,6 +245,15 @@ Object.assign(HCAT, {
       for (let i = 0; i < 5; i++) { const u = W * (i + 0.5) / 5; B("oak", u - 1, 2.5, 2, u + 1, 4.5, 8.4); B("oak", u - 1.3, 2.2, 8.4, u + 1.3, 4.8, 9.2); }   // five Shaker pegs
       for (const u of [3, W - 5.4]) { B(ST, u, 7, 0, u + 2.4, sh, 2.4); B(ST, u, sh - 4, 2.4, u + 2.4, sh, D - 4); B("oak", u, sh + 1.8, D - 9, u + 2.4, sh + 1.86, D - 5); }   // tenoned through the shelf
       B("cloth3", 10, sh + 1.8, 5, 25, sh + 7.5, 17); B("black", 30, sh + 1.8, 7, 42, sh + 3, 16); B("sisal", 52, sh + 1.8, 3, 72, sh + 8, 19); } },   // a hat, gloves, a basket
+  st_airer: { n: "Ceiling pulley airer", k: "idea", w: 90, d: 35, h: 16, ref: "pulleyairer", src: "Clothesmaid ceiling airer, 0.9 m",   // N241: hoisted; cast-iron ends, four pine laths, the ropes to the pulleys
+    b: (W, H, D, B) => { for (const u of [3, W - 4.2]) { B("black", u, 0, 2, u + 1.2, 1.6, D - 2); B("black", u, 0, 2, u + 1.2, 9, 3.6); B("black", u, 0, D - 3.6, u + 1.2, 9, D - 2); B("black", u, 7.4, 2, u + 1.2, 9, D - 2); }
+      for (const t of [6.5, 13.8, 21.1, 28.4]) B("pine", 0, 1.6, t - 1, W, 3.4, t + 1);
+      for (const u of [3.6, W - 3.6]) { B("steel_dark", u - 0.3, 9, D / 2 - 0.3, u + 0.3, H - 2, D / 2 + 0.3); B("black", u - 2, H - 2, D / 2 - 3, u + 2, H, D / 2 + 3); }
+      B("cloth4", 18, 3.4, 5, 42, 4.4, 16); B("cloth0", 50, 3.4, 13, 70, 4.2, 30); } },   // a towel and a shirt drying over the laths
+  st_books: { n: "Oak book tower", k: "idea", w: 50, d: 30, h: 200, ref: "snowdonoak", src: "Made to the spot, 18 mm oak",   // N241: sides, a back, six shelves of books
+    b: (W, H, D, B) => { B(ST, 0, 0, 0, 1.8, H, D); B(ST, W - 1.8, 0, 0, W, H, D); B(ST, 1.8, 0, 0, W - 1.8, H, 1.2); B(ST, 1.8, H - 1.8, 1.2, W - 1.8, H, D);
+      const n = 6, g = (H - 8) / n; B(ST, 1.8, 0, D - 2, W - 1.8, 8, D);
+      for (let i = 0; i < n; i++) { const v = 8 + i * g; B(ST, 1.8, v, 1.2, W - 1.8, v + 1.8, D); stBooks(B, 2.5, W - 2.5, v + 1.8, Math.min(26, g - 5) / 0.95, 1.5, D - 2, W * (i + 3)); } } },
   st_float: { n: "Oak floating shelf", k: "idea", w: 90, d: 23, h: 22, ref: "floatshelf", src: "B&Q oak floating shelf 90 × 23",
     b: (W, H, D, B) => { const t = 3.8, h = H - t - 1; B("oak", 0, 0, 0, W, t, D);
       stBooks(B, 2, W * 0.4, t, Math.min(h, 22) / 0.95, 2, D - 3); B("storebox", W * 0.45, t, 2, W * 0.45 + 24, t + Math.min(16, h), D - 2);

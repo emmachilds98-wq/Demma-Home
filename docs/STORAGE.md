@@ -52,3 +52,35 @@ checks each piece fits (its room, clear of the house, the doors' swings, the slo
 - **Kitchen and the store**: the wall over the bar past the boiler (119 long); the store under the stairs (89 × 171, 235 high) is empty,
   the washer dryer's corner kept. The space under the garage isn't usable without digging.
 - **Living room**: its own options stay (the window seat, the step drawers, the lift-top table, the storage ottoman ...).
+
+## The living room and bedroom 3: books, things and drying (Emma, 23 Nov 2026)
+
+Emma: "suggest some storage options based on what you think id like from plan in the living room and bedroom 3. i need various types
+of storage for various items and books as well as other things and drying clothes". Suggestions only (her brief: small and medium, unique
+to the spot, the media wall's and the office's artisan oak); nothing built or bought until she picks. Made pieces are from the media
+wall's oak board ("snowdonoak", £61.50 a board).
+
+**The living room** (already in the plan: the media wall's records and top shelf, the step drawers, the EKET cabinets, the alcove
+shelves, the shelf over the door, the lift-top table, the blanket basket):
+
+| For | Idea | Where | About | Source |
+|---|---|---|---|---|
+| Drying | An oak shelf over the radiator with four drying rails that fold down under its front edge: a sill for plants by day, warm rails on wash day, folded flat behind the curtains | Under the window, over the radiator (137 long) | 145 × 16, rails fold to 3 deep; £70–110 | oak board, brass hinges (E) |
+| Books, games | The window seat with two deep drawers instead of a lift-up lid: books spine-up, board games flat | The window corner (in place of the plant stand: one or the other) | the seat's width × 45 deep; £180–260 | oak board, 450 runners (E) |
+| Books | The alcove shelves as book ledges: a 2 cm oak lip and an oak bookend at each end, so books stand without falling and a few lie face-out | The two shelves over the plant stand (already picked) | 90 × 23 each; £15–25 more | oak board |
+| Small things | A shallow oak tray drawer under the lift-top table's top for remotes, controllers and coasters | The coffee table (already picked) | 70 × 35 × 5; £30–45 | oak board, runners (E) |
+
+**Bedroom 3, the office** (already there: the straight oak desk, the overhead shelf, the pegboard, the two oak cube shelves and the
+flip-up table; the N223 idea of oak drawers under the desk):
+
+| For | Idea | Where | About | Source |
+|---|---|---|---|---|
+| Drying | A ceiling pulley airer over the radiator, by the window: hoisted to 17 under the ceiling when not in use, lowered to load. The office is the house's best drying room: a radiator, a window to open, a door to shut | Across the window, over the radiator (0.9 m, the window's width) | 90 × 35, 4 laths; £75–99 | Clothesmaid 0.9–2 m £74.99 (clothesmaid.com); Cast in Style 6-lath £99 (castinstyle.co.uk) |
+| Drying (or) | A wall-mounted radial airer that folds flat: ten laths fan out over the radiator | Beside the window, over the radiator's end | 120 × 60 open, 20 × 10 shut; £56 | Pulley Maid radial airer £55.99 (pulleymaid.com) |
+| Books | A slim oak book tower, six shelves of books and games (about 3 m of spines), in the corner between the cube shelves and the window (a shelf over the door or the window won't go: the bifold's swing and fanlight, the airer) | The window's corner | 50 × 30 × 200; £145–185 | oak board |
+| Tech | Oak drawers on castors under the desk, between the PCs (N223), and a steel cable tray under the desk's back edge | Under the desk | 28 × 43 × 69; £145–160, the tray £20–30 | oak board; a cable tray (E) |
+| Headsets, controllers | Oak pegs along the overhead shelf's front, a headset and a controller each | The overhead shelf | 6 pegs; £15–20 | Willow & Stone oak pegs £2.75 each ("pegrail") |
+
+**My picks** (in the 3D as options, 23 Nov: Emma "add your picks into the 3D as options"): the office pulley airer and the book tower
+(bedroom 3's floor card, More, Storage ideas), the living room's radiator shelf with fold-down rails and the window seat's drawers (the
+living room's options).

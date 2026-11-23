@@ -1,4 +1,10 @@
-# Handover (23 Nov 2026, V4.52: start here)
+# Handover (23 Nov 2026, V4.56: start here)
+
+## Pick up here (23 Nov 2026, V4.56)
+**Check lightly (the client: "stop checking so much ... make sure future agents stop doing it too"):** quick checks and privacy per change, push, CI does the browser checks (CLAUDE.md).
+- **V4.56:** N237 in part (the ceilings share the woodwork's program; loading the customisation's code on a card's first tap still open).
+- **Also in V4.56** (from `claude/ecstatic-bardeen-bn139b`, the other session, stopped on its usage limit): N225's second half, N238, N241. **Not merged:** N239 (the same light from a distance) WIP on `claude/n239-light`; N240 (the PC's choppy picture) not started. Next: those two (section 30), then N237's rest; N228, N229, N234, N235 wait on Emma.
+- **Two sessions worked in parallel on 23 Nov** and built N225, N232, N224 and N226 twice. The other one's versions are on main. This session's are kept on branches, unmerged: `claude/trusting-gauss-gra6z6-pr322` (its whole PR #322, closed) and `claude/trusting-gauss-gra6z6-n225` (d7f8ddb: **the taps' and fittings' finish (chrome, black, brushed brass) and the bath panel (white, grey gloss, oak effect)**, cited as `n225fittings`). Main's next row, "N225's taps, mirror and bath panel", can port them from `24_bath.js` there instead of starting again. Before starting, check open PRs and the newest branches, so two sessions don't build the same row.
 
 ## Pick up here (23 Nov 2026, V4.53)
 V4.53: N224's splashback, N231 (a look's cost), N232 (shop pieces by form, merged and checked on screen), N233's WIN and STOOL steps.

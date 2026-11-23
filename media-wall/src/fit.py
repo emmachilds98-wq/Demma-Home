@@ -1491,7 +1491,13 @@ SOURCES["n224units"] = ("Kitchen fronts, a 500 × 715 door (B&Q GoodHome, read 2
                         "(5063022119254), Wickes Modern Cement-effect laminate £190 (p/284307); up to half again for joints, cut-outs and a fitter (E). "
                         "Handles (Wickes kitchen guide, Oct 2026: Elgin strap in brass or matt black, Walton in brushed nickel, Florence in stainless): "
                         "about £4–10 each (E)")
-ORDER.extend(["n225tiles", "n225suites", "n224glass", "n226doors", "n224units"])
+SOURCES["n225fit"] = ("Bathroom taps (Wickes, read 23 Nov 2026): Mariz basin mixer brushed brass £95 (p/312060), Mariz bath shower mixer brushed brass "
+                      "£150 (p/312069), Kubic chrome basin mixer £55 (p/161639); a chrome bath shower mixer about £90–150 and brushed nickel as brass (E); "
+                      "a plumber's half day £80–150 (E). A bath panel: a painted MDF front about £45–90, an oak one £70–140, with its paint (E)")
+SOURCES["pulleyairer"] = ("Ceiling pulley clothes airers (read 23 Nov 2026): Clothesmaid, cast iron rack ends 38 wide, pine slats 0.9 to 2 m, "
+                          "17 cm under the ceiling fully raised, £74.99 (clothesmaid.com); Cast in Style 6-lath Victorian Kitchen Maid £99 "
+                          "(castinstyle.co.uk); Pulley Maid wall radial airer, 120 × 60 open, 20 × 10 shut, £55.99 (pulleymaid.com)")
+ORDER.extend(["n225tiles", "n225suites", "n224glass", "n226doors", "n224units", "n225fit", "pulleyairer"])
 # V4 (N152): will the sofa bed go in? Its biggest box (166 × 101 × 68, SOURCES "amelia") carried on its side, the 166 first: it needs
 # its 68 and 2 to spare (hands) across each opening on the way, the front door, the hall past the stair box and the living room door, in
 # line (no turn). A door left on its hinges, open flat, takes about its leaf's thickness (E: 4) more. The doors' widths are Measure's

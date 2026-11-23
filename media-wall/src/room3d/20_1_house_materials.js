@@ -8,7 +8,7 @@ const SUNCFG = { lux: 80, out: 0.5 };   // tuned on stills: the bars' shadows re
    lawn, concrete, paving, road, carpet, tiles, boards. Each: the canvas and the metres it covers */
 const HTEX = {}, HI_T = new Set(["tile_w", "tile_f", "door_wood", "chalk"]);
 /* V2.56 (R3): finishes without a photo take one of ours (build_textures.finishes), their own colour over a white detail map (TINT) */
-const HTEX_AS = { kunit: "gloss", artisan: "oak", frame_out: "upvc", door_out: "upvc", gutter: "upvc", sill_board: "upvc", skirting: "gloss", door_white: "joinery", door_leaf: "joinery", door_cream: "joinery", door_wood: "joinery", woodwork: "upvc", newel: "joinery", rail_white: "gloss", steel: "brushed", steel_dark: "brushed", wardrobe: "melamine" };   // N142 (V4.12): the white units' foil
+const HTEX_AS = { kunit: "gloss", bpanel: "gloss", artisan: "oak", frame_out: "upvc", door_out: "upvc", gutter: "upvc", sill_board: "upvc", skirting: "gloss", door_white: "joinery", door_leaf: "joinery", door_cream: "joinery", door_wood: "joinery", woodwork: "upvc", newel: "joinery", rail_white: "gloss", steel: "brushed", steel_dark: "brushed", wardrobe: "melamine" };   // N142 (V4.12): the white units' foil
 const HTEX_TINT = new Set(["upvc", "gloss", "brushed", "joinery", "melamine"]);   // N111: the doors' painted timber, its grain up the leaf (the skirting's strokes along it, gloss)
 const BED_TINT = new Set(["duvet", "pillow", "artisan"]);   // V4.3: and artisan oak, a hair warmer than the oak it shares   // V3.66 (N113): the bedding's own colour over its cotton photo, a hair below white (it drew the photo at full white: clipped on a phone)
 /* V3.36 (N87): the soft things in their own colours over the cotton's white, each with a relief of its kind (blinds woven, felt knitted,
@@ -49,11 +49,15 @@ const FIN_RW = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1)
 function finPatch(m, k) {   // the walls' and ceilings' materials read the palette (their program keyed apart, so nothing else changes)
   if (!(k in FIN.kind) || !finSetup()) return m;
   const room = -1, scale = m.map ? 1 / 0.95 : 1;
-  if (FIN.kind[k] >= 2 && !m.roughnessMap) m.roughnessMap = FIN_RW;   // white (roughness × 1): the bedding's program the woodwork's, one shader
-  m.customProgramCacheKey = () => "finish" + Math.min(FIN.kind[k], 2) + (room > 0 ? "r" : "");   // the woodwork shares the bedding's program (its kind a uniform): no shader of its own at the first picture
+  if (FIN.kind[k] >= 1 && !m.roughnessMap) m.roughnessMap = FIN_RW;   // white (roughness × 1): the ceilings', the bedding's and the woodwork's maps alike, one shader (N237)
+  /* the woodwork shares the bedding's program (V4.49), and N237 the ceilings' too: their kind a uniform, so one text and one shader at
+     the first picture (the walls' their own: no map, the emulsion) */
+  const wall = FIN.kind[k] === 0;
+  m.customProgramCacheKey = () => "finish" + (wall ? 0 : 1) + (room > 0 ? "r" : "");
   m.onBeforeCompile = sh => {
     Object.assign(sh.uniforms, { finMap: { value: FIN.map }, finPal: { value: FIN.pal }, finWalls: { value: FIN.walls }, finKind: { value: FIN.kind[k] }, finRoom: { value: room }, finScale: { value: scale }, finInv: { value: FIN.inv } , finGar: { value: garageAt() } });
-    sh.vertexShader = "uniform mat4 finInv;\nvarying vec3 vFinP;\nvarying vec3 vFinN;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n vFinP = " + (FIN.kind[k] >= 2 ? "(finInv * modelMatrix * vec4(transformed, 1.0)).xyz; vFinN = (finInv * modelMatrix * vec4(objectNormal, 0.0)).xyz" : "transformed") + (FIN.kind[k] >= 2 ? ";" : "; vFinN = objectNormal;"));   // N216: a door's leaf swings: its room from where it is
+    sh.vertexShader = "uniform mat4 finInv;\nuniform float finKind;\nvarying vec3 vFinP;\nvarying vec3 vFinN;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n " + (wall ? "vFinP = transformed; vFinN = objectNormal;"
+      : "if (finKind > 1.5) { vFinP = (finInv * modelMatrix * vec4(transformed, 1.0)).xyz; vFinN = (finInv * modelMatrix * vec4(objectNormal, 0.0)).xyz; } else { vFinP = transformed; vFinN = objectNormal; }"));   // N216: a door's leaf swings: its room from where it is (a ceiling's as drawn)
     sh.fragmentShader = "uniform vec2 finGar;\nuniform sampler2D finMap;\nuniform sampler2D finPal;\nuniform sampler2D finWalls;\nuniform float finKind;\nuniform float finRoom;\nuniform float finScale;\nvarying vec3 vFinP;\nvarying vec3 vFinN;\n" +
       `int finAt(vec2 c, int fl) { ivec2 t = ivec2(int(clamp(floor(c.x / 2.0), 0.0, ${FIN.W - 1}.0)), int(clamp(floor((c.y + 309.0) / 2.0), 0.0, ${FIN.H - 1}.0)) + fl * ${FIN.H}); return int(texelFetch(finMap, t, 0).r * 255.0 + 0.5); }\n` +
       sh.fragmentShader.replace("vec4 diffuseColor = vec4( diffuse, opacity );", `vec3 finD = diffuse;
@@ -61,15 +65,15 @@ function finPatch(m, k) {   // the walls' and ceilings' materials read the palet
     int fl = yc < 0.0 ? 0 : (yc < 260.0 ? 1 : 2); int rm = int(finRoom);
     if (rm < 0) { float o = finKind < 0.5 || finKind > 2.5 ? 3.0 : 0.0;
       ivec2 t = ivec2(int(clamp(floor((xc - fn.x * o) / 2.0), 0.0, ${FIN.W - 1}.0)), int(clamp(floor((zc + fn.z * o + 309.0) / 2.0), 0.0, ${FIN.H - 1}.0)) + fl * ${FIN.H});
-      rm = int(texelFetch(finMap, t, 0).r * 255.0 + 0.5); }${FIN.kind[k] >= 2 ? `
+      rm = int(texelFetch(finMap, t, 0).r * 255.0 + 0.5); }${!wall ? `
     if (finKind > 2.5) for (int d = 1; d <= 8 && rm == 0; d++) { float s = float(d) * 4.0;   // V4.46: a door's lining, in the opening: the nearest room's
       rm = finAt(vec2(xc + s, zc), fl); if (rm == 0) rm = finAt(vec2(xc - s, zc), fl); if (rm == 0) rm = finAt(vec2(xc, zc + s), fl); if (rm == 0) rm = finAt(vec2(xc, zc - s), fl); }` : ""}
     if (rm > 0) { float nx = -fn.x, nz = fn.z; int sl = finKind > 2.5 ? 6 : finKind > 1.5 ? 5 : finKind > 0.5 ? 4 : (abs(nx) > abs(nz) ? (nx > 0.0 ? 2 : 3) : (nz > 0.0 ? 0 : 1));
-      vec4 fc = texelFetch(finPal, ivec2(sl, rm), 0);${FIN.kind[k] === 0 ? `
+      vec4 fc = texelFetch(finPal, ivec2(sl, rm), 0);${wall ? `
       { float ln = sl < 2 ? zc : xc, al = sl < 2 ? xc : zc;   // N214: the wall it's on (its line and span), its own colour if it has one
         for (int j = 0; j < ${FIN.WK}; j++) { vec4 w = texelFetch(finWalls, ivec2(sl * ${FIN.WK} + j, rm), 0);
-          if (ln > w.x - 2.0 && ln < w.y + 2.0 && al > w.z - 2.0 && al < w.w + 2.0) { vec4 c2 = texelFetch(finPal, ivec2(8 + sl * ${FIN.WK} + j, rm), 0); if (c2.a > 0.5) fc = c2; break; } } }` : FIN.kind[k] === 1 ? `
-      if (abs(fn.y) > 0.2 && abs(fn.y) < 0.95) { vec4 c2 = texelFetch(finPal, ivec2(7, rm), 0); if (c2.a > 0.5) fc = c2; }   // N214: a slope's own` : ""}
+          if (ln > w.x - 2.0 && ln < w.y + 2.0 && al > w.z - 2.0 && al < w.w + 2.0) { vec4 c2 = texelFetch(finPal, ivec2(8 + sl * ${FIN.WK} + j, rm), 0); if (c2.a > 0.5) fc = c2; break; } } }` : `
+      if (finKind < 1.5 && abs(fn.y) > 0.2 && abs(fn.y) < 0.95) { vec4 c2 = texelFetch(finPal, ivec2(7, rm), 0); if (c2.a > 0.5) fc = c2; }   // N214: a slope's own`}
       if (fc.a > 0.5) finD = fc.rgb * finScale;
       if (finKind > 1.5) rm = 0; }   // the bedding and the woodwork (N216): their colour, no room shade
     if (rm > 0) {
@@ -87,12 +91,12 @@ function finPatch(m, k) {   // the walls' and ceilings' materials read the palet
           if (finAt(c0 + vec2(dd, 0.0), fl) != rm || finAt(c0 - vec2(dd, 0.0), fl) != rm || finAt(c0 + vec2(0.0, dd), fl) != rm || finAt(c0 - vec2(0.0, dd), fl) != rm) cn = 1.0 - float(d - 1) / 3.0; }
         shd -= 0.08 * cn;
       }
-      ${FIN.kind[k] < 2 ? "{ float wm = max(finD.r, max(finD.g, finD.b)); if (wm > WMX) finD *= WMX / wm; }".replace(/WMX/g, Math.pow(WHITE_MAX, 2.2).toFixed(4)) : ""}
-      finD *= shd;${FIN.kind[k] === 0 ? `
+      ${"{ float wm = max(finD.r, max(finD.g, finD.b)); if (wm > WMX) finD *= WMX / wm; }".replace(/WMX/g, Math.pow(WHITE_MAX, 2.2).toFixed(4))}
+      finD *= shd;${wall ? `
       if (rm == int(finGar.x)) { float gh = yc - finGar.y, gm = pgN(vPgP * 0.8 + 11.0), gd = pgN(vec3(xc, yc * 0.3, zc) * 0.05);
         finD *= vec3(0.95, 0.95, 0.96) * (0.94 + 0.1 * gm) * (1.0 - (0.08 + 0.08 * gd) * exp(-max(gh + 15.0, 0.0) / 30.0)); }` : ""} } }
   vec4 diffuseColor = vec4( finD, opacity );`);
-    if (FIN.kind[k] === 0) paintGrain(sh);   // N172: the emulsion's tone and sheen
+    if (wall) paintGrain(sh);   // N172: the emulsion's tone and sheen
   };
   return m;
 }

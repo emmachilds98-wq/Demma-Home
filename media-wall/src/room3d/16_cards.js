@@ -131,7 +131,8 @@ function roomUps(room, noEd) {   // [{k, t, lo, hi}]: what's changed in a room (
     if (o[19]) add("19=" + o[19], "Curtains: " + upNm(FIN_CURT, o[19]), UPC.curt);
     if (o[90] && TILE_ROOMS[room]) tileUps(room, add);   // N225: the tiles by their area
     doorUps(room, add);   // N226: its doors her way
-    if (room === "kitchen") kitUps(add);   // N224: the units' fronts, handles, worktop
+    if (room === "kitchen") kitUps(add);
+    if (room === "bathroom") bathUps(add);   // N225: the taps and the bath panel   // N224: the units' fronts, handles, worktop
     winsOf(room).forEach((w, j) => { const v = o[70 + j]; if (v) add(`${70 + j}=${v}`, `${w.n}: ${winSay(...v.split("."))}`, winCost(w, v)); });   // N227: each window's own
     if (o[20]) add("20=" + o[20], "Bedding: " + upNm(FIN_BED, o[20]), UPC.bed);
     if (o[21]) add("21=" + o[21], "Picture: " + upNm(FIN_PICS, o[21]), UPC.pic);
