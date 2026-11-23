@@ -1476,7 +1476,10 @@ SOURCES["n225suites"] = ("Toilets, W × D × H cm: Wickes Portland close coupled
                          "Basins: Wickes Emma 420 full pedestal 42 × 32 × 85, £309 (p/233351); Wickes Galeria 450 semi pedestal 45 × 37 × 45, £189 (p/233362); "
                          "Wickes Newport corner 45 × 46 × 16.5, wall hung, £45 (p/161904); Wickes White Gloss Compact Vanity Unit & Basin 40.5 × 22.5 × 90.5, "
                          "floor standing, £97 (p/301110)")
-ORDER.extend(["n225tiles", "n225suites"])
+SOURCES["n224glass"] = ("Glass splashbacks, 6 mm toughened, 60 × 75 cm (0.45 m²), self-adhesive: Sage Green £104 (B&Q diy.com, 5060729154038), "
+                        "Cotton Cream £89.99 (Robert Dyas, 366145), Black Gloss £80 (Homebase, 0606101), read 23 Nov 2026; so about £231, £200 and "
+                        "£178 a m², a quarter more made to measure (E)")
+ORDER.extend(["n225tiles", "n225suites", "n224glass"])
 # V4 (N152): will the sofa bed go in? Its biggest box (166 × 101 × 68, SOURCES "amelia") carried on its side, the 166 first: it needs
 # its 68 and 2 to spare (hands) across each opening on the way, the front door, the hall past the stair box and the living room door, in
 # line (no turn). A door left on its hinges, open flat, takes about its leaf's thickness (E: 4) more. The doors' widths are Measure's
