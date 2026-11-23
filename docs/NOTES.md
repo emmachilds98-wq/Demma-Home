@@ -526,3 +526,11 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Cited, read 23 Nov:** `fit.SOURCES` `n225tiles` (white metro 15 × 7.5 £23, square 10 × 10 £48, large 60 × 30 £16, sage metro
   15 × 7.5 £21.33, zellige-look 10 × 10 £36.86; grout white, grey, charcoal; a tiler £20–50/m²) and `n225suites` (Portland, Cleveland,
   Nuie Bliss back-to-wall, Siena wall-hung on a Duplo One 82 frame; Emma pedestal, Galeria semi-pedestal, Newport corner, compact vanity).
+
+## N237 (23 Nov 2026): one palette program for the ceilings, bedding and woodwork
+- Two materials share a program only if three's parameters match too, not just `customProgramCacheKey`: the ceilings and the bedding
+  differed by a roughness map alone (`roughnessMapUv`), so the ceilings now take the same white 1 × 1 map (`FIN_RW`, roughness × 1).
+  Keep the shader's text the same for every kind in a key: branch on the `finKind` uniform (vertex too), never on the JS kind.
+- Compare cache keys field by field (`gl.info.programs[i].cacheKey.split(",")`) at `r3d-first` to find the one parameter apart. A scratch
+  folder may hold an older session's `_site`: build the baseline into a fresh `DEMMA_SITE` (and `npm ci` first, or the page has no
+  three bundle and no minify, and every number moves).
