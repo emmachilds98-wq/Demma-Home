@@ -289,6 +289,19 @@ STOOL = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTime
   const back = await wait(() => !E[id]) && !Object.values(ds.rows('edits')).some(v => v && v.item === id); if (D.actId) q('#r3d-act .x').click();
   return { swapped, name, line, back };
 }"""
+# N226: bedroom 2's door as a shaker with black knobs (This door), then All doors four panel; drawn in its part; The plan's, Undo, The plan's
+DOOR = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), pk = 'door.bed2_door';
+  const st = () => q('#r3d-act-st').textContent.split(' · ').slice(1).join(' · '), kept = () => JSON.stringify(D.finAll().doors || null), n = () => D.HPARTS[pk].g.children.filter(c => c.userData.door226).length;
+  R3D.set({ view: 'landing' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
+  D.openAct('hdoor:' + pk); await sl(600); const plan = st();
+  q('#r3d-act [data-doorsc="door"]').click(); await sl(200); q('#r3d-act [data-doorst="shaker"]').click(); await sl(500); q('#r3d-act [data-doorh="knob"]').click(); await sl(500);
+  const one = [st(), kept(), n()];
+  q('#r3d-act [data-doorsc="all"]').click(); await sl(200); q('#r3d-act [data-doorst="four"]').click(); await sl(500); const all = [st(), kept()];
+  q('#r3d-act [data-doorplan]').click(); await sl(500); const back = [kept(), n()];
+  q('#r3d-act [data-finundo]').click(); await sl(500); const undone = kept(); q('#r3d-act [data-doorplan]').click(); await sl(500);
+  q('#r3d-act [data-doorsc="door"]').click(); const left = kept(); if (D.actId) q('#r3d-act .x').click();
+  return { plan, one, all, back, undone, left };
+}"""
 # N218: tap bedroom 2's floor, Add a piece here, Shelves: a bookcase stands back to a wall and fits; the look link (Link) carries it
 ADD = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), cv = document.querySelector('.r3d canvas'), q = s => document.querySelector(s), ds = window.DemmaStore;
   const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
@@ -631,6 +644,10 @@ def main():
                     so = pg.evaluate(STOOL)                         # N230: a kitchen stool swapped for IKEA's STIG, then as planned
                     if not (so.get("swapped") and "STIG" in so.get("name", "") and so.get("line", "").startswith("40 × 42 × 90 cm · Fits") and so.get("back")):
                         fails.append(f"{w}: the kitchen's bar stool swapped for IKEA's STIG from its Shops chip, then as planned: {so} (want STIG, \"40 × 42 × 90 cm · Fits\", no rows left)")
+                    dr = pg.evaluate(DOOR)                          # N226: a door's leaf and handle, then all doors', The plan's, Undo, The plan's
+                    want = {"plan": "The plan's: cottage boards, chrome lever", "one": ["Shaker, black knob · £246–496", '{"72":"shaker.knob"}', 2],
+                            "all": ["Four panel, black knob · all doors · £211–461", '{"70":"four.knob"}'], "back": ["null", 0], "undone": '{"70":"four.knob"}', "left": "null"}
+                    if dr != want: fails.append(f"{w}: bedroom 2's door a shaker with black knobs, then all doors four panel, The plan's, Undo: {dr} (want {want})")
                     tl = pg.evaluate(TILE)                          # N225: the WC's tiles and grout, held, The plan's, Undo; its toilet and basin swapped, then as planned
                     want = {"title": "WC: the tiles", "plan": "The plan's: white 15 × 15", "st": "Zellige, charcoal grout · £28–38", "kp": ["zellige", "charcoal"], "drawn": True, "held": True,
                             "again": True, "gone": True, "undone": "zellige", "back": True}
