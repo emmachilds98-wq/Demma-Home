@@ -91,7 +91,10 @@ def looks(raw):
         lay = x.get("lay") if isinstance(x.get("lay"), dict) else {}
         moved = len(lay.get("layout")) if isinstance(lay.get("layout"), dict) else 0
         added = len(lay.get("added")) if isinstance(lay.get("added"), list) else 0
-        out.append({"name": name, "fin": finishes({"finishes": x.get("fin")}), "he": he, **({"living_moved": moved} if moved else {}), **({"living_added": added} if added else {})})
+        rows = [[r[0], re.sub(r"[^\w '&.,()#:£×–/-]", "", r[1])[:60], int(r[2]), int(r[3])] for r in (x.get("rows") if isinstance(x.get("rows"), list) else [])[:80]   # N231: what it changes, its rough cost
+                if isinstance(r, list) and len(r) == 4 and isinstance(r[0], str) and re.fullmatch(r"[a-z0-9_]{1,30}", r[0]) and isinstance(r[1], str)
+                and all(isinstance(v, (int, float)) and not isinstance(v, bool) and 0 <= v <= 1e6 for v in r[2:])]
+        out.append({"name": name, "fin": finishes({"finishes": x.get("fin")}), "he": he, **({"rows": rows} if rows else {}), **({"living_moved": moved} if moved else {}), **({"living_added": added} if added else {})})
     return out
 
 

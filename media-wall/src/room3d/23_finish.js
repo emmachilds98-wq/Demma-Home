@@ -527,12 +527,38 @@ const finSent = () => JSON.parse(JSON.stringify(ASIDE ? ASIDE.fin : finAll(false
 function lookSlim(x) {   // for Send: each room's slots but the plan's (the living room's whole), the edits and the living room's moves
   const P = planFin(), fin = {};
   for (const [r, sl] of Object.entries(finClean(x.fin))) { const o = r === LIVR ? sl : Object.fromEntries(Object.entries(sl).filter(([s, v]) => (P[r] || {})[s] !== v)); if (Object.keys(o).length) fin[r] = o; }
-  return Object.assign({ name: x.name, fin }, x.he && x.he.length ? { he: x.he } : {}, x.lay && (Object.keys(x.lay.layout || {}).length || (x.lay.added || []).length) ? { lay: x.lay } : {});
+  const rows = lookRows(x);   // N231: what it changes and its rough cost, for the plan's page
+  return Object.assign({ name: x.name, fin }, rows.length ? { rows } : {}, x.he && x.he.length ? { he: x.he } : {}, x.lay && (Object.keys(x.lay.layout || {}).length || (x.lay.added || []).length) ? { lay: x.lay } : {});
+}
+/* N231: a saved look's rough cost, a row a change as Changes prices it: its rooms' rows (the plan's own left out) with the device's set
+   aside a moment, the living room's against the plan's paint, its pieces' edits by the catalogue; [[room, what, lo, hi]], kept by the look */
+const LOOK_ROWS = new Map();
+function lookRows(L) {
+  if (!R.HOUSE3) return []; const key = JSON.stringify([L.fin, L.he, L.lay]); if (LOOK_ROWS.has(key)) return LOOK_ROWS.get(key);
+  const P = planFin(), fin = finClean(L.fin), lv = fin[LIVR] || {}, out = [], add = (r, t, c) => { if (c && c[1]) out.push([r, t, Math.round(c[0]), Math.round(c[1])]); };
+  delete fin[LIVR]; for (const [r, sl] of Object.entries(fin)) { for (const s of Object.keys(sl)) if ((P[r] || {})[s] === sl[s]) delete sl[s]; if (!Object.keys(sl).length) delete fin[r]; }
+  const s0 = S.fin; S.fin = fin; try { for (const r of upRooms()) if (r !== LIVR) for (const u of roomUps(r, true)) add(r, u.t, [u.lo, u.hi]); } finally { S.fin = s0; }
+  const ph = ((R.PAINTS || {})[DEF.paint] || {}).hex || "";
+  if (lv[0] && lv[0].toLowerCase() !== ph.toLowerCase()) add(LIVR, "Walls: " + finName(lv[0]), UPC.walls);
+  for (let s = 11; s <= 16; s++) if (lv[s]) add(LIVR, `${finCap(finSlotName(LIVR, s))}: ${finName(lv[s])}`, UPC.wall);
+  if (lv[4]) add(LIVR, "Ceiling: " + finName(lv[4]), UPC.ceil); if (lv[17]) add(LIVR, "Skirting and door: " + finName(lv[17]), UPC.skirt);
+  if (lv[18]) add(LIVR, "Rug", UPC.rug); if (lv[19]) add(LIVR, "Curtains", UPC.curt);
+  const E = {}; for (const [id, f, v, room] of Array.isArray(L.he) ? L.he : []) Object.assign(E[id] = E[id] || { room }, { [f]: v });
+  for (const [id, e] of Object.entries(E)) { const it = HIT(id), k = e.add || e.swap, C = HCAT[k] || HCAT[hcOwn(k)], r = (it && it.r) || e.room || "";
+    if (e.removed || !r) continue; if (C) add(r, `${e.add ? "Added" : (it ? it.n : "A piece") + ":"} ${C.n}`, upCat(k, C));
+    else if (it && it.op && (e.w != null || e.h != null)) add(r, "Resized: " + it.n, UPC[it.k] || UPC.door); }
+  for (const v of Object.values((L.lay || {}).layout || {})) if (v && v.sw && HCAT[v.sw]) add(LIVR, HCAT[v.sw].n, upCat(v.sw, HCAT[v.sw]));
+  LOOK_ROWS.set(key, out); return out;
+}
+const lookCost = L => lookRows(L).reduce((a, q) => [a[0] + q[2], a[1] + q[3]], [0, 0]);
+function lookDiff(L) {   // Hold to compare's toast: the look against the device's own changes (their middles)
+  const [lo, hi] = lookCost(L), T = R.HOUSE3 ? upsAll()[1] : { lo: 0, hi: 0 }, d = Math.round(((lo + hi) - (T.lo + T.hi)) / 2 / 10) * 10;
+  return Math.abs(d) < 20 ? "About the same as yours" : `About £${Math.abs(d).toLocaleString("en-GB")} ${d > 0 ? "more" : "less"} than yours`;
 }
 function finSchDraw() {
   const box = qs("#r3d-finschl"); if (!box) return; const L = finSchemes(), esc = t => String(t).replace(/[<&"]/g, "");
   box.innerHTML = `<button type="button" data-lookas="now" aria-pressed="${NOWV}">As it is</button><button type="button" data-lookas="plan" aria-pressed="${!!ASIDE && ASIDE.plan}">The plan</button>`
-    + L.map((x, i) => `<span class="r3d-mysc"><button type="button" data-finsch="${i}" aria-pressed="${!ASIDE && !NOWV && lookKey(x) === lookKey(x, true)}">${esc(x.name)}</button><button type="button" class="r3d-myx" data-finschdel="${i}" aria-label="Delete ${esc(x.name)}">×</button></span>`).join("");
+    + L.map((x, i) => { const [lo, hi] = lookCost(x); return `<span class="r3d-mysc"><button type="button" data-finsch="${i}" aria-pressed="${!ASIDE && !NOWV && lookKey(x) === lookKey(x, true)}" title="Hold to compare">${esc(x.name)}${hi ? ` · ${upRange(lo, hi)}` : ""}</button><button type="button" class="r3d-myx" data-finschdel="${i}" aria-label="Delete ${esc(x.name)}">×</button></span>`; }).join("");
 }
 function finSchSave() {
   const inp = qs("#r3d-finschname"), name = ((inp && inp.value.trim()) || `Look ${finSchemes().length + 1}`).slice(0, 24);
@@ -698,7 +724,13 @@ function nowMode(on) {
 qs("#r3d-now")?.addEventListener("click", () => nowMode(!NOWV));
 qs("#r3d-finschsave")?.addEventListener("click", finSchSave);
 qs("#r3d-finschname")?.addEventListener("keydown", e => { if (e.key === "Enter") finSchSave(); });
+let LOOK_HOLD = null;   // N231: a saved look's chip held: shown over yours (set aside) till let go, the difference on a toast; no wear on its click
+qs("#r3d-finschl")?.addEventListener("pointerdown", e => { const b = e.target.closest("[data-finsch]"); if (!b || ASIDE || NOWV) return; const i = +b.dataset.finsch;
+  LOOK_HOLD = { t: setTimeout(() => { const x = finSchemes()[i]; if (!x || ASIDE) return; LOOK_HOLD.on = true; const say = lookDiff(x); lookAside(x.name); lookPut(x); toast(`${x.name}: ${say}`); }, 350) }; });
+for (const ev of ["pointerup", "pointercancel"]) document.addEventListener(ev, () => { if (!LOOK_HOLD) return; clearTimeout(LOOK_HOLD.t);
+  if (LOOK_HOLD.on) { LOOK_HOLD.skip = true; lookMine(); setTimeout(() => { LOOK_HOLD = null; }, 0); } else LOOK_HOLD = null; });
 qs("#r3d-finschl")?.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return;
+  if (LOOK_HOLD && LOOK_HOLD.skip) { LOOK_HOLD = null; return; }
   if (b.dataset.finschdel) { const L = finSchemes(); L.splice(+b.dataset.finschdel, 1); try { localStorage.setItem(FSK, JSON.stringify(L)); } catch (er) {} finSchDraw(); }
   else if (b.dataset.finsch) finSchUse(+b.dataset.finsch);
   else if (b.dataset.lookas === "now") nowMode(!NOWV); else if (b.dataset.lookas === "plan") lookPlan(); });

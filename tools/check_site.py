@@ -261,6 +261,34 @@ TILE = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   const back = await wait(() => !E['wc.toilet'] && !E['wc.basin']) && !Object.values(ds.rows('edits')).some(v => v && /^wc[.]/.test(v.item)); if (D.actId) q('#r3d-act .x').click();
   return { title, plan, st, kp, drawn, held, again, gone, undone, toilet, basin, back };
 }"""
+# N227: bedroom 2's window dressed its own way from its card (a Roman blind, then deep blue): drawn, kept, in the look link; The plan's,
+# Undo, The plan's
+WIN = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), id = 'win:bed2:0';
+  const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
+  const kept = () => ((JSON.parse(localStorage.getItem('mw18-3d') || '{}').fin || {}).bed2 || {})[70] || null;
+  const n = () => { let c = 0; D.scene.traverse(o => { if (o.isMesh && o.userData.win === id) c++; }); return c; };
+  R3D.set({ view: 'bed2' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
+  D.openAct(id); await sl(600); const title = q('#r3d-act-h').textContent, plan = q('#r3d-act-st').textContent;
+  q('#r3d-act [data-winkind="roman"]').click(); await sl(400); q('#r3d-act [data-winfab="blue"]').click(); await sl(600);
+  const st = q('#r3d-act-st').textContent, k1 = kept(), drawn = n(); if (D.actId) q('#r3d-act .x').click(); await sl(200);
+  navigator.clipboard.writeText = u => { window.__link = u; return Promise.resolve(); }; window.__link = null; document.getElementById('r3d-link').click(); await wait(() => window.__link);
+  D.openAct(id); await sl(600); q('#r3d-act [data-winplan]').click(); await sl(500); const back = [kept(), n(), q('#r3d-act-st').textContent];
+  q('#r3d-act [data-finundo]').click(); await sl(500); const undone = [kept(), n()];
+  q('#r3d-act [data-winplan]').click(); await sl(500); const left = kept(); if (D.actId) q('#r3d-act .x').click();
+  return { title, plan, st, k1, drawn, back, undone, left, link: window.__link };
+}"""
+# N230: a kitchen bar stool swapped for IKEA's STIG from its Shops chip (its line says it fits), then as planned
+STOOL = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), ds = window.DemmaStore, E = D.HEDITS, id = 'kitchen.stool';
+  const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
+  R3D.set({ view: 'kitchen' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
+  D.openAct('hitem:' + id); await sl(600); const b = q('#r3d-act [data-actopen^="hswap:"]'); if (!b) return { err: 'no Swap it on the stool' }; b.click(); await sl(300);
+  const chip = [...document.querySelectorAll('#r3d-act [aria-label="Shops"] button')].find(x => x.textContent === 'IKEA'); if (!chip) return { err: 'no IKEA chip' };
+  chip.click(); const swapped = await wait(() => E[id] && E[id].swap && (D.PICK.ground || []).some(p => p.id === id)); await sl(300);
+  const name = q('#r3d-act-h').textContent, line = q('#r3d-act-st').textContent;
+  D.openAct('hitem:' + id); await sl(400); q('#r3d-act [data-hreset]').click();
+  const back = await wait(() => !E[id]) && !Object.values(ds.rows('edits')).some(v => v && v.item === id); if (D.actId) q('#r3d-act .x').click();
+  return { swapped, name, line, back };
+}"""
 # N218: tap bedroom 2's floor, Add a piece here, Shelves: a bookcase stands back to a wall and fits; the look link (Link) carries it
 ADD = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), cv = document.querySelector('.r3d canvas'), q = s => document.querySelector(s), ds = window.DemmaStore;
   const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
@@ -588,6 +616,21 @@ def main():
                     ls = pg.evaluate(LIVSWAP)                       # N233 (N220): the living room's rug swapped as the house's pieces are, then as planned
                     want = {"sofa": False, "swapped": True, "line": "160 × 230 × 1 cm · Fits · Argos's usual size", "kept": True, "back": True}
                     if ls != want: fails.append(f"{w}: the living room's rug swapped (Swap it, ›), then as planned; their sofa no Swap it: {ls} (want {want})")
+                    wn = pg.evaluate(WIN)                           # N227: a window dressed its own way, drawn, kept, in the link; The plan's, Undo, The plan's
+                    sent = None
+                    if wn.get("link"):
+                        c2 = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=True, has_touch=True, service_workers="block")
+                        p2 = c2.new_page(); p2.set_default_timeout(300000); localcdn.route(p2); p2.goto(wn["link"])
+                        p2.wait_for_function("window.R3D && R3D.ready", timeout=240000)
+                        sent = p2.evaluate("async () => { for (let i = 0; i < 200; i++) { const v = (R3D._dbg.finAll().bed2 || {})[70]; if (v) return v; await new Promise(r => setTimeout(r, 150)); } return null; }")
+                        c2.close()
+                    want = {"title": "Bedroom 2's window", "plan": "The plan's: a roller blind, rolled up", "st": "Roman blind, deep blue · £45–130", "k1": "roman.blue", "drawn": 1,
+                            "back": [None, 0, "The plan's: a roller blind, rolled up"], "undone": ["roman.blue", 1], "left": None}
+                    if {k: wn.get(k) for k in want} != want or sent != "roman.blue":
+                        fails.append(f"{w}: bedroom 2's window as a deep blue Roman blind, The plan's, Undo, The plan's: {wn}, in a fresh page from its link: {sent} (want {want}, the link roman.blue)")
+                    so = pg.evaluate(STOOL)                         # N230: a kitchen stool swapped for IKEA's STIG, then as planned
+                    if not (so.get("swapped") and "STIG" in so.get("name", "") and so.get("line", "").startswith("40 × 42 × 90 cm · Fits") and so.get("back")):
+                        fails.append(f"{w}: the kitchen's bar stool swapped for IKEA's STIG from its Shops chip, then as planned: {so} (want STIG, \"40 × 42 × 90 cm · Fits\", no rows left)")
                     tl = pg.evaluate(TILE)                          # N225: the WC's tiles and grout, held, The plan's, Undo; its toilet and basin swapped, then as planned
                     want = {"title": "WC: the tiles", "plan": "The plan's: white 15 × 15", "st": "Zellige, charcoal grout · £28–38", "kp": ["zellige", "charcoal"], "drawn": True, "held": True,
                             "again": True, "gone": True, "undone": "zellige", "back": True}
