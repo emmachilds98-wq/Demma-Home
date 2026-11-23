@@ -76,7 +76,7 @@ function buildHouse() {
       me.castShadow = !m.transparent; g.add(me); geos.forEach(q => q.dispose()); return me; };   // v69: the house's walls and pieces cast the sun's shadow (as the living room's)
     const mx = new THREE.Matrix4();
     /* v69 (B4): rounded edges by material (whites and woods a little, the suite and cushions a lot); walls, floors and frames sharp */
-    const ROUND = { pine: 0.8, pine_dark: 0.3, knob: 1.4, handle_black: 0.7, newel: 1.2, rail_white: 1.8, monitor_back: 1.5, mouse: 1.5, key_dark: 0.25, key_pink: 0.25, book0: 0.3, book1: 0.3, book2: 0.3, book3: 0.3, book4: 0.3, book5: 0.3, birch: 0.6, oak: 0.6, wardrobe: 0.5, gloss: 0.8, door_white: 0.4, door_leaf: 0.4, door_wood: 0.4, fitting: 6, porcelain: 1, sanitary: 1,
+    const ROUND = { pine: 0.8, pine_dark: 0.3, knob: 1.4, handle_black: 0.7, khandle: 0.7, kunit: 0.8, newel: 1.2, rail_white: 1.8, monitor_back: 1.5, mouse: 1.5, key_dark: 0.25, key_pink: 0.25, book0: 0.3, book1: 0.3, book2: 0.3, book3: 0.3, book4: 0.3, book5: 0.3, birch: 0.6, oak: 0.6, wardrobe: 0.5, gloss: 0.8, door_white: 0.4, door_leaf: 0.4, door_wood: 0.4, fitting: 6, porcelain: 1, sanitary: 1,
       primrose: 4, duvet: 3, pot: 4, lycksele: 5, storebox: 1.5, leather: 2, check: 1, curtain: 1, mattress: 4, pillow: 6,
       /* V2.44: every piece's edges catch the light (a bevel to its size); the worktop a little */
       black: 0.6, black_app: 1.2, worktop: 0.4, steel: 0.5, steel_dark: 0.5, chrome: 0.4, screen: 0.4, glass_dark: 0.3, pc_white: 0.8, panel: 0.5,
