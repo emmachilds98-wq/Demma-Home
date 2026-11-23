@@ -169,6 +169,24 @@ WOOD = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   const restored = kept(0) === was[0] && kept(17) === was[1]; if (D.actId) q('#r3d-act .x').click();
   return { wall, wt, yours, wood, back, restored };
 }"""
+# N227: bedroom 2's window from its card: a roman blind in deep blue (kept in slot 70, drawn, in the look link), the plan's, Undo, the plan's
+WIN = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), id = 'win:bed2:0';
+  const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
+  const kept = () => ((JSON.parse(localStorage.getItem('mw18-3d') || '{}').fin || {}).bed2 || {})[70] || null, st = () => q('#r3d-act-st').textContent;
+  const drawn = () => { let n = 0; D.scene.traverse(o => { if (o.isMesh && o.userData.win === id) n++; }); return n; };
+  D.openAct(id); await sl(600); if (D.actId !== id) return { err: 'no card: ' + D.actId };
+  const title = q('#r3d-act-h').textContent, plan = st();
+  q('#r3d-act [data-winkind="roman"]').click(); await sl(300); q('#r3d-act [data-winfab="blue"]').click(); await wait(() => kept() === 'roman.blue' && drawn()); await sl(300);
+  const s1 = st(), k1 = kept(), n1 = drawn();
+  navigator.clipboard.writeText = u => { window.__link = u; return Promise.resolve(); }; window.__link = null; q('#r3d-link').click(); await wait(() => window.__link);
+  const link = window.__link || null, b = link && link.split('#look-')[1];
+  let sent = null; try { sent = ((JSON.parse(decodeURIComponent(escape(atob(b.replace(/-/g, '+').replace(/_/g, '/'))))).fc || {}).bed2 || {})[70] || null; } catch (e) {}
+  if (D.actId !== id) { D.openAct(id); await sl(400); }
+  q('#r3d-act [data-winplan]').click(); await wait(() => !kept() && !drawn()); await sl(300); const back = [kept(), drawn(), st()];
+  q('#r3d-act [data-finundo]').click(); await wait(() => kept() && drawn()); await sl(300); const undone = [kept(), drawn()];
+  q('#r3d-act [data-winplan]').click(); await wait(() => !kept()); const left = kept(); if (D.actId) q('#r3d-act .x').click();
+  return { title, plan, st: s1, k1, sent, drawn: n1, back, undone, left, link };
+}"""
 EACH = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s);   // N214: the master's cupboard face and the alcove beside it, each its own; This room; bedroom 2's slopes
   const kept = r => ((JSON.parse(localStorage.getItem('mw18-3d') || '{}').fin || {})[r] || {}), was = JSON.stringify([kept('master'), kept('bed2')]);
   const put = async (id, sc, hex) => { D.openAct(id); await sl(600); const b = q(`#r3d-act [data-finsc="${sc}"]`); if (b) { b.click(); await sl(300); }
@@ -524,6 +542,18 @@ def main():
                     wd = pg.evaluate(WOOD)                          # N213, N216: a code typed on bedroom 2's wall, then its woodwork from "Yours", then back
                     if wd != {"wall": "#3a6b5a", "wt": "Bedroom 2: the woodwork", "yours": True, "wood": "#3a6b5a", "back": None, "restored": True}:
                         fails.append(f"{w}: bedroom 2's wall by its code, then its woodwork from Yours and back: {wd}")
+                    wn = pg.evaluate(WIN)                           # N227: bedroom 2's window a roman blind, deep blue, in the look link; the plan's, Undo, the plan's
+                    fr = None
+                    if wn.get("link"):
+                        c2 = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=True, has_touch=True, service_workers="block")
+                        p2 = c2.new_page(); p2.set_default_timeout(300000); localcdn.route(p2); p2.goto(wn["link"])
+                        p2.wait_for_function("window.R3D && R3D.ready", timeout=240000)
+                        fr = p2.evaluate("async () => { for (let i = 0; i < 200; i++) { if ((R3D._dbg.finAll().bed2 || {})[70] === 'roman.blue') return true; await new Promise(r => setTimeout(r, 150)); } return false; }")
+                        c2.close()
+                    want = {"title": "Bedroom 2's window", "plan": "The plan's: a roller blind, rolled up", "st": "Roman blind, deep blue · £45–130", "k1": "roman.blue", "sent": "roman.blue",
+                            "drawn": 1, "back": [None, 0, "The plan's: a roller blind, rolled up"], "undone": ["roman.blue", 1], "left": None}
+                    if {k: v for k, v in wn.items() if k != "link"} != want or not fr:
+                        fails.append(f"{w}: bedroom 2's window a roman blind in deep blue, the plan's, Undo, the plan's: {wn}, in a fresh page from its look link: {fr} (want {want}, then roman.blue)")
                     ea = pg.evaluate(EACH)                          # N214: each wall its own, This room over them, the slopes with the walls, then back
                     if ea != {"t1": "Master bedroom: the back wall (2 of 2)", "t2": "Master bedroom: the back wall (1 of 2)", "both": ["#3a6b5a", "#c98a5e"], "room": [None, "#dbffc8"],
                               "st": "Bedroom 2: the slopes", "slope": "walls", "restored": True}:
