@@ -1,4 +1,4 @@
-# Handover (23 Nov 2026, V4.49: start here)
+# Handover (23 Nov 2026, V4.50: start here)
 
 ## Pick up here (23 Nov 2026)
 The client, 22–23 Nov: "Keep working on the upgrade and ensure nothing can be lost outside github"; "stop things working locally and work
@@ -11,7 +11,8 @@ directly in GitHub to stop these losses" (CLAUDE.md: nothing stays local; push e
   bake). A review's seven findings fixed (see `docs/HISTORY.md` V4.49).
 - **Lost and rebuilt:** an earlier session's N219, N221, N222, N220 start and shader fix were only on its machine when it hit its usage
   limit; they were rebuilt from the plan and `docs/N219_catalogue.json`. Hence the rule.
-- **Open:** Emma's choices: which storage ideas (N212), whether Dave may Keep it (N222 keeps the button; one line to take it out); N201
+- **Storage to her brief (23 Nov, V4.50):** `docs/REAL_PLAN.md` section 28, N223 done: 12 ideas made for their spots in the living room's oak (`docs/STORAGE.md`); her pick next, then a build and a buy list.
+- **Open:** Emma's choices: which storage ideas (N212, now N223), whether Dave may Keep it (N222 keeps the button; one line to take it out); N201
   (the real devices' check, "lighting later"); N205 on hold. Smaller: a shop piece's own card has no shop link after a swap; the
   shop pieces are drawn by generic builders (some won't look like the real thing); N219/N220/N221 steps in `check_site.py` (the helpers'
   scripts were run by hand).

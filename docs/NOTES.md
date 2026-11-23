@@ -432,6 +432,12 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   program (N214's 32-column palette and wall table) costs no program.
 - Splitting a shared material (`upvc` → `woodwork` for frames and radiators) is how a few pieces take a room's colour without the
   rest (the window frames); a model material name must be new (`trim` was taken by the dormer).
+- **Storage ideas** (N223): most are made to their spot (`storage_ideas.MADE`), so a size is the spot's and the cost is `oak(m²)`: the
+  oak at the Snowdon board's price (`fit.SOURCES` "snowdonoak", a quarter more for the cuts, then whole boards) plus what else it takes.
+  The 3D's pieces (`st_*` in `08_house_catalogue.js`) use the house's `artisan` (the media wall's and the office cubes' oak) and only
+  materials the house already has; `stLip` is the media wall's ledge and lip, `stTen` a bracket tenoned through its shelf. Photograph one
+  with `R3D._dbg.openAct('fin:<room>:5')`, wait 400 ms (a click under 350 ms after a card opens is ignored), click `[data-finidea="*"]`,
+  then `R3D.set({aim: {eye, at, fov}})` (house cm; the store isn't a view: the whole house, Lower, `above: true`).
 - CI cancels a branch's running workflow on each push: batch pushes, or a run never finishes.
 - Worktree agents: give each a task whose files don't overlap; merge with `git merge <their branch>`; `check_site.py`'s step
   strings (`WOOD`, `EACH`, `FITS`, `ADD`, `SWAP`) can be run alone by a small Playwright script that pulls them out with a regex.
