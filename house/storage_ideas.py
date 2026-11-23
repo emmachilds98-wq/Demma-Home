@@ -157,7 +157,9 @@ def ideas():
 
 def for_3d():
     """What the 3D needs (R.HOUSE3.storage): each idea, its one line, its pieces."""
+    same = lambda P: all([round(q["box"][j + 3] - q["box"][j], 1) for j in range(3)] == [round(P[0]["box"][j + 3] - P[0]["box"][j], 1) for j in range(3)] for q in P)
     return [dict(id=i["id"], room=i["room"], n=i["n"], line=f"{i['what']} · {i['size']} · £{i['cost'][0]}–{i['cost'][1]} · {i['src']}",
+                 each=same(i["parts"]),   # N242: a bought option goes in each of its pieces' places (two like shelves), else the first's
                  parts=[dict(cat=p["cat"], b=p["box"], ax=p["ax"], flip=p["flip"]) for p in i["parts"]]) for i in ideas()]
 
 
