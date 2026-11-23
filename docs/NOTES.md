@@ -116,6 +116,11 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   spoofing `getParameter` for 0x9245, 0x9246 and 0x1F01. Send's `gpu` reads `hidden` then.
 - **Moving (N11, N17):** the page draws only when something changes (`17_render_loop` `need`). Damping is frame-rate free (`DAMP`).
   A slow phone walks without the shade and glow, then draws at 1.5× (`phoneCap`).
+  N240 (V4.56): a real card steps down too: moving frames over 28 ms (`MV`, gaps under 250 ms only, so CI's seconds-long frames never
+  count) set `slowDev`, and its walk, look or drag draws at 0.6× (0.75 at least) until 0.25 s still (`sizeRenderer(true)`: the
+  sharpness only, the lens kept). The walk runs on the frame's real time to 0.25 s in steps of 0.05 (`walkSteps`). To compare two
+  versions' per-frame work, `git archive` the old one into the scratchpad, build both, read `R3D.perf()` calls/triangles and the rAF
+  callback's own time after a short key walk: software graphics' frame gaps (seconds) say nothing.
 - **Draws (N16, N37):** `20_go.js` `put()` sorts a floor's merged meshes by room (`userData.rooms` spans); `09` `roomCull` cuts rooms by
   draw range through a door graph (`RLINK`). `HBUILD` makes one draw per (group, material); from outside `joinBuild` joins floors and
   `houseJoin` sets one draw range. The house opens in 188 draws (was 287). Left: rooms gained little (frustum culling already did most);
@@ -482,13 +487,12 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   slot (`09` `poolPick`), ranked by doors away (`roomCost`), never by distance from your room alone; point and window lights cast no
   shadows (`01_renderer` `adoptLight`), so a light lights next door through the wall. One sun over the house (`sunHouse`), never re-centred
   per room: the front rooms lost their floor patch. `bake.py` used to collect the sun once a room (each re-centred sun a new light, the
-  same direction): it now multiplies the one sun by the rooms visited, so the bake stays as V4.35 tuned it. To compare a room from outside
+  same direction): it now multiplies the one sun by the rooms visited, so the bake stays as V4.35 tuned it (V4.59). To compare a room from outside
   and inside: the same camera standing in the room behind, then in the room looked into; the mean picture difference under 1.
-- **A slow real PC (N240):** draws, triangles and JS a frame matched from V4.35 to V4.54 on the RTX path (software graphics can't time a
-  real card). A real card (`BIG_GPU`) never stepped down before; now a median moving frame over 40 ms in HD draws at 1× (`cardLite`),
-  then without the house's shade (off under `navigator.webdriver`; `?autolite` to try it); `walkTick` gets the real gap (to 0.25 s) in
-  steps of 50 ms. Send carries the worst gap and the steps taken. To count shadow redraws wrap `gl.shadowMap.render` and count only calls
-  with `needsUpdate || autoUpdate`.
+- **A slow real PC (N240):** two helpers in two sessions found the same: no regression since V4.35 on the RTX path (draws, triangles, JS a
+  frame). The parallel session's fix is the one on main (V4.58: sharpness down while moving over 28 ms, the walk by the frame's real time);
+  this session's `claude/n240-speed` (a 1× step and the house's shade off; Send's worst gap) stays on its branch, not merged. To count
+  shadow redraws wrap `gl.shadowMap.render` and count only calls with `needsUpdate || autoUpdate`.
 
 ## N224's units (V4.55)
 - **Where:** `room3d/22_kitchen.js`; `house/model.py` draws the units, wall cupboards and their handles in `kunit` and `khandle` (the
@@ -543,3 +547,11 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Cited, read 23 Nov:** `fit.SOURCES` `n225tiles` (white metro 15 × 7.5 £23, square 10 × 10 £48, large 60 × 30 £16, sage metro
   15 × 7.5 £21.33, zellige-look 10 × 10 £36.86; grout white, grey, charcoal; a tiler £20–50/m²) and `n225suites` (Portland, Cleveland,
   Nuie Bliss back-to-wall, Siena wall-hung on a Duplo One 82 frame; Emma pedestal, Galeria semi-pedestal, Newport corner, compact vanity).
+
+## N237 (23 Nov 2026): one palette program for the ceilings, bedding and woodwork
+- Two materials share a program only if three's parameters match too, not just `customProgramCacheKey`: the ceilings and the bedding
+  differed by a roughness map alone (`roughnessMapUv`), so the ceilings now take the same white 1 × 1 map (`FIN_RW`, roughness × 1).
+  Keep the shader's text the same for every kind in a key: branch on the `finKind` uniform (vertex too), never on the JS kind.
+- Compare cache keys field by field (`gl.info.programs[i].cacheKey.split(",")`) at `r3d-first` to find the one parameter apart. A scratch
+  folder may hold an older session's `_site`: build the baseline into a fresh `DEMMA_SITE` (and `npm ci` first, or the page has no
+  three bundle and no minify, and every number moves).

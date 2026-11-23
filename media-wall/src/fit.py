@@ -1512,6 +1512,18 @@ ORDER.extend(["n225tiles", "n225suites", "n224glass", "n226doors", "n224units", 
 SOURCES["paperback"] = ("UK book sizes, w × h: A-format 11.1 × 17.8, B-format 12.9 × 19.8 (the usual paperback novel), Demy 13.8 × 21.6, "
                         "Royal 15.6 × 23.4 (publishing.co.uk/guides/standard-book-sizes-uk, read 23 Nov 2026)")
 ORDER.append("paperback")
+# N242 (23 Nov 2026): real buys for each storage idea's spot, from different shops (docs/N242_options.json, read 22-23 Nov 2026), each
+# its own row by its page and name (shop_key, as N219's): options to look at, nothing to buy until she picks
+def opt_pieces():
+    import json, pathlib
+    return json.loads((pathlib.Path(__file__).resolve().parents[2] / "docs/N242_options.json").read_text())
+
+
+for _p in opt_pieces():
+    if shop_key(_p) not in SOURCES:
+        ORDER.append(shop_key(_p))
+    SOURCES[shop_key(_p)] = (f"{_p['retailer']}: {_p['name']}, {_p['finish']}, W {_p['w']:g} × D {_p['d']:g} × H {_p['h']:g} cm, £{_p['price']:g}"
+                             + (f"; {_p['note']}" if _p.get("note") else "") + f" ({_p['url']}, read {_p['read']})")
 # V4 (N152): will the sofa bed go in? Its biggest box (166 × 101 × 68, SOURCES "amelia") carried on its side, the 166 first: it needs
 # its 68 and 2 to spare (hands) across each opening on the way, the front door, the hall past the stair box and the living room door, in
 # line (no turn). A door left on its hinges, open flat, takes about its leaf's thickness (E: 4) more. The doors' widths are Measure's

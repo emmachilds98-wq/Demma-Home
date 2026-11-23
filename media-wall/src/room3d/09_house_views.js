@@ -99,7 +99,7 @@ function haloShow() {
 /* N239 (the client, 23 Nov: "all lights should appear as they do in the room even from a distance ... im not changing lights"): the set
    holds the lights of the rooms seen first (the room's own, then those seen from it), then their neighbours'; walking into a room whose
    lights are already on changes nothing, and a room seen and not yet lit swaps a light in while the rest keep theirs, slot by slot */
-const POOL = { pts: [], wins: [], key: "" };
+const POOL = { pts: [], wins: [], key: "", sh: null };
 function poolPick(cur, want, need, n) {   // cur: the lights held, a slot each; want: every light, best first; need: the rooms' seen
   const top = need.slice(0, n);
   const at = new Map(want.map((L, i) => [L, i]));
@@ -116,7 +116,7 @@ function sunHouse() {
   if (SUNBOX) return SUNBOX;
   const H = R.HOUSE3, rs = Object.values(H.rooms), dir = sun.userData.p0.clone().sub(sun.userData.t0).normalize();
   const x0 = Math.min(...rs.map(r => r[0])), x1 = Math.max(...rs.map(r => r[1])), z0 = Math.min(...rs.map(r => r[2])), z1 = Math.max(...rs.map(r => r[3]));
-  const y0 = Math.min(...rs.map(r => r[4])), y1 = Math.max(y0 + 600, (H.ridge || [])[1] || 0);
+  const y0 = Math.min(...rs.map(r => r[4])), y1 = Math.max(...rs.map(r => r[4])) + (H.ceil || 240) + 300;   // the top floor's ceiling and the roof over it
   const t = v3((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2), pos = t.clone().addScaledVector(dir, 20), cam = new THREE.OrthographicCamera();
   cam.position.copy(pos); cam.lookAt(t); cam.updateMatrixWorld(); const e = [1e9, -1e9, 1e9, -1e9, 1e9, -1e9];
   for (const x of [x0, x1]) for (const y of [y0, y1]) for (const z of [z0, z1]) { const q = v3(x, y, z).applyMatrix4(cam.matrixWorldInverse);
@@ -161,9 +161,13 @@ function placeRoomLights() {
     for (const F of Object.values(R.HOUSE3.floors)) { for (const L of F.lights || []) list.push([tier(L.room) + near(L), L]);
       if (!day) for (const L of F.lamps || []) list.push([tier(L.room, true) + near(L) + 400 - L.k * 100, L]); }   // a room's lamp after its ceiling light, the brighter first (upstairs by evening seven for six: the office's purple lamp kept from the landing, the bathroom's small one waits)
     const want = list.sort((p, q) => p[0] - q[0]).map(p => p[1]);
-    POOL.pts = poolPick(POOL.pts, want, want.filter(L => cost.has(L.room)), n); }
+    POOL.pts = poolPick(POOL.pts, want, want.filter(L => cost.has(L.room)), n);
+    /* the first light is the one casting shadows (20_5_go.js, HD): the room you're in's own ceiling light swaps into it, the rest stay put */
+    const own = want.find(L => L.room === rid && !L.reach), i = own ? POOL.pts.indexOf(own) : -1;
+    if (i > 0) [POOL.pts[0], POOL.pts[i]] = [POOL.pts[i], POOL.pts[0]]; }
   else POOL.pts = [];
   ROOMLIGHTS.forEach((l, k) => { const L = k < n && POOL.pts[k]; l.visible = !!L; if (L) lightAt(l, L, day, hd); });
+  if (POOL.pts[0] !== POOL.sh) { POOL.sh = POOL.pts[0]; reshadow(); }   // its shadows drawn again where it's moved to (the sun's stay over the house)
   /* V2.39 (R1): a window lights the room as the sky does through it, an area light the opening's size facing in and a little down.
      V3.57: the room's own, then the nearest rooms'; N239: the rooms seen first, held as the ceiling lights are; two windows side by side
      in one wall one light (winPanels: upstairs four windows, three lights, so every room's lit from the landing) */

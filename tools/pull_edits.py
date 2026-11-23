@@ -60,8 +60,6 @@ def speed(raw):
     cap = json.loads((ROOT / "tools/perf_budget.json").read_text())["paths"].get(kind, {}).get(key) if key else None
     line = (f"{w('v') or '?'} · {gpu or '?'} ({kind}) · {w('q').upper() or '?'} at {g('ratio')}× · moving {ms('move')}, still {ms('still')}"
             f" · {g('draws')} draws ({view or '?'}{f', budget {cap}' if cap else ''}{', OVER' if cap and draws and draws > cap else ''}) · {g('shaders')} shaders")
-    line += f" · worst {ms('worst')}" if num(p.get("worst")) is not None else ""   # N240
-    line += {1: " · stepped down to 1×", 2: " · stepped down to 1×, no shade in the house"}.get(num(p.get("lite")), "")
     return line + (f" · {g('err')} errors" if num(p.get("err")) else "")
 
 

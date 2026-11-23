@@ -100,6 +100,9 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
     e["windows_in"] = [[op["floor"], op["side"], *op["x"], op["sill"], op["head"]] for op in model.D.OPENINGS if op["kind"] == "window" and not op.get("skip")]
     import storage_ideas                                         # N212: the storage ideas, options to look at (built in the 3D only once shown)
     e["storage"] = storage_ideas.for_3d()
+    import fit as fitsrc                                         # N242: each idea's real buys from the shops (docs/N242_options.json)
+    for i in e["storage"]:
+        i["o"] = [opt_row(q) for q in fitsrc.opt_pieces() if i["id"] in q["spots"]]
     e["plants"] = getattr(model.D, "PLANTS", [])                # V1.3: the gardens' plants (survey_data.PLANTS: where, how big, the source)
     e["beyond"] = getattr(model.D, "BEYOND", None)               # V1.4: past the far fence (survey_data.BEYOND): the low building, the hill
     e["garden"] = getattr(model.D, "BACK_GARDEN", None)          # V2.89 (N30): the back garden's lawn, path, borders and fences
@@ -356,6 +359,15 @@ def shop_row(q):
     if k in ("unit", "wardrobe", "shoes"):
         c = int((re.findall(r"(\d+)\s*doors?", n, re.I) or [0])[0])
     return [_fit.shop_key(q), k, look, n.split(",")[0].replace(" (2 pack)", ""), q["retailer"], q["w"], q["d"], q.get("h") or 1, q["price"], q["url"], m, m2, c]
+
+
+def opt_row(q):
+    """N242: a storage idea's real buy for the page: shop_row's, its look one of the ideas' own builders (a shelf, a ledge, a peg rail,
+    an airer, the store's shelves) where the listing is one of those, then where it stands: "floor", "ceil" or on the idea's wall"""
+    r = shop_row(q)
+    if q.get("look"):
+        r[1], r[2] = "idea", q["look"]
+    return r + [q.get("on", "")]
 
 
 def main():
