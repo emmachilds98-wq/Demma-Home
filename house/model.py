@@ -656,8 +656,7 @@ def floors_and_fittings(o, floor, rs):
         # v66: the living room's flight runs on into the hall (its stand-in landing to z 319): boxed in from the hall, full height (the hall
         # saw its mint side), clear of the living room's door (to x 372.5 since V2.93); v67 (the photos): in the box's end, the door down to the lower
         # stairs, a grille over it
-        z0f = Gm.ALC_D - Gm.STAIR_D + 6
-        zl1 = z0f + (Gm.STAIR_N - 1) * Gm.STAIR_GOING + Gm.LANDING_D
+        zl1 = hall_door_z()
         xs = stair_box_x()
         o.box("paint", xs, y - SLAB, 38.0, Gm.STAIR_X[0] - 0.4, y + CEIL, zl1)
         dx0, dx1 = D.HALL["door"]
@@ -704,14 +703,24 @@ def stair():
     S = D.LOWER_STAIR
     x0, x1 = S.get("x") or sorted((cx(S["x_px"][1]), cx(S["x_px"][0])))   # v66: fitted to the living room's flight
     z0 = cz(S["z0_px"])
-    return dict(x0=round(x0, 1), x1=round(x1, 1), z0=round(z0, 1), z1=round(z0 + S["n"] * S["going"], 1), n=S["n"], rise=S["rise"], going=S["going"])
+    # V4.55 (N238), the client: "I still can't see down the stairs when stood in the front door": 13 goings of 22 put the top riser 33 inside
+    # the hall's door down, so from the front door the eye stood on the nosings' line and saw past them all to the landing below. The
+    # photos (the hall's, and up the flight from its foot) put the top step at the frame: the foot from the plan, the top nosing 2 inside
+    # the doorway, 12 goings between (24.6, about 39 degrees)
+    z1 = hall_door_z(); going = round((z1 - S["top_in"] - z0) / (S["n"] - 1), 2)
+    return dict(x0=round(x0, 1), x1=round(x1, 1), z0=round(z0, 1), z1=round(z1, 1), n=S["n"], rise=S["rise"], going=going)
+
+
+def hall_door_z():
+    """The hall's door down (the box's end round the living room's flight): its wall's face on the lower flight's side."""
+    return Gm.ALC_D - Gm.STAIR_D + 6 + (Gm.STAIR_N - 1) * Gm.STAIR_GOING + Gm.LANDING_D
 
 
 def stairs(o):
     st = stair(); y0 = FLOOR_Y["lower"]
     for i in range(st["n"]):
         za = st["z0"] + i * st["going"]; top = y0 + (i + 1) * st["rise"]
-        o.box("carpet_grey", st["x0"] + 1, top - st["rise"] - 14, za, st["x1"] - 1, top, za + st["going"] + 2)   # v67: grey carpet (the photo)
+        o.box("carpet_grey", st["x0"] + 1, top - st["rise"] - 14, za, st["x1"] - 1, top, min(za + st["going"] + 2, st["z1"]))   # v67: grey carpet (the photo)
     yl = lambda z: y0 + (z - st["z0"]) / st["going"] * st["rise"]                        # v67: the handrail on the left going down
     za, zb = st["z0"] + st["going"], st["z1"] - st["going"]
     o.prism("upvc", "x", WIDTH - 7, WIDTH - 2, [(za, yl(za) + 88), (zb, yl(zb) + 88), (zb, yl(zb) + 96), (za, yl(za) + 96)])
@@ -1734,8 +1743,8 @@ def bathroom(o):
         o.box("chrome", xc - 2.5, y + 40, zz - 0.6, xc, y + 56, zz + 0.6)
     o.box("chrome", xc - 2.5, y + 72, (sec[0] + sec[1]) / 2 - 7, xc, y + 73.2, (sec[0] + sec[1]) / 2 + 7)
     zt = (za + zb) / 2                                              # the black waterfall tap
-    o.box("handle_black", xw - 8, y + v["top"], zt - 1.5, xw - 4, y + v["top"] + 22, zt + 1.5)      # V2.17: rounded
-    o.box("handle_black", xw - 16, y + v["top"] + 18, zt - 2.5, xw - 4, y + v["top"] + 22, zt + 2.5)
+    o.box("bfit", xw - 8, y + v["top"], zt - 1.5, xw - 4, y + v["top"] + 22, zt + 1.5)      # V2.17: rounded
+    o.box("bfit", xw - 16, y + v["top"] + 18, zt - 2.5, xw - 4, y + v["top"] + 22, zt + 2.5)
     o.item("bath.slim", "The slim cabinet", "bathroom", src="client's photo + E", data=("BATH", "slim"), axis="z")
     sl = B["slim"]; s0, s1 = sl["z"]                                # the slim cabinet, its round vents
     o.box("gloss", xw - sl["d"] + 1.8, y + 0.3, s0, xw, y + sl["h"], s1)   # N198: the carcass, its door over it with a 3 mm gap
@@ -1766,6 +1775,7 @@ def bathroom(o):
     for (x0, x1, z0, z1) in ((bx0, bx0 + 6, bz0, bz1), (bx1 - 6, bx1, bz0, bz1), (bx0 + 6, bx1 - 6, bz0, bz0 + 6), (bx0 + 6, bx1 - 6, bz1 - 6, bz1)):
         o.box("sanitary", x0, y + 12, z0, x1, y + hb_, z1)
     o.box("fitting", bx0 + 6, y + 12, bz0 + 6, bx1 - 6, y + 13, bz1 - 6)
+    o.box("bpanel", bx1, y + 0.5, bz0 + 0.5, bx1 + 0.6, y + hb_ - 0.5, bz1 - 0.5)   # N225: the panel along its open side, its own (hers to change)
     for (x0, x1, z0, z1) in ((bx0, bx1, bz0, bz0 + 6), (bx0, bx1, bz1 - 6, bz1), (bx0, bx0 + 6, bz0, bz1), (bx1 - 6, bx1, bz0, bz1)):
         o.box("fitting", x0, y + b["h"] - 3, z0, x1, y + b["h"], z1)
     o.lathe("chrome", (bx0 + bx1) / 2, y + 13, bz0 + 25, [(0, 0), (2.6, 0), (2.6, 0.3), (0, 0.3)])   # the plug, in the tub (V2.17: round)
@@ -1777,16 +1787,16 @@ def bathroom(o):
     for k in range(12):                                            # the curtain, drawn back to the door end (v69: in folds; V2.17: finer)
         za_ = bz1 - 17 + k * 1.3; dx = 1.4 * math.sin(k * 1.3)
         o.box("curtain", rx - 2 + dx, y + 50 + (k % 3), za_, rx - 0.8 + dx, ry, za_ + 1.5)
-    o.lathe("black", bx0 + 1.6, y + 120, bz1 - 21, [(0, 0), (1.2, 0), (1.2, 2), (0.9, 2.4), (0.9, 70), (1.2, 70.4), (1.2, 72), (0, 72)])   # the riser (V2.17: turned)
+    o.lathe("bfit", bx0 + 1.6, y + 120, bz1 - 21, [(0, 0), (1.2, 0), (1.2, 2), (0.9, 2.4), (0.9, 70), (1.2, 70.4), (1.2, 72), (0, 72)])   # the riser (V2.17: turned)
     # V1.23 (Q6): the bath filler, black to match the shower, on the wall at the plug end (it had no taps): a plate, the spout, two levers
     yt_ = y + b["h"] + 14
-    o.box("black", bx0 + 0.2, yt_ - 4, bz0 + 17, bx0 + 1.4, yt_ + 4, bz0 + 33)
-    o.box("black", bx0 + 1.4, yt_ - 1.2, bz0 + 23.5, bx0 + 15, yt_ + 1.2, bz0 + 26.5)
-    o.box("black", bx0 + 13, yt_ - 4, bz0 + 23.5, bx0 + 15, yt_ - 1.2, bz0 + 26.5)
+    o.box("bfit", bx0 + 0.2, yt_ - 4, bz0 + 17, bx0 + 1.4, yt_ + 4, bz0 + 33)
+    o.box("bfit", bx0 + 1.4, yt_ - 1.2, bz0 + 23.5, bx0 + 15, yt_ + 1.2, bz0 + 26.5)
+    o.box("bfit", bx0 + 13, yt_ - 4, bz0 + 23.5, bx0 + 15, yt_ - 1.2, bz0 + 26.5)
     for zc in (bz0 + 19, bz0 + 31):
-        o.box("black", bx0 + 1.4, yt_ - 1, zc - 1, bx0 + 7, yt_ + 1, zc + 1)
-    o.box("handle_black", bx0 + 1.4, y + 191.5, bz1 - 22, bx0 + 8, y + 193, bz1 - 20)            # the arm, and the round shower head (V2.17)
-    o.lathe("black", bx0 + 11, y + 189.5, bz1 - 21, [(0, 0), (6.5, 0), (7, 0.8), (7, 2.4), (5.5, 3.4), (1, 3.6), (0, 3.6)])
+        o.box("bfit", bx0 + 1.4, yt_ - 1, zc - 1, bx0 + 7, yt_ + 1, zc + 1)
+    o.box("bfit", bx0 + 1.4, y + 191.5, bz1 - 22, bx0 + 8, y + 193, bz1 - 20)            # the arm, and the round shower head (V2.17)
+    o.lathe("bfit", bx0 + 11, y + 189.5, bz1 - 21, [(0, 0), (6.5, 0), (7, 0.8), (7, 2.4), (5.5, 3.4), (1, 3.6), (0, 3.6)])
     o.item("bath.tiles", "The wall tiles and the tiled box", "bathroom", kind="finish", src="client's photo + E", data=("BATH", "tiles"), measure=False)
     T, til = "stone", B["tiles"]                                   # the wall tiles, just proud of each wall
     op = next(p for p in D.OPENINGS if p["id"] == "bath_window")
@@ -2638,7 +2648,7 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "slab": ("#cfc8bb", 0.95), "carpet": ("#cdbfa6", 1.0), "tile_f": ("#d9d4cb", 0.6), "vinyl": ("#cdd8da", 0.6), "concrete": ("#b1afaa", 0.85),
     "earth": ("#8a8173", 1.0), "brick_buff": ("#d6c7a3", 0.92), "chipboard": ("#c8ad80", 0.85), "porch_in": ("#a7a49c", 0.9), "bin": ("#2f3236", 0.6), "recycle": ("#2b5d9a", 0.6), "quarry": ("#b25a43", 0.7), "board": ("#c4b79f", 0.9), "fitting": ("#ecedea", 0.07),
     "eaves": ("#e7e1d6", 0.9), "garage_blue": ("#2c3b63", 0.45), "garage_white": ("#ecebe7", 0.4), "garage_black": ("#26282a", 0.45), "timber": ("#8a5a35", 0.8), "pane": ("#3a4550", 0.08),
-    "gloss": ("#ebeae6", 0.16), "kunit": ("#ebeae6", 0.16), "khandle": ("#151517", 0.4), "gap": ("#9b9a95", 0.6), "black": ("#1d1d1f", 0.5), "black_app": ("#1f2023", 0.35), "glass_dark": ("#17191c", 0.1),
+    "gloss": ("#ebeae6", 0.16), "kunit": ("#ebeae6", 0.16), "khandle": ("#151517", 0.4), "bfit": ("#151517", 0.4), "bpanel": ("#e7e8e6", 0.05), "gap": ("#9b9a95", 0.6), "black": ("#1d1d1f", 0.5), "black_app": ("#1f2023", 0.35), "glass_dark": ("#17191c", 0.1),
     "ring": ("#2b2c2e", 0.6), "steel": ("#c8cacc", 0.25), "steel_dark": ("#8e9195", 0.35), "worktop": ("#26282a", 0.22), "metro": ("#111214", 0.1),
     "chrome": ("#e4e6e9", 0.06), "sanitary": ("#e7e8e6", 0.05), "primrose": ("#e3cf5c", 0.06), "tile_w": ("#f2f2ef", 0.12), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_leaf": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "rug": ("#8e4a32", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
     "cloth0": ("#3d4a5c", 0.95), "cloth1": ("#b9b2a6", 0.95), "cloth2": ("#7a2f2f", 0.95), "cloth3": ("#2f3b2f", 0.95), "cloth4": ("#d8d2c4", 0.95), "cloth5": ("#555555", 0.95), "cloth6": ("#9b8b6e", 0.95), "curtain": ("#f4f3ef", 0.9), "stone": ("#cbc6bd", 0.35), "marble": ("#141416", 0.1), "led": ("#ffffff", 0.3), "bulb": ("#fff3e2", 0.25), "lamp_purple": ("#c9a6ff", 0.3), "chalk": ("#222423", 0.85), "storebox": ("#c9c1b2", 0.95), "contact": ("#000000", 1.0), "mattress": ("#f0eee8", 0.9), "pillow": ("#f1efea", 0.95), "trim": ("#5a5d60", 0.5), "gutter": ("#f2f2ef", 0.4), "lead": ("#6c7072", 0.55), "birch": ("#dcc8a2", 0.7), "lycksele": ("#5b6b78", 0.95), "grille": ("#e8dcc4", 0.6), "ceiling": ("#f3f2ee", 0.95),

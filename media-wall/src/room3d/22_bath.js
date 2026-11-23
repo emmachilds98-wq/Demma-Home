@@ -70,7 +70,7 @@ function tileSet(room, style, grout) {   // her tile (null: the plan's, its grou
 function tileCard(room) {   // [title, now, buttons, -, the tray]: the tiles, then their grout
   const q = tileOf(room), u = q && roomUps(room).find(x => x.k.startsWith("90="));
   const glass = q && q.st[6] === 2, st = q ? [glass ? q.st[1] : `${q.st[1]}, ${q.g[1].toLowerCase()} grout`, u ? upRange(u.lo, u.hi) : ""].filter(Boolean).join(" · ") : `The plan's: ${TILE_PLAN[room]}`;
-  const bs = [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(q ? [btn("The plan's", { tileplan: "1" })] : []), btn("Hold to compare", { finhold: "1" }, undefined, "", "Hold to compare: the tiles as planned till you let go"), ...(room === "kitchen" ? [btn("The units", { actopen: "fin:kitchen:92" })] : [])];   // N224
+  const bs = [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(q ? [btn("The plan's", { tileplan: "1" })] : []), btn("Hold to compare", { finhold: "1" }, undefined, "", "Hold to compare: the tiles as planned till you let go"), ...(room === "kitchen" ? [btn("The units", { actopen: "fin:kitchen:92" })] : room === "bathroom" ? [btn("Taps and panel", { actopen: "fin:bathroom:95" })] : [])];   // N224, N225
   const sw = (at, k, t, c, now) => `<button type="button" class="sw" data-${at}="${k}" style="--c:${c}" aria-pressed="${now === k}" title="${t}" aria-label="${t}"><i></i><span>${t.split(",")[0]}</span></button>`;
   return [`${roomName(room)}: ${room === "kitchen" ? "the splashback" : "the tiles"}`, st, bs, null, `<div class="r3d-fin"><div class="r3d-fintray" role="group" aria-label="Tiles">${tileStyles(room).map(([k, t, w, h, c]) => sw("tile", k, `${t}, ${w} × ${h} cm`, c, q && q.st[0])).join("")}</div>`
     + (q && !glass ? `<span class="r3d-finlab">Grout</span><div class="r3d-fintray" role="group" aria-label="Grout">${TILE_GROUT.map(([k, t, c]) => sw("grout", k, t, c, q.g[0])).join("")}</div>` : "") + `</div>`];
@@ -78,3 +78,44 @@ function tileCard(room) {   // [title, now, buttons, -, the tray]: the tiles, th
 if (act) act.addEventListener("click", e => { const b = e.target.closest("[data-tile],[data-grout],[data-tileplan]");
   if (!b || !GS.actId || !/^fin:[a-z0-9_]+:90$/.test(GS.actId)) return; e.stopPropagation(); const room = GS.actId.split(":")[1], d = b.dataset;
   tileSet(room, d.tileplan ? null : d.tile || finGet(room, 90), d.grout || null); renderAct(); }, true);
+/* N225 (its second half): the bathroom's taps, filler and shower in a finish of hers (slot 95) and its bath panel (96), from a tap on
+   either: the fittings and the panel are their own materials (house/model.py `bfit`, `bpanel`), a finish its colour, metal and shine,
+   an oak panel the oak's photo swapped in (as the kitchen's fronts): no new shader. Costed by fit.SOURCES n225fit */
+const BATH_FITS = [["black", "Matt black", "#151517", 0, 0.4, [0, 0]], ["chrome", "Chrome", "#e4e6e9", 0.9, 0.08, [145, 210]], ["brass", "Brushed brass", "#b08d57", 0.85, 0.35, [245, 330]],
+  ["nickel", "Brushed nickel", "#a9a9a4", 0.85, 0.3, [230, 320]]];   // key, name, colour, metal, shine, £ a basin mixer and a bath shower mixer
+const BATH_PANELS = [["white", "White", "#e7e8e6", [0, 0]], ["oakwood", "Oak", "#b8844f", [70, 140]], ["sage", "Sage", "#8b9878", [45, 90]], ["navy", "Deep blue", "#34507f", [45, 90]], ["charcoal", "Charcoal", "#4a4d52", [45, 90]]];
+const BATH_FIT_LAB = [80, 150];   // a plumber's half day to swap the taps
+const bathOk = (room, k, v) => room === "bathroom" && ((k === 95 && BATH_FITS.some(([q]) => q === v)) || (k === 96 && BATH_PANELS.some(([q]) => q === v)));
+const bathNow = () => ({ f: finGet("bathroom", 95) || "black", p: finGet("bathroom", 96) || "white" });
+function bathAt(hit) { const m = hit && hit.object && hit.object.material, hk = m && !Array.isArray(m) && (m.userData || {}).hk; return hk === "bfit" || hk === "bpanel" ? { room: "bathroom", slot: 95 } : null; }
+function bathUps(add) {
+  const q = bathNow(), f = BATH_FITS.find(([k]) => k === q.f), p = BATH_PANELS.find(([k]) => k === q.p);
+  if (q.f !== "black") add(`95=${q.f}`, `Taps and shower: ${f[1].toLowerCase()}`, [f[5][0] + BATH_FIT_LAB[0], f[5][1] + BATH_FIT_LAB[1]]);
+  if (q.p !== "white") add(`96=${q.p}`, `Bath panel: ${p[1].toLowerCase()}`, p[3]);
+}
+function bathApply() {   // the fittings' finish, the panel's colour (oak: its photo)
+  if (!HMATS || !FIN.mat3) return; const q = finHeld ? { f: "black", p: "white" } : bathNow(), Fm = HMATS.bfit || FIN.mat3("bfit"), Pm = HMATS.bpanel || FIN.mat3("bpanel");
+  if (Fm) { kitSwap(Fm, null); const o = KIT0.get(Fm), f = BATH_FITS.find(([k]) => k === q.f); if (q.f === "black") { Fm.color.copy(o.color); Fm.metalness = o.metalness; Fm.roughness = o.roughness; } else { Fm.color.set(f[2]); Fm.metalness = f[3]; Fm.roughness = f[4]; } }
+  if (Pm) { kitSwap(Pm, q.p === "oakwood" ? kitTex("oakwood", "bpanel") : null); const o = KIT0.get(Pm);
+    if (q.p === "white") Pm.color.copy(o.color); else if (q.p === "oakwood") Pm.color.set("#ffffff"); else capWhite(Pm.color.set((BATH_PANELS.find(([k]) => k === q.p) || [])[2])); }
+  dirty();
+}
+function bathSet(slot, v) {
+  finPush(); S.fin = S.fin || {}; const o = S.fin.bathroom = S.fin.bathroom || {}, plan = slot === 95 ? "black" : "white";
+  if (v && v !== plan) o[slot] = v; else delete o[slot]; if (!Object.keys(o).length) delete S.fin.bathroom;
+  store.set(KEY, S); bathApply(); finSchDraw(); const q = bathNow();
+  toast(`Bathroom: ${slot === 95 ? upNm(BATH_FITS, q.f).toLowerCase() + " taps and shower" : upNm(BATH_PANELS, q.p).toLowerCase() + " bath panel"}`);
+}
+function bathCard() {   // [title, now, buttons, -, the tray]
+  const q = bathNow(), plan = q.f === "black" && q.p === "white", L = roomUps("bathroom").filter(u => /^9[56]=/.test(u.k)), lo = L.reduce((a, u) => a + u.lo, 0), hi = L.reduce((a, u) => a + u.hi, 0);
+  const st = plan ? "The plan's: matt black taps, a white bath panel" : [`${upNm(BATH_FITS, q.f)} taps, ${upNm(BATH_PANELS, q.p).toLowerCase()} bath panel`, hi ? upRange(lo, hi) : ""].filter(Boolean).join(" · ");
+  const bs = [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(plan ? [] : [btn("The plan's", { bathplan: "1" })]), btn("Hold to compare", { finhold: "1" }, undefined, "", "Hold to compare: as planned till you let go"), btn("The tiles", { actopen: "fin:bathroom:90" })];
+  const sw = (at, k, t, c, now) => `<button type="button" class="sw" data-${at}="${k}" style="--c:${c}" aria-pressed="${now === k}" title="${t}" aria-label="${t}"><i></i><span>${t}</span></button>`;
+  return ["Bathroom: taps and bath panel", st, bs, null, `<div class="r3d-fin"><span class="r3d-finlab">Taps and shower</span><div class="r3d-fintray" role="group" aria-label="Taps and shower">${BATH_FITS.map(([k, t, c]) => sw("bathf", k, t, c, q.f)).join("")}</div>`
+    + `<span class="r3d-finlab">Bath panel</span><div class="r3d-fintray" role="group" aria-label="Bath panel">${BATH_PANELS.map(([k, t, c]) => sw("bathp", k, t, c, q.p)).join("")}</div></div>`];
+}
+if (act) act.addEventListener("click", e => { const b = e.target.closest("[data-bathf],[data-bathp],[data-bathplan]");
+  if (!b || GS.actId !== "fin:bathroom:95") return; e.stopPropagation(); const d = b.dataset;
+  if (d.bathplan) { finPush(); const o = (S.fin || {}).bathroom || {}; delete o[95]; delete o[96]; if (S.fin && S.fin.bathroom && !Object.keys(o).length) delete S.fin.bathroom; store.set(KEY, S); bathApply(); finSchDraw(); toast("Bathroom: the plan's taps and panel"); }
+  else if (d.bathf) bathSet(95, d.bathf); else bathSet(96, d.bathp);
+  renderAct(); }, true);

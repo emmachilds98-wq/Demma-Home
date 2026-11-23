@@ -93,6 +93,18 @@ def ideas():
         size="28 × 43 × 69", what="a slim oak tower of six drawers on castors between the two PCs: cables, chargers, controllers, the hobby bits",
         where="bedroom 3, under the desk", src=f"{MADE}; ply drawer boxes; four 50 mm castors",
         parts=[dict(cat="st_drawers", box=[D.INSIDE["w"] - 3.0 - 43.0, y1, hz - 14.0, D.INSIDE["w"] - 3.0, y1 + 69.0, hz + 14.0], back="x1")])
+    # N241 (Emma, 23 Nov: "books as well as other things and drying clothes"): the office the house's drying room (a radiator, a window
+    # to open, a door to shut): a pulley airer over the window, hoisted; the books in a slim tower in the window's corner (over the door
+    # the bifold's swing and the fanlight's woodwork are in the way; the desk has its shelf)
+    ofr = _room("bed3")
+    add(id="airer", room="bed3", n="A ceiling pulley airer", ref="pulleyairer", cost=(75, 99), size="90 × 35",
+        what="a pulley airer over the radiator by the window: four laths, hoisted to 17 under the ceiling, lowered to load; dries over the radiator's heat",
+        where="bedroom 3, over the window", src="Clothesmaid ceiling airer 0.9 m, £74.99; Cast in Style 6 laths £99",
+        parts=[dict(cat="st_airer", box=[345.0, y1 + M.CEIL - 17.0, ofr["z1"] - 35.0, 435.0, y1 + M.CEIL - 0.5, ofr["z1"]], back="z1")])
+    add(id="booktower", room="bed3", n="An oak book tower", ref="snowdonoak", cost=oak(1.35), size="50 × 30 × 200",
+        what="a slim oak bookcase, six shelves of books and games, in the corner between the cube shelves and the window: about 3 m of spines",
+        where="bedroom 3, the window's corner", src=MADE,
+        parts=[dict(cat="st_books", box=[283.0, y1, ofr["z1"] - 32.0, 333.0, y1 + 200.0, ofr["z1"] - 2.0], back="z1")])   # clear of the skirting and the window board
     # ---------------------------------------------------------------- the landing: books over the doors, a lit case at the stairs' top
     la, b2 = _room("landing"), _door("bed2_door")
     sy = y1 + D.DOOR_H + 10.0                                             # over the frames' heads (204) and bedroom 2's cap

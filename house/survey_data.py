@@ -136,8 +136,9 @@ DOORS_PX = {
 DOOR_H = 198.0                                          # the living room's door (export3d DOOR_H), E for the rest
 
 # The lower flight: from the lower landing up to the hall, rising towards the front, under the living room's flight (P: the lower
-# plan's stairs and "UP"; the store is under it, HOUSE.md). 13 risers of 20 (260 floor to floor), goings 22 (Approved Document K).
-LOWER_STAIR = dict(x_px=(262, 405), z0_px=715, n=13, rise=20.0, going=22.0, src="P + E",
+# plan's stairs and "UP"; the store is under it, HOUSE.md). 13 risers of 20 (260 floor to floor). V4.55 (N238): the goings fitted (E),
+# from the plan's foot to the top step at the hall's door down (the photos: its carpeted nosing top_in inside the frame), about 24.6
+LOWER_STAIR = dict(x_px=(262, 405), z0_px=715, n=13, rise=20.0, top_in=2.0, src="P + C + E",
                    x=(382.0, 467.0))   # V2.93: under the living room's flight, now 85 (the stairwell measured upstairs); v66, the client: "make the door align with the given gap from the hallway to the living room, the
                                        # living room has accurate measurements so adjust the other rooms": under the living room's flight
                                        # (geometry.STAIR_X, 59 wide); the plan's 92 put its side wall across the doorway
@@ -361,7 +362,7 @@ FIT = {"first": {"bathroom": dict(x1=382.0, z1=-38.8), "bed2": dict(z1=79.5), "a
                  # V2.24, the client measured it: 85 wide (x 382), the banister's posts outside it (LANDING)
                  # v66: the stairwell over the flight; v67 (the landing photos): open to the flight's top step (the plans read 170)
        "ground": {"hall": dict(x0=WALL_HALL), "front_store_e": dict(x0=WALL_HALL), "garage": dict(x1=round(WALL_HALL - 12.6, 1))},
-       "lower": {"lower_store": dict(z1=251.7),   # V2.2 (STORE_TO_STAIRS): its back wall in line with the one past the flight's top step
+       "lower": {"lower_store": dict(z1=263.0),   # V2.2 (STORE_TO_STAIRS): its back wall in line with the one past the flight's top step (V4.55: the door down's wall)
                  "kitchen": dict(z1=-23.8), "kitchen_1": dict(z0=-23.8), "kitchen_2": dict(z0=-23.8), "kitchen_cupboard": dict(z0=-23.8),
                  "secret": dict(z1=327.0)}}   # V1.26, the client: "secret room seems to be square not rectangle" (its 277.7 width deep, was 450)
 FIT_DOORS = {"kitchen_door": (-115.5, -52.1),   # V1.20, the client: "kitchen door more centre with the area space between stairs and bathroom, this means shift up the table end": in the middle of the landing (the bar 15 shorter)
