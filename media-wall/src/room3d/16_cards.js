@@ -129,6 +129,7 @@ function roomUps(room) {   // [{k, t, lo, hi}]: what's changed in a room
     if (o[5] && o[5] !== fa.fk) add("5=" + o[5], "Floor: " + upNm(FIN_FLOORS, o[5]), UPC.floor[o[5]] || [30, 60], fa.floor || m2);
     if (o[18]) add("18=" + o[18], o[18] === "none" ? "Rug: none" : "Rug: " + upNm(FIN_RUGS, o[18]), o[18] === "none" ? [0, 0] : UPC.rug);
     if (o[19]) add("19=" + o[19], "Curtains: " + upNm(FIN_CURT, o[19]), UPC.curt);
+    if (o[90] && TILE_ROOMS[room]) tileUps(room, add);   // N225: the tiles by their area
     winsOf(room).forEach((w, j) => { const v = o[70 + j]; if (v) add(`${70 + j}=${v}`, `${w.n}: ${winSay(...v.split("."))}`, winCost(w, v)); });   // N227: each window's own
     if (o[20]) add("20=" + o[20], "Bedding: " + upNm(FIN_BED, o[20]), UPC.bed);
     if (o[21]) add("21=" + o[21], "Picture: " + upNm(FIN_PICS, o[21]), UPC.pic);
