@@ -207,11 +207,11 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id.startsWith("hswap:") || id.startsWith("hadd:")) return hcatCard(id);   // V2.46 (N7): swap a piece, or which piece you've added
   if (id.startsWith("hitem:")) { const k = id.slice(6), it = HIT(k); if (!it) return null;   // V1.50: a piece in the house, its size
     if (it.idea) return ideaCard(k);   // N212: a storage idea, to look at
-    const sw = pieceNow(k).swap;
+    const sw = pieceNow(k).swap, SC = HCAT[sw || it.add], shop = SC && SC.url ? `<div class="r3d-fin"><a href="${SC.url}" target="_blank" rel="noopener" aria-label="See it at ${SC.shop} (a new tab)">${SC.shop} ↗</a></div>` : null;   // N232: a shop's piece, its page
     return [sw ? HCAT[sw].n : it.n, pieceLine(k), [btn(it.op ? "Change its size" : "Move or resize", { actopen: "hsize:" + k }), ...(it.add ? [btn(it.look ? "Change plant" : "Change piece", { actopen: "hadd:" + k })] : swapKind(k) ? [btn("Swap it", { actopen: "hswap:" + k })] : []),
       ...(pieceDelta(k).some(Boolean) && !it.add ? [btn("As planned", { hreset: k })] : []), ...(it.op ? [] : [btn("Take it out", { hremove: k })]),
       ...(it.k === "window" || /^(back|garage)_door$/.test(k) ? [btn("Colour outside", { actopen: "fin:outside:9" })] : []), ...(it.k === "window" && winOf(k) ? [btn("Dress it", { actopen: winOf(k) })] : []), ...upsBtn(it.r)], null,   // V2.38 (F12): its frame's outside
-      it.k === "light" && it.r ? `<div class="r3d-fin"><span class="r3d-finlab">The bulbs</span>${finBulbTray(it.r)}${finFitTray(it.r)}</div>` : /\.bed$/.test(k) && it.r ? finBedTray(it.r) : null]; }   // N5d: a bed's bedding   // V2.9: a light's bulbs; V2.15: its fitting
+      it.k === "light" && it.r ? `<div class="r3d-fin"><span class="r3d-finlab">The bulbs</span>${finBulbTray(it.r)}${finFitTray(it.r)}</div>` : /\.bed$/.test(k) && it.r ? finBedTray(it.r) + (shop || "") : shop]; }   // N5d: a bed's bedding   // V2.9: a light's bulbs; V2.15: its fitting
   if (id.startsWith("hsize:")) { const k = id.slice(6), it = HIT(k); if (!it) return null; const c = pieceNow(k), door = it.k === "door";
     return [it.n, pieceLine(k), [btn("Done", { actopen: "hitem:" + k }), ...(canTurn(k) ? [btn("Turn", { hturn: k })] : []), ...(it.add ? [] : [btn("As planned", { hreset: k })])],
       FIELDS.filter(([f]) => !(door && (f === "h" || f === "up")) && !(f === "out" && it.op)).map(([f, t]) => [f, t, cmR(c[f])])]; }
