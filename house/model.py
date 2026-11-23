@@ -1063,11 +1063,11 @@ def kitchen(o):
     def handle(face, x0, x1, z0, z1, y, along=None):
         c = along if along is not None else ((x0 + x1) / 2 if face != "+x" else (z0 + z1) / 2)
         if face == "+z":                                           # V2.17 (REAL_PLAN R4): the photos' black bar handles, rounded
-            o.box("handle_black", c - 0.8, y - 5, z1 + 1.8, c + 0.8, y + 5, z1 + 4.5)
+            o.box("khandle", c - 0.8, y - 5, z1 + 1.8, c + 0.8, y + 5, z1 + 4.5)
         elif face == "-z":
-            o.box("handle_black", c - 0.8, y - 5, z0 - 4.5, c + 0.8, y + 5, z0 - 1.8)
+            o.box("khandle", c - 0.8, y - 5, z0 - 4.5, c + 0.8, y + 5, z0 - 1.8)
         else:
-            o.box("handle_black", x1 + 1.8, y - 5, c - 0.8, x1 + 4.5, y + 5, c + 0.8)
+            o.box("khandle", x1 + 1.8, y - 5, c - 0.8, x1 + 4.5, y + 5, c + 0.8)
     o.item("kitchen.units", "The kitchen units and appliances", "kitchen", src="client's photos + standard sizes (E)", data=("KITCHEN",), measure=False)
     for run in ("north", "east", "south"):
         for kind, a, b in K[run]:
@@ -1130,16 +1130,16 @@ def kitchen(o):
                 o.box("black", lx - 1.5, Y(0), lz - 1.5, lx + 1.5, Y(LEG), lz + 1.5)
             # N198: a kickboard over the legs, set back 5 (the units on legs before)
             if face == "+z":
-                o.box("gloss", x0 + 0.5, Y(0), z0 + 1, x1 - 0.5, Y(LEG), z1 - 5)
+                o.box("kunit", x0 + 0.5, Y(0), z0 + 1, x1 - 0.5, Y(LEG), z1 - 5)
             elif face == "-z":
-                o.box("gloss", x0 + 0.5, Y(0), z0 + 5, x1 - 0.5, Y(LEG), z1 - 1)
+                o.box("kunit", x0 + 0.5, Y(0), z0 + 5, x1 - 0.5, Y(LEG), z1 - 1)
             else:
-                o.box("gloss", x0 + 1, Y(0), z0 + 0.5, x1 - 5, Y(LEG), z1 - 0.5)
+                o.box("kunit", x0 + 1, Y(0), z0 + 0.5, x1 - 5, Y(LEG), z1 - 0.5)
             if kind == "corner":
                 continue
             # N198: the door and the drawer as their own fronts, 1.8 proud with a 3 mm gap round each (a line drawn on one box before)
-            front(face, x0, x1, z0, z1, Y(LEG + 0.3), Y(71.7), "gloss", inset=0.8)
-            front(face, x0, x1, z0, z1, Y(72.3), Y(TOP - WT - 0.3), "gloss", inset=0.8)
+            front(face, x0, x1, z0, z1, Y(LEG + 0.3), Y(71.7), "kunit", inset=0.8)
+            front(face, x0, x1, z0, z1, Y(72.3), Y(TOP - WT - 0.3), "kunit", inset=0.8)
             handle(face, x0, x1, z0, z1, Y(79))
             handle(face, x0, x1, z0, z1, Y(62))
     # the worktops (black speckled) and the sink
@@ -1162,22 +1162,22 @@ def kitchen(o):
     # the wall units, 30 deep, gloss doors with handles near the bottom
     o.item("kitchen.wall_units", "The wall cupboards", "kitchen", src="client (counted) + E", data=("KITCHEN", "wall_units"), measure=False)
     for a, b, n in K["wall_units"]["east"]:                         # v73: each run's doors as the client counts them
-        o.box("gloss", 0, Y(145), a, 28.2, Y(215), b); o.box("gloss", 0, Y(215), a, 32, Y(220), b)
+        o.box("kunit", 0, Y(145), a, 28.2, Y(215), b); o.box("kunit", 0, Y(215), a, 32, Y(220), b)
         for i in range(n):                                          # N198: each door its own, 1.8 thick, a 3 mm gap round it (lines on one box before)
-            o.box("gloss", 28.2, Y(145.3), a + (b - a) * i / n + 0.15, 30, Y(214.7), a + (b - a) * (i + 1) / n - 0.15)
+            o.box("kunit", 28.2, Y(145.3), a + (b - a) * i / n + 0.15, 30, Y(214.7), a + (b - a) * (i + 1) / n - 0.15)
         for i in range(n):
             handle("+x", 0, 30, a, b, Y(152), along=a + (b - a) * (i + 0.5) / n + (b - a) / n * 0.3)
     for a, b, n in K["wall_units"]["south"]:
-        o.box("gloss", a, Y(145), 36.2 - 28.2, b, Y(215), 36.2); o.box("gloss", a, Y(215), 36.2 - 32, b, Y(220), 36.2)
+        o.box("kunit", a, Y(145), 36.2 - 28.2, b, Y(215), 36.2); o.box("kunit", a, Y(215), 36.2 - 32, b, Y(220), 36.2)
         for i in range(n):
-            o.box("gloss", a + (b - a) * i / n + 0.15, Y(145.3), 36.2 - 30, a + (b - a) * (i + 1) / n - 0.15, Y(214.7), 36.2 - 28.2)
+            o.box("kunit", a + (b - a) * i / n + 0.15, Y(145.3), 36.2 - 30, a + (b - a) * (i + 1) / n - 0.15, Y(214.7), 36.2 - 28.2)
         for i in range(n):
             handle("-z", a, b, 6.2, 36.2, Y(152), along=a + (b - a) * (i + 0.5) / n + (b - a) / n * 0.3)
     p_ = K["pipes"]                                                  # v73: the pipes up the back corner, in the cupboards' 5 cm
     for i, dx in enumerate((0.0, 2.2)):
         o.box("pc_white", p_["x"][0] + dx, Y(TOP), p_["z"][0] + i * 1.2, p_["x"][0] + dx + 1.6, Y(CEIL), p_["z"][0] + i * 1.2 + 1.6)
     a, b = K["wall_units"]["over_fridge"]
-    o.box("gloss", a, Y(185), 36.2 - 32, b, Y(220), 36.2)
+    o.box("kunit", a, Y(185), 36.2 - 32, b, Y(220), 36.2)
     # the breakfast bar on chrome legs, two black chairs
     o.item("kitchen.bar", "The breakfast bar", "kitchen", src="client v73 + E", data=("KITCHEN", "bar"), axis="z")
     B = K["bar"]
@@ -2638,7 +2638,7 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "slab": ("#cfc8bb", 0.95), "carpet": ("#cdbfa6", 1.0), "tile_f": ("#d9d4cb", 0.6), "vinyl": ("#cdd8da", 0.6), "concrete": ("#b1afaa", 0.85),
     "earth": ("#8a8173", 1.0), "brick_buff": ("#d6c7a3", 0.92), "chipboard": ("#c8ad80", 0.85), "porch_in": ("#a7a49c", 0.9), "bin": ("#2f3236", 0.6), "recycle": ("#2b5d9a", 0.6), "quarry": ("#b25a43", 0.7), "board": ("#c4b79f", 0.9), "fitting": ("#ecedea", 0.07),
     "eaves": ("#e7e1d6", 0.9), "garage_blue": ("#2c3b63", 0.45), "garage_white": ("#ecebe7", 0.4), "garage_black": ("#26282a", 0.45), "timber": ("#8a5a35", 0.8), "pane": ("#3a4550", 0.08),
-    "gloss": ("#ebeae6", 0.16), "gap": ("#9b9a95", 0.6), "black": ("#1d1d1f", 0.5), "black_app": ("#1f2023", 0.35), "glass_dark": ("#17191c", 0.1),
+    "gloss": ("#ebeae6", 0.16), "kunit": ("#ebeae6", 0.16), "khandle": ("#151517", 0.4), "gap": ("#9b9a95", 0.6), "black": ("#1d1d1f", 0.5), "black_app": ("#1f2023", 0.35), "glass_dark": ("#17191c", 0.1),
     "ring": ("#2b2c2e", 0.6), "steel": ("#c8cacc", 0.25), "steel_dark": ("#8e9195", 0.35), "worktop": ("#26282a", 0.22), "metro": ("#111214", 0.1),
     "chrome": ("#e4e6e9", 0.06), "sanitary": ("#e7e8e6", 0.05), "primrose": ("#e3cf5c", 0.06), "tile_w": ("#f2f2ef", 0.12), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_leaf": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "rug": ("#8e4a32", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
     "cloth0": ("#3d4a5c", 0.95), "cloth1": ("#b9b2a6", 0.95), "cloth2": ("#7a2f2f", 0.95), "cloth3": ("#2f3b2f", 0.95), "cloth4": ("#d8d2c4", 0.95), "cloth5": ("#555555", 0.95), "cloth6": ("#9b8b6e", 0.95), "curtain": ("#f4f3ef", 0.9), "stone": ("#cbc6bd", 0.35), "marble": ("#141416", 0.1), "led": ("#ffffff", 0.3), "bulb": ("#fff3e2", 0.25), "lamp_purple": ("#c9a6ff", 0.3), "chalk": ("#222423", 0.85), "storebox": ("#c9c1b2", 0.95), "contact": ("#000000", 1.0), "mattress": ("#f0eee8", 0.9), "pillow": ("#f1efea", 0.95), "trim": ("#5a5d60", 0.5), "gutter": ("#f2f2ef", 0.4), "lead": ("#6c7072", 0.55), "birch": ("#dcc8a2", 0.7), "lycksele": ("#5b6b78", 0.95), "grille": ("#e8dcc4", 0.6), "ceiling": ("#f3f2ee", 0.95),
