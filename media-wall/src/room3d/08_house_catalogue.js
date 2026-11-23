@@ -3,6 +3,7 @@
    value: key, room, x, z, y}. A piece's own frame: u along its wall (0..W), v up (0..H), t out from its back (0..D). */
 const HCAT_KINDS = { bed: "Beds", wardrobe: "Wardrobes", chest: "Chests", bedside: "Bedsides", desk: "Desks", shelves: "Shelves", seat: "Seats", chair: "Desk chairs",
   table: "Tables", unit: "Units", shoes: "Shoe storage", stool: "Bar stools", lamp: "Lamps", rug: "Rugs", plant: "Plants", more: "More" };   // N219: tables, units (TV, sideboards) and lamps their own; N230: shoe storage, bar stools
+Object.defineProperties(HCAT_KINDS, { toilet: { value: "Toilets" }, basin: { value: "Basins" } });   // N225: the WC's and bathroom's suite: swapped, never added (not enumerable: no chips)
 function hcChest(mat, cols, rows, knob = "knob") {   // drawers: a carcass, its fronts with a shadow gap, a knob each ("grip": MALM's grip along each front's top)
   return (W, H, D, B) => {
     B(mat, 0, 0, 0, W, H, D - 2); B("gap", 1, 6, D - 2.1, W - 1, H - 2, D - 2); B(mat, 1, 0, D - 6, W - 1, 6, D - 5);   // the plinth, set back
@@ -274,6 +275,8 @@ const hcMake = (k, look, m, m2, c) => {
   if (k === "seat") return look === "sofa" ? hcSofa(m, m2) : hcArmchair(m, m2);
   if (k === "chair") return hcSwivel(m, 46, true);
   if (k === "stool") return hcStool(look, m, m2);
+  if (k === "toilet") return hcToilet(look, m, m2);
+  if (k === "basin") return hcBasin(look, m, m2);
   if (k === "rug") return (W, H, D, B, L) => look === "round" ? L(m, W / 2, D / 2, 0, [[0, 0], [W / 2, 0], [W / 2, H], [0, H]]) : B(m, 0, 0, 0, W, H, D);
   if (k === "lamp") return (W, H, D, B, L) => { const r = Math.min(W, D) / 2 - 0.5, sh = m === "sisal" ? "sisal" : "paper";
     L(m2, W / 2, D / 2, 0, [[0, 0], [Math.min(13, r), 0], [Math.min(13, r), 2.5], [Math.min(10, r), 4], [3, 5], [0, 5]]); L(m, W / 2, D / 2, 5, [[0, 0], [1.4, 0], [1, H - 30], [0, H - 30]]);
@@ -282,6 +285,30 @@ const hcMake = (k, look, m, m2, c) => {
     B(m, 0, 0, 0, W, H, D - 2); B("gap", 0.5, 4, D - 2.05, W - 0.5, H - 0.5, D - 2); B(m2 === m ? "black" : m2, 1.5, 0, D - 5, W - 1.5, 4, D - 4);
     for (let i = 0; i < n; i++) { B(m, i * dw + 0.3, 4.3, D - 2, (i + 1) * dw - 0.3, H - 0.3, D); B(grip === "grip" ? "handle_black" : "knob", (i + 0.5) * dw - 6, H - 8, D, (i + 0.5) * dw + 6, H - 6.8, D + 0.6); } };
 };
+/* N225: the toilets (glazed, as the house's own pan: its profile, oval), its back at t 0; and the basins, their bowl as the WC's (a rim
+   at the top of the piece), a mixer at the back. Close coupled: the cistern on the pan's back; back to wall: the pan on its own, the cistern
+   in a box behind; hung: a frame boxed in to 82, the pan off the floor. Basins on a pedestal, a semi pedestal, into a corner, on a unit */
+const HC_PAN = [[0, 0], [8, 0], [9, 3], [8.5, 14], [10.5, 24], [14, 33], [16, 39], [16, 41], [14.5, 41.5], [12.5, 39], [6, 27], [0, 25]],
+  HC_SEAT = [[11.5, 0], [16, 0], [16.8, 1.2], [16, 2.6], [11.5, 2.6], [11, 1.3], [11.5, 0]],
+  HC_BOWL = [[0, 0], [4, 0], [5, 1.5], [13, 12], [16, 15], [16, 16], [14.5, 16], [12, 13], [4, 3.5], [0, 3.5]];   // house/model.py PAN, SEAT, BOWL
+function hcToilet(look, m, ch) { return (W, H, D, B, L) => {
+  const back = look === "cc" ? 17 : look === "hung" ? 16 : 0, v0 = look === "hung" ? 40 - 33 : 0, sy = look === "hung" ? 40 : Math.min(41, H - 1), hx = Math.min(W, 37) / 2 - 1, hz = (D - back - 2) / 2, tc = back + 1 + hz;
+  if (look === "cc") { B(m, W / 2 - 17, 38, 0.5, W / 2 + 17, H - 3, back); B(m, W / 2 - 18, H - 3, 0, W / 2 + 18, H, back + 1); L(ch, W / 2, back / 2, H, [[0, 0], [2.2, 0], [2.2, 0.5], [0, 0.5]]); }
+  if (look === "btw") B(m, W / 2 - 10, 0, 0, W / 2 + 10, sy - 2, 12);   // its foot to the wall
+  if (look === "hung") { B("paint", 0, 0, 0, W, H, back); B(ch, W / 2 - 12, H - 30, back, W / 2 + 12, H - 14, back + 0.6); B(ch, W / 2 - 0.2, H - 27, back + 0.6, W / 2 + 0.2, H - 17, back + 0.8); }   // the frame boxed in, its flush plate
+  L(m, W / 2, tc, v0, HC_PAN.map(([r, h]) => [r, h * (sy - v0) / 41.5]), [hx / 16, hz / 16]);   // the pan and its seat
+  L(m, W / 2, tc, sy, HC_SEAT, [(hx + 0.5) / 16, (hz + 0.5) / 16]);
+  B(m, W / 2 - hx + 2, sy + 2.6, back + 1, W / 2 + hx - 2, sy + 2.6 + Math.min(40, hz * 2), back + 3.4); }; }   // the lid up
+function hcBasin(look, m, ch) { return (W, H, D, B, L) => {
+  const corner = look === "corner", bh = Math.min(16, H), r = (corner ? Math.min(W, D) * 0.4 : Math.min(W, D * 1.2) / 2 - 1), cu = corner ? W * 0.42 : W / 2, ct = corner ? D * 0.42 : D / 2 + 1, top = H - bh;
+  if (look === "vanity") { B("gloss", 0, 0, 0, W, top, D - 1.8); B("gloss", 0.3, 0.6, D - 1.8, W - 0.3, top - 0.4, D); B(ch, W - 6, top - 22, D, W - 4.8, top - 6, D + 2.2); }   // its unit, its door, a bar handle
+  if (look === "ped") L(m, W / 2, D * 0.42, 0, [[0, 0], [10, 0], [9, 3], [7, 12], [6.5, top - 4], [9, top], [0, top]], [1, 0.8]);   // the pedestal
+  if (look === "semi") L(m, W / 2, D * 0.38, top - 30, [[0, 0], [5, 0], [6.5, 20], [9, 30], [0, 30]], [1, 0.8]);
+  if (corner) { B(m, 0, H - 2, 0, W, H, 3); B(m, 0, H - 2, 0, 3, H, D); }   // its back rims along both walls
+  else B(m, 0, H - 2, 0, W, H, 6);   // the deck at the back for the tap
+  L(m, cu, ct, top, HC_BOWL.map(([q, h]) => [q, h * bh / 16]), [r / 16, (corner ? r : Math.min(r, D / 2 - 1)) / 16]);
+  const tu = corner ? 7 : W / 2, tt = corner ? 7 : 3;   // the mixer at the back: its body, the spout over the bowl
+  L(ch, tu, tt, H, [[0, 0], [2, 0], [1.6, 1], [1.4, 13], [0, 13]]); B(ch, tu - 1, H + 10.5, tt, tu + 1, H + 12.5, tt + 10); }; }
 /* N230: a bar stool (seat 62-63 high: the listings), its back at t 0, facing +t as the chairs do: on a chrome pedestal (a swivel), on thin
    legs with a padded seat and back, a wooden one with a spindle back, or a metal frame with a back band */
 function hcStool(look, m, m2) { return (W, H, D, B, L) => { const sh = Math.min(63, H - 24), c = W / 2, tc = D / 2;
@@ -335,7 +362,9 @@ function hcOwn(v) {   // her own piece's catalogue entry from its value (made on
 /* which pieces swap, and for what: by the kind of thing it is (its id), standing on the floor, one that turns (no lid or doors of its own) */
 const HSWAP_OF = [[/(^|\.)bed$|bed_/, "bed"], [/wardrobe/, "wardrobe"], [/bedside/, "bedside"], [/chest/, "chest"], [/desk$/, "desk"],
   [/shelving|kallax|bookcase|shelves/, "shelves"], [/chairbed|bench|armchair/, "seat"], [/(^|\.)chair\d?$/, "chair"], [/(^|\.)stool\d?$/, "stool"], [/(^|\.)rack\d?$|shoe/, "shoes"], [/(^|\.)rug$/, "rug"]];   // N230: the office's two chairs, the kitchen's stools, the hall's shoe racks
+const SUITE_OF = { "wc.toilet": "toilet", "bath.toilet": "toilet", "wc.basin": "basin", "bath.vanity": "basin" }, SUITE_RIM = { wc: 80, bathroom: 86 };   // N225: a basin's rim where the old one's was (survey_data)
 function swapKind(id) {
+  if (SUITE_OF[id]) return HIT(id) && canTurn(id) ? SUITE_OF[id] : null;   // N225: hung or with its own lid, still swapped for its own kind
   const it = HIT(id); if (!it || it.op || (it.k !== "furniture" && !/rug$/.test(id)) || (it.s[2] || 0) > 20) return null;
   const k = (HSWAP_OF.find(([re]) => re.test(id)) || [])[1];
   return k && canTurn(id) ? k : null;
@@ -350,6 +379,8 @@ function swapBox(id, key) {
   const u0 = !ch && b[a] - r0 < 10 ? b[a] : !ch && r1 - b[a + 3] < 10 ? b[a + 3] - C.w : (b[a] + b[a + 3] - C.w) / 2;
   b[a] = Math.max(r0, Math.min(r1 - C.w, u0)); b[a + 3] = b[a] + C.w; b[4] = b[1] + C.h;
   if (ch) { b[o] = (b[o] + b[o + 3] - C.d) / 2; b[o + 3] = b[o] + C.d; } else if (flip) b[o] = b[o + 3] - C.d; else b[o + 3] = b[o] + C.d;
+  if (SUITE_OF[id] && r) { b[1] = C.k === "basin" && C.h < 75 ? r[4] + (SUITE_RIM[it.r] || 82) - C.h : r[4]; b[4] = b[1] + C.h;   // N225: a toilet or standing basin from the floor, a hung basin's rim at the old one's
+    if (C.k === "basin" && C.w > 44 && C.d > 44) { b[a] = r0 + 0.5; b[a + 3] = b[a] + C.w; } }   // a corner basin into its wall's first corner (its builder's)
   return b.map(v => Math.round(v * 10) / 10);
 }
 function pieceBase(id, key) {   // the piece as planned, or the one swapped in where it stood (a chair turned to face as the old one did)
@@ -372,7 +403,7 @@ function hcBuild(key, it, t) {
   const B = (m, u0, v0, t0, u1, v1, t1) => { const p = at(u0, v0, t0), q = at(u1, v1, t1), bx = [0, 1, 2].map(i => Math.min(p[i], q[i])).concat([0, 1, 2].map(i => Math.max(p[i], q[i])));
     if (bx[3] - bx[0] < 0.05 || bx[4] - bx[1] < 0.05 || bx[5] - bx[2] < 0.05) return;
     (out.boxes[m] = out.boxes[m] || []).push(bx.map(v => Math.round(v * 10) / 10)); (out.bt[m] = out.bt[m] || []).push(t); };
-  const L = (m, u, w, v, p) => out.lathes.push({ c: at(u, v, w), p, s: [1, 1], m, t });   // a turned part round (u, w), its profile [radius, up]
+  const L = (m, u, w, v, p, sc) => out.lathes.push({ c: at(u, v, w), p, s: sc ? (a === 0 ? sc : [sc[1], sc[0]]) : [1, 1], m, t });   // N225: oval: sc along its wall, out   // a turned part round (u, w), its profile [radius, up]
   C.b(W, H, D, B, L, Math.abs(Math.round(b[0] * 3 + b[1] / 7 + b[2] * 5)));   // N236: where it stands, for a piece that draws each copy its own
   return out;
 }

@@ -316,8 +316,14 @@ def shop_row(q):
         look = "swivel" if re.search(r"swivel|chrome", nf, re.I) else "uph" if re.search(r"fabric|upholster", nf, re.I) else "wood" if re.search(r"wood", nf, re.I) else "metal"
     elif k in ("table", "rug"):
         look = "round" if re.search(r"round", n, re.I) or q["w"] == q["d"] else "box"
+    elif k == "toilet":   # N225: close coupled, back to wall (its cistern boxed in), or hung on a frame
+        look = "btw" if re.search(r"back to wall", n, re.I) else "hung" if re.search(r"wall hung", n, re.I) else "cc"
+    elif k == "basin":   # N225: on a full pedestal, on a semi pedestal, a corner one, or on its vanity unit
+        look = "vanity" if re.search(r"vanity", n, re.I) else "corner" if re.search(r"corner", n, re.I) else "semi" if re.search(r"semi", n, re.I) else "ped"
     else:
         look = k
+    if k in ("toilet", "basin"):   # N225: glazed ware, chrome fittings (the bathroom's own materials)
+        m, m2 = "sanitary", "chrome"
     pl = re.findall(r"(\d+)\s*\+\s*(\d+)", n)   # its drawers: "3 Drawer", "6 drawers", "(2+2)"
     c = sum(map(int, pl[0])) if pl else int((re.findall(r"(\d+)\s*drawer", n, re.I) or [0])[0])
     if k in ("unit", "wardrobe", "shoes"):
