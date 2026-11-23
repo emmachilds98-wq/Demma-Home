@@ -1,20 +1,17 @@
-# Handover (23 Nov 2026, V4.50: start here)
+# Handover (23 Nov 2026, V4.51: start here)
 
 ## Pick up here (23 Nov 2026, late: the session stopped near its usage limit)
 The client: "Merge the work soon so I can have another team pick it up from GitHub". Section 29 (`docs/REAL_PLAN.md`) is the plan;
 its order and her answers are in the section and `docs/DECISIONS.md` ("What to change next": bathroom tiles and the WC's toilet and
 basin first, then splashbacks; doors both ways).
 
-- **On main with this merge:** N233 (the site check's SHOP, STORE, LIVSWAP steps), and whatever of the helper branches below was
-  merged (each row in section 29 says Done with its checks, or still Open).
-- **Helper branches, each pushed after every step** (merge any that's ahead of main: `git log origin/main..origin/claude/<name>`):
-  - `claude/n230-furniture`: N230 (riders turn with their host, true door swings, chairs one each, hall and kitchen swaps), N236 (the
-    oak pieces' detail), then N232 (shop pieces by form, the shop link) — see its last commits for how far it got.
-  - `claude/n227-windows`: N227 (each window dressed on its own), then N231 (a look's cost).
-  - `claude/n225-bath`: N225 (the bathroom's tiles; the WC's toilet and basin to swap) — may hold nothing yet.
-  A branch's work is done when its row is ticked; otherwise read its last commit and the row, build (`python3 tools/build.py --fast`),
-  run `python3 tools/checks.py --quick` and the new `check_site.py` steps, and carry on.
-- **Next after those:** N224 (splashbacks first), N226 (doors: all at once and each its own), N237 (the first picture back under budget).
+- **On main (V4.51):** N233 (the site check's SHOP, STORE, LIVSWAP), N227 (each window dressed on its own), N230 (riders turn, true
+  door swings, chairs one each, stools and shoe storage swap), N236 (the oak pieces' detail); N225's research and design (no code yet).
+- **Not merged, on its branch:** N232 (shop pieces by form, the shop link) at `claude/n230-furniture` 7db151d, built but never looked at on
+  screen: its row says how to finish. N231 (a look's cost): a design under section 29's table, not built.
+- **Next, in order:** N225's build (the bathroom's tiles; the WC's toilet and basin: `docs/NOTES.md` "N225"), the check steps WIN and
+  STOOL into `check_site.py` (their JS in section 29's notes and N232's row), N232's finish, N231, then N224 (splashbacks first), N226
+  (doors: all at once and each its own), N237.
 
 ## Pick up here (23 Nov 2026)
 The client, 22–23 Nov: "Keep working on the upgrade and ensure nothing can be lost outside github"; "stop things working locally and work
