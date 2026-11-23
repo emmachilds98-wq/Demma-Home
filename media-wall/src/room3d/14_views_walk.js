@@ -339,7 +339,9 @@ function walkTick(dt) {
   WALK.tv += ((k.has("tr") ? 1 : 0) - (k.has("tl") ? 1 : 0) - WALK.tv) * Math.min(1, dt * 9);
   const turn = Math.abs(WALK.tv) < 1e-3 ? 0 : WALK.tv;
   if (WALK.v.lengthSq() < 1e-5 && !turn) { WALK.tv = 0; if (WALK.feet === null) WALK.feet = camera.position.y / M - STAND_EYE; return false; }
-  return walkMove(WALK.v.x, WALK.v.y, turn, dt);
+  const n = Math.ceil(dt / 0.05 - 1e-6); let moved = false;   // N240: a slow frame walks in steps of 50 ms (a wall is never stepped through)
+  for (let i = 0; i < n; i++) moved = walkMove(WALK.v.x, WALK.v.y, turn, dt / n) || moved;
+  return moved;
 }
 /* V1.32, V3.15: the phone's stick (bottom left), in every view: walking it walks you; over the house, a floor and Above it moves the map
    (mapKeys); in a view from your eyes it stands you there and walks on */
