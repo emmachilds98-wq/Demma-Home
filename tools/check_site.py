@@ -233,7 +233,7 @@ LOOKS = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTime
 }"""
 # N222: a fresh page with its own colour opens the look's link: shown as Emma's look, its own kept aside (localStorage untouched), Back to mine, then Keep it
 LOOKS2 = """async link => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), bed = () => (D.finAll().bed2 || {});
-  R3D.setFinishes({ bed2: { 0: '#e8c0c8' } }); await sl(300); const ls = () => [localStorage.getItem('mw18-3d'), localStorage.getItem('demma-v1:edits') || '{}'], before = JSON.stringify(ls());
+  R3D.setFinishes({ bed2: { 0: '#e8c0c8' } }); await sl(300); const ls = () => [JSON.stringify(Object.assign(JSON.parse(localStorage.getItem('mw18-3d') || '{}'), { view: 0 })), localStorage.getItem('demma-v1:edits') || '{}'], before = JSON.stringify(ls());   // the view it's left on is where you are, not a thing of yours
   const hid = Object.values(D.HEDITS).filter(e => e.removed).length;
   location.hash = link.split('#')[1]; for (let i = 0; i < 60 && q('#r3d-theirs').hidden; i++) await sl(100); await sl(600);
   const shown = [q('#r3d-theirs').hidden ? null : q('#r3d-theirs b').textContent, bed()[0], bed()[5], Object.values(D.HEDITS).filter(e => e.removed).length - hid, JSON.stringify(ls()) === before, (R3D.finishes().bed2 || {})[0]];
