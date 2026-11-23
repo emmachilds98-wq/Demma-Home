@@ -656,8 +656,7 @@ def floors_and_fittings(o, floor, rs):
         # v66: the living room's flight runs on into the hall (its stand-in landing to z 319): boxed in from the hall, full height (the hall
         # saw its mint side), clear of the living room's door (to x 372.5 since V2.93); v67 (the photos): in the box's end, the door down to the lower
         # stairs, a grille over it
-        z0f = Gm.ALC_D - Gm.STAIR_D + 6
-        zl1 = z0f + (Gm.STAIR_N - 1) * Gm.STAIR_GOING + Gm.LANDING_D
+        zl1 = hall_door_z()
         xs = stair_box_x()
         o.box("paint", xs, y - SLAB, 38.0, Gm.STAIR_X[0] - 0.4, y + CEIL, zl1)
         dx0, dx1 = D.HALL["door"]
@@ -704,14 +703,24 @@ def stair():
     S = D.LOWER_STAIR
     x0, x1 = S.get("x") or sorted((cx(S["x_px"][1]), cx(S["x_px"][0])))   # v66: fitted to the living room's flight
     z0 = cz(S["z0_px"])
-    return dict(x0=round(x0, 1), x1=round(x1, 1), z0=round(z0, 1), z1=round(z0 + S["n"] * S["going"], 1), n=S["n"], rise=S["rise"], going=S["going"])
+    # V4.55 (N238), the client: "I still can't see down the stairs when stood in the front door": 13 goings of 22 put the top riser 33 inside
+    # the hall's door down, so from the front door the eye stood on the nosings' line and saw past them all to the landing below. The
+    # photos (the hall's, and up the flight from its foot) put the top step at the frame: the foot from the plan, the top nosing 2 inside
+    # the doorway, 12 goings between (24.6, about 39 degrees)
+    z1 = hall_door_z(); going = round((z1 - S["top_in"] - z0) / (S["n"] - 1), 2)
+    return dict(x0=round(x0, 1), x1=round(x1, 1), z0=round(z0, 1), z1=round(z1, 1), n=S["n"], rise=S["rise"], going=going)
+
+
+def hall_door_z():
+    """The hall's door down (the box's end round the living room's flight): its wall's face on the lower flight's side."""
+    return Gm.ALC_D - Gm.STAIR_D + 6 + (Gm.STAIR_N - 1) * Gm.STAIR_GOING + Gm.LANDING_D
 
 
 def stairs(o):
     st = stair(); y0 = FLOOR_Y["lower"]
     for i in range(st["n"]):
         za = st["z0"] + i * st["going"]; top = y0 + (i + 1) * st["rise"]
-        o.box("carpet_grey", st["x0"] + 1, top - st["rise"] - 14, za, st["x1"] - 1, top, za + st["going"] + 2)   # v67: grey carpet (the photo)
+        o.box("carpet_grey", st["x0"] + 1, top - st["rise"] - 14, za, st["x1"] - 1, top, min(za + st["going"] + 2, st["z1"]))   # v67: grey carpet (the photo)
     yl = lambda z: y0 + (z - st["z0"]) / st["going"] * st["rise"]                        # v67: the handrail on the left going down
     za, zb = st["z0"] + st["going"], st["z1"] - st["going"]
     o.prism("upvc", "x", WIDTH - 7, WIDTH - 2, [(za, yl(za) + 88), (zb, yl(zb) + 88), (zb, yl(zb) + 96), (za, yl(za) + 96)])
