@@ -1,6 +1,8 @@
 # Handover (23 Nov 2026, V4.51: start here)
 
 ## Pick up here (23 Nov 2026, late: the session stopped near its usage limit)
+**Check lightly (client, 23 Nov: "stop checking so much ... make sure future agents stop doing it too"):** quick checks and privacy per change, then push; CI does the browser checks; no local screenshot rounds, long Playwright runs, reviews or CI polling (CLAUDE.md).
+
 The client: "Merge the work soon so I can have another team pick it up from GitHub". Section 29 (`docs/REAL_PLAN.md`) is the plan;
 its order and her answers are in the section and `docs/DECISIONS.md` ("What to change next": bathroom tiles and the WC's toilet and
 basin first, then splashbacks; doors both ways).
