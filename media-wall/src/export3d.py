@@ -299,7 +299,7 @@ FORMS = {"bed": [(r"metal", "metal"), (r"upholster|vissle", "uph"), (r"rattan|ca
          "unit": [(r"rattan|cane", "rattan"), (r"floating", "floating"), (r"sliding", "sliding"), (r"mid century|scandi", "legged")],
          "shoes": [(r"rattan|cane", "rattan"), (r"bench", "bench"), (r"compartment", "flip"), (r"mid century|scandi", "legged")],
          "desk": [(r"hairpin", "hairpin"), (r"height adjustable", "metal")], "lamp": [(r"tripod", "tripod"), (r"arm reach", "arc")],
-         "wardrobe": [(r"drawer", "drawers")]}
+         "wardrobe": [(r"\b1 drawer", "drawer1"), (r"drawer", "drawers")]}
 FORMS["bedside"] = FORMS["chest"]
 
 

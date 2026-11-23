@@ -262,7 +262,7 @@ const hcMake = (k, look, m, m2, c) => {
   const grip = m === "door_white" ? "grip" : "knob", cane = "sisal", legm = m2 === m && /^(door_white|book\d|quarry|lead|garage_blue)$/.test(m) ? "black" : m2;
   if (k === "bed") return hcBed(look === "metal" ? hcBedMetal(m) : look === "uph" ? hcBedUph(m2.startsWith("cloth") ? m2 : m.startsWith("cloth") ? m : "lycksele", m)
     : look === "panel" ? hcBedPanel(m) : look === "legged" ? hcBedLegged(m, m2) : look === "rattan" ? hcBedRattan(m, cane) : hcBedWood(m, m === m2 ? "pine" : m2));
-  if (k === "wardrobe") return (W, H, D, B) => { const n = c || Math.max(2, Math.round(W / 50)), dw = (W - 0.6) / n, dr = look === "drawers" ? 2 : 0, v0 = 8 + dr * 19;
+  if (k === "wardrobe") return (W, H, D, B) => { const n = c || Math.max(2, Math.round(W / 50)), dw = (W - 0.6) / n, dr = look === "drawers" ? 2 : look === "drawer1" ? 1 : 0, v0 = 8 + dr * 19;
     B(m, 0, 0, 0, W, H, D - 2); B("gap", 0.3, 8, D - 2.05, W - 0.3, H - 0.3, D - 2); B(m, 1, 0, D - 6, W - 1, 8, D - 5);
     for (let j = 0; j < dr; j++) { const v = 8 + j * 19; B(m, 0.45, v + 0.3, D - 2, W - 0.45, v + 18.7, D - 0.4); B(grip === "grip" ? "handle_black" : "knob", W / 2 - 6, v + 12, D - 0.4, W / 2 + 6, v + 13.2, D); }   // its drawers under the doors
     for (let i = 0; i < n; i++) { const u0 = 0.3 + i * dw, u = i % 2 ? u0 + 3 : u0 + dw - 5; B(m, u0 + 0.15, v0 + 0.3, D - 2, u0 + dw - 0.15, H - 0.3, D - 0.4); B("handle_black", u, H * 0.45, D - 0.4, u + 1.5, H * 0.45 + 32, D); } };
