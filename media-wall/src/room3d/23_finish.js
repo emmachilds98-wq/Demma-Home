@@ -99,7 +99,7 @@ function finFloorApply() {   // every room with a floor chosen: a thin floor on 
       ((by[room + "|" + k] = by[room + "|" + k] || { room, k, geos: [] }).geos).push(geo); });
     for (const { room, k, geos } of Object.values(by)) { const mat = FIN.mat3(k), me = new THREE.Mesh(worldUV(mergeGeometries(geos), k), mat);
       me.receiveShadow = true; me.userData.finRoom = room; me.userData.finFloor = f; geos.forEach(q => q.dispose()); g.add(me); FIN_LAID.push(me); } });
-  finFitApply(); finRugApply(); finCurtApply(); finPicApply(); finPaperApply(); finPanelApply(); dirty();
+  finFitApply(); finRugApply(); finCurtApply(); finPicApply(); finPaperApply(); finPanelApply(); bathApply(); dirty();   // N225: the bathroom's and WC's (24_bath.js)
 }
 /* N5c: curtains at a room's windows (row [19]): a pole a little wider than the window, two panels drawn back, head to sill (clear of a
    worktop), 14 cm in (clear of a radiator). The living room's are its Look's.
@@ -362,6 +362,7 @@ function winCard(id) {
 }
 function winAt(o, p) {   // a tap on a window's glass or frame, or what's on it: its card
   if (o.userData.win) return o.userData.win;
+  { const b = bathAt(o, p); if (b) return b; }   // N225: the tiles, the WC's suite, the taps, the bath's panel (24_bath.js)
   const hk = (o.material && !Array.isArray(o.material) && o.material.userData.hk) || ""; if (!/^(glass|upvc|frame_out|blind|curt_|shut_)/.test(hk)) return null;
   for (const w of winAll()) { const g = HFLOOR[w.f]; if (!g) continue; const q = g.worldToLocal(p.clone()), x = -q.x / M, y = q.y / M, z = q.z / M;
     if (x > w.x0 - 10 && x < w.x1 + 10 && y > w.yf + w.sill - 10 && y < w.yf + w.head + 16 && Math.abs(z - w.z) < 30) return `win:${w.room}:${winsOf(w.room).indexOf(w)}`; }
@@ -440,7 +441,7 @@ function finAt(hit) {   // a tap on a wall or a ceiling of the house: its room a
 function finClean(o) {
   const out = {}, floors = new Set(FIN_FLOORS.map(([k]) => k)), bulbs = new Set(FIN_BULBS.map(([v]) => v)), lux = new Set(FIN_LUX.map(([v]) => v));
   for (const [room, sl] of Object.entries(o && typeof o === "object" ? o : {})) { if (!/^[a-z0-9_]{1,30}$/.test(room) || !sl || typeof sl !== "object") continue;
-    for (const [s, v] of Object.entries(sl)) { const k = +s, ok = k <= 4 || k === 9 || k === 10 || k === 17 || k === 20 || (room === LIVR && k >= 11 && k <= 16) ? /^#[0-9a-f]{6}$/i.test(v) : k === 5 ? floors.has(v) : k === 6 ? bulbs.has(v) : k === 7 ? lux.has(v) : k === 8 ? FIN_FITS.some(([f]) => f === v) : k === 18 ? v === "none" || FIN_RUGS.some(([f]) => f === v) : k === 19 ? [...FIN_CURT, ...LIV_CURT].some(([f]) => f === v) : k === 21 ? FIN_PICS.some(([f]) => f === v) : k === 22 ? ["0", "1", "2", "3"].includes(String(v)) : k === 23 ? !!HCAT[v] && HCAT[v].k === "plant" : k === 24 ? FIN_PAPERS.some(([f]) => f === v) : k === 25 || k === 27 ? ["0", "1", "2", "3"].includes(String(v)) : k === 26 ? FIN_PANELS.some(([f]) => f === v) : k === 28 ? typeof v === "string" && v.split(",").every(q => IDEAS().some(i => i.id === q && i.room === room)) : k === 29 ? v === "walls" || LIV_HEX.test(v) : k >= 70 ? winOk(room, k, v) : k >= 30 ? !!finWalls(room)[k - 30] && LIV_HEX.test(v) : false;   // N214: the slopes, each wall
+    for (const [s, v] of Object.entries(sl)) { const k = +s, ok = k <= 4 || k === 9 || k === 10 || k === 17 || k === 20 || (room === LIVR && k >= 11 && k <= 16) ? /^#[0-9a-f]{6}$/i.test(v) : k === 5 ? floors.has(v) : k === 6 ? bulbs.has(v) : k === 7 ? lux.has(v) : k === 8 ? FIN_FITS.some(([f]) => f === v) : k === 18 ? v === "none" || FIN_RUGS.some(([f]) => f === v) : k === 19 ? [...FIN_CURT, ...LIV_CURT].some(([f]) => f === v) : k === 21 ? FIN_PICS.some(([f]) => f === v) : k === 22 ? ["0", "1", "2", "3"].includes(String(v)) : k === 23 ? !!HCAT[v] && HCAT[v].k === "plant" : k === 24 ? FIN_PAPERS.some(([f]) => f === v) : k === 25 || k === 27 ? ["0", "1", "2", "3"].includes(String(v)) : k === 26 ? FIN_PANELS.some(([f]) => f === v) : k === 28 ? typeof v === "string" && v.split(",").every(q => IDEAS().some(i => i.id === q && i.room === room)) : k === 29 ? v === "walls" || LIV_HEX.test(v) : k >= 90 ? bathOk(room, k, v) : k >= 70 ? winOk(room, k, v) : k >= 30 ? !!finWalls(room)[k - 30] && LIV_HEX.test(v) : false;   // N214: the slopes, each wall
       if (ok) (out[room] = out[room] || {})[k] = v; } }
   return out;
 }
@@ -645,6 +646,7 @@ function finCard(id) {   // [title, now, buttons, -, the tray]
   const [, room, s] = id.split(":"), slot = +s, ceil = slot === 4, slope = slot === 29, v = finGet(room, slot);   // N214: a wall's own, else its side's; the slopes' own colour
   const now = slope ? (LIV_HEX.test(v || "") ? v : null) : v || (slot >= 30 ? finGet(room, finSide(room, slot)) : null);
   if (slot === 5) return finFloorCard(room);
+  if (slot >= 90) return bathCard(room, slot);   // N225 (24_bath.js)
   if (slot === 20) return [`${roomName(room)}: the bedding`, now ? (FIN_BED.find(([h]) => h === now) || [0, now])[1] : "As planned", FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : [], null, finBedTray(room)];
   if (room === "outside") return [`Outside: ${slot === 9 ? "the window frames" : "the front door"}`, now ? finCap(finName(now)) : "White, as planned",
     [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(now ? [btn("As planned", { finc: "" })] : [])], null,
@@ -677,7 +679,7 @@ function finHold(on) {   // Hold to compare: while held, the palette empty (the 
   if (!FIN.pal) return;
   if (on && !finHeld) {    finHeld = FIN.pal.image.data.slice(); for (let i = 3; i < finHeld.length; i += 4) FIN.pal.image.data[i] = 0; FIN_LAID.forEach(m => m.visible = false); RUG_LAID.forEach(m => m.visible = false); CURT_LAID.forEach(m => m.visible = false); PIC_LAID.forEach(m => m.visible = false); PAPER_LAID.forEach(m => m.visible = false); PANEL_LAID.forEach(m => m.visible = false); FIT_LAID.forEach(m => m.visible = false); Object.values(FIN_PEND).forEach(g => g.visible = true); }
   else if (!on && finHeld) {    FIN.pal.image.data.set(finHeld); finHeld = null; FIN_LAID.forEach(m => m.visible = true); RUG_LAID.forEach(m => m.visible = true); CURT_LAID.forEach(m => m.visible = true); PIC_LAID.forEach(m => m.visible = true); PAPER_LAID.forEach(m => m.visible = true); PANEL_LAID.forEach(m => m.visible = true); FIT_LAID.forEach(m => m.visible = true); for (const [r, g] of Object.entries(FIN_PEND)) g.visible = !finGet(r, 8); }
-  FIN.pal.needsUpdate = true; finOut(); winPlanHide();   // N227: the plan's blinds back while held
+  FIN.pal.needsUpdate = true; finOut(); winPlanHide(); bathApply();   // N227: the plan's blinds back while held; N225: the bathroom's and WC's
 }
 /* V3.90 (N151): As it is: the house without Look's colours, Edit's moves, adds and take-outs (set aside, not changed); tap again for
    your plan. Nothing saves while on (store.set holds off); Edit or a colour picked switches it off first */
@@ -764,7 +766,7 @@ if (act) {
     if (b.dataset.finsc) finScope = b.dataset.finsc;
     else if (b.dataset.fincopy) { FIN_COPY = { room, sl: Object.assign({}, finAll()[room]) }; toast(`Copied ${roomName(room)}: tap another room, then Paste`); }
     else if (b.dataset.finpaste && FIN_COPY) { finPush(); S.fin = S.fin || {};   // N5: the living room's own six walls and skirting stay its own
-      if (room === LIVR) livSet(FIN_COPY.sl); else S.fin[room] = Object.fromEntries(Object.entries(FIN_COPY.sl).filter(([k]) => (+k <= 10 || (+k >= 18 && +k <= 27) || +k === 29 || (+k >= 70 && winOk(room, +k, FIN_COPY.sl[k]))) && !(+k === 5 && room === FIN_OWN)));
+      if (room === LIVR) livSet(FIN_COPY.sl); else S.fin[room] = Object.fromEntries(Object.entries(FIN_COPY.sl).filter(([k]) => (+k <= 10 || (+k >= 18 && +k <= 27) || +k === 29 || (+k >= 70 && winOk(room, +k, FIN_COPY.sl[k])) || bathOk(room, +k, FIN_COPY.sl[k])) && !(+k === 5 && room === FIN_OWN)));
       finApplyAll(); store.set(KEY, S); toast(`${roomName(room)}: ${roomName(FIN_COPY.room)}'s look`); }
     else if (b.dataset.finundo) { const prev = FIN_UNDO.pop(); if (prev != null) { finRestore(JSON.parse(prev)); finApplyAll(); store.set(KEY, S); toast("Undone"); } }
     else if ("finf" in b.dataset) finSet(room, 5, b.dataset.finf || null);

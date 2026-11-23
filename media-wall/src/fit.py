@@ -1476,7 +1476,11 @@ SOURCES["n225suites"] = ("Toilets, W × D × H cm: Wickes Portland close coupled
                          "Basins: Wickes Emma 420 full pedestal 42 × 32 × 85, £309 (p/233351); Wickes Galeria 450 semi pedestal 45 × 37 × 45, £189 (p/233362); "
                          "Wickes Newport corner 45 × 46 × 16.5, wall hung, £45 (p/161904); Wickes White Gloss Compact Vanity Unit & Basin 40.5 × 22.5 × 90.5, "
                          "floor standing, £97 (p/301110)")
-ORDER.extend(["n225tiles", "n225suites"])
+SOURCES["n225fittings"] = ("Taps and the bath's panel (read 23 Nov 2026): Wickes Mariz Compact Basin Mixer Tap, Chrome £79 (wickes.co.uk p/312058's "
+                           "range), Matt Black £79 (pricerunner.com, Wickes), Brushed Brass £75 (p/312057); the bathroom's bath and shower in the "
+                           "same finish about twice that again (E). Bath panels 1700: Wickes Standard Front Bath Panel 1700 × 510, white gloss, £32 "
+                           "(wickes.co.uk, bath panels); Grey Gloss £129.99 and Oak Effect £149 (diy.com, gloss 1700 mm bath panels)")
+ORDER.extend(["n225tiles", "n225suites", "n225fittings"])
 # V4 (N152): will the sofa bed go in? Its biggest box (166 × 101 × 68, SOURCES "amelia") carried on its side, the 166 first: it needs
 # its 68 and 2 to spare (hands) across each opening on the way, the front door, the hall past the stair box and the living room door, in
 # line (no turn). A door left on its hinges, open flat, takes about its leaf's thickness (E: 4) more. The doors' widths are Measure's
