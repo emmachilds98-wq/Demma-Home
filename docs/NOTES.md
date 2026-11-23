@@ -473,6 +473,16 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `pointerup` on a card's button that a re-render has replaced never reaches the card: send it to `#r3d-act`. The view for the bathroom is
   `bath` (`ROOM_VIEW`).
 
+## N224, N231, N232 (V4.53)
+- **The splashback** is `22_bath.js`'s tiles card with `TILE_ROOMS.kitchen = "metro"`; a style's 7th field 2 marks a glass panel (kitchen
+  only, `tileStyles`): one flat gloss face a 60 cm panel wide, a seam at each panel's edge, no grout row, costed without a tiler.
+- **A look's cost** (`23_finish.js` `lookRows`): Changes' own `roomUps` run with `S.fin` set for a moment to the look's rows (the plan's
+  scheme taken out, as `lookSlim` does) and `noEd` (the device's pieces left out); the look's own `he` rows priced by `upCat`. Compare
+  a look with yours by pricing yours the same way (`lookCost(lookNow())`): the device's Changes count the plan's scheme as changes.
+- **N232 carried on:** its commit conflicted with N225 and N236 only where both added lines (the builders, `shop_row`'s looks, the
+  piece card's tray); keeping both was right. The site's `PICK` is per floor (`lower`, `ground`, `first`): the WC and the kitchen are
+  on the lower floor; a check that looks for a piece looks on every floor.
+
 ### The design, as researched (kept for reference)
 - **Found:** the bathroom's wall tiles are model material `stone` (60 × 30, `build_textures.TILED`, only the bathroom uses it), the WC's
   splashback `tile_w` (15 × 15, one panel, `gridFrom`). Both are items of kind `finish` (`bath.tiles`, `wc.tiles`), not in the house file's

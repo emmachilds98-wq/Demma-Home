@@ -104,7 +104,7 @@ const UPK = "dh-done";
 const upDone = () => { try { return JSON.parse(localStorage.getItem(UPK) || "{}") || {}; } catch (e) { return {}; } };
 const upNm = (L, k) => (L.find(r => r[0] === k) || [0, k])[1];
 const upCat = (key, C) => C.own ? [0, 0] : C.shop ? [C.p, C.p] : UPC.piece[key] || C.k === "plant" && UPC.plant[key] || UPC.kind[C.k];   // N219: a shop's own price; hers, none
-function roomUps(room) {   // [{k, t, lo, hi}]: what's changed in a room
+function roomUps(room, noEd) {   // [{k, t, lo, hi}]: what's changed in a room (N231 noEd: not the device's pieces)
   const H = R.HOUSE3 || {}, L = [], add = (k, t, c = [0, 0], n = 1) => L.push({ k, t, lo: Math.round(c[0] * n), hi: Math.round(c[1] * n) });
   if (room === "outside") { const o = (S.fin || {}).outside || {};
     if (o[9]) add("9=" + o[9], "Window frames: " + finName(o[9]), UPC.frames); if (o[10]) add("10=" + o[10], "Front door: " + finName(o[10]), UPC.door_out); return L; }
@@ -141,7 +141,7 @@ function roomUps(room) {   // [{k, t, lo, hi}]: what's changed in a room
   }
   if (o[6] || o[7]) add(`6=${o[6]}${o[7]}`, "Bulbs: " + [o[6] && upNm(FIN_BULBS, o[6]), o[7] && upNm(FIN_LUX, o[7])].filter(Boolean).join(", "), UPC.bulbs);
   if (o[8]) add("8=" + o[8], "Light: " + upNm(FIN_FITS, o[8]), UPC.fit[o[8]]);
-  if (DS()) for (const [id, it] of Object.entries(H.items || {})) {   // Edit: the house's pieces in this room, moved, swapped, added or taken out
+  if (DS() && !noEd) for (const [id, it] of Object.entries(H.items || {})) {   // Edit: the house's pieces in this room, moved, swapped, added or taken out
     if (it.r !== room || it.look || !(it.add || pieceDelta(id).some(Boolean))) continue; const c = pieceNow(id), C = HCAT[it.add || c.swap];
     if (c.removed) add(id + "~x", "Out: " + it.n);
     else if (it.add && C) add(id + "~a=" + it.add, "Added: " + C.n, upCat(it.add, C));
@@ -208,11 +208,11 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id.startsWith("hswap:") || id.startsWith("hadd:")) return hcatCard(id);   // V2.46 (N7): swap a piece, or which piece you've added
   if (id.startsWith("hitem:")) { const k = id.slice(6), it = HIT(k); if (!it) return null;   // V1.50: a piece in the house, its size
     if (it.idea) return ideaCard(k);   // N212: a storage idea, to look at
-    const sw = pieceNow(k).swap;
+    const sw = pieceNow(k).swap, SC = HCAT[sw || it.add], shop = SC && SC.url ? `<div class="r3d-fin"><a href="${SC.url}" target="_blank" rel="noopener" aria-label="See it at ${SC.shop} (a new tab)">${SC.shop} ↗</a></div>` : null;   // N232: a shop's piece, its page
     return [sw ? HCAT[sw].n : it.n, pieceLine(k), [btn(it.op ? "Change its size" : "Move or resize", { actopen: "hsize:" + k }), ...(it.add ? [btn(it.look ? "Change plant" : "Change piece", { actopen: "hadd:" + k })] : swapKind(k) ? [btn("Swap it", { actopen: "hswap:" + k })] : []),
       ...(pieceDelta(k).some(Boolean) && !it.add ? [btn("As planned", { hreset: k })] : []), ...(it.op ? [] : [btn("Take it out", { hremove: k })]),
       ...(it.k === "window" || /^(back|garage)_door$/.test(k) ? [btn("Colour outside", { actopen: "fin:outside:9" })] : []), ...(it.k === "window" && winOf(k) ? [btn("Dress it", { actopen: winOf(k) })] : []), ...upsBtn(it.r)], null,   // V2.38 (F12): its frame's outside
-      it.k === "light" && it.r ? `<div class="r3d-fin"><span class="r3d-finlab">The bulbs</span>${finBulbTray(it.r)}${finFitTray(it.r)}</div>` : /\.bed$/.test(k) && it.r ? finBedTray(it.r) : null]; }   // N5d: a bed's bedding   // V2.9: a light's bulbs; V2.15: its fitting
+      it.k === "light" && it.r ? `<div class="r3d-fin"><span class="r3d-finlab">The bulbs</span>${finBulbTray(it.r)}${finFitTray(it.r)}</div>` : /\.bed$/.test(k) && it.r ? finBedTray(it.r) + (shop || "") : shop]; }   // N5d: a bed's bedding   // V2.9: a light's bulbs; V2.15: its fitting
   if (id.startsWith("hsize:")) { const k = id.slice(6), it = HIT(k); if (!it) return null; const c = pieceNow(k), door = it.k === "door";
     return [it.n, pieceLine(k), [btn("Done", { actopen: "hitem:" + k }), ...(canTurn(k) ? [btn("Turn", { hturn: k })] : []), ...(it.add ? [] : [btn("As planned", { hreset: k })])],
       FIELDS.filter(([f]) => !(door && (f === "h" || f === "up")) && !(f === "out" && it.op)).map(([f, t]) => [f, t, cmR(c[f])])]; }

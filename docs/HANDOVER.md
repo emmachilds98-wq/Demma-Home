@@ -1,6 +1,11 @@
 # Handover (23 Nov 2026, V4.52: start here)
 
-## Pick up here (23 Nov 2026, V4.52)
+## Pick up here (23 Nov 2026, V4.53)
+V4.53: N224's splashback, N231 (a look's cost), N232 (shop pieces by form, merged and checked on screen), N233's WIN and STOOL steps.
+**Next, in order:** N226 (doors: all at once from any door's card, and each its own), N224's units, handles and worktop, N237 (the first
+picture back under the old budgets); N225's taps, mirror and bath panel, N228, N229, N234, N235 as Emma says.
+
+## Before that (23 Nov 2026, V4.52)
 The client: "continue on from last team of agents ... keep upgrading appropriately". N225 is built (V4.52): the bathroom's and WC's
 tiles from a tap on them, and their toilets and basins swapped for real Wickes ones (`docs/REAL_PLAN.md` section 29, its row;
 `docs/NOTES.md` "N225").

@@ -82,11 +82,22 @@ def saved_looks():
                 pcs.append(f"{items[q[0]].lower()} moved or resized"); seen.add(q[0])
         if cols: parts.append("colours: " + few(cols))
         if fl: parts.append("floors: " + few(fl))
+        tl = [f"{rooms.get(r, r)} {sl['90']}" for r, sl in fin.items() if sl.get("90")]   # N225: the tiles
+        if tl: parts.append("tiles: " + few(tl))
         if pcs: parts.append("pieces: " + few(pcs))
         if x.get("living_moved") or x.get("living_added"):
             parts.append("the living room's furniture: " + ", ".join(t for t in (f"{x['living_moved']} moved" if x.get("living_moved") else "", f"{x['living_added']} added" if x.get("living_added") else "") if t))
         lines.append(f"<li><b>{html.escape(str(x.get('name', ''))[:24])}</b>: {html.escape('; '.join(parts) or 'as the plan')}</li>")
-    return '<h2>Saved looks</h2><p>Saved on the phone (Look, Your looks) and sent with Send; each one\'s changes from the plan.</p><ul>' + "".join(lines) + "</ul>"
+    gbp = lambda lo, hi: f"£{lo:,}" + (f"–{hi:,}" if hi > lo else "")
+    pages = []   # N231: a page a look with its rough costs (Where | What | Rough cost), as the phone priced them
+    for x in L[:8]:
+        rows = [r for r in x.get("rows") or [] if isinstance(r, list) and len(r) == 4]
+        if not rows:
+            continue
+        lo, hi = sum(int(r[2]) for r in rows), sum(int(r[3]) for r in rows)
+        pages.append(f'<div style="page-break-before: always"><h3>{html.escape(str(x.get("name", ""))[:24])}: about {gbp(lo, hi)}</h3><table><tr><th>Where</th><th>What</th><th>Rough cost</th></tr>'
+                     + "".join(f"<tr><td>{html.escape(rooms.get(r[0], r[0]))}</td><td>{html.escape(str(r[1]))}</td><td>{gbp(int(r[2]), int(r[3]))}</td></tr>" for r in rows) + "</table></div>")
+    return '<h2>Saved looks</h2><p>Saved on the phone (Look, Your looks) and sent with Send; each one\'s changes from the plan.</p><ul>' + "".join(lines) + "</ul>" + "".join(pages)
 
 
 PLANS = [("plan_lower_ground_corrected_25oct.jpg", "Lower ground floor, your corrections: the kitchen's window (purple), the cupboard by the store (black), the WC's small sink (maroon), the secret room."),
