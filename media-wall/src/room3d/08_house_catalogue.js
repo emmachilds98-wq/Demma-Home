@@ -170,46 +170,73 @@ const HCAT = {
   lohals: { n: "Flatwoven jute rug", k: "rug", w: 160, d: 230, h: 1.3, ref: "hcswap", src: "IKEA LOHALS, 160 × 230",
     b: (W, H, D, B) => { B("sisal", 0, 0, 0, W, H, D); for (const t of [6, D - 8]) B("knob", 4, H, t, W - 4, H + 0.15, t + 2); } },   // its two woven bands
 };
-/* N212: the storage ideas' pieces (house/storage_ideas.py, an "idea" kind: never swapped or added from the catalogue), the house's own
-   materials only (no new shader when shown) */
+/* N212, N223: the storage ideas' pieces (house/storage_ideas.py, an "idea" kind: never swapped or added from the catalogue), in the house's
+   own materials only (no new shader when shown): the artisan oak of the media wall and the office's cubes, its ledges' lip, its tenons */
 const stBooks = (B, u0, u1, v, h, t0, t1, k = 0) => { for (let u = u0; u < u1 - 2; k++) { const w = 1.4 + (k * 37 % 5) * 0.4, hh = h * (0.8 + (k * 53 % 5) * 0.05);
   B("book" + (k % 6), u, v, t0, Math.min(u1, u + w), v + hh, t1); u += w + 0.15; } };
+const stLPs = (B, u0, u1, v, t0, k = 0) => { for (let u = u0; u < u1 - 1; k++) { const w = 2.5 + (k * 37 % 4);   // LPs on edge, in runs of sleeves, a gap to flip
+  B("book" + (k * 5 % 6), u, v, t0, Math.min(u1, u + w), v + 31.4 - (k % 3) * 0.3, t0 + 31.4); u += w + (k % 4 === 3 ? 2.5 : 0.1); } };
+const ST = "artisan", stLip = (B, W, D, v) => { B(ST, 0, v, 0, W, v + 1.8, D); B(ST, 0, v + 1.8, D - 1.5, W, v + 3.6, D); };   // a ledge with its lip (the media wall's record ledge)
+const stTen = (B, u, D, sh) => { B(ST, u, 0, 0, u + 2.4, sh, 2.4); B(ST, u, sh - 4, 2.4, u + 2.4, sh, D - 3);   // a bracket: its leg on the wall, its arm under the shelf,
+  for (let i = 1; i < 4; i++) B(ST, u, sh - 4 - i, 2.4, u + 2.4, sh - 4 - i + 1, 2.4 + (4 - i) * 2.2);   // a stepped brace,
+  B("oak", u, sh + 1.8, D - 9, u + 2.4, sh + 1.86, D - 4); B("gap", u + 1.1, sh + 1.86, D - 8.6, u + 1.3, sh + 1.92, D - 4.4); };   // its tenon through the shelf, wedged flush
 Object.assign(HCAT, {
-  st_records: { n: "Record wall", k: "idea", w: 147, d: 39, h: 77, ref: "kallax24", src: "IKEA KALLAX 77 × 147, 39 deep",
-    b: (W, H, D, B) => { const nu = 4, nv = 2, cu = (W - 3) / nu, cv = (H - 3) / nv;   // on its side: four across, two up; the end two with doors
-      B("oak", 0, 0, 0, W, H, 1); for (let i = 0; i <= nu; i++) B("oak", i * cu, 0, 1, i * cu + 3, H, D); for (let j = 0; j <= nv; j++) B("oak", 0, j * cv, 1, W, j * cv + 3, D);
-      for (let i = 0; i < nu; i++) for (let j = 0; j < nv; j++) { const u = i * cu + 3, v = j * cv + 3;
-        if (i === nu - 1) { B("door_white", u + 0.3, v + 0.3, D - 1.8, u + cu - 3.3, v + cv - 3.3, D - 0.2); B("knob", u + 2, v + cv / 2 - 3, D - 0.2, u + 3.5, v + cv / 2 + 3, D); continue; }
-        stBooks(B, u + 0.5, u + cu - 3.5, v, Math.min(31.5, cv - 4) / 0.95, D - 33, D - 2, i * 13 + j * 7); } } },
-  st_eket: { n: "Lit glass cabinet", k: "idea", w: 35, d: 35, h: 35, ref: "eket", src: "IKEA EKET with glass door 35 × 35 × 35; MITTLED",
-    b: (W, H, D, B) => { const T = 1.5; B("door_white", 0, 0, 0, W, T, D - 1); B("door_white", 0, H - T, 0, W, H, D - 1); B("door_white", 0, T, 0, T, H - T, D - 1); B("door_white", W - T, T, 0, W, H - T, D - 1); B("door_white", T, T, 0, W - T, H - T, 1);
-      B("led", W / 2 - 3, H - T - 0.6, D / 2 - 3, W / 2 + 3, H - T, D / 2 + 3);   // its spotlight
-      B("brass", 5, T, 9, 11, T + 15, 15); B("pot", 14, T, 7, 24, T + 8, 17); B("black", 25, T, 15, 30, T + 20, 20);   // the knick-knacks
-      B("door_white", 0, 0, D - 1, T, H, D); B("door_white", W - T, 0, D - 1, W, H, D); B("door_white", T, 0, D - 1, W - T, T, D); B("door_white", T, H - T, D - 1, W - T, H, D);
-      B("glass", T, T, D - 0.7, W - T, H - T, D - 0.4); } },
-  st_skadis: { n: "Pegboard", k: "idea", w: 56, d: 10, h: 56, ref: "skadis", src: "IKEA SKÅDIS pegboard 56 × 56",
-    b: (W, H, D, B) => { B("pegboard", 0, 0, 0, W, H, 1.2); B("door_white", 5, 8, 1.2, 30, 9.2, D); B("storebox", 34, 6, 1.2, 50, 16, 9);
-      for (const [u, v] of [[8, 40], [16, 40], [24, 40], [40, 44]]) B("steel", u, v, 1.2, u + 0.6, v + 0.6, 5);
-      for (const u of [8.3, 16.3]) B("black", u - 0.5, 22, 2, u + 0.5, 40, 4);   // leads hung on their hooks
-      B("black", 36, 26, 1.5, 46, 44, 7); B("pink", 10, 9.2, 3, 16, 12, 8); } },   // the headphones, a pedal on the shelf
-  st_ledge: { n: "Picture ledge", k: "idea", w: 55, d: 12, h: 30, ref: "mosslanda", src: "IKEA MOSSLANDA",
-    b: (W, H, D, B) => { B("oak", 0, 0, 0, W, 2.2, D); B("oak", 0, 2.2, D - 1.5, W, 4.6, D);
+  st_lpcab: { n: "Record cabinet", k: "idea", w: 110, d: 36, h: 80, ref: "snowdonoak", src: "Made to the spot, 18 mm oak",
+    b: (W, H, D, B) => { const T = 1.8, bw = (W - 4 * T) / 3, rows = [8.8, 44.1];   // two rows of three bays, 34 high, a face frame
+      B(ST, 2, 0, 3, W - 2, 7, D - 4); B(ST, 0, 7, 0, T, H, D - 2); B(ST, W - T, 7, 0, W, H, D - 2); B("birch", T, 7, 0, W - T, H - T, 0.6);
+      B(ST, 0, H - T, 0, W, H, D); B(ST, T, 7, 0.6, W - T, 8.8, D - 2); B(ST, T, 42.3, 0.6, W - T, 44.1, D - 2);
+      for (let i = 1; i < 3; i++) { const u = T + i * bw + (i - 1) * T; B(ST, u, 8.8, 0.6, u + T, H - T, D - 2); B(ST, u - 0.7, 7, D - 2, u + T + 0.7, H - T, D); }
+      for (const u of [0, W - 3.5]) B(ST, u, 7, D - 2, u + 3.5, H - T, D);
+      for (const [v0, v1] of [[7, 9.5], [41.6, 44.8], [H - 3.6, H - T]]) B(ST, 0, v0, D - 2, W, v1, D);
+      rows.forEach((v, j) => { for (let i = 0; i < 3; i++) { const u = T + i * (bw + T);
+        if (j === 1 && i === 2) { B(ST, u + 0.3, v + 0.8, D - 2, u + bw - 0.3, v + 33, D - 0.4); B("oak", u + 2, v + 14, D - 0.4, u + 3.4, v + 20, D); continue; }   // the deck's kit, shut
+        stLPs(B, u + 0.4, u + bw - 0.4, v + 0.8, 1, i * 11 + j * 5); } }); } },
+  st_faceout: { n: "Face-out record ledge", k: "idea", w: 110, d: 9, h: 34, ref: "snowdonoak", src: "Made to the spot, 18 mm oak",
+    b: (W, H, D, B, L, k = 0) => { stLip(B, W, D, 0); const g = (W - 3 * 31.4) / 4;
+      for (let i = 0; i < 3; i++) { const u = g + i * (31.4 + g), c = (i * 2 + Math.round(W)) % 6;   // a sleeve leaning on the wall, its picture
+        B("book" + c, u, 1.8, 1.6, u + 31.4, 33.2, 2.2); B("book" + ((c + 3) % 6), u + 5, 7, 2.2, u + 26.4, 28, 2.4); B("paper", u + 12, 15, 2.4, u + 19.4, 20, 2.5); } } },
+  st_oakpeg: { n: "Oak pegboard", k: "idea", w: 56, d: 10, h: 56, ref: "snowdonoak", src: "Made to the spot, 18 mm oak, oak pegs",
+    b: (W, H, D, B) => { B(ST, 0, 0, 0, W, H, 1.8);
+      for (let i = 0; i < 7; i++) for (let j = 0; j < 7; j++) B("gap", 4.5 + i * 7.8 - 0.6, 4.5 + j * 7.8 - 0.6, 1.8, 4.5 + i * 7.8 + 0.6, 4.5 + j * 7.8 + 0.6, 1.88);
+      for (const [i, j] of [[1, 5], [2, 5], [3, 5], [5, 6], [6, 6], [1, 1], [5, 1]]) { const u = 4.5 + i * 7.8, v = 4.5 + j * 7.8; B("oak", u - 0.8, v - 0.8, 1.8, u + 0.8, v + 0.8, 7); B("oak", u - 1.1, v - 1.1, 6.4, u + 1.1, v + 1.1, 7.2); }
+      B(ST, 2.5, 11.2, 1.8, 46, 13, D); B(ST, 2.5, 13, D - 1.2, 46, 14.5, D);   // a small shelf, lipped: a pedal, a box of picks
+      B("pink", 6, 13, 3, 14, 17, 8.5); B("storebox", 18, 13, 2.5, 30, 19, 8.5);
+      for (const i of [1, 2, 3]) B("black", 4.5 + i * 7.8 - 0.4, 22, 4, 4.5 + i * 7.8 + 0.4, 43.5, 5);   // leads hung on their pegs
+      B("black", 39, 32, 3, 49, 50.5, 7.5); } },   // the headphones
+  st_ledge: { n: "Oak ledge", k: "idea", w: 120, d: 9, h: 26, ref: "snowdonoak", src: "Made to the spot, 18 mm oak",
+    b: (W, H, D, B, L) => { stLip(B, W, D, 0);
       for (let u = 3, k = 0; ; k++) { const fw = 10 + (k * 7 % 3) * 4, fh = Math.min(H - 3, 13 + (k * 5 % 3) * 6); if (u + fw > W - 2) break;
-        B(k % 2 ? "oak" : "black", u, 2.2, 1, u + fw, 2.2 + fh, 2.8); B("paper", u + 1.5, 3.7, 2.8, u + fw - 1.5, 0.7 + fh, 3); u += fw + 3; } } },
+        if (k === 2 && W > 60) { L("pot", u + 5, 4.5, 1.8, [[0, 0], [4, 0], [4.5, 9], [0, 9]]); B("ivy", u + 1.5, 10.8, 2, u + 8.5, 17, 7); u += 13; continue; }   // a plant
+        B(k % 2 ? ST : "black", u, 1.8, 1, u + fw, 1.8 + fh, 2.8); B("paper", u + 1.5, 3.3, 2.8, u + fw - 1.5, 0.3 + fh, 3); u += fw + 3; } } },
+  st_tenshelf: { n: "Oak shelf on tenoned brackets", k: "idea", w: 80, d: 20, h: 26, ref: "snowdonoak", src: "Made to the spot, 18 mm oak",
+    b: (W, H, D, B) => { const sh = 6; B(ST, 0, sh, 0, W, sh + 1.8, D); for (const u of [7, W - 9.4]) stTen(B, u, D, sh);
+      if (W < 85) stBooks(B, 1, W - 1, sh + 1.8, Math.min(19, H - sh - 3) / 0.95, 1, D - 2, W);   // paperbacks and game cases
+      else for (const u of [4, 47]) { B("storebox", u, sh + 1.8, 1.5, u + 37, sh + 15, D - 2); B("birch", u - 0.3, sh + 15, 1.2, u + 37.3, sh + 15.8, D - 1.7); } } },   // lidded boxes
+  st_drawers: { n: "Oak drawers on castors", k: "idea", w: 28, d: 43, h: 69, ref: "snowdonoak", src: "Made to the spot, 18 mm oak",
+    b: (W, H, D, B) => { for (const [u, t] of [[2, 3], [W - 6, 3], [2, D - 7], [W - 6, D - 7]]) B("black", u, 0, t, u + 4, 6, t + 4);
+      B(ST, 0, 6, 0, W, H, D - 2); B("gap", 1.6, 7.6, D - 2.05, W - 1.6, H - 1.6, D - 2); const rh = (H - 9.2) / 6;
+      for (let i = 0; i < 6; i++) { const v = 7.6 + i * rh; B(ST, 1.6, v + 0.3, D - 2, W - 1.6, v + rh - 0.3, D - 0.6); B("oak", W / 2 - 2, v + rh * 0.62 - 0.8, D - 0.6, W / 2 + 2, v + rh * 0.62 + 0.8, D); } } },
+  st_glass: { n: "Lit glass case", k: "idea", w: 55, d: 12, h: 80, ref: "glasscut", src: "Made to the spot, oak and toughened glass",
+    b: (W, H, D, B) => { const T = 2; B(ST, 0, 0, 0, T, H, D); B(ST, W - T, 0, 0, W, H, D); B(ST, T, 0, 0, W - T, T, D); B(ST, T, H - T, 0, W - T, H, D); B(ST, T, T, 0, W - T, H - T, 0.6);
+      B("led", 6, H - T - 0.4, 3, W - 6, H - T, 5); const g = (H - 2 * T) / 3;   // its light under the top, two glass shelves
+      for (let i = 1; i < 3; i++) B("glass", T, T + i * g, 0.6, W - T, T + i * g + 0.6, D - 1.4);
+      for (let i = 0; i < 3; i++) { const v = T + i * g + (i ? 0.6 : 0);   // the knick-knacks
+        B("brass", 6 + i * 4, v, 3, 12 + i * 4, v + 12 - i * 2, 9); B("pot", 22, v, 2.5, 32, v + 8, 9); B(i === 1 ? "book2" : "black", 37, v, 3, 46 - i * 2, v + 18 - i * 3, 5); }
+      B("glass", T, T, D - 0.9, W - T, H - T, D - 0.5); } },
+  st_pegshelf: { n: "Peg rail and hat shelf", k: "idea", w: 79, d: 22, h: 30, ref: "pegrail", src: "Willow & Stone oak backplate and pegs; an oak shelf",
+    b: (W, H, D, B) => { const sh = 20; B(ST, 0, 0, 0, W, 7, 2); B(ST, 0, sh, 0, W, sh + 1.8, D);
+      for (let i = 0; i < 5; i++) { const u = W * (i + 0.5) / 5; B("oak", u - 1, 2.5, 2, u + 1, 4.5, 8.4); B("oak", u - 1.3, 2.2, 8.4, u + 1.3, 4.8, 9.2); }   // five Shaker pegs
+      for (const u of [3, W - 5.4]) { B(ST, u, 7, 0, u + 2.4, sh, 2.4); B(ST, u, sh - 4, 2.4, u + 2.4, sh, D - 4); B("oak", u, sh + 1.8, D - 9, u + 2.4, sh + 1.86, D - 5); }   // tenoned through the shelf
+      B("cloth3", 10, sh + 1.8, 5, 25, sh + 7.5, 17); B("black", 30, sh + 1.8, 7, 42, sh + 3, 16); B("sisal", 52, sh + 1.8, 3, 72, sh + 8, 19); } },   // a hat, gloves, a basket
   st_float: { n: "Oak floating shelf", k: "idea", w: 90, d: 23, h: 22, ref: "floatshelf", src: "B&Q oak floating shelf 90 × 23",
     b: (W, H, D, B) => { const t = 3.8, h = H - t - 1; B("oak", 0, 0, 0, W, t, D);
       stBooks(B, 2, W * 0.4, t, Math.min(h, 22) / 0.95, 2, D - 3); B("storebox", W * 0.45, t, 2, W * 0.45 + 24, t + Math.min(16, h), D - 2);
       B("jar", W * 0.78, t, D / 2 - 4, W * 0.78 + 8, t + Math.min(12, h), D / 2 + 4); } },
-  st_shelf: { n: "Shelf over the door", k: "idea", w: 80, d: 20, h: 26, ref: "bergshult", src: "IKEA BERGSHULT 80 × 20",
-    b: (W, H, D, B) => { B("door_white", 0, 0, 0, W, 1.8, D); stBooks(B, 1, W - 1, 1.8, Math.min(19, H - 3) / 0.95, 1, D - 2, W); } },
-  st_hooks: { n: "Hat rack with hooks", k: "idea", w: 79, d: 32, h: 25, ref: "tjusig", src: "IKEA TJUSIG 79 × 32 × 25",
-    b: (W, H, D, B) => { B("door_white", 0, 0, 0, W, 8, 2); for (const u of [3, W - 5]) { B("door_white", u, 0, 0, u + 2, H, 4); B("door_white", u, H - 4, 4, u + 2, H, D); }
-      for (const t of [5, 12, 19, 26]) B("steel", 1, H - 2, t, W - 1, H, t + 1.6);
-      for (let u = 9; u < W - 6; u += 10) B("steel", u, 1, 2, u + 0.8, 6, 5); } },
-  st_helmer: { n: "Drawers on castors", k: "idea", w: 28, d: 43, h: 69, ref: "helmer", src: "IKEA HELMER 28 × 43 × 69", b: hcChest("door_white", 1, 6) },
-  st_ivar: { n: "Pine shelves", k: "idea", w: 89, d: 30, h: 179, ref: "ivar", src: "IKEA IVAR 89 × 30 × 179",
-    b: (W, H, D, B) => { for (const u of [0, W - 3]) { for (const t of [0, D - 3]) B("pine", u, 0, t, u + 3, H, t + 3); for (const v of [20, 90, 160]) B("pine", u, v, 3, u + 3, v + 3, D - 3); }
-      const vs = [3, 42, 81, 120, H - 2]; vs.forEach((v, i) => { B("pine", 3, v, 0, W - 3, v + 2, D); if (i < vs.length - 1) for (const u of [6, 46]) B("storebox", u, v + 2, 2, u + 36, v + 2 + Math.min(28, vs[i + 1] - v - 6), D - 2); }); } },
+  st_store: { n: "Ply shelves, oak lips", k: "idea", w: 89, d: 30, h: 179, ref: "wickesply", src: "Made to the spot, 12 mm ply, oak lips",
+    b: (W, H, D, B) => { const P = 1.2; B("birch", 0, 0, 0, P, H, D); B("birch", W - P, 0, 0, W, H, D); const vs = [3, 42, 81, 120, H - P];
+      vs.forEach((v, i) => { B("birch", P, v, 0, W - P, v + P, D - 1.5); B(ST, P, v + P - 4, D - 1.5, W - P, v + P, D);   // each shelf's oak lip, 15 mm
+        if (i < vs.length - 1) for (const u of [4, 48]) { const top = v + P + Math.min(15, vs[i + 1] - v - 6);
+          B("storebox", u, v + P, 2, u + 35, top - 0.8, 28); B("birch", u - 0.2, top - 0.8, 1.8, u + 35.2, top, 28.2); } }); } },   // KUGGIS boxes, their lids
 });
 /* N219: real pieces from four shops (R.SHOP, from docs/N219_catalogue.json by export3d.shop_row; each its own fit.SOURCES row by its key)
    and her own (a size, a look, one of the house's materials, a name), drawn by the same builders at their own size. Built only when one is

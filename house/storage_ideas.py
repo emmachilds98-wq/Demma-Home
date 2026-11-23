@@ -82,7 +82,7 @@ def ideas():
         parts=[dict(cat="st_ledge", box=[0.0, hb + 4.0, c - w / 2, 9.0, hb + 30.0, c + w / 2], back="x0")   # one line, over the headboard
                for c, w in [(mid, 120.0)] + [((a + b) / 2, 40.0) for a, b in bs]])
     md, mx = _door("master_door"), _room("master_b")["x1"]
-    add(id="overdoor", room="master", n="A shelf over the door", ref=["snowdonoak", "kuggis"], cost=oak(0.22), size="90 × 20",
+    add(id="overdoor", room="master", n="A shelf over the door", ref="snowdonoak", cost=oak(0.22), size="90 × 20",
         what="an oak shelf on two through-tenoned brackets over the door: lidded boxes of the off-season and the hats",
         where="master bedroom, over its door", src=f"{MADE}; the media wall's wedged tenons",
         parts=[dict(cat="st_tenshelf", box=[mx - 22.0, y1 + 211.0, md["a"] - 6.0, mx, y1 + 234.0, md["a"] + 84.0], back="x1")])
