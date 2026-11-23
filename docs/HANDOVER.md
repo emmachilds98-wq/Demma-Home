@@ -1,9 +1,9 @@
 # Handover (23 Nov 2026, V4.52: start here)
 
 ## Pick up here (23 Nov 2026, V4.52)
-- **Done (V4.52, PR #322):** N225 built (the bathroom's and WC's tiles and grout, the WC's toilet and basin, the taps' finish, the bath panel: `24_bath.js`; the mirror and the bathroom's own toilet and vanity not yet); N232 finished (shop forms; some forms not yet looked at on screen: rattan, wing, lamps, shoe storage); N237 in part (the ceilings share the woodwork's program; loading the customisation's code on first tap still open); WIN and STOOL in `check_site.py`.
+- **Done (V4.52, PR #322):** N225 built (the bathroom's and WC's tiles and grout, the WC's toilet and basin, the taps' finish, the bath panel: `24_bath.js`; the mirror and the bathroom's own toilet and vanity not yet); N232 finished (shop forms; some forms not yet looked at on screen: rattan, wing, lamps, shoe storage); N237 in part (the ceilings share the woodwork's program; loading the customisation's code on first tap still open); WIN and STOOL in `check_site.py`. N226 doors (in #322): a door's card, This door or All doors, five leaves, lever or knob in three finishes (`26_doors.js`); not yet the living room's, the front door, the cupboards'.
 - **PR #322 (V4.52):** merge it when CI is green, if it isn't merged yet.
-- **In progress when this session stopped (on their own branches, pushed after every step; may be partial):** N224 the kitchen, splashbacks first (`claude/trusting-gauss-gra6z6-n224`, a new part `25_kitchen.js`); N226 doors, All doors and each its own (`claude/trusting-gauss-gra6z6-n226`). Read each branch's last commit and its REAL_PLAN row, finish it, merge it into a PR.
+- **In progress when this session stopped (on their own branches, pushed after every step; may be partial):** N224 the kitchen, splashbacks first (`claude/trusting-gauss-gra6z6-n224`, a new part `25_kitchen.js`); Read each branch's last commit and its REAL_PLAN row, finish it, merge it into a PR.
 - **Next, in order:** N231 (a look's cost: its design under section 29's table) after N224 and N226 (it shares their files). N225's leftovers: `roomUps` is reassigned in `24_bath.js` (a one-line call in `16_cards.js` would be cleaner); the cards don't follow a moved WC suite.
 
 ## Pick up here (23 Nov 2026, late: the session stopped near its usage limit)

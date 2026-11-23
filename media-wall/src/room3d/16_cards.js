@@ -218,9 +218,9 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id === "hblinds") return ["The blinds", S.blinds ? "Down" : "Rolled up", [btn(S.blinds ? "Roll them up" : "Pull them down", { tog: "blinds" })]];   // V1.47
   if (id.startsWith("hdoor:")) { const k = id.slice(6), P = HPARTS[k]; if (!P) return null; const op = doorOpen(P);   // V1.26: a door's card
     const any = Object.entries(HPARTS).some(([q, Q]) => q.startsWith("door.") && doorOpen(Q));
-    return [P.label || "The door", op ? (Math.abs(P.angle) < 89 ? "Open as far as it goes" : "Open") : "Shut", [
+    return doorCard(k, [P.label || "The door", op ? (Math.abs(P.angle) < 89 ? "Open as far as it goes" : "Open") : "Shut", [   // N226: its leaf and handle (26_doors.js)
       btn(op ? "Shut it" : "Open it", { hdoor: k }), ...(k === "door.hall_porch" ? [btn("Colour outside", { actopen: "fin:outside:10" })] : []),   // V2.38 (F12)
-      btn(any ? "Shut all doors" : "Open all doors", { hdoors: any ? "shut" : "open" }), ...(DS() && HIT(k.slice(5)) ? [btn("Change its size", { actopen: "hsize:" + k.slice(5) })] : [])]]; }
+      btn(any ? "Shut all doors" : "Open all doors", { hdoors: any ? "shut" : "open" }), ...(DS() && HIT(k.slice(5)) ? [btn("Change its size", { actopen: "hsize:" + k.slice(5) })] : [])]]); }
   if (id === "nowplay") return ["Now playing", `${NOWP[S.nowp % NOWP.length].name}`, [   // v39: which LP faces out
       btn("‹", { nowp: "-1" }, false, "q", "The one before"), btn("›", { nowp: "1" }, false, "q", "The next one"),
       btn("Your photo", { nowpic: "1" }), btn("Look at it", { view: S.plants === "breast" ? "corner" : "breast" })]];

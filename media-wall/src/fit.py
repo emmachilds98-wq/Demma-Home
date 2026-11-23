@@ -1481,6 +1481,16 @@ SOURCES["n225fittings"] = ("Taps and the bath's panel (read 23 Nov 2026): Wickes
                            "same finish about twice that again (E). Bath panels 1700: Wickes Standard Front Bath Panel 1700 × 510, white gloss, £32 "
                            "(wickes.co.uk, bath panels); Grey Gloss £129.99 and Oak Effect £149 (diy.com, gloss 1700 mm bath panels)")
 ORDER.extend(["n225tiles", "n225suites", "n225fittings"])
+SOURCES["n226doors"] = ("Doors (N226, read 23 Nov 2026; each door its own, options to look at, 1981 × 762 × 35 mm leaves, wickes.co.uk white "
+                        "internal doors): Geneva White Grained Moulded Cottage £32 (p/165806, the plan's boards); Chester White Grained Moulded 4 Panel "
+                        "£34 (p/187538), Exeter White Smooth Moulded 4 Panel £44 (p/117168); LPD Internal 1 Panel Pattern 10 Primed White, a shaker, "
+                        "£120 (p/262953); Flush Primed Paint Grade £35 (p/239052); Chester White Clear Glazed 4 Panel, its top two glazed, £112 "
+                        "(p/161334). Bifolds: Chester 4 Panel £92 (p/165876), Marlow 4 Panel Shaker 1947 × 762 £155 (p/236420). Handles a pair "
+                        "(screwfix.com): Smith & Locke Bourne lever on rose, polished chrome £11.99 (790HY), Bude matt black £12.39 (591HY), brass "
+                        "£15–25 (E, the range's); Designer Levers Ringed mortice knob, matt black 64 mm £14.89 (479KK), Beehive mortice knobs £16.39 "
+                        "(brass, chrome). Hanging a new leaf, a carpenter, £60–120 a door (E). Drawn: stiles 11, rails 11 top, 20 bottom, a lock rail "
+                        "at 90–106, panels 0.6 in from each face (E)")
+ORDER.append("n226doors")
 # V4 (N152): will the sofa bed go in? Its biggest box (166 × 101 × 68, SOURCES "amelia") carried on its side, the 166 first: it needs
 # its 68 and 2 to spare (hands) across each opening on the way, the front door, the hall past the stair box and the living room door, in
 # line (no turn). A door left on its hinges, open flat, takes about its leaf's thickness (E: 4) more. The doors' widths are Measure's

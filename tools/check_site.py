@@ -187,6 +187,25 @@ WIN = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeou
   q('#r3d-act [data-winplan]').click(); await wait(() => !kept()); const left = kept(); if (D.actId) q('#r3d-act .x').click();
   return { title, plan, st: s1, k1, sent, drawn: n1, back, undone, left, link };
 }"""
+# N226: bedroom 2's door from its card: shaker with a brass knob (slot 73, drawn); All doors half-glazed (slot 70 alone, the master's drawn, in the
+# look link); the plan's, Undo, the plan's
+DOORS = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), id = 'hdoor:door.bed2_door';
+  const wait = async f => { for (let i = 0; i < 100 && !f(); i++) await sl(150); return !!f(); }, tap = s => { const b = q('#r3d-act ' + s); if (b) b.click(); return !!b; };
+  const kept = () => (JSON.parse(localStorage.getItem('mw18-3d') || '{}').fin || {}).doors || null, drawn = d => { let n = 0; D.scene.traverse(o => { if (o.isMesh && o.userData.door === d) n++; }); return n; };
+  D.openAct(id); await sl(600); if (D.actId !== id) return { err: 'no card: ' + D.actId };
+  const title = q('#r3d-act-h').textContent;
+  tap('[data-dleaf="shaker"]'); await sl(300); tap('[data-dhand="k"]'); await sl(300); tap('[data-dfin="brass"]'); await wait(() => drawn('bed2_door')); await sl(200);
+  const one = kept(), n1 = drawn('bed2_door') > 0, st = q('#r3d-act-st').textContent.split(' · ').slice(1).join(' · ');
+  tap('[data-dscope="all"]'); await sl(300); tap('[data-dleaf="glazed"]'); await wait(() => drawn('master_door')); await sl(200);
+  const all = kept(), n2 = drawn('master_door') > 0;
+  navigator.clipboard.writeText = u => { window.__link = u; return Promise.resolve(); }; window.__link = null; q('#r3d-link').click(); await wait(() => window.__link);
+  let sent = null; try { sent = ((JSON.parse(decodeURIComponent(escape(atob(window.__link.split('#look-')[1].replace(/-/g, '+').replace(/_/g, '/'))))).fc || {}).doors || {})[70] || null; } catch (e) {}
+  if (D.actId !== id) { D.openAct(id); await sl(400); }
+  tap('[data-dplan]'); await wait(() => !kept() && !drawn('master_door')); const back = [kept(), drawn('bed2_door')];
+  tap('[data-finundo]'); await wait(() => kept()); await sl(300); const undone = kept();
+  tap('[data-dplan]'); await wait(() => !kept()); const left = kept(); tap('[data-dscope="one"]'); if (D.actId) q('#r3d-act .x').click();
+  return { title, one, n1, st, all, n2, sent, back, undone, left };
+}"""
 EACH = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s);   // N214: the master's cupboard face and the alcove beside it, each its own; This room; bedroom 2's slopes
   const kept = r => ((JSON.parse(localStorage.getItem('mw18-3d') || '{}').fin || {})[r] || {}), was = JSON.stringify([kept('master'), kept('bed2')]);
   const put = async (id, sc, hex) => { D.openAct(id); await sl(600); const b = q(`#r3d-act [data-finsc="${sc}"]`); if (b) { b.click(); await sl(300); }
@@ -581,6 +600,11 @@ def main():
                             "drawn": 1, "back": [None, 0, "The plan's: a roller blind, rolled up"], "undone": ["roman.blue", 1], "left": None}
                     if {k: v for k, v in wn.items() if k != "link"} != want or not fr:
                         fails.append(f"{w}: bedroom 2's window a roman blind in deep blue, the plan's, Undo, the plan's: {wn}, in a fresh page from its look link: {fr} (want {want}, then roman.blue)")
+                    dr = pg.evaluate(DOORS)                         # N226: bedroom 2's door its own, then All doors half-glazed; the plan's, Undo, the plan's
+                    want = {"title": "Bedroom 2's door", "one": {"73": "shaker.kbrass"}, "n1": True, "st": "Shaker, brass knob · £196–256", "all": {"70": "glazed.kbrass"},
+                            "n2": True, "sent": "glazed.kbrass", "back": [None, 0], "undone": {"70": "glazed.kbrass"}, "left": None}
+                    if dr != want:
+                        fails.append(f"{w}: bedroom 2's door shaker with a brass knob, then All doors half-glazed, the plan's, Undo, the plan's: {dr} (want {want})")
                     ea = pg.evaluate(EACH)                          # N214: each wall its own, This room over them, the slopes with the walls, then back
                     if ea != {"t1": "Master bedroom: the back wall (2 of 2)", "t2": "Master bedroom: the back wall (1 of 2)", "both": ["#3a6b5a", "#c98a5e"], "room": [None, "#dbffc8"],
                               "st": "Bedroom 2: the slopes", "slope": "walls", "restored": True}:
