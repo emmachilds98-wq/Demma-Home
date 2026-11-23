@@ -613,33 +613,65 @@ const plantTray = room => { const now = finGet(room, 23) || "";
   return `<span class="r3d-finlab">A plant</span><div class="r3d-finsc" role="group" aria-label="A plant">`
     + [["", "None"], ...plantKeys().map(k => [k, HCAT[k].n.split(",")[0]])].map(([v, t]) => `<button type="button" data-finplant="${v}" aria-pressed="${now === v}">${t}</button>`).join("") + `</div>`; };
 /* N212: the storage ideas (R.HOUSE3.storage, house/storage_ideas.py): options to look at, shown a room at a time from its floor card
-   (More), kept as their ids in S.fin[room][28]; each piece an added piece of the house (drawn, tapped), built only once it's shown */
+   (More), kept as their ids in S.fin[room][28]; each piece an added piece of the house (drawn, tapped), built only once it's shown.
+   N242: each idea's real buys from the shops (its "o" rows: export3d.opt_row, docs/N242_options.json): ‹ › on its card through the plan's
+   idea and each, kept as "id:key" in the same slot; drawn at its own size on the idea's wall (centred on its spot) by the ideas' own
+   builders in its colour, or the shops' (hcMake), on the floor or under the ceiling where it stands there */
 const IDEAS = () => (R.HOUSE3 && R.HOUSE3.storage) || [];
 const ideasIn = room => IDEAS().filter(i => i.room === room);
-const ideaOn = room => String(finGet(room, 28) || "").split(",").filter(Boolean);
+const ideaVals = room => String(finGet(room, 28) || "").split(",").filter(Boolean);
+const ideaOn = room => ideaVals(room).map(q => q.split(":")[0]);
+const ideaPick = (room, id) => (ideaVals(room).find(q => q.split(":")[0] === id) || "").split(":")[1] || "";
+const ST_CARRY = new Set(["st_float", "st_ledge", "st_faceout", "st_tenshelf", "st_pegshelf", "st_airer"]);   // drawn as tall as the idea's spot: what stands on it, the ropes
+function ideaOptKey(I, key) {   // a shop's buy for idea I: its catalogue piece (made once), or null
+  const r = key && (I.o || []).find(q => q[0] === key); if (!r) return null; const hk = `opt.${I.id}.${key}`; if (HCAT[hk]) return hk;
+  const [, k, look, n, shop, w, d, h, p, url, m, m2, c, on] = r, own = k === "idea" && HCAT[look];
+  HCAT[hk] = { n, k: "idea", w, d, h, ref: key, src: `${shop}, ${n}`, shop, p, url, on, look, opt: true,
+    b: own ? (W, H, D, B, L, ...x) => own.b(W, H, D, (q, ...a) => B(q === ST || q === "oak" ? m : q, ...a), L, ...x) : hcMake(k, look, m, m2, c) };
+  return hk;
+}
+function optBox(p, C, r) {   // N242: its back on the idea's wall, centred on its spot, its own size; on the floor or from the ceiling if so
+  const a = p.ax === "z" ? 2 : 0, o = 2 - a, b = p.b.slice(), c = (b[a] + b[a + 3]) / 2, H = ST_CARRY.has(C.look) ? Math.max(C.h, b[4] - b[1]) : C.h;
+  b[a] = c - C.w / 2; b[a + 3] = c + C.w / 2; if (p.flip) b[o] = b[o + 3] - C.d; else b[o + 3] = b[o] + C.d;
+  if (C.on === "ceil") b[1] = b[4] - H; else { if (C.on === "floor") b[1] = r[4]; b[4] = b[1] + H; }
+  return b.map(v => Math.round(v * 10) / 10);
+}
 const IDEA_AT = {};
 function syncIdeas() {
   const H3 = R.HOUSE3, want = {};
-  for (const i of IDEAS()) if ((H3.rooms || {})[i.room] && ideaOn(i.room).includes(i.id)) i.parts.forEach((p, j) => { if (HCAT[p.cat]) want[`idea.${i.id}.${j}`] = [i, p]; });
-  for (const id of Object.keys(IDEA_AT)) if (!want[id]) { delete H3.items[id]; delete IDEA_AT[id]; }
-  for (const [id, [i, p]] of Object.entries(want)) { if (IDEA_AT[id]) continue;
-    const r = H3.rooms[i.room], a = p.ax === "z" ? 2 : 0, b = p.b.slice(); IDEA_AT[id] = 1; ADDFK[id] = HCFK[String(r[4])];
-    H3.items[id] = { n: i.n, k: "furniture", r: i.room, ax: p.ax, flip: p.flip, b, s: [b[a + 3] - b[a], b[4] - b[1], Math.round((b[1] - r[4]) * 10) / 10], g: false,
-      al: Math.round((b[a] - r[a]) * 10) / 10, op: null, add: p.cat, look: i.room, idea: i.id, fk: ADDFK[id] };
+  for (const i of IDEAS()) if ((H3.rooms || {})[i.room] && ideaOn(i.room).includes(i.id)) { const hk = ideaOptKey(i, ideaPick(i.room, i.id));
+    i.parts.forEach((p, j) => { if (hk ? !j || i.each : HCAT[p.cat]) want[`idea.${i.id}.${j}`] = [i, p, hk]; }); }
+  for (const id of Object.keys(IDEA_AT)) if (!want[id] || IDEA_AT[id] !== (want[id][2] || "-")) { delete H3.items[id]; delete IDEA_AT[id]; }
+  for (const [id, [i, p, hk]] of Object.entries(want)) { if (IDEA_AT[id]) continue;
+    const r = H3.rooms[i.room], a = p.ax === "z" ? 2 : 0, b = hk ? optBox(p, HCAT[hk], r) : p.b.slice(); IDEA_AT[id] = hk || "-"; ADDFK[id] = HCFK[String(r[4])];
+    H3.items[id] = { n: hk ? HCAT[hk].n : i.n, k: "furniture", r: i.room, ax: p.ax, flip: p.flip, b, s: [b[a + 3] - b[a], b[4] - b[1], Math.round((b[1] - r[4]) * 10) / 10], g: false,
+      al: Math.round((b[a] - r[a]) * 10) / 10, op: null, add: hk || p.cat, look: i.room, idea: i.id, fk: ADDFK[id] };
   }
 }
-function ideaSet(room, id) {   // one idea on or off; "*" all of the room's, "" none
-  finPush(); S.fin = S.fin || {}; const o = S.fin[room] = S.fin[room] || {}, all = ideasIn(room).map(i => i.id), now = ideaOn(room);
-  const L = id === "*" ? all : !id ? [] : now.includes(id) ? now.filter(q => q !== id) : [...now, id], one = IDEAS().find(i => i.id === id);
-  if (L.length) o[28] = all.filter(q => L.includes(q)).join(","); else delete o[28]; if (!Object.keys(o).length) delete S.fin[room];
+function ideaKeep(room, ids) {   // the room's shown ideas, in the plan's order, each with its pick
+  S.fin = S.fin || {}; const o = S.fin[room] = S.fin[room] || {};
+  const v = ideasIn(room).map(i => i.id).filter(q => ids[q] != null).map(q => ids[q] ? `${q}:${ids[q]}` : q);
+  if (v.length) o[28] = v.join(","); else delete o[28]; if (!Object.keys(o).length) delete S.fin[room];
   store.set(KEY, S); storeEdits(); finSchDraw();
+}
+function ideaSet(room, id) {   // one idea on or off; "*" all of the room's, "" none
+  finPush(); const all = ideasIn(room).map(i => i.id), now = ideaOn(room);
+  const L = id === "*" ? all : !id ? [] : now.includes(id) ? now.filter(q => q !== id) : [...now, id], one = IDEAS().find(i => i.id === id);
+  ideaKeep(room, Object.fromEntries(L.map(q => [q, ideaPick(room, q)])));
   toast(one ? `${one.n}: ${L.includes(id) ? "shown (an idea to look at)" : "hidden"}` : `${roomName(room)}: ${L.length ? "its storage ideas shown" : "no storage ideas"}`);
+}
+function ideaChoose(room, id, key) {   // N242: the plan's idea (no key) or a shop's buy, shown
+  finPush(); const ids = Object.fromEntries(ideaOn(room).map(q => [q, ideaPick(room, q)])); ids[id] = key || ""; ideaKeep(room, ids);
+  const I = IDEAS().find(i => i.id === id), C = key && HCAT[ideaOptKey(I, key)]; toast(C ? `${C.n} · ${C.shop}` : `${I.n}: the plan's idea`);
 }
 const ideaTray = room => { const L = ideasIn(room), on = ideaOn(room); if (!L.length) return "";
   return `<span class="r3d-finlab">Storage ideas (to look at)</span><div class="r3d-finsc" role="group" aria-label="Storage ideas">`
     + L.map(i => `<button type="button" data-finidea="${i.id}" aria-pressed="${on.includes(i.id)}">${i.n}</button>`).join("")
     + (L.length > 1 ? `<button type="button" data-finidea="${on.length === L.length ? "" : "*"}" aria-pressed="false">${on.length === L.length ? "None" : "All"}</button>` : "") + `</div>`; };
-function ideaCard(k) {   // a tapped idea's piece: its one line, hide it
+function ideaCard(k) {   // a tapped idea's piece: its one line, hide it; N242: ‹ › the plan's idea and each shop's buy, its size, fit, price and page
   const it = HIT(k), I = it && IDEAS().find(i => i.id === it.idea); if (!I) return null;
-  return [I.n + " (an idea)", I.line, [btn("Hide it", { hidea: `${it.look}:${I.id}` }), btn("This room's ideas", { actopen: `fin:${it.look}:5` })]];
+  const L = [null, ...(I.o || []).map(r => ideaOptKey(I, r[0]))], i = Math.max(0, L.indexOf(it.add)), C = L[i] && HCAT[L[i]];
+  return [C ? C.n : I.n + " (an idea)", C ? hcLine(k, C) : I.line, [...(L.length > 1 ? hcNav(k, i, "hideago") : []), btn("Hide it", { hidea: `${it.look}:${I.id}` }),
+    btn("This room's ideas", { actopen: `fin:${it.look}:5` })], null, L.length > 1 ? `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="The plan's idea">`
+    + `<button type="button" data-hideago="${k}:0" aria-pressed="${!C}">The plan's idea</button></div>${hcShopTray(k, L, C, "hideago")}</div>` : null];
 }
