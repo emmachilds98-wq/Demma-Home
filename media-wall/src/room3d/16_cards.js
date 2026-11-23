@@ -130,6 +130,7 @@ function roomUps(room, noEd) {   // [{k, t, lo, hi}]: what's changed in a room (
     if (o[18]) add("18=" + o[18], o[18] === "none" ? "Rug: none" : "Rug: " + upNm(FIN_RUGS, o[18]), o[18] === "none" ? [0, 0] : UPC.rug);
     if (o[19]) add("19=" + o[19], "Curtains: " + upNm(FIN_CURT, o[19]), UPC.curt);
     if (o[90] && TILE_ROOMS[room]) tileUps(room, add);   // N225: the tiles by their area
+    doorUps(room, add);   // N226: its doors her way
     winsOf(room).forEach((w, j) => { const v = o[70 + j]; if (v) add(`${70 + j}=${v}`, `${w.n}: ${winSay(...v.split("."))}`, winCost(w, v)); });   // N227: each window's own
     if (o[20]) add("20=" + o[20], "Bedding: " + upNm(FIN_BED, o[20]), UPC.bed);
     if (o[21]) add("21=" + o[21], "Picture: " + upNm(FIN_PICS, o[21]), UPC.pic);
@@ -219,9 +220,11 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id === "hblinds") return ["The blinds", S.blinds ? "Down" : "Rolled up", [btn(S.blinds ? "Roll them up" : "Pull them down", { tog: "blinds" })]];   // V1.47
   if (id.startsWith("hdoor:")) { const k = id.slice(6), P = HPARTS[k]; if (!P) return null; const op = doorOpen(P);   // V1.26: a door's card
     const any = Object.entries(HPARTS).some(([q, Q]) => q.startsWith("door.") && doorOpen(Q));
-    return [P.label || "The door", op ? (Math.abs(P.angle) < 89 ? "Open as far as it goes" : "Open") : "Shut", [
+    return [P.label || "The door", [op ? (Math.abs(P.angle) < 89 ? "Open as far as it goes" : "Open") : "Shut", doorIds().includes(k) ? doorLine(k) : ""].filter(Boolean).join(" · "), [
       btn(op ? "Shut it" : "Open it", { hdoor: k }), ...(k === "door.hall_porch" ? [btn("Colour outside", { actopen: "fin:outside:10" })] : []),   // V2.38 (F12)
-      btn(any ? "Shut all doors" : "Open all doors", { hdoors: any ? "shut" : "open" }), ...(DS() && HIT(k.slice(5)) ? [btn("Change its size", { actopen: "hsize:" + k.slice(5) })] : [])]]; }
+      btn(any ? "Shut all doors" : "Open all doors", { hdoors: any ? "shut" : "open" }), ...(DS() && HIT(k.slice(5)) ? [btn("Change its size", { actopen: "hsize:" + k.slice(5) })] : []),
+      ...(doorIds().includes(k) ? [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(doorNow(k).plan ? [] : [btn("The plan's", { doorplan: "1" })])] : [])],
+      null, doorIds().includes(k) ? doorTray(k) : null]; }   // N226: its leaf and handle
   if (id === "nowplay") return ["Now playing", `${NOWP[S.nowp % NOWP.length].name}`, [   // v39: which LP faces out
       btn("‹", { nowp: "-1" }, false, "q", "The one before"), btn("›", { nowp: "1" }, false, "q", "The next one"),
       btn("Your photo", { nowpic: "1" }), btn("Look at it", { view: S.plants === "breast" ? "corner" : "breast" })]];
