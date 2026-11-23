@@ -949,3 +949,16 @@ rolled up", st "Roman blind, deep blue · £45–130", k1 and sent "roman.blue",
 left null, and the link in a fresh page giving `finAll().bed2[70] === "roman.blue"`): open `win:bed2:0`, `[data-winkind="roman"]`,
 `[data-winfab="blue"]`, read `#r3d-act-st` and `mw18-3d`'s `fin.bed2[70]`, count `userData.win === 'win:bed2:0'` meshes, copy the look
 link (`#r3d-link`), `[data-winplan]`, `[data-finundo]`, `[data-winplan]`.
+
+## 30. Emma's notes on V4.54 (23 Nov 2026)
+
+Emma, 23 Nov 2026: "on 4.54 i still cant see down the stairs when stood in the front door and lighting looks different as i look in a
+room from another than when i walk in it, all lights should appear as they do in the room even from a distance. im not changing lights
+so it feels unnatural"; "movement on pc was also extremely slow" (asked: a choppy, laggy picture, not the walking pace). Worked side by
+side by three helpers (branches `claude/n238-stairs`, `claude/n239-light`, `claude/n240-speed`), merged by the lead.
+
+| Task | What | Files | Waits for | State |
+|---|---|---|---|---|
+| N238 | **Down the stairs from the front door.** Found: from the hall just inside the front door the doorway down shows its handrail, a grey sill and the lower landing's door, but not the flight's steps (N62, N88 had it before). Do: the lower flight seen going down from the front door and the hall | `house/model.py`, `room3d/09_house_views.js`, `room3d/20_*` | — | In progress (helper) |
+| N239 | **The same light from a distance.** Found: the ceiling lights' pool (6, Fast 4), the windows' daylight (3, HD) and the sun's shadow box are handed out by the room you stand in (`placeRoomLights`), so a room seen through a door is lit differently from inside it, and it changes as you cross the doorway. Do: each room lit the same from anywhere it's seen, no shader rebuilt (the pool's size fixed) | `room3d/09_house_views.js`, `room3d/20_5_go.js` | — | In progress (helper) |
+| N240 | **The PC's picture choppy.** Found: walking is 140 cm a second × the frame's time, capped at 0.1 s, so under ten frames a second it crawls. Do: measure V4.51 against now on the RTX path (JS a frame, draws, triangles), find what got heavier, fix it, budgets kept | `room3d/17_render_loop.js` and as found | — | In progress (helper) |
