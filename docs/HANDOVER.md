@@ -11,6 +11,7 @@ directly in GitHub to stop these losses" (CLAUDE.md: nothing stays local; push e
   bake). A review's seven findings fixed (see `docs/HISTORY.md` V4.49).
 - **Lost and rebuilt:** an earlier session's N219, N221, N222, N220 start and shader fix were only on its machine when it hit its usage
   limit; they were rebuilt from the plan and `docs/N219_catalogue.json`. Hence the rule.
+- **Next (23 Nov, at V4.50):** `docs/REAL_PLAN.md` section 29, N224–N237: more hers to change (the kitchen, the bathroom, each door, each window, lighting later, her storage picks, furniture's last gaps, a look's cost) and the whole house better made (shop pieces by form, every new step in the site check, her devices' check, the tape round, the made pieces' detail, the first picture back under budget); N233 first; its four questions for Emma.
 - **Storage to her brief (23 Nov, V4.50):** `docs/REAL_PLAN.md` section 28, N223 done: 12 ideas made for their spots in the living room's oak (`docs/STORAGE.md`); her pick next, then a build and a buy list.
 - **Open:** Emma's choices: which storage ideas (N212, now N223), whether Dave may Keep it (N222 keeps the button; one line to take it out); N201
   (the real devices' check, "lighting later"); N205 on hold. Smaller: a shop piece's own card has no shop link after a swap; the
