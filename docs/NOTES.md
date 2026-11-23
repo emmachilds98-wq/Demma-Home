@@ -473,6 +473,14 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `pointerup` on a card's button that a re-render has replaced never reaches the card: send it to `#r3d-act`. The view for the bathroom is
   `bath` (`ROOM_VIEW`).
 
+## N224's units (V4.55)
+- **Where:** `room3d/22_kitchen.js`; `house/model.py` draws the units, wall cupboards and their handles in `kunit` and `khandle` (the
+  same colours as `gloss` and `handle_black`; `HTEX_AS.kunit = "gloss"`, `ROUND`), so the kitchen alone changes. Hooks: `finAt`
+  (`kitAt`), `finCard` (slot 92), `finClean` (`kitOk`, before the tiles' 90), `finApplyAll` and `finHold` (`kitApply`), `roomUps`
+  (`kitUps`), the piece card's Fronts and worktop (a unit is a piece: its tap opens the piece's card first).
+- **Keys** in a look link must be 4–8 letters (`finLook`): "oakwood", not "oak". A photo texture swapped onto another material is a
+  `texClone` with its own repeat (the material's UVs are in its own photo's metres), so the shared photo is left alone.
+
 ## N226 (V4.54)
 - **Where:** `room3d/22_doors.js`; hooks in `23_finish.js` (`finClean`: `room === "doors"` first; `finApplyAll`, `finHold`, the N227 floor
   rebuild wrapper call `doorApply`) and `16_cards.js` (the door's card's tray and buttons; `roomUps` calls `doorUps`).

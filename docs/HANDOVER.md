@@ -2,7 +2,7 @@
 
 ## Pick up here (23 Nov 2026, V4.53)
 V4.53: N224's splashback, N231 (a look's cost), N232 (shop pieces by form, merged and checked on screen), N233's WIN and STOOL steps.
-V4.54: N226 (each door's leaf and handle, one door or all). **Next, in order:** N224's units, handles and worktop, N237 (the first
+V4.54: N226 (each door's leaf and handle, one door or all). V4.55: N224's units, handles and worktop. **Next, in order:** N237 (the first
 picture back under the old budgets); N225's taps, mirror and bath panel, N228, N229, N234, N235 as Emma says.
 
 ## Before that (23 Nov 2026, V4.52)
