@@ -90,6 +90,8 @@ def items(export):
             row["opening"] = dict(axis=dd["axis"], line=dd["line"], a=dd["a"], b=dd["b"], y0=M.FLOOR_Y[f], y1=M.FLOOR_Y[f] + D.DOOR_H, frame=FRAME)
             H = M.hang(f, dd, 1.75)                                   # N217: its leaf's swing, for the page's fit check
             row["opening"]["swing"] = dict(hinge=round(H["hinge"], 1), u=H["u"], side=H["side"])
+            if abs(H["deg"] - 90) > 0.05 or H["fold"]:                # N230: as it opens: the bathroom's stops short, the bifold folds to half
+                row["opening"]["swing"].update(deg=H["deg"], **({"fold": True} if H["fold"] else {}))
         if iid in ops:                                            # a window or an outside door: its opening in the wall
             op = ops[iid]
             size.update(w=round(op["x"][1] - op["x"][0], 1), h=round(op["head"] - op["sill"], 1), up=op["sill"])

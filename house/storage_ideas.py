@@ -252,16 +252,8 @@ def checks():
     over = lambda a, b, s=0.5: all(a[i] + s < b[i + 3] and b[i] < a[i + 3] - s for i in range(3))
 
     def swept(d, H, b, y0):
-        """Does box b cut the door's swing (a quarter circle from its hinge, on the side it opens to, 205 high)?"""
-        if b[1] > y0 + 205:
-            return False
-        r, (al, ac) = d["b"] - d["a"], ((b[0], b[3]), (b[2], b[5])) if d["axis"] == "x" else ((b[2], b[5]), (b[0], b[3]))
-        qa, qc = sorted((H["hinge"], H["hinge"] + H["u"] * r)), sorted((d["line"], d["line"] + H["side"] * r))
-        a0, a1, c0, c1 = max(al[0], qa[0]), min(al[1], qa[1]), max(ac[0], qc[0]), min(ac[1], qc[1])
-        if a0 >= a1 - 0.5 or c0 >= c1 - 0.5:
-            return False
-        na, nc = min(max(H["hinge"], a0), a1), min(max(d["line"], c0), c1)
-        return (na - H["hinge"]) ** 2 + (nc - d["line"]) ** 2 < r * r
+        """Does box b cut the door's swing (as it opens, model.swing_into: from its hinge, on the side it opens to, 205 high)?"""
+        return M.swing_into(d, H, b, y0) > 0.5
     swings = [(f, d, M.hang(f, d, 1.75)) for f in FY for d in M.doors(f) if d["id"] not in ("store_w", "store_e", "hall_porch")]
     swings += [("ground", d, M.hang("ground", d, 1.75)) for d in M.doors("ground") if d["id"] == "hall_porch"]
     res, seen = [], set()

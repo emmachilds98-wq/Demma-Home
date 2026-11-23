@@ -54,8 +54,9 @@
           "on": { "type": "string", "description": "N217: the item it stands on or hangs from: it goes where that goes, hidden if that's taken out" },
           "opening": { "type": "object", "description": "a door's or window's hole in its wall: the viewer moves the wall's edges with it",
             "required": ["axis", "line", "a", "b", "y0", "y1"],
-            "properties": { "swing": { "type": "object", "description": "N217: a door's leaf: its hinge along the wall, the way the leaf runs from it (u), the side it opens to",
-              "required": ["hinge", "u", "side"] } } } } }
+            "properties": { "swing": { "type": "object", "description": "N217: a door's leaf: its hinge along the wall, the way the leaf runs from it (u), the side it opens to; N230: deg, how far it opens if not a quarter (the bathroom's); fold, a bifold (its two halves fold back along the track)",
+              "required": ["hinge", "u", "side"],
+              "properties": { "deg": { "type": "number", "minimum": 0, "maximum": 180 }, "fold": { "type": "boolean" } } } } } } }
     },
     "measure": {
       "type": "array",

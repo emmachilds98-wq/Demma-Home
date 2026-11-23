@@ -282,11 +282,11 @@ def scene():
 
 
 # N219: a shop's piece for the page: [key, kind, look, name, shop, w, d, h, £, page, its material, its legs' or frame's, a count (drawers or doors)]
-SHOP_KIND = {"deskchair": "chair", "records": "shelves", "display": "shelves", "dining": "table", "coffee": "table", "tv": "unit", "sideboard": "unit", "shoes": "unit"}
+SHOP_KIND = {"deskchair": "chair", "records": "shelves", "display": "shelves", "dining": "table", "coffee": "table", "tv": "unit", "sideboard": "unit"}   # N230: shoes and stools their own
 SHOP_MAT = [(r"jute|rattan|cane|bamboo", "sisal"), (r"white stain", "door_white"), (r"green|sage|olive|yellow", "cloth3"), (r"blue", "cloth0"), (r"grey", "cloth5"),
             (r"black-brown", "black"), (r"walnut", "pine_dark"), (r"mink|beige|latte", "cloth1"), (r"cherry|whisky|\btan\b|golden|honey|brown|leather", "door_wood"),
             (r"orange|rosehip|\bred\b", "cloth2"), (r"off-white|cream|linen|white fabric|wool|cotton", "cloth4"), (r"brass", "brass"), (r"white", "door_white"),
-            (r"pine", "pine"), (r"ash|rubberwood|natural fabric|light", "birch"), (r"black", "black"), (r"metal", "steel"), (r"oak|natural", "oak")]
+            (r"pine", "pine"), (r"ash|rubberwood|natural fabric|light", "birch"), (r"black", "black"), (r"chrome", "chrome"), (r"metal", "steel"), (r"oak|natural", "oak")]
 WOODS = {"oak", "pine", "birch", "pine_dark", "door_wood", "sisal"}
 
 
@@ -312,13 +312,15 @@ def shop_row(q):
         look = "ladder" if re.search(r"ladder", n, re.I) else "glass" if q["kind"] == "display" else "cubes" if q["kind"] == "records" else "books"
     elif k == "seat":
         look = "sofa" if re.search(r"sofa|seater", n, re.I) else "arm"
+    elif k == "stool":   # N230: a bar stool on a chrome pedestal, upholstered on legs, wooden, or a metal frame
+        look = "swivel" if re.search(r"swivel|chrome", nf, re.I) else "uph" if re.search(r"fabric|upholster", nf, re.I) else "wood" if re.search(r"wood", nf, re.I) else "metal"
     elif k in ("table", "rug"):
         look = "round" if re.search(r"round", n, re.I) or q["w"] == q["d"] else "box"
     else:
         look = k
     pl = re.findall(r"(\d+)\s*\+\s*(\d+)", n)   # its drawers: "3 Drawer", "6 drawers", "(2+2)"
     c = sum(map(int, pl[0])) if pl else int((re.findall(r"(\d+)\s*drawer", n, re.I) or [0])[0])
-    if k in ("unit", "wardrobe"):
+    if k in ("unit", "wardrobe", "shoes"):
         c = int((re.findall(r"(\d+)\s*doors?", n, re.I) or [0])[0])
     return [_fit.shop_key(q), k, look, n.split(",")[0].replace(" (2 pack)", ""), q["retailer"], q["w"], q["d"], q.get("h") or 1, q["price"], q["url"], m, m2, c]
 

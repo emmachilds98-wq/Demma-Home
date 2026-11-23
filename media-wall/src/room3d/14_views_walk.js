@@ -77,7 +77,7 @@ function hsolidSet(fk, F) {
     b.push([L.c[0] - r * L.s[0], L.c[1] + Math.min(0, ...hs), L.c[2] - r * L.s[1], L.c[0] + r * L.s[0], L.c[1] + Math.max(...hs), L.c[2] + r * L.s[1]]); }
   const skin = new Set(["ceiling", "artex"]);   // V1.32: a walk ignores the ceilings' skins (each has a slab or the roof over it; the lower store's runs over the flight)
   // V1.57: and the chairs and stools (the office's stood in its doorway, a step in: you'd push past one), not the eye's view of them
-  const tags = F.tags || [], soft = t => t != null && t >= 0 && /\.(chairs?|stools?)$/.test(tags[t] || ""), nl = (F.lathes || []).length;
+  const tags = F.tags || [], soft = t => t != null && t >= 0 && /\.(chairs?|stools?)\d?$/.test(tags[t] || ""), nl = (F.lathes || []).length;
   /* V3.48 (N100): a walk passes over the furnishings (only the head meets them; a wardrobe or tall rack still stops you) and doesn't climb
      onto them; walls, doors, windows, stairs, banisters and fittings stop the whole body */
   const its = (R.HOUSE3 && R.HOUSE3.items) || {}, furn = t => t != null && t >= 0 && WALK_OVER.has((its[tags[t]] || {}).k);
