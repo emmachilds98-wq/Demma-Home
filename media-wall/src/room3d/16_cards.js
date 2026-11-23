@@ -56,7 +56,7 @@ const HCAT_ADD = ["plant", "snake", "monstera", "olive", "armchair", "sidetable"
 HCAT_ADD.push(...Object.keys(HCAT).filter(q => HCAT[q].shop));   // N219: the shops' pieces too
 const hcAddOf = kind => HCAT_ADD.filter(q => HCAT[q].k === kind);
 const hcLine = (k, C, why = fitWhy(k)) => {   // N217: its size, whether it fits; N219: a shop's price and name, or hers (N220: the living room's why)
-  return `${[C.w, C.d, C.h].map(v => Math.round(v * 10) / 10).join(" × ")} cm · ${why.length ? why.slice(0, 2).join(" · ") : "Fits"} · ${C.shop ? `£${C.p} · ${C.shop}` : C.src.split(",")[0]}`; };
+  return `${[C.w, C.d, C.h].map(v => Math.round(v * 10) / 10).join(" × ")} cm · ${why.length ? why.slice(0, 2).join(" · ") : "Fits"} · ${C.shop ? `£${C.p % 1 ? C.p.toFixed(2) : C.p} · ${C.shop}` : C.src.split(",")[0]}`; };
 const hcShopTray = (k, L, C, at) => { const shops = [...new Set(L.map(q => q && HCAT[q].shop).filter(Boolean))];   // a chip a shop (its first piece of this kind), its page
   return (shops.length ? `<div class="r3d-finsc" role="group" aria-label="Shops">${shops.map(s => `<button type="button" data-${at}="${k}:${L.findIndex(q => q && HCAT[q].shop === s)}" aria-pressed="${!!C && C.shop === s}">${s}</button>`).join("")}</div>` : "")
     + (C && C.url ? `<a href="${C.url}" target="_blank" rel="noopener">See it at ${C.shop}</a>` : ""); };
