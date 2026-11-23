@@ -302,6 +302,19 @@ DOOR = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   q('#r3d-act [data-doorsc="door"]').click(); const left = kept(); if (D.actId) q('#r3d-act .x').click();
   return { plan, one, all, back, undone, left };
 }"""
+# N224: the kitchen's units from a unit's card (Fronts and worktop): navy fronts, brass handles, a white quartz-effect worktop; The plan's,
+# Undo, The plan's
+KIT = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s);
+  const kept = () => { const o = D.finAll().kitchen || {}; return [o[92] || null, o[93] || null, o[94] || null]; };
+  R3D.set({ view: 'kitchen' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
+  D.openAct('hitem:kitchen.units'); await sl(600); const b = q('#r3d-act [data-actopen="fin:kitchen:92"]'); if (!b) return { err: 'no Fronts and worktop' }; b.click(); await sl(600);
+  const plan = [q('#r3d-act-h').textContent, q('#r3d-act-st').textContent];
+  for (const s of ['[data-kitf="navy"]', '[data-kith="brass"]', '[data-kitt="quartz"]']) { q('#r3d-act ' + s).click(); await sl(500); }
+  const mine = [q('#r3d-act-st').textContent, kept()];
+  q('#r3d-act [data-kitplan]').click(); await sl(500); const back = kept(); q('#r3d-act [data-finundo]').click(); await sl(500); const undone = kept();
+  q('#r3d-act [data-kitplan]').click(); await sl(500); const left = kept(); if (D.actId) q('#r3d-act .x').click();
+  return { plan, mine, back, undone, left };
+}"""
 # N218: tap bedroom 2's floor, Add a piece here, Shelves: a bookcase stands back to a wall and fits; the look link (Link) carries it
 ADD = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), cv = document.querySelector('.r3d canvas'), q = s => document.querySelector(s), ds = window.DemmaStore;
   const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
@@ -648,6 +661,11 @@ def main():
                     want = {"plan": "The plan's: cottage boards, chrome lever", "one": ["Shaker, black knob · £246–496", '{"72":"shaker.knob"}', 2],
                             "all": ["Four panel, black knob · all doors · £211–461", '{"70":"four.knob"}'], "back": ["null", 0], "undone": '{"70":"four.knob"}', "left": "null"}
                     if dr != want: fails.append(f"{w}: bedroom 2's door a shaker with black knobs, then all doors four panel, The plan's, Undo: {dr} (want {want})")
+                    kt = pg.evaluate(KIT)                           # N224: the kitchen's fronts, handles and worktop, The plan's, Undo, The plan's
+                    want = {"plan": ["Kitchen: the units", "The plan's: white gloss, black handles, black worktop"],
+                            "mine": ["Midnight navy, brushed brass handles, white quartz-effect worktop · £1,414–1,945", ["navy", "brass", "quartz"]],
+                            "back": [None, None, None], "undone": ["navy", "brass", "quartz"], "left": [None, None, None]}
+                    if kt != want: fails.append(f"{w}: the kitchen's units navy with brass handles and a quartz worktop, The plan's, Undo: {kt} (want {want})")
                     tl = pg.evaluate(TILE)                          # N225: the WC's tiles and grout, held, The plan's, Undo; its toilet and basin swapped, then as planned
                     want = {"title": "WC: the tiles", "plan": "The plan's: white 15 × 15", "st": "Zellige, charcoal grout · £28–38", "kp": ["zellige", "charcoal"], "drawn": True, "held": True,
                             "again": True, "gone": True, "undone": "zellige", "back": True}
