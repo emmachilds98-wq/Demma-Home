@@ -1,4 +1,8 @@
-# Handover (23 Nov 2026, V4.56: start here)
+# Handover (23 Nov 2026, V4.57: start here)
+
+## Pick up here (23 Nov 2026, V4.57)
+- **V4.57:** N239 (the same light from a distance), N242 (the client: "options that you pick from varying suppliers and I'm able to look at": each storage spot's idea card steps ‹ › through 3 real products from different shops; `docs/N242_options.json`). Left on N242: the living room's spots, a pick's price in Changes. N240 (the PC's choppy picture) on `claude/trusting-gauss-gra6z6-n240`, in progress.
+- **Next:** N240; the same shop options for other choices if Emma asks (lighting fittings, rugs, curtains); N237's rest; N228, N229, N234, N235 wait on Emma.
 
 ## Pick up here (23 Nov 2026, V4.56)
 **Check lightly (the client: "stop checking so much ... make sure future agents stop doing it too"):** quick checks and privacy per change, push, CI does the browser checks (CLAUDE.md).
