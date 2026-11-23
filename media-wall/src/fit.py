@@ -1141,8 +1141,8 @@ SOURCES["trones"] = ("IKEA UK: TRONES shoe cabinet/storage, white, 52 × 18 × 3
                      "the wall (ikea.com/gb, 003.973.07)")
 SOURCES["eket"] = ("IKEA: EKET wall cabinet with glass door, 35 × 35 × 35 cm, a suspension rail included, at least 5 cm to the ceiling; "
                    "about 38 € (ikea.com/lv, ikea.com/cz)")
-SOURCES["floatshelf"] = ("B&Q: Shelf Depot oak floating shelf, L 900 × D 230 mm, a concealed steel bracket included (diy.com, 5060042781980); "
-                         "Wickes floating shelf brackets for solid walls")
+SOURCES["floatshelf"] = ("B&Q: Shelf Depot oak floating shelf, L 900 × D 230 × 38 mm, oak colour, a concealed steel bracket included, £24.99 "
+                         "(diy.com, 5060042781980, read 23 Nov 2026); Wickes floating shelf brackets for solid walls")
 SOURCES["seat"] = ("Window seats: a seat 17 to 19 in (43 to 48 cm) high and at least 16 in (41 cm) deep, 18 to 22 in better "
                    "(hunker.com, askthebuilder.com); a lift-up lid stores the most")
 SOURCES["shoebench"] = ("notonthehighstreet (Momentum): open-compartments shoe bench, 104 × 30 × 48 cm, a padded seat, 200 kg on the seat")
@@ -1434,10 +1434,6 @@ ORDER.append("amelia")
 # N212 (21 Nov 2026): the storage ideas' pieces (house/storage_ideas.py), options to look at (IKEA UK listings read 22 Nov 2026)
 SOURCES["kallax24"] = ("IKEA UK: KALLAX shelving unit, white stained oak effect, W 77 × D 39 × H 147 cm, 13 kg a shelf, stands either way up, "
                        "£55 (ikea.com/gb, 003.245.18); with two door inserts £88; LPs: about 50 a cube (r/vinyl, \"1000 vinyl records\", 2025)")
-SOURCES["skadis"] = "IKEA UK: SKÅDIS pegboard, white, 56 × 56 cm, £13; with hooks, a shelf and boxes £35.50 (ikea.com/gb, 003.208.03)"
-SOURCES["helmer"] = "IKEA UK: HELMER drawer unit on castors, white or black, W 28 × D 43 × H 69 cm, six drawers, £39 (ikea.com/gb, 102.510.45)"
-SOURCES["ivar"] = "IKEA UK: IVAR 1 section with shelves, pine, 89 × 30 × 179 cm, the shelves moved to suit, about £96 (ikea.com/gb, 398.963.71)"
-SOURCES["mittled"] = "IKEA UK: MITTLED LED spotlight, dimmable, black, for inside cabinets, £9 (ikea.com/gb, 605.286.59)"
 # N219 (22 Nov 2026): real pieces from four shops (docs/N219_catalogue.json, read 22 Nov 2026), each its own row, to swap or add in
 # the 3D (options to look at: nothing to buy until she picks). Keyed by its page and name (shop_key), so a row in Send or a look link keeps it.
 def shop_key(p):   # its page and name (one page can sell two sizes)
@@ -1454,12 +1450,12 @@ for _p in shop_pieces():
     SOURCES[shop_key(_p)] = (f"{_p['retailer']}: {_p['name']}, {_p['finish']}, W {_p['w']:g} × D {_p['d']:g}"
                                     + (f" × H {_p['h']:g}" if _p.get("h") else "") + f" cm, £{_p['price']:g} ({_p['url']}, read {_p['read']})")
     ORDER.append(shop_key(_p))
-SOURCES["bergshult"] = ("IKEA UK: BERGSHULT shelf, white, 80 × 20 cm, £12, on two RAMSHULT brackets (18 × 22) at least 70 apart; the pair about £27 "
-                        "(ikea.com/gb, 704.212.38)")
-SOURCES["tjusig"] = "IKEA UK: TJUSIG hat rack, white, W 79 × D 32 × H 25 cm, hooks under a rail shelf, £29 (ikea.com/gb, 401.526.33)"
 SOURCES["paxslide"] = ("IKEA UK: a pair of PAX sliding doors (AULI mirror glass and others) for 200 of frames, 200 × 201 cm, built-in depth 8 cm, "
                        "£215–320 (ikea.com/gb, 499.303.60, 791.909.50)")
-ORDER.extend(["kallax24", "skadis", "helmer", "ivar", "mittled", "bergshult", "tjusig", "paxslide"])
+# N223 (23 Nov 2026): the storage ideas redrawn to her brief, most made to the spot from the oak board ("snowdonoak"); the hall's peg rail bought
+SOURCES["pegrail"] = ("Willow & Stone: Oak Backplate for Creating Hook/Peg Rails, natural solid oak, 91.5 × 7 × 2 cm £35 (56 × 7 £23.50); "
+                      "Single Shaker Style Oak Peg, 7 × 2 cm, £2.75 (willowandstone.co.uk, read 23 Nov 2026)")
+ORDER.extend(["kallax24", "paxslide", "pegrail"])
 # V4 (N152): will the sofa bed go in? Its biggest box (166 × 101 × 68, SOURCES "amelia") carried on its side, the 166 first: it needs
 # its 68 and 2 to spare (hands) across each opening on the way, the front door, the hall past the stair box and the living room door, in
 # line (no turn). A door left on its hinges, open flat, takes about its leaf's thickness (E: 4) more. The doors' widths are Measure's

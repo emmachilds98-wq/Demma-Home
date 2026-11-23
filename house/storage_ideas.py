@@ -1,17 +1,34 @@
 """N212 (Emma, 21 Nov 2026: "keep storage in mind as its a strange shaped house and needs to be adequate for all our things and displays /
-knick nacks"; "integrating good storage design in a unique way"): storage and display worked into the rooms' odd spaces, options to look
-at, never in the plan's build or buy lists (CLAUDE.md: core plan vs options). Each idea is one line (what, where, size, rough cost, source)
-and one or more pieces, each a real product's size (media-wall/src/fit.py SOURCES) placed in the house's own numbers (survey_data, model).
+knick nacks"), redrawn to her brief by N223 (23 Nov 2026: "I want storage ideas that are unique and don't take up lots of space so various
+small to medium unless there's adequate space, it should be fit with similar design to the living room and office bedroom 3"): small and
+medium pieces, each made for its spot in the media wall's and the office's artisan oak (the oak board, through-tenons, a face frame,
+face-out ledges); options to look at, never in the plan's build or buy lists (CLAUDE.md: core plan vs options). Each idea is one line
+(what, where, size, rough cost, source) and one or more pieces placed in the house's own numbers (survey_data, model): a made piece's size
+is its spot's, its cost the oak it takes at the board's price (oak(): media-wall/src/fit.py SOURCES "snowdonoak"); a bought one is a real
+product's size and price.
 
 What they keep (DECISIONS, 21 Nov): 100-300 LPs with room to grow, under 2 m of books and games, clothes and shoes, tech, cables and hobby
 kit, knick-knacks to show. now() says what each room holds, dead() the odd spaces measured from the model, ideas() what fits them.
-The 3D draws a piece with room3d/08_house_catalogue.js's builders (its `cat`, an "idea" kind), only once it's shown (Look's floor card,
-More: Storage ideas); checks() proves each fits (check_model.py). docs/STORAGE.md has the numbers. python3 house/storage_ideas.py prints them."""
+The 3D draws a piece with room3d/08_house_catalogue.js's builders (its `cat`, an "idea" kind, the house's own artisan oak), only once it's
+shown (Look's floor card, More: Storage ideas); checks() proves each fits (check_model.py). docs/STORAGE.md has the numbers.
+python3 house/storage_ideas.py prints them."""
 import functools
+import math
 import model as M
 import survey_data as D
 
 FY = M.FLOOR_Y
+BOARD = (184.50 / 3, 0.6 * 1.2)   # fit.SOURCES "snowdonoak": an 18 mm oak furniture board 600 × 1200, £184.50 a pack of three
+PLY = 22.50                       # fit.SOURCES "wickesply": a 12 mm ply sheet 607 × 1829
+MADE = "made to the spot: 18 mm oak board"
+
+
+def oak(m2, lo=0.0, hi=None):
+    """A made piece's rough cost (lo, hi), £5s: its oak (m², a quarter more for the cuts) at the board's price, then to the whole boards
+    it takes; plus what else it needs (lo, and hi if more)."""
+    r5 = lambda v: int(5 * math.ceil(v / 5 - 1e-9))
+    a = m2 * 1.25
+    return r5(a * BOARD[0] / BOARD[1] + lo), r5(math.ceil(a / BOARD[1]) * BOARD[0] + (lo if hi is None else hi))
 
 
 def _room(rid):
@@ -38,85 +55,86 @@ def ideas():
     y1, yl, yg = FY["first"], FY["lower"], FY["ground"]
     out = []
     add = lambda **k: out.append(k)
-    # ---------------------------------------------------------------- bedroom 2, the music room: records, lit display, the gear
+    # ---------------------------------------------------------------- bedroom 2, the music room: records, face-out ledges, the gear
     mu, kx = D.MUSIC, D.MUSIC["kallax"]
     za = kx["z0"] + kx["d"] + kx["drawer_d"] + 1.0                        # past the Kallax drawers pulled out
-    add(id="records", room="bed2", n="Record wall", ref="kallax24", cost=(55, 90), size="147 × 39 × 77",
-        what="a KALLAX 2 × 4 laid on its side: six cubes of LPs (about 300 more), two with doors for the deck's kit",
-        where="bedroom 2, the side wall past the slope", src="IKEA KALLAX 77 × 147, 39 deep",
-        parts=[dict(cat="st_records", box=[2.0, y1, za, 41.0, y1 + 77.0, za + 147.0], back="x0")])
-    zc = za + 147.0 / 2
-    add(id="glass", room="bed2", n="Lit glass cabinets", ref=["eket", "mittled"], cost=(90, 120), size="2 × 35 × 35 × 35",
-        what="two EKET glass-door cabinets over the records, a MITTLED spotlight in each: the knick-knacks lit",
-        where="bedroom 2, over the record wall", src="IKEA EKET with glass door 35 × 35 × 35; MITTLED",
-        parts=[dict(cat="st_eket", box=[0.0, y1 + 125.0, z0, 35.0, y1 + 160.0, z0 + 35.0], back="x0") for z0 in (zc - 37.5, zc + 2.5)])
+    # LP bays 34 high, 33 deep inside (fit "crate": 32.5-33 for a 31.4 sleeve), about 50 LPs to 33 cm of bay (fit "kallax24")
+    add(id="records", room="bed2", n="Record cabinet", ref=["snowdonoak", "crate", "kallax24", "wickesply"], cost=oak(2.45, PLY),
+        size="110 × 36 × 80", what="a low oak cabinet with a face frame, two rows of three bays: about 250 LPs on edge, one bay shut for the deck's kit",
+        where="bedroom 2, the side wall past the slope", src=f"{MADE}; LP bays 34 × 33 inside",
+        parts=[dict(cat="st_lpcab", box=[2.0, y1, za, 38.0, y1 + 80.0, za + 110.0], back="x0")])
+    add(id="faceout", room="bed2", n="Face-out record ledges", ref=["snowdonoak", "media"], cost=oak(0.26), size="2 × 110 × 9",
+        what="two oak ledges with a lip, as the media wall's: six LPs face-out, the ones playing now",
+        where="bedroom 2, over the record cabinet", src=f"{MADE}; LP sleeves 31.4",
+        parts=[dict(cat="st_faceout", box=[0.0, y1 + v, za, 9.0, y1 + v + 34.0, za + 110.0], back="x0") for v in (116.0, 158.0)])
     cb = mu["chairbed"]
-    add(id="pegboard", room="bed2", n="Pegboard for the gear", ref="skadis", cost=(15, 40), size="56 × 56",
-        what="a SKÅDIS pegboard over the amp: leads, pedals, picks, the headphones on hooks",
-        where="bedroom 2, the front wall over the amp", src="IKEA SKÅDIS pegboard 56 × 56",
-        parts=[dict(cat="st_skadis", box=[4.0, y1 + 100.0, cb["z1"] - 10.0, 60.0, y1 + 156.0, cb["z1"]], back="z1")])
-    # ---------------------------------------------------------------- the master bedroom: frames over the bed, boxes over the door
+    add(id="pegboard", room="bed2", n="Oak pegboard", ref=["snowdonoak", "oakdowel"], cost=oak(0.36, 5, 15), size="56 × 56",
+        what="an oak pegboard over the amp, oak pegs and a small shelf: leads, pedals, picks, the headphones",
+        where="bedroom 2, the front wall over the amp", src=f"{MADE}; oak dowel pegs",
+        parts=[dict(cat="st_oakpeg", box=[4.0, y1 + 100.0, cb["z1"] - 10.0, 60.0, y1 + 156.0, cb["z1"]], back="z1")])
+    # ---------------------------------------------------------------- the master bedroom: ledges over the bed, boxes over the door
     ms = D.MASTER
     (bz0, bz1), bs, hb = ms["bed"]["z"], ms["bedsides"], y1 + ms["bed"]["head_h"]      # the headboard's top
     mid = (bz0 + bz1) / 2
-    add(id="ledges", room="master", n="Ledges over the bed", ref="mosslanda", cost=(20, 45), size="115 and 2 × 55, 12 deep",
-        what="an oak picture ledge over the bed for frames, one over each bedside for the small things",
-        where="master bedroom, the wall behind the bed", src="IKEA MOSSLANDA 115 and 55",
-        parts=[dict(cat="st_ledge", box=[0.0, hb + 4.0, c - w / 2, 12.0, hb + 34.0, c + w / 2], back="x0")   # one line, over the headboard
-               for c, w in [(mid, 115.0)] + [((a + b) / 2, 55.0) for a, b in bs]])
+    add(id="ledges", room="master", n="Ledges over the bed", ref="snowdonoak", cost=oak(0.24), size="120 and 2 × 40, 9 deep",
+        what="oak ledges with a lip in one line over the bed and the bedsides: frames, a plant, the small things",
+        where="master bedroom, the wall behind the bed", src=MADE,
+        parts=[dict(cat="st_ledge", box=[0.0, hb + 4.0, c - w / 2, 9.0, hb + 30.0, c + w / 2], back="x0")   # one line, over the headboard
+               for c, w in [(mid, 120.0)] + [((a + b) / 2, 40.0) for a, b in bs]])
     md, mx = _door("master_door"), _room("master_b")["x1"]
-    add(id="overdoor", room="master", n="A shelf over the door", ref="floatshelf", cost=(25, 40), size="90 × 23",
-        what="an oak floating shelf over the door, inside: hat boxes and the off-season, out of the way",
-        where="master bedroom, over its door", src="B&Q oak floating shelf 90 × 23",
-        parts=[dict(cat="st_float", box=[mx - 23.0, y1 + 212.0, md["a"] - 6.0, mx, y1 + 233.0, md["a"] + 84.0], back="x1")])
+    add(id="overdoor", room="master", n="A shelf over the door", ref=["snowdonoak", "kuggis"], cost=oak(0.22), size="90 × 20",
+        what="an oak shelf on two through-tenoned brackets over the door: lidded boxes of the off-season and the hats",
+        where="master bedroom, over its door", src=f"{MADE}; the media wall's wedged tenons",
+        parts=[dict(cat="st_tenshelf", box=[mx - 22.0, y1 + 211.0, md["a"] - 6.0, mx, y1 + 234.0, md["a"] + 84.0], back="x1")])
     # ---------------------------------------------------------------- bedroom 3, the office: the cables and the bits
     of = D.OFFICE
     hz = (of["pc"]["z"][1] + 2 + 346.0) / 2                               # between the two PCs' gear (the second's starts at 346)
-    add(id="helmer", room="bed3", n="Drawers under the desk", ref="helmer", cost=(30, 40), size="28 × 43 × 69",
-        what="a HELMER drawer unit between the two PCs: cables, chargers, controllers, the hobby bits",
-        where="bedroom 3, under the desk", src="IKEA HELMER on castors 28 × 43 × 69",
-        parts=[dict(cat="st_helmer", box=[D.INSIDE["w"] - 3.0 - 43.0, y1, hz - 14.0, D.INSIDE["w"] - 3.0, y1 + 69.0, hz + 14.0], back="x1")])
-    # ---------------------------------------------------------------- the landing: books over the doors, things met at the stairs' top
+    add(id="drawers", room="bed3", n="Oak drawers under the desk", ref=["snowdonoak", "wickesply", "castor50"], cost=oak(1.0, PLY + 4 * 3.29),
+        size="28 × 43 × 69", what="a slim oak tower of six drawers on castors between the two PCs: cables, chargers, controllers, the hobby bits",
+        where="bedroom 3, under the desk", src=f"{MADE}; ply drawer boxes; four 50 mm castors",
+        parts=[dict(cat="st_drawers", box=[D.INSIDE["w"] - 3.0 - 43.0, y1, hz - 14.0, D.INSIDE["w"] - 3.0, y1 + 69.0, hz + 14.0], back="x1")])
+    # ---------------------------------------------------------------- the landing: books over the doors, a lit case at the stairs' top
     la, b2 = _room("landing"), _door("bed2_door")
     sy = y1 + D.DOOR_H + 10.0                                             # over the frames' heads (204) and bedroom 2's cap
-    add(id="books", room="landing", n="Books over the doors", ref="bergshult", cost=(35, 55), size="2 × 80 × 20",
-        what="two shelves over bedroom 2's and the boiler cupboard's doors: paperbacks and game cases, 1.6 m, clear of the loft hatch",
-        where="the landing, over the doors", src="IKEA BERGSHULT 80 × 20 on RAMSHULT brackets",
-        parts=[dict(cat="st_shelf", box=[la["x0"], sy, z0, la["x0"] + 20.0, y1 + M.CEIL - 0.5, z0 + 80.0], back="x0")
+    add(id="books", room="landing", n="Books over the doors", ref="snowdonoak", cost=oak(0.40), size="2 × 80 × 20",
+        what="two oak shelves on through-tenoned brackets over bedroom 2's and the boiler cupboard's doors: paperbacks and game cases, 1.6 m",
+        where="the landing, over the doors", src=f"{MADE}; the media wall's wedged tenons",
+        parts=[dict(cat="st_tenshelf", box=[la["x0"], sy, z0, la["x0"] + 20.0, y1 + M.CEIL - 0.5, z0 + 80.0], back="x0")
                for z0 in (b2["a"] - 7.0, b2["a"] + 73.0)])
     lt = _room("landing_top")
-    add(id="stairtop", room="landing", n="Ledges at the top of the stairs", ref="mosslanda", cost=(18, 30), size="3 × 55 × 12",
-        what="three oak picture ledges stacked: the knick-knacks met at the top of the stairs",
-        where="the landing, the end wall at the top of the stairs", src="IKEA MOSSLANDA 55",
-        parts=[dict(cat="st_ledge", box=[lt["x0"] + 13.0, y1 + v, lt["z1"] - 12.0, lt["x0"] + 68.0, y1 + v + 30.0, lt["z1"]], back="z1")
-               for v in (115.0, 148.0, 181.0)])
+    gl = max(0.3, (0.51 * 0.76 + 2 * 0.51 * 0.09))                        # its front and two shelves (m², the 0.3 the least charged)
+    add(id="glasscase", room="landing", n="A lit glass case", ref=["snowdonoak", "glasscut", "wickesply", "cablight"],
+        cost=oak(0.32, gl * 75 + PLY + 17, gl * 95 + PLY + 17), size="55 × 80 × 12",
+        what="the living room's glass case made small: an oak frame, a glass front and two glass shelves, a light under its top",
+        where="the landing, the end wall at the top of the stairs", src=f"{MADE}; toughened glass cut to size; a USB cabinet light",
+        parts=[dict(cat="st_glass", box=[lt["x0"] + 15.0, y1 + 115.0, lt["z1"] - 12.0, lt["x0"] + 70.0, y1 + 195.0, lt["z1"]], back="z1")])
     # ---------------------------------------------------------------- the hall: coats over the bench, the keys over the radiator
-    hb_, hm, ra = _box("hall.bench"), _box("hall.mirror"), _box("hall.radiator")
+    hm, ra = _box("hall.mirror"), _box("hall.radiator")
     hx = _room("hall")["x1"]
-    add(id="hooks", room="hall", n="Hooks and a hat shelf", ref="tjusig", cost=(25, 35), size="79 × 32 × 25",
-        what="a TJUSIG hat rack over the bench, past the mirror: coats and bags on its hooks, hats and gloves on top",
-        where="the hall, over the bench", src="IKEA TJUSIG 79 × 32 × 25",
-        parts=[dict(cat="st_hooks", box=[hx - 32.0, yg + 165.0, hm[5] + 2.0, hx, yg + 190.0, hm[5] + 81.0], back="x1")])
-    add(id="radshelf", room="hall", n="A shelf over the radiator", ref="floatshelf", cost=(25, 40), size="90 × 23",
+    add(id="hooks", room="hall", n="Peg rail and a hat shelf", ref=["pegrail", "snowdonoak"], cost=oak(0.22, 35 + 5 * 2.75), size="79 × 22 × 30",
+        what="a Shaker oak peg rail under an oak hat shelf, past the mirror: coats and bags on five pegs, hats and gloves on top",
+        where="the hall, over the bench", src="Willow & Stone oak backplate cut to 79, five oak pegs; the shelf made to the spot",
+        parts=[dict(cat="st_pegshelf", box=[hx - 22.0, yg + 160.0, hm[5] + 2.0, hx, yg + 190.0, hm[5] + 81.0], back="x1")])
+    add(id="radshelf", room="hall", n="A shelf over the radiator", ref="floatshelf", cost=(25, 30), size="90 × 23",
         what="an oak floating shelf over the radiator: keys, post and a tray for the small things",
-        where="the hall, over the radiator", src="B&Q oak floating shelf 90 × 23",
+        where="the hall, over the radiator", src="B&Q oak floating shelf 90 × 23, £24.99",
         parts=[dict(cat="st_float", box=[_room("hall")["x0"], yg + 85.0, (ra[2] + ra[5]) / 2 - 45.0, _room("hall")["x0"] + 23.0, yg + 105.0,
                                          (ra[2] + ra[5]) / 2 + 45.0], back="x0")])
     # ---------------------------------------------------------------- the kitchen: the cookbooks over the bar
-    bar, boiler = _box("kitchen.bar"), _box("kitchen.boiler")
+    boiler = _box("kitchen.boiler")
     kx1 = _room("kitchen")["x1"]
-    add(id="barshelf", room="kitchen", n="A shelf over the bar", ref="floatshelf", cost=(25, 40), size="90 × 23",
+    add(id="barshelf", room="kitchen", n="A shelf over the bar", ref="floatshelf", cost=(25, 30), size="90 × 23",
         what="an oak floating shelf over the breakfast bar, past the boiler: the cookbooks and the jars",
-        where="the kitchen, over the bar", src="B&Q oak floating shelf 90 × 23",
+        where="the kitchen, over the bar", src="B&Q oak floating shelf 90 × 23, £24.99",
         parts=[dict(cat="st_float", box=[kx1 - 23.0, yl + 148.0, boiler[5] + 10.0, kx1, yl + 175.0, boiler[5] + 100.0], back="x1")])
-    # ---------------------------------------------------------------- the store under the stairs: tech, cables and hobby kit in boxes
+    # ---------------------------------------------------------------- the store under the stairs (room for a bigger piece): tech and hobby kit
     sd, sx1 = _door("store_door"), _box("lower.stair_box")[0]
     H, r = M.hang("lower", sd, 1.75), sd["b"] - sd["a"]                   # the door opens in from its west end: past its arc
     z0 = sd["line"] + H["side"] * ((r * r - (sx1 - 30.5 - H["hinge"]) ** 2) ** 0.5 + 2.0)
-    add(id="ivar", room="lower_store", n="Shelves in the store", ref="ivar", cost=(70, 100), size="89 × 30 × 179",
-        what="an IVAR bay against the flight's boxed side: boxes of tech, cables and hobby kit; the back corner left for the washer dryer",
-        where="the store under the stairs", src="IKEA IVAR 1 section 89 × 30 × 179",
-        parts=[dict(cat="st_ivar", box=[sx1 - 30.5, yl, z0, sx1 - 0.5, yl + 179.0, z0 + 89.0], back="x1")])
+    add(id="store", room="lower_store", n="Shelves in the store", ref=["wickesply", "snowdonoak", "kuggis"], cost=oak(0.20, 3 * PLY), size="89 × 30 × 179",
+        what="ply shelves with oak lips, as the media wall's crates, on the flight's boxed side: boxes of tech, cables and hobby kit",
+        where="the store under the stairs", src="made to the spot: 12 mm ply, oak lips; KUGGIS boxes",
+        parts=[dict(cat="st_store", box=[sx1 - 30.5, yl, z0, sx1 - 0.5, yl + 179.0, z0 + 89.0], back="x1")])
     for i in out:
         for p in i["parts"]:
             p["box"] = [round(v, 1) for v in p["box"]]
