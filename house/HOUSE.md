@@ -76,7 +76,9 @@ will eventually confirm exact measurements." Files: `media-wall/inputs/plan_lowe
     letterbox in the rail between the panels).
   - **The stairs (the photos):** the living room's flight runs straight up between a wall and a white newel and banister, grey carpet,
     an LED strip along it; the lower flight runs down under it between walls, grey carpet, a handrail on the left going down, laminate at
-    the bottom. Fitted v67: the top landing ends where the hall's photo puts the door down (the plans' landing).
+    the bottom. Fitted v67: the top landing ends where the hall's photo puts the door down (the plans' landing). **The lower flight's
+    top step is at the door down's frame** (the hall's photo; up the flight from its foot): its 12 goings fitted from the plan's foot to
+    it, about 24.6 (V4.55, N238; they were 22, which left the top riser 33 inside and hid the steps from the front door): to measure.
   - **The alley gate (the client, 25 Oct: "add the alleyway gate inbetween my house and next door to cover the alley"):** a
     close-board timber gate across the alley in line with the fronts, about 180 high on two posts (as next door's in the front photo;
     a ready-made 0.9 × 1.8 m close-board gate, posts and fittings, about £120–180: E). Modelled v66.
