@@ -129,6 +129,21 @@ function sunAt(house) {   // house: the house's rooms' one sun; else the living 
   else { sun.position.copy(sun.userData.p0); sun.target.position.copy(sun.userData.t0); c.left = c.bottom = -5.5; c.right = c.top = 5.5; c.near = 0.5; c.far = 16; }
   c.updateProjectionMatrix(); sun.target.updateMatrixWorld();
 }
+/* N239: the windows' lights: windows in one wall on one floor, side by side (under 60 apart, their heights overlapping), share one light
+   over both, as bright in all as the two (k: their area over the light's); a light without shadows lit the room next door through the
+   wall anyway. Upstairs the back's two bedrooms' and bathroom's */
+let WPANELS = null;
+function winPanels() {
+  if (WPANELS) return WPANELS;
+  const ws = Object.values(R.HOUSE3.items || {}).filter(it => it.k === "window" && it.op && it.op.axis === "x" && R.HOUSE3.rooms[it.r])
+    .map(it => ({ rooms: [it.r], line: it.op.line, fy: R.HOUSE3.rooms[it.r][4], a: it.op.a, b: it.op.b, y0: it.op.y0, y1: it.op.y1, area: (it.op.b - it.op.a) * (it.op.y1 - it.op.y0) }))
+    .sort((p, q) => p.a - q.a), out = [];
+  for (const w of ws) { const o = out.find(p => p.line === w.line && p.fy === w.fy && w.a - p.b < 60 && p.a - w.b < 60 && Math.min(p.y1, w.y1) - Math.max(p.y0, w.y0) > 0.6 * Math.min(p.y1 - p.y0, w.y1 - w.y0));
+    if (!o) { out.push({ ...w }); continue; }
+    o.rooms.push(...w.rooms); o.a = Math.min(o.a, w.a); o.b = Math.max(o.b, w.b); o.y0 = Math.min(o.y0, w.y0); o.y1 = Math.max(o.y1, w.y1); o.area += w.area; }
+  for (const o of out) { o.sz = (o.b - o.a) * (o.y1 - o.y0); o.k = o.area / o.sz; }
+  return (WPANELS = out);
+}
 /* v69: in a room of the house, its ceiling lights on and the sun over the house */
 function placeRoomLights() {
   if (!ROOMLIGHTS.length || !sun) return;
@@ -139,29 +154,29 @@ function placeRoomLights() {
   const pk = [day, n, !!b].join(); if (pk !== POOL.key) { POOL.key = pk; POOL.pts = []; POOL.wins = []; }   // evening's lamps, Fast's four: picked afresh
   /* the rooms seen from it (open doors, a flight's top or foot: the hall's lower flight and landing, the client's "Lit stairs and landing
      below"), as roomCull draws them, before the rest */
-  const seen = b && typeof roomSees === "function" ? roomSees([rid, GS.hereRoom, ...Object.keys(WALK_VIEW).filter(k => WALK_VIEW[k] === S.view)]) : new Set();
+  const cost = b ? roomCost([rid, GS.hereRoom, ...Object.keys(WALK_VIEW).filter(k => WALK_VIEW[k] === S.view)]) : new Map();
+  const tier = (rm, lamp) => (cost.has(rm) ? cost.get(rm) * 2 + (lamp ? 1 : 0) : 9) * 1e5;   // its own room's, its lamp, the rooms a door away, their lamps, two doors ...
   if (b) { const cx = (b[0] + b[1]) / 2, cy = (b[2] + b[3]) / 2, cz = (b[4] + b[5]) / 2, list = [];
-    const near = L => (L.room === rid ? -1e6 : seen.has(L.room) ? -5e5 : 0) + Math.hypot(L.x - cx, L.z - cz) + Math.abs(L.y - cy) * 3;
-    for (const F of Object.values(R.HOUSE3.floors)) { for (const L of F.lights || []) list.push([near(L), L]);
-      if (!day) for (const L of F.lamps || []) list.push([near(L) + (L.room === rid ? 1000 : 400), L]); }   // a room's lamp after its ceiling light
+    const near = L => Math.hypot(L.x - cx, L.z - cz) + Math.abs(L.y - cy) * 3;
+    for (const F of Object.values(R.HOUSE3.floors)) { for (const L of F.lights || []) list.push([tier(L.room) + near(L), L]);
+      if (!day) for (const L of F.lamps || []) list.push([tier(L.room, true) + near(L) + 400, L]); }   // a room's lamp after its ceiling light
     const want = list.sort((p, q) => p[0] - q[0]).map(p => p[1]);
-    POOL.pts = poolPick(POOL.pts, want, want.filter(L => seen.has(L.room)), n); }
+    POOL.pts = poolPick(POOL.pts, want, want.filter(L => cost.has(L.room)), n); }
   else POOL.pts = [];
   ROOMLIGHTS.forEach((l, k) => { const L = k < n && POOL.pts[k]; l.visible = !!L; if (L) lightAt(l, L, day, hd); });
   /* V2.39 (R1): a window lights the room as the sky does through it, an area light the opening's size facing in and a little down.
-     V3.57: the room's own, then the nearest rooms'; N239: the rooms seen first, held as the ceiling lights are */
-  const op = it => it.op && it.op.axis === "x" && it.op, sz = it => (it.op.b - it.op.a) * (it.op.y1 - it.op.y0);
-  if (rr) { const cx = (b[0] + b[1]) / 2, cz = (b[4] + b[5]) / 2, all = Object.values(R.HOUSE3.items || {}).filter(it => it.k === "window" && op(it) && R.HOUSE3.rooms[it.r]);
-    const own = all.filter(it => it.r === rid).sort((p, q) => sz(q) - sz(p)).slice(0, 2);
-    const dist = it => { const r = R.HOUSE3.rooms[it.r]; return (seen.has(it.r) ? -1e5 : 0) + Math.hypot((r[0] + r[1]) / 2 - cx, (r[2] + r[3]) / 2 - cz) + Math.abs(r[4] - rr[4]) * 3 - sz(it) / 1e3; };
-    const want = own.concat(all.filter(it => !own.includes(it)).sort((p, q) => dist(p) - dist(q)));
-    POOL.wins = poolPick(POOL.wins, want, want.filter(it => seen.has(it.r)), WINLIGHTS.length); }
+     V3.57: the room's own, then the nearest rooms'; N239: the rooms seen first, held as the ceiling lights are; two windows side by side
+     in one wall one light (winPanels: upstairs four windows, three lights, so every room's lit from the landing) */
+  if (rr) { const cx = (b[0] + b[1]) / 2, cz = (b[4] + b[5]) / 2, rc = r => [(r[0] + r[1]) / 2, (r[2] + r[3]) / 2];
+    const dist = w => Math.min(...w.rooms.map(id => { const r = R.HOUSE3.rooms[id], [x, z] = rc(r); return tier(id) + Math.hypot(x - cx, z - cz) + Math.abs(r[4] - rr[4]) * 3; })) - w.sz / 1e3;
+    const want = winPanels().slice().sort((p, q) => dist(p) - dist(q));
+    POOL.wins = poolPick(POOL.wins, want, want.filter(w => w.rooms.some(id => cost.has(id))), WINLIGHTS.length); }
   else POOL.wins = [];
   /* V3.30 (living room quality): by day 60, the living room's window's 70 for its size (10 left the rooms flat, lit by the even fill) */
-  WINLIGHTS.forEach((l, k) => { const it = POOL.wins[k], o = it && it.op; l.visible = !!o; if (!o) return; const r = R.HOUSE3.rooms[it.r];
+  WINLIGHTS.forEach((l, k) => { const o = POOL.wins[k]; l.visible = !!o; if (!o) return; const r = R.HOUSE3.rooms[o.rooms[0]];
     const cx = (o.a + o.b) / 2, cy = (o.y0 + o.y1) / 2, d = Math.sign((r[2] + r[3]) / 2 - o.line) || 1;
     l.width = (o.b - o.a) * M; l.height = (o.y1 - o.y0) * M; l.position.copy(v3(cx, cy, o.line + d * 3)); l.lookAt(v3(cx, cy - 40, o.line + d * 100));
-    l.intensity = day ? WK : 3; l.color.set(day ? "#eef0f2" : "#7d89b8"); });   // V3.57: WK, the neighbours' windows on too
+    l.intensity = (day ? WK : 3) * o.k; l.color.set(day ? "#eef0f2" : "#7d89b8"); });   // V3.57: WK, the neighbours' windows on too; N239: a shared light as bright as its windows
   const key = b ? "house" : "";
   if (key === GS.roomKey || OUT.sunOut) return; GS.roomKey = key;   // N189: outside, the sun is the whole house's (outdoor())
   sunAt(!!b);
@@ -398,13 +413,14 @@ function roomDoors() {   // each door's part and the rooms either side ("out": o
     list.push([pk, a || "out", b || "out", !!glazed[pk]]); }
   return (RDOORS = { list, out });
 }
-function roomSees(seeds) {   // the rooms seen from these: through two open (or glazed) doors at most, or a flight's top or foot
+function roomSees(seeds) { return new Set(roomCost(seeds).keys()); }
+function roomCost(seeds) {   // the rooms seen from these: through two open (or glazed) doors at most, or a flight's top or foot (N239: each with its doors' count)
   const { list } = roomDoors(), cost = new Map(seeds.filter(Boolean).map(r => [r, 0])), todo = [...cost.keys()];
   const open = (pk, gz) => gz || !HPARTS[pk] || doorOpen(HPARTS[pk]);   // a door with no leaf of its own (the cupboards', the back door): as open
   while (todo.length) { const r = todo.shift(), c = cost.get(r), add = (q, k) => { if (q && c + k <= 2 && !(cost.get(q) <= c + k)) { cost.set(q, c + k); if (q !== "out") todo.push(q); } };
     for (const [a, b, k] of RLINK) if (a === r) add(b, k); else if (b === r) add(a, k);
     for (const [pk, a, b, gz] of list) if ((a === r || b === r) && open(pk, gz)) add(a === r ? b : a, 1); }
-  return new Set(cost.keys());
+  return cost;
 }
 function roomUncull() {
   for (const me of CULLM) { me.geometry.setDrawRange(0, Infinity); me.layers.enable(0); for (const t of me.userData.twins || []) t.visible = false; }
