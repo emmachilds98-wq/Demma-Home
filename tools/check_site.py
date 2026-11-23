@@ -229,6 +229,19 @@ SHOP = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   const back = await wait(() => !E[id]) && !Object.values(ds.rows('edits')).some(v => v && v.item === id); if (D.actId) q('#r3d-act .x').click();
   return { swapped, line, link, back };
 }"""
+# N232: the kitchen's stool swapped for IKEA's STIG (Swap it, › to it): its line, its shop's page on its card; then as planned
+STOOL = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), ds = window.DemmaStore, E = D.HEDITS, id = 'kitchen.stool';
+  const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
+  R3D.set({ view: 'kitchen' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
+  D.openAct('hitem:' + id); await sl(600); const b = q('#r3d-act [data-actopen^="hswap:"]'); if (!b) return { err: 'no Swap it' }; b.click(); await sl(300);
+  for (let i = 0; i < 40 && !q('#r3d-act-h').textContent.startsWith('STIG'); i++) { const was = (E[id] || {}).swap;
+    q('#r3d-act [aria-label="The next one"]').click(); await wait(() => (E[id] || {}).swap !== was); await sl(200); }
+  const swapped = await wait(() => E[id] && E[id].swap && Object.values(D.PICK).flat().some(p => p.id === id)) && q('#r3d-act-h').textContent.startsWith('STIG'); await sl(300);
+  const line = q('#r3d-act-st').textContent; D.openAct('hitem:' + id); await sl(400);
+  const a = q('#r3d-act a[target="_blank"]'), link = a && [new URL(a.href).host, a.textContent]; q('#r3d-act [data-hreset]').click();
+  const back = await wait(() => !E[id]) && !Object.values(ds.rows('edits')).some(v => v && v.item === id); if (D.actId) q('#r3d-act .x').click();
+  return { swapped, line, link, back };
+}"""
 # N233 (N220): the living room's rug swapped as the house's pieces are (Swap it, ›): drawn, kept; their sofa's card has no Swap it; then as planned
 LIVSWAP = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), it = D.MOV.rug, sw = () => (D.S.layout.rug || {}).sw;
   const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
@@ -588,6 +601,9 @@ def main():
                     sh = pg.evaluate(SHOP)                          # N233 (N219): a shop's piece from its chip, its line and its page, then as planned
                     want = {"swapped": True, "line": "102 × 103 × 74 cm · Fits · £275 · Habitat", "link": ["www.habitat.co.uk", "noopener", "See it at Habitat"], "back": True}
                     if sh != want: fails.append(f"{w}: bedroom 2's chair-bed for Habitat's first seat, then as planned: {sh} (want {want})")
+                    so = pg.evaluate(STOOL)                         # N232: the kitchen's stool for IKEA's STIG, its line and its page, then as planned
+                    if not (so.get("swapped") and so.get("line", "").startswith("40 × 42 × 90 cm · Fits") and so.get("link") == ["www.ikea.com", "IKEA ↗"] and so.get("back")):
+                        fails.append(f"{w}: the kitchen's stool for IKEA's STIG, then as planned: {so} (want \"40 × 42 × 90 cm · Fits\", its IKEA link, then back)")
                     st = pg.evaluate(STORE)                         # N233 (N223): a room's storage ideas, all shown, each clear, then hidden
                     want = {"n": IDEAS_BED2, "inway": [], "hidden": True}
                     if st != want: fails.append(f"{w}: bedroom 2's storage ideas from its floor card's More, All, then None: {st} (want {want}: each piece drawn, none in a walk)")

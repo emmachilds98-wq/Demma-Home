@@ -284,10 +284,23 @@ def scene():
 # N219: a shop's piece for the page: [key, kind, look, name, shop, w, d, h, £, page, its material, its legs' or frame's, a count (drawers or doors)]
 SHOP_KIND = {"deskchair": "chair", "records": "shelves", "display": "shelves", "dining": "table", "coffee": "table", "tv": "unit", "sideboard": "unit"}   # N230: shoes and stools their own
 SHOP_MAT = [(r"jute|rattan|cane|bamboo", "sisal"), (r"white stain", "door_white"), (r"green|sage|olive|yellow", "cloth3"), (r"blue", "cloth0"), (r"grey", "cloth5"),
-            (r"black-brown", "black"), (r"walnut", "pine_dark"), (r"mink|beige|latte", "cloth1"), (r"cherry|whisky|\btan\b|golden|honey|brown|leather", "door_wood"),
+            (r"black-brown", "black"), (r"walnut", "pine_dark"), (r"mink|beige|latte|natural fabric", "cloth1"), (r"cherry|whisky|\btan\b|golden|honey|brown|leather", "door_wood"),
             (r"orange|rosehip|\bred\b", "cloth2"), (r"off-white|cream|linen|white fabric|wool|cotton", "cloth4"), (r"brass", "brass"), (r"white", "door_white"),
             (r"pine", "pine"), (r"ash|rubberwood|natural fabric|light", "birch"), (r"black", "black"), (r"chrome", "chrome"), (r"metal", "steel"), (r"oak|natural", "oak")]
 WOODS = {"oak", "pine", "birch", "pine_dark", "door_wood", "sisal"}
+# N232: a painted or metal piece in a plain paint of its colour, not a cloth's weave (the house's own: no new material)
+PAINTED = {"cloth0": "garage_blue", "cloth1": "book2", "cloth2": "quarry", "cloth3": "book3", "cloth4": "book2", "cloth5": "lead", "cloth6": "book5"}
+SOFT_WORDS = r"fabric|velvet|upholster|chenille|wool|cotton|mesh|leather|cushion|vissle|gunnared|talliden|kelinge|kilanda"
+# N232: its form within its kind, from the listing's own words (its name, finish and note); the first that matches, else the kind's own
+FORMS = {"bed": [(r"metal", "metal"), (r"upholster|vissle", "uph"), (r"rattan|cane", "rattan"), (r"\bhigh\b", "panel"), (r"mid century|scandi", "legged")],
+         "chest": [(r"rattan|cane|bamboo", "rattan"), (r"groove", "groove"), (r"mid century|scandi", "legged")],
+         "seat": [(r"sofa|seater", "sofa"), (r"rattan|cane", "rattan"), (r"wing", "wing"), (r"\blow\b", "low"), (r"^(oak|walnut|ash|birch)", "frame")],
+         "table": [(r"rattan|cane", "rattan"), (r"\blegs\b", "legs"), (r"round", "round")],
+         "unit": [(r"rattan|cane", "rattan"), (r"floating", "floating"), (r"sliding", "sliding"), (r"mid century|scandi", "legged")],
+         "shoes": [(r"rattan|cane", "rattan"), (r"bench", "bench"), (r"compartment", "flip"), (r"mid century|scandi", "legged")],
+         "desk": [(r"hairpin", "hairpin"), (r"height adjustable", "metal")], "lamp": [(r"tripod", "tripod"), (r"arm reach", "arc")],
+         "wardrobe": [(r"\b1 drawer", "drawer1"), (r"drawer", "drawers")]}
+FORMS["bedside"] = FORMS["chest"]
 
 
 def shop_row(q):
@@ -303,21 +316,35 @@ def shop_row(q):
         m, m2 = m2, m
     if k == "rug":   # a rug in cloth, not paint or wood
         m = {"door_white": "cloth4", "black": "cloth5", "oak": "sisal", "birch": "sisal"}.get(m, m)
-    if k == "table" and "glass top" in f:
-        m = "glass"
+    if k == "table" and "glass" in f:   # a glass top, its legs or frame in the other part's material
+        other = [x for x in parts if "glass" not in x]
+        m, m2 = "glass", (mat(other[0]) if other else None) or m2
     nf = n + " " + f
+    words = " ".join([n, f, q.get("note") or ""]).lower()
+    if k in ("chair", "seat", "stool") and m in ("door_wood", "black") and re.search(r"leather|\btan\b|whisky", words):   # N232: leather, not timber or paint
+        m = "shoe_tan" if m == "door_wood" else "leather"
+    if k in ("chair", "seat") and m == "door_wood":
+        m = "shoe_tan"
+    soft = k in ("seat", "chair", "rug") or (k == "bed" and re.search(r"upholster|vissle", words)) or re.search(SOFT_WORDS, parts[0])
+    if not soft:
+        m = PAINTED.get(m, m)
+    if not (len(parts) > 1 and re.search(SOFT_WORDS, parts[1])) and k != "rug":
+        m2 = PAINTED.get(m2, m2)
+    form = next((v for pat, v in FORMS.get(k, []) if re.search(pat, words if pat[0] != "^" else f.strip())), None)
     if k == "bed":
-        look = "metal" if re.search(r"metal", nf, re.I) else "uph" if re.search(r"upholster", nf, re.I) else "wood"
+        look = form or "wood"
     elif k == "shelves":
         look = "ladder" if re.search(r"ladder", n, re.I) else "glass" if q["kind"] == "display" else "cubes" if q["kind"] == "records" else "books"
     elif k == "seat":
-        look = "sofa" if re.search(r"sofa|seater", n, re.I) else "arm"
+        look = form or "arm"
     elif k == "stool":   # N230: a bar stool on a chrome pedestal, upholstered on legs, wooden, or a metal frame
         look = "swivel" if re.search(r"swivel|chrome", nf, re.I) else "uph" if re.search(r"fabric|upholster", nf, re.I) else "wood" if re.search(r"wood", nf, re.I) else "metal"
-    elif k in ("table", "rug"):
+    elif k == "table":
+        look = form if form in ("rattan", "legs") else "round" if form == "round" or q["w"] == q["d"] else "box"
+    elif k == "rug":
         look = "round" if re.search(r"round", n, re.I) or q["w"] == q["d"] else "box"
     else:
-        look = k
+        look = form or k
     pl = re.findall(r"(\d+)\s*\+\s*(\d+)", n)   # its drawers: "3 Drawer", "6 drawers", "(2+2)"
     c = sum(map(int, pl[0])) if pl else int((re.findall(r"(\d+)\s*drawer", n, re.I) or [0])[0])
     if k in ("unit", "wardrobe", "shoes"):

@@ -257,31 +257,86 @@ Object.assign(HCAT, {
 /* N219: real pieces from four shops (R.SHOP, from docs/N219_catalogue.json by export3d.shop_row; each its own fit.SOURCES row by its key)
    and her own (a size, a look, one of the house's materials, a name), drawn by the same builders at their own size. Built only when one is
    swapped in or added, from materials the house already has: no new shader at the first picture. Options to look at: nothing to buy */
+const hcUp = (B, dv) => (m, a, b, c, d, e, f) => B(m, a, b + dv, c, d, e + dv, f);   // a builder's boxes raised dv (a case on its legs)
 const hcMake = (k, look, m, m2, c) => {
-  const grip = m === "door_white" ? "grip" : "knob";
-  if (k === "bed") return hcBed(look === "metal" ? hcBedMetal(m) : look === "uph" ? hcBedUph(m2.startsWith("cloth") ? m2 : m.startsWith("cloth") ? m : "lycksele", m.startsWith("cloth") ? m : "cloth5") : hcBedWood(m, m === m2 ? "pine" : m2));
-  if (k === "wardrobe") return (W, H, D, B) => { const n = c || Math.max(2, Math.round(W / 50)), dw = (W - 0.6) / n;
+  const grip = m === "door_white" ? "grip" : "knob", cane = "sisal", legm = m2 === m && /^(door_white|book\d|quarry|lead|garage_blue)$/.test(m) ? "black" : m2;
+  if (k === "bed") return hcBed(look === "metal" ? hcBedMetal(m) : look === "uph" ? hcBedUph(m2.startsWith("cloth") ? m2 : m.startsWith("cloth") ? m : "lycksele", m)
+    : look === "panel" ? hcBedPanel(m) : look === "legged" ? hcBedLegged(m, m2) : look === "rattan" ? hcBedRattan(m, cane) : hcBedWood(m, m === m2 ? "pine" : m2));
+  if (k === "wardrobe") return (W, H, D, B) => { const n = c || Math.max(2, Math.round(W / 50)), dw = (W - 0.6) / n, dr = look === "drawers" ? 2 : look === "drawer1" ? 1 : 0, v0 = 8 + dr * 19;
     B(m, 0, 0, 0, W, H, D - 2); B("gap", 0.3, 8, D - 2.05, W - 0.3, H - 0.3, D - 2); B(m, 1, 0, D - 6, W - 1, 8, D - 5);
-    for (let i = 0; i < n; i++) { const u0 = 0.3 + i * dw, u = i % 2 ? u0 + 3 : u0 + dw - 5; B(m, u0 + 0.15, 8.3, D - 2, u0 + dw - 0.15, H - 0.3, D - 0.4); B("handle_black", u, H * 0.45, D - 0.4, u + 1.5, H * 0.45 + 32, D); } };
-  if (k === "chest" || k === "bedside") return (W, H, D, B) => { const cols = k === "chest" && (W >= 110 || c > 6) ? 2 : 1;
-    hcChest(m, cols, Math.max(1, Math.min(6, Math.ceil((c || (k === "bedside" ? (H > 50 ? 2 : 1) : Math.round((H - 8) / 22))) / cols))), grip)(W, H, D, B); };
+    for (let j = 0; j < dr; j++) { const v = 8 + j * 19; B(m, 0.45, v + 0.3, D - 2, W - 0.45, v + 18.7, D - 0.4); B(grip === "grip" ? "handle_black" : "knob", W / 2 - 6, v + 12, D - 0.4, W / 2 + 6, v + 13.2, D); }   // its drawers under the doors
+    for (let i = 0; i < n; i++) { const u0 = 0.3 + i * dw, u = i % 2 ? u0 + 3 : u0 + dw - 5; B(m, u0 + 0.15, v0 + 0.3, D - 2, u0 + dw - 0.15, H - 0.3, D - 0.4); B("handle_black", u, H * 0.45, D - 0.4, u + 1.5, H * 0.45 + 32, D); } };
+  if (k === "chest" || k === "bedside") return (W, H, D, B, L) => { const cols = k === "chest" && (W >= 110 || c > 6) ? 2 : 1;
+    if (look === "rattan") return hcCaneCase(m === "sisal" ? "birch" : m, cane, k === "chest" && W > 70 ? 2 : 1)(W, H, D, B, L);
+    const lg = look === "legged" ? 14 : 0; if (lg) hcLegs(legm, W, D, lg, 1.8, 4)(B, L);
+    hcChest(m, cols, Math.max(1, Math.min(6, Math.ceil((c || (k === "bedside" ? (H > 50 ? 2 : 1) : Math.round((H - 8) / 22))) / cols))), grip)(W, H - lg, D, lg ? hcUp(B, lg) : B);
+    if (look === "groove") for (let u = 3; u < W - 2; u += 2.5) B("gap", u, 7, D - 0.5, u + 0.3, H - 1.5, D - 0.3); };   // its grooved fronts
   if (k === "shelves") return look === "cubes" ? hcCubes(m) : look === "ladder" ? hcLadder(m) : look === "glass" ? hcCabinet(m, c) : hcShelves(m, hcBooks);
-  if (k === "desk" || k === "table") return (W, H, D, B, L) => { const t = k === "desk" ? 3 : H < 55 ? 4 : 3.5;
-    if (look === "round") { L(m, W / 2, D / 2, H - t, [[0, 0], [W / 2, 0], [W / 2, t], [0, t]]);
-      L(m2, W / 2, D / 2, 0, [[0, 0], [Math.min(W, D) * 0.22, 0], [Math.min(W, D) * 0.22, 2], [5, 7], [4, H - t], [0, H - t]]); return; }   // a round top on its pedestal
+  if (k === "desk" || k === "table") return (W, H, D, B, L) => { const t = k === "desk" ? 3 : H < 55 ? 4 : 3.5, r = Math.min(W, D) / 2;
+    if (look === "rattan") { L(m, W / 2, D / 2, 0, [[0, 0], [r - 1, 0], [r - 1, H - t], [0, H - t]]); L(m, W / 2, D / 2, H - t, [[0, 0], [r, 0], [r, t], [0, t]]); return; }   // a woven drum
+    if (look === "round" || look === "legs") { L(m, W / 2, D / 2, H - t, [[0, 0], [W / 2, 0], [W / 2, t], [0, t]]);
+      if (look === "legs") { hcLegs(m2, W, D, H - t, 2.2, r * 0.42)(B, L); return; }   // a round top on four legs
+      L(m2, W / 2, D / 2, 0, [[0, 0], [r * 0.44, 0], [r * 0.44, 2], [5, 7], [4, H - t], [0, H - t]]); return; }   // a round top on its pedestal
     B(m, 0, H - t, 0, W, H, D); if (k === "desk") B(m, 3, H - t - 8, 3, W - 3, H - t, 5);   // a desk's modesty rail
+    if (look === "hairpin") { for (const u of [3, W - 4]) for (const tt of [3, D - 4]) for (const q of [0, 4.5]) B(m2, u, 0, tt + (tt < D / 2 ? q : -q), u + 1, H - t, tt + (tt < D / 2 ? q : -q) + 1); return; }   // hairpin legs, two rods a corner
+    if (look === "metal") { for (const u of [4, W - 9]) { B(m2, u, 0, 4, u + 5, 3, D - 4); B(m2, u, 3, D / 2 - 3, u + 5, H - t - 3, D / 2 + 3); B(m2, u, H - t - 3, 4, u + 5, H - t, D - 4); }
+      B(m2, 9, H - t - 6, D / 2 - 2, W - 9, H - t - 3, D / 2 + 2); return; }   // a sit-stand frame: a T at each end, a beam between
     hcLegs(m2, W, D, H - t, H < 55 ? 2.4 : 2.2, 4)(B, L); };
-  if (k === "seat") return look === "sofa" ? hcSofa(m, m2) : hcArmchair(m, m2);
+  if (k === "seat") return look === "sofa" ? hcSofa(m, m2) : look === "wing" ? hcWing(m, m2) : look === "frame" ? hcFrameChair(m, m2) : look === "rattan" ? hcCaneChair(m, cane)
+    : look === "low" ? hcScoop(m, legm) : hcArmchair(m, m2);
   if (k === "chair") return hcSwivel(m, 46, true);
   if (k === "stool") return hcStool(look, m, m2);
   if (k === "rug") return (W, H, D, B, L) => look === "round" ? L(m, W / 2, D / 2, 0, [[0, 0], [W / 2, 0], [W / 2, H], [0, H]]) : B(m, 0, 0, 0, W, H, D);
   if (k === "lamp") return (W, H, D, B, L) => { const r = Math.min(W, D) / 2 - 0.5, sh = m === "sisal" ? "sisal" : "paper";
+    if (look === "tripod") { const ap = H - 34, r0 = r - 1.5, rs = Math.min(19, r);   // three legs splayed from under the shade, each in eight steps
+      for (let j = 0; j < 3; j++) { const a = j * 2.094 + 0.5; for (let q = 0; q < 8; q++) { const rr = r0 * (1 - (q + 0.5) / 8), cu = W / 2 + Math.cos(a) * rr, ct = D / 2 + Math.sin(a) * rr;
+        B(m, cu - 1, ap * q / 8, ct - 1, cu + 1, ap * (q + 1) / 8, ct + 1); } }
+      L(m2 === m ? sh : m2, W / 2, D / 2, H - 34, [[0, 0], [rs, 0], [rs * 0.85, 30], [0, 30]]); return; }
+    if (look === "arc") { const u = Math.min(15, W * 0.15), tc = D / 2;   // a heavy foot, a stem, an arm out to the shade hanging over
+      L("marble", u, tc, 0, [[0, 0], [Math.min(14, r), 0], [Math.min(14, r), 3], [0, 3]]); L(m, u, tc, 3, [[0, 0], [1.2, 0], [1.2, H - 15], [0, H - 15]]);
+      B(m, u, H - 12, tc - 0.8, W - 15, H - 10.4, tc + 0.8); L(m2, W - 15, tc, H - 36, [[0, 0], [15, 0], [6, 24], [0, 24]]); return; }
     L(m2, W / 2, D / 2, 0, [[0, 0], [Math.min(13, r), 0], [Math.min(13, r), 2.5], [Math.min(10, r), 4], [3, 5], [0, 5]]); L(m, W / 2, D / 2, 5, [[0, 0], [1.4, 0], [1, H - 30], [0, H - 30]]);
     L(sh, W / 2, D / 2, H - 28, [[0, 0], [r, 0], [r * 0.82, 28], [0, 28]]); };
-  return (W, H, D, B) => { const n = c || Math.max(1, Math.round(W / 50)), dw = W / n;   // a unit: a carcass on a plinth, its doors in a shadow gap
-    B(m, 0, 0, 0, W, H, D - 2); B("gap", 0.5, 4, D - 2.05, W - 0.5, H - 0.5, D - 2); B(m2 === m ? "black" : m2, 1.5, 0, D - 5, W - 1.5, 4, D - 4);
-    for (let i = 0; i < n; i++) { B(m, i * dw + 0.3, 4.3, D - 2, (i + 1) * dw - 0.3, H - 0.3, D); B(grip === "grip" ? "handle_black" : "knob", (i + 0.5) * dw - 6, H - 8, D, (i + 0.5) * dw + 6, H - 6.8, D + 0.6); } };
+  if (look === "rattan") return hcCaneCase(m === "sisal" ? "birch" : m, cane, c);
+  if (look === "bench") return (W, H, D, B) => { const p = ["shoe_black", "shoe_tan", "shoe_white", "shoe_grey"];   // a seat over two open shelves of shoes
+    for (const u of [0, W - 2.5]) B(m, u, 0, 0, u + 2.5, H - 3, D); B(m, 0, H - 3, 0, W, H, D); B(m, 2.5, 0, 0, W - 2.5, H - 3, 1.5); const sv = (H - 3) / 2;
+    for (const v of [3, sv]) { B(m, 2.5, v - 2, 1.5, W - 2.5, v, D); for (let u = 5, q = 0; u < W - 14; u += 13, q++) for (const du of [0, 5]) B(p[(q + (v > 3)) % 4], u + du, v, 5, u + du + 4.4, v + Math.min(7, sv - 4), D - 3); } };
+  if (look === "flip") return (W, H, D, B) => { const n = Math.max(2, Math.round(H / 42)), rh = (H - 2) / n;   // tip-out fronts, one over another
+    B(m, 0, 0, 0, W, H, D - 2); B("gap", 0.3, 1, D - 2.05, W - 0.3, H - 0.3, D - 2);
+    for (let i = 0; i < n; i++) { const v = 1 + i * rh; B(m, 0.3, v + 0.25, D - 2, W - 0.3, v + rh - 0.25, D - 0.4); B(grip === "grip" ? "handle_black" : "knob", W / 2 - 6, v + rh - 5, D - 0.4, W / 2 + 6, v + rh - 3.8, D); } };
+  return (W, H, D, B, L) => { const n = c || Math.max(1, Math.round(W / 50)), lg = look === "legged" ? 15 : 0, Bq = lg ? hcUp(B, lg) : B, h = H - lg, fl = look === "floating" ? 4 : 0, dw = W / n;
+    if (lg) hcLegs(legm, W, D, lg, 2, 5)(B, L);   // a unit: a carcass on a plinth (on legs; under a top floating over a shadow), its doors in a shadow gap
+    Bq(m, fl ? 1.5 : 0, 0, 0, W - (fl ? 1.5 : 0), h - fl, D - 2); Bq("gap", 0.5, lg ? 0.5 : 4, D - 2.05, W - 0.5, h - fl - 0.5, D - 2); if (!lg) Bq(legm === m ? "black" : legm, 1.5, 0, D - 5, W - 1.5, 4, D - 4);
+    if (fl) { Bq("gap", 3, h - fl, 2, W - 3, h - 3, D - 4); Bq(m, 0, h - 3, 0, W, h, D); }
+    if (look === "sliding") { for (let i = 0; i < 2; i++) { const u0 = i ? W / 2 - 1 : 0.3, u1 = i ? W - 0.3 : W / 2 + 1, t = i ? D - 1.2 : D - 0.4;   // two leaves, one past the other
+      Bq(m, u0, lg ? 0.8 : 4.3, t - 0.8 - (i ? 0 : 0.8), u1, h - fl - 0.3, t); Bq("gap", i ? u0 + 3 : u1 - 4, h * 0.3, t, i ? u0 + 4 : u1 - 3, h * 0.7, t + 0.1); } return; }
+    for (let i = 0; i < n; i++) { Bq(m, i * dw + 0.3, lg ? 0.8 : 4.3, D - 2, (i + 1) * dw - 0.3, h - fl - 0.3, D); Bq(grip === "grip" ? "handle_black" : "knob", (i + 0.5) * dw - 6, h - fl - 8, D, (i + 0.5) * dw + 6, h - fl - 6.8, D + 0.6); } };
 };
+/* N232: the forms the listings' words name (export3d.FORMS): a bed with panel sides to the floor (MALM "high"), one low on tapered legs,
+   one with a cane headboard; a case of cane doors on short legs; a wing chair, a chair on a wooden frame, a rattan bowl, a low scoop */
+const hcBedPanel = m => (W, H, D, B, L, v) => { B(m, 0, 0, 0, W, H, 4); for (const u of [0, W - 2.5]) B(m, u, 0, 4, u + 2.5, v + 2, D - 3);
+  B(m, 0, 0, D - 3, W, Math.min(38, v + 10), D); B("birch", 2.5, v - 2, 4, W - 2.5, v, D - 3); B("gap", 2.5, 1, D - 3.1, W - 2.5, 3, D - 3); };
+const hcBedLegged = (m, legs) => (W, H, D, B, L, v) => { hcLegs(legs, W, D, 16, 2.2, 7)(B, L); B(m, 0, 16, 3, W, v, D);
+  for (const u of [3, W - 7]) B(m, u, 0, 0, u + 4, H - 6, 3); B(m, 0, v + 4, 0, W, H, 3); B("birch", 2, v - 1, 5, W - 2, v, D - 2); };   // its headboard a slab on two posts
+const hcBedRattan = (m, cane) => (W, H, D, B, L, v) => { for (const u of [0, W - 6]) { B(m, u, 0, 0, u + 6, H, 6); B(m, u, 0, D - 6, u + 6, 42, D); }
+  B(m, 6, H - 8, 0.5, W - 6, H, 5.5); B(m, 6, v, 0.5, W - 6, v + 6, 5.5); B(cane, 6, v + 6, 2, W - 6, H - 8, 4);   // the headboard's cane in its frame
+  B(m, 6, 30, D - 5.5, W - 6, 42, D - 0.5); B(cane, 6, 14, D - 4, W - 6, 30, D - 2);
+  B(m, 0, 14, 6, 4, v, D - 6); B(m, W - 4, 14, 6, W, v, D - 6); B("birch", 4, v - 2, 6, W - 4, v, D - 6); };
+const hcCaneCase = (m, cane, n0) => (W, H, D, B, L) => { const lg = 10, n = n0 || Math.max(1, Math.round(W / 45)), dw = (W - 2) / n; hcLegs(m, W, D, lg, 1.6, 3)(B, L);
+  B(m, 0, lg, 0, W, H, D - 2); B("gap", 0.6, lg + 0.6, D - 2.05, W - 0.6, H - 0.6, D - 2);
+  for (let i = 0; i < n; i++) { const u0 = 1 + i * dw; B(m, u0 + 0.2, lg + 0.8, D - 2, u0 + dw - 0.2, H - 0.8, D - 0.6); B(cane, u0 + 3, lg + 3.8, D - 0.6, u0 + dw - 3, H - 3.8, D - 0.4);
+    B("knob", i % 2 ? u0 + 1.2 : u0 + dw - 2.6, (lg + H) / 2 - 2, D - 0.6, i % 2 ? u0 + 2.6 : u0 + dw - 1.2, (lg + H) / 2 + 2, D + 0.6); } };
+function hcWing(m, legs) { return (W, H, D, B, L) => { const a = Math.min(12, W * 0.14), s = Math.min(46, H * 0.45);   // its back tall, wings either side of the head
+  hcLegs(legs, W, D, 12, 2, 6)(B, L); B(m, 0, 12, 0, W, s - 10, D); B(m, 0, s - 10, 0, W, H, 14); B(m, 0, s - 10, 14, a, s + 16, D); B(m, W - a, s - 10, 14, W, s + 16, D);
+  for (const u of [0, W - a]) B(m, u, s + 16, 4, u + a, H - 6, 30); B(m, a + 0.5, s - 10, 28, W - a - 0.5, s, D - 0.5); B(m, a + 0.5, s - 10, 14, W - a - 0.5, H - 4, 28); }; }
+function hcFrameChair(m, fr) { return (W, H, D, B) => { const s = Math.min(40, H * 0.45);   // cushions on a wooden frame: its side rails to the floor, the arms over
+  for (const u of [0, W - 4]) { B(fr, u, 0, 4, u + 4, 3, D - 2); B(fr, u, 3, D - 8, u + 4, s + 18, D - 4); B(fr, u, 3, 6, u + 4, H - 4, 10); B(fr, u, s + 18, 8, u + 4, s + 21, D - 2); }
+  B(fr, 4, s - 14, 10, W - 4, s - 11, D - 6); B(m, 5, s - 11, 12, W - 5, s, D - 3); B(m, 5, s, 8, W - 5, H - 3, 16); }; }
+function hcCaneChair(m, cane) { return (W, H, D, B, L) => { const r = Math.min(W, D) / 2;   // a rattan bowl on a ring, its cushion in it
+  L(cane, W / 2, D / 2, 0, [[0, 0], [r * 0.55, 0], [r * 0.6, 10], [0, 10]]); L(cane, W / 2, D / 2, 10, [[0, 0], [r * 0.7, 0], [r - 1, 18], [r, H - 10], [r - 3, H - 10], [r - 4, 22], [0, 20]]);
+  L(m, W / 2, D / 2 + 2, 20, [[0, 0], [r - 5, 0], [r - 5, 8], [0, 9]]); B(m, W / 2 - r * 0.6, 26, 6, W / 2 + r * 0.6, H - 14, 14); }; }
+function hcScoop(m, legs) { return (W, H, D, B, L) => { const s = Math.min(31, H * 0.45);   // a low lounge chair: a shell seat and back, short legs
+  hcLegs(legs, W, D, 10, 1.6, 7)(B, L); B(m, 0, 10, 4, W, s, D); B(m, 0, s, 0, W, H, 12); for (const u of [0, W - 8]) B(m, u, s, 12, u + 8, s + 14, D - 8); }; }
 /* N230: a bar stool (seat 62-63 high: the listings), its back at t 0, facing +t as the chairs do: on a chrome pedestal (a swivel), on thin
    legs with a padded seat and back, a wooden one with a spindle back, or a metal frame with a back band */
 function hcStool(look, m, m2) { return (W, H, D, B, L) => { const sh = Math.min(63, H - 24), c = W / 2, tc = D / 2;
