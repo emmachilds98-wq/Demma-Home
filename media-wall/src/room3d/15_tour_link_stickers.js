@@ -173,7 +173,7 @@ function applyLook(tok, title = "Emma's look") {   // N222: a title: shown, not 
   setView(o.v in VIEWS ? o.v : "room", true);
   const c = Array.isArray(o.c) && o.c.length === 7 && o.c.every(Number.isFinite) ? o.c : null;
   if (c) { camera.position.copy(v3(c[0], c[1], c[2])); controls.target.copy(v3(c[3], c[4], c[5])); GS.baseFov = Math.max(20, Math.min(90, c[6])); camera.fov = fitFov(GS.baseFov); camera.updateProjectionMatrix(); controls.update(); updateCut(); dirty(); }
-  if (title) lookPill(); else store.set(KEY, S);   // shown: nothing saved till Keep it or Back to mine (23_finish.js)
+  if (title) lookPill(); else store.set(KEY, S);   // shown: nothing saved; Back to mine (or Esc) puts the device's own back (23_finish.js)
   return true;
 }
 function lookFromHash() {
@@ -182,6 +182,7 @@ function lookFromHash() {
   try { history.replaceState(history.state, "", "#room"); } catch (e) {}
 }
 addEventListener("hashchange", () => { if (started) lookFromHash(); });
+document.querySelector("#r3d-theirs [data-lookkeep]")?.remove();   // N222 (Emma: "Dave only looks"): a look shown is never kept: its pill says Back to mine only
 
 let cutSide = "";
 function updateCut() {        // which wall the camera is outside of, if any (only in the views from above, before you walk)

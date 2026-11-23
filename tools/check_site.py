@@ -348,7 +348,7 @@ LOOKS = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTime
   const link = window.__link; await ds.del('edits', rid); try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {} R3D.setFinishes(was);
   return { now, other, worn, link, looks: !!R3D.looks };
 }"""
-# N222: a fresh page with its own colour opens the look's link: shown as Emma's look, its own kept aside (localStorage untouched), Back to mine, then Keep it
+# N222: a fresh page with its own colour opens the look's link: shown as Emma's look, its own kept aside (localStorage untouched), Back to mine; again: no Keep it (Dave only looks)
 LOOKS2 = """async link => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), bed = () => (D.finAll().bed2 || {});
   R3D.setFinishes({ bed2: { 0: '#e8c0c8' } }); await sl(300); const ls = () => [JSON.stringify(Object.assign(JSON.parse(localStorage.getItem('mw18-3d') || '{}'), { view: 0 })), localStorage.getItem('demma-v1:edits') || '{}'], before = JSON.stringify(ls());   // the view it's left on is where you are, not a thing of yours
   const hid = Object.values(D.HEDITS).filter(e => e.removed).length;
@@ -357,8 +357,8 @@ LOOKS2 = """async link => { const D = R3D._dbg, sl = ms => new Promise(r => setT
   q('#r3d-theirs [data-lookmine]').click(); await sl(600);
   const mine = [q('#r3d-theirs').hidden, bed()[0], Object.values(D.HEDITS).filter(e => e.removed).length - hid, JSON.stringify(ls()) === before];
   location.hash = link.split('#')[1]; for (let i = 0; i < 60 && q('#r3d-theirs').hidden; i++) await sl(100); await sl(600);
-  q('#r3d-theirs [data-lookkeep]').click(); await sl(600);
-  const kept = [q('#r3d-theirs').hidden, (JSON.parse(localStorage.getItem('mw18-3d') || '{}').fin || {}).bed2, Object.values(JSON.parse(localStorage.getItem('demma-v1:edits') || '{}')).filter(v => v.field === 'removed').length];
+  const nokeep = !q('#r3d-theirs [data-lookkeep]'); q('#r3d-theirs [data-lookmine]').click(); await sl(600);
+  const kept = [nokeep, q('#r3d-theirs').hidden, bed()[0], JSON.stringify(ls()) === before];
   return { shown, mine, kept };
 }"""
 OFF = """() => { const W = document.documentElement.clientWidth, out = [];
@@ -619,16 +619,16 @@ def main():
                                      "(want it back to a wall, \"Fits\", shown from the link, then gone)")
                     lk = pg.evaluate(LOOKS)                         # N221: a look saved (a wall, a floor, a piece taken out), others set, As it is, the look back
                     l2 = None
-                    if lk.get("link"):                              # N222: its link on another device with its own colour: shown, set aside, Back to mine, Keep it
+                    if lk.get("link"):                              # N222: its link on another device with its own colour: shown, set aside, Back to mine, no Keep it
                         c2 = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=True, has_touch=True, service_workers="block")
                         p2 = c2.new_page(); p2.set_default_timeout(300000); localcdn.route(p2); p2.goto(base + "index.html")
                         p2.wait_for_function("window.R3D && R3D.ready", timeout=240000); p2.wait_for_timeout(1500)
                         l2 = p2.evaluate(LOOKS2, lk["link"]); c2.close()
                     if not (lk.get("now") == "true" and lk.get("other") == ["#c98a5e", False] and lk.get("worn") == ["#3a6b5a", "oak", True, "true"] and lk.get("looks")
                             and l2 and l2["shown"] == ["Emma's look", "#3a6b5a", "oak", 1, True, "#e8c0c8"] and l2["mine"] == [True, "#e8c0c8", 0, True]
-                            and l2["kept"][0] and (l2["kept"][1] or {}).get("0") == "#3a6b5a" and l2["kept"][2] == 1):
+                            and l2["kept"] == [True, True, "#e8c0c8", True]):
                         fails.append(f"{w}: a look saved, others set, As it is, the look worn: {lk}; its link on a device with its own colour: {l2} "
-                                     "(want Emma's look shown, nothing of its own saved over, Back to mine its own, Keep it hers)")
+                                     "(want Emma's look shown, nothing of its own saved over, Back to mine its own, no Keep it)")
                     ft = pg.evaluate(FITS)                          # N217: a swap's size and fit on its card, then as planned
                     if not (ft.get("fits", "").startswith("89 × 89 × 78 cm · Fits") and "cm into the slope" in ft.get("big", "") and ft.get("rid") and ft.get("back")):
                         fails.append(f"{w}: bedroom 2's chair-bed for an armchair, its Kallax for a bookcase, its desk for the long one, then as planned: {ft} "
