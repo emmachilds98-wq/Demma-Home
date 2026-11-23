@@ -2454,6 +2454,7 @@ def wc(o):
     o.item("wc.pipes", "The pipes", "wc", kind="fitting", src="client's photo", measure=False)
     o.prism("upvc", "x", 374.6 + 1, WIDTH - 1, [(zb + 1.5 + 1.6 * math.cos(i * math.pi / 6), y + 61.5 + 1.6 * math.sin(i * math.pi / 6)) for i in range(12)])   # the white pipes (V2.22: round)
     o.lathe("upvc", W["riser_x"], y + 60, zb + 1.5, [(0, 0), (1.6, 0), (1.6, CEIL - 60), (0, CEIL - 60)])   # V3.10 (N49): up the right of the window to the ceiling
+    o.item("wc.basin", "The small basin", "wc")                                               # N225: its trap goes with it (a swap took the basin and left it)
     o.lathe("chrome", xe + bs["d"] / 2, rim - 34, bc, [(0, 0), (2.6, 0), (2.8, 9), (1.2, 10), (1.2, 18), (0, 18)])   # N198: the basin's bottle trap to the wall
     o.prism("chrome", "x", xe, xe + bs["d"] / 2, ring(bc, rim - 29, 1.2, 12))
     # V2.40 (REAL_PLAN R5, the photo of 30 Oct): the black pedal bin and the toilet brush in the corner by the basin's wall, a black mat round the pan

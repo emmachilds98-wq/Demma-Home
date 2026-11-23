@@ -1,4 +1,13 @@
-# Handover (23 Nov 2026, V4.51: start here)
+# Handover (23 Nov 2026, V4.52: start here)
+
+## Pick up here (23 Nov 2026, V4.52)
+The client: "continue on from last team of agents ... keep upgrading appropriately". N225 is built (V4.52): the bathroom's and WC's
+tiles from a tap on them, and their toilets and basins swapped for real Wickes ones (`docs/REAL_PLAN.md` section 29, its row;
+`docs/NOTES.md` "N225").
+
+- **Next, in order:** the check steps WIN and STOOL into `check_site.py` (their JS in section 29's notes and N232's row), N232's finish
+  (branch `claude/n230-furniture` 7db151d), N231, then N224 (splashbacks first), N226 (doors: all at once and each its own), N237.
+  N225's second half (the taps' finish, the mirror, the bath panel) as Emma says.
 
 ## Pick up here (23 Nov 2026, late: the session stopped near its usage limit)
 The client: "Merge the work soon so I can have another team pick it up from GitHub". Section 29 (`docs/REAL_PLAN.md`) is the plan;
