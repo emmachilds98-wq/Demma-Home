@@ -1219,8 +1219,8 @@ def kitchen(o):
         o.box("chrome", xw - 4, Y(B["h"]), zc - 1, xw - 2, Y(bo["y"][0]), zc + 1)
     o.item("kitchen.radiator", "The kitchen radiator", "kitchen", kind="radiator", src="client's photo (30 Oct) + E", data=("KITCHEN", "radiator"), axis="z")
     r_ = K["radiator"]; radiator(o, "z", xw, -1, r_["z"][0], r_["z"][1], Y(r_["y"][0]), Y(r_["y"][1]))   # V3.03 (N44): under the bar
-    o.item("kitchen.chairs", "The bar stools", "kitchen", src="client's photos (30 Oct) + E", measure=False)
-    for cx_, cz_ in K["chairs"]:                                   # V1.14: bar stools, as the photos (they were low chairs)
+    for n_, (cx_, cz_) in enumerate(K["chairs"]):                   # V1.14: bar stools, as the photos (they were low chairs); N230: each its own piece
+        o.item("kitchen.stool" + ("" if not n_ else str(n_ + 1)), "Bar stool %d" % (n_ + 1), "kitchen", src="client's photos (30 Oct) + E", measure=False, axis="z")
         bar_stool(o, cx_, cz_, Y(0), "+x")
     # the LED battens on the ceiling (the photo)
     o.item("kitchen.lights", "The LED battens", "kitchen", kind="light", src="client's photo", measure=False)
@@ -1341,8 +1341,8 @@ def office(o):
     pc = O["pc"]
     o.box("pc_white", pc["x"][0], y0, pc["z"][0], pc["x"][1], y0 + pc["h"], pc["z"][1])
     o.box("pc_glow", pc["x"][0] - 0.3, y0 + 3, pc["z"][0] + 2, pc["x"][0], y0 + pc["h"] - 3, pc["z"][1] - 2)   # its glass side, lit
-    o.item("office.chairs", "The desk chairs", "bed3", src="E", measure=False)
-    for cx, cz in (O["chair"], O["chair2"]):                       # a desk chair at each setup, facing the desk (V1.14: a real swivel chair)
+    for n_, (cx, cz) in enumerate((O["chair"], O["chair2"])):     # a desk chair at each setup, facing the desk (V1.14: a real swivel chair); N230: each its own
+        o.item("office.chair" + ("" if not n_ else "2"), "Desk chair %d" % (n_ + 1), "bed3", src="E", measure=False, axis="z")
         desk_chair(o, cx, cz, y0, "+x")
     o.item("office.radiator", "The office radiator", "bed3", kind="radiator", src="F + E", data=("OFFICE", "radiator"), axis="x")
     r = O["radiator"]                                              # under the window, and the blind down
@@ -1924,7 +1924,56 @@ def hang(floor, d, th):
     deg = h.get("deg", 90.0)
     if deg is None:                                                # the bathroom's: it stops on the bath, BATH_DOOR_GAP off the wall behind it
         deg = bath_door_deg(floor, d, end)
-    return dict(end=end, side=s_, u=u, hinge=hx, pivot=pivot, angle=sign * deg, t0=h.get("open", 0))
+    return dict(end=end, side=s_, u=u, hinge=hx, pivot=pivot, angle=sign * deg, t0=h.get("open", 0), deg=deg, fold=d["id"] in D.BIFOLD)
+
+
+def swing_reach(H, width, a):
+    """N230: how far the door's leaf reaches from its hinge at angle a (degrees from shut, along its wall): a leaf the opening's width
+    to the angle it opens (the bathroom's stops at bath_door_deg); a bifold's two half-leaves fold back along the track, so its outline
+    is a quarter circle of half the width past 45° and the astroid its far half sweeps below that (its far end runs back along the track)."""
+    import math
+    if a < -0.01 or a > H["deg"] + 0.01:
+        return 0.0
+    if not H.get("fold"):
+        return width
+    t = math.radians(min(max(a, 0.0), 90.0))
+    c, s = math.cos(t) ** (2 / 3), math.sin(t) ** (2 / 3)
+    return max(width / 2, width / (c + s) ** 1.5) if a < 45 else width / 2
+
+
+def swing_into(d, H, b, y0, every=2.0):
+    """N230: how far box b reaches into the door's swing (cm, 0 if clear): along rays from the hinge, every few degrees and at the box's
+    nearest point, the swing's reach less where the ray meets the box (205 high, as storage_ideas.checks)."""
+    import math
+    if b[1] > y0 + 205:
+        return 0.0
+    w, (al, ac) = d["b"] - d["a"], ((b[0], b[3]), (b[2], b[5])) if d["axis"] == "x" else ((b[2], b[5]), (b[0], b[3]))
+    l0, l1 = sorted(((al[0] - H["hinge"]) * H["u"], (al[1] - H["hinge"]) * H["u"]))   # along the leaf's way, from the hinge
+    c0, c1 = sorted(((ac[0] - d["line"]) * H["side"], (ac[1] - d["line"]) * H["side"]))   # out the way it opens
+    if l1 <= 0.5 or c1 <= 0.5:
+        return 0.0
+    def enter(t):                                                  # where the ray at t (radians) meets the box, or None
+        dl, dc, lo, hi = math.cos(t), math.sin(t), 0.0, 1e9
+        for p0, p1, dv in ((l0, l1, dl), (c0, c1, dc)):
+            if abs(dv) < 1e-9:
+                if not p0 <= 0 <= p1:
+                    return None
+                continue
+            q0, q1 = sorted((p0 / dv, p1 / dv))
+            lo, hi = max(lo, q0), min(hi, q1)
+        return lo if lo <= hi else None
+    best = 0.0
+    nl, nc = min(max(0.0, l0), l1), min(max(0.0, c0), c1)          # the box's nearest point to the hinge
+    tests = [(math.degrees(math.atan2(nc, nl)), math.hypot(nl, nc))]
+    a = 0.0
+    while a <= H["deg"] + 1e-6:
+        e = enter(math.radians(a))
+        if e is not None:
+            tests.append((a, e))
+        a = min(H["deg"], a + every) if a < H["deg"] else H["deg"] + 1
+    for a, r in tests:
+        best = max(best, swing_reach(H, w, a) - r)
+    return best
 
 
 def bath_door_deg(floor, d, end):
@@ -2329,7 +2378,7 @@ def hall(o):
     o.box("black", bx0 + 3, y + 10, bz0 + 1, bx1 - 3, y + 12, bz1 - 1)
     o.box("check", b["x"][0] + 2, y + b["h"], b["z"][0] + 6, b["x"][1] - 3, y + b["h"] + 4, b["z"][1] - 6)
     for r in Hh["racks"]:                                                      # black shoe racks, shoes on the shelves
-        o.item(f"hall.rack{Hh['racks'].index(r) + 1}", "Shoe rack " + str(Hh["racks"].index(r) + 1), "hall", src="client's photo + E", data=("HALL", "racks"), axis="z")
+        o.item(f"hall.rack{Hh['racks'].index(r) + 1}", "Shoe rack " + str(Hh["racks"].index(r) + 1), "hall", src="client's photo + E", data=("HALL", "racks"), axis="x")   # N230: along the front wall
         x0, x1, z0, z1, h = r["x"][0], r["x"][1], r["z"][0], r["z"][1], r["h"]
         for xx in (x0, x1 - 1.5):
             for zz in (z0, z1 - 1.5):

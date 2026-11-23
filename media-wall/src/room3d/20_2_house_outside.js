@@ -298,16 +298,22 @@ function townTex() {    // the hill's face from across the valley: clusters of t
   });
 }
 const gridFrom = g => { g.computeBoundingBox(); const b = g.boundingBox; return { x: -b.min.x, y: -b.min.y, z: -b.min.z }; };   // N183: the WC's splashback's grid from its own corner (it ran from the house's, its grout stepping across the panel)
+/* N236: a made oak piece's grain runs along each part's length, as the media wall's (03_materials boxGeo): each face's picture turned so its
+   grain (up the picture) runs the longer way of that face, from the box's own size (houseBox's "grain" attribute, dropped here) */
+const GRAIN_ALONG = new Set(["artisan"]);
 function worldUV(geo, k, off) {
-  const T = houseTex(k); if (!T) return geo;
+  const T = houseTex(k), G = geo.attributes.grain; if (!T) { if (G) geo.deleteAttribute("grain"); return geo; }
   const P = geo.attributes.position, N = geo.attributes.normal, uv = new Float32Array(P.count * 2), [sw, sh] = T.size, ox = off ? off.x : 0, oy = off ? off.y : 0, oz = off ? off.z : 0;
   for (let i = 0; i < P.count; i++) {
     const x = P.getX(i) + ox, y = P.getY(i) + oy, z = P.getZ(i) + oz, nx = Math.abs(N.getX(i)), ny = Math.abs(N.getY(i)), nz = Math.abs(N.getZ(i));
     let u, v;
-    if (ny > 0.3 && ny < 0.95 && (k === "tile" || k === "hung")) { const s2 = 1 / ny; if (nx > nz) { u = z; v = x * s2; } else { u = x; v = z * s2; } }   // v69: along the slope at its own pitch (the back is 50°)
+    if (G && G.getX(i) + G.getY(i) > 0) { const dm = [G.getX(i), G.getY(i), G.getZ(i)], q = [x, y, z], ax = ny >= 0.7 ? [0, 2] : nx > nz ? [2, 1] : [0, 1], lg = dm[ax[1]] >= dm[ax[0]];
+      u = q[lg ? ax[0] : ax[1]]; v = q[lg ? ax[1] : ax[0]]; }
+    else if (ny > 0.3 && ny < 0.95 && (k === "tile" || k === "hung")) { const s2 = 1 / ny; if (nx > nz) { u = z; v = x * s2; } else { u = x; v = z * s2; } }   // v69: along the slope at its own pitch (the back is 50°)
     else if (ny >= 0.7) { u = x; v = z; }
     else if (nx > nz) { u = z; v = y; } else { u = x; v = y; }
     uv[2 * i] = u / sw; uv[2 * i + 1] = v / sh;
   }
+  if (G) geo.deleteAttribute("grain");
   geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2)); return geo;
 }

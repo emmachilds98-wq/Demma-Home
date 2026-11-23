@@ -63,6 +63,7 @@ function buildHouse() {
       for (const F of FLIGHT) if (x0 >= F[0] - 1 && x1 <= F[1] + 1 && z0 >= F[2] - 1 && z1 <= F[3] + 1 && y0 >= F[4] - 2 && y0 < F[4] + 260 && y1 <= F[4] + 360) return F.V;   // V3.35: the lower flight's treads and rail are the lower stairs' (inside the store's outline, they went with it)
       let hit = null; for (const V of RVOL) if (x0 >= V[1] && x1 <= V[2] && y0 >= V[3] && y1 <= V[4] && z0 >= V[5] && z1 <= V[6]) { if (hit) return null; hit = V; } return hit; };
     const put = (g, geos, m, part) => { if (!geos.length) return;
+      if (geos.some(q => q.attributes.grain) && geos.some(q => !q.attributes.grain)) geos.forEach(q => q.attributes.grain || q.setAttribute("grain", new THREE.Float32BufferAttribute(new Float32Array(q.attributes.position.count * 3), 3)));
       if (geos.some(q => q.index) && geos.some(q => !q.index)) geos = geos.map(q => { if (!q.index) return q; const u = q.toNonIndexed(); q.dispose(); return u; });   // V2.98 (N37): boxes with profiles or turned shapes in one draw
       let rooms = null;
       if (!part && RVOL.length) { const V = geos.map(roomOf), ord = geos.map((q, i) => i).sort((a, b) => ((V[a] || [])[7] || 0) - ((V[b] || [])[7] || 0) || a - b);
@@ -102,6 +103,7 @@ function buildHouse() {
           if (keys.some(k => SHARED.has(k))) { const I = b.index.array, keep = [];
             b.groups.forEach((gp, f) => { if (!SHARED.has(keys[f])) for (let j = gp.start; j < gp.start + gp.count; j++) keep.push(I[j]); });
             b.setIndex(keep); b.clearGroups(); } }
+        if (GRAIN_ALONG.has(mk)) b.setAttribute("grain", new THREE.Float32BufferAttribute(new Float32Array(P.count * 3).map((q, i) => [w, h, d][i % 3]), 3));   // N236: its size, for worldUV
         return b; }
       if (CLOTH[mk] && !LOWD) return clothBox(mk, x0, y0, z0, x1, y1, z1, r);
       /* V2.79 (N27): the rounding as fine as it shows: under 0.8 cm one bevel an edge (bevelBox, 44 triangles), under 2 cm two steps (108);

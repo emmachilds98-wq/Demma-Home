@@ -209,7 +209,15 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   living room's walls by name, 17 the woodwork (the living room's skirting and door in its Look; any other room's through the palette, N216), 18 rug, 19 curtains, 20 bedding, 21 picture, 22 picture's wall, 23 plant,
   24–25 wallpaper, 26–27 panelling (N57; `finWallRun` gives any wall its face, openings and ceiling line), 28 storage ideas, 29 the slopes
   (N214: none with the ceiling, `walls`, or a colour), 30 on each wall as built (N214: 30 + its number in the house file's
-  `finish_walls[room]`, `[side, line from, to, along from, to, m²]` from `surfaces.walls`). A new slot goes in `finClean`, the Paste filter, `roomUps` and a cost in `UPC`.
+  `finish_walls[room]`, `[side, line from, to, along from, to, m²]` from `surfaces.walls`), 70 on each window (N227: 70 + its number
+  among its room's windows, `winsOf`, from the house file's `windows_in` matched to its window item; `"kind.finish"` or `"none"`, no colon:
+  `pull_edits` keeps `[\w.-]` only). A new slot goes in `finClean`, the Paste filter, `roomUps` and a cost in `UPC`; a slot that isn't a
+  colour must stay out of `finApplyAll`'s palette loop and This room's clearing of the 30s (both now stop at 70).
+  **A window** (N227): a tap on its glass, frame or what's on it opens `win:<room>:<j>` (`winAt`, before the piece's card; The frame
+  goes to that). None set, a window shows the room's old curtains (19), else the plan's (bedroom 2's and the office's roller blinds:
+  `winPlan`). Her own hides the plan's blind by folding its vertices to a point (`winPlanHide`, the blind is merged into the floor's
+  mesh; back while Hold to compare). Its inside face is the window item's room side (a dormer's frame sits 25 in from the room's edge).
+  `HBUILD` is wrapped so a floor rebuilt by an edit (it clears the floor's group) gets what's laid on it again (`finFloorApply`).
   Each wall (N214): `finAt` finds the wall a tap is on as the shader does (its side, then the line within 2 cm and the span within 2);
   This wall sets it, This room and Whole house set 0–3 and drop the 30s; a side with more than one says "the west wall (2 of 3)"
   (`finWallName`); a face under 15 cm or 0.1 m² (a return, a strip) is on none and keeps its side's colour. `check_model.py` checks every
@@ -236,13 +244,16 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `w`, `h`, `along` rows read from that base (`pieceNow`, `pieceDelta`, `setPiece`) and a new swap clears them. What swaps is
   `HSWAP_OF` by id (a decor `rug` too). `fitWhy(id)` is the page's fit check for any changed piece (the swap card and `pieceLine`): the
   room's walls (its box, the notches where it's L-shaped, the knee walls), the slope or ceiling (`model.headroom`), the doors' swings
-  (`opening.swing` in the house file, a quarter circle as `storage_ideas.checks`) and the walks (`storage_ideas.reserves()` named "walk"),
+  (`opening.swing` in the house file; N230: as it opens, `model.swing_into` and the page's `swingInto` the same sums: rays from the hinge every 2° to `deg`, a bifold's reach half its width past 45°, the astroid below) and the walks (`storage_ideas.reserves()` named "walk"),
   all from `R.HOUSE3.fit` (`export3d._fit`), then `clashes`; a rug only the walls. A new walk goes in `reserves()` (the model check keeps
   the storage ideas clear of it too). **Riders:** a piece that stands on or hangs from another is `o.item(..., on="host")` (the house
   file's `on`); `riderBox` moves it with its host (the same offset from the host's back-left corner, the same height over its top) and
-  hides it when the host is taken out or turned, or the new top is under less than 90% of it (hung: when it no longer meets it). Riders
+  hides it when the host is taken out, or the new top is under less than 90% of it (hung: when it no longer meets it); a turned host
+  turns it too (N230: worked out on the host's box before its turn, turned round the host's middle, drawn as an edit with that `turn`). Riders
   are bedroom 2's monitors, interface, 88-key, headphones and mic on the L desk and the office's two screen setups on its desk; not the
-  office lamp (its light would stay behind).
+  office lamp (its light would stay behind). N230: two of a thing are two items (`kitchen.stool`, `kitchen.stool2`; a number on the id:
+  `HSWAP_OF`, `hcSoft` and the walk's soft pieces allow it); a seat kind (`hcSeat`: chairs, stools) swaps centred, facing as before.
+  A kind with no house pieces (bar stools) gets real ones as rows in `docs/N219_catalogue.json` (read date, the listing's W × D × H).
   **Adding** (N218): the add card's kinds are chips, ‹ › goes through that kind (`hcAddOf`); `addSpot` puts a new piece (and each piece
   picked for it) back to the room's wall nearest the tap where `roomWhy` and the pieces find it clear, stored as the row's `x, z` on the
   wall line (0.5 in), which `syncAdds` reads back as against that wall. The space kept clear (`fit.keep`, from `reserves()`) names the
@@ -441,3 +452,34 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - CI cancels a branch's running workflow on each push: batch pushes, or a run never finishes.
 - Worktree agents: give each a task whose files don't overlap; merge with `git merge <their branch>`; `check_site.py`'s step
   strings (`WOOD`, `EACH`, `FITS`, `ADD`, `SWAP`) can be run alone by a small Playwright script that pulls them out with a regex.
+
+## Lessons of 23 Nov 2026 (N230, N236, N232)
+- **A made piece's details** (N236): a catalogue builder gets a 6th argument, a number from where the piece stands (`hcBuild`), so
+  copies of one idea differ (the face-out ledges' sleeves). The house's boxes are rounded to 1 mm (`hcBuild`): a detail proud of a face
+  by less than that vanishes, so labels and bands stand 1 mm out. A material in `GRAIN_ALONG` (`artisan`) carries its boxes' sizes
+  into `worldUV`, which turns each face's picture so its grain (up the picture) runs the face's longer way; any other material keeps
+  the world's directions (up a wall, along z on a top).
+
+## N225, started 23 Nov 2026 (stopped at the usage limit: research and design only, no code yet)
+- **Found:** the bathroom's wall tiles are model material `stone` (60 × 30, `build_textures.TILED`, only the bathroom uses it), the WC's
+  splashback `tile_w` (15 × 15, one panel, `gridFrom`). Both are items of kind `finish` (`bath.tiles`, `wc.tiles`), not in the house file's
+  `items` (`export_house.EDITABLE`), so a tap on them opens no card today (`pickItem`: `HIT` misses, `finAt` skips non-palette keys).
+- **Tiles, the plan:** a new part `room3d/24_bath.js`. Slots `S.fin[room][90]` (style key) and `[91]` (grout key); they pass
+  `pull_edits.finishes` (two digits) and never clash with the walls' 30 + n. Draw a tile by swapping the material's own `map`,
+  `normalMap` and `roughnessMap` (only those it already has: adding one is a new program) for canvas textures drawn at the tile's size,
+  `texture.repeat` = the photo's metres over the pattern's (no new shader; check `gl.info.programs` before and after); `color` white while
+  shown, the originals kept for "The plan's". Hooks (one line each, merge-friendly): `finAt` (a hit on `stone`/`tile_w` → slot 90),
+  `finCard` (slot 90 → the tile card), `finClean` (a line before `if (ok)`), `finLook` (`|| tileLook(s, v)`), `finApplyAll` and `finHold`
+  (call the apply), `roomUps` (the cost: area from the house file's `stone`/`tile_w` boxes, two largest sides, × 1.1 × £/m² plus a
+  tiler's £20–50/m²). Card id `fin:<room>:90` so Undo, Hold to compare and Changes work as on a wall's card. ESLint's `no-func-assign`
+  rules out wrapping `finClean`.
+- **The WC's suite, the plan:** HCAT pieces of kinds `toilet` and `basin` (names via a non-enumerable `HCAT_KINDS` entry so the add card's
+  chips don't show them), `shop: "Wickes"`, `p`, `url` so `hcLine`, the shop link and `upCat` work as N219's. Hook `swapKind` (a first line:
+  `wc.toilet`, `bath.toilet` → toilet; `wc.basin`, `bath.vanity` → basin: the basin's `up` 64 fails its > 20 test) and `swapBox` (a line
+  after `b[4] = ...`: a floor piece from the floor, `it.b[1] - it.s[2]`; a hung basin's rim where the old one's was, 80 in the WC, 86 in
+  the bathroom (`survey_data`); a corner basin to the nearer end of its wall). `checks.py sizes` and `pull_edits` read the catalogue's
+  keys from `08_house_catalogue.js` only: add `24_bath.js` to both regexes. WC: x 374.6–467, z −309 to −134.6; its door's swing a quarter of
+  58 from the hinge at x 448 into the room (z to −191): a corner basin by the door hits it, by the back wall the toilet.
+- **Cited, read 23 Nov:** `fit.SOURCES` `n225tiles` (white metro 15 × 7.5 £23, square 10 × 10 £48, large 60 × 30 £16, sage metro
+  15 × 7.5 £21.33, zellige-look 10 × 10 £36.86; grout white, grey, charcoal; a tiler £20–50/m²) and `n225suites` (Portland, Cleveland,
+  Nuie Bliss back-to-wall, Siena wall-hung on a Duplo One 82 frame; Emma pedestal, Galeria semi-pedestal, Newport corner, compact vanity).

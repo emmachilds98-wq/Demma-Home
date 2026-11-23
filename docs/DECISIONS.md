@@ -58,6 +58,9 @@ take one out (to `docs/HISTORY.md`) when they change their mind.
   (large only where a room has the space), each one unique to its spot, in the living room's and the office's look (the artisan oak:
   oak uprights, through-tenons, face frames, face-out ledges; the office's oak cubes, straight oak desk, overhead shelf, pegboard). Replaces
   N212's first set (IKEA's white and metal stock pieces) as the ideas to look at (REAL_PLAN N223).
+- **What to change next** (23 Nov 2026, asked in a session, REAL_PLAN section 29): first "Bathroom tiles. Toilet downstairs toilet and
+  sink. Then splashbacks and more" (N225 first: the bathroom's tiles, the downstairs WC's toilet and basin; then N224's splashbacks and
+  the kitchen); doors: **both**, one style for every door and any single door its own (N226).
 
 - **Floors for now (21 Nov 2026):** bedroom 2 and the office in grey carpet ("im not planning a floor change here just yet"); the office's plastic ivy out (she'll decorate again soon).
 

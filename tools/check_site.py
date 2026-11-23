@@ -9,8 +9,9 @@ import http.server, json, pathlib, socketserver, sys, threading, time
 from functools import partial
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "media-wall/src"))
-import pw, localcdn  # noqa: E402
+sys.path.insert(0, str(ROOT / "media-wall/src")); sys.path.insert(0, str(ROOT / "house"))
+import pw, localcdn, storage_ideas  # noqa: E402
+IDEAS_BED2 = sum(len(i["parts"]) for i in storage_ideas.for_3d() if i["room"] == "bed2")   # N233: bedroom 2's storage ideas' pieces (STORE)
 
 ARGS = [a for a in sys.argv[1:] if a != "--hitch"]; HITCH = "--hitch" in sys.argv   # N177: --hitch runs only the hitch walk (its own CI job: the site job is near its 40 min)
 SITE = pathlib.Path(ARGS[0] if ARGS else ROOT / "_site").resolve()
@@ -197,6 +198,44 @@ FITS = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   const back = await wait(() => !Object.keys(E).some(k => /^music[.]/.test(k))) && !Object.values(ds.rows('edits')).some(v => v && /^music[.]/.test(v.item));
   if (D.actId) q('#r3d-act .x').click();
   return { fits, big, rid, back };
+}"""
+# N233 (N219): bedroom 2's chair-bed swapped for Habitat's first seat from its Shops chip: its line, its page; then as planned
+SHOP = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), ds = window.DemmaStore, E = D.HEDITS, id = 'music.chairbed';
+  const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
+  R3D.set({ view: 'bed2' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
+  D.openAct('hitem:' + id); await sl(600); q('#r3d-act [data-actopen^="hswap:"]').click(); await sl(300);
+  const chip = [...document.querySelectorAll('#r3d-act [aria-label="Shops"] button')].find(b => b.textContent === 'Habitat'); if (!chip) return { err: 'no Habitat chip' };
+  chip.click(); const swapped = await wait(() => E[id] && E[id].swap && D.PICK.first.some(p => p.id === id)); await sl(300);
+  const a = q('#r3d-act a[target="_blank"]'), line = q('#r3d-act-st').textContent, link = a && [new URL(a.href).host, a.rel, a.textContent];
+  D.openAct('hitem:' + id); await sl(400); q('#r3d-act [data-hreset]').click();
+  const back = await wait(() => !E[id]) && !Object.values(ds.rows('edits')).some(v => v && v.item === id); if (D.actId) q('#r3d-act .x').click();
+  return { swapped, line, link, back };
+}"""
+# N233 (N220): the living room's rug swapped as the house's pieces are (Swap it, ›): drawn, kept; their sofa's card has no Swap it; then as planned
+LIVSWAP = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), it = D.MOV.rug, sw = () => (D.S.layout.rug || {}).sw;
+  const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
+  R3D.set({ view: 'room' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
+  D.openAct('mov:sofa'); await sl(500); const sofa = !!q('#r3d-act [data-actopen^="lswap:"]');
+  D.openAct('mov:rug'); await sl(500); const b = q('#r3d-act [data-actopen="lswap:rug"]'); if (!b) return { sofa, err: 'no Swap it on the rug' };
+  b.click(); await sl(300); q('#r3d-act [data-lswapgo="rug:1"]').click();
+  const swapped = await wait(() => sw() && it.swk === sw() && it.swg && it.swg.parent === it.pivot && it.g0.parent !== it.pivot); await sl(300);
+  const line = q('#r3d-act-st').textContent, kept = ((JSON.parse(localStorage.getItem('mw18-3d') || '{}').layout || {}).rug || {}).sw === sw();
+  q('#r3d-act [data-lswapgo="rug:0"]').click();
+  const back = await wait(() => !sw() && !it.swk && it.g0.parent === it.pivot && !it.swg); if (D.actId) q('#r3d-act .x').click();
+  return { sofa, swapped, line, kept, back };
+}"""
+# N233 (N223): bedroom 2's floor card, More, Storage ideas, All: each piece drawn, none in a walk or a space kept clear; then None
+STORE = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), H = D.H3;
+  const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
+  R3D.set({ view: 'bed2' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
+  const ids = () => [...new Set(D.PICK.first.map(p => p.id))].filter(k => /^idea[.]/.test(k) && H.items[k] && H.items[k].look === 'bed2'), all = H.storage.filter(i => i.room === 'bed2').reduce((n, i) => n + i.parts.length, 0);
+  D.openAct('fin:bed2:5'); await sl(600); const m = q('#r3d-act .r3d-actmore'); if (m && !m.open) m.querySelector('summary').click(); await sl(200);
+  const b = q('#r3d-act [aria-label="Storage ideas"] [data-finidea="*"]'); if (!b) return { err: 'no All under More' }; b.click();
+  await wait(() => ids().length >= all); await sl(300); const n = ids().length;
+  const over = (p, k) => [0, 1, 2].every(j => p[j] < k[j + 3] - 1 && p[j + 3] > k[j] + 1), inway = ids().flatMap(k => (H.fit.keep || []).filter(([, c]) => over(H.items[k].b, c)).map(([w]) => k + ': ' + w));
+  q('#r3d-act [aria-label="Storage ideas"] [data-finidea=""]').click();
+  const hidden = await wait(() => !ids().length) && !(D.finAll().bed2 || {})[28]; if (D.actId) q('#r3d-act .x').click();
+  return { n, inway, hidden };
 }"""
 # N218: tap bedroom 2's floor, Add a piece here, Shelves: a bookcase stands back to a wall and fits; the look link (Link) carries it
 ADD = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), cv = document.querySelector('.r3d canvas'), q = s => document.querySelector(s), ds = window.DemmaStore;
@@ -516,6 +555,15 @@ def main():
                     if not (ft.get("fits", "").startswith("89 × 89 × 78 cm · Fits") and "cm into the slope" in ft.get("big", "") and ft.get("rid") and ft.get("back")):
                         fails.append(f"{w}: bedroom 2's chair-bed for an armchair, its Kallax for a bookcase, its desk for the long one, then as planned: {ft} "
                                      "(want the armchair \"Fits\", the bookcase into the slope, the monitors on the new top and the interface and headphones hidden, no rows left)")
+                    sh = pg.evaluate(SHOP)                          # N233 (N219): a shop's piece from its chip, its line and its page, then as planned
+                    want = {"swapped": True, "line": "102 × 103 × 74 cm · Fits · £275 · Habitat", "link": ["www.habitat.co.uk", "noopener", "See it at Habitat"], "back": True}
+                    if sh != want: fails.append(f"{w}: bedroom 2's chair-bed for Habitat's first seat, then as planned: {sh} (want {want})")
+                    st = pg.evaluate(STORE)                         # N233 (N223): a room's storage ideas, all shown, each clear, then hidden
+                    want = {"n": IDEAS_BED2, "inway": [], "hidden": True}
+                    if st != want: fails.append(f"{w}: bedroom 2's storage ideas from its floor card's More, All, then None: {st} (want {want}: each piece drawn, none in a walk)")
+                    ls = pg.evaluate(LIVSWAP)                       # N233 (N220): the living room's rug swapped as the house's pieces are, then as planned
+                    want = {"sofa": False, "swapped": True, "line": "160 × 230 × 1 cm · Fits · Argos's usual size", "kept": True, "back": True}
+                    if ls != want: fails.append(f"{w}: the living room's rug swapped (Swap it, ›), then as planned; their sofa no Swap it: {ls} (want {want})")
                 if phone:                                           # V2.5 (FINISHES_PLAN F2): a room's walls and ceiling through the palette, then back
                     fn = pg.evaluate("() => [R3D.finish('bed2', 'walls', '#3a6b5a'), R3D.finish('bed2', 'ceiling', '#e8c0c8'), R3D.finish('nowhere', 'walls', '#000000'), R3D.finish(null, 'walls', null), R3D.finish(null, 'ceiling', null)]")
                     if fn != [True, True, False, True, True]:
