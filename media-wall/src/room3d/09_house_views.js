@@ -96,42 +96,75 @@ function haloShow() {
   for (const me of h.ms) me.visible = on; if (!on) return;
   h.mat.color.copy(warmColour()); h.mat.opacity = day ? 0.1 : 0.26;
 }
-/* v69: in a room of the house, its ceiling lights on and the sun's shadow box over it */
+/* N239 (the client, 23 Nov: "all lights should appear as they do in the room even from a distance ... im not changing lights"): the set
+   holds the lights of the rooms seen first (the room's own, then those seen from it), then their neighbours'; walking into a room whose
+   lights are already on changes nothing, and a room seen and not yet lit swaps a light in while the rest keep theirs, slot by slot */
+const POOL = { pts: [], wins: [], key: "" };
+function poolPick(cur, want, need, n) {   // cur: the lights held, a slot each; want: every light, best first; need: the rooms' seen
+  const top = need.slice(0, n);
+  const at = new Map(want.map((L, i) => [L, i]));
+  if (cur.length === n && top.every(L => cur.includes(L)) && cur.every(L => !L || at.get(L) < n + 3)) return cur;   // (a jump across the house picks afresh)
+  const rank = new Map(want.map((L, i) => [L, i - (cur.includes(L) ? 3 : 0)])), pick = new Set(top);   // one held stays ahead of one a little nearer
+  for (const L of want.filter(L => !pick.has(L)).sort((p, q) => rank.get(p) - rank.get(q))) { if (pick.size >= n) break; pick.add(L); }
+  const out = cur.length === n ? cur.map(L => (L && pick.has(L) ? L : null)) : new Array(n).fill(null), left = [...pick].filter(L => !out.includes(L));
+  return out.map(L => L || left.shift() || null);
+}
+/* N239: one sun over every room of the house, the living room's (low, from the back garden), its shadow box round the whole house, so it
+   never moves as you go from room to room (V3.33's front sun for a front room is gone: seen from the landing the room had the back's) */
+let SUNBOX = null;
+function sunHouse() {
+  if (SUNBOX) return SUNBOX;
+  const H = R.HOUSE3, rs = Object.values(H.rooms), dir = sun.userData.p0.clone().sub(sun.userData.t0).normalize();
+  const x0 = Math.min(...rs.map(r => r[0])), x1 = Math.max(...rs.map(r => r[1])), z0 = Math.min(...rs.map(r => r[2])), z1 = Math.max(...rs.map(r => r[3]));
+  const y0 = Math.min(...rs.map(r => r[4])), y1 = Math.max(y0 + 600, (H.ridge || [])[1] || 0);
+  const t = v3((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2), pos = t.clone().addScaledVector(dir, 20), cam = new THREE.OrthographicCamera();
+  cam.position.copy(pos); cam.lookAt(t); cam.updateMatrixWorld(); const e = [1e9, -1e9, 1e9, -1e9, 1e9, -1e9];
+  for (const x of [x0, x1]) for (const y of [y0, y1]) for (const z of [z0, z1]) { const q = v3(x, y, z).applyMatrix4(cam.matrixWorldInverse);
+    e[0] = Math.min(e[0], q.x); e[1] = Math.max(e[1], q.x); e[2] = Math.min(e[2], q.y); e[3] = Math.max(e[3], q.y); e[4] = Math.min(e[4], -q.z); e[5] = Math.max(e[5], -q.z); }
+  return (SUNBOX = { pos, t, e: [e[0] - 0.1, e[1] + 0.1, e[2] - 0.1, e[3] + 0.1, Math.max(0.5, e[4] - 1), e[5] + 1] });   // left, right, bottom, top, near, far (m)
+}
+function sunAt(house) {   // house: the house's rooms' one sun; else the living room's own, its box round the room
+  const c = sun.shadow.camera;
+  if (house) { const B = sunHouse(); sun.position.copy(B.pos); sun.target.position.copy(B.t); [c.left, c.right, c.bottom, c.top, c.near, c.far] = B.e; }
+  else { sun.position.copy(sun.userData.p0); sun.target.position.copy(sun.userData.t0); c.left = c.bottom = -5.5; c.right = c.top = 5.5; c.near = 0.5; c.far = 16; }
+  c.updateProjectionMatrix(); sun.target.updateMatrixWorld();
+}
+/* v69: in a room of the house, its ceiling lights on and the sun over the house */
 function placeRoomLights() {
   if (!ROOMLIGHTS.length || !sun) return;
   haloShow();   // V3.76 (N116)
   const v = VIEWS[S.view] || {}, b = R.HOUSE3 && v.box, day = S.tod === "day", hd = S.quality === "hd";
   const rid = b && VIEW_ROOM[S.view], rr = rid && R.HOUSE3.rooms && R.HOUSE3.rooms[rid];
-  const list = [];
-  if (b) { const cx = (b[0] + b[1]) / 2, cy = (b[2] + b[3]) / 2, cz = (b[4] + b[5]) / 2;
-    const seen = typeof roomSees === "function" ? roomSees([rid]) : new Set();   // the rooms seen from it (open doors, a flight's top or foot: the hall's lower flight and landing, the client's "Lit stairs and landing below") before the rest
+  const n = hd ? ROOMLIGHTS.length : Math.min(4, ROOMLIGHTS.length);   // Fast: four (20_go.js: the last two are HD's)
+  const pk = [day, n, !!b].join(); if (pk !== POOL.key) { POOL.key = pk; POOL.pts = []; POOL.wins = []; }   // evening's lamps, Fast's four: picked afresh
+  /* the rooms seen from it (open doors, a flight's top or foot: the hall's lower flight and landing, the client's "Lit stairs and landing
+     below"), as roomCull draws them, before the rest */
+  const seen = b && typeof roomSees === "function" ? roomSees([rid, GS.hereRoom, ...Object.keys(WALK_VIEW).filter(k => WALK_VIEW[k] === S.view)]) : new Set();
+  if (b) { const cx = (b[0] + b[1]) / 2, cy = (b[2] + b[3]) / 2, cz = (b[4] + b[5]) / 2, list = [];
     const near = L => (L.room === rid ? -1e6 : seen.has(L.room) ? -5e5 : 0) + Math.hypot(L.x - cx, L.z - cz) + Math.abs(L.y - cy) * 3;
     for (const F of Object.values(R.HOUSE3.floors)) { for (const L of F.lights || []) list.push([near(L), L]);
       if (!day) for (const L of F.lamps || []) list.push([near(L) + (L.room === rid ? 1000 : 400), L]); }   // a room's lamp after its ceiling light
-    list.sort((p, q) => p[0] - q[0]); }
-  const n = hd ? ROOMLIGHTS.length : Math.min(4, ROOMLIGHTS.length);   // Fast: four (20_go.js: the last two are HD's)
-  ROOMLIGHTS.forEach((l, k) => { const L = k < n && list[k] && list[k][1]; l.visible = !!L; if (L) lightAt(l, L, day, hd); });
+    const want = list.sort((p, q) => p[0] - q[0]).map(p => p[1]);
+    POOL.pts = poolPick(POOL.pts, want, want.filter(L => seen.has(L.room)), n); }
+  else POOL.pts = [];
+  ROOMLIGHTS.forEach((l, k) => { const L = k < n && POOL.pts[k]; l.visible = !!L; if (L) lightAt(l, L, day, hd); });
   /* V2.39 (R1): a window lights the room as the sky does through it, an area light the opening's size facing in and a little down.
-     V3.57: the room's two biggest, then the nearest room's biggest */
+     V3.57: the room's own, then the nearest rooms'; N239: the rooms seen first, held as the ceiling lights are */
   const op = it => it.op && it.op.axis === "x" && it.op, sz = it => (it.op.b - it.op.a) * (it.op.y1 - it.op.y0);
-  let ws = [];
   if (rr) { const cx = (b[0] + b[1]) / 2, cz = (b[4] + b[5]) / 2, all = Object.values(R.HOUSE3.items || {}).filter(it => it.k === "window" && op(it) && R.HOUSE3.rooms[it.r]);
     const own = all.filter(it => it.r === rid).sort((p, q) => sz(q) - sz(p)).slice(0, 2);
-    const dist = it => { const r = R.HOUSE3.rooms[it.r]; return Math.hypot((r[0] + r[1]) / 2 - cx, (r[2] + r[3]) / 2 - cz) + Math.abs(r[4] - rr[4]) * 3 - sz(it) / 1e3; };
-    ws = own.concat(all.filter(it => it.r !== rid).sort((p, q) => dist(p) - dist(q))).slice(0, WINLIGHTS.length); }
+    const dist = it => { const r = R.HOUSE3.rooms[it.r]; return (seen.has(it.r) ? -1e5 : 0) + Math.hypot((r[0] + r[1]) / 2 - cx, (r[2] + r[3]) / 2 - cz) + Math.abs(r[4] - rr[4]) * 3 - sz(it) / 1e3; };
+    const want = own.concat(all.filter(it => !own.includes(it)).sort((p, q) => dist(p) - dist(q)));
+    POOL.wins = poolPick(POOL.wins, want, want.filter(it => seen.has(it.r)), WINLIGHTS.length); }
+  else POOL.wins = [];
   /* V3.30 (living room quality): by day 60, the living room's window's 70 for its size (10 left the rooms flat, lit by the even fill) */
-  WINLIGHTS.forEach((l, k) => { const it = ws[k], o = it && it.op; l.visible = !!o; if (!o) return; const r = R.HOUSE3.rooms[it.r];
+  WINLIGHTS.forEach((l, k) => { const it = POOL.wins[k], o = it && it.op; l.visible = !!o; if (!o) return; const r = R.HOUSE3.rooms[it.r];
     const cx = (o.a + o.b) / 2, cy = (o.y0 + o.y1) / 2, d = Math.sign((r[2] + r[3]) / 2 - o.line) || 1;
     l.width = (o.b - o.a) * M; l.height = (o.y1 - o.y0) * M; l.position.copy(v3(cx, cy, o.line + d * 3)); l.lookAt(v3(cx, cy - 40, o.line + d * 100));
     l.intensity = day ? WK : 3; l.color.set(day ? "#eef0f2" : "#7d89b8"); });   // V3.57: WK, the neighbours' windows on too
-  const key = b ? b.join() : "";
-  if (key === GS.roomKey || OUT.sunOut) return; GS.roomKey = key;   // N189: outside, the sun is the whole house's (outdoor()): a room's left it over the living room with the house's box
-  const d = b ? v3((b[0] + b[1]) / 2, 0, (b[4] + b[5]) / 2).sub(sun.userData.t0).setY(0) : new THREE.Vector3();
-  sun.position.copy(sun.userData.p0).add(d); sun.target.position.copy(sun.userData.t0).add(d);
-  /* V3.33 (N85): a room whose biggest window looks out of the front has the front's sun, its patch on the floor */
-  if (ws[0] && ws[0].r === rid && ws[0].op.line > (rr[2] + rr[3]) / 2) { const t = v3((b[0] + b[1]) / 2, b[2], (b[4] + b[5]) / 2);
-    sun.target.position.copy(t); sun.position.copy(t).addScaledVector(dayLight.position.clone().sub(dayLight.target.position).normalize(), sun.userData.p0.distanceTo(sun.userData.t0)); }
-  sun.target.updateMatrixWorld();
+  const key = b ? "house" : "";
+  if (key === GS.roomKey || OUT.sunOut) return; GS.roomKey = key;   // N189: outside, the sun is the whole house's (outdoor())
+  sunAt(!!b);
   reshadow();
 }
 /* v73: one neutral room reflection, made once, on the house's materials from the start (v69's per-room cube camera froze PCs) */

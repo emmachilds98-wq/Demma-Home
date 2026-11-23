@@ -78,7 +78,7 @@ function outdoor() {
       u.quads.forEach(([al, sl], i) => { if (!(low && sl) && (!al || room || !S.hgarden)) keep.push(i); });
       if (keep.join() !== u.k) { u.k = keep.join(); A.array.set(keep.flatMap(i => [...u.idx.subarray(6 * i, 6 * i + 6)])); A.needsUpdate = true; L.geometry.setDrawRange(0, 6 * keep.length); } L.visible = keep.length > 0; }
     { const st = OUT.ground.getObjectByName("street"); if (st) st.visible = !house || !!S.hstreet; }   // and the street with Next door (from a room's window it's always there)
-    const d = house || !liv || !sun ? dayLight.position.clone().sub(dayLight.target.position) : sun.position.clone().sub(sun.target.position);   // the sun the sky shows: the one lighting it
+    const d = house || !sun ? dayLight.position.clone().sub(dayLight.target.position) : sun.position.clone().sub(sun.target.position);   // the sun the sky shows: the one lighting it (N239: a house room's too, the living room's sun)
     OUT.sky.material.uniforms.sunPosition.value.copy(d.normalize());
     if (S.tod !== "day" && !house) OUT.sky.material.uniforms.sunPosition.value.set(-0.6, -0.04, -0.8).normalize(); }   // V1.47: by evening from inside, the sun just down: a dusk sky
   duskVeil(INSIDE() && S.tod !== "day");
