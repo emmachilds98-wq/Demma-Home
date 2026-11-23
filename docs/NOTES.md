@@ -116,6 +116,11 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   spoofing `getParameter` for 0x9245, 0x9246 and 0x1F01. Send's `gpu` reads `hidden` then.
 - **Moving (N11, N17):** the page draws only when something changes (`17_render_loop` `need`). Damping is frame-rate free (`DAMP`).
   A slow phone walks without the shade and glow, then draws at 1.5× (`phoneCap`).
+  N240 (V4.56): a real card steps down too: moving frames over 28 ms (`MV`, gaps under 250 ms only, so CI's seconds-long frames never
+  count) set `slowDev`, and its walk, look or drag draws at 0.6× (0.75 at least) until 0.25 s still (`sizeRenderer(true)`: the
+  sharpness only, the lens kept). The walk runs on the frame's real time to 0.25 s in steps of 0.05 (`walkSteps`). To compare two
+  versions' per-frame work, `git archive` the old one into the scratchpad, build both, read `R3D.perf()` calls/triangles and the rAF
+  callback's own time after a short key walk: software graphics' frame gaps (seconds) say nothing.
 - **Draws (N16, N37):** `20_go.js` `put()` sorts a floor's merged meshes by room (`userData.rooms` spans); `09` `roomCull` cuts rooms by
   draw range through a door graph (`RLINK`). `HBUILD` makes one draw per (group, material); from outside `joinBuild` joins floors and
   `houseJoin` sets one draw range. The house opens in 188 draws (was 287). Left: rooms gained little (frustum culling already did most);
