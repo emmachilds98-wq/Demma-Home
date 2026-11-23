@@ -441,3 +441,27 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - CI cancels a branch's running workflow on each push: batch pushes, or a run never finishes.
 - Worktree agents: give each a task whose files don't overlap; merge with `git merge <their branch>`; `check_site.py`'s step
   strings (`WOOD`, `EACH`, `FITS`, `ADD`, `SWAP`) can be run alone by a small Playwright script that pulls them out with a regex.
+
+## N225, started 23 Nov 2026 (stopped at the usage limit: research and design only, no code yet)
+- **Found:** the bathroom's wall tiles are model material `stone` (60 × 30, `build_textures.TILED`, only the bathroom uses it), the WC's
+  splashback `tile_w` (15 × 15, one panel, `gridFrom`). Both are items of kind `finish` (`bath.tiles`, `wc.tiles`), not in the house file's
+  `items` (`export_house.EDITABLE`), so a tap on them opens no card today (`pickItem`: `HIT` misses, `finAt` skips non-palette keys).
+- **Tiles, the plan:** a new part `room3d/24_bath.js`. Slots `S.fin[room][90]` (style key) and `[91]` (grout key); they pass
+  `pull_edits.finishes` (two digits) and never clash with the walls' 30 + n. Draw a tile by swapping the material's own `map`,
+  `normalMap` and `roughnessMap` (only those it already has: adding one is a new program) for canvas textures drawn at the tile's size,
+  `texture.repeat` = the photo's metres over the pattern's (no new shader; check `gl.info.programs` before and after); `color` white while
+  shown, the originals kept for "The plan's". Hooks (one line each, merge-friendly): `finAt` (a hit on `stone`/`tile_w` → slot 90),
+  `finCard` (slot 90 → the tile card), `finClean` (a line before `if (ok)`), `finLook` (`|| tileLook(s, v)`), `finApplyAll` and `finHold`
+  (call the apply), `roomUps` (the cost: area from the house file's `stone`/`tile_w` boxes, two largest sides, × 1.1 × £/m² plus a
+  tiler's £20–50/m²). Card id `fin:<room>:90` so Undo, Hold to compare and Changes work as on a wall's card. ESLint's `no-func-assign`
+  rules out wrapping `finClean`.
+- **The WC's suite, the plan:** HCAT pieces of kinds `toilet` and `basin` (names via a non-enumerable `HCAT_KINDS` entry so the add card's
+  chips don't show them), `shop: "Wickes"`, `p`, `url` so `hcLine`, the shop link and `upCat` work as N219's. Hook `swapKind` (a first line:
+  `wc.toilet`, `bath.toilet` → toilet; `wc.basin`, `bath.vanity` → basin: the basin's `up` 64 fails its > 20 test) and `swapBox` (a line
+  after `b[4] = ...`: a floor piece from the floor, `it.b[1] - it.s[2]`; a hung basin's rim where the old one's was, 80 in the WC, 86 in
+  the bathroom (`survey_data`); a corner basin to the nearer end of its wall). `checks.py sizes` and `pull_edits` read the catalogue's
+  keys from `08_house_catalogue.js` only: add `24_bath.js` to both regexes. WC: x 374.6–467, z −309 to −134.6; its door's swing a quarter of
+  58 from the hinge at x 448 into the room (z to −191): a corner basin by the door hits it, by the back wall the toilet.
+- **Cited, read 23 Nov:** `fit.SOURCES` `n225tiles` (white metro 15 × 7.5 £23, square 10 × 10 £48, large 60 × 30 £16, sage metro
+  15 × 7.5 £21.33, zellige-look 10 × 10 £36.86; grout white, grey, charcoal; a tiler £20–50/m²) and `n225suites` (Portland, Cleveland,
+  Nuie Bliss back-to-wall, Siena wall-hung on a Duplo One 82 frame; Emma pedestal, Galeria semi-pedestal, Newport corner, compact vanity).
