@@ -121,7 +121,7 @@ function speed() {
   try {
     const p = window.R3D && window.R3D.perf && window.R3D.perf(); if (!p || !p.programs) return null;
     return { v: p.version, gpu: p.gpuClass, phone: !!p.phone, q: p.quality, ratio: p.ratio, move: p.moveMs, still: p.stillMs,
-      draws: p.calls, shaders: p.programs, view: p.view, err: p.errors };
+      draws: p.calls, shaders: p.programs, view: p.view, err: p.errors, worst: p.worstMs, lite: p.lite };   // N240: the worst gap moving, the steps down taken
   } catch (e) { return null; }
 }
 function readLink() {
