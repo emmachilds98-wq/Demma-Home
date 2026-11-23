@@ -172,8 +172,25 @@ const HCAT = {
 };
 /* N212, N223: the storage ideas' pieces (house/storage_ideas.py, an "idea" kind: never swapped or added from the catalogue), in the house's
    own materials only (no new shader when shown): the artisan oak of the media wall and the office's cubes, its ledges' lip, its tenons */
-const stBooks = (B, u0, u1, v, h, t0, t1, k = 0) => { for (let u = u0; u < u1 - 2; k++) { const w = 1.4 + (k * 37 % 5) * 0.4, hh = h * (0.8 + (k * 53 % 5) * 0.05);
-  B("book" + (k % 6), u, v, t0, Math.min(u1, u + w), v + hh, t1); u += w + 0.15; } };
+/* N236: books as the office's shelf has them (house/model.py, office.shelf: its nine widths and heights, a pair lying flat), each with its
+   spine: the pages' cream showing over the boards, a band near its head (gilt on the dark ones), a label on some; h the tallest */
+const ST_BK = [[3.2, 22], [2.4, 20], [4.1, 24], [2.8, 19], [3.6, 23], [2.2, 21], [3.0, 18], [4.4, 24], [2.6, 22]];
+const stBook = (B, c, u, w, v, hh, t0, t1, k) => { const dark = c !== 2 && c !== 5;
+  B("book" + c, u, v, t0, u + w, v + hh, t1); B("paper", u + 0.1, v + hh, t0 + 0.3, u + w - 0.1, v + hh + 0.1, t1 - 0.3);
+  if (w > 1.2) { B(dark ? "brass" : "book4", u + 0.2, v + hh * 0.86, t1, u + w - 0.2, v + hh * 0.86 + 0.4, t1 + 0.1);
+    if (k % 3 === 1) B(dark ? "paper" : "book1", u + 0.3, v + hh * 0.48, t1, u + w - 0.3, v + hh * 0.66, t1 + 0.1); } };
+const stBooks = (B, u0, u1, v, h, t0, t1, k = 0) => { const s = Math.min(1, h / 24);
+  for (let u = u0; u < u1 - 2; k++) { const [bw, bh] = ST_BK[k % 9], w = Math.round(bw * Math.max(0.7, s) * 10) / 10, hh = bh * s, c = k * 5 % 6;
+    if (k % 11 === 10 && u + bh * s + 1 < u1 && t1 - t0 > 10) {   // a pair lying flat, the longer under
+      B("book2", u + 0.5, v, t0 + 1, u + 0.5 + bh * s, v + 3.4, t1 - 0.5); B("book0", u + 1.2, v + 3.4, t0 + 1.5, u + bh * s - 0.2, v + 6.2, t1 - 1); u += bh * s + 1.5; continue; }
+    if (u + w > u1) break; stBook(B, c, u, w, v, hh, t0, t1, k); u += w + 0.1; } };
+/* N236: the living room's record set (render.now_playing's three sleeves, the vinyl stand's four) in the house's own colours: a sleeve's
+   ground, then its art as [material, across from, to, down from the top, to] */
+const ST_SLEEVES = [["paper", ["quarry", 0.12, 0.88, 0.12, 0.62], ["book4", 0.38, 0.62, 0.7, 0.9]], ["book1", ["jar", 0, 1, 0.78, 1], ["book2", 0.2, 0.8, 0.2, 0.66]],
+  ["book3", ["pink", 0.1, 0.5, 0.1, 0.9], ["book2", 0.55, 0.9, 0.1, 0.9]], ["paper", ["book1", 0.15, 0.85, 0.15, 0.7]], ["quarry", ["jar", 0.1, 0.9, 0.62, 0.9]],
+  ["book4", ["book2", 0.3, 0.7, 0.3, 0.7]], ["book3", ["paper", 0.1, 0.9, 0.1, 0.45]]];
+const stSleeve = (B, n, u, v, t, S = 31.4) => { const [g, ...art] = ST_SLEEVES[n % ST_SLEEVES.length]; B(g, u, v, t, u + S, v + S, t + 0.6);
+  for (const [m, a0, a1, d0, d1] of art) B(m, u + a0 * S, v + S * (1 - d1), t + 0.6, u + a1 * S, v + S * (1 - d0), t + 0.8); };
 const stLPs = (B, u0, u1, v, t0, k = 0) => { for (let u = u0; u < u1 - 1; k++) { const w = 2.5 + (k * 37 % 4);   // LPs on edge, in runs of sleeves, a gap to flip
   B("book" + (k * 5 % 6), u, v, t0, Math.min(u1, u + w), v + 31.4 - (k % 3) * 0.3, t0 + 31.4); u += w + (k % 4 === 3 ? 2.5 : 0.1); } };
 const ST = "artisan", stLip = (B, W, D, v) => { B(ST, 0, v, 0, W, v + 1.8, D); B(ST, 0, v + 1.8, D - 1.5, W, v + 3.6, D); };   // a ledge with its lip (the media wall's record ledge)
@@ -192,9 +209,8 @@ Object.assign(HCAT, {
         if (j === 1 && i === 2) { B(ST, u + 0.3, v + 0.8, D - 2, u + bw - 0.3, v + 33, D - 0.4); B("oak", u + 2, v + 14, D - 0.4, u + 3.4, v + 20, D); continue; }   // the deck's kit, shut
         stLPs(B, u + 0.4, u + bw - 0.4, v + 0.8, 1, i * 11 + j * 5); } }); } },
   st_faceout: { n: "Face-out record ledge", k: "idea", w: 110, d: 9, h: 34, ref: "snowdonoak", src: "Made to the spot, 18 mm oak",
-    b: (W, H, D, B, L, k = 0) => { stLip(B, W, D, 0); const g = (W - 3 * 31.4) / 4;
-      for (let i = 0; i < 3; i++) { const u = g + i * (31.4 + g), c = (i * 2 + Math.round(W)) % 6;   // a sleeve leaning on the wall, its picture
-        B("book" + c, u, 1.8, 1.6, u + 31.4, 33.2, 2.2); B("book" + ((c + 3) % 6), u + 5, 7, 2.2, u + 26.4, 28, 2.4); B("paper", u + 12, 15, 2.4, u + 19.4, 20, 2.5); } } },
+    b: (W, H, D, B, L, k = 0) => { stLip(B, W, D, 0); const g = (W - 3 * 31.4) / 4;   // N236: each ledge its own three of the record set (k: where it hangs)
+      for (let i = 0; i < 3; i++) stSleeve(B, k * 3 + i * 2, g + i * (31.4 + g), 1.8, 1.6); } },
   st_oakpeg: { n: "Oak pegboard", k: "idea", w: 56, d: 10, h: 56, ref: "snowdonoak", src: "Made to the spot, 18 mm oak, oak pegs",
     b: (W, H, D, B) => { B(ST, 0, 0, 0, W, H, 1.8);
       for (let i = 0; i < 7; i++) for (let j = 0; j < 7; j++) B("gap", 4.5 + i * 7.8 - 0.6, 4.5 + j * 7.8 - 0.6, 1.8, 4.5 + i * 7.8 + 0.6, 4.5 + j * 7.8 + 0.6, 1.88);
@@ -357,7 +373,7 @@ function hcBuild(key, it, t) {
     if (bx[3] - bx[0] < 0.05 || bx[4] - bx[1] < 0.05 || bx[5] - bx[2] < 0.05) return;
     (out.boxes[m] = out.boxes[m] || []).push(bx.map(v => Math.round(v * 10) / 10)); (out.bt[m] = out.bt[m] || []).push(t); };
   const L = (m, u, w, v, p) => out.lathes.push({ c: at(u, v, w), p, s: [1, 1], m, t });   // a turned part round (u, w), its profile [radius, up]
-  C.b(W, H, D, B, L);
+  C.b(W, H, D, B, L, Math.abs(Math.round(b[0] * 3 + b[1] / 7 + b[2] * 5)));   // N236: where it stands, for a piece that draws each copy its own
   return out;
 }
 const HCFK = { "-260": "lower", "0": "ground", "260": "first" };   // the floor as drawn, with the pieces swapped (their own boxes out, the new one's in their place) and those added (a new tag each)

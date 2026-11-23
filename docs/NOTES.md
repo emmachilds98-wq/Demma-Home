@@ -444,3 +444,10 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - CI cancels a branch's running workflow on each push: batch pushes, or a run never finishes.
 - Worktree agents: give each a task whose files don't overlap; merge with `git merge <their branch>`; `check_site.py`'s step
   strings (`WOOD`, `EACH`, `FITS`, `ADD`, `SWAP`) can be run alone by a small Playwright script that pulls them out with a regex.
+
+## Lessons of 23 Nov 2026 (N230, N236, N232)
+- **A made piece's details** (N236): a catalogue builder gets a 6th argument, a number from where the piece stands (`hcBuild`), so
+  copies of one idea differ (the face-out ledges' sleeves). The house's boxes are rounded to 1 mm (`hcBuild`): a detail proud of a face
+  by less than that vanishes, so labels and bands stand 1 mm out. A material in `GRAIN_ALONG` (`artisan`) carries its boxes' sizes
+  into `worldUV`, which turns each face's picture so its grain (up the picture) runs the face's longer way; any other material keeps
+  the world's directions (up a wall, along z on a top).
