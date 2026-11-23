@@ -53,6 +53,11 @@ take one out (to `docs/HISTORY.md`) when they change their mind.
   first** (N217). Then 5–7: **real pieces from several shops**, each with its real size and price ("Use multiple real furniture
   sites and sources", N219); saved looks **on the phone and in the plan** (sent with Send, N221); **Dave only looks** at her link (his
   phone shows her look; nothing of his is changed or kept, N222).
+- **Storage, her brief** (23 Nov 2026): "I want storage ideas that are unique and don't take up lots of space so various small to medium
+  unless there's adequate space, it should be fit with similar design to the living room and office bedroom 3": small and medium pieces
+  (large only where a room has the space), each one unique to its spot, in the living room's and the office's look (the artisan oak:
+  oak uprights, through-tenons, face frames, face-out ledges; the office's oak cubes, straight oak desk, overhead shelf, pegboard). Replaces
+  N212's first set (IKEA's white and metal stock pieces) as the ideas to look at (REAL_PLAN N223).
 
 - **Floors for now (21 Nov 2026):** bedroom 2 and the office in grey carpet ("im not planning a floor change here just yet"); the office's plastic ivy out (she'll decorate again soon).
 

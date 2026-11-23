@@ -883,3 +883,12 @@ row's check is a `check_site.py` tap, as N209's is.
 5. Real things from shops you'd like to try (which shops), or looks and sizes only for now?
 6. Saved looks: a few named ones on the phone (like "The house's colours" now), and should they reach the plan?
 7. Dave: does he open your link on his own phone and change things too, or only look?
+
+## 28. Storage to her brief (23 Nov 2026)
+
+Emma, 23 Nov 2026 (`docs/DECISIONS.md`, "Storage, her brief"): unique, space-saving, small to medium (large only where there's room),
+in the living room's and the office's design. Still options to look at (no build steps or buy rows until she picks: CLAUDE.md).
+
+| Task | What | Files | Waits for | State |
+|---|---|---|---|---|
+| N223 | **The storage ideas redrawn to her brief.** Found: N212's 12 ideas (`house/storage_ideas.py`, 18 pieces) are mostly stock pieces in white or metal (KALLAX record wall 147 wide, IVAR bay, EKET cubes, HELMER, MOSSLANDA, BERGSHULT, TJUSIG); several are large or don't match the oak. Do: each idea small or medium and made for its spot, in the artisan oak of the living room's media wall (oak uprights, through-tenons, an oak face frame, face-out record ledges) or the office's oak cubes and pegboard; large only where the room has the space (the store under the stairs, the eaves); the same needs covered (records with room to grow, under 2 m of books and games, tech and hobby kit, clothes and shoes, knick-knacks to show: open ledges, lit glass, closed); each one line with a cited size and a rough cost (timber from the media wall's sources where it's made, a real product where one fits); checked clear of walks, doors and slopes (`check_model.py`); `docs/STORAGE.md` rewritten; the 3D's pieces in oak. Check: `check_model.py` storage ideas; a screenshot of each room's ideas | `house/storage_ideas.py`, `house/model.py`, `docs/STORAGE.md`, `media-wall/src/fit.py` | — | Open |

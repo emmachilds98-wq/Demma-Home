@@ -11,7 +11,8 @@ directly in GitHub to stop these losses" (CLAUDE.md: nothing stays local; push e
   bake). A review's seven findings fixed (see `docs/HISTORY.md` V4.49).
 - **Lost and rebuilt:** an earlier session's N219, N221, N222, N220 start and shader fix were only on its machine when it hit its usage
   limit; they were rebuilt from the plan and `docs/N219_catalogue.json`. Hence the rule.
-- **Open:** Emma's choices: which storage ideas (N212), whether Dave may Keep it (N222 keeps the button; one line to take it out); N201
+- **Storage to her brief (23 Nov):** `docs/REAL_PLAN.md` section 28, N223 (unique, small to medium, in the living room's and the office's oak).
+- **Open:** Emma's choices: which storage ideas (N212, now N223), whether Dave may Keep it (N222 keeps the button; one line to take it out); N201
   (the real devices' check, "lighting later"); N205 on hold. Smaller: a shop piece's own card has no shop link after a swap; the
   shop pieces are drawn by generic builders (some won't look like the real thing); N219/N220/N221 steps in `check_site.py` (the helpers'
   scripts were run by hand).
