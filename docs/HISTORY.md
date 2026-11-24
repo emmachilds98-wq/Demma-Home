@@ -464,3 +464,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.64** (24 Nov 2026): N249, N251: the shared docs are the lead's; the shop catalogues in house/data
 - **V4.65** (24 Nov 2026): N252: main's last CI in the handover; branches.py
 - **V4.66** (24 Nov 2026): N250: a start a new team can read (one Start pointer, one Now block, the old plans archived)
+- **V4.67** (24 Nov 2026): checks.py runs the customisation check and the test door's names (N257's hooks)
