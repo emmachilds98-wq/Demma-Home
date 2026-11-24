@@ -106,8 +106,7 @@ const upNm = (L, k) => (L.find(r => r[0] === k) || [0, k])[1];
 const upCat = (key, C) => C.own ? [0, 0] : C.shop ? [C.p, C.p] : UPC.piece[key] || C.k === "plant" && UPC.plant[key] || UPC.kind[C.k];   // N219: a shop's own price; hers, none
 function roomUps(room, noEd) {   // [{k, t, lo, hi}]: what's changed in a room (N231 noEd: not the device's pieces)
   const H = R.HOUSE3 || {}, L = [], add = (k, t, c = [0, 0], n = 1) => L.push({ k, t, lo: Math.round(c[0] * n), hi: Math.round(c[1] * n) });
-  if (room === "outside") { const o = (S.fin || {}).outside || {};
-    if (o[9]) add("9=" + o[9], "Window frames: " + finName(o[9]), UPC.frames); if (o[10]) add("10=" + o[10], "Front door: " + finName(o[10]), UPC.door_out); return L; }
+  if (room === "outside") { const o = (S.fin || {}).outside || {}; for (const n of [9, 10]) slotOf(n).ups(room, o, add); return L; }   // N253: each slot's line from its row (23_finish.js SLOTS)
   const liv = room === LIVR, o = liv ? Object.assign({}, (S.fin || {})[LIVR], livRow()) : (S.fin || {})[room] || {}, r = (H.rooms || {})[room], m2 = r ? (r[1] - r[0]) * (r[3] - r[2]) / 1e4 : 12;
   if (liv) {   // the living room's own Look, and its ideas and suggestions not in the plan
     const ws = Object.entries(S.walls).filter(([, v]) => LIV_HEX.test(v || ""));
@@ -118,34 +117,11 @@ function roomUps(room, noEd) {   // [{k, t, lo, hi}]: what's changed in a room (
       add(`d${k}=${S.decor[k]}`, `${PD.decor[k][0]}: ${PD.decor[k][1][S.decor[k]] || S.decor[k]}`, c); }
     picks().filter(i => !i.plan && i.kind !== "Decor").forEach(i => add("i=" + i.name, i.name, [i.lo, i.hi]));
     for (const it of Object.values(MOV)) if (it.swk && !(S.layout[it.id] || {}).off) add(it.id + "~s=" + it.swk, `${it.label.replace(/ \(suggested\)$/, "")}: ${HCAT[it.swk].n}`, upCat(it.swk, HCAT[it.swk]));   // N220: a swap
+    for (const n of [6, 8]) slotOf(n).ups(room, o, add);   // its bulbs and light fitting
   } else {
-    const ws = [0, 1, 2, 3].filter(s => o[s]);
-    if (ws.length) add("w=" + ws.map(s => o[s]).join(), "Walls: " + [...new Set(ws.map(s => finName(o[s])))].join(", "), ws.length > 1 ? UPC.walls : UPC.wall);
-    if (o[4]) add("4=" + o[4], "Ceiling: " + finName(o[4]), UPC.ceil);
-    if (o[17]) add("17=" + o[17], "Woodwork: " + finName(o[17]), UPC.skirt);   // N216
-    finWalls(room).forEach((w, k) => { const h = o[30 + k]; if (h) add(`${30 + k}=${h}`, `${finCap(finSlotName(room, 30 + k))}: ${finName(h)}`, UPC.wall); });   // N214: each wall's own, the slopes
-    if (o[29]) add("29=" + o[29], "Slopes: " + (o[29] === "walls" ? "with the walls" : finName(o[29])), UPC.ceil);
-    const fa = (H.finish_areas || {})[room] || {};   // N209: the floor laid now is no change; a new one by its area
-    if (o[5] && o[5] !== fa.fk) add("5=" + o[5], "Floor: " + upNm(FIN_FLOORS, o[5]), UPC.floor[o[5]] || [30, 60], fa.floor || m2);
-    if (o[18]) add("18=" + o[18], o[18] === "none" ? "Rug: none" : "Rug: " + upNm(FIN_RUGS, o[18]), o[18] === "none" ? [0, 0] : UPC.rug);
-    if (o[19]) add("19=" + o[19], "Curtains: " + upNm(FIN_CURT, o[19]), UPC.curt);
-    if (o[90] && TILE_ROOMS[room]) tileUps(room, add);   // N225: the tiles by their area
+    for (const d of SLOTS) if (d.ups) d.ups(room, o, add, m2);   // N253: each row's line, in the slots' order
     doorUps(room, add);   // N226: its doors her way
-    if (room === "kitchen") kitUps(add);
-    if (room === "bathroom") bathUps(add);   // N225: the taps and the bath panel   // N224: the units' fronts, handles, worktop
-    winsOf(room).forEach((w, j) => { const v = o[70 + j]; if (v) add(`${70 + j}=${v}`, `${w.n}: ${winSay(...v.split("."))}`, winCost(w, v)); });   // N227: each window's own
-    if (o[20]) add("20=" + o[20], "Bedding: " + upNm(FIN_BED, o[20]), UPC.bed);
-    if (o[21]) add("21=" + o[21], "Picture: " + upNm(FIN_PICS, o[21]), UPC.pic);
-    if (o[23] && HCAT[o[23]]) add("23=" + o[23], "Plant: " + HCAT[o[23]].n, UPC.plant[o[23]] || UPC.kind.plant);
-    for (const q of String(o[28] || "").split(",").filter(Boolean)) { const [id, key] = q.split(":"), I = IDEAS().find(i => i.id === id && i.room === room); if (!I) continue;   // N244: a storage idea shown: a shop's buy its price, the plan's its range
-      const hk = key && ideaOptKey(I, key); add("28=" + q, `${I.n}: ${hk ? HCAT[hk].n + " · " + HCAT[hk].shop : "made to the spot"}`, ideaCost(I, key)); }
-    const P = FIN_PAPERS.find(([q]) => q === o[24]), A = PAPER_AT[room];   // N40: the rolls as the 3D counted them (3 to 6 till it's laid)
-    if (P) add(`24=${P[0]}${o[25] || 0}`, `Wallpaper: ${P[1]}${A ? `, ${A.rolls} rolls` : ""}`, A ? [A.cost + UPC.paper[0], A.cost + UPC.paper[1]] : [P[5] * 3, P[5] * 6]);
-    const Q = FIN_PANELS.find(([q]) => q === o[26]), B = PANEL_AT[room];   // N57: the packs as the 3D counted them
-    if (Q) add(`26=${Q[0]}${o[27] || 0}`, `Panelling: ${Q[1]}${B ? `, ${B.packs} ${Q[0] === "slat" ? "panels" : "packs"}` : ""}`, B ? [B.cost + UPC.panel[0], B.cost + UPC.panel[1]] : [Q[2] * 2, Q[2] * 8]);
   }
-  if (o[6] || o[7]) add(`6=${o[6]}${o[7]}`, "Bulbs: " + [o[6] && upNm(FIN_BULBS, o[6]), o[7] && upNm(FIN_LUX, o[7])].filter(Boolean).join(", "), UPC.bulbs);
-  if (o[8]) add("8=" + o[8], "Light: " + upNm(FIN_FITS, o[8]), UPC.fit[o[8]]);
   if (DS() && !noEd) for (const [id, it] of Object.entries(H.items || {})) {   // Edit: the house's pieces in this room, moved, swapped, added or taken out
     if (it.r !== room || it.look || !(it.add || pieceDelta(id).some(Boolean))) continue; const c = pieceNow(id), C = HCAT[it.add || c.swap];
     if (c.removed) add(id + "~x", "Out: " + it.n);
