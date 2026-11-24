@@ -992,7 +992,7 @@ slots and cards (makes every later feature cheaper), U4+U5+U6 Plan, the shopping
 **The client's standing rules for this plan** (CLAUDE.md, DECISIONS): check lightly (quick checks and privacy, then push; CI does the
 browser checks); nothing stays local (push every commit; helpers to their own `claude/...` branch); "Don't wait for CI" (24 Nov: merge when
 the quick checks pass, then read main's CI result and fix what it finds); options only until she picks; "You can do all the things I don't
-have to do". Until N247 exists, claim a row by opening a draft PR named after it before writing code.
+have to do". Claim a row before writing code: `python3 tools/claim.py N###` (N247).
 
 **Side by side** (rows in different groups share no files; inside a group, one after another):
 - **G1 tools and docs** (`tools/`, `CLAUDE.md`, `docs/`, `.github/`): N246 → N247 → N248 → N249 → N250 → N251 → N252. One lead; small PRs.
@@ -1012,8 +1012,8 @@ have to do". Until N247 exists, claim a row by opening a draft PR named after it
 
 | Task | What | Size | Emma | State |
 |---|---|---|---|---|
-| N246 | **A7 conflict markers check.** Markers were committed into REAL_PLAN three times. Do: `checks.py --quick` fails on lines starting `<<<<<<< ` / `>>>>>>> ` in tracked text | S | — | Open |
-| N247 | **A3 claim a row first.** Rows were built twice (N225, N232, N224, N226) and two V4.59s were made. Do: `tools/claim.py N###` checks open PRs and branches for the row, then opens a draft PR "N### (claimed)" on `claude/<session>-n###`; the rule in CLAUDE.md | S | — | Open |
+| N246 | **A7 conflict markers check.** Markers were committed into REAL_PLAN three times. Do: `checks.py --quick` fails on lines starting `<<<<<<< ` / `>>>>>>> ` in tracked text | S | — | Done (`markers` in `checks.py`, quick and full) |
+| N247 | **A3 claim a row first.** Rows were built twice (N225, N232, N224, N226) and two V4.59s were made. Do: `tools/claim.py N###` checks open PRs and branches for the row, then opens a draft PR "N### (claimed)" on `claude/<session>-n###`; the rule in CLAUDE.md | S | — | Done (`tools/claim.py`; the rule in CLAUDE.md) |
 | N248 | **A4 versions at merge only.** `round.py` bumps VERSION at the start; PR titles carry versions. Do: `tools/ship.py`: merge main, the next free version, the VERSION/HISTORY/STATE/HANDOVER lines, `--quick`, push, merge; PRs and branches name the row, never a version | M | — | Open |
 | N249 | **A1 the shared docs.** STATE's version line is one 6,791-character line; every PR edits five shared docs. Do: STATE's version line holds the current version only; only the lead touches VERSION/HISTORY/STATE/HANDOVER, at merge (via `ship.py`); a helper template in NOTES §2 (own worktree, own branch, push each commit, only the row's files, quick checks, hand back branch + sha) (A5) | S | — | Open |
 | N250 | **A2, A8–A11 a start a new team can read.** CLAUDE.md has ~11 dated "start with section N" bullets; HANDOVER stacks 8 "Pick up here" blocks; REAL_PLAN is 218 KB, HISTORY 154 KB (~90k tokens to read before any work); old plans (V1_PLAN, UPGRADE_REVIEW, QUALITY_PLAN, FINISHES_PLAN) are still pointed to by the PR template, `round.py` and the workflow. Do: one pointer "Start: docs/HANDOVER.md → Now"; HANDOVER one Now block, rewritten; REAL_PLAN sections 1–28 to `docs/archive/` with a one-line index of done rows; HISTORY one line ≤200 chars per version; NOTES' per-row blocks folded into its sections; CLAUDE.md ~15 rule bullets (quotes to DECISIONS, how-to to NOTES) | M | — | Open |
