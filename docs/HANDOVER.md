@@ -3,8 +3,11 @@
 ## Now (24 Nov 2026, V4.64: start here)
 The client: "handover efficiently now so another team can finish and start upgrade. make sure none of your work is left behind".
 
-1. **Main's CI first.** Main is V4.62 (`2cd8257`). The runs for V4.60, V4.61 and V4.62 were cancelled by the next merge, so run 933 (on
-   `2cd8257`) is the first CI over all three: read its result (Actions) and fix anything red from its log before new work.
+1. **Main's CI first** (N252: this line always records main's last finished CI; a red main is fixed first, from one log read).
+   Last finished: run 923 (`fbf8dc4`, 23 Nov) **failed**, `browser (site)`: "a wall's colour in three rooms": the kitchen's tap opened
+   "Kitchen: the splashback", not its walls' card (`check_site.py`'s paint step or `16_cards.js`'s pick order; G3 or G5). Every main run
+   since (937–957, 24 Nov) was cancelled by the next merge, so none has finished: while threads merge every few minutes, main's CI
+   never completes (G5's N257/N258 to fix: don't cancel main's runs, or a nightly run on main).
 2. **Build N245** (Ideas reading N243's 41 places and 188 pieces from `data/ideas.json`, plus an Ideas pill in the living room): not
    started in code; its row in REAL_PLAN section 31 gives the steps (a `syncAdds` hook, then `24_ideas.js`, then the living room).
 3. **Then the upgrade plan: `docs/REAL_PLAN.md` section 32** (N246–N275), its order and its side-by-side groups. Start with group G1 (N246
