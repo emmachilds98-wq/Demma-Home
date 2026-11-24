@@ -476,3 +476,14 @@ figure.zoomable::after { content: "⤢"; position: absolute; right: 10px; top: 1
 summary .pf a { display: inline-block; padding: 6px 2px; margin: -6px 0; }
 @media (pointer: coarse) { .items .paid input { min-height: 40px; } .items li { padding-block: 10px; } }
 details.owned .notice { margin: 8px 0 0; }
+/* N264: Plan opens on one card: the house's total, a chip a room (tap: there, its Changes open), her House plan */
+.hcard { padding: 16px 18px; border-radius: var(--r-xl); background: var(--surface); margin: 0 0 14px; }
+.upchips { list-style: none; margin: 10px 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.upchips li { display: inline-flex; gap: 6px; align-items: center; min-height: 40px; padding: 0 14px; border-radius: var(--r-pill); background: var(--soft); font: 600 14px var(--body); cursor: pointer; }
+.upchips li:hover, .upchips li:focus-visible { background: var(--ink); color: var(--page); }
+.upchips .mb { display: none; } .upchips .mv { font-weight: 500; opacity: .75; }
+.hlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.hlist li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 8px 12px; border-radius: var(--r-m, 12px); background: var(--surface); font-size: 14px; }
+.hlist li.done .ht { text-decoration: line-through; opacity: .6; }
+.hlist .hr { color: var(--muted); font-size: 12px; } .hlist .hp { white-space: nowrap; }
+.hlist input { width: 20px; height: 20px; margin: 0; }

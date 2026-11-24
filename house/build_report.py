@@ -97,7 +97,7 @@ def saved_looks():
         lo, hi = sum(int(r[2]) for r in rows), sum(int(r[3]) for r in rows)
         pages.append(f'<div style="page-break-before: always"><h3>{html.escape(str(x.get("name", ""))[:24])}: about {gbp(lo, hi)}</h3><table><tr><th>Where</th><th>What</th><th>Rough cost</th></tr>'
                      + "".join(f"<tr><td>{html.escape(rooms.get(r[0], r[0]))}</td><td>{html.escape(str(r[1]))}</td><td>{gbp(int(r[2]), int(r[3]))}</td></tr>" for r in rows) + "</table></div>")
-    return '<h2>Saved looks</h2><p>Saved on the phone (Look, Your looks) and sent with Send; each one\'s changes from the plan.</p><ul>' + "".join(lines) + "</ul>" + "".join(pages)
+    return '<h2>Saved looks</h2><p>Saved on the phone (Look, Your looks) and sent with Share; each one\'s changes from the plan.</p><ul>' + "".join(lines) + "</ul>" + "".join(pages)
 
 
 PLANS = [("plan_lower_ground_corrected_25oct.jpg", "Lower ground floor, your corrections: the kitchen's window (purple), the cupboard by the store (black), the WC's small sink (maroon), the secret room."),
@@ -144,17 +144,63 @@ def build():
             '<h2 class="pb">The plan</h2>' + md(H / "HD_PLAN.md"),
             '<h2 class="pb">What we need from you: measurements and photos</h2>' + md(H / "SURVEY.md"),
             '<h2 class="pb">Appendix: the build specification</h2>' + md(H / "BUILD_SPEC.md")]
+    pdf(body, "Whole_House_HD_Plan.pdf", "The whole house in HD")
+    client()
+
+
+
+def pdf(body, name, foot):
     html = f'<!doctype html><html><head><meta charset="utf-8"><style>{CSS}</style></head><body>{"".join(body)}</body></html>'
-    src = TMP / "report.html"; src.write_text(html)
+    src = TMP / (name + ".html"); src.write_text(html)
     with sync_playwright() as p:
         sys.path.insert(0, str(ROOT / "media-wall/src")); b = __import__("pw").launch(p)
         pg = b.new_page(); pg.goto(src.as_uri()); pg.wait_for_timeout(500)
-        pg.pdf(path=str(OUT / "Whole_House_HD_Plan.pdf"), format="A4", print_background=True,
+        pg.pdf(path=str(OUT / name), format="A4", print_background=True,
                display_header_footer=True, header_template="<span></span>",
-               footer_template='<div style="font-size:8px;width:100%;text-align:center;color:#777">The whole house in HD · <span class="pageNumber"></span>/<span class="totalPages"></span></div>',
+               footer_template=f'<div style="font-size:8px;width:100%;text-align:center;color:#777">{foot} · <span class="pageNumber"></span>/<span class="totalPages"></span></div>',
                margin={"top": "16mm", "bottom": "16mm", "left": "15mm", "right": "15mm"})
         b.close()
-    print("report:", OUT / "Whole_House_HD_Plan.pdf")
+    print("report:", OUT / name)
+
+
+def schemes():
+    """N264: each room's scheme in the plan (plan_finishes.json), in words: its walls' colours, its floor, its bulbs"""
+    import json, html
+    import export_house as XH
+    floors = dict(re.findall(r'\["(\w+)", "([^"]+)"\]', re.search(r"const FIN_FLOORS = \[(.*?)\];", (ROOT / "media-wall/src/room3d/23_finish.js").read_text(), re.S).group(1)))
+    rooms = {r["id"]: r["name"] for r in XH.rooms()}
+    plan = json.loads((H / "plan_finishes.json").read_text()).get("rooms", {})
+    sw = lambda c: f'<span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:{c};border:1px solid #999;vertical-align:middle"></span> {c.upper()}'
+    rows = []
+    for r, sl in plan.items():
+        cols = sorted({v for k, v in sl.items() if k in "0123" and re.fullmatch(r"#[0-9a-fA-F]{6}", str(v))})
+        rows.append(f"<tr><td>{html.escape(rooms.get(r, r))}</td><td>{' '.join(sw(c) for c in cols)}</td><td>{html.escape(floors.get(sl.get('5', ''), sl.get('5', '')))}</td><td>{sl['6'] + ' K' if sl.get('6') else ''}</td></tr>")
+    return ("<h2>Each room's scheme</h2><p>The plan's colours and floors for each room you haven't chosen yet. Change any of them in the 3D: tap a wall or a floor.</p>"
+            "<table><tr><th>Room</th><th>Walls</th><th>Floor</th><th>Bulbs</th></tr>" + "".join(rows) + "</table>")
+
+
+def to_measure():
+    """N264: what's still a guess, room by room, as Measure lists it"""
+    import html
+    import export_house as XH
+    h = XH.house(); names = {r["id"]: r["name"] for r in h["rooms"]}
+    rows = "".join(f"<tr><td>{html.escape(names.get(m['room'], m['room']))}</td><td>{html.escape(m['what'])}</td><td>{html.escape(m.get('where', ''))}</td></tr>" for m in h["measure"])
+    return f"<h2>Still to measure ({len(h['measure'])})</h2><p>Type each one into Measure in the 3D, then Share.</p><table><tr><th>Room</th><th>What</th><th>Where</th></tr>{rows}</table>"
+
+
+def client():
+    """N264 (U6): her own House plan, linked from Plan: what each room becomes, her saved looks and their costs, the ideas to look at,
+    what's still to measure. No build specification or evidence (those are the developers', in Whole_House_HD_Plan.pdf)"""
+    when = datetime.date.today().strftime("%-d %B %Y")
+    body = [f'<section class="cover"><h1>Our house plan</h1><p class="lead">Every room: its scheme, your looks, the ideas to look at and what\'s still to measure.</p><p>{when}</p></section>',
+            schemes(), saved_looks(),
+            '<h2>Storage ideas (to look at, not in the plan)</h2><table><tr><th>What</th><th>Where</th><th>Size</th><th>Rough cost</th><th>Source</th></tr>'
+            + "".join(f"<tr><td>{w}</td><td>{at}</td><td>{sz}</td><td>£{lo:,}–{hi:,}</td><td>{src}</td></tr>" for w, at, sz, (lo, hi), src in SI.rows()) + "</table>",
+            '<h2>Garden ideas (to look at, not in the plan)</h2><table><tr><th>What</th><th>Where</th><th>Size</th><th>Rough cost</th><th>Source</th></tr>'
+            + "".join(f"<tr><td>{w}</td><td>{at}</td><td>{sz}</td><td>£{lo:,}–{hi:,}</td><td>{src}</td></tr>" for w, at, sz, (lo, hi), src in D.GARDEN_IDEAS) + "</table>",
+            to_measure(),
+            '<h2 class="pb">The house now</h2>' + now_pictures()]
+    pdf(body, "House_Plan.pdf", "Our house plan")
 
 
 if __name__ == "__main__":
