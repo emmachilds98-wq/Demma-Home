@@ -6,8 +6,8 @@ python3 tools/round.py "what changed, in the client's words" [--rows rows.json |
 2. Pull the client's edits and measurements from the app (tools/pull_edits.py; rows saved from the artifact's database with the
    ArtifactData tool, or a GitHub Pages share link).
 3. Build everything (tools/build.py; --fast keeps the renders and PDFs) and run every check (tools/checks.py).
-Then: rewrite docs/STATE.md's "What's open", update the status board in docs/V1_PLAN.md, commit, open the PR with the check lines
-this prints, merge: GitHub Pages publishes it in a few minutes (V1.37: no shared page any more)."""
+Then: tick the row in docs/REAL_PLAN.md, commit, push, open the PR with the check lines
+this prints, then python3 tools/ship.py "words" merges it; GitHub Pages publishes it in a few minutes."""
 import pathlib, subprocess, sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
