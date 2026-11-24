@@ -1,6 +1,6 @@
-# Handover (24 Nov 2026, V4.64: start here)
+# Handover (24 Nov 2026, V4.65: start here)
 
-## Now (24 Nov 2026, V4.64: start here)
+## Now (24 Nov 2026, V4.65: start here)
 The client: "handover efficiently now so another team can finish and start upgrade. make sure none of your work is left behind".
 
 1. **Main's CI first** (N252: this line always records main's last finished CI; a red main is fixed first, from one log read).

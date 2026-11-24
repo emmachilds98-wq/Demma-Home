@@ -462,3 +462,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.62** (24 Nov 2026): N243 a bigger catalogue and more places: 41 spots in 11 rooms (27 new: living room, kitchen, WC, bathroom, hall, landing, under the stairs, garage…), each checked clear of doors, walks and slopes; 188 more real pieces from 20 shops (`house/data/N243_catalogue.json`, each cited); `_site/data/ideas.json` for Ideas (fetched on first open).
 - **V4.63** (24 Nov 2026): N246–N248: a conflict-markers check, claim.py, ship.py
 - **V4.64** (24 Nov 2026): N249, N251: the shared docs are the lead's; the shop catalogues in house/data
+- **V4.65** (24 Nov 2026): N252: main's last CI in the handover; branches.py
