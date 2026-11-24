@@ -14,6 +14,7 @@ shown (Look's floor card, More: Storage ideas); checks() proves each fits (check
 python3 house/storage_ideas.py prints them."""
 import functools
 import math
+import sys
 import model as M
 import survey_data as D
 
@@ -568,14 +569,19 @@ def for_page():
         r = export3d.cat_row(q)
         rows.setdefault(r[0], r)
     used = {k for L in F.values() for k in L}
-    rooms = {rid: [k for k, r in rows.items() if set(r[14].split(",")) & set(U)] for rid, U in ROOM_USES.items()}
     return dict(v=1, cols=["key", "kind", "look", "name", "shop", "w", "d", "h", "price", "url", "mat", "mat2", "count", "on", "uses"],
                 spots=[dict(id=s["id"], room=s["room"], n=s["n"], at=s["at"], b=s["box"], back=s["back"], face=s["face"], w=s["w"], d=s["d"], h=s["h"],
                             uses=s["uses"], **({"idea": s["idea"]} if s.get("idea") else {})) for s in _spots()],
-                pieces=list(rows.values()), fits=F, rooms=rooms, n=dict(spots=len(_spots()), pieces=len(rows), placed=len(used)))
+                pieces=list(rows.values()), fits=F, rooms=ROOM_USES, n=dict(spots=len(_spots()), pieces=len(rows), placed=len(used)))
 
 
-if __name__ == "__main__":
+if __name__ == "__main__" and "--page" in sys.argv:          # N243: tools/build.py writes the page's ideas data (_site/data/ideas.json)
+    import json, pathlib
+    _out = pathlib.Path(sys.argv[sys.argv.index("--page") + 1])
+    _out.parent.mkdir(parents=True, exist_ok=True)
+    _out.write_text(json.dumps(for_page(), separators=(",", ":"), ensure_ascii=False))
+    print(_out.name, round(_out.stat().st_size / 1024), "KB")
+elif __name__ == "__main__":
     for n, ok, note in checks():
         print("PASS" if ok else "FAIL", n, note)
     print("\nnow:")

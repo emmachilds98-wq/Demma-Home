@@ -7,6 +7,7 @@ What goes where (docs/STATE.md has the same):
   _site/index.html (and plan.html)                       the site: the house and the living room in 3D, Plan, Build, Buy (build_viewer.py)
   _site/sw.js, manifest.webmanifest                      offline and Add to Home Screen (build_viewer.pwa_files)
   _site/data/house.json                                  the house file (house/export_house.py; tools/pull_edits.py checks against it)
+  _site/data/ideas.json                                  N243: where storage and furniture can go, the catalogue, what fits where
   _site/data/projects/<id>.json, index.json              the projects (media-wall/src/export_project.py; room for each room's own)
   _site/media-wall/out/                                  the plan PDFs and HD pictures
   _site/media-wall/src/art/                              the pictures the page uses"""
@@ -78,6 +79,7 @@ def main(argv):
         index.append(dict(id=pj["id"], name=pj["name"], room=pj["room"], file=f"data/projects/{pj['id']}.json"))
     (SITE / "data/projects/index.json").write_text(json.dumps(index))
     run(["export_house.py", SITE / "data/house.json"], cwd=HOUSE)
+    run(["storage_ideas.py", "--page", SITE / "data/ideas.json"], cwd=HOUSE)   # N243: the spots and the catalogue, fetched when wanted
     (SITE / "data/bake.json").write_text("{}")                             # N195: no baked light until house/bake.py writes it (the workflow, cached)
     if not fast or not (HOUSE / "out/Whole_House_HD_Plan.pdf").exists():
         run(["build_report.py"], cwd=HOUSE)                               # the whole-house report (PDF)
