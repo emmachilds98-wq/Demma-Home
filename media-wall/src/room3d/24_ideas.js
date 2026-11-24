@@ -64,8 +64,19 @@ function ixShow(room, i) {   // set-up i over hers: her colours, edits and piece
   heWear([...mine, ...s.adds.map(([k, x, z], j) => [`add.${IX.p}${j}`, "add", k, room, cmR(x), cmR(z), r[4]])], DS()); IX.n = s.adds.length;
   finApplyAll(); storeEdits(); lookPill();
 }
+/* N245 (its first part): the catalogue's pieces (N243's data, data/ideas.json: N219's, N242's and N243's shops, 230 and more) fetched once,
+   when Ideas first opens or a kept piece needs one, into HCAT and + Add's list: not in the page, so a first visit doesn't carry them */
+let IXD = null;
+function ixData() {
+  return IXD || (IXD = fetch("data/ideas.json").then(r => r.ok ? r.json() : null).then(j => { if (j && j.v === 1) ixLoad(j); return j && j.v === 1 ? j : null; }).catch(() => null));
+}
+function ixLoad(j) {
+  for (const [key, k, look, n, shop, w, d, h, p, url, m, m2, c] of j.pieces || []) { if (HCAT[key] || k === "idea" || !HCAT_KINDS[k] && !/^(gtable|gchair|gsofa)$/.test(k)) continue;
+    HCAT[key] = { n, k, w, d, h: Math.max(h, k === "rug" ? 0.6 : 1), ref: key, src: `${shop}, ${n}`, shop, p, url, b: hcMake(k, look, m, m2, c) }; HCAT_ADD.push(key); }
+}
 function ixOpen(room) {   // the pill: the room's set-ups (made once a visit), the first idea shown at once, its card
   if (!DS() || !R.HOUSE3) { toast("One moment: the plan's still loading"); return; }
+  if (!IXD) { toast("Loading the shops' pieces…"); ixData().then(() => ixOpen(room)); return; }   // N245: the catalogue first (then as before, without it if the fetch failed)
   if (!(ixOn() && ASIDE.ix === room && IX.room === room)) {
     if (ASIDE) lookMine(); IX.p = "ix" + Math.random().toString(36).slice(2, 6); IX.room = room; IX.k = 0; IX.fit = null; IX.L = ixSetups(room);
     ixShow(room, IX.L.length > 1 ? 1 : 0); if (!ixOn()) return; toast(IX.L.length > 1 ? `${IX.L[IX.i].n} · ‹ › for more` : "No set-ups fit here: + Add storage"); }

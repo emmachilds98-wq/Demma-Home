@@ -199,7 +199,7 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id.startsWith("win:")) return winCard(id);   // N227
   if (id.startsWith("lswap:")) { const k = id.slice(6), kind = livSwapKind(k);   // N220: a living-room piece, swapped as the house's are
     return kind ? swapCard(k, kind, MOV[k].swk, MOV[k].label.replace(/ \(suggested\)$/, ""), () => livWhy(k), "lswapgo", livCardOf(k)) : null; }
-  if (id.startsWith("hswap:") || id.startsWith("hadd:")) return hcatCard(id);   // V2.46 (N7): swap a piece, or which piece you've added
+  if (id.startsWith("hswap:") || id.startsWith("hadd:")) { if (!IXD) ixData().then(j => j && GS.actId === id && renderAct()); return hcatCard(id); }   // N245: the shops' pieces, fetched on the first swap or add   // V2.46 (N7): swap a piece, or which piece you've added
   if (id.startsWith("hitem:")) { const k = id.slice(6), it = HIT(k); if (!it) return null;   // V1.50: a piece in the house, its size
     if (it.idea) return ideaCard(k);   // N212: a storage idea, to look at
     if (ixMine(k)) return ixPieceCard(k);   // N244: an idea set-up's piece: ‹ › what fits its spot
