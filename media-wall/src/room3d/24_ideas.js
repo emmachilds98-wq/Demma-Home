@@ -14,6 +14,8 @@ const IX_THEMES = [   // a set-up: the room's storage ideas whose words match re
   { n: "On show", re: /glass|display|ledge|case/i, no: /bath|wc|garage/, add: [["unit", /glass|display|cabinet/i], ["shelves", /ladder|display/i], ["plant", null]] },
   { n: "Calm bedroom", re: /drawer|bedside|ledge|wardrobe|box/i, only: /master|bed/, add: [["bedside", /rattan|oak|pine/i], ["chest", /drawer/i], ["lamp", /floor/i]] },   // N276
   { n: "Oak and cane", re: /oak|shelf|ledge|record/i, no: /bath|wc|garage|store|kitchen/, add: [["unit", /rattan|cane|oak|pine/i], ["shelves", /ladder|oak|edin/i], ["seat", /rattan|cane|oak/i]] },   // N276
+  { n: "Bathroom shelves", re: /shelf|cabinet|box|basket|towel/i, only: /bath/, add: [["unit", /bathroom|single|double|zander|sonderborg/i], ["chest", /bamboo|bathroom/i], ["shelves", /tallboy|glass/i]] },   // N277
+  { n: "Media and games", re: /media|tv|game|record|console/i, no: /bath|wc|kitchen|garage|store|hall|landing/, add: [["unit", /tv|media/i], ["seat", /armchair|chair/i], ["rug", /wool|jute/i]] },   // N277
   { n: "Coats and shoes", re: /peg|hook|coat|hat|shoe/i, only: /hall|porch|landing/, add: [["shoes", null], ["seat", /bench/i]] },
 ];
 const IX_STORE = ["shelves", "chest", "shoes", "wardrobe", "unit"];   // + Add storage, a kind each press
