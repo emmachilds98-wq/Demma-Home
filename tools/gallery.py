@@ -1,4 +1,4 @@
-"""Demma's Home V1.13 (docs/QUALITY_PLAN.md Q4): every room by day in HD on one sheet, after the photos land: each round's proof and
+"""Demma's Home V1.13 (docs/archive/QUALITY_PLAN.md Q4): every room by day in HD on one sheet, after the photos land: each round's proof and
 the client's quick look. The whole house, the living room, then each of the house's rooms from its own view (In it).
 
 python3 tools/gallery.py [site dir] [--evening]      writes _shots/gallery.jpg (gallery_evening.jpg), each picture in _shots/gallery/;

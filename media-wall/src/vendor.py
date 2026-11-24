@@ -74,7 +74,7 @@ def minify(html_):
         word = "cl" + "aude"   # a name the source spells in parts (qa.no_assistant_names) that esbuild would join
         bad = lambda t: "</script" in t or "</style" in t or (word in t and word not in code.lower())
         return out if r.returncode == 0 and out and not bad(out.lower()) else code
-    html_ = re.sub(r'(<script type="module">)(.*?)(</script>)', lambda m: m.group(1) + run(m.group(2), "js", ("--format=esm", "--target=es2020")) + m.group(3), html_, flags=re.S)
+    html_ = re.sub(r'(<script type="module">)(.*?)(</script>)', lambda m: m.group(1) + run(m.group(2), "js", ("--format=esm", "--target=es2022")) + m.group(3), html_, flags=re.S)
     return re.sub(r'(<style>)(.*?)(</style>)', lambda m: m.group(1) + run(m.group(2), "css") + m.group(3), html_, flags=re.S)
 
 

@@ -2,7 +2,7 @@
 
 What the agents learned while doing each task, so a new team doesn't find it again from zero. Until 8 Nov 2026 these lived only in
 the project's memory, outside GitHub. Facts about the house are in `house/HOUSE.md`, the client's choices in `docs/DECISIONS.md`,
-what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (the 6 Nov upgrade review and mobile audit, both at V2.44).
+what's true now in `docs/STATE.md`. Two older reviews are in `docs/archive/reviews/` (the 6 Nov upgrade review and mobile audit, both at V2.44).
 
 ## 1. Working in the sandbox
 - **three.js:** jsDelivr is blocked. `npm ci` gives the local bundle; for the browser checks set `THREE_LOCAL` to an unpacked
@@ -63,10 +63,14 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 
 ## 2. Merging when threads run side by side
 - **Push everything at once (22 Nov 2026):** three rounds lost work to usage limits (N219's shop pieces, N221's saved looks, an iPhone fix, V4.41 once), each committed or merged only on the machine that stopped. Every commit is pushed when made; helpers push their own branch after each step; a merge is pushed straight away. To keep a running PR's CI, push to another branch (your own, or the helper's) and fold it into the PR with the next push.
-- **Versions race.** Each PR takes `VERSION`, a line in `docs/HISTORY.md`, `docs/STATE.md` and its plan row, and main moves every few
-  minutes while CI runs about 20. Take the version **at merge time**: once the code is green, merge `main` in (a merge commit, not a
-  rebase), take the next free version, `checks.py --quick` and `build.py --fast`, push, merge straight away. Never take a version below
-  main's. A docs-only conflict needs no second full CI wait. Numbers lost in races (V2.81, V2.84–V2.86) were simply skipped.
+- **Versions at merge only (N248, N249).** Only the lead touches `VERSION`, `docs/HISTORY.md`, `docs/STATE.md`'s version line and
+  `docs/HANDOVER.md`'s headings, and only through `python3 tools/ship.py "words"` at merge: it merges main, takes the next free version,
+  writes those lines, runs the quick checks, pushes and merges. A row's own PR edits only its row's files and its plan row. STATE's
+  version line holds the current version only; what each version did is HISTORY's one line. Numbers lost in races are simply skipped.
+- **A helper's brief (A5),** pasted into every helper's prompt: "Work in your own worktree on your own branch `claude/<session>-n###`
+  (from `tools/claim.py N###`). Push after every commit. Touch only the row's files (its row names them); never VERSION, HISTORY, STATE
+  or HANDOVER. Per change: `python3 tools/checks.py --quick` and `python3 house/privacy_check.py`, nothing longer. Never write the
+  house's address. Hand back the branch name and the last pushed sha."
 - **A PR that conflicts with main gets no CI** (no merge ref): merge main first. A draft PR once got no runs until marked ready.
 - **Docs-only PRs** skip the browser jobs (the workflow's "Only documents changed?" step) and take no version.
 - **Flaky checks:** `browser (site)` "Measure didn't keep the number typed" was a fixed wait against Measure's 600 ms debounce;
@@ -258,11 +262,11 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   are bedroom 2's monitors, interface, 88-key, headphones and mic on the L desk and the office's two screen setups on its desk; not the
   office lamp (its light would stay behind). N230: two of a thing are two items (`kitchen.stool`, `kitchen.stool2`; a number on the id:
   `HSWAP_OF`, `hcSoft` and the walk's soft pieces allow it); a seat kind (`hcSeat`: chairs, stools) swaps centred, facing as before.
-  A kind with no house pieces (bar stools) gets real ones as rows in `docs/N219_catalogue.json` (read date, the listing's W × D × H).
+  A kind with no house pieces (bar stools) gets real ones as rows in `house/data/N219_catalogue.json` (read date, the listing's W × D × H).
   **Adding** (N218): the add card's kinds are chips, ‹ › goes through that kind (`hcAddOf`); `addSpot` puts a new piece (and each piece
   picked for it) back to the room's wall nearest the tap where `roomWhy` and the pieces find it clear, stored as the row's `x, z` on the
   wall line (0.5 in), which `syncAdds` reads back as against that wall. The space kept clear (`fit.keep`, from `reserves()`) names the
-  piece it's for (the Kallax's drawers), which that piece may take. **Real pieces and her own** (N219): `docs/N219_catalogue.json` (the
+  piece it's for (the Kallax's drawers), which that piece may take. **Real pieces and her own** (N219): `house/data/N219_catalogue.json` (the
   research, 142 pieces) is read by `fit.shop_pieces()`: each its own `fit.SOURCES` row under `fit.shop_key` (a hash of its page and name,
   so a row in Send or a link keeps meaning it; one page can sell two sizes), and by `export3d.shop_row` into `R.SHOP` (its kind, a look for
   the builder, its materials from the finish's words, a door or drawer count). `08_house_catalogue.js` puts them in `HCAT` (`shop`, `p`,
@@ -469,7 +473,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Where it is:** `room3d/22_bath.js` (the tiles: `TILE_ROOMS`, `tileTex`, `tileApply`, `tileCard`, `tileUps`), hooked in one line each
   in `23_finish.js` (`finAt`, `finCard`, `finClean`, `finApplyAll`, `finHold`) and `16_cards.js` (`roomUps`). Numbered 22, not 24 as
   first planned: `23_finish.js` runs code at load (`finSchDraw`) that reaches `finClean`, and a `const` of a later part is not yet made then.
-- **The suites:** shop pieces like N219's (`docs/N219_catalogue.json`, kinds `toilet` and `basin`), so their size, price, page and
+- **The suites:** shop pieces like N219's (`house/data/N219_catalogue.json`, kinds `toilet` and `basin`), so their size, price, page and
   `fit.SOURCES` row come for free; `HCAT_KINDS` names them non-enumerably (no chips in the add card: a suite is swapped, never added);
   `SUITE_OF` lets the four pieces swap though hung or lidded (`swapKind`'s first line), `swapBox` sets their height. `hcBuild` passes
   a 7th argument, `end` (the piece stands in its wall's far corner), and `L` an oval (`sc`, along its wall and out).
