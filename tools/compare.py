@@ -72,7 +72,7 @@ def main():
                 pg.evaluate("a => R3D.set({ aim: a })", CAMS[view]); pg.wait_for_timeout(1500)
                 if view in TRUE_FOV:
                     pg.evaluate(LENS, CAMS[view]["fov"]); pg.wait_for_timeout(500)
-            pg.evaluate("document.body.classList.add('bare'); document.querySelectorAll('.r3d-mini, .brand, .r3d-toast, .r3d-stick').forEach(e => e.style.visibility = 'hidden')")
+            pg.evaluate("document.body.classList.add('bare'); document.querySelectorAll('.r3d-mini, .brand, .r3d-gear, .r3d-toast, .r3d-stick').forEach(e => e.style.visibility = 'hidden')")
             pg.wait_for_timeout(600)
             shot = OUT / f"{view}_3d.png"; pg.screenshot(path=str(shot)); ctx.close()
             r = Image.open(shot).convert("RGB")
