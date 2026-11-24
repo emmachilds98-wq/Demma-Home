@@ -286,15 +286,15 @@ def _new_spots():
        ["display", "plants", "boxes"])
     lx = G.FLOOR_LAMP_SPOTS["sofa"][1][0] - G.FLOOR_LAMP["base"] / 2
     sp("lr_armend", "living", "By the sofa's arm, at the window", "floor", [G.SOFABED_X[1] + 5, 0, G.SOFA_BACK_Z + 1, lx - 2, G.WINDOW_Y[0] - 3,
-       G.SOFA_BACK_Z + 28], "z0", ["side", "plants", "lamp", "records", "display"])
+       G.SOFA_BACK_Z + 30], "z0", ["side", "plants", "lamp", "records", "display"])
     # ------------------------------------------------ the kitchen
     k, kd, b = _room("kitchen"), _door("kitchen_door"), _box("kitchen.boiler")
     sp("k_overdoor", "kitchen", "Over the kitchen door", "over door", [k["x1"] - 20, hd("lower"), kd["a"] - 3, k["x1"], top("lower"), kd["b"] + 3], "x1",
        ["books", "boxes", "display"])
-    sp("k_airer", "kitchen", "Over the floor by the washer", "ceiling", [105.0, yl + C - 34, -244.0, 225.0, yl + C, -206.0], "y1", ["laundry"])
+    sp("k_airer", "kitchen", "Over the floor by the washer", "ceiling", [105.0, yl + C - 34, -250.0, 225.0, yl + C, -204.0], "y1", ["laundry"])
     # ------------------------------------------------ the WC
     w = _room("wc")
-    sp("wc_shelf", "wc", "Beside the window, over the toilet", "wall", [w["x1"] - 18, yl + 130, w["z0"] + 14, w["x1"], yl + 190, w["z0"] + 57], "x1",
+    sp("wc_shelf", "wc", "Beside the window, over the toilet", "wall", [w["x1"] - 18, yl + 130, w["z0"] + 14, w["x1"], yl + 225, w["z0"] + 57], "x1",
        ["boxes", "display", "plants"])
     sp("wc_cab", "wc", "Over the basin", "wall", [w["x0"], yl + 140, -245.0, w["x0"] + 15, yl + 200, -195.0], "x0", ["boxes", "display"])
     sp("wc_corner", "wc", "The corner past the toilet", "floor", [w["x1"] - 28, yl, -237.0, w["x1"] - 2, yl + 80, -200.0], "x1", ["boxes", "laundry"])
@@ -319,7 +319,7 @@ def _new_spots():
     la, b3 = _room("landing"), _door("bed3_door")
     sp("land_overbath", "landing", "Over the bathroom door", "over door", [bd["a"], hd("first"), la["z0"] + 2, bd["b"], top("first"), la["z0"] + 22], "z0",
        ["books", "boxes", "display"])
-    sp("land_overoffice", "landing", "Over the office door", "over door", [b3["a"], hd("first"), la["z1"] - 22, b3["b"], top("first"), la["z1"] - 2], "z1",
+    sp("land_overoffice", "landing", "Over the office door", "over door", [b3["a"] - 5, hd("first"), la["z1"] - 22, b3["b"] + 5, top("first"), la["z1"] - 2], "z1",
        ["books", "games", "boxes"])
     sp("land_byoffice", "landing", "By the office door, under the switch", "floor", [la["x0"] + 2, y1, 234.0, la["x0"] + 24, y1 + 110, la["z1"] - 2], "x0",
        ["books", "display", "plants", "boxes"])
@@ -348,7 +348,7 @@ def _new_spots():
     of = _room("bed3")
     sp("office_low", "bed3", "Under the cube shelves", "floor", [270.5, y1, 308.0, 300.5, y1 + 108, 344.0], "x0",
        ["boxes", "media", "games", "books"])
-    sp("office_overdoor", "bed3", "Over its door", "over door", [b3["a"], hd("first"), of["z0"] + 2, b3["b"], top("first"), of["z0"] + 22], "z0",
+    sp("office_overdoor", "bed3", "Over its door", "over door", [b3["a"] - 5, hd("first"), of["z0"] + 2, b3["b"] + 5, top("first"), of["z0"] + 22], "z0",
        ["books", "games", "boxes"])
     # ------------------------------------------------ the garage
     g = _room("garage")
@@ -396,7 +396,12 @@ def piece_on(q):
 
 
 def piece_uses(q):
-    return q.get("use") or KIND_USES.get(q["kind"], [])
+    """What a piece is for: its row's "use", else (N242) its spots' uses, else its kind's."""
+    if q.get("use"):
+        return q["use"]
+    if q.get("spots"):
+        return sorted({u for i in q["spots"] for u in IDEA_USES.get(i, [])})
+    return KIND_USES.get(q["kind"], [])
 
 
 def fits_spot(q, s):
