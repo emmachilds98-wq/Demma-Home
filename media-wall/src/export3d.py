@@ -332,7 +332,8 @@ def shop_row(q):
     soft = k in ("seat", "chair", "rug") or (k == "bed" and re.search(r"upholster|vissle", words)) or re.search(SOFT_WORDS, parts[0])
     if not soft:
         m = PAINTED.get(m, m)
-    if not (len(parts) > 1 and re.search(SOFT_WORDS, parts[1])) and k != "rug":
+    shade = k == "lamp" and len(parts) > 1 and re.search(r"linen|fabric", parts[1])   # N278: a lamp's linen shade stays cloth
+    if not (len(parts) > 1 and re.search(SOFT_WORDS, parts[1])) and k != "rug" and not shade:
         m2 = PAINTED.get(m2, m2)
     form = next((v for pat, v in FORMS.get(k, []) if re.search(pat, words if pat[0] != "^" else f.strip())), None)
     if k == "bed":
