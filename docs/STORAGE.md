@@ -88,7 +88,7 @@ living room's options).
 ## Real buys to look at (N242, 23 Nov 2026)
 
 Emma: "Look at plans I want options that you pick from varying suppliers and I'm able to look at". Three real products for each
-spot, each from a different shop, read 22–23 Nov 2026 (`docs/N242_options.json`, each a `fit.SOURCES` row). In the 3D: tap the
+spot, each from a different shop, read 22–23 Nov 2026 (`house/data/N242_options.json`, each a `fit.SOURCES` row). In the 3D: tap the
 idea's piece, then ‹ › or a shop's chip: each drawn at its own size, its card says if it fits and links the shop's page. Options only.
 
 **Bedroom 2: the record cabinet's spot (110 × 36, 80 high)**

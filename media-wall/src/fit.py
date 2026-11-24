@@ -1452,7 +1452,7 @@ ORDER.append("amelia")
 # N212 (21 Nov 2026): the storage ideas' pieces (house/storage_ideas.py), options to look at (IKEA UK listings read 22 Nov 2026)
 SOURCES["kallax24"] = ("IKEA UK: KALLAX shelving unit, white stained oak effect, W 77 × D 39 × H 147 cm, 13 kg a shelf, stands either way up, "
                        "£55 (ikea.com/gb, 003.245.18); with two door inserts £88; LPs: about 50 a cube (r/vinyl, \"1000 vinyl records\", 2025)")
-# N219 (22 Nov 2026): real pieces from four shops (docs/N219_catalogue.json, read 22 Nov 2026), each its own row, to swap or add in
+# N219 (22 Nov 2026): real pieces from four shops (house/data/N219_catalogue.json, read 22 Nov 2026), each its own row, to swap or add in
 # the 3D (options to look at: nothing to buy until she picks). Keyed by its page and name (shop_key), so a row in Send or a look link keeps it.
 def shop_key(p):   # its page and name (one page can sell two sizes)
     import hashlib
@@ -1461,7 +1461,7 @@ def shop_key(p):   # its page and name (one page can sell two sizes)
 
 def shop_pieces():
     import json, pathlib
-    return json.loads((pathlib.Path(__file__).resolve().parents[2] / "docs/N219_catalogue.json").read_text())
+    return json.loads((pathlib.Path(__file__).resolve().parents[2] / "house/data/N219_catalogue.json").read_text())
 
 
 for _p in shop_pieces():
@@ -1507,7 +1507,7 @@ SOURCES["n225fit"] = ("Bathroom taps (Wickes, read 23 Nov 2026): Mariz basin mix
 SOURCES["n225mirror"] = ("Bathroom mirrors, W × H cm (read 24 Nov 2026): IKEA LINDBYN round, black, 50, bathroom approved, £25 (ikea.com/gb, 705.904.48); "
                          "IKEA NYSJÖN mirror cabinet, white, two sliding mirror doors, 50 × 13 × 60, £40 (104.708.30); Aveli arched, black frame, "
                          "50 × 80, £44.95 (B&Q diy.com, 5056806185941), brushed brass £49.95 (5056806185958); the frames about 3 deep (E). The bathroom's "
-                         "toilets and vanities to swap: N219's rows (docs/N219_catalogue.json, the B&Q Cavally, Wickes Nova and Halite, IKEA HAVBÄCK)")
+                         "toilets and vanities to swap: N219's rows (house/data/N219_catalogue.json, the B&Q Cavally, Wickes Nova and Halite, IKEA HAVBÄCK)")
 ORDER.append("n225mirror")
 SOURCES["pulleyairer"] = ("Ceiling pulley clothes airers (read 23 Nov 2026): Clothesmaid, cast iron rack ends 38 wide, pine slats 0.9 to 2 m, "
                           "17 cm under the ceiling fully raised, £74.99 (clothesmaid.com); Cast in Style 6-lath Victorian Kitchen Maid £99 "
@@ -1517,11 +1517,11 @@ ORDER.extend(["n225tiles", "n225suites", "n224glass", "n226doors", "n224units", 
 SOURCES["paperback"] = ("UK book sizes, w × h: A-format 11.1 × 17.8, B-format 12.9 × 19.8 (the usual paperback novel), Demy 13.8 × 21.6, "
                         "Royal 15.6 × 23.4 (publishing.co.uk/guides/standard-book-sizes-uk, read 23 Nov 2026)")
 ORDER.append("paperback")
-# N242 (23 Nov 2026): real buys for each storage idea's spot, from different shops (docs/N242_options.json, read 22-23 Nov 2026), each
+# N242 (23 Nov 2026): real buys for each storage idea's spot, from different shops (house/data/N242_options.json, read 22-23 Nov 2026), each
 # its own row by its page and name (shop_key, as N219's): options to look at, nothing to buy until she picks
 def opt_pieces():
     import json, pathlib
-    return json.loads((pathlib.Path(__file__).resolve().parents[2] / "docs/N242_options.json").read_text())
+    return json.loads((pathlib.Path(__file__).resolve().parents[2] / "house/data/N242_options.json").read_text())
 
 
 for _p in opt_pieces():

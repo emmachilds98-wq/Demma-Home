@@ -264,7 +264,7 @@ Object.assign(HCAT, {
         if (i < vs.length - 1) for (const u of [4, 48]) { const top = v + P + Math.min(15, vs[i + 1] - v - 6);
           B("storebox", u, v + P, 2, u + 35, top - 0.8, 28); B("birch", u - 0.2, top - 0.8, 1.8, u + 35.2, top, 28.2); } }); } },   // KUGGIS boxes, their lids
 });
-/* N219: real pieces from four shops (R.SHOP, from docs/N219_catalogue.json by export3d.shop_row; each its own fit.SOURCES row by its key)
+/* N219: real pieces from four shops (R.SHOP, from house/data/N219_catalogue.json by export3d.shop_row; each its own fit.SOURCES row by its key)
    and her own (a size, a look, one of the house's materials, a name), drawn by the same builders at their own size. Built only when one is
    swapped in or added, from materials the house already has: no new shader at the first picture. Options to look at: nothing to buy */
 const hcUp = (B, dv) => (m, a, b, c, d, e, f) => B(m, a, b + dv, c, d, e + dv, f);   // a builder's boxes raised dv (a case on its legs)
@@ -617,7 +617,7 @@ const plantTray = room => { const now = finGet(room, 23) || "";
     + [["", "None"], ...plantKeys().map(k => [k, HCAT[k].n.split(",")[0]])].map(([v, t]) => `<button type="button" data-finplant="${v}" aria-pressed="${now === v}">${t}</button>`).join("") + `</div>`; };
 /* N212: the storage ideas (R.HOUSE3.storage, house/storage_ideas.py): options to look at, shown a room at a time from its floor card
    (More), kept as their ids in S.fin[room][28]; each piece an added piece of the house (drawn, tapped), built only once it's shown.
-   N242: each idea's real buys from the shops (its "o" rows: export3d.opt_row, docs/N242_options.json): ‹ › on its card through the plan's
+   N242: each idea's real buys from the shops (its "o" rows: export3d.opt_row, house/data/N242_options.json): ‹ › on its card through the plan's
    idea and each, kept as "id:key" in the same slot; drawn at its own size on the idea's wall (centred on its spot) by the ideas' own
    builders in its colour, or the shops' (hcMake), on the floor or under the ceiling where it stands there */
 const IDEAS = () => (R.HOUSE3 && R.HOUSE3.storage) || [];
