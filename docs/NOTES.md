@@ -583,3 +583,6 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/archive/revie
   by less than that vanishes, so labels and bands stand 1 mm out. A material in `GRAIN_ALONG` (`artisan`) carries its boxes' sizes
   into `worldUV`, which turns each face's picture so its grain (up the picture) runs the face's longer way; any other material keeps
   the world's directions (up a wall, along z on a top).
+- **A walk kept clear has no piece (`of` null), and a new piece has no `self` (null):** `roomWhy` skipped each reserve with
+  `of !== self`, so `null !== null` let every added piece (Ideas' set-ups, + Add storage, a tapped add) stand in bedroom 2's walk to
+  the desk; it showed only in the fresh-page features job (24 Nov). Now `!of || of !== self`.

@@ -522,7 +522,7 @@ function roomWhy(b, rid, self) {   // box b in room rid (self: the piece it is, 
     let s = 0;   // storage_ideas.checks' swept (model.swing_into): each door's leaf as it opens, 205 high
     for (const o of Object.values(R.HOUSE3.items)) { const p = o.op; if (p && p.swing && p.y0 === r[4] && b[1] <= p.y0 + 205) s = Math.max(s, swingInto(p, b)); }
     into(s, "the door's swing");
-    for (const [n, q, of] of FT.keep) if (of !== self) into(dig(q), n.replace(/ \(.*\)$/, ""));
+    for (const [n, q, of] of FT.keep) if (!of || of !== self) into(dig(q), n.replace(/ \(.*\)$/, ""));   // a walk (of none) for every piece, a new one too (self null)
   }
   return out;
 }
