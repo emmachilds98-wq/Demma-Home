@@ -13,7 +13,7 @@ The client: "handover efficiently now so another team can finish and start upgra
    real cause), the tape round (N235, N275), the master's sliding-door gap, lighting "later" (N228, N270).
 
 **Superseded branches, kept only for reference (not to merge):** `claude/trusting-gauss-gra6z6-pr322`, `-n224`, `-n225`, `-n226`, `-n232`,
-`-win` (a parallel session's versions of the same rows are on main); `-n237` (its commit is on main under another id). Every other
+`-win` (a parallel session's versions of the same rows are on main); `-n237` (its commit is on main under another id); `-old-n224-kitchen`, `-old-n220-living`, `-old-shaders` (earlier helpers' unfinished work, saved at handover; the same rows are on main). Every other
 `claude/trusting-gauss-gra6z6-*` branch is merged.
 
 **The client's standing rules:** check lightly; nothing stays local; don't wait for CI (merge on the quick checks, then fix from main's
