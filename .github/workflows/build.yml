@@ -24,9 +24,10 @@ on:
 permissions:
   contents: read
 
-concurrency:
-  group: build-${{ github.ref }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}   # a pull request's newer push replaces its run; every merge to main publishes
+concurrency:   # a pull request's newer push replaces its run; on main every merge gets its own run, never cancelled (N258: with one group a
+  # newer merge dropped the pending one, so runs 937-957 all ended cancelled and main's CI never finished)
+  group: build-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   build:
@@ -181,6 +182,9 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-24.04
+    concurrency:   # one deploy at a time, in order; a run whose merge is no longer main's newest doesn't publish over a newer one
+      group: pages
+      cancel-in-progress: false
     permissions:
       pages: write
       id-token: write
@@ -188,7 +192,13 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
+      - name: Still main's newest merge?
+        id: newest
+        run: |
+          head=$(git ls-remote "https://github.com/${{ github.repository }}" refs/heads/main | cut -f1)
+          echo "go=$([ "$head" = "${{ github.sha }}" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"; echo "main is at $head, this run ${{ github.sha }}"
       - id: deploy
+        if: steps.newest.outputs.go == 'true'
         uses: actions/deploy-pages@v5
 
   release:
