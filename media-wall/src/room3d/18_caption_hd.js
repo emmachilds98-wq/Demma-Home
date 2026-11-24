@@ -241,3 +241,33 @@ qs("#r3d-find")?.addEventListener("change", e => findGo(e.target.value));
 qs("#r3d-find")?.addEventListener("keydown", e => { if (e.key === "Enter") findGo(e.target.value); });
 qs("#r3d-findgo")?.addEventListener("click", () => findGo(qs("#r3d-find").value));
 
+/* N264 (U5): Buy's "The house": every change in every room (upsAll's rows, the same as Plan's chips): what, the room, how much, the price,
+   the shop's link, a tick (the same tick as the room's Changes card); Copy as text */
+function houseList() {
+  if (!R.HOUSE3) return [];
+  return upRooms().flatMap(r => roomUps(r).map(u => { const m = /~[as]=(.+)$/.exec(u.k) || /^28=[^:]+:(.+)$/.exec(u.k), C = m && HCAT[m[1]];
+    return { room: r, rn: r === "outside" ? "Outside" : roomName(r), k: u.k, t: u.t, lo: u.lo, hi: u.hi, done: !!u.done, url: C && /^https:\/\//.test(C.url || "") ? C.url : "", shop: C && C.shop || "" }; }));
+}
+function buyHouse() {
+  const box = document.getElementById("bh-l"), tot = document.getElementById("bh-tot"); if (!box || !tot) return;
+  const L = houseList(), lo = L.reduce((a, u) => a + u.lo, 0), hi = L.reduce((a, u) => a + u.hi, 0), d = L.filter(u => u.done).length;
+  tot.textContent = L.length ? `${upRange(lo, hi) || "£0"} · ${d} of ${L.length} done` : "nothing yet";
+  box.textContent = "";
+  if (!L.length) { const li = document.createElement("li"); li.textContent = "Tap a wall, a floor or a piece in a room to change it."; box.append(li); return; }
+  for (const u of L) {   // built as elements: the rows hold names typed on a device, never markup
+    const li = document.createElement("li"); li.classList.toggle("done", u.done);
+    const cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = u.done; cb.dataset.hdone = u.room + "|" + u.k; cb.setAttribute("aria-label", "Done: " + u.t);
+    const t = document.createElement("span"); t.className = "ht"; t.textContent = u.t; const r = document.createElement("span"); r.className = "hr"; r.textContent = " " + u.rn; t.append(document.createElement("br"), r);
+    const p = document.createElement("span"); p.className = "hp"; p.textContent = upRange(u.lo, u.hi) || "";
+    if (u.url) { const a = document.createElement("a"); a.href = u.url; a.target = "_blank"; a.rel = "noopener"; a.textContent = " " + (u.shop || "Shop"); p.append(a); }
+    li.append(cb, t, p); box.append(li);
+  }
+}
+document.addEventListener("change", e => { const cb = e.target.closest && e.target.closest("[data-hdone]"); if (!cb) return;
+  const D = upDone(), k = cb.dataset.hdone; if (cb.checked) D[k] = 1; else delete D[k];
+  try { localStorage.setItem(UPK, JSON.stringify(D)); } catch (er) {} buyHouse(); upsPlan(); });
+document.addEventListener("click", e => { if (!e.target.closest || !e.target.closest("#bh-copy")) return; const L = houseList(), st = document.getElementById("bh-st");
+  const text = ["THE HOUSE: SHOPPING LIST", ...L.map(u => `${u.done ? "[x]" : "[ ]"} ${u.rn}: ${u.t}${u.hi ? " · " + upRange(u.lo, u.hi) : ""}${u.url ? " · " + u.url : ""}`)].join("\n");
+  const shown = () => { if (st) st.textContent = text; };
+  try { navigator.clipboard.writeText(text).then(() => { if (st) st.textContent = "Copied."; }, shown); } catch (er) { shown(); } });
+{ const sh = document.getElementById("sh-buy"); if (sh) new MutationObserver(() => { if (sh.classList.contains("open")) { buyHouse(); setTimeout(buyHouse, 60); } }).observe(sh, { attributes: true, attributeFilter: ["class"] }); }
