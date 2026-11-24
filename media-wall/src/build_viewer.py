@@ -926,6 +926,11 @@ SHEETS_JS = r"""(() => { const D = document.getElementById("sheets-data"); let t
     const S = JSON.parse(text); text = null;
     for (const [k, h] of Object.entries(S.html)) { const b = document.querySelector("#sh-" + k + " .sbd"); if (b) b.innerHTML = h; }
     for (const js of S.js) { const s = document.createElement("script"); s.textContent = js; document.body.appendChild(s); }   // in order, as before
+    for (const o of document.querySelectorAll("ol.sources[data-src]")) {   /* N284: the Sources list fetched when it first comes into view (or to print) */
+      const go = () => { if (o.dataset.got) return; o.dataset.got = "1"; fetch(o.dataset.src).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+        .then(t => { o.outerHTML = t; }, () => { delete o.dataset.got; }); };
+      if (window.IntersectionObserver) { const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); go(); } }, { rootMargin: "600px" }); io.observe(o); } else go();
+      addEventListener("beforeprint", go, { once: true }); }
     W.done = true; dispatchEvent(new Event("demma-sheets")); return true; };
   W.load = () => built ? Promise.resolve() : fetchIt().then(build);
   /* a tap that needs the sheets: built there and then if fetched (the tap goes on to their own handlers), else after the fetch, tapped again */
@@ -1503,12 +1508,29 @@ def split_sheets(html_):
     m = re.search(r'<script type="application/json" id="sheets-data">(.*?)</script>', html_, re.S)
     if not m:
         return html_
-    data = m.group(1).encode()
+    data = split_sources(m.group(1)).encode()
     name = f"sheets.{hashlib.sha256(data).hexdigest()[:10]}.json"
     for old in SITE.glob("sheets.*.json"):
         if old.name != name: old.unlink()
     (SITE / name).write_bytes(data)
     return html_[:m.start()] + f'<script type="application/json" id="sheets-data" data-src="{name}"></script>' + html_[m.end():]
+
+
+def split_sources(data):
+    """N284: the Plan's Sources list (about 600 sources, 120 KB: one for every shop piece Ideas offers, and growing with them) a file of its
+    own (sources.<hash>.html), fetched when it first comes into view (SHEETS_JS), not with the sheets after the first picture (a phone's
+    first visit was over its budget)"""
+    S = json.loads(data); h = S["html"].get("plan", "")
+    m = re.search(r"<ol class='sources'>.*?</ol>", h, re.S)
+    if not m:
+        return data
+    body = m.group(0).encode()
+    name = f"sources.{hashlib.sha256(body).hexdigest()[:10]}.html"
+    for old in SITE.glob("sources.*.html"):
+        if old.name != name: old.unlink()
+    (SITE / name).write_bytes(body)
+    S["html"]["plan"] = h[:m.start()] + f"<ol class='sources' data-src='{name}'></ol>" + h[m.end():]
+    return json.dumps(S, separators=(",", ":")).replace("</", "<\\/").replace("<!--", "<\\u0021--")
 
 
 def split_app(html_):

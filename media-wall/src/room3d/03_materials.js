@@ -24,23 +24,42 @@ function grassy(m) {
 }
 /* N271 (the review: brick, roof tiles, concrete and paving repeat visibly): the outside's photos under a slow tone that drifts across a
    wall or a roof (about ±8%, a couple of metres a patch, worked out from where the pixel is in the house), and on brick a dirt band where it
-   meets the ground (splash and green, darker in its bottom 30 or so cm, ragged). One program ("weather"), the dirt a uniform */
-function weathered(m, kind) {
-  const dirt = kind === "brick" ? 1 : 0;
-  m.customProgramCacheKey = () => "weather";   // one program for all of them: the dirt band a uniform (the speed budget's shaders_first)
+   meets the ground (splash and green, darker in its bottom 30 or so cm, ragged). One program ("weather"), the dirt a uniform.
+   N284: the garage's slab (20_1 garageFloor) is in that program too, and each of them has a roughness map (a white one, × 1, where it has
+   none: N237's way), so the brick, the roof, the paving and the slab are one program on every path (the brick's, the roof's and the slab's
+   were three: the computer's and the iPhone's first pictures over budget). What each draws is a uniform: wTone the drifting tone, wDirt the
+   brick's foot, gR and gY the garage's outline and floor (none: nothing) */
+const OUT_RW = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1); OUT_RW.needsUpdate = true;
+function weathered(m, kind) { return outShade(m, { tone: 1, dirt: kind === "brick" ? 1 : 0 }); }
+function outShade(m, u) {
+  if (!m.roughnessMap) m.roughnessMap = OUT_RW;
+  m.customProgramCacheKey = () => "weather";   // one program for all of them (the speed budget's shaders_first): its text the same for each
   m.onBeforeCompile = sh => {
-    sh.uniforms.wDirt = { value: dirt };
+    Object.assign(sh.uniforms, { wTone: { value: u.tone || 0 }, wDirt: { value: u.dirt || 0 }, gR: { value: new THREE.Vector4(...(u.gR || [0, 0, 0, 0])) }, gY: { value: u.gY || 0 } });
     sh.vertexShader = "varying vec3 vPgP;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n vPgP = (modelMatrix * vec4(transformed, 1.0)).xyz;");
-    sh.fragmentShader = PAINT_GRAIN + "uniform float wDirt;\n" + sh.fragmentShader.replace("#include <map_fragment>", `#ifdef USE_MAP
+    sh.fragmentShader = PAINT_GRAIN + "uniform float wTone;\nuniform float wDirt;\nuniform vec4 gR;\nuniform float gY;\n" + sh.fragmentShader.replace("#include <map_fragment>", `#ifdef USE_MAP
     vec4 sampledDiffuseColor = texture2D(map, vMapUv);
     vec3 wP = vec3(-vPgP.x, vPgP.y, vPgP.z) * 100.0;
-    float wT = 0.6 * pgN(wP * 0.004 + 1.3) + 0.4 * pgN(wP * 0.013 + 4.1);
-    sampledDiffuseColor.rgb *= 1.0 + 0.16 * (wT - 0.5);
-    float wH = wP.y - (wP.z > 95.0 ? -15.0 : -260.0);
-    float wD = wDirt * (1.0 - smoothstep(3.0, 28.0 + 22.0 * pgN(wP * 0.03 + 2.0), wH)) * step(-8.0, wH);
-    sampledDiffuseColor.rgb *= mix(vec3(1.0), vec3(0.74, 0.76, 0.7), wD);
+    if (wTone > 0.0) { float wT = 0.6 * pgN(wP * 0.004 + 1.3) + 0.4 * pgN(wP * 0.013 + 4.1);
+      sampledDiffuseColor.rgb *= 1.0 + 0.16 * wTone * (wT - 0.5); }
+    if (wDirt > 0.0) { float wH = wP.y - (wP.z > 95.0 ? -15.0 : -260.0);
+      float wD = wDirt * (1.0 - smoothstep(3.0, 28.0 + 22.0 * pgN(wP * 0.03 + 2.0), wH)) * step(-8.0, wH);
+      sampledDiffuseColor.rgb *= mix(vec3(1.0), vec3(0.74, 0.76, 0.7), wD); }
     diffuseColor *= sampledDiffuseColor;
-  #endif`); };
+  #endif`).replace("#include <color_fragment>", `#include <color_fragment>
+  float gfR = 1.0;
+  { vec2 c = vec2(-vPgP.x * 100.0, vPgP.z * 100.0);
+    if (c.x > gR.x && c.x < gR.y && c.y > gR.z && c.y < gR.w && abs(vPgP.y * 100.0 - gY) < 20.0) {
+      float W = gR.y - gR.x, L = gR.w - gR.z, u = c.x - gR.x, v = c.y - gR.z, n = pgN(vPgP * 9.0), n2 = pgN(vPgP * 1.6 + 5.0), k = 1.0;
+      k *= mix(0.5, 1.0, smoothstep(0.2, 0.55, abs(v - L * 0.7) + (n - 0.5) * 0.25));
+      float e = min(min(u, W - u), min(v, L - v));
+      k *= 1.0 - 0.1 * exp(-e / 12.0) * (0.6 + 0.8 * n2);
+      float tr = 0.0; for (int s = -1; s <= 1; s += 2) tr = max(tr, 1.0 - smoothstep(5.0, 13.0, abs(u - W * 0.5 - float(s) * 76.0)));
+      tr *= smoothstep(L * 0.12, L * 0.3, v) * (0.5 + 0.5 * n2);
+      k *= 1.0 - 0.1 * tr; gfR *= 1.0 - 0.25 * tr;
+      float od = length(vec2(u - W * 0.5, (v - L * 0.27) * 0.8)) + (n2 - 0.5) * 24.0 + (n - 0.5) * 6.0, oil = 1.0 - smoothstep(14.0, 30.0, od);
+      k *= 1.0 - 0.3 * oil; gfR *= 1.0 - 0.45 * oil;
+      diffuseColor.rgb *= k; } }`).replace("#include <roughnessmap_fragment>", "#include <roughnessmap_fragment>\n  roughnessFactor *= gfR;"); };
   return m;
 }
 const OAKS = new Set(["#c48c57", "#d9a46c", "#9c6a3f", "#a87443", "#cfa575", "#ddb78a", "#b08756", "#c79a6b", "#d8ad80", "#a37a50",
