@@ -1,4 +1,4 @@
-"""Demma's Home V1.40 (docs/UPGRADE_REVIEW.md Next 2): stand the 3D's camera where each of the client's photos was taken. For each pair in
+"""Demma's Home V1.40 (docs/archive/UPGRADE_REVIEW.md Next 2): stand the 3D's camera where each of the client's photos was taken. For each pair in
 compare.PAIRS it nudges the eye (x, y, z), the aim (turn, tilt) and the lens one at a time, keeping a change when the 3D's edges sit closer
 to the photo's (the F-score of edges within 4 px each way, both pictures softened first), halving the steps each pass. It prints each
 camera for compare.CAMS, where the comparison then stands; what still misses after that is the room's sizes, not the camera. V1.41: a

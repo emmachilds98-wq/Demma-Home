@@ -1,4 +1,4 @@
-"""Demma's Home V1.35 (docs/UPGRADE_REVIEW.md U10): the key the workflow keeps the drawn renders under (make_images.py: 96 of the build's
+"""Demma's Home V1.35 (docs/archive/UPGRADE_REVIEW.md U10): the key the workflow keeps the drawn renders under (make_images.py: 96 of the build's
 120 s). It's a hash of make_images.py, every module of ours it imports (followed through their imports), the client's inputs and the
 house's numbers: anything the renders are drawn from. Not the version: the renders' file names carry it, and tools/build.py
 --keep-renders names them afresh.
