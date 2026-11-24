@@ -80,7 +80,7 @@ def sizes():
     sys.path.insert(0, str(SRC)); import fit
     refs = re.findall(r'^  (\w+): \{ n: "[^"]+".*?ref: "(\w+)"', (SRC / "room3d/08_house_catalogue.js").read_text(), re.M)
     cite = [f"catalogue {k}: no source {r}" for k, r in refs if r not in fit.SOURCES] + ([] if len(refs) >= 26 else [f"catalogue: {len(refs)} pieces cite a source"])
-    shop = fit.shop_pieces() + fit.opt_pieces()   # N219: each shop's piece its own row, with its size, price and page; N242: the storage ideas' buys
+    shop = fit.shop_pieces() + fit.opt_pieces() + fit.cat_pieces()   # N219: each shop's piece its own row, with its size, price and page; N242: the storage ideas' buys; N243: the catalogue
     cite += [f"shop piece {q.get('name')}: no size, price or page" for q in shop if not (q.get("w") and q.get("d") and q.get("price") and str(q.get("url", "")).startswith("https://") and fit.shop_key(q) in fit.SOURCES)]
     # V2.75 (N26): the speed budget's files (tools/perf_budget.json; the site check measures the paths): over it, the round fails
     got = {"page_mb": mb(SITE / "index.html"), "three_mb": mb(tj) if tj else 0, "photos_mb": sum(map(mb, tex)), "half_mb": sum(map(mb, half)), "ktx2_mb": sum(map(mb, k2))}
