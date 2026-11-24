@@ -3,7 +3,7 @@ before you push. Exits non-zero if any check fails; prints one line each (the re
 
 python3 tools/checks.py            the model's checks, flicker, clashes, privacy (repo and site), the repo's size, the front door, the media wall's page and taps;
                                    the speed budget (tools/perf_budget.json: the files in sizes, the four paths in site)
-python3 tools/checks.py --quick    no browser: the model's checks, flicker, clashes, privacy, conflict markers, the repo's size
+python3 tools/checks.py --quick    no browser: the model's checks, flicker, clashes, privacy, conflict markers, the repo's size, the test door's names
 
 Needs the site built first (python3 tools/build.py); THREE_LOCAL serves three.js where the CDN is blocked."""
 import json, os, pathlib, re, subprocess, sys, time
@@ -183,6 +183,21 @@ def hitch():
     return code == 0, " | ".join(last[-4:]) or out[-300:]
 
 
+def features():
+    """N257: the customisation scenarios on the phone (check_site.py --features), their own CI job."""
+    code, out = sh([ROOT / "tools/check_site.py", SITE, "--features"], timeout=2400)
+    last = [l for l in out.splitlines() if l.startswith(("features", "site check", "FAIL"))]
+    return code == 0, " | ".join(last[-4:]) or out[-300:]
+
+
+def dbgnames():
+    """N257: every R3D._dbg name the site check reaches for still exists (check_site.py --dbg-names: no site, no browser, a second)."""
+    if "--dbg-names" not in (ROOT / "tools/check_site.py").read_text():
+        return True, "check_site.py has no --dbg-names yet"
+    code, out = sh([ROOT / "tools/check_site.py", "--dbg-names"], timeout=120)
+    return code == 0, (out.strip().splitlines() or ["no output"])[-1][:300]
+
+
 def qa():
     SHOTS.mkdir(exist_ok=True)
     code, out = sh(["qa.py", SHOTS], SRC, timeout=2400)
@@ -206,10 +221,10 @@ def taps():
 def main(argv):
     """python3 tools/checks.py [--quick | --only site,page,taps]"""
     quick = "--quick" in argv
-    checks = [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("markers", markers), ("repo", repo), ("sizes", sizes), ("lean", lean), ("names", names)] + ([] if quick else [("site", site), ("hitch", hitch), ("page", qa), ("taps", taps)])
+    checks = [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("markers", markers), ("repo", repo), ("sizes", sizes), ("lean", lean), ("names", names), ("dbgnames", dbgnames)] + ([] if quick else [("site", site), ("features", features), ("hitch", hitch), ("page", qa), ("taps", taps)])
     if "--only" in argv:                                         # V1.35 (U10): one or more by name (the workflow runs the browser checks side by side)
         want = argv[argv.index("--only") + 1].split(",")
-        checks = [c for c in [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("markers", markers), ("repo", repo), ("sizes", sizes), ("lean", lean), ("names", names), ("site", site), ("hitch", hitch), ("page", qa), ("taps", taps)] if c[0] in want]
+        checks = [c for c in [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("markers", markers), ("repo", repo), ("sizes", sizes), ("lean", lean), ("names", names), ("dbgnames", dbgnames), ("site", site), ("features", features), ("hitch", hitch), ("page", qa), ("taps", taps)] if c[0] in want]
     fails = 0
     for name, fn in checks:
         t = time.time()
