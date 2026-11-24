@@ -539,3 +539,27 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - Compare cache keys field by field (`gl.info.programs[i].cacheKey.split(",")`) at `r3d-first` to find the one parameter apart. A scratch
   folder may hold an older session's `_site`: build the baseline into a fresh `DEMMA_SITE` (and `npm ci` first, or the page has no
   three bundle and no minify, and every number moves).
+
+## N243 (24 Nov 2026): the ideas data (spots, the catalogue, what fits where), for N244's Ideas pill
+- **Where:** `house/storage_ideas.py` (`spots()`, `spot_fits()`, `for_page()`, the shared fit test `_tester()`), `house/data/N243_catalogue.json`
+  (188 pieces from 20 shops, each read on its own page 23–24 Nov), `media-wall/src/fit.py` (`cat_pieces()`, each a `SOURCES` row by
+  `shop_key`, its own block after N242's), `media-wall/src/export3d.py` (`cat_row`; a row's `form` names its look; `side` and `console`
+  are tables). `tools/build.py` writes **`_site/data/ideas.json`** (about 80 KB, 20 KB gzipped): not in the page, so the first visit
+  is unchanged; fetch it when the Ideas pill first opens (`fetch("data/ideas.json")`, as `data/bake.json`).
+- **The shape** (`v: 1`): `spots` [{id, room, n (its name), at ("floor", "wall", "over door", "alcove", "slope", "ceiling", "top": on a
+  fixed piece), b [x0, y0, z0, x1, y1, z1] (house cm, the most it may take), back ("x0", "x1", "z0", "z1": the side on the wall; "y1" the
+  ceiling), face ("+x", "-x", "+z", "-z", "down"), w (along its wall), d (out from it), h, uses [what suits it], idea (a storage idea's
+  own spot: its id in `R.HOUSE3.storage`)}]; `pieces` [rows: `cols` names them: key, kind, look, name, shop, w, d, h, price, url, mat,
+  mat2, count, on ("floor", "wall", "ceil"), uses (comma-joined)], the first 13 the same as `R.SHOP`'s and `I.o`'s, so `hcMake(kind,
+  look, mat, mat2, count)` draws one and an "idea" kind uses the ideas' own builders (`ideaOptKey`'s way); `fits` {spot id: [keys that
+  fit it]}; `rooms` {room: [uses a room suits]} (a set-up's pieces: those whose uses meet the room's); `n` {spots, pieces, placed}.
+- **What fits a spot** (`fits_spot`): the piece's place matches the spot's (floor, wall or ceiling), a use in common, its W ≤ the spot's
+  w, D ≤ its d and H ≤ its h (1 cm spare; a free-standing piece may turn). N242's buys keep their own spots too. Placed in a spot: back
+  on its wall (`back`), centred along it, as `optBox` does for an idea's buy; a "top" spot stands on the wall cabinets' top.
+- **Checked** (`check_model.py` via `storage_ideas.checks()`): every new spot in its room, clear of the house's solid boxes (the living
+  room: its plan's pieces from `media-wall/src/clash.py` and the LPs on the side wall's ledge), the doors' swings (an over-door spot
+  starts 211 up, over the 205 swing), the walks and space kept clear (`reserves()`), the slopes; a hung spot's back on a wall; a spot in
+  every room; every catalogue piece cited, every spot with a piece that fits. Floor spots stand 2 off the wall (the skirting).
+- **Lessons:** `room_sizes()` has no living room (its own scene): `_tester` takes `living_shell()`'s box. The landing's fanlights sit
+  in the wall's thickness, so a shelf over a landing door starts 2 in from the wall. A web research job returns some wrong rows (a
+  bad URL, sizes swapped, a set's price): read each before it goes in.

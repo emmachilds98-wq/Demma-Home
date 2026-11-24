@@ -537,15 +537,11 @@ def checks():
     nosrc = [q["name"] for q in cat if fit.shop_key(q) not in fit.SOURCES]
     keys = [fit.shop_key(q) for q in cat]
     twice = sorted({q["name"] for q, k in zip(cat, keys) if keys.count(k) > 1})
+    nosrc += [f"{u} (not a use)" for u in sorted({u for x in cat + S for u in (piece_uses(x) if "kind" in x else x["uses"])} - set(USES))]
     res.append(("catalogue (N243): each piece cited, each spot with pieces that fit", not empty and not nosrc and not twice,
                 "; ".join([f"nothing fits {i}" for i in empty] + [f"no source {n}" for n in nosrc] + [f"{n} twice" for n in twice])
                 or f"{len(cat)} pieces from {len({q['retailer'] for q in cat})} shops; {len(placed)} of all the shops' pieces fit a spot"))
     return res
-
-
-def piece_room_only(q):
-    """A piece of furniture (a sofa, a bed, a table, a lamp, a rug): it goes in a room (N218's add, N217's swap), not in a storage spot."""
-    return not set(piece_uses(q)) & {"records", "books", "games", "media", "shoes", "coats", "toys", "laundry", "display", "boxes"}
 
 
 # rooms a piece of furniture suits (N244's set-ups): by its use

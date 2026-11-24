@@ -1510,12 +1510,12 @@ for _p in opt_pieces():
         ORDER.append(shop_key(_p))
     SOURCES[shop_key(_p)] = (f"{_p['retailer']}: {_p['name']}, {_p['finish']}, W {_p['w']:g} × D {_p['d']:g} × H {_p['h']:g} cm, £{_p['price']:g}"
                              + (f"; {_p['note']}" if _p.get("note") else "") + f" ({_p['url']}, read {_p['read']})")
-# N243 (23-24 Nov 2026): a bigger catalogue from more UK shops (docs/N243_catalogue.json, each read on its own page): storage and
+# N243 (23-24 Nov 2026): a bigger catalogue from more UK shops (house/data/N243_catalogue.json, each read on its own page): storage and
 # furniture to look through, each its own row by its page and name (shop_key, as N219's), mapped to the places it fits (house/storage_ideas
 # spots, spot_fits): options to look at, nothing to buy until she picks
 def cat_pieces():
     import json, pathlib
-    return json.loads((pathlib.Path(__file__).resolve().parents[2] / "docs/N243_catalogue.json").read_text())
+    return json.loads((pathlib.Path(__file__).resolve().parents[2] / "house/data/N243_catalogue.json").read_text())
 
 
 for _p in cat_pieces():

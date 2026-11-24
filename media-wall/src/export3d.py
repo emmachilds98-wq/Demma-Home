@@ -375,6 +375,8 @@ def opt_row(q):
 
 def cat_row(q):
     """N243: any catalogue piece (N219's, N242's, N243's) for the ideas data (storage_ideas.for_page): opt_row's, then its uses joined"""
+    import sys, pathlib
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2] / "house"))
     import storage_ideas
     return opt_row(q)[:13] + [storage_ideas.piece_on(q), ",".join(storage_ideas.piece_uses(q))]
 
