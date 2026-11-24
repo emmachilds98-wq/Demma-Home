@@ -127,7 +127,7 @@ if (act) act.addEventListener("click", e => { const b = e.target.closest("[data-
    shader), the bar over its top; the plan's back while held. fit.SOURCES n225mirror */
 const BATH_MIRS = [["round", "Round, black", 50, 50, 3, "black", "#1d1d1f", [25, 25]], ["cabinet", "Mirror cabinet", 50, 60, 13, "gloss", "#e7e8e6", [40, 40]],
   ["arch", "Arched, black", 50, 80, 3, "black", "#2a2a2c", [45, 45]], ["brass", "Arched, brass", 50, 80, 3, "brass", "#c9b58a", [50, 50]]];   // key, name, W × H × D cm, its frame's (or body's) material, swatch, £ (IKEA LINDBYN 50, NYSJÖN 50 × 13 × 60; B&Q Aveli 500 × 800)
-const MIR_HK = new Set(["oak", "mirror", "black", "led"]), MIR_ORIG = new WeakMap(); let MIR_LAID = [], MIR_REDO = 0;
+const MIR_HK = new Set(["oak", "mirror", "black", "led"]), MIR_ORIG = new WeakMap(); let MIR_LAID = [];
 function mirBox() { const it = HIT("bath.mirror"); return it ? (typeof pieceBox === "function" ? pieceBox("bath.mirror") : it.b) : null; }
 function mirHide(b, on) {   // the plan's frame, glass, bar and strip in the mirror's box: folded to a point (on), or back
   const key = on ? b.map(Math.round).join() : ""; let n = 0;
@@ -159,8 +159,7 @@ function mirGeos(st, b) {   // {material: [geometries]}: her mirror on the wall'
 }
 function mirApply(k) {   // her mirror (k: its key, "oak" the plan's) on the bathroom's wall, or the plan's back
   if (!houseG || !R.HOUSE3 || !FIN.mat3) return;
-  if (HBUILD && !HBUILD.bath) { const b0 = HBUILD; HBUILD = Object.assign((fk, F) => { const r = b0(fk, F);   // a floor rebuilt (a swap, an edit) drops what's laid on it: laid again
-    if (!MIR_REDO) { MIR_REDO = 1; Promise.resolve().then(() => { MIR_REDO = 0; bathApply(); }); } return r; }, b0, { bath: 1 }); }
+  AFTER_FLOOR.set("bath", bathApply);   // N255: a floor rebuilt (a swap, an edit) drops what's laid on it: laid again
   for (const me of MIR_LAID) { me.parent && me.parent.remove(me); me.geometry.dispose(); } MIR_LAID = [];
   const st = BATH_MIRS.find(([q]) => q === k), b = mirBox(), r = (R.HOUSE3.rooms || {}).bathroom, g = r && HFLOOR[HCFK[String(r[4])]];
   if (!b || !g) return; mirHide(b, !!st); if (!st) return;
