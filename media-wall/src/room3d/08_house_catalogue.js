@@ -3,7 +3,8 @@
    value: key, room, x, z, y}. A piece's own frame: u along its wall (0..W), v up (0..H), t out from its back (0..D). */
 const HCAT_KINDS = { bed: "Beds", wardrobe: "Wardrobes", chest: "Chests", bedside: "Bedsides", desk: "Desks", shelves: "Shelves", seat: "Seats", chair: "Desk chairs",
   table: "Tables", unit: "Units", shoes: "Shoe storage", stool: "Bar stools", dchair: "Dining chairs", trolley: "Trolleys", lamp: "Lamps", rug: "Rugs", plant: "Plants", more: "More" };   // N219: tables, units (TV, sideboards) and lamps their own; N230: shoe storage, bar stools
-Object.defineProperties(HCAT_KINDS, { toilet: { value: "Toilets" }, basin: { value: "Basins" } });   // N225: the WC's and bathroom's suite: swapped, never added (not enumerable: no chips)
+Object.defineProperties(HCAT_KINDS, { toilet: { value: "Toilets" }, basin: { value: "Basins" }, gtable: { value: "Garden tables" }, gchair: { value: "Garden chairs" }, gsofa: { value: "Garden seats" } });   // N280: the garden's, only in its Ideas
+const H3R = id => R.HOUSE3 && ((R.HOUSE3.rooms || {})[id] || (R.HOUSE3.yard || {})[id]);   // N280: a room, or the garden (Ideas' place outside)   // N225: the WC's and bathroom's suite: swapped, never added (not enumerable: no chips)
 function hcChest(mat, cols, rows, knob = "knob") {   // drawers: a carcass, its fronts with a shadow gap, a knob each ("grip": MALM's grip along each front's top)
   return (W, H, D, B) => {
     B(mat, 0, 0, 0, W, H, D - 2); B("gap", 1, 6, D - 2.1, W - 1, H - 2, D - 2); B(mat, 1, 0, D - 6, W - 1, 6, D - 5);   // the plinth, set back
@@ -269,6 +270,7 @@ Object.assign(HCAT, {
    swapped in or added, from materials the house already has: no new shader at the first picture. Options to look at: nothing to buy */
 const hcUp = (B, dv) => (m, a, b, c, d, e, f) => B(m, a, b + dv, c, d, e + dv, f);   // a builder's boxes raised dv (a case on its legs)
 const hcMake = (k, look, m, m2, c) => {
+  const gk = { gtable: "table", gchair: "dchair", gsofa: "seat" }[k]; if (gk) return hcMake(gk, look, m, m2, c);   // N280
   const grip = m === "door_white" ? "grip" : "knob", cane = "rattan", legm = m2 === m && /^(door_white|pnt_\w+)$/.test(m) ? "black" : m2;
   if (k === "bed") return hcBed(look === "metal" ? hcBedMetal(m) : look === "uph" ? hcBedUph(m2.startsWith("cloth") ? m2 : m.startsWith("cloth") ? m : "lycksele", m)
     : look === "panel" ? hcBedPanel(m) : look === "legged" ? hcBedLegged(m, m2) : look === "rattan" ? hcBedRattan(m, cane) : hcBedWood(m, m === m2 ? "pine" : m2));
@@ -457,7 +459,7 @@ const hcOf = kind => Object.keys(HCAT).filter(k => HCAT[k].k === kind && !HCAT[k
    end if that stood within 10 of its room's wall, else from its middle, kept in its room; a chair where the old one was, facing the same way */
 const hcSeat = k => k === "chair" || k === "stool";   // sat on facing the desk or the bar: centred where the old one stood, facing as it did
 function swapBox(id, key) {
-  const it = HIT(id), C = HCAT[key], { a, o, flip } = hcFrame(it), b = it.b.slice(), r = (R.HOUSE3.rooms || {})[it.r], ch = hcSeat(C.k);
+  const it = HIT(id), C = HCAT[key], { a, o, flip } = hcFrame(it), b = it.b.slice(), r = H3R(it.r), ch = hcSeat(C.k);
   const [r0, r1] = r ? (a === 2 ? [r[2], r[3]] : [r[0], r[1]]) : [b[a], b[a + 3]];
   const u0 = !ch && b[a] - r0 < 10 ? b[a] : !ch && r1 - b[a + 3] < 10 ? b[a + 3] - C.w : (b[a] + b[a + 3] - C.w) / 2;
   b[a] = Math.max(r0, Math.min(r1 - C.w, u0)); b[a + 3] = b[a] + C.w; b[4] = b[1] + C.h;
@@ -473,7 +475,7 @@ function pieceBase(id, key) {   // the piece as planned, or the one swapped in w
 }
 /* a piece's frame in the house: its wall axis, and which way it faces (its back to the nearer wall of its room) */
 function hcFrame(it) {
-  const r = (R.HOUSE3.rooms || {})[it.r] || [it.b[0], it.b[3], it.b[2], it.b[5]], b = it.b, a = it.ax === "z" ? 2 : 0, o = 2 - a;
+  const r = H3R(it.r) || [it.b[0], it.b[3], it.b[2], it.b[5]], b = it.b, a = it.ax === "z" ? 2 : 0, o = 2 - a;
   if (it.flip != null) return { a, o, flip: it.flip };   // N212: a storage idea's piece knows its wall (the store's shelves back onto the flight)
   const lo = o === 2 ? b[2] - r[2] : b[0] - r[0], hi = o === 2 ? r[3] - b[5] : r[1] - b[3];
   return { a, o, flip: hi < lo };
@@ -487,7 +489,7 @@ function hcBuild(key, it, t) {
     if (bx[3] - bx[0] < 0.05 || bx[4] - bx[1] < 0.05 || bx[5] - bx[2] < 0.05) return;
     (out.boxes[m] = out.boxes[m] || []).push(bx.map(v => Math.round(v * 10) / 10)); (out.bt[m] = out.bt[m] || []).push(t); };
   const L = (m, u, w, v, p, sc) => out.lathes.push({ c: at(u, v, w), p, s: sc ? (a === 0 ? sc : [sc[1], sc[0]]) : [1, 1], m, t });   // N225: oval: sc along its wall, out   // a turned part round (u, w), its profile [radius, up]
-  const rr = (R.HOUSE3.rooms || {})[it.r], end = !!rr && (a === 2 ? rr[3] : rr[1]) - b[a + 3] < 2;   // N225: it stands in its wall's far corner (a corner basin's side)
+  const rr = H3R(it.r), end = !!rr && (a === 2 ? rr[3] : rr[1]) - b[a + 3] < 2;   // N225: it stands in its wall's far corner (a corner basin's side)
   C.b(W, H, D, B, L, Math.abs(Math.round(b[0] * 3 + b[1] / 7 + b[2] * 5)), end);   // N236: where it stands, for a piece that draws each copy its own
   return out;
 }
@@ -515,10 +517,10 @@ const ADDED = {}, ADDFK = {};   // ADDFK: each added piece's floor, kept once it
 function syncAdds() {
   const ds = DS(), H3 = R.HOUSE3; if (!ds || !H3) return;
   syncPlants(); syncIdeas();
-  const rows = {}; for (const v of Object.values(ds.rows("edits") || {})) if (v && v.field === "add" && /^add\.[a-z0-9]{1,12}$/.test(v.item || "") && (HCAT[v.value] || hcOwn(v.value)) && (H3.rooms || {})[v.room]) rows[v.item] = v;   // N219: her own too
+  const rows = {}; for (const v of Object.values(ds.rows("edits") || {})) if (v && v.field === "add" && /^add\.[a-z0-9]{1,12}$/.test(v.item || "") && (HCAT[v.value] || hcOwn(v.value)) && H3R(v.room)) rows[v.item] = v;   // N219: her own too
   for (const id of Object.keys(ADDED)) if (!rows[id]) { delete H3.items[id]; delete ADDED[id]; }
   for (const [id, v] of Object.entries(rows)) { if (ADDED[id] === `${v.value}@${v.x},${v.z}`) continue;   // N218: a new piece or a new spot
-    const C = HCAT[v.value], r = H3.rooms[v.room], x = +v.x, z = +v.z, y = isFinite(+v.y) ? +v.y : r[4]; if (!isFinite(x) || !isFinite(z)) continue;
+    const C = HCAT[v.value], r = H3R(v.room), x = +v.x, z = +v.z, y = isFinite(+v.y) ? +v.y : r[4]; if (!isFinite(x) || !isFinite(z)) continue;
     const dz = Math.min(z - r[2], r[3] - z), dx = Math.min(x - r[0], r[1] - x), ax = dz <= dx ? "x" : "z", a = ax === "z" ? 2 : 0, o = 2 - a;
     const c = [x, y, z], b = [0, y, 0, 0, y + C.h, 0], ro = o === 2 ? [r[2], r[3]] : [r[0], r[1]], ra = a === 2 ? [r[2], r[3]] : [r[0], r[1]];
     b[a] = Math.max(ra[0], Math.min(ra[1] - C.w, c[a] - C.w / 2)); b[a + 3] = b[a] + C.w;
@@ -573,7 +575,7 @@ function addSpot(rid, key, x, z, y, self) { const s = spotFor(rid, key, x, z, y,
 /* N244: the spot itself, [x, z, how far, its box] or null; also clear of boxes not drawn yet (more: a set-up's other pieces), past the
    pieces skip says (a set-up shown before), within maxD of the tap */
 function spotFor(rid, key, x, z, y, self, more = [], skip = null, maxD = Infinity) {
-  const r = R.HOUSE3.rooms[rid], C = HCAT[key], over = (p, q) => [0, 1, 2].every(j => p[j] < q[j + 3] - 1 && p[j + 3] > q[j] + 1); let best = null; if (!r || !C) return null;
+  const r = H3R(rid), C = HCAT[key], over = (p, q) => [0, 1, 2].every(j => p[j] < q[j + 3] - 1 && p[j + 3] > q[j] + 1); let best = null; if (!r || !C) return null;
   const busy = Object.keys(R.HOUSE3.items).filter(k => { const o = HIT(k); return k !== self && !(skip && skip(k)) && o.r === rid && !HCSKIP.has(o.k) && !hcSoft(k) && !pieceNow(k).removed; }).map(pieceBox).concat(more);
   for (const [o, hi] of [[2, 0], [2, 1], [0, 0], [0, 1]]) { const a = 2 - o, w = r[o + hi] + (hi ? -0.5 : 0.5);   // each wall, its back 0.5 off it
     for (let u = r[a]; u <= r[a + 1] - C.w; u += 5) { const b = [0, y, 0, 0, y + C.h, 0]; b[a] = u; b[a + 3] = u + C.w; b[o] = hi ? w - C.d : w; b[o + 3] = b[o] + C.d;

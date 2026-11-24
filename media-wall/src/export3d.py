@@ -124,7 +124,9 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
                                     op=dict((q, it["opening"][q]) for q in ("axis", "line", "a", "b", "y0", "y1", "swing") if q in it["opening"]) if it.get("opening") else None,
                                     **({"on": it["on"]} if it.get("on") else {}))
     e["fit"] = _fit(e)
-    e.update(front=model.RO["s"], back=model.RO["n"], garage=[0.0, next(r["x1"] for r in model.rooms("ground") if r["id"] == "garage")], hall=[model.D.WALL_HALL, model.RO["w"]], drive=model.D.LEVELS["drive"], lawn=model.D.LEVELS["lawn"])   # V1.3: the ground beyond, at the street's and the garden's levels
+    e.update(front=model.RO["s"], back=model.RO["n"], garage=[0.0, next(r["x1"] for r in model.rooms("ground") if r["id"] == "garage")], hall=[model.D.WALL_HALL, model.RO["w"]], drive=model.D.LEVELS["drive"], lawn=model.D.LEVELS["lawn"])
+    # N280: the back garden as a place for Ideas (E: the lawn behind the house, clear of the back wall's path and the cordyline by the west fence)
+    e["yard"] = {"garden": [model.RO["e"] + 20, model.RO["w"] - 90, model.RO["n"] - 700, model.RO["n"] - 100, model.D.LEVELS["lawn"]]}   # V1.3: the ground beyond, at the street's and the garden's levels
     return e
 
 def _fit(e):
@@ -307,7 +309,14 @@ FORMS = {"bed": [(r"metal", "metal"), (r"upholster|vissle", "uph"), (r"rattan|ca
 FORMS["bedside"] = FORMS["chest"]
 
 
+GARDEN = {"gtable": "dining", "gchair": "dchair", "gsofa": "seat"}   # N280: garden pieces drawn as their indoor kind, kept apart
+
+
 def shop_row(q):
+    if q["kind"] in GARDEN:
+        r = shop_row(dict(q, kind=GARDEN[q["kind"]]))
+        r[1] = q["kind"]
+        return r
     """its finish's first part its own material, a second part (after "/", "with", "&") its legs', frame's or cushion's; a seat shows its cloth"""
     import fit as _fit
     n, k = q["name"], SHOP_KIND.get(q["kind"], q["kind"])
