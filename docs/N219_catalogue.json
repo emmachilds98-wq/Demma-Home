@@ -1935,5 +1935,70 @@
 "url": "https://www.wickes.co.uk/Wickes-White-Gloss-Compact-Vanity-Unit+Basin---905-x-405mm/p/301110",
 "read": "2026-11-23",
 "note": "floor standing, white gloss; p/301110"
+},
+{
+"kind": "toilet",
+"retailer": "B&Q",
+"name": "GoodHome Cavally rimless close coupled toilet set, soft close seat",
+"finish": "white ceramic",
+"w": 37,
+"d": 67.5,
+"h": 83,
+"price": 160,
+"url": "https://www.diy.com/departments/goodhome-cavally-white-rimless-close-coupled-toilet-set-with-soft-close-seat/5059340155982_BQ.prd",
+"read": "2026-11-24",
+"note": "close coupled, rimless; the bathroom's (N225); 5059340155982"
+},
+{
+"kind": "toilet",
+"retailer": "B&Q",
+"name": "GoodHome Cavally rimless comfort height close coupled toilet set, soft close seat",
+"finish": "white ceramic",
+"w": 37,
+"d": 67.5,
+"h": 88,
+"price": 260,
+"url": "https://www.diy.com/departments/goodhome-cavally-white-rimless-comfort-height-close-coupled-toilet-set-with-soft-close-seat/5059340156002_BQ.prd",
+"read": "2026-11-24",
+"note": "close coupled, its seat 5 higher; the bathroom's (N225); 5059340156002"
+},
+{
+"kind": "basin",
+"retailer": "Wickes",
+"name": "Wickes Nova gloss white freestanding vanity unit and Easton basin 600",
+"finish": "white gloss",
+"w": 60,
+"d": 34.6,
+"h": 83.5,
+"price": 423,
+"url": "https://www.wickes.co.uk/Wickes-Nova-Gloss-White-Freestanding-Vanity-Unit+Easton-Basin---835-x-600mm/p/314227",
+"read": "2026-11-24",
+"note": "floor standing; the bathroom's (N225); p/314227"
+},
+{
+"kind": "basin",
+"retailer": "Wickes",
+"name": "Halite waterproof white vanity unit with basin 600",
+"finish": "white",
+"w": 60,
+"d": 39.5,
+"h": 80,
+"price": 250,
+"url": "https://www.wickes.co.uk/Halite-Waterproof-White-Vanity-Unit-with-Basin---600mm/p/317281",
+"read": "2026-11-24",
+"note": "the bathroom's (N225); p/317281"
+},
+{
+"kind": "basin",
+"retailer": "IKEA",
+"name": "HAVBÄCK / ORRSJÖN wall hung vanity, wash-stand with drawers and wash-basin",
+"finish": "white",
+"w": 62,
+"d": 49,
+"h": 71,
+"price": 275,
+"url": "https://www.ikea.com/gb/en/p/havbaeck-orrsjoen-wash-stnd-w-drawers-wash-basin-white-white-marble-effect-s79629371/",
+"read": "2026-11-24",
+"note": "wall hung, two drawers, white marble effect top; the bathroom's (N225); 796.293.71"
 }
 ]
