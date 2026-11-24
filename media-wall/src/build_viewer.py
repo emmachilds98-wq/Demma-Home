@@ -1483,6 +1483,26 @@ def split_sheets(html_):
     return html_[:m.start()] + f'<script type="application/json" id="sheets-data" data-src="{name}"></script>' + html_[m.end():]
 
 
+def split_app(html_):
+    """N256 (C4): on Pages the 3D's script and its scene are files of their own, named by their contents (room3d.<hash>.js,
+    scene.<hash>.json, like three's), so a release whose 3D didn't change downloads only the page, and the service worker keeps them
+    (HASHED) till they change. The scene is fetched as the script starts (00_setup.js, its data-src), preloaded beside it."""
+    import hashlib
+    keep = set()
+    m = re.search(r'<script type="application/json" id="scene3d-data">(.*?)</script>', html_, re.S)
+    if m:
+        data = m.group(1).encode(); name = f"scene.{hashlib.sha256(data).hexdigest()[:10]}.json"; (SITE / name).write_bytes(data); keep.add(name)
+        html_ = (html_[:m.start()] + f'<link rel="preload" href="{name}" as="fetch" crossorigin="anonymous">'
+                 f'<script type="application/json" id="scene3d-data" data-src="{name}"></script>' + html_[m.end():])
+    m = next((x for x in re.finditer(r'<script type="module">(.*?)</script>', html_, re.S) if 'from "three"' in x.group(1) or "from'three'" in x.group(1) or 'from"three"' in x.group(1)), None)
+    if m:
+        data = m.group(1).encode(); name = f"room3d.{hashlib.sha256(data).hexdigest()[:10]}.js"; (SITE / name).write_bytes(data); keep.add(name)
+        html_ = html_[:m.start()] + f'<script type="module" src="{name}"></script>' + html_[m.end():]
+    for old in [*SITE.glob("scene.*.json"), *SITE.glob("room3d.*.js")]:
+        if old.name not in keep: old.unlink()
+    return html_
+
+
 # N25: plan.html was a second 2 MB copy of the page; now a step to it, the link's view (its query and hash) kept
 PLAN_REDIRECT = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>Home Plan</title><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1510,6 +1530,7 @@ if __name__ == "__main__":
     html_ = split_sheets(split_photos(site()))                               # V1.2: the site's front door
     if vmap: html_ = html_.replace(room3d_page.IMPORTMAP, vmap, 1)
     html_ = vendor.minify(html_)                                              # V2.50 (speed): the 3D's script and the CSS minified
+    html_ = split_app(html_)                                                  # N256: the 3D's script and scene, files named by their contents
     (SITE / "index.html").write_text(html_)
     (SITE / "plan.html").write_text(PLAN_REDIRECT)                            # N25: old links, the view's query and hash kept
     pwa_files()
