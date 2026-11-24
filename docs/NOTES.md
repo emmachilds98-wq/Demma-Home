@@ -478,6 +478,22 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `pointerup` on a card's button that a re-render has replaced never reaches the card: send it to `#r3d-act`. The view for the bathroom is
   `bath` (`ROOM_VIEW`).
 
+## Section 30, Emma's notes on V4.54 (V4.56)
+- **Seeing down a flight (N238):** a flight that "can't be seen" though its treads are drawn: check the sightline before the culling. With
+  the eye on the line through the nosings every tread lines up edge-on. Raycast a pixel column from the eye (`intersectObjects` honours
+  `roomCull`'s draw ranges) and list each hit's material and height. The lower flight's top step is at the hall's door down
+  (`model.hall_door_z()`), its goings fitted from the plan's foot (about 24.6, a Measure row `lower_tread`).
+- **The same light from a distance (N239):** in a house room the lights' set is kept while every room seen has its own on, swapped slot by
+  slot (`09` `poolPick`), ranked by doors away (`roomCost`), never by distance from your room alone; point and window lights cast no
+  shadows (`01_renderer` `adoptLight`), so a light lights next door through the wall. One sun over the house (`sunHouse`), never re-centred
+  per room: the front rooms lost their floor patch. `bake.py` used to collect the sun once a room (each re-centred sun a new light, the
+  same direction): it now multiplies the one sun by the rooms visited, so the bake stays as V4.35 tuned it (V4.59). To compare a room from outside
+  and inside: the same camera standing in the room behind, then in the room looked into; the mean picture difference under 1.
+- **A slow real PC (N240):** two helpers in two sessions found the same: no regression since V4.35 on the RTX path (draws, triangles, JS a
+  frame). The parallel session's fix is the one on main (V4.58: sharpness down while moving over 28 ms, the walk by the frame's real time);
+  this session's `claude/n240-speed` (a 1× step and the house's shade off; Send's worst gap) stays on its branch, not merged. To count
+  shadow redraws wrap `gl.shadowMap.render` and count only calls with `needsUpdate || autoUpdate`.
+
 ## N224's units (V4.55)
 - **Where:** `room3d/22_kitchen.js`; `house/model.py` draws the units, wall cupboards and their handles in `kunit` and `khandle` (the
   same colours as `gloss` and `handle_black`; `HTEX_AS.kunit = "gloss"`, `ROUND`), so the kitchen alone changes. Hooks: `finAt`

@@ -160,7 +160,7 @@ function placeRoomLights() {
   if (b) { const cx = (b[0] + b[1]) / 2, cy = (b[2] + b[3]) / 2, cz = (b[4] + b[5]) / 2, list = [];
     const near = L => Math.hypot(L.x - cx, L.z - cz) + Math.abs(L.y - cy) * 3;
     for (const F of Object.values(R.HOUSE3.floors)) { for (const L of F.lights || []) list.push([tier(L.room) + near(L), L]);
-      if (!day) for (const L of F.lamps || []) list.push([tier(L.room, true) + near(L) + 400, L]); }   // a room's lamp after its ceiling light
+      if (!day) for (const L of F.lamps || []) list.push([tier(L.room, true) + near(L) + 400 - L.k * 100, L]); }   // a room's lamp after its ceiling light, the brighter first (upstairs by evening seven for six: the office's purple lamp kept from the landing, the bathroom's small one waits)
     const want = list.sort((p, q) => p[0] - q[0]).map(p => p[1]);
     POOL.pts = poolPick(POOL.pts, want, want.filter(L => cost.has(L.room)), n);
     /* the first light is the one casting shadows (20_5_go.js, HD): the room you're in's own ceiling light swaps into it, the rest stay put */

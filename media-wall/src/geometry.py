@@ -973,6 +973,36 @@ STAIR_DRAWERS["w"] = round(STAIR_X[1] - STAIR_X[0] - 2 * STAIR_DRAWERS["inset"],
 OVERDOOR = dict(w=49.0, d=11.0, h=14.0, hooks=6, door_t=4.0)
 OVERDOOR["open_gap"] = round(DOOR_X[0] - BREAST_X[1], 1)                                 # 12: the open door to the breast's side
 
+# N241 (23 Nov 2026), Emma: storage "for various items and books as well as other things and drying clothes" (docs/STORAGE.md, the
+# living room); she picked two to see in the 3D. Options only.
+# 8, "radshelf": an oak shelf over the radiator (the 18 mm oak board, fit.SOURCES "snowdonoak"), a sill for plants by day; four oak rails
+# (18 mm dowels) on two brass drop arms under its front edge fold down in front of the radiator on wash day, up flat under it after. The
+# drawn curtains hang 11.6 off the wall (CURTAIN z, folds 1.2), so it stops at the radiator's face: 10 deep, not 16, behind them. Its top
+# 1 under the window sill's underside, over the sofa's back (80); two oak cheeks at its ends, past the radiator, on a batten along the wall.
+_sl_under = SILL["y"] - SILL["t"]                                                            # 85: the sill's underside
+RAD_SHELF = dict(x=((RADIATOR_X[0] + RADIATOR_X[1]) / 2 - 72.5, (RADIATOR_X[0] + RADIATOR_X[1]) / 2 + 72.5), t=1.8,
+                 top=_sl_under - 1.0, z=(WINDOW_Z, RADIATOR_FACE), cheek=12.0, rails=4, rail_d=1.8, pitch=2.5, arm=10.0)
+_rs = RAD_SHELF
+_rs["w"] = round(_rs["x"][1] - _rs["x"][0], 1)                                               # 145
+_rs["d"] = round(_rs["z"][1] - _rs["z"][0], 1)                                               # 10
+_rs["over_rad"] = round(_rs["top"] - _rs["t"] - RADIATOR_Y[1], 1)                            # 12.2 over the radiator's top
+_rs["over_sofa"] = round(_rs["top"] - SOFA_H, 1)                                             # 4 over your sofa's back
+_rs["to_curtain"] = round(CURTAIN["z"] - CURTAIN["amp"] - _rs["z"][1], 1)                    # 0.4 behind the drawn curtains
+_rs["cheek_gap"] = round(RADIATOR_X[0] - (_rs["x"][0] + _rs["t"]), 1)                        # 2.2 from each cheek to the radiator's end
+_rs["rail_low"] = round(_rs["top"] - _rs["t"] - _rs["arm"], 1)                               # 72.2: the arms' feet, folded down
+del _rs, _sl_under
+# 9, "seatdrawers": the window seat (WINDOW_SEAT, its size and cushion) with two deep drawers instead of a lift-up lid: books spine-up,
+# board games flat. Each drawer on a pair of 400 full-extension runners (fit.SOURCES "runners": 12.5 mm a side), a divider between them
+SEAT_DRAWERS = dict(n=2, plinth=6.0, gap=0.3, runner=40.0, allow=1.25, side=1.2, clear=1.0)
+_sd2, _ws = SEAT_DRAWERS, WINDOW_SEAT
+_sd2["opening"] = (round((_ws["inside"][0] - _ws["t"]) / 2, 2), round(_ws["box_h"] - _sd2["plinth"] - 2 * _ws["t"], 1))   # 46.3 × 29.4
+_sd2["box"] = (round(_sd2["opening"][0] - 2 * _sd2["allow"], 2), _sd2["runner"], round(_sd2["opening"][1] - _sd2["clear"], 1))   # 43.8 × 40 × 28.4
+_sd2["inside"] = (round(_sd2["box"][0] - 2 * _sd2["side"], 1), round(_sd2["box"][1] - 2 * _sd2["side"], 1),
+                  round(_sd2["box"][2] - _sd2["side"], 1))                                   # 41.4 × 37.6 × 27.2
+_sd2["front"] = (round((_ws["x"][1] - _ws["x"][0] - 3 * _sd2["gap"]) / 2, 2), round(_ws["box_h"] - _sd2["plinth"] - 2 * _sd2["gap"], 1))   # 48.55 × 32.4
+_sd2["spare_d"] = round(_ws["inside"][1] - _sd2["runner"], 1)                                # 2.4 behind the runners
+del _sd2, _ws
+
 # v78, the client: "living room has no door going up the stairs. we're thinking of fitting a curtain there at the bottom of the steps
 # attached to the overhang ceiling there so maybe add as an option": a ceiling-fix track under the bulkhead over the bottom step (B&Q's
 # 90 cm, 35 wide, 21 deep with its gliders, cut to the opening) and one thermal pencil-pleat panel, 168 wide (2.5 times the track, so it

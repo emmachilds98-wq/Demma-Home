@@ -214,6 +214,17 @@ SUGGEST += [
      "Bags, the dog lead, a scarf, by the door you come in through, with no drilling.",
      f"Over the hall door. The open door stands {_od['open_gap']:g} off the breast: slim things only."),
 ]
+# N241 (23 Nov 2026), Emma: storage for books, things and drying clothes; her two picks for the living room (geometry, fit.more_storage_zone)
+_rs, _sd2 = G.RAD_SHELF, G.SEAT_DRAWERS
+SUGGEST += [
+    ("radshelf", "An oak radiator shelf with drying rails", f"{_rs['w']:g} × {_rs['d']:g} oak at {_rs['top']:g}; four rails fold down under it", (70, 110),
+     "Plants on it by day; on wash day four rails fold down over the radiator's warmth, then up flat. Behind the curtains when drawn.",
+     "Over the radiator, under the window sill."),
+    ("seatdrawers", "A window seat with two deep drawers", f"{_ws['x'][1] - _ws['x'][0]:g} × {_ws['d']:g} × {_ws['h']:g}; drawers {_sd2['box'][0]:g} × {_sd2['box'][1]:g}", (180, 260),
+     "The storage seat with drawers in place of the lid: books spine-up in one, board games flat in the other.",
+     "The window corner, in the plant stand's place."),
+]
+del _rs, _sd2
 del _bb, _ws, _hb, _wd, _al, _wc, _sd, _od
 
 # v43, client: "review the room and suggest improvements and more item options": four more, to look at in the 3D room (options, not
@@ -281,6 +292,8 @@ SUGG_VARS = {
     "wardrobe": [("oak", "Oak doors", ["#c48c57"]), ("green", "Card Room Green doors", ["#2d5a46"]), ("white", "White doors", ["#ece8e0"])],
     "wallcabs": [("walnut", "Walnut effect", ["#6e4a2e"]), ("white", "White", ["#ece8e0"]), ("bluegrey", "Dark grey-blue", ["#3b4652"])],
     "overdoor": [("black", "Black", ["#2a2a2c"]), ("brass", "Brass", ["#b8913f"]), ("white", "White", ["#ece8e0"])],
+    "radshelf": [("oak", "Oak", ["#c48c57"]), ("walnut", "Dark oak", ["#6e4a2e"]), ("white", "White-oiled", ["#efe6d6"])],   # N241
+    "seatdrawers": [("mustard", "Mustard cushion", ["#d9a441"]), ("sage", "Sage cushion", ["#8b9878"]), ("blue", "Blue cord cushion", ["#34507f"])],
     "growlights": [("warm", "Warm white", ["#ffe3b0"]), ("full", "Full spectrum (pink)", ["#ff9ad8"])],                     # v43
     "curtainmotor": [("white", "White", ["#efefec"]), ("black", "Black", ["#2a2a2c"])],
     "lpledges": [("oak", "Oak effect", ["#c48c57"]), ("black", "Black", ["#2a2a2c"]), ("walnut", "Walnut effect", ["#6e4a2e"])],
@@ -319,13 +332,14 @@ OPTION_GROUPS = [
     ("coffee", "The coffee table", "one", "The plan's lift-top with storage, or the record table; None is your own.",   # V3.74: the lift-top is the plan's
      [("liftcoffee", "The lift-top with storage (the plan)", {"sugg": "liftcoffee"}), ("recordtable", "The record table", {"sugg": "recordtable"})]),
     ("corner", "The window corner", "one", "Your plant stand is here now. Pick one and it takes the corner.",
-     [("windowseat", "A storage window seat", {"sugg": "windowseat"}), ("hallbench", "A bench with cubbies", {"sugg": "hallbench"}),
-      ("wardrobe", "A built-in cupboard", {"sugg": "wardrobe"})]),
+     [("windowseat", "A storage window seat", {"sugg": "windowseat"}), ("seatdrawers", "The seat with two drawers", {"sugg": "seatdrawers"}),
+      ("hallbench", "A bench with cubbies", {"sugg": "hallbench"}), ("wardrobe", "A built-in cupboard", {"sugg": "wardrobe"})]),
     ("storage", "More storage", "any", "Switch on as many as you like.",
      [("doorshelf", "A shelf over the hall door", {"sugg": "doorshelf"}),
       ("shelfboxes", "Boxes on your black shelf", {"sugg": "shelfboxes"}), ("alcoveshelves", "Alcove shelves, window corner", {"sugg": "alcoveshelves"}),
       ("wallcabs", "Wall cabinets over the sofa", {"sugg": "wallcabs"}), ("stairdrawers", "Drawers in the bottom steps", {"sugg": "stairdrawers"}),
-      ("overdoor", "A hook rail over the door", {"sugg": "overdoor"}), ("shoes", "Shoe cabinets beside the cabinet", {"beside": "shoes"})]),
+      ("overdoor", "A hook rail over the door", {"sugg": "overdoor"}), ("radshelf", "A radiator shelf with drying rails", {"sugg": "radshelf"}),
+      ("shoes", "Shoe cabinets beside the cabinet", {"beside": "shoes"})]),
 ]
 
 

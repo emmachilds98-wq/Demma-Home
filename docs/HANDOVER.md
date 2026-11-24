@@ -1,7 +1,7 @@
-# Handover (23 Nov 2026, V4.59: start here)
+# Handover (23 Nov 2026, V4.60: start here)
 
-## Pick up here (24 Nov 2026, V4.59)
-- **V4.59:** N244 Ideas (section 31) and N222 Dave only looks; merged without waiting for CI at the client's word ("Don't wait for CI"): read CI's result on main and fix what it finds.
+## Pick up here (24 Nov 2026, V4.60)
+- **V4.60:** N244 Ideas (section 31) and N222 Dave only looks; merged without waiting for CI at the client's word ("Don't wait for CI"): read CI's result on main and fix what it finds.
 - **In progress (own branches):** N243 the bigger catalogue and spots in every room (`claude/trusting-gauss-gra6z6-n243`); N225's mirror and the bathroom's own toilet and vanity (`claude/trusting-gauss-gra6z6-left`). Ideas reads their data with no code change.
 
 ## Pick up here (23 Nov 2026, V4.57)
@@ -14,7 +14,15 @@
 - **Also in V4.56** (from `claude/ecstatic-bardeen-bn139b`, the other session, stopped on its usage limit): N225's second half, N238, N241. **Not merged:** N239 (the same light from a distance) WIP on `claude/n239-light`; N240 (the PC's choppy picture) not started. Next: those two (section 30), then N237's rest; N228, N229, N234, N235 wait on Emma.
 - **Two sessions worked in parallel on 23 Nov** and built N225, N232, N224 and N226 twice. The other one's versions are on main. This session's are kept on branches, unmerged: `claude/trusting-gauss-gra6z6-pr322` (its whole PR #322, closed) and `claude/trusting-gauss-gra6z6-n225` (d7f8ddb: **the taps' and fittings' finish (chrome, black, brushed brass) and the bath panel (white, grey gloss, oak effect)**, cited as `n225fittings`). Main's next row, "N225's taps, mirror and bath panel", can port them from `24_bath.js` there instead of starting again. Before starting, check open PRs and the newest branches, so two sessions don't build the same row.
 
-## Pick up here (23 Nov 2026, V4.53)
+## Pick up here (23 Nov 2026, V4.56)
+V4.56: Emma's notes on V4.54 (`docs/REAL_PLAN.md` section 30: N238 the stairs from the front door, N239 the same light from a distance,
+N240 the PC's choppy picture), the bathroom's taps and panel (N225), her storage picks in the 3D as options (N241, `docs/STORAGE.md`).
+**Waiting on Emma:** a Measure → Send link from the PC after a short walk (N240: no regression was found; the speed line now says the chip,
+the sharpness, the moving and worst frame and any step down); which storage picks to build (N241). **Next:** N237, then N228, N229, N234,
+N235 as she says. Helpers worked in their own worktrees and branches (`claude/n238-stairs`, `n239-light`, `n240-speed`, `n241-living`),
+the lead merged them; when the usage limit stopped them, their pushed commits were all there was to lose.
+
+## Before that (23 Nov 2026, V4.53)
 V4.53: N224's splashback, N231 (a look's cost), N232 (shop pieces by form, merged and checked on screen), N233's WIN and STOOL steps.
 V4.54: N226 (each door's leaf and handle, one door or all). V4.55: N224's units, handles and worktop. **Next, in order:** N237 (the first
 picture back under the old budgets); N225's taps, mirror and bath panel, N228, N229, N234, N235 as Emma says.
