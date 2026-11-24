@@ -24,20 +24,21 @@ function grassy(m) {
 }
 /* N271 (the review: brick, roof tiles, concrete and paving repeat visibly): the outside's photos under a slow tone that drifts across a
    wall or a roof (about ±8%, a couple of metres a patch, worked out from where the pixel is in the house), and on brick a dirt band where it
-   meets the ground (splash and green, darker in its bottom 30 or so cm, ragged). One program a kind ("weather1" brick, "weather0" the rest) */
+   meets the ground (splash and green, darker in its bottom 30 or so cm, ragged). One program ("weather"), the dirt a uniform */
 function weathered(m, kind) {
-  const dirt = kind === "brick";
-  m.customProgramCacheKey = () => "weather" + (dirt ? 1 : 0);
+  const dirt = kind === "brick" ? 1 : 0;
+  m.customProgramCacheKey = () => "weather";   // one program for all of them: the dirt band a uniform (the speed budget's shaders_first)
   m.onBeforeCompile = sh => {
+    sh.uniforms.wDirt = { value: dirt };
     sh.vertexShader = "varying vec3 vPgP;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n vPgP = (modelMatrix * vec4(transformed, 1.0)).xyz;");
-    sh.fragmentShader = PAINT_GRAIN + sh.fragmentShader.replace("#include <map_fragment>", `#ifdef USE_MAP
+    sh.fragmentShader = PAINT_GRAIN + "uniform float wDirt;\n" + sh.fragmentShader.replace("#include <map_fragment>", `#ifdef USE_MAP
     vec4 sampledDiffuseColor = texture2D(map, vMapUv);
     vec3 wP = vec3(-vPgP.x, vPgP.y, vPgP.z) * 100.0;
     float wT = 0.6 * pgN(wP * 0.004 + 1.3) + 0.4 * pgN(wP * 0.013 + 4.1);
-    sampledDiffuseColor.rgb *= 1.0 + 0.16 * (wT - 0.5);${dirt ? `
+    sampledDiffuseColor.rgb *= 1.0 + 0.16 * (wT - 0.5);
     float wH = wP.y - (wP.z > 95.0 ? -15.0 : -260.0);
-    float wD = (1.0 - smoothstep(3.0, 28.0 + 22.0 * pgN(wP * 0.03 + 2.0), wH)) * step(-8.0, wH);
-    sampledDiffuseColor.rgb *= mix(vec3(1.0), vec3(0.74, 0.76, 0.7), wD);` : ""}
+    float wD = wDirt * (1.0 - smoothstep(3.0, 28.0 + 22.0 * pgN(wP * 0.03 + 2.0), wH)) * step(-8.0, wH);
+    sampledDiffuseColor.rgb *= mix(vec3(1.0), vec3(0.74, 0.76, 0.7), wD);
     diffuseColor *= sampledDiffuseColor;
   #endif`); };
   return m;
