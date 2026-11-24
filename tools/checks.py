@@ -3,7 +3,7 @@ before you push. Exits non-zero if any check fails; prints one line each (the re
 
 python3 tools/checks.py            the model's checks, flicker, clashes, privacy (repo and site), the repo's size, the front door, the media wall's page and taps;
                                    the speed budget (tools/perf_budget.json: the files in sizes, the four paths in site)
-python3 tools/checks.py --quick    no browser: the model's checks, flicker, clashes, privacy, the repo's size
+python3 tools/checks.py --quick    no browser: the model's checks, flicker, clashes, privacy, conflict markers, the repo's size
 
 Needs the site built first (python3 tools/build.py); THREE_LOCAL serves three.js where the CDN is blocked."""
 import json, os, pathlib, re, subprocess, sys, time
@@ -62,6 +62,16 @@ def repo():
     msg = (f"{len(files)} files, {tracked:.0f} MB tracked ({photos / 2 ** 20:.0f} MB the client's photos), {len(built)} built, {len(big)} over 1.5 MB, "
            f"history {hist:.0f} MB (budget 200 tracked, 750 history)")
     return not built and not big and not over, msg + (": " + ", ".join((built + big)[:4]) if built or big else "")
+
+
+def markers():
+    """N246 (A7): merge-conflict markers were committed into REAL_PLAN four times. Fails on any tracked text line that starts with
+    "<<<<<<< " or ">>>>>>> " (a bare "=======" is a Markdown heading rule, so it isn't counted)."""
+    r = subprocess.run(["git", "grep", "-nI", "-E", "^(<{7} |>{7} )"], cwd=ROOT, capture_output=True, text=True)
+    if r.returncode > 1:
+        return True, "not a git checkout"
+    hits = r.stdout.splitlines()
+    return not hits, f"{len(hits)} conflict-marker lines" + (": " + ", ".join(h.split(":")[0] + ":" + h.split(":")[1] for h in hits[:4]) if hits else "")
 
 
 def sizes():
@@ -196,10 +206,10 @@ def taps():
 def main(argv):
     """python3 tools/checks.py [--quick | --only site,page,taps]"""
     quick = "--quick" in argv
-    checks = [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("repo", repo), ("sizes", sizes), ("lean", lean), ("names", names)] + ([] if quick else [("site", site), ("hitch", hitch), ("page", qa), ("taps", taps)])
+    checks = [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("markers", markers), ("repo", repo), ("sizes", sizes), ("lean", lean), ("names", names)] + ([] if quick else [("site", site), ("hitch", hitch), ("page", qa), ("taps", taps)])
     if "--only" in argv:                                         # V1.35 (U10): one or more by name (the workflow runs the browser checks side by side)
         want = argv[argv.index("--only") + 1].split(",")
-        checks = [c for c in [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("repo", repo), ("sizes", sizes), ("lean", lean), ("site", site), ("hitch", hitch), ("page", qa), ("taps", taps)] if c[0] in want]
+        checks = [c for c in [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("markers", markers), ("repo", repo), ("sizes", sizes), ("lean", lean), ("names", names), ("site", site), ("hitch", hitch), ("page", qa), ("taps", taps)] if c[0] in want]
     fails = 0
     for name, fn in checks:
         t = time.time()

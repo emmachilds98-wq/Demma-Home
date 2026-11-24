@@ -113,7 +113,7 @@ const LIV_CURT = [["hessian", "Your hessian"], ["linen", "Linen"], ["sage", "Sag
 const WIN_KINDS = [["curtains", "Curtains"], ["roller", "Roller blind"], ["roman", "Roman blind"], ["shutters", "Shutters"], ["none", "Nothing"]];
 const WIN_SHUT = [["white", "White", "#f1efe9"], ["oak", "Oak", "#b48a5a"], ["grey", "Grey", "#8e9296"], ["sage", "Sage", "#8b9878"]];
 const winFabs = k => k === "shutters" ? WIN_SHUT : FIN_CURT;
-let WIN_ALL = null, WIN_REDO = 0; const WIN_ORIG = new WeakMap();
+let WIN_ALL = null; const WIN_ORIG = new WeakMap();
 function winAll() {   // every window but the living room's: its item, room, floor, side (1: the room is to +z), span, sill, head, its room's floor and inside face
   if (WIN_ALL || !R.HOUSE3 || !R.HOUSE3.finish_pieces) return WIN_ALL || [];
   const H = R.HOUSE3, its = Object.entries(H.items || {}).filter(([, v]) => v.k === "window" && v.op);
@@ -169,8 +169,7 @@ function winGeos(w, k, c) {   // [[geometries, material]] for a window dressed: 
 }
 function finCurtApply() {
   if (!finSetup() || !houseG) return;
-  if (HBUILD && !HBUILD.win) { const b0 = HBUILD; HBUILD = Object.assign((fk, F) => { const r = b0(fk, F);   // N227: a floor rebuilt (an edit) drops what's laid on it: laid again
-    if (!WIN_REDO) { WIN_REDO = 1; Promise.resolve().then(() => { WIN_REDO = 0; finFloorApply(); doorApply(); }); } return r; }, { win: 1 }); }
+  if (!AFTER_FLOOR.has("win")) AFTER_FLOOR.set("win", () => { finFloorApply(); doorApply(); });   // N227, N255: a floor rebuilt (an edit) drops what's laid on it: laid again
   for (const m of CURT_LAID) { m.parent && m.parent.remove(m); m.geometry.dispose(); } CURT_LAID = [];
   for (const w of winAll()) { const g = HFLOOR[w.f], j = winsOf(w.room).indexOf(w), now = winNow(w.room, j); if (!g || now.plan || now.k === "none") continue;
     for (const [geos, mat] of winGeos(w, now.k, now.c)) if (geos.length) { const m = mat(), me = new THREE.Mesh(m.map ? worldUV(mergeGeometries(geos), m.userData.hk) : mergeGeometries(geos), m); geos.forEach(q => q.dispose());

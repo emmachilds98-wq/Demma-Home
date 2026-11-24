@@ -16,7 +16,9 @@ import { Sky } from "three/addons/objects/Sky.js";   // V1.3: the sky over the w
 const GS = { need: 2, moving: false, tween: null, baseFov: 50, livOut: false, hfloor: "all", hfview: "angle", roomKey: "", RMODE: "in", hereRoom: null, standSpot: null, cabSnap: false, bar1: null, actId: null };   // N203: the state more than one part sets (an ES module can't set another's binding)
 const MOD_AT = performance.now();   // V1.31: when this script began (R3D.timing)
 const root = document.getElementById("r3d");
-const SC = JSON.parse(document.getElementById("scene3d-data").textContent);
+const SC = await (async () => { const el = document.getElementById("scene3d-data");   // N256: on Pages a file of its own (scene.<hash>.json, preloaded)
+  if (el.dataset.src) { const r = await fetch(el.dataset.src, { credentials: "same-origin" }); if (r.ok) return r.json(); throw new Error("The scene didn't load: " + r.status); }
+  return JSON.parse(el.textContent); })();
 const R = SC.room;
 { const sb = R.SHELF_B, gap = 10, len = Math.abs(sb.z[0] - sb.z[1]), end = R.PIPE_BOX.z[1] + gap; sb.gap = gap; sb.z = [end + len, end]; }   // v37: the stairs-wall shelf always ends 10 cm short of the pipe boxing, whatever the data says
 const M = 0.01;

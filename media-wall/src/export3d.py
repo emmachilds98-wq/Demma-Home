@@ -100,7 +100,7 @@ def _house3():   # v58: the whole house built (house/model.py: walls, openings, 
     e["windows_in"] = [[op["floor"], op["side"], *op["x"], op["sill"], op["head"]] for op in model.D.OPENINGS if op["kind"] == "window" and not op.get("skip")]
     import storage_ideas                                         # N212: the storage ideas, options to look at (built in the 3D only once shown)
     e["storage"] = storage_ideas.for_3d()
-    import fit as fitsrc                                         # N242: each idea's real buys from the shops (docs/N242_options.json)
+    import fit as fitsrc                                         # N242: each idea's real buys from the shops (house/data/N242_options.json)
     for i in e["storage"]:
         i["o"] = [opt_row(q) for q in fitsrc.opt_pieces() if i["id"] in q["spots"]]
     e["plants"] = getattr(model.D, "PLANTS", [])                # V1.3: the gardens' plants (survey_data.PLANTS: where, how big, the source)

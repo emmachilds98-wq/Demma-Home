@@ -13,6 +13,6 @@
 
 ## The plan
 
-- Status board row (docs/V1_PLAN.md section 0): (phase, now "Done (date)" or what's left)
-- docs/STATE.md rewritten · docs/HISTORY.md has the round
+- The row in docs/REAL_PLAN.md: (N-number, now "Done" or what's left)
+- VERSION, HISTORY and STATE: by `tools/ship.py` at merge, not by hand
 - `python3 house/privacy_check.py` passes

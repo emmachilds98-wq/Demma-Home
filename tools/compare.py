@@ -1,4 +1,4 @@
-"""Demma's Home V1.34 (docs/UPGRADE_REVIEW.md U9, 4.2): each room's view beside the client's photo it was modelled from, at the photo's
+"""Demma's Home V1.34 (docs/archive/UPGRADE_REVIEW.md U9, 4.2): each room's view beside the client's photo it was modelled from, at the photo's
 shape, and the 3D's edges (red) laid over the photo: where a size is wrong, its lines don't meet. Each round's accuracy proof, as the
 gallery is the look's (house/evidence/compare_*.jpg were made by hand before).
 
