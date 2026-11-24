@@ -1,6 +1,6 @@
-# Handover (24 Nov 2026, V4.62: start here)
+# Handover (24 Nov 2026, V4.63: start here)
 
-## Now (24 Nov 2026, V4.62: start here)
+## Now (24 Nov 2026, V4.63: start here)
 The client: "handover efficiently now so another team can finish and start upgrade. make sure none of your work is left behind".
 
 1. **Main's CI first.** Main is V4.62 (`2cd8257`). The runs for V4.60, V4.61 and V4.62 were cancelled by the next merge, so run 933 (on
