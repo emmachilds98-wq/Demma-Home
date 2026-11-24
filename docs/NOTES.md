@@ -586,3 +586,19 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/archive/revie
 - **A walk kept clear has no piece (`of` null), and a new piece has no `self` (null):** `roomWhy` skipped each reserve with
   `of !== self`, so `null !== null` let every added piece (Ideas' set-ups, + Add storage, a tapped add) stand in bedroom 2's walk to
   the desk; it showed only in the fresh-page features job (24 Nov). Now `!of || of !== self`.
+
+### N285 (24 Nov 2026): the phone's one structure
+- **On the screen at once:** the brand and its gear (Settings), one row of the view's pills under it, the dock, at most one card or
+  panel. Under 600 wide: a room's row is its four ways + Ideas + Whole house + ⋯; the house's is Angled/Overhead as one button (the
+  other way), the floors (sliding), ⋯ (As it is, Hide labels, the garden's Ideas). Plan · Build · Buy leave the top under 900 wide:
+  the dock's Plan opens the sheet (it has the three).
+- **Settings** (the gear, `#r3d-gear`; a panel with no bubble, `#r3d-dp-settings`): Share (`#r3d-link`), Full screen, Help (the
+  welcome), Keys (a computer), the version (`.ver`, get the latest), Quality, Labels, Move buttons. Share and Keys left the top row on
+  every screen; Full screen, Quality, Labels and Move buttons left View.
+- **A card on a phone is a sheet** (`renderAct`, the kit, so every card at once): its name and one line (each one line, cut with …),
+  one row of choices that slides (chips and swatches, 44 px, labels under), the first swatch tray kept (else two chip rows), the rest
+  of its tray and its buttons after three under More; half the screen till More or a drag up (`.full`), down to its peek, down
+  again to close. A computer keeps its floating card.
+- **Sizes:** 44 × 44 to touch, 16 px buttons, 15 px chips, 13 px labels; a phone counts by its width too (`(max-width: 599px)` beside
+  `(pointer: coarse)`: headless Chromium reports a fine pointer). `check_site.py` PHONEUI checks it at 375 × 812 (the house, bedroom 2,
+  a wall's card, Settings). A closed `<details>`' contents still have boxes in Chrome: a check skips them.
