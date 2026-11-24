@@ -517,7 +517,8 @@ const ADDED = {}, ADDFK = {};   // ADDFK: each added piece's floor, kept once it
 function syncAdds() {
   const ds = DS(), H3 = R.HOUSE3; if (!ds || !H3) return;
   syncPlants(); syncIdeas();
-  const rows = {}; for (const v of Object.values(ds.rows("edits") || {})) if (v && v.field === "add" && /^add\.[a-z0-9]{1,12}$/.test(v.item || "") && (HCAT[v.value] || hcOwn(v.value)) && H3R(v.room)) rows[v.item] = v;   // N219: her own too
+  const rows = {}; for (const v of Object.values(ds.rows("edits") || {})) if (v && v.field === "add" && /^add\.[a-z0-9]{1,12}$/.test(v.item || "") && (HCAT[v.value] || hcOwn(v.value)) && H3R(v.room)) rows[v.item] = v;
+    else if (v && v.field === "add" && /^sh[0-9a-f]{6}$/.test(v.value || "") && !HCAT[v.value] && typeof ixData === "function") ixData().then(j => j && storeEdits());   // N245: a piece from the ideas data, kept after a reload   // N219: her own too
   for (const id of Object.keys(ADDED)) if (!rows[id]) { delete H3.items[id]; delete ADDED[id]; }
   for (const [id, v] of Object.entries(rows)) { if (ADDED[id] === `${v.value}@${v.x},${v.z}`) continue;   // N218: a new piece or a new spot
     const C = HCAT[v.value], r = H3R(v.room), x = +v.x, z = +v.z, y = isFinite(+v.y) ? +v.y : r[4]; if (!isFinite(x) || !isFinite(z)) continue;
