@@ -1071,9 +1071,15 @@ def _page(site=False):
     notice = ('<p class="notice">Share, at the top of the 3D, takes the ticks and amounts to your other devices.</p>' if site
               else f'<p class="caption">Also on <a href="{PAGES}" target="_blank" rel="noopener">GitHub Pages</a>.</p>')
 
+    hbase = "house/out/" if site else PAGES + "house/out/"   # N264: her House plan (house/build_report.py client())
     plan_home = f"""<div class="plan-home" id="plan-home"><div class="panel" id="overview">
-      <div><p class="hello"><span id="hello">Evening, Emma &amp; Dave</span><button class="ver" type="button" title="Get the latest version">{LABEL}</button></p><p>The house's changes: <b id="d-house">none yet</b>. The media wall: about <b id="d-total">£{money(lo_tot, hi_tot)}</b>.</p>
-        <p class="row"><a class="btn" href="{base}Home_Plan_{LABEL}_Plan.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">download</span> The plan (PDF)</a><a class="btn" href="{base}Home_Plan_{LABEL}_Plan_phone.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">smartphone</span> Phone edition</a></p></div>
+      <div class="hcard"><p class="hello"><span id="hello">Evening, Emma &amp; Dave</span><button class="ver" type="button" title="Get the latest version">{LABEL}</button></p>
+        <p>The house's changes: <b id="ups-tot">none yet</b></p>
+        <ul class="upchips" id="ups-l" aria-label="Each room's changes: tap one to go there"></ul>
+        <p class="row"><a class="btn primary" href="{hbase}House_Plan.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">download</span> House plan (PDF)</a><button type="button" class="btn" data-nav="buy"><span class="ms" aria-hidden="true">shopping_bag</span> Shopping list</button></p></div>
+      <div class="next3" id="next3" aria-label="Your next three things"></div>
+      <details class="fold mwall"><summary>The media wall: about <b id="d-total">£{money(lo_tot, hi_tot)}</b></summary>
+        <p class="row"><a class="btn" href="{base}Home_Plan_{LABEL}_Plan.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">download</span> Its plan (PDF)</a><a class="btn" href="{base}Home_Plan_{LABEL}_Plan_phone.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">smartphone</span> Phone edition</a></p>
       {PU.plan_home(ring, sum(1 for r in rows if r["kind"] == "buy"), len(steps())).replace("{MONEY}", PU.money_html(TRACK))}
       <div class="upnext" hidden><span class="n" id="d-nextn">1</span><div><span class="label">Up next</span><h3 id="d-next">Measure and count</h3></div>
         <button type="button" class="done-btn" id="d-nextdone" data-s="1"><span class="ms" aria-hidden="true">check_circle</span>Done</button>
@@ -1084,6 +1090,7 @@ def _page(site=False):
       <div class="tilegrid">{tiles}</div>
       <details class="fold"><summary>The plan on a page</summary><div class="doc">{s1}</div></details>
       <!--keep--><details class="fold changes"><summary>What changed in {LABEL}</summary><div class="doc"><p>{decision}</p></div></details><!--/keep-->
+      </details>
     </div></div>"""
     chapters = "".join([
         chapter("c-room", more(f'<div class="doc">{sec["2"]}</div>')),
@@ -1168,6 +1175,10 @@ def _page(site=False):
     <details class="fold" id="order"><summary>Every step in one list (<span id="s-count">0 of {len(steps())} steps done</span>)</summary><p class="caption">A step ticks itself when its tasks are done.</p><span class="bar sr-only"><i id="s-bar"></i></span><ol class="steps-list" id="steps-ol">{"".join(step_cards)}</ol></details>
   </section>"""
     buy_body = f"""<section class="panel" id="buy">
+    <details class="fold" id="buyhouse" open><summary>The house: <b id="bh-tot">nothing yet</b></summary>
+      <ul class="hlist" id="bh-l"></ul>
+      <div class="row"><button class="btn" id="bh-copy" type="button"><span class="ms" aria-hidden="true">content_copy</span> Copy as text</button><span class="caption" id="bh-st" aria-live="polite"></span></div></details>
+    <h3 class="ptitle">The media wall</h3>
     <div class="tiles">
       <div><strong id="t-plan">£{money(lo_tot, hi_tot)}</strong><span id="t-plans">the plan</span></div>
       <div><strong id="t-done">0 of {sum(1 for r in rows if r["kind"] == "buy")}</strong><span>bought <b id="t-left" hidden>nothing ticked yet</b></span></div>

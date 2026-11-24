@@ -433,7 +433,8 @@ body.bare .r3d-peg, .r3d.editing .r3d-peg { display: none; }
 .r3d-stick { opacity: .4; transition: background .15s, opacity .3s; } .r3d-stick.held { opacity: 1; } @media (hover: hover) { .r3d-stick:hover { opacity: 1; } }
 .r3d.keyed .r3d-stick:not(.held):not(:hover) { opacity: 0; } .r3d:has(.r3d-pop:not([hidden])) .r3d-stick, body.sheet-open .r3d-stick { display: none; }
 /* V1.30 (U3): only the tools that work where you are (room3d.js brandPlace) */
-body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-editbtn, body.hv #r3d-dp-look > :not(h2):not(#r3d-finsch), body.hroom .hnav { display: none !important; }
+body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-editbtn, body.hv #r3d-dp-look > :not(h2):not(#r3d-finsch) { display: none !important; }
+@media (max-width: 899px) { body.hroom .hnav { display: none !important; } }   /* N264: Plan, Build and Buy stay up in a room on a computer; a phone has the bottom bar */
 @media (max-width: 899px) { body.hv .r3d-bubbles { justify-content: center; gap: 28px; } body.hv .r3d-bub { flex: 0 0 auto; } }
 /* V1.30: on a phone the small buttons share a row (six rows were the top half of the screen); the floors and rooms a row each, a fade
    where there's more to slide to */

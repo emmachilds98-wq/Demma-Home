@@ -334,7 +334,6 @@ window.PICKS = (() => {
     const ideas = ad.filter(x => x.idea), ilo = ideas.reduce((a, x) => a + x.lo, 0), ihi = ideas.reduce((a, x) => a + x.hi, 0);
     txt("#d-total", tot); txt("#t-plan", tot);
     const U = window.DemmaUps && DemmaUps();   // N119: Plan leads with the whole house
-    txt("#d-house", U && U.T.n ? `about ${U.range || "£0"}, ${U.T.d} of ${U.T.n} done` : "none yet");
     txt("#sb-count", ideas.length ? `${ideas.length} ${ideas.length === 1 ? "idea" : "ideas"} moved into the plan: +${rng(ilo, ihi)}` : "Nothing added to the plan yet");
     txt("#sb-total", "The plan: " + tot);
     $$("[data-short]").forEach(b => { const on = !!st.short[b.dataset.short]; b.setAttribute("aria-pressed", String(on));
