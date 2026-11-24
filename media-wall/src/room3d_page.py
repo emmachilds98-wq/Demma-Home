@@ -93,6 +93,8 @@ html body .r3d .r3d-stage canvas:focus-visible { outline: 3px solid var(--oak, o
 .r3d-fin { display: grid; gap: 8px; margin: 0 0 10px; }
 @media (max-width: 599px) { .r3d.actopen .r3d-peg { display: none; } }
 .r3d-finsc { display: flex; gap: 4px; flex-wrap: wrap; }
+.r3d-ixwhy { margin: 2px 0 6px; font: 500 12.5px/1.35 Figtree, system-ui, sans-serif; color: #4a463f; }
+.r3d-ixwhy b { color: #2a2723; } .r3d-ixwhy span { display: block; color: #5d6b4f; }
 .r3d-finlab { font: 600 12px Figtree, system-ui, sans-serif; color: #6b655c; margin-top: 2px; }
 .r3d-fin > a { justify-self: start; font: 600 13px Figtree, system-ui, sans-serif; color: #2a2723; text-underline-offset: 3px; padding: 6px 0; }   /* N219: a shop's page */
 .r3d-finsc button { font: 600 12.5px Figtree, system-ui, sans-serif; padding: 5px 10px; border-radius: var(--r-pill); border: 1px solid #d9d4ca; background: #fff; color: #2a2723; min-height: 30px; }

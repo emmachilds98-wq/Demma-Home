@@ -680,7 +680,7 @@ function finApplyAll() {   // what's kept, into the palette (on start, after Und
 /* V2.38 (F12): the window frames' and front door's outside colours (RAL), S.fin.outside[9] and [10] */
 const FIN_OUT = [["#f5f5f2", "White"], ["#383e42", "Anthracite grey (RAL 7016)"], ["#b5b8b1", "Agate grey (RAL 7038)"], ["#0a0a0a", "Black (RAL 9005)"], ["#fdf4e3", "Cream (RAL 9001)"]];
 const finOut = () => { for (const [s, k] of [[9, "frame_out"], [10, "door_out"]]) { const m = HMATS && HMATS[k]; if (m) m.color.set(!finHeld && finGet("outside", s) || R.HOUSE3.mats[k][0]); } dirty(); };
-const finKnown = hex => [...FIN_OUT, ...finSwatches(), ...Object.values(FIN_PAIRS).flat()].find(([h]) => h.toLowerCase() === String(hex).toLowerCase());
+const finKnown = hex => [...FIN_OUT, ...finSwatches(), ...IX_PAINTS, ...Object.values(FIN_PAIRS).flat()].find(([h]) => h.toLowerCase() === String(hex).toLowerCase());
 /* N213: her own colours: a code typed (#dbffc8, dbffc8 or #dbf), named "your colour #DBFFC8"; "Yours" offers each one she's put on a
    wall, ceiling or outside (not a paint's, not the plan's) on every wall's card; nothing new kept (they're read from her rows) */
 const finHex = v => { let t = String(v || "").trim().replace(/^#/, "").toLowerCase(); if (/^[0-9a-f]{3}$/.test(t)) t = t.replace(/./g, c => c + c); return /^[0-9a-f]{6}$/.test(t) ? "#" + t : null; };
