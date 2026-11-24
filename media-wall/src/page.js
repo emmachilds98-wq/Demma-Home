@@ -224,8 +224,8 @@ paintSteps();
 (async () => {
   const [d, u] = await Promise.all([use("db"), use("user")]);
   if (!d) {
-    $("#t-note").textContent = "Each phase names the step it's for. Measure's Send takes the ticks to your other devices.";
-    const sn = $("#s-note"); if (sn) sn.textContent = "Measure's Send takes the ticks to your other devices.";
+    $("#t-note").textContent = "Each phase names the step it's for. Share, at the top, takes the ticks to your other devices.";
+    const sn = $("#s-note"); if (sn) sn.textContent = "Share, at the top, takes the ticks to your other devices.";
     return;
   }
   db = d;
