@@ -194,7 +194,6 @@ function drawPlanText() { const t = qs("#r3d-plantext"); if (t && !qs("#r3d-plan
 function saveMyPlan() {
   const box = qs("#r3d-planbox"), btn = qs("[data-myplan]"); if (!box) return;
   box.hidden = !box.hidden; if (btn) btn.setAttribute("aria-expanded", String(!box.hidden));
-  const sh = qs("#r3d-planshare"); if (sh) sh.hidden = !navigator.share;
   const sv = qs("#r3d-plansave"); if (sv) sv.hidden = !ldb;
   drawPlanText();
 }
@@ -204,8 +203,6 @@ qs("#r3d-planname")?.addEventListener("input", drawPlanText);
 qs("#r3d-plancopy")?.addEventListener("click", () => { const text = planText(), t = qs("#r3d-plantext");
   const shown = () => { if (t) { t.value = text; t.focus(); t.select(); } planSt("Select the text above and copy it."); };
   try { navigator.clipboard.writeText(text).then(() => { planSt("Copied: paste it into your next message to us."); toast("Plan copied"); }, shown); } catch (e) { shown(); } });
-qs("#r3d-planshare")?.addEventListener("click", () => { const text = planText();
-  navigator.share({ title: (qs("#r3d-planname")?.value || "").trim() || "Our plan", text }).then(() => planSt("Sent."), e => { if (e && e.name !== "AbortError") planSt("Couldn't open sharing: use Copy."); }); });
 qs("#r3d-plansave")?.addEventListener("click", () => { if (!ldb) return;
   const name = (qs("#r3d-planname")?.value || "").trim() || "Our plan", at = new Date().toISOString();
   const state = JSON.parse(JSON.stringify(Object.fromEntries(Object.entries(S).filter(([k]) => !["edit", "picked"].includes(k)))));
