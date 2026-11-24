@@ -138,9 +138,12 @@ SWAP = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
   R3D.set({ view: 'master' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
   const it = Object.values(D.PICK).flat().find(p => p.id === 'master.chest'); if (!it) return { err: 'no chest in PICK' };
-  const c = it.b.getCenter(new D.THREE.Vector3()).project(D.camera), r = cv.getBoundingClientRect();
-  const o = { clientX: r.left + (c.x + 1) / 2 * cv.clientWidth, clientY: r.top + (1 - c.y) / 2 * cv.clientHeight, bubbles: true, pointerId: 1, button: 0, isPrimary: true };
-  cv.dispatchEvent(new PointerEvent('pointerdown', o)); cv.dispatchEvent(new PointerEvent('pointerup', o)); await sl(600);
+  const r = cv.getBoundingClientRect(), C = it.b.getCenter(new D.THREE.Vector3()), S = it.b.getSize(new D.THREE.Vector3());   // N257: the centre, then points across its box (from the plan's view on a first visit the bed hides the chest's middle)
+  for (const [fx, fy, fz] of [[0, 0, 0], [0, 0.3, 0], [0.3, 0.3, 0.3], [-0.3, 0.3, 0.3], [0.3, 0.3, -0.3], [-0.3, 0.3, -0.3], [0, 0.4, 0.3], [0, 0.4, -0.3]]) {
+    const c = new D.THREE.Vector3(C.x + fx * S.x, C.y + fy * S.y, C.z + fz * S.z).project(D.camera);
+    const o = { clientX: r.left + (c.x + 1) / 2 * cv.clientWidth, clientY: r.top + (1 - c.y) / 2 * cv.clientHeight, bubbles: true, pointerId: 1, button: 0, isPrimary: true };
+    cv.dispatchEvent(new PointerEvent('pointerdown', o)); cv.dispatchEvent(new PointerEvent('pointerup', o)); await sl(600);
+    if (D.actId === 'hitem:master.chest') break; if (D.actId) { const x = q('#r3d-act .x'); x && x.click(); await sl(300); } }
   const b = q('#r3d-act [data-actopen^="hswap:"]'); if (!b) return { card: D.actId }; b.click(); await sl(200); q('#r3d-act [data-hswapgo$=":1"]').click();
   const swapped = await wait(() => D.HEDITS['master.chest'] && D.HEDITS['master.chest'].swap === 'chest3' && D.PICK.first.some(p => p.id === 'master.chest'));
   await ds.put('edits', 'add.check~add', { item: 'add.check', field: 'add', value: 'plant', room: 'master', x: 240, z: 220, y: 260 });
