@@ -13,7 +13,8 @@ sys.path.insert(0, str(ROOT / "media-wall/src")); sys.path.insert(0, str(ROOT / 
 import pw, localcdn, storage_ideas  # noqa: E402
 IDEAS_BED2 = sum(len(i["parts"]) for i in storage_ideas.for_3d() if i["room"] == "bed2")   # N233: bedroom 2's storage ideas' pieces (STORE)
 
-ARGS = [a for a in sys.argv[1:] if a != "--hitch"]; HITCH = "--hitch" in sys.argv   # N177: --hitch runs only the hitch walk (its own CI job: the site job is near its 40 min)
+ARGS = [a for a in sys.argv[1:] if not a.startswith("--")]; HITCH = "--hitch" in sys.argv   # N177: --hitch runs only the hitch walk (its own CI job: the site job is near its 40 min)
+FEATURES = "--features" in sys.argv   # N257: --features runs only the customisation scenarios (features()), on the phone: its own CI job
 SITE = pathlib.Path(ARGS[0] if ARGS else ROOT / "_site").resolve()
 SHOTS = ROOT / "_shots"
 # V1.38: a walk from the hall into the living room, up its stairs to the landing (feet at the first floor), back down and out to the hall
@@ -67,7 +68,7 @@ FIN3 = """async () => { const sl = ms => new Promise(r => setTimeout(r, ms)), cv
   for (const [view, name] of [['bed2', 'Bedroom 2'], ['master', 'Master bedroom'], ['kitchen', 'Kitchen']]) {
     R3D.set({ view }); await settle(); let got = null;
     for (const fy of [0.3, 0.2, 0.4, 0.15]) { for (const fx of [0.15, 0.85, 0.3, 0.7, 0.5]) { tap(cv.clientWidth * fx, cv.clientHeight * fy); await sl(700);   // V2.42: a mouse click's card waits out a double-click (380 ms)
-      const h = card(); if (h && h.startsWith(name + ': the')) { got = h; break; } const c = document.querySelector('#r3d-act button'); if (h && c) c.click(); await sl(150); } if (got) break; }
+      const h = card(); if (h && h.startsWith(name + ': the') && /wall/.test(h)) { got = h; break; }   /* a wall's card, not the kitchen's splashback (main's run 923) */ const c = document.querySelector('#r3d-act button'); if (h && c) c.click(); await sl(150); } if (got) break; }
     if (got) { const sw = document.querySelector('[data-finc="#899081"]'); if (sw) sw.click(); await sl(300);
       const kept = JSON.stringify((R3D._dbg.S.fin || {})); out[view] = [got, kept.includes('#899081')];
       const un = document.querySelector('[data-finundo]'); if (un) un.click(); await sl(200); const c = document.querySelector('#r3d-act button'); if (c) c.click(); await sl(150); }
@@ -137,9 +138,12 @@ SWAP = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
   R3D.set({ view: 'master' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
   const it = Object.values(D.PICK).flat().find(p => p.id === 'master.chest'); if (!it) return { err: 'no chest in PICK' };
-  const c = it.b.getCenter(new D.THREE.Vector3()).project(D.camera), r = cv.getBoundingClientRect();
-  const o = { clientX: r.left + (c.x + 1) / 2 * cv.clientWidth, clientY: r.top + (1 - c.y) / 2 * cv.clientHeight, bubbles: true, pointerId: 1, button: 0, isPrimary: true };
-  cv.dispatchEvent(new PointerEvent('pointerdown', o)); cv.dispatchEvent(new PointerEvent('pointerup', o)); await sl(600);
+  const r = cv.getBoundingClientRect(), C = it.b.getCenter(new D.THREE.Vector3()), S = it.b.getSize(new D.THREE.Vector3());   // N257: the centre, then points across its box (from the plan's view on a first visit the bed hides the chest's middle)
+  for (const [fx, fy, fz] of [[0, 0, 0], [0, 0.3, 0], [0.3, 0.3, 0.3], [-0.3, 0.3, 0.3], [0.3, 0.3, -0.3], [-0.3, 0.3, -0.3], [0, 0.4, 0.3], [0, 0.4, -0.3]]) {
+    const c = new D.THREE.Vector3(C.x + fx * S.x, C.y + fy * S.y, C.z + fz * S.z).project(D.camera);
+    const o = { clientX: r.left + (c.x + 1) / 2 * cv.clientWidth, clientY: r.top + (1 - c.y) / 2 * cv.clientHeight, bubbles: true, pointerId: 1, button: 0, isPrimary: true };
+    cv.dispatchEvent(new PointerEvent('pointerdown', o)); cv.dispatchEvent(new PointerEvent('pointerup', o)); await sl(600);
+    if (D.actId === 'hitem:master.chest') break; if (D.actId) { const x = q('#r3d-act .x'); x && x.click(); await sl(300); } }
   const b = q('#r3d-act [data-actopen^="hswap:"]'); if (!b) return { card: D.actId }; b.click(); await sl(200); q('#r3d-act [data-hswapgo$=":1"]').click();
   const swapped = await wait(() => D.HEDITS['master.chest'] && D.HEDITS['master.chest'].swap === 'chest3' && D.PICK.first.some(p => p.id === 'master.chest'));
   await ds.put('edits', 'add.check~add', { item: 'add.check', field: 'add', value: 'plant', room: 'master', x: 240, z: 220, y: 260 });
@@ -164,7 +168,7 @@ WOOD = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   const wb = [...document.querySelectorAll('#r3d-act button')].find(b => b.textContent.trim() === 'Woodwork'); if (!wb) return { wall, err: 'no Woodwork button' };
   wb.click(); await sl(500); const wt = q('#r3d-act-h').textContent, yours = !!q('#r3d-act [aria-label="Your colours"] [data-finc="#3a6b5a"]');
   q('#r3d-act [aria-label="Your colours"] [data-finc="#3a6b5a"]').click(); await sl(400); const wood = kept(17);
-  const ab = [...document.querySelectorAll('#r3d-act button')].find(b => b.textContent.trim() === 'As planned'); ab && ab.click(); await sl(300);
+  const ab = [...document.querySelectorAll('#r3d-act button')].find(b => ['As planned', "The plan's"].includes(b.textContent.trim())); ab && ab.click(); await sl(300);
   const back = kept(17); for (let i = 0; i < 3; i++) { const u = q('#r3d-act [data-finundo]'); if (u) u.click(); await sl(300); }   // the three changes undone
   const restored = kept(0) === was[0] && kept(17) === was[1]; if (D.actId) q('#r3d-act .x').click();
   return { wall, wt, yours, wood, back, restored };
@@ -443,6 +447,13 @@ HITCH_WARM = """async () => { const D = R3D._dbg, G = D.gl, sl = ms => new Promi
 HITCH_WALK = WALK.replace("const legs = [],", "window.__H.on = true; const legs = [],").replace("return { seen,", "window.__H.on = false; return { hitches: Object.keys(window.__H.f).length, what: [...new Set(window.__H.what)], seen,")
 
 
+def wait_for(pg, cond, ms=1500):
+    """N257: wait for the page to say it's done (polled 4 times a second: CI's software frames take seconds, so not once a frame), up to a
+    minute; if it never says so, the old fixed wait, so a slow page still gets its time and the step's own check says what's wrong"""
+    try: pg.wait_for_function(cond, polling=250, timeout=60000)
+    except Exception: pg.wait_for_timeout(ms)
+
+
 def over_budget(path, got):
     want = BUDGET["paths"][path]
     return [f"{path}: {k} {got.get(k)} over {v}" for k, v in want.items() if not k.startswith("_") and not 0 <= (got.get(k) or 0) <= v]
@@ -493,18 +504,19 @@ def stick_all(pg, w):
         moved = max(abs(a[0] - z[0]), abs(a[1] - z[1]))
         if a[2] == "none" or (z[3] != "stand" if "In it" in how else moved < 0.05):   # In it: the flight down to your eyes takes CI's slow frames, standing is the proof
             out.append(f"{w}: the stick in {how}: shown {a[2]!r}, moved {moved:.2f} m, then {z[3]!r} (want shown, moving, In it standing you there)")
-    pg.evaluate("() => R3D.set({ view: 'house' })"); pg.wait_for_timeout(1500)
+    pg.evaluate("() => R3D.set({ view: 'house' })"); wait_for(pg, "() => R3D._dbg.S.view === 'house' && !R3D._dbg.flying")
     return out
 
 
 def mouse_look(pg, w):
     """N207, the client: the mouse "feels inverted": on a PC a mouse held down in a room looks the way it moves (right looks right, up looks up)"""
     dirn = "() => { const D = R3D._dbg, d = D.controls.target.clone().sub(D.camera.position).normalize(); return [d.x, d.y, d.z]; }"
-    pg.evaluate("() => R3D.set({ view: 'hall' })"); pg.wait_for_timeout(3000); pg.evaluate("() => document.querySelector('[data-rmode=in]').click()"); pg.wait_for_timeout(4000)
+    pg.evaluate("() => R3D.set({ view: 'hall' })"); wait_for(pg, "() => R3D._dbg.S.view === 'hall' && !R3D._dbg.flying", 3000)
+    pg.evaluate("() => document.querySelector('[data-rmode=in]').click()"); wait_for(pg, "() => R3D._dbg.RMODE === 'in' && !R3D._dbg.flying", 4000)
     x, y = pg.evaluate("() => { const r = document.querySelector('.r3d canvas').getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }")
     a = pg.evaluate(dirn); pg.mouse.move(x, y); pg.mouse.down(); pg.mouse.move(x + 120, y - 60, steps=4); pg.wait_for_timeout(1500); pg.mouse.up(); pg.wait_for_timeout(800); z = pg.evaluate(dirn)
     turn = a[2] * z[0] - a[0] * z[2]                                  # the turn round the upright: below 0 is to the right
-    pg.evaluate("() => R3D.set({ view: 'house' })"); pg.wait_for_timeout(1500)
+    pg.evaluate("() => R3D.set({ view: 'house' })"); wait_for(pg, "() => R3D._dbg.S.view === 'house' && !R3D._dbg.flying")
     return [] if turn < -0.01 and z[1] > a[1] + 0.01 else [f"{w}: a mouse drag right and up in the hall's In it turned {turn:+.3f} and tilted {z[1] - a[1]:+.3f} (want right, below 0, and up)"]
 def names_keys(pg, w):
     """V2.97 (N42): names everywhere (the page as it opens, a door's card in the kitchen, Edit's list), Esc one at a time; on a PC Tab"""
@@ -520,7 +532,7 @@ def names_keys(pg, w):
     pg.evaluate(f"() => {{ {D}.S.edit || document.getElementById('r3d-editbtn').click(); document.getElementById('r3d-add').click(); }}"); pg.wait_for_timeout(800); check("Edit's list")
     pg.keyboard.press("Escape"); pg.keyboard.press("Escape"); pg.wait_for_timeout(300)
     if pg.evaluate(f"() => {D}.S.edit"): out.append(f"{w}: two Esc didn't shut Edit's list and then Edit")
-    pg.evaluate("() => R3D.set({ view: 'house' })"); pg.wait_for_timeout(1500)
+    pg.evaluate("() => R3D.set({ view: 'house' })"); wait_for(pg, "() => R3D._dbg.S.view === 'house' && !R3D._dbg.flying")
     if w < 600: return out
     seen = []
     pg.evaluate("() => document.querySelector('.brand').focus()")   # from the brand, top left
@@ -541,6 +553,141 @@ def names_keys(pg, w):
     return out
 
 
+def features(pg, b, w, h, base):
+    """N257: the customisation scenarios (sections 27-31: sizes, swaps, colours, adds, looks, shops, storage, Ideas, windows, doors, the
+    kitchen, the WC), on the phone, in their own CI job beside the site's (python3 tools/check_site.py site --features)"""
+    fails = []
+    sz = pg.evaluate(SIZE)
+    if sz.get("card") != "hitem:office.desk" or not sz.get("row") or not sz.get("ed") or not sz.get("listed") or sz.get("after") or not sz.get("gone"):
+        fails.append(f"{w}: tapping the office desk and widening it: {sz} (want its card, a row of 223.9, the 3D changed, Measure listing it, then back as planned)")
+    pg.screenshot(path=str(SHOTS / f"site-{w}-size.png"))
+    sw = pg.evaluate(SWAP)                          # V2.46 (N7): swap the master's chest for another, add a plant from the catalogue, both back
+    want = "Bedroom 2 · Grey carpet|carpet_grey|Bedroom 2 · Oak boards|oak|carpet_grey"   # N209: oak from the floor's card, then the plan's
+    if sw != {"swapped": True, "added": True, "gone": True, "planted": True, "unplanted": True, "floor": want}:
+        fails.append(f"{w}: swapping the master bedroom's chest, adding a plant, bedroom 2's plant and floor from Look: {sw} (want each drawn, then gone; floor {want})")
+    wd = pg.evaluate(WOOD)                          # N213, N216: a code typed on bedroom 2's wall, then its woodwork from "Yours", then back
+    if wd != {"wall": "#3a6b5a", "wt": "Bedroom 2: the woodwork", "yours": True, "wood": "#3a6b5a", "back": None, "restored": True}:
+        fails.append(f"{w}: bedroom 2's wall by its code, then its woodwork from Yours and back: {wd}")
+    ea = pg.evaluate(EACH)                          # N214: each wall its own, This room over them, the slopes with the walls, then back
+    if ea != {"t1": "Master bedroom: the back wall (2 of 2)", "t2": "Master bedroom: the back wall (1 of 2)", "both": ["#3a6b5a", "#c98a5e"], "room": [None, "#dbffc8"],
+              "st": "Bedroom 2: the slopes", "slope": "walls", "restored": True}:
+        fails.append(f"{w}: the master's cupboard face and its alcove each a colour, This room over both, bedroom 2's slopes with the walls, then back: {ea}")
+    ad = pg.evaluate(ADD)                           # N218: a piece added where it fits, in the look link
+    seen = None
+    if ad.get("link"):
+        c2 = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=True, has_touch=True, service_workers="block")
+        p2 = c2.new_page(); p2.set_default_timeout(300000); localcdn.route(p2); p2.goto(ad["link"])
+        p2.wait_for_function("window.R3D && R3D.ready", timeout=240000)
+        seen = p2.evaluate("async () => { for (let i = 0; i < 200; i++) { if (Object.values(R3D._dbg.HEDITS).some(e => e.add === 'bookcase')) return true; await new Promise(r => setTimeout(r, 150)); } return false; }")
+        c2.close()
+    if not (ad.get("card") == "fin:bed2:5" and ad.get("line", "").startswith("80 × 28 × 202 cm · Fits") and ad.get("wall") and ad.get("gone") and seen):
+        fails.append(f"{w}: adding a bookcase in bedroom 2 from its floor's card: {ad}, in a fresh page from its look link: {seen} "
+                     "(want it back to a wall, \"Fits\", shown from the link, then gone)")
+    lk = pg.evaluate(LOOKS)                         # N221: a look saved (a wall, a floor, a piece taken out), others set, As it is, the look back
+    l2 = None
+    if lk.get("link"):                              # N222: its link on another device with its own colour: shown, set aside, Back to mine, no Keep it
+        c2 = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=True, has_touch=True, service_workers="block")
+        p2 = c2.new_page(); p2.set_default_timeout(300000); localcdn.route(p2); p2.goto(base + "index.html")
+        p2.wait_for_function("window.R3D && R3D.ready", timeout=240000); p2.wait_for_timeout(1500)
+        l2 = p2.evaluate(LOOKS2, lk["link"]); c2.close()
+    if not (lk.get("now") == "true" and lk.get("other") == ["#c98a5e", False] and lk.get("worn") == ["#3a6b5a", "oak", True, "true"] and lk.get("looks")
+            and l2 and l2["shown"] == ["Emma's look", "#3a6b5a", "oak", 1, True, "#e8c0c8"] and l2["mine"] == [True, "#e8c0c8", 0, True]
+            and l2["kept"] == [True, True, "#e8c0c8", True]):
+        fails.append(f"{w}: a look saved, others set, As it is, the look worn: {lk}; its link on a device with its own colour: {l2} "
+                     "(want Emma's look shown, nothing of its own saved over, Back to mine its own, no Keep it)")
+    ft = pg.evaluate(FITS)                          # N217: a swap's size and fit on its card, then as planned
+    if not (ft.get("fits", "").startswith("89 × 89 × 78 cm · Fits") and "cm into the slope" in ft.get("big", "") and ft.get("rid") and ft.get("back")):
+        fails.append(f"{w}: bedroom 2's chair-bed for an armchair, its Kallax for a bookcase, its desk for the long one, then as planned: {ft} "
+                     "(want the armchair \"Fits\", the bookcase into the slope, the monitors on the new top and the interface and headphones hidden, no rows left)")
+    sh = pg.evaluate(SHOP)                          # N233 (N219): a shop's piece from its chip, its line and its page, then as planned
+    want = {"swapped": True, "line": "102 × 103 × 74 cm · Fits · £275 · Habitat", "link": ["www.habitat.co.uk", "noopener", "See it at Habitat"], "back": True}
+    if sh != want: fails.append(f"{w}: bedroom 2's chair-bed for Habitat's first seat, then as planned: {sh} (want {want})")
+    st = pg.evaluate(STORE)                         # N233 (N223): a room's storage ideas, all shown, each clear, then hidden
+    want = {"n": IDEAS_BED2, "inway": [], "hidden": True}
+    if st != want: fails.append(f"{w}: bedroom 2's storage ideas from its floor card's More, All, then None: {st} (want {want}: each piece drawn, none in a walk)")
+    ix = pg.evaluate(IDEAS)                         # N244: Ideas in bedroom 2: a set-up drawn at once, its line, ›, + Add storage, Keep this, Back to mine
+    want = {"card": True, "line": True, "drawn": True, "inway": [], "next": True, "more": True, "kept": 1, "back": True}
+    if ix != want: fails.append(f"{w}: bedroom 2's Ideas pill, a set-up, the next, + Add storage, Keep this, Back to mine: {ix} (want {want})")
+    ls = pg.evaluate(LIVSWAP)                       # N233 (N220): the living room's rug swapped as the house's pieces are, then as planned
+    want = {"sofa": False, "swapped": True, "line": "160 × 230 × 1 cm · Fits · Argos's usual size", "kept": True, "back": True}
+    if ls != want: fails.append(f"{w}: the living room's rug swapped (Swap it, ›), then as planned; their sofa no Swap it: {ls} (want {want})")
+    wn = pg.evaluate(WIN)                           # N227: a window dressed its own way, drawn, kept, in the link; The plan's, Undo, The plan's
+    sent = None
+    if wn.get("link"):
+        c2 = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=True, has_touch=True, service_workers="block")
+        p2 = c2.new_page(); p2.set_default_timeout(300000); localcdn.route(p2); p2.goto(wn["link"])
+        p2.wait_for_function("window.R3D && R3D.ready", timeout=240000)
+        sent = p2.evaluate("async () => { for (let i = 0; i < 200; i++) { const v = (R3D._dbg.finAll().bed2 || {})[70]; if (v) return v; await new Promise(r => setTimeout(r, 150)); } return null; }")
+        c2.close()
+    want = {"title": "Bedroom 2's window", "plan": "The plan's: a roller blind, rolled up", "st": "Roman blind, deep blue · £45–130", "k1": "roman.blue", "drawn": 1,
+            "back": [None, 0, "The plan's: a roller blind, rolled up"], "undone": ["roman.blue", 1], "left": None}
+    if {k: wn.get(k) for k in want} != want or sent != "roman.blue":
+        fails.append(f"{w}: bedroom 2's window as a deep blue Roman blind, The plan's, Undo, The plan's: {wn}, in a fresh page from its link: {sent} (want {want}, the link roman.blue)")
+    so = pg.evaluate(STOOL)                         # N230: a kitchen stool swapped for IKEA's STIG, then as planned
+    if not (so.get("swapped") and "STIG" in so.get("name", "") and so.get("line", "").startswith("40 × 42 × 90 cm · Fits") and so.get("back")):
+        fails.append(f"{w}: the kitchen's bar stool swapped for IKEA's STIG from its Shops chip, then as planned: {so} (want STIG, \"40 × 42 × 90 cm · Fits\", no rows left)")
+    dr = pg.evaluate(DOOR)                          # N226: a door's leaf and handle, then all doors', The plan's, Undo, The plan's
+    want = {"plan": "The plan's: cottage boards, chrome lever", "one": ["Shaker, black knob · £246–496", '{"72":"shaker.knob"}', 2],
+            "all": ["Four panel, black knob · all doors · £211–461", '{"70":"four.knob"}'], "back": ["null", 0], "undone": '{"70":"four.knob"}', "left": "null"}
+    if dr != want: fails.append(f"{w}: bedroom 2's door a shaker with black knobs, then all doors four panel, The plan's, Undo: {dr} (want {want})")
+    kt = pg.evaluate(KIT)                           # N224: the kitchen's fronts, handles and worktop, The plan's, Undo, The plan's
+    want = {"plan": ["Kitchen: the units", "The plan's: white gloss, black handles, black worktop"],
+            "mine": ["Midnight navy, brushed brass handles, white quartz-effect worktop · £1,414–1,945", ["navy", "brass", "quartz"]],
+            "back": [None, None, None], "undone": ["navy", "brass", "quartz"], "left": [None, None, None]}
+    if kt != want: fails.append(f"{w}: the kitchen's units navy with brass handles and a quartz worktop, The plan's, Undo: {kt} (want {want})")
+    tl = pg.evaluate(TILE)                          # N225: the WC's tiles and grout, held, The plan's, Undo; its toilet and basin swapped, then as planned
+    want = {"title": "WC: the tiles", "plan": "The plan's: white 15 × 15", "st": "Zellige, charcoal grout · £28–38", "kp": ["zellige", "charcoal"], "drawn": True, "held": True,
+            "again": True, "gone": True, "undone": "zellige", "back": True}
+    if {k: tl.get(k) for k in want} != want or not str(tl.get("toilet", [""])[1]).startswith("35 × 66 × 79 cm") or "Wickes" not in str(tl.get("basin")):
+        fails.append(f"{w}: the WC's tiles from their card, held, The plan's, Undo; its toilet and basin swapped, then as planned: {tl} (want {want}, Wickes's toilet and corner basin)")
+    fn = pg.evaluate("() => [R3D.finish('bed2', 'walls', '#3a6b5a'), R3D.finish('bed2', 'ceiling', '#e8c0c8'), R3D.finish('nowhere', 'walls', '#000000'), R3D.finish(null, 'walls', null), R3D.finish(null, 'ceiling', null)]")
+    if fn != [True, True, False, True, True]:
+        fails.append(f"{w}: R3D.finish on bedroom 2's walls and ceiling, a room that isn't, then all back: {fn} (want [true, true, false, true, true])")
+    sc = pg.evaluate("""async () => { const sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), was = R3D.finishes();
+      try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {}
+      R3D.setFinishes({ bed2: { 0: '#899081', 5: 'oak', 8: 'dome' } }); await sl(200); q('#r3d-finschname').value = 'A'; q('#r3d-finschsave').click();
+      R3D.setFinishes({ landing: { 4: '#e8c0c8' } }); await sl(200); q('[data-finsch="0"]').click(); await sl(300);
+      const got = JSON.stringify(R3D.finishes()); try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {} R3D.setFinishes(was); return got; }""")
+    if sc != '{"bed2":{"0":"#899081","5":"oak","8":"dome"}}':
+        fails.append(f"{w}: the house's colours saved as a scheme, others set, the scheme back: {sc} (want bedroom 2's back wall, oak floor and flush dome)")
+    return fails
+
+
+DBG_USERS = ["tools/check_site.py", "tools/compare.py", "tools/camfit.py", "tools/draws.py", "tools/gallery.py", "house/bake.py", "media-wall/src/taptest.py"]
+
+
+def dbg_names():
+    """N257: the names the checks reach for in R3D._dbg (20_5_go.js's test door), each one still there. A name renamed or dropped in the
+    3D only showed as a red site job half an hour into CI; this reads the code instead (no browser, a second). Gives (used, missing):
+    used {name: [files]}, missing the names no _dbg has. In a JS string, D.x counts where D is R3D._dbg's alias there."""
+    import ast, re
+    go = (ROOT / "media-wall/src/room3d/20_5_go.js").read_text()
+    i = go.index("_dbg: {") + len("_dbg: "); depth, j = 0, i
+    for j in range(i, len(go)):
+        depth += {"{": 1, "}": -1}.get(go[j], 0)
+        if depth == 0: break
+    body, flat, depth = go[i + 1:j], "", 0
+    for ch in body:                                             # the getters' own bodies out, the names left at the top level
+        if ch in "{(": depth += 1
+        elif ch in "})": depth -= 1
+        elif depth == 0: flat += ch
+    have = {m.group(1) for part in flat.split(",") for m in [re.match(r"\s*(?:get\s+)?([A-Za-z_$][\w$]*)", part)] if m}
+    used = {}
+    for rel in DBG_USERS:
+        f = ROOT / rel
+        if not f.exists(): continue
+        for node in ast.walk(ast.parse(f.read_text())):
+            if isinstance(node, ast.JoinedStr):                 # an f-string: {D} (D = "R3D._dbg" in Python) read as R3D._dbg
+                s = "".join(v.value if isinstance(v, ast.Constant) else ("R3D._dbg" if isinstance(v, ast.FormattedValue) and isinstance(v.value, ast.Name) and v.value.id == "D" else "?") for v in node.values)
+            elif isinstance(node, ast.Constant) and isinstance(node.value, str): s = node.value
+            else: continue
+            names = re.findall(r"R3D\._dbg\.([A-Za-z_$][\w$]*)", s)
+            for al in set(re.findall(r"(?<![\w$.])([A-Za-z_$][\w$]*)\s*=\s*R3D\._dbg\b(?![.\w])", s)):   # D = R3D._dbg, V = ..., then D.x
+                names += re.findall(r"(?<![\w$.])" + re.escape(al) + r"\.([A-Za-z_$][\w$]*)", s)
+            for n in names: used.setdefault(n, set()).add(rel)
+    return {k: sorted(v) for k, v in sorted(used.items())}, sorted(n for n in used if n not in have)
+
+
 class Quiet(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a):
         pass
@@ -558,7 +705,7 @@ def main():
     with sync_playwright() as p:
         b = pw.launch(p, pw.GL)
         if not HITCH:
-            for w, h in ((393, 852), (1920, 1080)):
+            for w, h in ((393, 852),) if FEATURES else ((393, 852), (1920, 1080)):
                 phone = w < 600
                 ctx = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=phone, has_touch=phone, service_workers="block")
                 ctx.add_init_script(PERF_INIT % ("null", "false"))
@@ -566,7 +713,15 @@ def main():
                 pg = ctx.new_page(); pg.set_default_timeout(300000); localcdn.route(pg); errs = []   # V1.5: CI's software graphics draw the whole house at 1920 in ~20 s a frame; a screenshot took over 120 s
                 pg.on("pageerror", lambda e: errs.append("pageerror: " + str(e)[:300]))
                 pg.on("console", lambda m: errs.append(m.text[:300]) if (m.type == "error" and "favicon" not in m.text and "fonts.g" not in m.text) or "INVALID_" in m.text else None)   # V1.12: and any WebGL error (a photo sent into a texture too small for it, V1.9-V1.11)
-                pg.goto(base + "index.html"); pg.wait_for_function("window.R3D && window.R3D.ready", timeout=240000); pg.wait_for_timeout(3000)
+                pg.goto(base + "index.html"); pg.wait_for_function("window.R3D && window.R3D.ready", timeout=240000)
+                try: pg.wait_for_function(f"() => R3D.photos() >= {photos} && !R3D._dbg.flying", polling=250, timeout=60000)   # N257: the photos in, not a fixed 3 s
+                except Exception: pass
+                if FEATURES:                                        # N257: Measure opened and shut (SIZE reads its list), then the scenarios
+                    pg.click("#r3d-dt-measure"); wait_for(pg, "() => document.querySelectorAll('#r3d-dp-measure [data-measure]').length > 0")
+                    pg.click("#r3d-dt-measure"); pg.wait_for_timeout(300)
+                    fails += features(pg, b, w, h, base)
+                    if errs: fails.append(f"{w}: errors: {errs[:4]}")
+                    ctx.close(); continue
                 view, place = pg.evaluate("() => [R3D._dbg.S.view, (document.getElementById('brand-place') || {}).textContent]")
                 if view != "house": fails.append(f"{w}: opens on {view!r}, not the whole house")
                 if place != "The whole house": fails.append(f"{w}: the brand says {place!r}")
@@ -586,14 +741,14 @@ def main():
                     fails += edit_drag(pg, w) + stick_all(pg, w)
                     bk = pg.evaluate(BACK)
                     if bk != ["master", "master", "house", True]: fails.append(f"{w}: two rooms, then Back: {bk} (want ['master', 'master', 'house', True]: one step, out to the house)")
-                pg.click("[data-hfloor=first]"); pg.wait_for_timeout(2500)
+                pg.click("[data-hfloor=first]"); wait_for(pg, "() => document.getElementById('brand-place').textContent === 'The first floor' && !R3D._dbg.flying", 2500)
                 if phone:
                     fh = pg.evaluate("() => document.getElementById('r3d-floors').getBoundingClientRect().height")
                     if fh > 48: fails.append(f"{w}: the floors pill wraps ({fh:.0f} px tall)")
                 place = pg.evaluate("() => document.getElementById('brand-place').textContent")
                 if place != "The first floor": fails.append(f"{w}: on the first floor the brand says {place!r}")
                 pg.screenshot(path=str(SHOTS / f"site-{w}-first.png"))
-                pg.click("#r3d-dt-measure"); pg.wait_for_timeout(800)
+                pg.click("#r3d-dt-measure"); wait_for(pg, "() => document.querySelectorAll('#r3d-dp-measure [data-measure]').length > 0", 800)
                 n = pg.evaluate("() => document.querySelectorAll('#r3d-dp-measure [data-measure]').length")
                 if n != rows: fails.append(f"{w}: Measure lists {n} sizes, the house file {rows}")
                 pg.fill("#r3d-dp-measure [data-measure]", "123")   # V2.75: wait for the save (a 600 ms debounce behind a frame that takes seconds in CI), not a fixed 1.2 s: it failed main's V2.74 run and four PRs
@@ -605,108 +760,13 @@ def main():
                 cnt = pg.evaluate("() => document.getElementById('ms-count').textContent")
                 if not cnt.startswith("1 of"): fails.append(f"{w}: Measure counts {cnt!r}")
                 pg.screenshot(path=str(SHOTS / f"site-{w}-measure.png"))
-                if phone:                                           # V1.50: tap a piece, change its size, put it back
+                if phone:                                           # Measure shut again (the customisation scenarios: features(), --features)
                     pg.click("#r3d-dt-measure"); pg.wait_for_timeout(500)
-                    sz = pg.evaluate(SIZE)
-                    if sz.get("card") != "hitem:office.desk" or not sz.get("row") or not sz.get("ed") or not sz.get("listed") or sz.get("after") or not sz.get("gone"):
-                        fails.append(f"{w}: tapping the office desk and widening it: {sz} (want its card, a row of 223.9, the 3D changed, Measure listing it, then back as planned)")
-                    pg.screenshot(path=str(SHOTS / f"site-{w}-size.png"))
-                    sw = pg.evaluate(SWAP)                          # V2.46 (N7): swap the master's chest for another, add a plant from the catalogue, both back
-                    want = "Bedroom 2 · Grey carpet|carpet_grey|Bedroom 2 · Oak boards|oak|carpet_grey"   # N209: oak from the floor's card, then the plan's
-                    if sw != {"swapped": True, "added": True, "gone": True, "planted": True, "unplanted": True, "floor": want}:
-                        fails.append(f"{w}: swapping the master bedroom's chest, adding a plant, bedroom 2's plant and floor from Look: {sw} (want each drawn, then gone; floor {want})")
-                    wd = pg.evaluate(WOOD)                          # N213, N216: a code typed on bedroom 2's wall, then its woodwork from "Yours", then back
-                    if wd != {"wall": "#3a6b5a", "wt": "Bedroom 2: the woodwork", "yours": True, "wood": "#3a6b5a", "back": None, "restored": True}:
-                        fails.append(f"{w}: bedroom 2's wall by its code, then its woodwork from Yours and back: {wd}")
-                    ea = pg.evaluate(EACH)                          # N214: each wall its own, This room over them, the slopes with the walls, then back
-                    if ea != {"t1": "Master bedroom: the back wall (2 of 2)", "t2": "Master bedroom: the back wall (1 of 2)", "both": ["#3a6b5a", "#c98a5e"], "room": [None, "#dbffc8"],
-                              "st": "Bedroom 2: the slopes", "slope": "walls", "restored": True}:
-                        fails.append(f"{w}: the master's cupboard face and its alcove each a colour, This room over both, bedroom 2's slopes with the walls, then back: {ea}")
-                    ad = pg.evaluate(ADD)                           # N218: a piece added where it fits, in the look link
-                    seen = None
-                    if ad.get("link"):
-                        c2 = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=True, has_touch=True, service_workers="block")
-                        p2 = c2.new_page(); p2.set_default_timeout(300000); localcdn.route(p2); p2.goto(ad["link"])
-                        p2.wait_for_function("window.R3D && R3D.ready", timeout=240000)
-                        seen = p2.evaluate("async () => { for (let i = 0; i < 200; i++) { if (Object.values(R3D._dbg.HEDITS).some(e => e.add === 'bookcase')) return true; await new Promise(r => setTimeout(r, 150)); } return false; }")
-                        c2.close()
-                    if not (ad.get("card") == "fin:bed2:5" and ad.get("line", "").startswith("80 × 28 × 202 cm · Fits") and ad.get("wall") and ad.get("gone") and seen):
-                        fails.append(f"{w}: adding a bookcase in bedroom 2 from its floor's card: {ad}, in a fresh page from its look link: {seen} "
-                                     "(want it back to a wall, \"Fits\", shown from the link, then gone)")
-                    lk = pg.evaluate(LOOKS)                         # N221: a look saved (a wall, a floor, a piece taken out), others set, As it is, the look back
-                    l2 = None
-                    if lk.get("link"):                              # N222: its link on another device with its own colour: shown, set aside, Back to mine, no Keep it
-                        c2 = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=True, has_touch=True, service_workers="block")
-                        p2 = c2.new_page(); p2.set_default_timeout(300000); localcdn.route(p2); p2.goto(base + "index.html")
-                        p2.wait_for_function("window.R3D && R3D.ready", timeout=240000); p2.wait_for_timeout(1500)
-                        l2 = p2.evaluate(LOOKS2, lk["link"]); c2.close()
-                    if not (lk.get("now") == "true" and lk.get("other") == ["#c98a5e", False] and lk.get("worn") == ["#3a6b5a", "oak", True, "true"] and lk.get("looks")
-                            and l2 and l2["shown"] == ["Emma's look", "#3a6b5a", "oak", 1, True, "#e8c0c8"] and l2["mine"] == [True, "#e8c0c8", 0, True]
-                            and l2["kept"] == [True, True, "#e8c0c8", True]):
-                        fails.append(f"{w}: a look saved, others set, As it is, the look worn: {lk}; its link on a device with its own colour: {l2} "
-                                     "(want Emma's look shown, nothing of its own saved over, Back to mine its own, no Keep it)")
-                    ft = pg.evaluate(FITS)                          # N217: a swap's size and fit on its card, then as planned
-                    if not (ft.get("fits", "").startswith("89 × 89 × 78 cm · Fits") and "cm into the slope" in ft.get("big", "") and ft.get("rid") and ft.get("back")):
-                        fails.append(f"{w}: bedroom 2's chair-bed for an armchair, its Kallax for a bookcase, its desk for the long one, then as planned: {ft} "
-                                     "(want the armchair \"Fits\", the bookcase into the slope, the monitors on the new top and the interface and headphones hidden, no rows left)")
-                    sh = pg.evaluate(SHOP)                          # N233 (N219): a shop's piece from its chip, its line and its page, then as planned
-                    want = {"swapped": True, "line": "102 × 103 × 74 cm · Fits · £275 · Habitat", "link": ["www.habitat.co.uk", "noopener", "See it at Habitat"], "back": True}
-                    if sh != want: fails.append(f"{w}: bedroom 2's chair-bed for Habitat's first seat, then as planned: {sh} (want {want})")
-                    st = pg.evaluate(STORE)                         # N233 (N223): a room's storage ideas, all shown, each clear, then hidden
-                    want = {"n": IDEAS_BED2, "inway": [], "hidden": True}
-                    if st != want: fails.append(f"{w}: bedroom 2's storage ideas from its floor card's More, All, then None: {st} (want {want}: each piece drawn, none in a walk)")
-                    ix = pg.evaluate(IDEAS)                         # N244: Ideas in bedroom 2: a set-up drawn at once, its line, ›, + Add storage, Keep this, Back to mine
-                    want = {"card": True, "line": True, "drawn": True, "inway": [], "next": True, "more": True, "kept": 1, "back": True}
-                    if ix != want: fails.append(f"{w}: bedroom 2's Ideas pill, a set-up, the next, + Add storage, Keep this, Back to mine: {ix} (want {want})")
-                    ls = pg.evaluate(LIVSWAP)                       # N233 (N220): the living room's rug swapped as the house's pieces are, then as planned
-                    want = {"sofa": False, "swapped": True, "line": "160 × 230 × 1 cm · Fits · Argos's usual size", "kept": True, "back": True}
-                    if ls != want: fails.append(f"{w}: the living room's rug swapped (Swap it, ›), then as planned; their sofa no Swap it: {ls} (want {want})")
-                    wn = pg.evaluate(WIN)                           # N227: a window dressed its own way, drawn, kept, in the link; The plan's, Undo, The plan's
-                    sent = None
-                    if wn.get("link"):
-                        c2 = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=True, has_touch=True, service_workers="block")
-                        p2 = c2.new_page(); p2.set_default_timeout(300000); localcdn.route(p2); p2.goto(wn["link"])
-                        p2.wait_for_function("window.R3D && R3D.ready", timeout=240000)
-                        sent = p2.evaluate("async () => { for (let i = 0; i < 200; i++) { const v = (R3D._dbg.finAll().bed2 || {})[70]; if (v) return v; await new Promise(r => setTimeout(r, 150)); } return null; }")
-                        c2.close()
-                    want = {"title": "Bedroom 2's window", "plan": "The plan's: a roller blind, rolled up", "st": "Roman blind, deep blue · £45–130", "k1": "roman.blue", "drawn": 1,
-                            "back": [None, 0, "The plan's: a roller blind, rolled up"], "undone": ["roman.blue", 1], "left": None}
-                    if {k: wn.get(k) for k in want} != want or sent != "roman.blue":
-                        fails.append(f"{w}: bedroom 2's window as a deep blue Roman blind, The plan's, Undo, The plan's: {wn}, in a fresh page from its link: {sent} (want {want}, the link roman.blue)")
-                    so = pg.evaluate(STOOL)                         # N230: a kitchen stool swapped for IKEA's STIG, then as planned
-                    if not (so.get("swapped") and "STIG" in so.get("name", "") and so.get("line", "").startswith("40 × 42 × 90 cm · Fits") and so.get("back")):
-                        fails.append(f"{w}: the kitchen's bar stool swapped for IKEA's STIG from its Shops chip, then as planned: {so} (want STIG, \"40 × 42 × 90 cm · Fits\", no rows left)")
-                    dr = pg.evaluate(DOOR)                          # N226: a door's leaf and handle, then all doors', The plan's, Undo, The plan's
-                    want = {"plan": "The plan's: cottage boards, chrome lever", "one": ["Shaker, black knob · £246–496", '{"72":"shaker.knob"}', 2],
-                            "all": ["Four panel, black knob · all doors · £211–461", '{"70":"four.knob"}'], "back": ["null", 0], "undone": '{"70":"four.knob"}', "left": "null"}
-                    if dr != want: fails.append(f"{w}: bedroom 2's door a shaker with black knobs, then all doors four panel, The plan's, Undo: {dr} (want {want})")
-                    kt = pg.evaluate(KIT)                           # N224: the kitchen's fronts, handles and worktop, The plan's, Undo, The plan's
-                    want = {"plan": ["Kitchen: the units", "The plan's: white gloss, black handles, black worktop"],
-                            "mine": ["Midnight navy, brushed brass handles, white quartz-effect worktop · £1,414–1,945", ["navy", "brass", "quartz"]],
-                            "back": [None, None, None], "undone": ["navy", "brass", "quartz"], "left": [None, None, None]}
-                    if kt != want: fails.append(f"{w}: the kitchen's units navy with brass handles and a quartz worktop, The plan's, Undo: {kt} (want {want})")
-                    tl = pg.evaluate(TILE)                          # N225: the WC's tiles and grout, held, The plan's, Undo; its toilet and basin swapped, then as planned
-                    want = {"title": "WC: the tiles", "plan": "The plan's: white 15 × 15", "st": "Zellige, charcoal grout · £28–38", "kp": ["zellige", "charcoal"], "drawn": True, "held": True,
-                            "again": True, "gone": True, "undone": "zellige", "back": True}
-                    if {k: tl.get(k) for k in want} != want or not str(tl.get("toilet", [""])[1]).startswith("35 × 66 × 79 cm") or "Wickes" not in str(tl.get("basin")):
-                        fails.append(f"{w}: the WC's tiles from their card, held, The plan's, Undo; its toilet and basin swapped, then as planned: {tl} (want {want}, Wickes's toilet and corner basin)")
-                if phone:                                           # V2.5 (FINISHES_PLAN F2): a room's walls and ceiling through the palette, then back
-                    fn = pg.evaluate("() => [R3D.finish('bed2', 'walls', '#3a6b5a'), R3D.finish('bed2', 'ceiling', '#e8c0c8'), R3D.finish('nowhere', 'walls', '#000000'), R3D.finish(null, 'walls', null), R3D.finish(null, 'ceiling', null)]")
-                    if fn != [True, True, False, True, True]:
-                        fails.append(f"{w}: R3D.finish on bedroom 2's walls and ceiling, a room that isn't, then all back: {fn} (want [true, true, false, true, true])")
                 if not phone:                                       # V2.6 (FINISHES F3): tap a wall in three rooms, a colour, Undo
                     f3 = pg.evaluate(FIN3)
                     bad = {k: v for k, v in f3.items() if not v[0] or not v[1]}
                     if bad:
                         fails.append(f"{w}: tapping a wall and a colour in three rooms: {f3} (want each room's walls' card, the colour kept, then undone)")
-                if phone:                                           # V2.13 (FINISHES F6): a scheme saved, another set, the first back in one tap
-                    sc = pg.evaluate("""async () => { const sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), was = R3D.finishes();
-                      try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {}
-                      R3D.setFinishes({ bed2: { 0: '#899081', 5: 'oak', 8: 'dome' } }); await sl(200); q('#r3d-finschname').value = 'A'; q('#r3d-finschsave').click();
-                      R3D.setFinishes({ landing: { 4: '#e8c0c8' } }); await sl(200); q('[data-finsch="0"]').click(); await sl(300);
-                      const got = JSON.stringify(R3D.finishes()); try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {} R3D.setFinishes(was); return got; }""")
-                    if sc != '{"bed2":{"0":"#899081","5":"oak","8":"dome"}}':
-                        fails.append(f"{w}: the house's colours saved as a scheme, others set, the scheme back: {sc} (want bedroom 2's back wall, oak floor and flush dome)")
                 if phone:                                           # V1.53: the floor from overhead, then the figure dropped in
                     dr = pg.evaluate(DROP)
                     if dr.get("off") or dr.get("said") != "Bedroom 3" or dr.get("view") != "office" or dr.get("mode") != "stand" or abs(dr.get("eye", 0) - 420) > 15:
@@ -753,15 +813,29 @@ def main():
             if errs: fails.append(f"rtx hitch walk: errors: {errs[:4]}")
             ctx.close()
         b.close()
-    (SHOTS / ("perf-hitch.json" if HITCH else "perf.json")).write_text(json.dumps(perf, indent=1))
+    if not FEATURES: (SHOTS / ("perf-hitch.json" if HITCH else "perf.json")).write_text(json.dumps(perf, indent=1))
     httpd.shutdown()
     for f in fails: print("FAIL ", f)
     speed = "speed: " + " · ".join(f"{k} {v['first_visit_mb']} MB, {v['shaders_first']} shaders first, draws {v['draws_house']} house {v['draws_living']} living room {v.get('draws_landing')} landing" + (f", {v['shaders_spot']} built on the spot into it" if "shaders_spot" in v else "") + (f", {v['hitches']} hitches walking" if "hitches" in v else "") + (f", bake {v['bake']}" if v.get("bake", "none") != "none" else "") for k, v in perf.items())
     if HITCH: print(speed); print(f"hitch check: a walk on the PC path (hall, kitchen, living room, landing and back), {perf['rtx']['hitches']} hitches, the speed budget on the iPhone's and the RTX's paths, {len(fails)} failed"); return 1 if fails else 0
+    if FEATURES: print(f"features check: the customisation on the phone (a size from a tap, swaps, adds, wall and woodwork colours, looks and their links, shops, storage, Ideas, a window, a door, the kitchen, the WC, schemes), {len(fails)} failed"); return 1 if fails else 0
     print(speed)
-    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named (shut panels, a card, Edit's list too), Esc one layer a press, Tab the top row then the 3D, Measure keeps a number, a piece resized from a tap, one swapped and one added, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, Back from a room to the house, down to the lower floor and back, the speed budget on the phone's and the PC's Fast paths, {len(fails)} failed; screenshots in _shots/")
+    print(f"site check: the front door at 393 and 1920, opens on the house, its {photos} photo sets after, every control named (shut panels, a card, Edit's list too), Esc one layer a press, Tab the top row then the 3D, Measure keeps a number, a wall's colour in three rooms, the figure dropped in, a double-tap there, through every door both ways, a walk into the living room and up its stairs, Back from a room to the house, down to the lower floor and back, the speed budget on the phone's and the PC's Fast paths, {len(fails)} failed; screenshots in _shots/")
     return 1 if fails else 0
 
 
 if __name__ == "__main__":
+    if "--dbg-names" in sys.argv:                                   # N257: python3 tools/check_site.py --dbg-names (no site, no browser)
+        used, missing = dbg_names()
+        print(f"dbg names: the checks use {len(used)} of R3D._dbg's names" + (f"; gone from 20_5_go.js: {', '.join(f'{n} ({used[n][0]})' for n in missing)}" if missing else ", every one still there"))
+        import ast, shutil, subprocess, tempfile                     # N258: and every scenario's JS parses (a // inside a one-line string ends it)
+        bad = []
+        if shutil.which("node"):
+            for n in ast.walk(ast.parse(pathlib.Path(__file__).read_text())):
+                if isinstance(n, ast.Assign) and isinstance(n.value, ast.Constant) and isinstance(n.value.value, str) and n.value.value.lstrip().startswith(("async", "() =>")):
+                    with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False) as f: f.write("(" + n.value.value + ");")
+                    r = subprocess.run(["node", "--check", f.name], capture_output=True, text=True); pathlib.Path(f.name).unlink()
+                    if r.returncode: bad.append(f"{n.targets[0].id}: {(r.stderr.strip().splitlines() or ['?'])[-1]}")
+        print("scenarios' JS: " + ("; ".join(bad) if bad else "each one parses"))
+        sys.exit(1 if missing or bad else 0)
     sys.exit(main())
