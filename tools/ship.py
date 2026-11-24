@@ -3,7 +3,7 @@ version lines, so two sessions never make the same version (two V4.59s were made
 
 python3 tools/ship.py "one line, in the client's words" [--pr N] [--dry-run] [--no-merge]
 
-1. Merge origin/main into the branch (stops on a conflict: fix it, commit, run again).
+1. Merge origin/main into the branch (a conflict only in the version lines takes main's; any other stops: fix it, commit, run again).
 2. The next free version: main's VERSION + 0.01 (4.62 → 4.63).
 3. VERSION; one HISTORY line; STATE's version line (the current version only); HANDOVER's two "start here" headings.
 4. checks.py --quick and privacy_check.py; stops if either fails.
@@ -13,6 +13,7 @@ PR titles and branch names name the row (N248), never a version."""
 import datetime, pathlib, re, shutil, subprocess, sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
+LINES = {"VERSION", "docs/HISTORY.md", "docs/STATE.md", "docs/HANDOVER.md"}   # what only ship.py writes
 
 
 def run(*a, check=True):
@@ -65,7 +66,11 @@ def main(argv):
         if "--dry-run" in argv:
             print(f"would ship {label(next_version(git('show', 'origin/main:VERSION')))} from {branch}: {words}"); return 0
         if run("git", "merge", "--no-edit", "origin/main", check=False).returncode:
-            print("merging main hit a conflict: fix it, commit, run ship.py again"); return 1
+            clash = set(git("diff", "--name-only", "--diff-filter=U").split())
+            if not clash or not clash <= LINES:                    # a real conflict in the row's own files
+                print("merging main hit a conflict: fix it, commit, run ship.py again"); return 1
+            git("checkout", "--theirs", *clash); git("add", *clash)   # only the version lines: main's win, this branch takes the next
+            git("commit", "-qm", "Merge main (its version lines kept; this branch takes the next)")
         v = next_version(git("show", "origin/main:VERSION"))
         lab = write_lines(v, words)
         for args in ([sys.executable, "tools/checks.py", "--quick"], [sys.executable, "house/privacy_check.py"]):
@@ -84,7 +89,7 @@ def main(argv):
             print(f"{lab} pushed on {branch}: merge its PR now" + ("" if shutil.which("gh") else " (no gh here)")); return 0
         r = run("gh", "pr", "merge", *([pr] if pr else []), "--merge", check=False)
         if r.returncode:
-            print(f"{lab} pushed on {branch}, but gh couldn't merge: {r.stderr.strip()[:200]}"); return 1
+            print(f"{lab} pushed on {branch}, but gh couldn't merge: {r.stderr.strip()[:200]} (main moved? run ship.py again)"); return 1
         print(f"{lab} merged from {branch}"); return 0
     print("main kept moving: try again"); return 1
 
