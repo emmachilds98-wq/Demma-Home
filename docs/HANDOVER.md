@@ -1,7 +1,23 @@
-# Handover (23 Nov 2026, V4.62: start here)
+# Handover (24 Nov 2026, V4.62: start here)
 
-## Pick up here (24 Nov 2026, V4.62: the full upgrade plan)
-The client asked for a whole-repo review and a full upgrade plan (24 Nov): it is `docs/REAL_PLAN.md` **section 32** (N246–N275 in four streams: how agents work, the code, the app's layout and offer, the house model), with its order. Start with stream A. In progress: N245 (Ideas reading N243's places and pieces) on `claude/trusting-gauss-gra6z6-n245`.
+## Now (24 Nov 2026, V4.62: start here)
+The client: "handover efficiently now so another team can finish and start upgrade. make sure none of your work is left behind".
+
+1. **Main's CI first.** Main is V4.62 (`2cd8257`). The runs for V4.60, V4.61 and V4.62 were cancelled by the next merge, so run 933 (on
+   `2cd8257`) is the first CI over all three: read its result (Actions) and fix anything red from its log before new work.
+2. **Finish N245** (Ideas reading N243's 41 places and 188 pieces from `data/ideas.json`, plus an Ideas pill in the living room): branch
+   `claude/trusting-gauss-gra6z6-n245`, its REAL_PLAN row says what's done and left. Merge it, then ship.
+3. **Then the upgrade plan: `docs/REAL_PLAN.md` section 32** (N246–N275), its order and its side-by-side groups. Start with group G1 (N246
+   the conflict-markers check: markers were committed three times; N247 claim a row; N248 `ship.py`).
+4. **Waiting on Emma:** her storage picks (Ideas and the storage options now show real shop pieces), `?perf` → Send from her PC (N240's
+   real cause), the tape round (N235, N275), the master's sliding-door gap, lighting "later" (N228, N270).
+
+**Superseded branches, kept only for reference (not to merge):** `claude/trusting-gauss-gra6z6-pr322`, `-n224`, `-n225`, `-n226`, `-n232`,
+`-win` (a parallel session's versions of the same rows are on main); `-n237` (its commit is on main under another id). Every other
+`claude/trusting-gauss-gra6z6-*` branch is merged.
+
+**The client's standing rules:** check lightly; nothing stays local; don't wait for CI (merge on the quick checks, then fix from main's
+CI); do everything that doesn't need her; options only until she picks. All in CLAUDE.md.
 
 ## Pick up here (24 Nov 2026, V4.60)
 - **V4.60:** N244 Ideas (section 31) and N222 Dave only looks; merged without waiting for CI at the client's word ("Don't wait for CI"): read CI's result on main and fix what it finds.

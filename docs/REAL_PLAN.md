@@ -988,6 +988,25 @@ its size (S/M/L) and whether it waits on Emma. Check lightly (CLAUDE.md); claim 
 (U7, U11, U12, U14, C14, D7, D12), then the big ones in this order: U1 Share, U2+U3 one way to edit and one Ideas, U8 undo, C1+C2 the
 slots and cards (makes every later feature cheaper), U4+U5+U6 Plan, the shopping list and her PDF, then stream D's looks.
 
+**The client's standing rules for this plan** (CLAUDE.md, DECISIONS): check lightly (quick checks and privacy, then push; CI does the
+browser checks); nothing stays local (push every commit; helpers to their own `claude/...` branch); "Don't wait for CI" (24 Nov: merge when
+the quick checks pass, then read main's CI result and fix what it finds); options only until she picks; "You can do all the things I don't
+have to do". Until N247 exists, claim a row by opening a draft PR named after it before writing code.
+
+**Side by side** (rows in different groups share no files; inside a group, one after another):
+- **G1 tools and docs** (`tools/`, `CLAUDE.md`, `docs/`, `.github/`): N246 → N247 → N248 → N249 → N250 → N251 → N252. One lead; small PRs.
+- **G2 the floor rebuild** (`20_4_house_build.js`, `22_bath.js`, `23_finish.js`'s curtains, the bake apply): N255 + N268 together, first after G1's N246.
+- **G3 the finish code** (`23_finish.js`, `16_cards.js`, `22_*.js`): N253 → N254, then stream C's card rows (N265, N266) on top. Don't run C's
+  card rows before N254: they'd be rewritten.
+- **G4 the app shell** (`room3d_page.py`, `build_viewer.py`, `measure.js`, `page.js`): N261, N264, then N256 (hashed files).
+- **G5 CI and the site check** (`.github/workflows/build.yml`, `tools/check_site.py`): N257, N258.
+- **G6 the house** (`house/model.py`, `03_materials.js`, `build_textures.py`, `20_2_house_outside.js`): N272 → N273 (both `model.py`); N271 beside
+  them (materials and outside only); N269 after N272.
+- Later, with Emma: N270 (lighting "later"), N275 (her tape), N252's deletions (her OK), N262–N263 (big; after G3).
+
+**First steps:** G1: write N246's markers check (ten lines in `tools/checks.py`), then N247's `claim.py`. G2: read `HBUILD` and `bakeApply`
+(N268's Found) and add the `AFTER_FLOOR` set. G6: N272's radiators each get a Measure row (`house/measure.py`).
+
 **Stream A: how agents work** (the review found 232 commits on main since 20 Nov; the shared docs changed in 34–94 of them)
 
 | Task | What | Size | Emma | State |
@@ -1035,5 +1054,5 @@ slots and cards (makes every later feature cheaper), U4+U5+U6 Plan, the shopping
 | N271 | **D5–D6 the outside less like stand-ins.** Brick, roof tiles, concrete and paving repeat visibly; no weathering or soldier course over the windows; next door are identical clones with flat panes; the street has no cars, markings, trees, walls or bins. Do: the lawn's slow patchwork on those materials, a dirt band and soldier courses; vary the neighbours (door colours, windows, porches, nets); generic cars, a centre line, trees, low front walls, bins — nothing that points to the real street | M | — | Open |
 | N272 | **D7–D8, D12 details.** No radiators in the master, bed2, bathroom (a towel rail), landing, WC; skirting missing in bed2 and the bathroom; door openings' depth in wall paint; the lower flight one block a tread with a plain bar rail. Do: estimated radiators (each a Measure row), the skirting, a 2 cm timber lining in each opening, nosings, riser lines and a rounded rail on brackets | S–M | radiator spots (estimate till then) | Open |
 | N273 | **D10–D11 the furniture they keep, better made.** "Still upgrade the furniture we have" (20 Nov) isn't done (N197 was closed): the pine bed is square slats and boxes; shop sofas and chairs are 6–10 boxes; the artisan oak has razor edges. Do: rounded slats, a moulded headboard rail, a mattress tick and piping, keeping sizes; crowned, piped cushions on the shop sofas; `artisan` in `ROUND` | M | — | Open |
-| N274 | **D9 the kitchen handles' shapes** (N224's "Left"). Do: bar, knob, cup, none as shapes, not only finishes | S | — | Open |
+| N274 | **D9 the kitchen handles' shapes** (N224's "Left"; the bathroom's taps, mirror and panel the review also listed are done in V4.56/V4.61). Do: bar, knob, cup, none as shapes, not only finishes | S | — | Open |
 | N275 | **D13–D14 measured sizes, sharper shadows.** The ceilings (235), slabs (25), roof pitch (35°) and both flights are guesses (39 in Measure); a room seen from the next has no ceiling-light shadows; the sun's whole-house box softens its edges. Do: Measure ordered by how much each size moves the picture (ceilings and floor heights first); a second shadow slot for the room seen through a door, or a tight sun box plus a wide one | S–M | her tape; Emma and Dave to say on shadows | Open |
