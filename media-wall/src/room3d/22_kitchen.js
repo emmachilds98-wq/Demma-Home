@@ -50,15 +50,12 @@ function kitSet(slot, v) {   // her choice (the plan's: none kept)
 function kitCard() {   // [title, now, buttons, -, the tray]: the fronts, the handles, the worktop; the splashback a tap away
   const q = kitNow(), plan = q.f === "white" && q.h === "black" && q.t === "black", L = roomUps("kitchen").filter(u => /^9[234]=/.test(u.k)), lo = L.reduce((a, u) => a + u.lo, 0), hi = L.reduce((a, u) => a + u.hi, 0);
   const st = plan ? "The plan's: white gloss, black handles, black worktop" : [`${upNm(KIT_FRONTS, q.f)}, ${upNm(KIT_HANDLES, q.h).toLowerCase()} handles, ${upNm(KIT_TOPS, q.t).toLowerCase()} worktop`, hi ? upRange(lo, hi) : ""].filter(Boolean).join(" · ");
-  const bs = [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(plan ? [] : [btn("The plan's", { kitplan: "1" })]), btn("Hold to compare", { finhold: "1" }, undefined, "", "Hold to compare: the units as planned till you let go"), btn("Splashback", { actopen: "fin:kitchen:90" })];
-  const sw = (at, k, t, c, now) => `<button type="button" class="sw" data-${at}="${k}" style="--c:${c}" aria-pressed="${now === k}" title="${t}" aria-label="${t}"><i></i><span>${t}</span></button>`;
+  const bs = finButtons(!plan && ["The plan's", { kitplan: "1" }], "the units as planned", [btn("Splashback", { actopen: "fin:kitchen:90" })]);
   const topCol = { black: "#26282a", oakwood: "#b8844f", quartz: "#eeece6", cement: "#9c9a95" };
-  return ["Kitchen: the units", st, bs, null, `<div class="r3d-fin"><span class="r3d-finlab">Fronts</span><div class="r3d-fintray" role="group" aria-label="Fronts">${KIT_FRONTS.map(([k, t, c]) => sw("kitf", k, t, c, q.f)).join("")}</div>`
-    + `<span class="r3d-finlab">Handles</span><div class="r3d-fintray" role="group" aria-label="Handles">${KIT_HANDLES.map(([k, t, c]) => sw("kith", k, t, c, q.h)).join("")}</div>`
-    + `<span class="r3d-finlab">Worktop</span><div class="r3d-fintray" role="group" aria-label="Worktop">${KIT_TOPS.map(([k, t]) => sw("kitt", k, t, topCol[k], q.t)).join("")}</div></div>`];
+  return ["Kitchen: the units", st, bs, null, `<div class="r3d-fin">${finTray("Fronts", KIT_FRONTS.map(([k, t, c]) => finSwatch("kitf", k, t, c, q.f === k)).join(""))}`
+    + finTray("Handles", KIT_HANDLES.map(([k, t, c]) => finSwatch("kith", k, t, c, q.h === k)).join(""))
+    + finTray("Worktop", KIT_TOPS.map(([k, t]) => finSwatch("kitt", k, t, topCol[k], q.t === k)).join("")) + `</div>`];
 }
-if (act) act.addEventListener("click", e => { const b = e.target.closest("[data-kitf],[data-kith],[data-kitt],[data-kitplan]");
-  if (!b || GS.actId !== "fin:kitchen:92") return; e.stopPropagation(); const d = b.dataset;
+cardOn("[data-kitf],[data-kith],[data-kitt],[data-kitplan]", id => id === "fin:kitchen:92", d => {   // N254: through the cards' router
   if (d.kitplan) { finWrite("kitchen", { 92: null, 93: null, 94: null }); toast("Kitchen: the plan's units"); }
-  else if (d.kitf) kitSet(92, d.kitf); else if (d.kith) kitSet(93, d.kith); else kitSet(94, d.kitt);
-  renderAct(); }, true);
+  else if (d.kitf) kitSet(92, d.kitf); else if (d.kith) kitSet(93, d.kith); else kitSet(94, d.kitt); });

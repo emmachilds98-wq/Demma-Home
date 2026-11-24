@@ -92,10 +92,7 @@ function doorSet(pk, s, h) {   // her style on this door or all of them (null: t
   else finWrite("doors", { [71 + i]: v });
   toast(`${DOOR_SCOPE === "all" ? "All doors" : (HPARTS[pk] || {}).label || "The door"}: ${v ? doorSay(doorNow(pk)).toLowerCase() : "the plan's"}`);
 }
-if (act) act.addEventListener("click", e => { const b = e.target.closest("[data-doorst],[data-doorh],[data-doorsc],[data-doorplan],[data-finundo]");
-  if (!b || !GS.actId || !GS.actId.startsWith("hdoor:")) return; const pk = GS.actId.slice(6); if (!doorIds().includes(pk)) return; e.stopPropagation(); const d = b.dataset, q = doorNow(pk);
+cardOn("[data-doorst],[data-doorh],[data-doorsc],[data-doorplan]", id => id.startsWith("hdoor:") && doorIds().includes(id.slice(6)), (d, id) => { const pk = id.slice(6), q = doorNow(pk);   // N254: the cards' router
   if (d.doorsc) DOOR_SCOPE = d.doorsc;
-  else if (d.finundo) { const prev = FIN_UNDO.pop(); if (prev != null) { finRestore(JSON.parse(prev)); finApplyAll(); store.set(KEY, S); toast("Undone"); } }
   else if (d.doorplan) doorSet(pk, null);
-  else doorSet(pk, d.doorst || q.s, d.doorh || q.h);
-  renderAct(); }, true);
+  else doorSet(pk, d.doorst || q.s, d.doorh || q.h); });

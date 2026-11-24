@@ -50,6 +50,17 @@ function pickItem(e) {
   return null;
 }
 const btn = (label, attrs, on, cls, aria) => ({ label, attrs, on, cls, aria });
+/* N254 (C2): the card kit. One swatch (finSwatch), one labelled tray (finTray), a finish card's own buttons (finButtons: Undo, The
+   plan's, Hold to compare, then its own), and one click router for the cards' trays (cardOn: a selector, which cards by their id, what
+   it does with the button's data; false: nothing to draw again). Undo is one route for every finish card */
+const finSwatch = (at, k, t, c, on, short) => `<button type="button" class="sw" data-${at}="${k}" style="--c:${c}" aria-pressed="${!!on}" title="${t}" aria-label="${t}"><i></i><span>${short == null ? t : short}</span></button>`;
+const finTray = (label, inner, lab = true) => `${lab ? `<span class="r3d-finlab">${label}</span>` : ""}<div class="r3d-fintray" role="group" aria-label="${label}">${inner}</div>`;
+const finButtons = (plan, hold, more = []) => [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(plan ? [btn(plan[0], plan[1])] : []),
+  ...(hold ? [btn("Hold to compare", { finhold: "1" }, undefined, "", `Hold to compare: ${hold} till you let go`)] : []), ...more];
+const CARD_ON = [], cardOn = (sel, test, fn) => { CARD_ON.push([sel, test, fn]); };
+if (act) act.addEventListener("click", e => { if (!GS.actId) return;
+  for (const [sel, test, fn] of CARD_ON) { const b = e.target.closest(sel); if (!b || !test(GS.actId)) continue; e.stopPropagation(); if (fn(b.dataset, GS.actId, b, e) !== false) renderAct(); return; } }, true);
+cardOn("[data-finundo]", id => /^(fin|win|hdoor):/.test(id), () => finUndo());
 /* V2.46 (N7): a swap's card (‹ › its kind's pieces) and an added piece's (‹ › the catalogue, its kinds to jump to); shown at once */
 const HCAT_ADD = ["plant", "snake", "monstera", "olive", "armchair", "sidetable", "floorlamp", "rug", "bookcase", "cubes", "ladder", "chest3", "chest6", "tallboy", "bsdrawer", "bswhite", "bslegs",
   "desklegs", "deskdrawers", "trestle", "bench", "pouffe", "wardrobe2", "sliding", "openrail", "divan", "oakbed", "metalbed", "markus", "langfjall", "stoense", "lohals", "desklong"];
@@ -206,7 +217,7 @@ function actItems(id) {     // [title, how it is now, buttons]
     return [P.label || "The door", [op ? (Math.abs(P.angle) < 89 ? "Open as far as it goes" : "Open") : "Shut", doorIds().includes(k) ? doorLine(k) : ""].filter(Boolean).join(" · "), [
       btn(op ? "Shut it" : "Open it", { hdoor: k }), ...(k === "door.hall_porch" ? [btn("Colour outside", { actopen: "fin:outside:10" })] : []),   // V2.38 (F12)
       btn(any ? "Shut all doors" : "Open all doors", { hdoors: any ? "shut" : "open" }), ...(DS() && HIT(k.slice(5)) ? [btn("Change its size", { actopen: "hsize:" + k.slice(5) })] : []),
-      ...(doorIds().includes(k) ? [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(doorNow(k).plan ? [] : [btn("The plan's", { doorplan: "1" })])] : [])],
+      ...(doorIds().includes(k) ? finButtons(!doorNow(k).plan && ["The plan's", { doorplan: "1" }]) : [])],
       null, doorIds().includes(k) ? doorTray(k) : null]; }   // N226: its leaf and handle
   if (id === "nowplay") return ["Now playing", `${NOWP[S.nowp % NOWP.length].name}`, [   // v39: which LP faces out
       btn("‹", { nowp: "-1" }, false, "q", "The one before"), btn("›", { nowp: "1" }, false, "q", "The next one"),
