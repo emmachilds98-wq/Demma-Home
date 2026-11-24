@@ -7,8 +7,11 @@
 #            from is unchanged: tools/render_key.py; 96 of the build's 120 s), runs the quick checks (privacy on the built site among
 #            them), and hands the site on. On main Pages publishes straight after: minutes, not half an hour. What's merged has
 #            already passed every check on its pull request.
-#   browser  the front door (site), the media wall's page (page) and the taps (taps), side by side, each on a machine of its own;
-#            skipped when only documents changed (docs/, *.md).
+#   browser  the front door (site), the customisation (features, N257), the PC's walk (hitch), the media wall's page (page) and the
+#            taps (taps), side by side, each on a machine of its own; skipped when only documents changed (docs/, *.md); hitch only when
+#            the 3D, the house or the speed budget changed (N258).
+# N258: one setup for every job (.github/actions/setup); the build fails if three.js fell back to the CDN; the bake is keyed on the
+# code without its comments.
 name: Build, check and publish
 
 on:
@@ -31,29 +34,21 @@ jobs:
     timeout-minutes: 75
     outputs:
       heavy: ${{ steps.changes.outputs.heavy }}
+      checks: ${{ steps.changes.outputs.checks }}
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0   # the changes step compares with the base
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-          cache: pip
-          cache-dependency-path: media-wall/requirements.txt
+      - uses: ./.github/actions/setup
+        id: setup
       - name: Install
         id: install
         run: |
-          sudo apt-get update -q && sudo apt-get install -yq fonts-inter
-          python -m pip install -q -r media-wall/requirements.txt
           npm ci --no-audit --no-fund   # V1.29 (U4): three.js and esbuild for the site's one-file bundle (media-wall/src/vendor.py)
-          echo "pw=$(python -c 'import importlib.metadata as m; print(m.version("playwright"))')" >> "$GITHUB_OUTPUT"
+          echo "pw=${{ steps.setup.outputs.pw }}" >> "$GITHUB_OUTPUT"
           echo "renders=$(python tools/render_key.py)" >> "$GITHUB_OUTPUT"
-      - name: Playwright's browser (kept between runs)
-        uses: actions/cache@v6
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.install.outputs.pw }}
-      - run: python -m playwright install --with-deps chromium
+      - name: The checks' names in the 3D's test door (N257, a second, no browser)
+        run: python tools/check_site.py --dbg-names
       - name: The drawn renders (kept while what they're drawn from is unchanged)
         id: renders
         uses: actions/cache@v6
@@ -74,6 +69,9 @@ jobs:
         run: python tools/checks.py --quick
       - name: Build the site and the PDFs
         run: python tools/build.py ${{ steps.renders.outputs.cache-hit == 'true' && '--keep-renders' || '' }}
+      - name: three.js bundled, not the CDN's (N258)
+        run: |
+          if ! ls _site/three.*.js >/dev/null 2>&1; then echo "::error::three.js fell back to the CDN (media-wall/src/vendor.py: esbuild or the packages missing); the build's log says why"; exit 1; fi
       - id: k2
         run: echo "key=ktx2-$(ls .ktx2cache 2>/dev/null | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"   # each named by its contents
       - name: Keep the KTX2 photos (a new entry only when they changed)
@@ -84,9 +82,19 @@ jobs:
           key: ${{ steps.k2.outputs.key }}
       # N195: the bounced light baked (house/bake.py: Blender's Cycles via bpy, which needs Python 3.13), kept while the house file and
       # its build are unchanged (a shell it doesn't match takes the mean bounce, so a stale bake never darkens a room)
+      # N258: keyed on the code without its comments (esbuild prints the JS back without them; bake.py's # lines out), so a comment edit
+      # doesn't re-run Blender
       - name: The baked light's key
         id: bakekey
-        run: echo "key=bake-$(cat _site/data/house.json house/bake.py media-wall/src/room3d/20_*.js | sha1sum | cut -c1-20)" >> "$GITHUB_OUTPUT"
+        run: |
+          js=$(cat media-wall/src/room3d/20_*.js | node_modules/.bin/esbuild --loader=js --log-level=error | sha1sum)
+          py=$(python - <<'PY' | sha1sum
+          import tokenize
+          skip = (tokenize.COMMENT, tokenize.NL, tokenize.NEWLINE, tokenize.INDENT, tokenize.DEDENT)
+          print(" ".join(t.string for t in tokenize.generate_tokens(open("house/bake.py").readline) if t.type not in skip))
+          PY
+          )
+          echo "key=bake-$( (sha1sum < _site/data/house.json; echo "$js $py") | sha1sum | cut -c1-20)" >> "$GITHUB_OUTPUT"
       - name: The baked light (kept)
         id: bakecache
         uses: actions/cache@v6
@@ -116,6 +124,9 @@ jobs:
           elif [ -n "${{ github.event.before }}" ] && [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then range="${{ github.event.before }}..${{ github.sha }}"
           else range=""; fi
           if [ -n "$range" ] && ! git diff --name-only $range | grep -qvE '^docs/|\.md$'; then echo "heavy=false"; else echo "heavy=true"; fi >> "$GITHUB_OUTPUT"
+          # N258: the PC's walk (hitch, the longest) only when the 3D, the house, the speed budget, the packages or CI changed
+          if [ -n "$range" ] && ! git diff --name-only $range | grep -qE '^media-wall/src/[^/]*\.(py|js|css)$|^media-wall/src/room3d/|^house/|^tools/(check_site\.py|perf_budget\.json)$|^package|^\.github/'; then
+            echo 'checks=["site","features","page","taps"]'; else echo 'checks=["site","features","hitch","page","taps"]'; fi >> "$GITHUB_OUTPUT"
           cat "$GITHUB_OUTPUT"
       - name: Hand the site to the browser checks
         uses: actions/upload-artifact@v7
@@ -145,31 +156,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: [site, hitch, page, taps]
+        check: ${{ fromJSON(needs.build.outputs.checks) }}   # site, features (N257: the customisation, its own job), hitch (when the 3D changed), page, taps
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-          cache: pip
-          cache-dependency-path: media-wall/requirements.txt
-      - name: Install
-        id: install
-        run: |
-          sudo apt-get update -q && sudo apt-get install -yq fonts-inter
-          python -m pip install -q -r media-wall/requirements.txt
-          echo "pw=$(python -c 'import importlib.metadata as m; print(m.version("playwright"))')" >> "$GITHUB_OUTPUT"
-      - uses: actions/cache@v6
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.install.outputs.pw }}
-      - run: python -m playwright install --with-deps chromium
+      - uses: ./.github/actions/setup
       - uses: actions/download-artifact@v7
         with:
           name: site
           path: _site
       - name: The ${{ matrix.check }} check
-        run: python tools/checks.py --only ${{ matrix.check }}
+        run: |
+          if [ "${{ matrix.check }}" = features ]; then python tools/check_site.py _site --features; else python tools/checks.py --only ${{ matrix.check }}; fi
       - name: Keep the screenshots
         if: always()
         uses: actions/upload-artifact@v7

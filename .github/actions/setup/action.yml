@@ -1,0 +1,29 @@
+# N258: the setup every job repeated (Python 3.12, the Inter font, the Python packages, Playwright's Chromium kept between runs), once
+name: Setup
+description: Python, fonts, the packages and Playwright's Chromium for the build and the browser checks
+outputs:
+  pw:
+    description: Playwright's version (the bake installs the same)
+    value: ${{ steps.install.outputs.pw }}
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-python@v7
+      with:
+        python-version: "3.12"
+        cache: pip
+        cache-dependency-path: media-wall/requirements.txt
+    - name: Install
+      id: install
+      shell: bash
+      run: |
+        sudo apt-get update -q && sudo apt-get install -yq fonts-inter
+        python -m pip install -q -r media-wall/requirements.txt
+        echo "pw=$(python -c 'import importlib.metadata as m; print(m.version("playwright"))')" >> "$GITHUB_OUTPUT"
+    - name: Playwright's browser (kept between runs)
+      uses: actions/cache@v6
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ steps.install.outputs.pw }}
+    - shell: bash
+      run: python -m playwright install --with-deps chromium
