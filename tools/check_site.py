@@ -165,7 +165,7 @@ WOOD = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeo
   const wb = [...document.querySelectorAll('#r3d-act button')].find(b => b.textContent.trim() === 'Woodwork'); if (!wb) return { wall, err: 'no Woodwork button' };
   wb.click(); await sl(500); const wt = q('#r3d-act-h').textContent, yours = !!q('#r3d-act [aria-label="Your colours"] [data-finc="#3a6b5a"]');
   q('#r3d-act [aria-label="Your colours"] [data-finc="#3a6b5a"]').click(); await sl(400); const wood = kept(17);
-  const ab = [...document.querySelectorAll('#r3d-act button')].find(b => b.textContent.trim() === 'As planned'); ab && ab.click(); await sl(300);
+  const ab = [...document.querySelectorAll('#r3d-act button')].find(b => ['As planned', "The plan's"].includes(b.textContent.trim())); ab && ab.click(); await sl(300);
   const back = kept(17); for (let i = 0; i < 3; i++) { const u = q('#r3d-act [data-finundo]'); if (u) u.click(); await sl(300); }   // the three changes undone
   const restored = kept(0) === was[0] && kept(17) === was[1]; if (D.actId) q('#r3d-act .x').click();
   return { wall, wt, yours, wood, back, restored };
