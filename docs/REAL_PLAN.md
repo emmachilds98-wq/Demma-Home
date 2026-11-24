@@ -1012,7 +1012,7 @@ have to do". Until N247 exists, claim a row by opening a draft PR named after it
 
 | Task | What | Size | Emma | State |
 |---|---|---|---|---|
-| N246 | **A7 conflict markers check.** Markers were committed into REAL_PLAN three times. Do: `checks.py --quick` fails on lines starting `<<<<<<< ` / `>>>>>>> ` in tracked text | S | — | Open |
+| N246 | **A7 conflict markers check.** Markers were committed into REAL_PLAN three times. Do: `checks.py --quick` fails on lines starting `<<<<<<< ` / `>>>>>>> ` in tracked text | S | — | Done (`markers` in `checks.py`, quick and full) |
 | N247 | **A3 claim a row first.** Rows were built twice (N225, N232, N224, N226) and two V4.59s were made. Do: `tools/claim.py N###` checks open PRs and branches for the row, then opens a draft PR "N### (claimed)" on `claude/<session>-n###`; the rule in CLAUDE.md | S | — | Open |
 | N248 | **A4 versions at merge only.** `round.py` bumps VERSION at the start; PR titles carry versions. Do: `tools/ship.py`: merge main, the next free version, the VERSION/HISTORY/STATE/HANDOVER lines, `--quick`, push, merge; PRs and branches name the row, never a version | M | — | Open |
 | N249 | **A1 the shared docs.** STATE's version line is one 6,791-character line; every PR edits five shared docs. Do: STATE's version line holds the current version only; only the lead touches VERSION/HISTORY/STATE/HANDOVER, at merge (via `ship.py`); a helper template in NOTES §2 (own worktree, own branch, push each commit, only the row's files, quick checks, hand back branch + sha) (A5) | S | — | Open |
