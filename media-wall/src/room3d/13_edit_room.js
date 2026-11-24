@@ -11,7 +11,9 @@ const livSwapOk = (id, key) => !!key && !!HCAT[key] && !HCAT[key].own && HCAT[ke
 function livHm(k) {   // a house material's colour in the room's own kinds (no new shader): oak's grain, a cloth's weave
   if (LIVHM[k]) return LIVHM[k];
   const [c, r] = (R.HOUSE3 && R.HOUSE3.mats[k]) || ["#cccccc", 0.8], m = new THREE.MeshStandardMaterial({ color: c, roughness: r });
-  if (/oak|birch|pine|wood|timber/.test(k)) Object.assign(m, { map: OAK_TEX, roughness: 0.55 }); else if (/^cloth|lycksele|rug|sisal|jute/.test(k)) fabric(m);
+  const T = /^(rattan|pnt_)/.test(k) ? houseTex(k) : null;   // N276: cane's weave, painted timber's grain (the house's textures)
+  if (T) Object.assign(m, { map: T.map, normalMap: T.normal || null }, T.tint ? {} : { color: new THREE.Color("#ffffff") });
+  else if (/oak|birch|pine|wood|timber/.test(k)) Object.assign(m, { map: OAK_TEX, roughness: 0.55 }); else if (/^cloth|lycksele|rug|sisal|jute/.test(k)) fabric(m);
   if (/glass/.test(k)) Object.assign(m, { transparent: true, opacity: 0.35, roughness: 0.1 });
   return (LIVHM[k] = reg(m));
 }

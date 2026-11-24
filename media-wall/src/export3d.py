@@ -287,13 +287,13 @@ def scene():
 # N219: a shop's piece for the page: [key, kind, look, name, shop, w, d, h, £, page, its material, its legs' or frame's, a count (drawers or doors)]
 SHOP_KIND = {"deskchair": "chair", "records": "shelves", "display": "shelves", "dining": "table", "coffee": "table", "tv": "unit", "sideboard": "unit",
              "side": "table", "console": "table"}   # N230: shoes and stools their own; N243: side and console tables
-SHOP_MAT = [(r"jute|rattan|cane|bamboo", "sisal"), (r"white stain", "door_white"), (r"green|sage|olive|yellow", "cloth3"), (r"blue", "cloth0"), (r"grey", "cloth5"),
+SHOP_MAT = [(r"jute|rattan|cane|bamboo", "rattan"), (r"white stain", "door_white"), (r"green|sage|olive|yellow", "cloth3"), (r"blue", "cloth0"), (r"grey", "cloth5"),
             (r"black-brown", "black"), (r"walnut", "pine_dark"), (r"mink|beige|latte|natural fabric", "cloth1"), (r"cherry|whisky|\btan\b|golden|honey|brown|leather", "door_wood"),
             (r"orange|rosehip|\bred\b", "cloth2"), (r"off-white|cream|linen|white fabric|wool|cotton", "cloth4"), (r"brass", "brass"), (r"white", "door_white"),
             (r"pine", "pine"), (r"ash|rubberwood|natural fabric|light", "birch"), (r"black", "black"), (r"chrome", "chrome"), (r"metal", "steel"), (r"oak|natural", "oak")]
-WOODS = {"oak", "pine", "birch", "pine_dark", "door_wood", "sisal"}
+WOODS = {"oak", "pine", "birch", "pine_dark", "door_wood", "rattan"}
 # N232: a painted or metal piece in a plain paint of its colour, not a cloth's weave (the house's own: no new material)
-PAINTED = {"cloth0": "garage_blue", "cloth1": "book2", "cloth2": "quarry", "cloth3": "book3", "cloth4": "book2", "cloth5": "lead", "cloth6": "book5"}
+PAINTED = {"cloth0": "pnt_navy", "cloth1": "pnt_beige", "cloth2": "pnt_red", "cloth3": "pnt_green", "cloth4": "pnt_beige", "cloth5": "pnt_grey", "cloth6": "pnt_tan"}   # N276: painted timber's grain, not flat card
 SOFT_WORDS = r"fabric|velvet|upholster|chenille|wool|cotton|mesh|leather|cushion|vissle|gunnared|talliden|kelinge|kilanda"
 # N232: its form within its kind, from the listing's own words (its name, finish and note); the first that matches, else the kind's own
 FORMS = {"bed": [(r"metal", "metal"), (r"upholster|vissle", "uph"), (r"rattan|cane", "rattan"), (r"\bhigh\b", "panel"), (r"mid century|scandi", "legged")],
@@ -319,7 +319,7 @@ def shop_row(q):
     if k == "seat" and m2.startswith("cloth") and m in WOODS:   # the cushion in front, the frame its legs
         m, m2 = m2, m
     if k == "rug":   # a rug in cloth, not paint or wood
-        m = {"door_white": "cloth4", "black": "cloth5", "oak": "sisal", "birch": "sisal"}.get(m, m)
+        m = {"door_white": "cloth4", "black": "cloth5", "oak": "rattan", "birch": "rattan"}.get(m, m)
     if k == "table" and "glass" in f:   # a glass top, its legs or frame in the other part's material
         other = [x for x in parts if "glass" not in x]
         m, m2 = "glass", (mat(other[0]) if other else None) or m2

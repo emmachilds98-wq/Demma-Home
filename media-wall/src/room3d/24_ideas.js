@@ -12,6 +12,8 @@ const IX_THEMES = [   // a set-up: the room's storage ideas whose words match re
   { n: "Tidy office", re: /drawer|peg|book|desk/i, no: /bath|wc|kitchen|garage|store|hall|landing/, add: [["desk", null], ["shelves", /cube|kallax/i], ["chest", null]] },
   { n: "More storage", re: /./, shop: true, no: /wc/, add: [["shelves", null], ["chest", null], ["shoes", null], ["wardrobe", null]] },
   { n: "On show", re: /glass|display|ledge|case/i, no: /bath|wc|garage/, add: [["unit", /glass|display|cabinet/i], ["shelves", /ladder|display/i], ["plant", null]] },
+  { n: "Calm bedroom", re: /drawer|bedside|ledge|wardrobe|box/i, only: /master|bed/, add: [["bedside", /rattan|oak|pine/i], ["chest", /drawer/i], ["lamp", /floor/i]] },   // N276
+  { n: "Oak and cane", re: /oak|shelf|ledge|record/i, no: /bath|wc|garage|store|kitchen/, add: [["unit", /rattan|cane|oak|pine/i], ["shelves", /ladder|oak|edin/i], ["seat", /rattan|cane|oak/i]] },   // N276
   { n: "Coats and shoes", re: /peg|hook|coat|hat|shoe/i, only: /hall|porch|landing/, add: [["shoes", null], ["seat", /bench/i]] },
 ];
 const IX_STORE = ["shelves", "chest", "shoes", "wardrobe", "unit"];   // + Add storage, a kind each press
@@ -30,7 +32,7 @@ const ixCands = (kind, re, used = new Set()) => { const sc = q => (re && re.test
 function ixSetups(room) {   // [{n, ideas: {id: shop key or ""}, adds: [[key, x, z]]}], the plan's first
   const r = R.HOUSE3.rooms[room], m2 = (r[1] - r[0]) * (r[3] - r[2]) / 1e4, cap = Math.max(2, Math.min(5, Math.round(m2 / 2.5)));
   const skip = k => String(k).startsWith("add." + IX.p) || !!(HIT(k) || {}).idea, out = [{ n: "The plan's", ideas: {}, adds: [] }], seen = new Set(), used = new Set();
-  for (const th of IX_THEMES) { if (out.length > 5) break; if ((th.only && !th.only.test(room)) || (th.no && th.no.test(room))) continue;
+  for (const th of IX_THEMES) { if (out.length > 7) break; if ((th.only && !th.only.test(room)) || (th.no && th.no.test(room))) continue;
     const s = { n: th.n, ideas: {}, adds: [] }, more = []; let n = 0;
     for (const I of ideasIn(room)) { if (n >= cap) break; const O = I.o || [];
       if (!th.re.test(`${I.n} ${I.line}`) && !O.some(o => th.re.test(o[3]))) continue;

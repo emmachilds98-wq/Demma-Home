@@ -150,14 +150,14 @@ const HCAT = {
       for (let i = 0; i < 11; i++) { const a = i * 2.4, r = 2.5 + (i % 3) * 2.8, u = W / 2 + Math.cos(a) * r, t = D / 2 + Math.sin(a) * r;
         B("ivy", u - 1.8, 24, t - 0.6, u + 1.8, 28 + (H - 28) * (0.55 + (i * 37 % 9) / 20), t + 0.6); } } },
   monstera: { n: "Monstera, seagrass basket", k: "plant", w: 70, d: 70, h: 100, ref: "hcplants", src: "The Lechuza, 70 across, 100 tall",
-    b: (W, H, D, B, L) => { L("sisal", W / 2, D / 2, 0, [[0, 0], [13, 0], [16, 28], [0, 28]]);
+    b: (W, H, D, B, L) => { L("rattan", W / 2, D / 2, 0, [[0, 0], [13, 0], [16, 28], [0, 28]]);
       L("ivy", W / 2, D / 2, 26, [[0, 0], [W * 0.3, 8], [W / 2, (H - 26) * 0.45], [W * 0.44, (H - 26) * 0.7], [W * 0.22, H - 28], [0, H - 26]]); } },
   olive: { n: "Olive tree, grey planter", k: "plant", w: 70, d: 70, h: 150, ref: "hcplants", src: "Olive Grove Oundle, 150 tall, 45 pot",
     b: (W, H, D, B, L) => { L("concrete", W / 2, D / 2, 0, [[0, 0], [20, 0], [22.5, 36], [22.5, 38], [0, 38]]);
       L("timber", W / 2, D / 2, 38, [[0, 0], [2.5, 0], [2, H * 0.4], [0, H * 0.4]]);
       L("ivy", W / 2, D / 2, H * 0.5, [[0, 0], [W * 0.3, H * 0.06], [W / 2, H * 0.22], [W * 0.4, H * 0.38], [W * 0.12, H * 0.49], [0, H * 0.5]]); } },
   rug: { n: "Rug", k: "rug", w: 160, d: 230, h: 1, ref: "rugsizes", src: "Argos's usual size, 160 × 230",
-    b: (W, H, D, B) => { B("rug", 0, 0, 0, W, Math.max(0.6, H), D); B("sisal", 4, Math.max(0.6, H), 4, W - 4, Math.max(0.6, H) + 0.2, 8); B("sisal", 4, Math.max(0.6, H), D - 8, W - 4, Math.max(0.6, H) + 0.2, D - 4); } },
+    b: (W, H, D, B) => { B("rug", 0, 0, 0, W, Math.max(0.6, H), D); B("rattan", 4, Math.max(0.6, H), 4, W - 4, Math.max(0.6, H) + 0.2, 8); B("rattan", 4, Math.max(0.6, H), D - 8, W - 4, Math.max(0.6, H) + 0.2, D - 4); } },
   floorlamp: { n: "Floor lamp, linen shade", k: "lamp", w: 45, d: 45, h: 155, ref: "hcmore", src: "Dunelm Marin, 155 tall, 45 shade",
     b: (W, H, D, B, L) => { L("black", W / 2, D / 2, 0, [[0, 0], [13, 0], [13, 2.5], [10, 4], [3, 5], [0, 5]]); L("black", W / 2, D / 2, 5, [[0, 0], [1.4, 0], [1, H - 30], [0, H - 30]]);
       L("paper", W / 2, D / 2, H - 28, [[0, 0], [W / 2 - 0.5, 0], [W / 2 - 0.5, 28], [0, 28]]); } },
@@ -169,7 +169,7 @@ const HCAT = {
   langfjall: { n: "Swivel chair, beige and black", k: "chair", w: 68, d: 68, h: 92, ref: "hcswap", src: "IKEA LÅNGFJÄLL, 68 × 68 × 92", b: hcSwivel("cloth1", 48, false) },
   stoense: { n: "Low-pile rug, off-white", k: "rug", w: 133, d: 195, h: 1.8, ref: "hcswap", src: "IKEA STOENSE, 133 × 195", b: (W, H, D, B) => B("cloth4", 0, 0, 0, W, H, D) },
   lohals: { n: "Flatwoven jute rug", k: "rug", w: 160, d: 230, h: 1.3, ref: "hcswap", src: "IKEA LOHALS, 160 × 230",
-    b: (W, H, D, B) => { B("sisal", 0, 0, 0, W, H, D); for (const t of [6, D - 8]) B("knob", 4, H, t, W - 4, H + 0.15, t + 2); } },   // its two woven bands
+    b: (W, H, D, B) => { B("rattan", 0, 0, 0, W, H, D); for (const t of [6, D - 8]) B("knob", 4, H, t, W - 4, H + 0.15, t + 2); } },   // its two woven bands
 };
 /* N212, N223: the storage ideas' pieces (house/storage_ideas.py, an "idea" kind: never swapped or added from the catalogue), in the house's
    own materials only (no new shader when shown): the artisan oak of the media wall and the office's cubes, its ledges' lip, its tenons */
@@ -244,7 +244,7 @@ Object.assign(HCAT, {
     b: (W, H, D, B) => { const sh = 20; B(ST, 0, 0, 0, W, 7, 2); B(ST, 0, sh, 0, W, sh + 1.8, D);
       for (let i = 0; i < 5; i++) { const u = W * (i + 0.5) / 5; B("oak", u - 1, 2.5, 2, u + 1, 4.5, 8.4); B("oak", u - 1.3, 2.2, 8.4, u + 1.3, 4.8, 9.2); }   // five Shaker pegs
       for (const u of [3, W - 5.4]) { B(ST, u, 7, 0, u + 2.4, sh, 2.4); B(ST, u, sh - 4, 2.4, u + 2.4, sh, D - 4); B("oak", u, sh + 1.8, D - 9, u + 2.4, sh + 1.86, D - 5); }   // tenoned through the shelf
-      B("cloth3", 10, sh + 1.8, 5, 25, sh + 7.5, 17); B("black", 30, sh + 1.8, 7, 42, sh + 3, 16); B("sisal", 52, sh + 1.8, 3, 72, sh + 8, 19); } },   // a hat, gloves, a basket
+      B("cloth3", 10, sh + 1.8, 5, 25, sh + 7.5, 17); B("black", 30, sh + 1.8, 7, 42, sh + 3, 16); B("rattan", 52, sh + 1.8, 3, 72, sh + 8, 19); } },   // a hat, gloves, a basket
   st_airer: { n: "Ceiling pulley airer", k: "idea", w: 90, d: 35, h: 16, ref: "pulleyairer", src: "Clothesmaid ceiling airer, 0.9 m",   // N241: hoisted; cast-iron ends, four pine laths, the ropes to the pulleys
     b: (W, H, D, B) => { for (const u of [3, W - 4.2]) { B("black", u, 0, 2, u + 1.2, 1.6, D - 2); B("black", u, 0, 2, u + 1.2, 9, 3.6); B("black", u, 0, D - 3.6, u + 1.2, 9, D - 2); B("black", u, 7.4, 2, u + 1.2, 9, D - 2); }
       for (const t of [6.5, 13.8, 21.1, 28.4]) B("pine", 0, 1.6, t - 1, W, 3.4, t + 1);
@@ -269,7 +269,7 @@ Object.assign(HCAT, {
    swapped in or added, from materials the house already has: no new shader at the first picture. Options to look at: nothing to buy */
 const hcUp = (B, dv) => (m, a, b, c, d, e, f) => B(m, a, b + dv, c, d, e + dv, f);   // a builder's boxes raised dv (a case on its legs)
 const hcMake = (k, look, m, m2, c) => {
-  const grip = m === "door_white" ? "grip" : "knob", cane = "sisal", legm = m2 === m && /^(door_white|book\d|quarry|lead|garage_blue)$/.test(m) ? "black" : m2;
+  const grip = m === "door_white" ? "grip" : "knob", cane = "rattan", legm = m2 === m && /^(door_white|pnt_\w+)$/.test(m) ? "black" : m2;
   if (k === "bed") return hcBed(look === "metal" ? hcBedMetal(m) : look === "uph" ? hcBedUph(m2.startsWith("cloth") ? m2 : m.startsWith("cloth") ? m : "lycksele", m)
     : look === "panel" ? hcBedPanel(m) : look === "legged" ? hcBedLegged(m, m2) : look === "rattan" ? hcBedRattan(m, cane) : hcBedWood(m, m === m2 ? "pine" : m2));
   if (k === "wardrobe") return (W, H, D, B) => { const n = c || Math.max(2, Math.round(W / 50)), dw = (W - 0.6) / n, dr = look === "drawers" ? 2 : 0, v0 = 8 + dr * 19;
@@ -277,7 +277,7 @@ const hcMake = (k, look, m, m2, c) => {
     for (let j = 0; j < dr; j++) { const v = 8 + j * 19; B(m, 0.45, v + 0.3, D - 2, W - 0.45, v + 18.7, D - 0.4); B(grip === "grip" ? "handle_black" : "knob", W / 2 - 6, v + 12, D - 0.4, W / 2 + 6, v + 13.2, D); }   // its drawers under the doors
     for (let i = 0; i < n; i++) { const u0 = 0.3 + i * dw, u = i % 2 ? u0 + 3 : u0 + dw - 5; B(m, u0 + 0.15, v0 + 0.3, D - 2, u0 + dw - 0.15, H - 0.3, D - 0.4); B("handle_black", u, H * 0.45, D - 0.4, u + 1.5, H * 0.45 + 32, D); } };
   if (k === "chest" || k === "bedside") return (W, H, D, B, L) => { const cols = k === "chest" && (W >= 110 || c > 6) ? 2 : 1;
-    if (look === "rattan") return hcCaneCase(m === "sisal" ? "birch" : m, cane, k === "chest" && W > 70 ? 2 : 1)(W, H, D, B, L);
+    if (look === "rattan") return hcCaneCase(m === "rattan" ? "birch" : m, cane, k === "chest" && W > 70 ? 2 : 1)(W, H, D, B, L);
     const lg = look === "legged" ? 14 : 0; if (lg) hcLegs(legm, W, D, lg, 1.8, 4)(B, L);
     hcChest(m, cols, Math.max(1, Math.min(6, Math.ceil((c || (k === "bedside" ? (H > 50 ? 2 : 1) : Math.round((H - 8) / 22))) / cols))), grip)(W, H - lg, D, lg ? hcUp(B, lg) : B);
     if (look === "groove") for (let u = 3; u < W - 2; u += 2.5) B("gap", u, 7, D - 0.5, u + 0.3, H - 1.5, D - 0.3); };   // its grooved fronts
@@ -299,7 +299,7 @@ const hcMake = (k, look, m, m2, c) => {
   if (k === "toilet") return hcToilet(look, m, m2);
   if (k === "basin") return hcBasin(look, m, m2);
   if (k === "rug") return (W, H, D, B, L) => look === "round" ? L(m, W / 2, D / 2, 0, [[0, 0], [W / 2, 0], [W / 2, H], [0, H]]) : B(m, 0, 0, 0, W, H, D);
-  if (k === "lamp") return (W, H, D, B, L) => { const r = Math.min(W, D) / 2 - 0.5, sh = m === "sisal" ? "sisal" : "paper";
+  if (k === "lamp") return (W, H, D, B, L) => { const r = Math.min(W, D) / 2 - 0.5, sh = m === "rattan" ? "rattan" : "paper";
     if (look === "tripod") { const ap = H - 34, r0 = r - 1.5, rs = Math.min(19, r);   // three legs splayed from under the shade, each in eight steps
       for (let j = 0; j < 3; j++) { const a = j * 2.094 + 0.5; for (let q = 0; q < 8; q++) { const rr = r0 * (1 - (q + 0.5) / 8), cu = W / 2 + Math.cos(a) * rr, ct = D / 2 + Math.sin(a) * rr;
         B(m, cu - 1, ap * q / 8, ct - 1, cu + 1, ap * (q + 1) / 8, ct + 1); } }
@@ -309,7 +309,7 @@ const hcMake = (k, look, m, m2, c) => {
       B(m, u, H - 12, tc - 0.8, W - 15, H - 10.4, tc + 0.8); L(m2, W - 15, tc, H - 36, [[0, 0], [15, 0], [6, 24], [0, 24]]); return; }
     L(m2, W / 2, D / 2, 0, [[0, 0], [Math.min(13, r), 0], [Math.min(13, r), 2.5], [Math.min(10, r), 4], [3, 5], [0, 5]]); L(m, W / 2, D / 2, 5, [[0, 0], [1.4, 0], [1, H - 30], [0, H - 30]]);
     L(sh, W / 2, D / 2, H - 28, [[0, 0], [r, 0], [r * 0.82, 28], [0, 28]]); };
-  if (look === "rattan") return hcCaneCase(m === "sisal" ? "birch" : m, cane, c);
+  if (look === "rattan") return hcCaneCase(m === "rattan" ? "birch" : m, cane, c);
   if (look === "bench") return (W, H, D, B) => { const p = ["shoe_black", "shoe_tan", "shoe_white", "shoe_grey"];   // a seat over two open shelves of shoes
     for (const u of [0, W - 2.5]) B(m, u, 0, 0, u + 2.5, H - 3, D); B(m, 0, H - 3, 0, W, H, D); B(m, 2.5, 0, 0, W - 2.5, H - 3, 1.5); const sv = (H - 3) / 2;
     for (const v of [3, sv]) { B(m, 2.5, v - 2, 1.5, W - 2.5, v, D); for (let u = 5, q = 0; u < W - 14; u += 13, q++) for (const du of [0, 5]) B(p[(q + (v > 3)) % 4], u + du, v, 5, u + du + 4.4, v + Math.min(7, sv - 4), D - 3); } };
