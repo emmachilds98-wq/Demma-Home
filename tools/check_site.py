@@ -237,6 +237,22 @@ STORE = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTime
   const hidden = await wait(() => !ids().length) && !(D.finAll().bed2 || {})[28]; if (D.actId) q('#r3d-act .x').click();
   return { n, inway, hidden };
 }"""
+IDEAS = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), H = D.H3;   // N244
+  const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); };
+  try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {}
+  R3D.set({ view: 'bed2' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
+  const pill = q('#r3d-ideas'); if (!pill || pill.hidden) return { err: 'no Ideas pill in bedroom 2' };
+  const mine = () => Object.keys(H.items).filter(k => H.items[k].r === 'bed2' && (/^add[.]ix/.test(k) || /^idea[.]/.test(k)));
+  pill.click(); await wait(() => mine().length); await sl(300);
+  const card = String(D.actId).startsWith('ix:bed2'), line = q('#r3d-act-st').textContent, n0 = mine().length;
+  const over = (p, k) => [0, 1, 2].every(j => p[j] < k[j + 3] - 1 && p[j + 3] > k[j] + 1), inway = mine().flatMap(k => (H.fit.keep || []).filter(([, c]) => over(H.items[k].b, c)).map(([w]) => k + ': ' + w));
+  q('#r3d-act [aria-label="The next one"]').click(); await sl(600); const next = q('#r3d-act-st').textContent !== line;
+  const n1 = mine().length; q('#r3d-act [data-ixadd]').click(); await wait(() => mine().length > n1); const more = mine().length > n1;
+  q('#r3d-act [data-ixkeep]').click(); await sl(200); let kept = 0; try { kept = JSON.parse(localStorage.getItem('dh-fin-schemes') || '[]').length; } catch (e) {}
+  q('#r3d-theirs [data-lookmine]').click(); const back = await wait(() => !mine().length) && pill.getAttribute('aria-pressed') === 'false' && !D.actId;
+  try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {}
+  return { card, line: /^[^·]+ · \\d+ pieces? · £\\d/.test(line), drawn: n0 > 0, inway, next, more, kept, back };
+}"""
 # N225: the WC's tiles from their card: zellige, then charcoal grout (the material's own map swapped, costed), held: the plan's, The
 # plan's, Undo, The plan's; then its toilet swapped for Wickes's first (a close coupled one from the floor) and its basin for the corner
 # one (hung at the old one's rim, in the nearer corner: by the door, so its card says the swing), then as planned
@@ -348,7 +364,7 @@ LOOKS = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTime
   const link = window.__link; await ds.del('edits', rid); try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {} R3D.setFinishes(was);
   return { now, other, worn, link, looks: !!R3D.looks };
 }"""
-# N222: a fresh page with its own colour opens the look's link: shown as Emma's look, its own kept aside (localStorage untouched), Back to mine, then Keep it
+# N222: a fresh page with its own colour opens the look's link: shown as Emma's look, its own kept aside (localStorage untouched), Back to mine; again: no Keep it (Dave only looks)
 LOOKS2 = """async link => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), bed = () => (D.finAll().bed2 || {});
   R3D.setFinishes({ bed2: { 0: '#e8c0c8' } }); await sl(300); const ls = () => [JSON.stringify(Object.assign(JSON.parse(localStorage.getItem('mw18-3d') || '{}'), { view: 0 })), localStorage.getItem('demma-v1:edits') || '{}'], before = JSON.stringify(ls());   // the view it's left on is where you are, not a thing of yours
   const hid = Object.values(D.HEDITS).filter(e => e.removed).length;
@@ -357,8 +373,8 @@ LOOKS2 = """async link => { const D = R3D._dbg, sl = ms => new Promise(r => setT
   q('#r3d-theirs [data-lookmine]').click(); await sl(600);
   const mine = [q('#r3d-theirs').hidden, bed()[0], Object.values(D.HEDITS).filter(e => e.removed).length - hid, JSON.stringify(ls()) === before];
   location.hash = link.split('#')[1]; for (let i = 0; i < 60 && q('#r3d-theirs').hidden; i++) await sl(100); await sl(600);
-  q('#r3d-theirs [data-lookkeep]').click(); await sl(600);
-  const kept = [q('#r3d-theirs').hidden, (JSON.parse(localStorage.getItem('mw18-3d') || '{}').fin || {}).bed2, Object.values(JSON.parse(localStorage.getItem('demma-v1:edits') || '{}')).filter(v => v.field === 'removed').length];
+  const nokeep = !q('#r3d-theirs [data-lookkeep]'); q('#r3d-theirs [data-lookmine]').click(); await sl(600);
+  const kept = [nokeep, q('#r3d-theirs').hidden, bed()[0], JSON.stringify(ls()) === before];
   return { shown, mine, kept };
 }"""
 OFF = """() => { const W = document.documentElement.clientWidth, out = [];
@@ -619,16 +635,16 @@ def main():
                                      "(want it back to a wall, \"Fits\", shown from the link, then gone)")
                     lk = pg.evaluate(LOOKS)                         # N221: a look saved (a wall, a floor, a piece taken out), others set, As it is, the look back
                     l2 = None
-                    if lk.get("link"):                              # N222: its link on another device with its own colour: shown, set aside, Back to mine, Keep it
+                    if lk.get("link"):                              # N222: its link on another device with its own colour: shown, set aside, Back to mine, no Keep it
                         c2 = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=True, has_touch=True, service_workers="block")
                         p2 = c2.new_page(); p2.set_default_timeout(300000); localcdn.route(p2); p2.goto(base + "index.html")
                         p2.wait_for_function("window.R3D && R3D.ready", timeout=240000); p2.wait_for_timeout(1500)
                         l2 = p2.evaluate(LOOKS2, lk["link"]); c2.close()
                     if not (lk.get("now") == "true" and lk.get("other") == ["#c98a5e", False] and lk.get("worn") == ["#3a6b5a", "oak", True, "true"] and lk.get("looks")
                             and l2 and l2["shown"] == ["Emma's look", "#3a6b5a", "oak", 1, True, "#e8c0c8"] and l2["mine"] == [True, "#e8c0c8", 0, True]
-                            and l2["kept"][0] and (l2["kept"][1] or {}).get("0") == "#3a6b5a" and l2["kept"][2] == 1):
+                            and l2["kept"] == [True, True, "#e8c0c8", True]):
                         fails.append(f"{w}: a look saved, others set, As it is, the look worn: {lk}; its link on a device with its own colour: {l2} "
-                                     "(want Emma's look shown, nothing of its own saved over, Back to mine its own, Keep it hers)")
+                                     "(want Emma's look shown, nothing of its own saved over, Back to mine its own, no Keep it)")
                     ft = pg.evaluate(FITS)                          # N217: a swap's size and fit on its card, then as planned
                     if not (ft.get("fits", "").startswith("89 × 89 × 78 cm · Fits") and "cm into the slope" in ft.get("big", "") and ft.get("rid") and ft.get("back")):
                         fails.append(f"{w}: bedroom 2's chair-bed for an armchair, its Kallax for a bookcase, its desk for the long one, then as planned: {ft} "
@@ -639,6 +655,9 @@ def main():
                     st = pg.evaluate(STORE)                         # N233 (N223): a room's storage ideas, all shown, each clear, then hidden
                     want = {"n": IDEAS_BED2, "inway": [], "hidden": True}
                     if st != want: fails.append(f"{w}: bedroom 2's storage ideas from its floor card's More, All, then None: {st} (want {want}: each piece drawn, none in a walk)")
+                    ix = pg.evaluate(IDEAS)                         # N244: Ideas in bedroom 2: a set-up drawn at once, its line, ›, + Add storage, Keep this, Back to mine
+                    want = {"card": True, "line": True, "drawn": True, "inway": [], "next": True, "more": True, "kept": 1, "back": True}
+                    if ix != want: fails.append(f"{w}: bedroom 2's Ideas pill, a set-up, the next, + Add storage, Keep this, Back to mine: {ix} (want {want})")
                     ls = pg.evaluate(LIVSWAP)                       # N233 (N220): the living room's rug swapped as the house's pieces are, then as planned
                     want = {"sofa": False, "swapped": True, "line": "160 × 230 × 1 cm · Fits · Argos's usual size", "kept": True, "back": True}
                     if ls != want: fails.append(f"{w}: the living room's rug swapped (Swap it, ›), then as planned; their sofa no Swap it: {ls} (want {want})")

@@ -550,14 +550,17 @@ function fitWhy(id) {
 }
 /* N218: where an added piece stands: back to a wall of its room (as syncAdds puts it: the row's x, z on that wall), clear of the walls,
    the slope, the swings, the space kept clear and the pieces, nearest the tap; if nowhere, back to the nearest wall at the tap */
-function addSpot(rid, key, x, z, y, self) {
-  const r = R.HOUSE3.rooms[rid], C = HCAT[key], over = (p, q) => [0, 1, 2].every(j => p[j] < q[j + 3] - 1 && p[j + 3] > q[j] + 1); let best = null;
-  const busy = Object.keys(R.HOUSE3.items).filter(k => { const o = HIT(k); return k !== self && o.r === rid && !HCSKIP.has(o.k) && !hcSoft(k) && !pieceNow(k).removed; }).map(pieceBox);
+function addSpot(rid, key, x, z, y, self) { const s = spotFor(rid, key, x, z, y, self); return s ? s.slice(0, 2) : [x, z]; }
+/* N244: the spot itself, [x, z, how far, its box] or null; also clear of boxes not drawn yet (more: a set-up's other pieces), past the
+   pieces skip says (a set-up shown before), within maxD of the tap */
+function spotFor(rid, key, x, z, y, self, more = [], skip = null, maxD = Infinity) {
+  const r = R.HOUSE3.rooms[rid], C = HCAT[key], over = (p, q) => [0, 1, 2].every(j => p[j] < q[j + 3] - 1 && p[j + 3] > q[j] + 1); let best = null; if (!r || !C) return null;
+  const busy = Object.keys(R.HOUSE3.items).filter(k => { const o = HIT(k); return k !== self && !(skip && skip(k)) && o.r === rid && !HCSKIP.has(o.k) && !hcSoft(k) && !pieceNow(k).removed; }).map(pieceBox).concat(more);
   for (const [o, hi] of [[2, 0], [2, 1], [0, 0], [0, 1]]) { const a = 2 - o, w = r[o + hi] + (hi ? -0.5 : 0.5);   // each wall, its back 0.5 off it
     for (let u = r[a]; u <= r[a + 1] - C.w; u += 5) { const b = [0, y, 0, 0, y + C.h, 0]; b[a] = u; b[a + 3] = u + C.w; b[o] = hi ? w - C.d : w; b[o + 3] = b[o] + C.d;
-      const d = Math.hypot((b[0] + b[3]) / 2 - x, (b[2] + b[5]) / 2 - z); if (best && d >= best[2]) continue;
-      if (!roomWhy(b, rid, self).length && !busy.some(q => over(b, q))) best = o ? [u + C.w / 2, w, d] : [w, u + C.w / 2, d]; } }
-  return best ? best.slice(0, 2) : [x, z];
+      const d = Math.hypot((b[0] + b[3]) / 2 - x, (b[2] + b[5]) / 2 - z); if (d > maxD || (best && d >= best[2])) continue;
+      if (!busy.some(q => over(b, q)) && !roomWhy(b, rid, self).length) best = [...(o ? [u + C.w / 2, w] : [w, u + C.w / 2]), d, b]; } }
+  return best;
 }
 /* the pieces in its way: a moved, swapped or added piece against the others in the room it now stands in (not chairs and rugs) */
 const HCSKIP = new Set(["decor", "finish", "light", "switch", "socket", "fitting", "window", "door"]), hcSoft = k => /chairs?\d?$|stools?\d?$|rug$/.test(k) || /^(chair|stool|rug)$/.test((HCAT[(HIT(k) || {}).add] || {}).k);   // N217: by its id or what was added
@@ -663,6 +666,11 @@ function ideaSet(room, id) {   // one idea on or off; "*" all of the room's, "" 
 function ideaChoose(room, id, key) {   // N242: the plan's idea (no key) or a shop's buy, shown
   finPush(); const ids = Object.fromEntries(ideaOn(room).map(q => [q, ideaPick(room, q)])); ids[id] = key || ""; ideaKeep(room, ids);
   const I = IDEAS().find(i => i.id === id), C = key && HCAT[ideaOptKey(I, key)]; toast(C ? `${C.n} · ${C.shop}` : `${I.n}: the plan's idea`);
+}
+function ideaCost(I, key) {   // N244: an idea's rough cost: a shop's buy its price (in each of its places if so), the plan's its made-to-the-spot range
+  const hk = key && ideaOptKey(I, key), n = I.each ? I.parts.length : 1; if (hk) return [HCAT[hk].p * n, HCAT[hk].p * n];
+  if (Array.isArray(I.cost)) return I.cost.slice(0, 2);
+  const m = String(I.line || "").match(/£([\d,]+)(?:\s*[–-]\s*£?([\d,]+))?/), f = s => +s.replace(/,/g, ""); return m ? [f(m[1]), f(m[2] || m[1])] : [0, 0];
 }
 const ideaTray = room => { const L = ideasIn(room), on = ideaOn(room); if (!L.length) return "";
   return `<span class="r3d-finlab">Storage ideas (to look at)</span><div class="r3d-finsc" role="group" aria-label="Storage ideas">`

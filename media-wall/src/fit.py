@@ -1504,6 +1504,11 @@ SOURCES["n224units"] = ("Kitchen fronts, a 500 × 715 door (B&Q GoodHome, read 2
 SOURCES["n225fit"] = ("Bathroom taps (Wickes, read 23 Nov 2026): Mariz basin mixer brushed brass £95 (p/312060), Mariz bath shower mixer brushed brass "
                       "£150 (p/312069), Kubic chrome basin mixer £55 (p/161639); a chrome bath shower mixer about £90–150 and brushed nickel as brass (E); "
                       "a plumber's half day £80–150 (E). A bath panel: a painted MDF front about £45–90, an oak one £70–140, with its paint (E)")
+SOURCES["n225mirror"] = ("Bathroom mirrors, W × H cm (read 24 Nov 2026): IKEA LINDBYN round, black, 50, bathroom approved, £25 (ikea.com/gb, 705.904.48); "
+                         "IKEA NYSJÖN mirror cabinet, white, two sliding mirror doors, 50 × 13 × 60, £40 (104.708.30); Aveli arched, black frame, "
+                         "50 × 80, £44.95 (B&Q diy.com, 5056806185941), brushed brass £49.95 (5056806185958); the frames about 3 deep (E). The bathroom's "
+                         "toilets and vanities to swap: N219's rows (docs/N219_catalogue.json, the B&Q Cavally, Wickes Nova and Halite, IKEA HAVBÄCK)")
+ORDER.append("n225mirror")
 SOURCES["pulleyairer"] = ("Ceiling pulley clothes airers (read 23 Nov 2026): Clothesmaid, cast iron rack ends 38 wide, pine slats 0.9 to 2 m, "
                           "17 cm under the ceiling fully raised, £74.99 (clothesmaid.com); Cast in Style 6-lath Victorian Kitchen Maid £99 "
                           "(castinstyle.co.uk); Pulley Maid wall radial airer, 120 × 60 open, 20 × 10 shut, £55.99 (pulleymaid.com)")

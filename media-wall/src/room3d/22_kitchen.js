@@ -8,7 +8,7 @@ const KIT_FRONTS = [["white", "White gloss", "#ebeae6", 0], ["cream", "Cream", "
 const KIT_HANDLES = [["black", "Matt black", "#151517", 0.0, 0.4], ["brass", "Brushed brass", "#b08d57", 0.85, 0.35], ["nickel", "Brushed nickel", "#a9a9a4", 0.85, 0.3], ["steel", "Stainless", "#c8cacc", 0.9, 0.22]];
 const KIT_TOPS = [["black", "Black granite-effect", 95], ["oakwood", "Solid oak", 190], ["quartz", "White quartz-effect", 160], ["cement", "Cement-effect", 190]];   // £ a 3 m length
 const KIT_HANDLE_P = [4, 10], KIT0 = new WeakMap(), KIT_TEX = {};
-const kitOk = (room, k, v) => room === "kitchen" && ((k === 92 && KIT_FRONTS.some(([q]) => q === v)) || (k === 93 && KIT_HANDLES.some(([q]) => q === v)) || (k === 94 && KIT_TOPS.some(([q]) => q === v)));
+const kitOk = (room, k, v) => room === "bathroom" ? bathOk(room, k, v) : room === "kitchen" && ((k === 92 && KIT_FRONTS.some(([q]) => q === v)) || (k === 93 && KIT_HANDLES.some(([q]) => q === v)) || (k === 94 && KIT_TOPS.some(([q]) => q === v)));
 const kitNow = () => ({ f: finGet("kitchen", 92) || "white", h: finGet("kitchen", 93) || "black", t: finGet("kitchen", 94) || "black" });
 function kitAt(hit) { const m = hit && hit.object && hit.object.material, hk = m && !Array.isArray(m) && (m.userData || {}).hk; return hk === "kunit" || hk === "khandle" || hk === "worktop" ? { room: "kitchen", slot: 92 } : null; }
 function kitCount() {   // [fronts, handles, the worktop's run in m] from the house file's kitchen boxes
