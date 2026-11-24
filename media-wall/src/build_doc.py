@@ -344,6 +344,8 @@ def other_options_html():
         ("A bench with cubbies", "Your hall, or the window corner", f"{n(g.HALL_BENCH['w'])} × {n(g.HALL_BENCH['d'])} × {n(g.HALL_BENCH['h'])}", "80–130", sup("shoebench")),
         ("A built-in cupboard", "Window corner, floor to ceiling", f"{n(g.WARDROBE['x'][1] - g.WARDROBE['x'][0])} × {n(g.WARDROBE['d'])}", "450–800", sup("wardrobe")),
         ("A hook rail over the door", "Over the hall door", f"{n(g.OVERDOOR['w'])} × {n(g.OVERDOOR['d'])} × {n(g.OVERDOOR['h'])}", "12–25", sup("overdoor")),
+        ("An oak radiator shelf with drying rails", "Over the radiator, under the window", f"{n(g.RAD_SHELF['w'])} × {n(g.RAD_SHELF['d'])}", "70–110", sup("snowdonoak", "oakdowel")),   # N241
+        ("A window seat with two drawers", "Window corner", f"{n(g.WINDOW_SEAT['x'][1] - g.WINDOW_SEAT['x'][0])} × {n(g.WINDOW_SEAT['d'])} × {n(g.WINDOW_SEAT['h'])}", "180–260", sup("seat", "runners")),
         (f"An {n(C8['top'][0])}-wide table", "The dining cabinet", f"{n(C8['len'])} long; four chairs inside, not six", "about the same", sup("padded")),
         ("A smooth or patterned ceiling", "The ceiling (test the Artex first)", "the whole ceiling", "200–700", sup("skimartex", "artextest")),
         ("Oak-effect beams, coffers or an LED cove", "The ceiling", "12 × 12 beams; cove 2 m lengths", "450–1,050", sup("pubeam", "orac")),
@@ -365,7 +367,7 @@ def other_options_html():
             f"<p class='note'>Will the sofa bed go in? {fit.sofabed_fit_line()}.</p>")   # V4 (N152)
 
 
-OPT_OWN = {"barcase", "bartrolley", "barside", "cotswoldbasket", "liftcoffee", "windowseat", "hallbench", "wardrobe", "overdoor",
+OPT_OWN = {"barcase", "bartrolley", "barside", "cotswoldbasket", "liftcoffee", "windowseat", "hallbench", "wardrobe", "overdoor", "radshelf", "seatdrawers",
            "growlights", "curtainmotor", "lpledges", "cordlamp", "stairscurtain"}
 
 

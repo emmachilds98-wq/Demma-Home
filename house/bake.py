@@ -80,6 +80,12 @@ def export(site, tod):
                 k = (L["type"], *[round(c, 2) for c in L["p"]])
                 if k not in seen:
                     seen.add(k); lights.append(L)
+        # N239 (V4.56): the page's sun no longer moves with the room (one over the house): it's collected once, where each room's own
+        # was collected before (one a room, the same direction). The bake as V4.35 was tuned and Emma saw it ("Looks great at 4.50"):
+        # the sun's bounce as before, once a room visited
+        suns = [L for L in lights if L["sun"] and L["type"] == "DirectionalLight"]
+        if suns:                                                # one sun (the same direction everywhere: its place doesn't count)
+            suns[0]["I"] *= len(views); lights = [L for L in lights if L not in suns[1:]]
         out = pg.evaluate(EXPORT, [[], list(SHELL)]); out["lights"] = lights
         b.close()
     h.shutdown(); h.server_close()

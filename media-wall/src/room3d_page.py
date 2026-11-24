@@ -619,7 +619,7 @@ SUGG_SHORT = {"floorplant": "Tall floor plant", "sidetable": "Round side table",
               "barside": "Drinks cabinet, by the sofa", "blanketbasket": "Blanket basket", "cotswoldbasket": "Lidded seagrass basket", "recordtable": "Record table", "liftcoffee": "Lift-top coffee table", "doorshelf": "Shelf over the door",
               "shelfboxes": "Boxes on your shelf",
               "stairdrawers": "Drawers in the steps", "alcoveshelves": "Alcove shelves", "windowseat": "Storage window seat", "hallbench": "Bench with cubbies",
-              "wardrobe": "Built-in cupboard", "wallcabs": "Wall cabinets, sofa", "overdoor": "Hook rail over the door",
+              "wardrobe": "Built-in cupboard", "wallcabs": "Wall cabinets, sofa", "overdoor": "Hook rail over the door", "radshelf": "Radiator shelf, drying rails", "seatdrawers": "Window seat, two drawers",
               "growlights": "Grow lights, plant stand", "curtainmotor": "Curtain motors", "lpledges": "LP ledges, side wall", "cordlamp": "Lamp on the C-table", "stairscurtain": "Curtain round the stairs"}   # v43   # v37   # v36   # v32   # v26   # v23   # v21: the buttons' words for ideas.SUGGEST
 IDEA_SHORT = {"case": "Glass case on the breast", "glass": "Glass plant shelves", "ctable": "Sofa C-table", "sync": "TV backlight, picture sync",
               "cushions": "Cushions and a throw", "plantlight": "Uplight under the plants", "rugpad": "Rug pad (corner turned back)",
