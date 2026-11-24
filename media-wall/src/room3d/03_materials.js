@@ -10,6 +10,7 @@ const reg = m => (MATS.push(clipMat(glassLive(grassy(m)))), m);
 /* V2.68 (N22): every lawn without its repeat: a slow patchwork picks the photo or its larger turned copy, a slower one shades it; one
    program ("grass"). N173: further off, the photo's average under a slower tone still */
 function grassy(m) {
+  if (m.map && m.map.userData.weather) return weathered(m, m.map.userData.weather);
   if (!(m.map && m.map.userData.grass)) return m;
   m.customProgramCacheKey = () => "grass";
   m.onBeforeCompile = sh => { sh.fragmentShader = sh.fragmentShader.replace("#include <map_fragment>", `#ifdef USE_MAP
@@ -18,6 +19,26 @@ function grassy(m) {
     float gd = smoothstep(14.0, 60.0, length(vViewPosition));   // N173: far off, the photo's own pattern gives way to its average under the slow tones, so no repeat shows
     sampledDiffuseColor.rgb = mix(sampledDiffuseColor.rgb, textureLod(map, vec2(0.5), 12.0).rgb, gd * 0.65) * clamp(dot(texture2D(map, vMapUv * 0.037 + 0.11, 4.0).rgb, vec3(0.333)) / ga, 0.8, 1.2)
       * mix(1.0, clamp(dot(textureLod(map, vMapUv * 0.0083 + 0.61, 7.0).rgb, vec3(0.333)) / ga, 0.85, 1.15), gd); diffuseColor *= sampledDiffuseColor;
+  #endif`); };
+  return m;
+}
+/* N271 (the review: brick, roof tiles, concrete and paving repeat visibly): the outside's photos under a slow tone that drifts across a
+   wall or a roof (about ±8%, a couple of metres a patch, worked out from where the pixel is in the house), and on brick a dirt band where it
+   meets the ground (splash and green, darker in its bottom 30 or so cm, ragged). One program a kind ("weather1" brick, "weather0" the rest) */
+function weathered(m, kind) {
+  const dirt = kind === "brick";
+  m.customProgramCacheKey = () => "weather" + (dirt ? 1 : 0);
+  m.onBeforeCompile = sh => {
+    sh.vertexShader = "varying vec3 vPgP;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n vPgP = (modelMatrix * vec4(transformed, 1.0)).xyz;");
+    sh.fragmentShader = PAINT_GRAIN + sh.fragmentShader.replace("#include <map_fragment>", `#ifdef USE_MAP
+    vec4 sampledDiffuseColor = texture2D(map, vMapUv);
+    vec3 wP = vec3(-vPgP.x, vPgP.y, vPgP.z) * 100.0;
+    float wT = 0.6 * pgN(wP * 0.004 + 1.3) + 0.4 * pgN(wP * 0.013 + 4.1);
+    sampledDiffuseColor.rgb *= 1.0 + 0.16 * (wT - 0.5);${dirt ? `
+    float wH = wP.y - (wP.z > 95.0 ? -15.0 : -260.0);
+    float wD = (1.0 - smoothstep(3.0, 28.0 + 22.0 * pgN(wP * 0.03 + 2.0), wH)) * step(-8.0, wH);
+    sampledDiffuseColor.rgb *= mix(vec3(1.0), vec3(0.74, 0.76, 0.7), wD);` : ""}
+    diffuseColor *= sampledDiffuseColor;
   #endif`); };
   return m;
 }

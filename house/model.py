@@ -550,6 +550,13 @@ def outer_walls(o, floor):
                 if op["kind"] == "window":                       # the sill, proud of the wall
                     o.box("frame_out", op["x"][0] - 4, yb - 4, face - out * 6, op["x"][1] + 4, yb + 0.6, face + out * 4)
                 _door_leaf(o, op, side, face, yb, yt)
+            if op["side"] == side and axis == "x" and abs(line - (BACK if side == "n" else FRONT)) < 1 and op["design"] not in ("porch", "garage"):
+                o.end(); soldier(o, op["x"][0], op["x"][1], FLOOR_Y[floor] + op["head"], line + out * t_out, out)   # N271
+
+
+def soldier(o, x0, x1, head, face, s):
+    """N271 (the review: no soldier course over the windows): a course of bricks on end over an opening's head, a hair proud of the face."""
+    o.box("soldier", x0 - 10, head + 0.4, face - s * 0.5, x1 + 10, head + 22, face + s * 1.2)
 
 
 def living_window(o, op, face, y):
@@ -921,11 +928,13 @@ def porch(o):
         o.box("recycle", wst["x0"] + 2.5, y0_, FRONT - 0.5 - bb["w"], min(wst["x1"] - 0.5, wst["x0"] + 2.5 + bb["d"]), y0_ + bb["h"] - 0.5, FRONT - 0.5)
 
 
-def _house_shell(o, span, gcol):
+def _house_shell(o, span, gcol, var=None):
     """One house of the terrace in our own coordinates (its inside end wall at x 0, as ours), as a simple solid building: the brick
     cross-section, the roof, the dormer, the porch, every window and door from survey_data.OPENINGS, its front and back gardens.
-    span: its outside x range (an end house from its gable, -28; a middle one from the party wall's middle, -15; to the next, 482)."""
+    span: its outside x range (an end house from its gable, -28; a middle one from the party wall's middle, -15; to the next, 482).
+    var (N271: next door no longer our clones): its front door's colour, nets in its windows, its porch open or glazed in."""
     x0, x1 = span
+    var = var or {}
     t = D.ROOF["t"] / math.cos(math.radians(D.ROOF["pitch"]))
     tb = D.ROOF["t"] / math.cos(math.atan(KB))                    # v68: the steeper back slope
     prof = [(RO["n"], D.LEVELS["lawn"] - 15), (RO["n"], ROOF_B), (RIDGE_Z, RIDGE_Y), (RO["s"], ROOF_E), (RO["s"], D.LEVELS["drive"] - 6)]   # v65: into the ground
@@ -956,12 +965,21 @@ def _house_shell(o, span, gcol):
         elif op["design"] == "porch":                     # v65: the open porch as ours: dark inside, the door set back, a step
             dr = D.LEVELS["drive"]
             o.box("porch_in", xa, ya, pz, xb, min(yb, D.PORCH["surround"]["head"]), pz + s * 0.6)   # V2.75: to the frieze
-            o.box("upvc", xa + 14, ya, pz + s * 0.6, xb - 14, yb - 8, pz + s * 1.2)
+            o.box(var.get("door", "upvc"), xa + 14, ya, pz + s * 0.6, xb - 14, yb - 8, pz + s * 1.2)
             surround(o, xa, xb, pz, s, dr)
+            if var.get("porch") == "glazed":              # N271: its porch glazed in, a white frame and a door across the front
+                o.box("pane", xa + 2, ya + 2, pz + s * 1.8, xb - 2, min(yb, D.PORCH["surround"]["head"]) - 2, pz + s * 2.2)
+                for xx in (xa, (xa + xb) / 2 - 2, xb - 4):
+                    o.box("frame_out", xx, ya, pz + s * 1.6, xx + 4, min(yb, D.PORCH["surround"]["head"]), pz + s * 2.6)
+                o.box("frame_out", xa, ya, pz + s * 1.6, xb, ya + 30, pz + s * 2.6)
             o.box("quarry", xa - 22, dr - 5.5, pz + s * 0.3, xb + 22, ya, pz + s * 34)
         else:
-            o.box("pane", xa + 1, ya + 1, pz + s * 0.2, xb - 1, yb - 1, pz + s * 0.6)
+            nets = var.get("nets") and op["kind"] == "window"   # N271: nets over the lower part of its windows
+            o.box("pane", xa + 1, (ya + yb) / 2 if nets else ya + 1, pz + s * 0.2, xb - 1, yb - 1, pz + s * 0.6)
+            if nets:
+                o.box("curtain", xa + 1, ya + 1, pz + s * 0.2, xb - 1, (ya + yb) / 2, pz + s * 0.6)
             window(o, op["side"], xa, xb, ya, yb, "bars" if op["design"] in ("living", "glazed") else op["design"], face)
+            soldier(o, xa, xb, yb, pz, s)
     gx = (30.0, 270.0)                                            # its drive, front lawn, the pavement and road, its back lawn and fence
     dr = D.LEVELS["drive"]                                         # v65: every layer from one base, side by side (no shared planes)
     o.box("concrete", gx[0], dr - 6, RO["s"], gx[1], dr, RO["s"] + 550)
@@ -996,13 +1014,14 @@ def street(o):
     its end wall to the alley. Each with its gardens. Shown only when the client switches Next door on."""
     W = WIDTH + 2 * D.WALLS["party"]
     P = D.WALLS["party"]
+    VAR = (dict(door="door_navy", nets=True), dict(door="door_red", porch="glazed"), dict(door="door_sage", nets=True, porch="glazed"), dict())   # N271
     for k, gcol in ((1, "garage_blue"), (2, "garage_black")):           # west: shifted copies
-        h = Out(); _house_shell(h, (-P, RO["w"]), gcol)
+        h = Out(); _house_shell(h, (-P, RO["w"]), gcol, VAR[k - 1])
         dx = RO["w"] + (k - 1) * W + P
         _copy(h, o, lambda x, dx=dx: dx + x)
     ax = -125.0                                                           # the alley's far side (its fence at -121)
     for k, (span, gcol) in enumerate((((-T_OUT, RO["w"]), "garage_white"), ((-P, RO["w"]), "garage_blue"))):
-        h = Out(); _house_shell(h, span, gcol)
+        h = Out(); _house_shell(h, span, gcol, VAR[2 + k])
         base = ax - T_OUT if k == 0 else ax - (RO["w"] + T_OUT) - P - (k - 1) * W   # the first's gable at the alley; the next shares its party wall
         _copy(h, o, lambda x, base=base: base - x)                       # mirrored: its x runs east
 
@@ -2707,7 +2726,7 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "eaves": ("#e7e1d6", 0.9), "garage_blue": ("#2c3b63", 0.45), "garage_white": ("#ecebe7", 0.4), "garage_black": ("#26282a", 0.45), "timber": ("#8a5a35", 0.8), "pane": ("#3a4550", 0.08),
     "gloss": ("#ebeae6", 0.16), "kunit": ("#ebeae6", 0.16), "khandle": ("#151517", 0.4), "bfit": ("#151517", 0.4), "bpanel": ("#e7e8e6", 0.05), "gap": ("#9b9a95", 0.6), "black": ("#1d1d1f", 0.5), "black_app": ("#1f2023", 0.35), "glass_dark": ("#17191c", 0.1),
     "ring": ("#2b2c2e", 0.6), "steel": ("#c8cacc", 0.25), "steel_dark": ("#8e9195", 0.35), "worktop": ("#26282a", 0.22), "metro": ("#111214", 0.1),
-    "chrome": ("#e4e6e9", 0.06), "sanitary": ("#e7e8e6", 0.05), "primrose": ("#e3cf5c", 0.06), "tile_w": ("#f2f2ef", 0.12), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_leaf": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "rug": ("#8e4a32", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
+    "chrome": ("#e4e6e9", 0.06), "sanitary": ("#e7e8e6", 0.05), "primrose": ("#e3cf5c", 0.06), "tile_w": ("#f2f2ef", 0.12), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_leaf": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "door_navy": ("#2c3a52", 0.35), "door_red": ("#7a2427", 0.35), "door_sage": ("#7d8c74", 0.4), "rug": ("#8e4a32", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
     "cloth0": ("#3d4a5c", 0.95), "cloth1": ("#b9b2a6", 0.95), "cloth2": ("#7a2f2f", 0.95), "cloth3": ("#2f3b2f", 0.95), "cloth4": ("#d8d2c4", 0.95), "cloth5": ("#555555", 0.95), "cloth6": ("#9b8b6e", 0.95), "curtain": ("#f4f3ef", 0.9), "stone": ("#cbc6bd", 0.35), "marble": ("#141416", 0.1), "led": ("#ffffff", 0.3), "bulb": ("#fff3e2", 0.25), "lamp_purple": ("#c9a6ff", 0.3), "chalk": ("#222423", 0.85), "storebox": ("#c9c1b2", 0.95), "contact": ("#000000", 1.0), "mattress": ("#f0eee8", 0.9), "pillow": ("#f1efea", 0.95), "trim": ("#5a5d60", 0.5), "gutter": ("#f2f2ef", 0.4), "lead": ("#6c7072", 0.55), "birch": ("#dcc8a2", 0.7), "lycksele": ("#5b6b78", 0.95), "grille": ("#e8dcc4", 0.6), "ceiling": ("#f3f2ee", 0.95),
     "laminate": ("#a9a39a", 0.5), "oak": ("#b8844f", 0.55), "artisan": ("#fff1df", 0.55),   # V4.3: artisan oak (bedroom 3's cube shelves): the oak's grain, a hair warmer
     "herring": ("#b48a5c", 0.6), "lvt_grey": ("#8e8b87", 0.5), "porcelain": ("#d6d0c4", 0.5),   # V3.14 (N56): the upgrade floors
