@@ -70,7 +70,7 @@ function tileSet(room, style, grout) {   // her tile (null: the plan's, its grou
 function tileCard(room) {   // [title, now, buttons, -, the tray]: the tiles, then their grout
   const q = tileOf(room), u = q && roomUps(room).find(x => x.k.startsWith("90="));
   const glass = q && q.st[6] === 2, st = q ? [glass ? q.st[1] : `${q.st[1]}, ${q.g[1].toLowerCase()} grout`, u ? upRange(u.lo, u.hi) : ""].filter(Boolean).join(" · ") : `The plan's: ${TILE_PLAN[room]}`;
-  const bs = [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(q ? [btn("The plan's", { tileplan: "1" })] : []), btn("Hold to compare", { finhold: "1" }, undefined, "", "Hold to compare: the tiles as planned till you let go"), ...(room === "kitchen" ? [btn("The units", { actopen: "fin:kitchen:92" })] : room === "bathroom" ? [btn("Taps and panel", { actopen: "fin:bathroom:95" })] : [])];   // N224, N225
+  const bs = [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(q ? [btn("The plan's", { tileplan: "1" })] : []), btn("Hold to compare", { finhold: "1" }, undefined, "", "Hold to compare: the tiles as planned till you let go"), ...(room === "kitchen" ? [btn("The units", { actopen: "fin:kitchen:92" })] : room === "bathroom" ? [btn("Taps and mirror", { actopen: "fin:bathroom:95" })] : [])];   // N224, N225
   const sw = (at, k, t, c, now) => `<button type="button" class="sw" data-${at}="${k}" style="--c:${c}" aria-pressed="${now === k}" title="${t}" aria-label="${t}"><i></i><span>${t.split(",")[0]}</span></button>`;
   return [`${roomName(room)}: ${room === "kitchen" ? "the splashback" : "the tiles"}`, st, bs, null, `<div class="r3d-fin"><div class="r3d-fintray" role="group" aria-label="Tiles">${tileStyles(room).map(([k, t, w, h, c]) => sw("tile", k, `${t}, ${w} × ${h} cm`, c, q && q.st[0])).join("")}</div>`
     + (q && !glass ? `<span class="r3d-finlab">Grout</span><div class="r3d-fintray" role="group" aria-label="Grout">${TILE_GROUT.map(([k, t, c]) => sw("grout", k, t, c, q.g[0])).join("")}</div>` : "") + `</div>`];
@@ -85,37 +85,86 @@ const BATH_FITS = [["black", "Matt black", "#151517", 0, 0.4, [0, 0]], ["chrome"
   ["nickel", "Brushed nickel", "#a9a9a4", 0.85, 0.3, [230, 320]]];   // key, name, colour, metal, shine, £ a basin mixer and a bath shower mixer
 const BATH_PANELS = [["white", "White", "#e7e8e6", [0, 0]], ["oakwood", "Oak", "#b8844f", [70, 140]], ["sage", "Sage", "#8b9878", [45, 90]], ["navy", "Deep blue", "#34507f", [45, 90]], ["charcoal", "Charcoal", "#4a4d52", [45, 90]]];
 const BATH_FIT_LAB = [80, 150];   // a plumber's half day to swap the taps
-const bathOk = (room, k, v) => room === "bathroom" && ((k === 95 && BATH_FITS.some(([q]) => q === v)) || (k === 96 && BATH_PANELS.some(([q]) => q === v)));
-const bathNow = () => ({ f: finGet("bathroom", 95) || "black", p: finGet("bathroom", 96) || "white" });
-function bathAt(hit) { const m = hit && hit.object && hit.object.material, hk = m && !Array.isArray(m) && (m.userData || {}).hk; return hk === "bfit" || hk === "bpanel" ? { room: "bathroom", slot: 95 } : null; }
+const bathOk = (room, k, v) => room === "bathroom" && ((k === 95 && BATH_FITS.some(([q]) => q === v)) || (k === 96 && BATH_PANELS.some(([q]) => q === v)) || (k === 97 && BATH_MIRS.some(([q]) => q === v)));
+const bathNow = () => ({ f: finGet("bathroom", 95) || "black", p: finGet("bathroom", 96) || "white", m: finGet("bathroom", 97) || "oak" });
+function bathAt(hit) { const m = hit && hit.object && hit.object.material, hk = m && !Array.isArray(m) && (m.userData || {}).hk; return hk === "bfit" || hk === "bpanel" || (hit && hit.object.userData.bmir) ? { room: "bathroom", slot: 95 } : null; }
 function bathUps(add) {
   const q = bathNow(), f = BATH_FITS.find(([k]) => k === q.f), p = BATH_PANELS.find(([k]) => k === q.p);
   if (q.f !== "black") add(`95=${q.f}`, `Taps and shower: ${f[1].toLowerCase()}`, [f[5][0] + BATH_FIT_LAB[0], f[5][1] + BATH_FIT_LAB[1]]);
   if (q.p !== "white") add(`96=${q.p}`, `Bath panel: ${p[1].toLowerCase()}`, p[3]);
+  const mi = BATH_MIRS.find(([k]) => k === q.m); if (mi) add(`97=${q.m}`, `Mirror: ${mi[1].toLowerCase()}`, mi[7]);
 }
 function bathApply() {   // the fittings' finish, the panel's colour (oak: its photo)
-  if (!HMATS || !FIN.mat3) return; const q = finHeld ? { f: "black", p: "white" } : bathNow(), Fm = HMATS.bfit || FIN.mat3("bfit"), Pm = HMATS.bpanel || FIN.mat3("bpanel");
+  if (!HMATS || !FIN.mat3) return; const q = finHeld ? { f: "black", p: "white", m: "oak" } : bathNow(), Fm = HMATS.bfit || FIN.mat3("bfit"), Pm = HMATS.bpanel || FIN.mat3("bpanel");
   if (Fm) { kitSwap(Fm, null); const o = KIT0.get(Fm), f = BATH_FITS.find(([k]) => k === q.f); if (q.f === "black") { Fm.color.copy(o.color); Fm.metalness = o.metalness; Fm.roughness = o.roughness; } else { Fm.color.set(f[2]); Fm.metalness = f[3]; Fm.roughness = f[4]; } }
   if (Pm) { kitSwap(Pm, q.p === "oakwood" ? kitTex("oakwood", "bpanel") : null); const o = KIT0.get(Pm);
     if (q.p === "white") Pm.color.copy(o.color); else if (q.p === "oakwood") Pm.color.set("#ffffff"); else capWhite(Pm.color.set((BATH_PANELS.find(([k]) => k === q.p) || [])[2])); }
-  dirty();
+  mirApply(q.m); dirty();
 }
 function bathSet(slot, v) {
-  finPush(); S.fin = S.fin || {}; const o = S.fin.bathroom = S.fin.bathroom || {}, plan = slot === 95 ? "black" : "white";
+  finPush(); S.fin = S.fin || {}; const o = S.fin.bathroom = S.fin.bathroom || {}, plan = slot === 95 ? "black" : slot === 97 ? "oak" : "white";
   if (v && v !== plan) o[slot] = v; else delete o[slot]; if (!Object.keys(o).length) delete S.fin.bathroom;
   store.set(KEY, S); bathApply(); finSchDraw(); const q = bathNow();
-  toast(`Bathroom: ${slot === 95 ? upNm(BATH_FITS, q.f).toLowerCase() + " taps and shower" : upNm(BATH_PANELS, q.p).toLowerCase() + " bath panel"}`);
+  toast(`Bathroom: ${slot === 95 ? upNm(BATH_FITS, q.f).toLowerCase() + " taps and shower" : slot === 97 ? (q.m === "oak" ? "the plan's mirror" : upNm(BATH_MIRS, q.m).toLowerCase() + " mirror") : upNm(BATH_PANELS, q.p).toLowerCase() + " bath panel"}`);
 }
 function bathCard() {   // [title, now, buttons, -, the tray]
-  const q = bathNow(), plan = q.f === "black" && q.p === "white", L = roomUps("bathroom").filter(u => /^9[56]=/.test(u.k)), lo = L.reduce((a, u) => a + u.lo, 0), hi = L.reduce((a, u) => a + u.hi, 0);
-  const st = plan ? "The plan's: matt black taps, a white bath panel" : [`${upNm(BATH_FITS, q.f)} taps, ${upNm(BATH_PANELS, q.p).toLowerCase()} bath panel`, hi ? upRange(lo, hi) : ""].filter(Boolean).join(" · ");
-  const bs = [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(plan ? [] : [btn("The plan's", { bathplan: "1" })]), btn("Hold to compare", { finhold: "1" }, undefined, "", "Hold to compare: as planned till you let go"), btn("The tiles", { actopen: "fin:bathroom:90" })];
+  const q = bathNow(), plan = q.f === "black" && q.p === "white" && q.m === "oak", L = roomUps("bathroom").filter(u => /^9[567]=/.test(u.k)), lo = L.reduce((a, u) => a + u.lo, 0), hi = L.reduce((a, u) => a + u.hi, 0);
+  const st = plan ? "The plan's: black taps, white panel, oak mirror" : [`${upNm(BATH_FITS, q.f)} taps, ${upNm(BATH_PANELS, q.p).toLowerCase()} panel, ${q.m === "oak" ? "oak" : upNm(BATH_MIRS, q.m).toLowerCase()} mirror`, hi ? upRange(lo, hi) : ""].filter(Boolean).join(" · ");
+  const bs = [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(plan ? [] : [btn("The plan's", { bathplan: "1" })]), btn("Hold to compare", { finhold: "1" }, undefined, "", "Hold to compare: as planned till you let go"), btn("The tiles", { actopen: "fin:bathroom:90" }),
+    ...[["bath.toilet", "Toilet"], ["bath.vanity", "Vanity"]].filter(([id]) => typeof swapKind === "function" && swapKind(id)).map(([id, t]) => btn(t, { actopen: "hswap:" + id }))];   // the bathroom's own suites: its Swap it (08_house_catalogue.js)
   const sw = (at, k, t, c, now) => `<button type="button" class="sw" data-${at}="${k}" style="--c:${c}" aria-pressed="${now === k}" title="${t}" aria-label="${t}"><i></i><span>${t}</span></button>`;
-  return ["Bathroom: taps and bath panel", st, bs, null, `<div class="r3d-fin"><span class="r3d-finlab">Taps and shower</span><div class="r3d-fintray" role="group" aria-label="Taps and shower">${BATH_FITS.map(([k, t, c]) => sw("bathf", k, t, c, q.f)).join("")}</div>`
-    + `<span class="r3d-finlab">Bath panel</span><div class="r3d-fintray" role="group" aria-label="Bath panel">${BATH_PANELS.map(([k, t, c]) => sw("bathp", k, t, c, q.p)).join("")}</div></div>`];
+  return ["Bathroom: taps, panel, mirror", st, bs, null, `<div class="r3d-fin"><span class="r3d-finlab">Taps and shower</span><div class="r3d-fintray" role="group" aria-label="Taps and shower">${BATH_FITS.map(([k, t, c]) => sw("bathf", k, t, c, q.f)).join("")}</div>`
+    + `<span class="r3d-finlab">Bath panel</span><div class="r3d-fintray" role="group" aria-label="Bath panel">${BATH_PANELS.map(([k, t, c]) => sw("bathp", k, t, c, q.p)).join("")}</div>`
+    + `<span class="r3d-finlab">Mirror</span><div class="r3d-fintray" role="group" aria-label="Mirror">${[["oak", "Oak, the plan's", 0, 0, 0, 0, "#b8844f"], ...BATH_MIRS].map(r => sw("bathm", r[0], r[1], r[6], q.m)).join("")}</div></div>`];
 }
-if (act) act.addEventListener("click", e => { const b = e.target.closest("[data-bathf],[data-bathp],[data-bathplan]");
+if (act) act.addEventListener("click", e => { const b = e.target.closest("[data-bathf],[data-bathp],[data-bathm],[data-bathplan]");
   if (!b || GS.actId !== "fin:bathroom:95") return; e.stopPropagation(); const d = b.dataset;
-  if (d.bathplan) { finPush(); const o = (S.fin || {}).bathroom || {}; delete o[95]; delete o[96]; if (S.fin && S.fin.bathroom && !Object.keys(o).length) delete S.fin.bathroom; store.set(KEY, S); bathApply(); finSchDraw(); toast("Bathroom: the plan's taps and panel"); }
-  else if (d.bathf) bathSet(95, d.bathf); else bathSet(96, d.bathp);
+  if (d.bathplan) { finPush(); const o = (S.fin || {}).bathroom || {}; delete o[95]; delete o[96]; delete o[97]; if (S.fin && S.fin.bathroom && !Object.keys(o).length) delete S.fin.bathroom; store.set(KEY, S); bathApply(); finSchDraw(); toast("Bathroom: the plan's taps, panel and mirror"); }
+  else if (d.bathf) bathSet(95, d.bathf); else if (d.bathm) bathSet(97, d.bathm); else bathSet(96, d.bathp);
   renderAct(); }, true);
+/* N225 (its rest): the bathroom's mirror hers (slot 97): round, a mirror cabinet, arched in black or brass. The plan's oak frame and its
+   light bar folded away (their faces to a point, as the plan's blinds), hers drawn on the wall from the house's own materials (no new
+   shader), the bar over its top; the plan's back while held. fit.SOURCES n225mirror */
+const BATH_MIRS = [["round", "Round, black", 50, 50, 3, "black", "#1d1d1f", [25, 25]], ["cabinet", "Mirror cabinet", 50, 60, 13, "gloss", "#e7e8e6", [40, 40]],
+  ["arch", "Arched, black", 50, 80, 3, "black", "#2a2a2c", [45, 45]], ["brass", "Arched, brass", 50, 80, 3, "brass", "#c9b58a", [50, 50]]];   // key, name, W × H × D cm, its frame's (or body's) material, swatch, £ (IKEA LINDBYN 50, NYSJÖN 50 × 13 × 60; B&Q Aveli 500 × 800)
+const MIR_HK = new Set(["oak", "mirror", "black", "led"]), MIR_ORIG = new WeakMap(); let MIR_LAID = [], MIR_REDO = 0;
+function mirBox() { const it = HIT("bath.mirror"); return it ? (typeof pieceBox === "function" ? pieceBox("bath.mirror") : it.b) : null; }
+function mirHide(b, on) {   // the plan's frame, glass, bar and strip in the mirror's box: folded to a point (on), or back
+  const key = on ? b.map(Math.round).join() : ""; let n = 0;
+  houseG.traverse(me => { const hk = me.isMesh && me.material && !Array.isArray(me.material) && (me.material.userData || {}).hk; if (!MIR_HK.has(hk) || me.userData.bmir) return;
+    const P = me.geometry.attributes.position, st = MIR_ORIG.get(P); if (st ? st.key === key : !key) return;   // a roomCull twin shares its attribute: once
+    const a = st ? st.a : P.array.slice(); MIR_ORIG.set(P, { a, key }); P.array.set(a);
+    if (on) { let k = -1; for (let i = 0; i < P.count; i++) { const x = -a[3 * i] / M, y = a[3 * i + 1] / M, z = a[3 * i + 2] / M;
+      if (x > b[3] - 6 && x < b[3] + 1 && y > b[1] - 1 && y < b[4] + 4 && z > b[2] - 1 && z < b[5] + 1) { if (k < 0) k = i; P.array.copyWithin(3 * i, 3 * k, 3 * k + 3); } } }
+    P.needsUpdate = true; n++; });
+  if (n && typeof joinDrop === "function") { joinDrop(); if (typeof roomCull === "function") roomCull(true); }
+}
+function mirGeos(st, b) {   // {material: [geometries]}: her mirror on the wall's face at the plan's middle, its bottom where the plan's was
+  const [, , W, H, D] = st, xf = b[3], y0 = b[1], zc = (b[2] + b[5]) / 2, out = {}, put = (mk, g) => (out[mk] = out[mk] || []).push(g);
+  const outline = (w, h, u0 = 0, v0 = 0, P = new THREE.Shape()) => { if (st[0] === "round") P.absarc(u0, v0 + w / 2, w / 2, 0, Math.PI * 2, false);
+    else if (st[0] === "cabinet") { P.moveTo(u0 - w / 2, v0); P.lineTo(u0 + w / 2, v0); P.lineTo(u0 + w / 2, v0 + h); P.lineTo(u0 - w / 2, v0 + h); P.lineTo(u0 - w / 2, v0); }
+    else { P.moveTo(u0 - w / 2, v0); P.lineTo(u0 + w / 2, v0); P.lineTo(u0 + w / 2, v0 + h - w / 2); P.absarc(u0, v0 + h - w / 2, w / 2, 0, Math.PI, false); P.lineTo(u0 - w / 2, v0); }
+    return P; };
+  const rect = (u0, v0, u1, v1) => { const P = new THREE.Shape(); P.moveTo(u0, v0); P.lineTo(u1, v0); P.lineTo(u1, v1); P.lineTo(u0, v1); P.lineTo(u0, v0); return P; };
+  const ext = (mk, P, t0, t1) => {   // a shape on the wall (u along it, v up), out from t0 to t1 cm: into the house's frame, wound back (x is mirrored into the world)
+    const g = new THREE.ExtrudeGeometry(P, { depth: t1 - t0, bevelEnabled: false, curveSegments: 24 }), A = g.attributes.position, c = new THREE.Vector3();
+    for (let i = 0; i < A.count; i++) { c.copy(v3(xf - t0 - A.getZ(i), y0 + A.getY(i), zc + A.getX(i))); A.setXYZ(i, c.x, c.y, c.z); }
+    const L = Object.values(g.attributes); for (let i = 0; i + 2 < A.count; i += 3) for (const a of L) for (let e = 0; e < a.itemSize; e++) { const j = (i + 1) * a.itemSize + e, k = (i + 2) * a.itemSize + e, t = a.array[j]; a.array[j] = a.array[k]; a.array[k] = t; }
+    g.deleteAttribute("normal"); g.computeVertexNormals(); g.clearGroups(); put(mk, g); };
+  if (st[0] === "cabinet") { ext(st[5], outline(W, H), 0, D); ext("mirror", rect(-W / 2 + 0.6, 0.6, 0.15, H - 0.6), D, D + 0.5); ext("mirror", rect(-0.15, 0.6, W / 2 - 0.6, H - 0.6), D + 0.7, D + 1.2); }   // NYSJÖN: its body, two sliding mirror doors
+  else { const f = 2.2, P = outline(W, H); P.holes.push(outline(W - 2 * f, H - 2 * f, 0, f)); ext(st[5], P, 0, D); ext("mirror", outline(W - 2 * f + 0.4, H - 2 * f + 0.4, 0, f - 0.2), 0.6, D - 0.6); }
+  const top = H + 1, bw = Math.min(40, W - 6), bd = st[0] === "cabinet" ? D + 1 : 4.6;   // the light bar over its top, its lit strip under
+  ext("black", rect(-bw / 2, top, bw / 2, top + 2.5), 0, bd); ext("led", rect(-bw / 2 + 1, top - 0.4, bw / 2 - 1, top), 0.8, bd - 0.8);
+  return out;
+}
+function mirApply(k) {   // her mirror (k: its key, "oak" the plan's) on the bathroom's wall, or the plan's back
+  if (!houseG || !R.HOUSE3 || !FIN.mat3) return;
+  if (HBUILD && !HBUILD.bath) { const b0 = HBUILD; HBUILD = Object.assign((fk, F) => { const r = b0(fk, F);   // a floor rebuilt (a swap, an edit) drops what's laid on it: laid again
+    if (!MIR_REDO) { MIR_REDO = 1; Promise.resolve().then(() => { MIR_REDO = 0; bathApply(); }); } return r; }, b0, { bath: 1 }); }
+  for (const me of MIR_LAID) { me.parent && me.parent.remove(me); me.geometry.dispose(); } MIR_LAID = [];
+  const st = BATH_MIRS.find(([q]) => q === k), b = mirBox(), r = (R.HOUSE3.rooms || {}).bathroom, g = r && HFLOOR[HCFK[String(r[4])]];
+  if (!b || !g) return; mirHide(b, !!st); if (!st) return;
+  for (const [mk, geos] of Object.entries(mirGeos(st, b))) { const m = FIN.mat3(mk), mg = mergeGeometries(geos); geos.forEach(q => q.dispose()); if (!mg || !m) continue;
+    const geo = m.map ? worldUV(mg, mk) : mg; if (m.lightMap && !geo.attributes.uv1) geo.setAttribute("uv1", new THREE.BufferAttribute(new Uint16Array(geo.attributes.position.count * 2), 2, true));
+    const me = new THREE.Mesh(geo, m); me.castShadow = mk !== "led"; me.receiveShadow = true; me.userData.bmir = true; g.add(me); MIR_LAID.push(me); }
+}
