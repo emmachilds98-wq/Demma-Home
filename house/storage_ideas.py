@@ -255,53 +255,254 @@ def reserves():
             ("the walk into the store (55 wide)", [st["x0"], yl, st["z0"], st["x0"] + 55.0, yl + 200.0, st["z1"] - 60.0])]]
 
 
-def checks():
-    """[(name, ok, note)]: each piece in its room, clear of the house's boxes, the doors' swings, the slopes and the space kept clear; its
-    back on a wall or a fixed box; its source cited."""
+# ------------------------------------------------------------------------------------------------ N243: places for storage and furniture
+# Emma, 23 Nov 2026: "Expand the catalogue you offer for options and where they go to." Each spot is a box the house leaves free (read from
+# the model: survey_data, model, the living room's plan in media-wall/src/geometry.py), clear of the doors' swings, the walks and the windows
+# as an idea's piece is (checks); what kinds of thing suit it; the catalogue's pieces that fit it (spot_fits). Options to look at only.
+USES = ("records", "books", "games", "media", "shoes", "coats", "toys", "laundry", "display", "boxes", "plants",
+        "sofa", "armchair", "coffee", "side", "dining", "desk", "bed", "lamp", "rug", "chest", "wardrobe")
+# each idea's spot (its first piece's box): what suits it
+IDEA_USES = {"records": ["records", "media"], "faceout": ["records", "display"], "pegboard": ["media", "boxes"], "ledges": ["display", "plants"],
+             "overdoor": ["boxes", "books"], "drawers": ["media", "boxes"], "airer": ["laundry"], "booktower": ["books", "games", "display"],
+             "books": ["books", "games"], "glasscase": ["display"], "hooks": ["coats"], "radshelf": ["boxes", "display"],
+             "barshelf": ["books", "display"], "store": ["boxes", "media", "toys"]}
+
+
+def _new_spots():
+    """[dict(id, room, n, at, box, back, uses)]: at "floor" (stands on it; it may turn), "wall" (hung, its back on the wall), "over door",
+    "alcove", "slope" (under the roof), "ceiling" (hung from it), "top" (stands on a fixed piece); box [x0, y0, z0, x1, y1, z1] the most
+    it may take, house cm; back the side against the wall (the piece faces away from it), "y1" the ceiling."""
+    yl, yg, y1, C = FY["lower"], FY["ground"], FY["first"], M.CEIL
+    out = []
+    sp = lambda i, room, n, at, box, back, uses: out.append(dict(id=i, room=room, n=n, at=at, box=[round(v, 1) for v in box], back=back, uses=uses))
+    hd = lambda f: FY[f] + 211.0                                            # over a door's frame head (204) and its swing (205)
+    top = lambda f: FY[f] + C - 2.0                                         # 2 under the ceiling
+    # ------------------------------------------------ the living room (its plan's pieces from media-wall/src/clash.py)
+    G = M.Gm
+    wc, wz = G.WALL_CABS, G.WRAP_Z
+    sp("lr_overledge", "living", "Over the side wall's ledge", "wall", [0, 195.0, wz[1] + 6, 22.0, 230.0, wz[0] - 8], "x0",
+       ["books", "display", "records", "plants"])
+    sp("lr_cabtop", "living", "On the wall cabinets", "top", [0, wc["y0"] + G.EKET[2] + 1, wc["z"][1], G.EKET[1], C - 2.0, wc["z"][0]], "x0",
+       ["display", "plants", "boxes"])
+    lx = G.FLOOR_LAMP_SPOTS["sofa"][1][0] - G.FLOOR_LAMP["base"] / 2
+    sp("lr_armend", "living", "By the sofa's arm, at the window", "floor", [G.SOFABED_X[1] + 5, 0, G.SOFA_BACK_Z + 1, lx - 2, G.WINDOW_Y[0] - 3,
+       G.SOFA_BACK_Z + 28], "z0", ["side", "plants", "lamp", "records", "display"])
+    # ------------------------------------------------ the kitchen
+    k, kd, b = _room("kitchen"), _door("kitchen_door"), _box("kitchen.boiler")
+    sp("k_overdoor", "kitchen", "Over the kitchen door", "over door", [k["x1"] - 20, hd("lower"), kd["a"] - 3, k["x1"], top("lower"), kd["b"] + 3], "x1",
+       ["books", "boxes", "display"])
+    sp("k_airer", "kitchen", "Over the floor by the washer", "ceiling", [105.0, yl + C - 34, -244.0, 225.0, yl + C, -206.0], "y1", ["laundry"])
+    # ------------------------------------------------ the WC
+    w = _room("wc")
+    sp("wc_shelf", "wc", "Beside the window, over the toilet", "wall", [w["x1"] - 18, yl + 130, w["z0"] + 14, w["x1"], yl + 190, w["z0"] + 57], "x1",
+       ["boxes", "display", "plants"])
+    sp("wc_cab", "wc", "Over the basin", "wall", [w["x0"], yl + 140, -245.0, w["x0"] + 15, yl + 200, -195.0], "x0", ["boxes", "display"])
+    sp("wc_corner", "wc", "The corner past the toilet", "floor", [w["x1"] - 28, yl, -237.0, w["x1"] - 2, yl + 80, -200.0], "x1", ["boxes", "laundry"])
+    # ------------------------------------------------ the bathroom (the back slope over its east side)
+    bt, bd = _room("bathroom"), _door("bath_door")
+    sp("bath_overdoor", "bathroom", "Over the bathroom door", "over door", [bd["a"], hd("first"), bt["z1"] - 22, bd["b"], top("first"), bt["z1"] - 2], "z1",
+       ["boxes", "display"])
+    b1 = _room("bathroom_1")
+    sp("bath_tower", "bathroom", "Beside the vanity", "floor", [b1["x1"] - 30, y1, -82.0, b1["x1"], y1 + 180, b1["z1"] - 2], "x1", ["boxes", "laundry"])
+    sp("bath_slope", "bathroom", "Under the slope past the toilet", "slope", [412.0, y1, -250.0, b1["x1"], M.headroom(412.0, b1["x1"], -250.0) - 1, -195.0],
+       "x1", ["laundry", "boxes"])
+    # ------------------------------------------------ the hall
+    h, fd, ld = _room("hall"), _door("hall_porch"), _door("living_door")
+    sp("hall_overfront", "hall", "Over the front door", "over door", [fd["a"] - 5, hd("ground"), h["z1"] - 20, fd["b"] + 5, top("ground"), h["z1"]], "z1",
+       ["boxes", "books", "display"])
+    sp("hall_overliving", "hall", "Over the living room door", "over door", [h["x0"] + 2, hd("ground"), h["z0"], 376.0, top("ground"), h["z0"] + 20], "z0",
+       ["books", "display", "boxes"])
+    sp("hall_bymirror", "hall", "Past the mirror, by the stairs", "floor", [h["x1"] - 29, yg, 264.0, h["x1"] - 2, yg + 90, 291.0], "x1",
+       ["shoes", "side", "boxes", "plants"])
+    sp("hall_stairside", "hall", "High along the stairs' side", "wall", [360.0, hd("ground"), 70.0, 378.0, top("ground"), 250.0], "x1", ["books", "display"])
+    # ------------------------------------------------ the landing
+    la, b3 = _room("landing"), _door("bed3_door")
+    sp("land_overbath", "landing", "Over the bathroom door", "over door", [bd["a"], hd("first"), la["z0"] + 2, bd["b"], top("first"), la["z0"] + 22], "z0",
+       ["books", "boxes", "display"])
+    sp("land_overoffice", "landing", "Over the office door", "over door", [b3["a"], hd("first"), la["z1"] - 22, b3["b"], top("first"), la["z1"] - 2], "z1",
+       ["books", "games", "boxes"])
+    sp("land_byoffice", "landing", "By the office door, under the switch", "floor", [la["x0"] + 2, y1, 234.0, la["x0"] + 24, y1 + 110, la["z1"] - 2], "x0",
+       ["books", "display", "plants", "boxes"])
+    # ------------------------------------------------ under the stairs (the store)
+    st = _room("lower_store")
+    sp("store_overwasher", "lower_store", "Over the washer dryer", "wall", [st["x0"], yl + 92, st["z1"] - 25, st["x0"] + 60, top("lower"), st["z1"]], "z1",
+       ["laundry", "boxes"])
+    sd, sx1 = _door("store_door"), _box("lower.stair_box")[0]
+    H, r = M.hang("lower", sd, 1.75), sd["b"] - sd["a"]
+    zs = sd["line"] + H["side"] * ((r * r - (sx1 - 30.5 - H["hinge"]) ** 2) ** 0.5 + 2.0) + 90.0   # past the store idea's shelves
+    sp("store_end", "lower_store", "The store's far end, past the shelves", "floor", [st["x0"] + 61.0, yl, zs, sx1 - 0.5, yl + 200, st["z1"] - 2], "x1",
+       ["boxes", "media", "toys", "laundry", "shoes"])
+    sp("store_high", "lower_store", "High over the way in", "wall", [st["x0"], yl + 206, st["z0"] + 9, st["x0"] + 20, top("lower"), st["z1"] - 63], "x0",
+       ["boxes", "coats"])
+    # ------------------------------------------------ bedroom 2
+    b2, d2 = _room("bed2"), _door("bed2_door")
+    sp("bed2_overdoor", "bed2", "Over its door", "over door", [b2["x1"] - 20, hd("first"), d2["a"] - 3, b2["x1"], top("first"), d2["b"] + 3], "x1",
+       ["records", "books", "boxes", "display"])
+    # ------------------------------------------------ the master bedroom
+    ms, m1 = _room("master"), _room("master_1")
+    sp("master_corner", "master", "The corner past the bedside", "floor", [ms["x0"] + 2, y1, 453.0, 47.0, y1 + 200, ms["z1"] - 2], "x0",
+       ["laundry", "plants", "lamp", "books", "display"])
+    sp("master_bywindow", "master", "Past the bed's foot, by the window", "floor", [m1["x1"] - 37, y1, 410.0, m1["x1"] - 2, y1 + 200, 452.0], "x1",
+       ["books", "display", "boxes", "shoes", "chest"])
+    # ------------------------------------------------ bedroom 3, the office
+    of = _room("bed3")
+    sp("office_low", "bed3", "Under the cube shelves", "floor", [270.5, y1, 308.0, 300.5, y1 + 108, 344.0], "x0",
+       ["boxes", "media", "games", "books"])
+    sp("office_overdoor", "bed3", "Over its door", "over door", [b3["a"], hd("first"), of["z0"] + 2, b3["b"], top("first"), of["z0"] + 22], "z0",
+       ["books", "games", "boxes"])
+    # ------------------------------------------------ the garage
+    g = _room("garage")
+    sp("garage_wall", "garage", "The garage's side wall", "floor", [g["x0"], yg - 15, 100.0, g["x0"] + 45, yg + 200, 235.0], "x0",
+       ["boxes", "toys", "shoes", "coats"])
+    return out
+
+
+@functools.lru_cache(None)
+def _spots():
+    out = []
+    for i in ideas():                                                     # the ideas' own places first (their pieces' boxes)
+        p = i["parts"][0]
+        b = p["box"]
+        at = "ceiling" if p["cat"] == "st_airer" else "floor" if b[1] in FY.values() else "over door" if i["id"] in ("overdoor", "books") else "wall"
+        out.append(dict(id=i["id"], room=i["room"], n=i["where"].split(", ", 1)[-1].capitalize(), at=at, box=b, back=p["back"],
+                        uses=IDEA_USES.get(i["id"], ["boxes"]), idea=i["id"], new=False))
+    out += [dict(s, new=True) for s in _new_spots()]
+    for s in out:
+        b, k = s["box"], s["back"]
+        a = 2 if k in ("x0", "x1") else 0                                 # along its wall
+        s["w"], s["d"], s["h"] = round(b[a + 3] - b[a], 1), round(b[2 - a + 3] - b[2 - a], 1), round(b[4] - b[1], 1)
+        if k == "y1":
+            s["w"], s["d"] = round(b[3] - b[0], 1), round(b[5] - b[2], 1)
+        s["face"] = {"x0": "+x", "x1": "-x", "z0": "+z", "z1": "-z", "y1": "down"}[k]
+    return out
+
+
+def spots():
+    """Every place a piece can go: the ideas' own and N243's (see _new_spots), each with w (along its wall), d (out from it), h, its facing."""
+    return [dict(s) for s in _spots()]
+
+
+# a catalogue piece's uses from its kind, where its row gives none (N219's rooms' pieces)
+KIND_USES = {"records": ["records", "toys", "media"], "shelves": ["books", "display", "games"], "display": ["display"], "shoes": ["shoes"],
+             "chest": ["boxes", "chest"], "bedside": ["boxes", "side"], "tv": ["media", "games"], "sideboard": ["media", "boxes"],
+             "lamp": ["lamp"], "coffee": ["coffee"], "side": ["side"], "console": ["side", "display"], "dining": ["dining"], "seat": ["armchair"],
+             "rug": ["rug"], "desk": ["desk"], "bed": ["bed"], "wardrobe": ["wardrobe"], "deskchair": [], "stool": [], "toilet": [], "basin": []}
+AT_ON = {"floor": "floor", "slope": "floor", "alcove": "floor", "top": "floor", "wall": "wall", "over door": "wall", "ceiling": "ceil"}
+
+
+def piece_on(q):
+    """Where a catalogue piece goes: "floor", "wall" (hung) or "ceil"."""
+    return q.get("on") or ("wall" if str(q.get("look", "")).startswith("st_") else "floor")
+
+
+def piece_uses(q):
+    return q.get("use") or KIND_USES.get(q["kind"], [])
+
+
+def fits_spot(q, s):
+    """Does catalogue piece q go in spot s: its kind of place, a use the spot suits, its size (a free-standing piece may turn; 1 cm spare)."""
+    if piece_on(q) != AT_ON[s["at"]] or not set(piece_uses(q)) & set(s["uses"]):
+        return False
+    w, d, h = q["w"], q["d"], q.get("h") or 1
+    if h > s["h"] + 1:
+        return False
+    ok = lambda a, b: a <= s["w"] + 1 and b <= s["d"] + 1
+    return ok(w, d) or (s["at"] in ("floor", "top", "ceiling") and ok(d, w))
+
+
+@functools.lru_cache(None)
+def _fits():
     import sys, pathlib
     sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "media-wall/src"))
     import fit
-    e = M.export()
-    sizes = M.room_sizes()
-    over = lambda a, b, s=0.5: all(a[i] + s < b[i + 3] and b[i] < a[i + 3] - s for i in range(3))
+    out = {s["id"]: [] for s in _spots()}
+    for q in fit.shop_pieces() + fit.opt_pieces() + fit.cat_pieces():
+        key = fit.shop_key(q)
+        for s in _spots():
+            if (s["id"] in q.get("spots", []) or fits_spot(q, s)) and key not in out[s["id"]]:
+                out[s["id"]].append(key)
+    return out
 
-    def swept(d, H, b, y0):
-        """Does box b cut the door's swing (as it opens, model.swing_into: from its hinge, on the side it opens to, 205 high)?"""
-        return M.swing_into(d, H, b, y0) > 0.5
+
+def spot_fits():
+    """{spot id: [catalogue keys (fit.shop_key) that fit it]}: N219's, N242's (its own spots too) and N243's pieces."""
+    return {k: list(v) for k, v in _fits().items()}
+
+
+def _tester():
+    """The fit test the ideas and the spots share: why(box, room, back) -> [what it hits]: outside its room, the house's solid boxes (and in
+    the living room its plan's pieces), the doors' swings, the space kept clear, the slopes or the ceiling, its back off a wall ("y1": off
+    the ceiling; None: free-standing, no back to test)."""
+    import sys, pathlib
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "media-wall/src"))
+    e = M.export()
+    sizes = dict(M.room_sizes())
+    lv = M.living_shell()
+    sizes["living"] = dict(floor="ground", x0=lv["box"][0], x1=lv["box"][1], z0=lv["box"][2], z1=lv["box"][3])
+    over = lambda a, b, s=0.5: all(a[i] + s < b[i + 3] and b[i] < a[i + 3] - s for i in range(3))
     swings = [(f, d, M.hang(f, d, 1.75)) for f in FY for d in M.doors(f) if d["id"] not in ("store_w", "store_e", "hall_porch")]
     swings += [("ground", d, M.hang("ground", d, 1.75)) for d in M.doors("ground") if d["id"] == "hall_porch"]
+    solid = {}
+    for fk, F in e["floors"].items():
+        tags, L = F.get("tags", []), []
+        for m, B in F["boxes"].items():
+            if m in SOFT or m.startswith("shade"):
+                continue
+            L += [(q, f"{m} of {tags[t] if t >= 0 else 'the shell'}") for q, t in zip(B, F.get("bt", {}).get(m, [-1] * len(B)))]
+        solid[fk] = L
+    fixed = {fk: [q for q, _n in L] for fk, L in solid.items()}
+    fixed_items = [q for iid, q in _bb().items() if M.ITEMS.get(iid, {}).get("kind") == "fixed"]   # a boxed-in flight's side
+    living = [([x[0], y[0], z[0], x[1], y[1], z[1]], n) for n, x, y, z in _living_pieces()]          # the living room's plan (its own scene)
+
+    def why(b, rid, back):
+        rm, bad = sizes[rid], []
+        if not (rm["x0"] - 1 <= b[0] and b[3] <= rm["x1"] + 1 and rm["z0"] - 1 <= b[2] and b[5] <= rm["z1"] + 1):
+            bad.append("outside its room")
+        fk = rm["floor"]
+        bad += [n for q, n in solid[fk] + (living if rid == "living" else []) if over(b, q)]
+        bad += [f"{d['id']}'s swing" for f, d, H in swings if f == fk and M.swing_into(d, H, b, FY[f]) > 0.5]
+        bad += [n for n, q, _ in reserves() if over(b, q)]
+        top = FY[fk] + M.CEIL
+        if fk == "first":
+            top = min(M.headroom(b[0], b[3], z) for z in (b[2], b[5]))
+            if b[4] > top + 0.5:
+                bad.append(f"the slope ({top - FY['first']:.0f} there)")
+        elif b[4] > top + 0.5:
+            bad.append("the ceiling")
+        if back == "y1":
+            if abs(b[4] - top) > 3:
+                bad.append(f"not on the ceiling ({abs(b[4] - top):.0f} off)")
+        elif back:
+            k, hi = {"x": 0, "z": 2}[back[0]], back[1] == "1"          # its back: on its room's wall, or on a fixed box's face
+            c = b[k + 3] if hi else b[k]
+            wall = rm["x1" if k == 0 else "z1"] if hi else rm["x0" if k == 0 else "z0"]
+            o = [j for j in (0, 1, 2) if j != k]
+            on = abs(c - wall) <= 3 or any(abs((q[k] if hi else q[k + 3]) - c) <= 2 and all(q[j] < b[j + 3] and b[j] < q[j + 3] for j in o)
+                                           for q in fixed[fk] + fixed_items)
+            if not on:
+                bad.append(f"its back not on a wall ({abs(c - wall):.0f} off)")
+        return bad
+    return why, over
+
+
+def _living_pieces():
+    """The living room's plan as boxes (media-wall/src/clash.py: its own scene, in the house's numbers), and the face-out LPs on the side
+    wall's ledge (sleeves 31.4 standing on it)."""
+    import clash
+    G = M.Gm
+    return clash.pieces() + [("the LPs on the side wall's ledge", (0, 9), (G.LEDGE_TOP, G.LEDGE_TOP + 33), (G.WRAP_Z[1], G.WRAP_Z[0]))]
+
+
+def checks():
+    """[(name, ok, note)]: each piece in its room, clear of the house's boxes, the doors' swings, the slopes and the space kept clear; its
+    back on a wall or a fixed box; its source cited. N243: each new spot the same; every room has one; every catalogue piece fits one."""
+    why, over = _tester()
+    import fit
     res, seen = [], set()
     for i in ideas():
         bad = []
         for p in i["parts"]:
-            b, rm = p["box"], sizes[i["room"]]
-            if not (rm["x0"] - 1 <= b[0] and b[3] <= rm["x1"] + 1 and rm["z0"] - 1 <= b[2] and b[5] <= rm["z1"] + 1):
-                bad.append("outside its room")
-            fk = rm["floor"]
-            F = e["floors"][fk]
-            tags = F.get("tags", [])
-            solid = []
-            for m, L in F["boxes"].items():
-                if m in SOFT or m.startswith("shade"):
-                    continue
-                for q, t in zip(L, F.get("bt", {}).get(m, [-1] * len(L))):
-                    solid.append(q)
-                    if over(b, q):
-                        bad.append(f"{m} of {tags[t] if t >= 0 else 'the shell'}")
-            bad += [f"{d['id']}'s swing" for f, d, H in swings if f == fk and swept(d, H, b, FY[f])]
-            bad += [n for n, q, _ in reserves() if over(b, q)]
-            if fk == "first":
-                top = min(M.headroom(b[0], b[3], z) for z in (b[2], b[5]))
-                if b[4] > top + 0.5:
-                    bad.append(f"the slope ({top - FY['first']:.0f} there)")
-            k, hi = {"x": 0, "z": 2}[p["back"][0]], p["back"][1] == "1"          # its back: on its room's wall, or on a fixed box's face
-            c = b[k + 3] if hi else b[k]
-            wall = rm["x1" if k == 0 else "z1"] if hi else rm["x0" if k == 0 else "z0"]
-            o = [j for j in (0, 1, 2) if j != k]
-            fixed = solid + [q for iid, q in _bb().items() if M.ITEMS.get(iid, {}).get("kind") == "fixed"]   # a boxed-in flight's side
-            on = abs(c - wall) <= 3 or any(abs((q[k] if hi else q[k + 3]) - c) <= 2 and all(q[j] < b[j + 3] and b[j] < q[j + 3] for j in o) for q in fixed)
-            if not on:
-                bad.append(f"its back not on a wall ({abs(c - wall):.0f} off)")
+            bad += why(p["box"], i["room"], p["back"])
         for ref in (i["ref"] if isinstance(i["ref"], list) else [i["ref"]]):
             if ref not in fit.SOURCES:
                 bad.append(f"no source {ref}")
@@ -313,7 +514,60 @@ def checks():
     P = [(i["id"], p["box"]) for i in ideas() for p in i["parts"]]
     cl = sorted({f"{a} and {c}" for n, (a, b) in enumerate(P) for c, d in P[n + 1:] if a != c and over(b, d)})
     res.append(("storage ideas: clear of each other", not cl, "; ".join(cl) or f"{len(P)} pieces"))
+    S, bad = spots(), []
+    for s in S:
+        if s["new"]:
+            b = why(s["box"], s["room"], None if s["at"] in ("floor", "slope", "alcove") else s["back"])
+            if b:
+                bad.append(f"{s['id']}: {'; '.join(sorted(set(b)))}")
+    ids = [s["id"] for s in S]
+    bad += [f"{q} twice" for q in sorted({q for q in ids if ids.count(q) > 1})]
+    rooms = {s["room"] for s in S}
+    bad += [f"no spot in {r}" for r in sorted({"living", "kitchen", "wc", "bathroom", "hall", "landing", "lower_store", "bed2", "master", "bed3"} - rooms)]
+    res.append(("storage spots (N243): each clear, one in every room", not bad, "; ".join(bad) or f"{len(S)} spots in {len(rooms)} rooms"))
+    F, cat = spot_fits(), fit.cat_pieces()
+    placed = {k for L in F.values() for k in L}
+    empty = [s["id"] for s in S if not F[s["id"]]]
+    nosrc = [q["name"] for q in cat if fit.shop_key(q) not in fit.SOURCES]
+    keys = [fit.shop_key(q) for q in cat]
+    twice = sorted({q["name"] for q, k in zip(cat, keys) if keys.count(k) > 1})
+    res.append(("catalogue (N243): each piece cited, each spot with pieces that fit", not empty and not nosrc and not twice,
+                "; ".join([f"nothing fits {i}" for i in empty] + [f"no source {n}" for n in nosrc] + [f"{n} twice" for n in twice])
+                or f"{len(cat)} pieces from {len({q['retailer'] for q in cat})} shops; {len(placed)} of all the shops' pieces fit a spot"))
     return res
+
+
+def piece_room_only(q):
+    """A piece of furniture (a sofa, a bed, a table, a lamp, a rug): it goes in a room (N218's add, N217's swap), not in a storage spot."""
+    return not set(piece_uses(q)) & {"records", "books", "games", "media", "shoes", "coats", "toys", "laundry", "display", "boxes"}
+
+
+# rooms a piece of furniture suits (N244's set-ups): by its use
+ROOM_USES = {"living": ["sofa", "armchair", "coffee", "side", "lamp", "rug", "records", "books", "display", "media", "plants", "games"],
+             "kitchen": ["dining", "boxes", "laundry", "books"], "wc": ["boxes"], "bathroom": ["boxes", "laundry"],
+             "hall": ["shoes", "coats", "side", "boxes", "rug"], "landing": ["books", "display", "rug"], "lower_store": ["boxes", "laundry", "toys", "media"],
+             "bed2": ["records", "media", "armchair", "desk", "books", "games", "lamp", "rug", "bed"],
+             "master": ["bed", "chest", "wardrobe", "side", "lamp", "rug", "armchair", "display", "laundry"],
+             "bed3": ["desk", "books", "games", "media", "boxes", "armchair", "lamp", "rug", "laundry"], "garage": ["boxes", "toys", "shoes", "coats"]}
+
+
+def for_page():
+    """N243's data for the page (_site/data/ideas.json, written by tools/build.py; fetched when wanted, not in the page): the spots, the
+    catalogue's rows, what fits where and which rooms suit what. The shape: docs/NOTES.md ("N243: the ideas data")."""
+    import sys, pathlib
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1] / "media-wall/src"))
+    import fit, export3d
+    F = spot_fits()
+    rows = {}
+    for q in fit.shop_pieces() + fit.opt_pieces() + fit.cat_pieces():
+        r = export3d.cat_row(q)
+        rows.setdefault(r[0], r)
+    used = {k for L in F.values() for k in L}
+    rooms = {rid: [k for k, r in rows.items() if set(r[14].split(",")) & set(U)] for rid, U in ROOM_USES.items()}
+    return dict(v=1, cols=["key", "kind", "look", "name", "shop", "w", "d", "h", "price", "url", "mat", "mat2", "count", "on", "uses"],
+                spots=[dict(id=s["id"], room=s["room"], n=s["n"], at=s["at"], b=s["box"], back=s["back"], face=s["face"], w=s["w"], d=s["d"], h=s["h"],
+                            uses=s["uses"], **({"idea": s["idea"]} if s.get("idea") else {})) for s in _spots()],
+                pieces=list(rows.values()), fits=F, rooms=rooms, n=dict(spots=len(_spots()), pieces=len(rows), placed=len(used)))
 
 
 if __name__ == "__main__":
@@ -329,3 +583,7 @@ if __name__ == "__main__":
     print("\nideas:")
     for r in rows():
         print("  ·", r)
+    print("\nspots (N243):")
+    F = spot_fits()
+    for s in spots():
+        print(f"  {s['room']:11} {s['id']:16} {s['at']:9} {s['w']:g} × {s['d']:g} × {s['h']:g}  {','.join(s['uses'])}: {len(F[s['id']])} fit")

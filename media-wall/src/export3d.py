@@ -285,7 +285,8 @@ def scene():
 
 
 # N219: a shop's piece for the page: [key, kind, look, name, shop, w, d, h, £, page, its material, its legs' or frame's, a count (drawers or doors)]
-SHOP_KIND = {"deskchair": "chair", "records": "shelves", "display": "shelves", "dining": "table", "coffee": "table", "tv": "unit", "sideboard": "unit"}   # N230: shoes and stools their own
+SHOP_KIND = {"deskchair": "chair", "records": "shelves", "display": "shelves", "dining": "table", "coffee": "table", "tv": "unit", "sideboard": "unit",
+             "side": "table", "console": "table"}   # N230: shoes and stools their own; N243: side and console tables
 SHOP_MAT = [(r"jute|rattan|cane|bamboo", "sisal"), (r"white stain", "door_white"), (r"green|sage|olive|yellow", "cloth3"), (r"blue", "cloth0"), (r"grey", "cloth5"),
             (r"black-brown", "black"), (r"walnut", "pine_dark"), (r"mink|beige|latte|natural fabric", "cloth1"), (r"cherry|whisky|\btan\b|golden|honey|brown|leather", "door_wood"),
             (r"orange|rosehip|\bred\b", "cloth2"), (r"off-white|cream|linen|white fabric|wool|cotton", "cloth4"), (r"brass", "brass"), (r"white", "door_white"),
@@ -352,6 +353,8 @@ def shop_row(q):
         look = "vanity" if re.search(r"vanity", n, re.I) else "corner" if re.search(r"corner", n, re.I) else "semi" if re.search(r"semi", n, re.I) else "ped"
     else:
         look = form or k
+    if q.get("form"):   # N243: the listing's form named in its row (FORMS' words, or the kind's looks)
+        look = q["form"]
     if k in ("toilet", "basin"):   # N225: glazed ware, chrome fittings (the bathroom's own materials)
         m, m2 = "sanitary", "chrome"
     pl = re.findall(r"(\d+)\s*\+\s*(\d+)", n)   # its drawers: "3 Drawer", "6 drawers", "(2+2)"
@@ -368,6 +371,12 @@ def opt_row(q):
     if q.get("look"):
         r[1], r[2] = "idea", q["look"]
     return r + [q.get("on", "")]
+
+
+def cat_row(q):
+    """N243: any catalogue piece (N219's, N242's, N243's) for the ideas data (storage_ideas.for_page): opt_row's, then its uses joined"""
+    import storage_ideas
+    return opt_row(q)[:13] + [storage_ideas.piece_on(q), ",".join(storage_ideas.piece_uses(q))]
 
 
 def main():

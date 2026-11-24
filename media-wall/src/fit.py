@@ -1510,6 +1510,23 @@ for _p in opt_pieces():
         ORDER.append(shop_key(_p))
     SOURCES[shop_key(_p)] = (f"{_p['retailer']}: {_p['name']}, {_p['finish']}, W {_p['w']:g} × D {_p['d']:g} × H {_p['h']:g} cm, £{_p['price']:g}"
                              + (f"; {_p['note']}" if _p.get("note") else "") + f" ({_p['url']}, read {_p['read']})")
+# N243 (23-24 Nov 2026): a bigger catalogue from more UK shops (docs/N243_catalogue.json, each read on its own page): storage and
+# furniture to look through, each its own row by its page and name (shop_key, as N219's), mapped to the places it fits (house/storage_ideas
+# spots, spot_fits): options to look at, nothing to buy until she picks
+def cat_pieces():
+    import json, pathlib
+    return json.loads((pathlib.Path(__file__).resolve().parents[2] / "docs/N243_catalogue.json").read_text())
+
+
+for _p in cat_pieces():
+    if shop_key(_p) not in SOURCES:
+        ORDER.append(shop_key(_p))
+    SOURCES[shop_key(_p)] = (f"{_p['retailer']}: {_p['name']}, {_p['finish']}, W {_p['w']:g} × D {_p['d']:g} × H {_p['h']:g} cm, £{_p['price']:g}"
+                             + (f"; {_p['note']}" if _p.get("note") else "") + f" ({_p['url']}, read {_p['read']})")
+# N243: the Pulley Maid airer's own page (N242 cited the shop's home page)
+SOURCES["pulleyairer"] = SOURCES["pulleyairer"].replace("Pulley Maid wall radial airer, 120 × 60 open, 20 × 10 shut, £55.99 (pulleymaid.com)",
+                                                        "Pulley Maid Modern Clothes Airer, rack ends 46 wide, 24 under the ceiling raised, from £129.99, "
+                                                        "0.9 m laths £15 (pulleymaid.com/modern-clothes-airer.htm)")
 # V4 (N152): will the sofa bed go in? Its biggest box (166 × 101 × 68, SOURCES "amelia") carried on its side, the 166 first: it needs
 # its 68 and 2 to spare (hands) across each opening on the way, the front door, the hall past the stair box and the living room door, in
 # line (no turn). A door left on its hinges, open flat, takes about its leaf's thickness (E: 4) more. The doors' widths are Measure's
