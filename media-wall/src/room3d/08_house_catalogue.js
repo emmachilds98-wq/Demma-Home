@@ -299,15 +299,15 @@ const hcMake = (k, look, m, m2, c) => {
   if (k === "toilet") return hcToilet(look, m, m2);
   if (k === "basin") return hcBasin(look, m, m2);
   if (k === "rug") return (W, H, D, B, L) => look === "round" ? L(m, W / 2, D / 2, 0, [[0, 0], [W / 2, 0], [W / 2, H], [0, H]]) : B(m, 0, 0, 0, W, H, D);
-  if (k === "lamp") return (W, H, D, B, L) => { const r = Math.min(W, D) / 2 - 0.5, sh = m === "rattan" ? "rattan" : "paper";
+  if (k === "lamp") return (W, H, D, B, L) => { const r = Math.min(W, D) / 2 - 0.5, sh = m === "rattan" ? "rattan" : /^cloth/.test(m2) ? m2 : "paper";   // N278: a linen or cloth shade in its weave
     if (look === "tripod") { const ap = H - 34, r0 = r - 1.5, rs = Math.min(19, r);   // three legs splayed from under the shade, each in eight steps
       for (let j = 0; j < 3; j++) { const a = j * 2.094 + 0.5; for (let q = 0; q < 8; q++) { const rr = r0 * (1 - (q + 0.5) / 8), cu = W / 2 + Math.cos(a) * rr, ct = D / 2 + Math.sin(a) * rr;
         B(m, cu - 1, ap * q / 8, ct - 1, cu + 1, ap * (q + 1) / 8, ct + 1); } }
-      L(m2 === m ? sh : m2, W / 2, D / 2, H - 34, [[0, 0], [rs, 0], [rs * 0.85, 30], [0, 30]]); return; }
+      L(m2 === m || /^cloth/.test(m2) ? sh : m2, W / 2, D / 2, H - 34, [[0, 0], [rs, 0], [rs * 0.85, 30], [0, 30]]); return; }
     if (look === "arc") { const u = Math.min(15, W * 0.15), tc = D / 2;   // a heavy foot, a stem, an arm out to the shade hanging over
       L("marble", u, tc, 0, [[0, 0], [Math.min(14, r), 0], [Math.min(14, r), 3], [0, 3]]); L(m, u, tc, 3, [[0, 0], [1.2, 0], [1.2, H - 15], [0, H - 15]]);
       B(m, u, H - 12, tc - 0.8, W - 15, H - 10.4, tc + 0.8); L(m2, W - 15, tc, H - 36, [[0, 0], [15, 0], [6, 24], [0, 24]]); return; }
-    L(m2, W / 2, D / 2, 0, [[0, 0], [Math.min(13, r), 0], [Math.min(13, r), 2.5], [Math.min(10, r), 4], [3, 5], [0, 5]]); L(m, W / 2, D / 2, 5, [[0, 0], [1.4, 0], [1, H - 30], [0, H - 30]]);
+    L(/^cloth/.test(m2) ? m : m2, W / 2, D / 2, 0, [[0, 0], [Math.min(13, r), 0], [Math.min(13, r), 2.5], [Math.min(10, r), 4], [3, 5], [0, 5]]); L(m, W / 2, D / 2, 5, [[0, 0], [1.4, 0], [1, H - 30], [0, H - 30]]);
     L(sh, W / 2, D / 2, H - 28, [[0, 0], [r, 0], [r * 0.82, 28], [0, 28]]); };
   if (look === "rattan") return hcCaneCase(m === "rattan" ? "birch" : m, cane, c);
   if (look === "bench") return (W, H, D, B) => { const p = ["shoe_black", "shoe_tan", "shoe_white", "shoe_grey"];   // a seat over two open shelves of shoes
