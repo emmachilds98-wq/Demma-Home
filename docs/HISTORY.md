@@ -472,3 +472,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.72** (24 Nov 2026): G5: the customisation checks in their own CI job, waits not sleeps, a test-hooks check, one CI setup, main's runs never cancelled
 - **V4.73** (24 Nov 2026): the house back under its speed budget
 - **V4.74** (24 Nov 2026): more shop pieces in Ideas, and cane and painted pieces in real textures
+- **V4.75** (24 Nov 2026): more ideas: TV units, hall, bathroom pieces and a wool rug
