@@ -52,6 +52,7 @@ addEventListener("popstate", e => {
 });
 function syncRmode() {
   if (typeof syncStick === "function") try { syncStick(); } catch (e) {}   // V1.32: the walk's stick
+  try { ixPill(); } catch (e) {}   // N244: the Ideas pill, in a room of the house
   const rm = qs("#r3d-rmode"); if (!rm) return;
   const liv = LIVV(), cur = liv ? (S.view === "room" ? "above" : S.view === "livalone" ? "alone" : S.view === "livstand" ? "stand" : "in") : GS.RMODE;
   rm.hidden = !(ROOMV() || liv); qsa("[data-rmode]", rm).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.rmode === cur)));

@@ -509,7 +509,7 @@ function lookAside(title, plan) {   // N222: the device's own set aside, once, b
 }
 function lookPill() {
   root.classList.toggle("theirs", !!ASIDE); const p = document.getElementById("r3d-theirs");
-  if (p) { p.hidden = !ASIDE; if (ASIDE) p.querySelector("b").textContent = ASIDE.title; } finSchDraw();
+  if (p) { p.hidden = !ASIDE; if (ASIDE) p.querySelector("b").textContent = ASIDE.title; } finSchDraw(); ixPill();   // N244: the Ideas pill on while its set-ups show
 }
 function lookMine() {   // Back to mine: the device's own as it was (its S, its rows); nothing was saved while the look showed
   if (!ASIDE) return; nowOff(); const A = ASIDE, s = JSON.parse(A.s); ASIDE = null; if (A.real) window.DemmaStore = A.real;
