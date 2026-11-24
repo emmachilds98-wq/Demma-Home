@@ -50,6 +50,17 @@ function pickItem(e) {
   return null;
 }
 const btn = (label, attrs, on, cls, aria) => ({ label, attrs, on, cls, aria });
+/* N254 (C2): the card kit. One swatch (finSwatch), one labelled tray (finTray), a finish card's own buttons (finButtons: Undo, The
+   plan's, Hold to compare, then its own), and one click router for the cards' trays (cardOn: a selector, which cards by their id, what
+   it does with the button's data; false: nothing to draw again). Undo is one route for every finish card */
+const finSwatch = (at, k, t, c, on, short) => `<button type="button" class="sw" data-${at}="${k}" style="--c:${c}" aria-pressed="${!!on}" title="${t}" aria-label="${t}"><i></i><span>${short == null ? t : short}</span></button>`;
+const finTray = (label, inner, lab = true) => `${lab ? `<span class="r3d-finlab">${label}</span>` : ""}<div class="r3d-fintray" role="group" aria-label="${label}">${inner}</div>`;
+const finButtons = (plan, hold, more = []) => [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(plan ? [btn(plan[0], plan[1])] : []),
+  ...(hold ? [btn("Hold to compare", { finhold: "1" }, undefined, "", `Hold to compare: ${hold} till you let go`)] : []), ...more];
+const CARD_ON = [], cardOn = (sel, test, fn) => { CARD_ON.push([sel, test, fn]); };
+if (act) act.addEventListener("click", e => { if (!GS.actId) return;
+  for (const [sel, test, fn] of CARD_ON) { const b = e.target.closest(sel); if (!b || !test(GS.actId)) continue; e.stopPropagation(); if (fn(b.dataset, GS.actId, b, e) !== false) renderAct(); return; } }, true);
+cardOn("[data-finundo]", id => /^(fin|win|hdoor):/.test(id), () => finUndo());
 /* V2.46 (N7): a swap's card (‹ › its kind's pieces) and an added piece's (‹ › the catalogue, its kinds to jump to); shown at once */
 const HCAT_ADD = ["plant", "snake", "monstera", "olive", "armchair", "sidetable", "floorlamp", "rug", "bookcase", "cubes", "ladder", "chest3", "chest6", "tallboy", "bsdrawer", "bswhite", "bslegs",
   "desklegs", "deskdrawers", "trestle", "bench", "pouffe", "wardrobe2", "sliding", "openrail", "divan", "oakbed", "metalbed", "markus", "langfjall", "stoense", "lohals", "desklong"];
@@ -64,7 +75,7 @@ const hcShopTray = (k, L, C, at) => { const shops = [...new Set(L.map(q => q && 
 const ownOf = v => { const q = String(v).split("|"); return { look: q[1], m: q[2], w: +q[3], d: +q[4], h: +q[5], n: q[6] || "" }; };
 function ownCard(k, C) {
   const o = ownOf(HIT(k).add), f = (x, t, v, a) => `<div class="fld"><span>${t}</span><span class="stp"><input ${a} value="${v}" data-hown="${x}" aria-label="${t}"></span></div>`;
-  return [C.n, hcLine(k, C), [btn("Keep it", { actopen: "hitem:" + k }, true), btn("Remove", { hremove: k })], null,
+  return [C.n, hcLine(k, C), [btn("Done", { actopen: "hitem:" + k }, true), btn("Take it out", { hremove: k })], null,
     `<div class="r3d-fin"><div class="r3d-actfields">${f("n", "Its name", o.n, 'type="text" maxlength="24" placeholder="Your own piece" style="width:150px"')}`
     + [["w", "Width"], ["d", "Depth"], ["h", "Height"]].map(([x, t]) => f(x, t + " (cm)", o[x], 'type="number" inputmode="decimal" step="1" min="1" max="400"')).join("") + `</div>`
     + `<span class="r3d-finlab">Its look</span><div class="r3d-finsc" role="group" aria-label="Its look">${OWN_LOOKS.map(q => `<button type="button" data-hownl="${q}" aria-pressed="${o.look === q}">${HCAT_KINDS[q]}</button>`).join("")}</div>`
@@ -74,7 +85,7 @@ function ownCard(k, C) {
 const hcNav = (k, i, at) => [btn("‹", { [at]: `${k}:${i - 1}` }, false, "q", "The one before"), btn("›", { [at]: `${k}:${i + 1}` }, false, "q", "The next one")];
 function swapCard(k, kind, cur, name, why, at, back) {
   const L = [null, ...hcOf(kind)], i = Math.max(0, L.indexOf(cur)), C = HCAT[L[i]];
-  return [C ? C.n : name, C ? hcLine(k, C, why()) : `${HCAT_KINDS[kind]} · as planned`, [...hcNav(k, i, at), btn("Keep it", { actopen: back }, true)], null, `<div class="r3d-fin">${hcShopTray(k, L, C, at)}</div>`];
+  return [C ? C.n : name, C ? hcLine(k, C, why()) : `${HCAT_KINDS[kind]} · as planned`, [...hcNav(k, i, at), btn("Done", { actopen: back }, true)], null, `<div class="r3d-fin">${hcShopTray(k, L, C, at)}</div>`];
 }
 const livCardOf = k => k.startsWith("sg_") ? "sg:" + k.slice(3) : "mov:" + k;
 function hcatCard(id) {
@@ -82,10 +93,10 @@ function hcatCard(id) {
   const nav = (i, at) => hcNav(k, i, at);
   if (id.startsWith("hswap:")) { const kind = swapKind(k); return kind ? swapCard(k, kind, pieceNow(k).swap, it.n + " (yours)", () => fitWhy(k), "hswapgo", "hitem:" + k) : null; }
   if (it.look) { const L = plantKeys(), i = Math.max(0, L.indexOf(it.add)), C = HCAT[it.add];   // N5: a room's plant, from Look
-    return [C.n, `${roomName(it.look)}'s plant · ${i + 1} of ${L.length} · ${C.src}`, [...nav(i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Remove", { hremove: k })]]; }
+    return [C.n, `${roomName(it.look)}'s plant · ${i + 1} of ${L.length} · ${C.src}`, [...nav(i, "haddgo"), btn("Done", { actopen: "hitem:" + k }, true), btn("Take it out", { hremove: k })]]; }
   const C = HCAT[it.add]; if (C.own) return ownCard(k, C);
   const L = hcAddOf(C.k), i = Math.max(0, L.indexOf(it.add));   // N218: its kind first (the chips), then ‹ › through that kind
-  return [C.n, hcLine(k, C), [...nav(i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Remove", { hremove: k })], null,
+  return [C.n, hcLine(k, C), [...nav(i, "haddgo"), btn("Done", { actopen: "hitem:" + k }, true), btn("Take it out", { hremove: k })], null,
     `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Kinds">${Object.entries(HCAT_KINDS).map(([q, t]) => `<button type="button" data-hcatk="${k}:${q}" aria-pressed="${C.k === q}">${t}</button>`).join("")}</div>${hcShopTray(k, L, C, "haddgo")}</div>`];
 }
 /* N23: a room's card of its changes (Look's and Edit's), a tap each to tick done, with a rough cost; Plan has the house's total. Ticks in
@@ -106,8 +117,7 @@ const upNm = (L, k) => (L.find(r => r[0] === k) || [0, k])[1];
 const upCat = (key, C) => C.own ? [0, 0] : C.shop ? [C.p, C.p] : UPC.piece[key] || C.k === "plant" && UPC.plant[key] || UPC.kind[C.k];   // N219: a shop's own price; hers, none
 function roomUps(room, noEd) {   // [{k, t, lo, hi}]: what's changed in a room (N231 noEd: not the device's pieces)
   const H = R.HOUSE3 || {}, L = [], add = (k, t, c = [0, 0], n = 1) => L.push({ k, t, lo: Math.round(c[0] * n), hi: Math.round(c[1] * n) });
-  if (room === "outside") { const o = (S.fin || {}).outside || {};
-    if (o[9]) add("9=" + o[9], "Window frames: " + finName(o[9]), UPC.frames); if (o[10]) add("10=" + o[10], "Front door: " + finName(o[10]), UPC.door_out); return L; }
+  if (room === "outside") { const o = (S.fin || {}).outside || {}; for (const n of [9, 10]) slotOf(n).ups(room, o, add); return L; }   // N253: each slot's line from its row (23_finish.js SLOTS)
   const liv = room === LIVR, o = liv ? Object.assign({}, (S.fin || {})[LIVR], livRow()) : (S.fin || {})[room] || {}, r = (H.rooms || {})[room], m2 = r ? (r[1] - r[0]) * (r[3] - r[2]) / 1e4 : 12;
   if (liv) {   // the living room's own Look, and its ideas and suggestions not in the plan
     const ws = Object.entries(S.walls).filter(([, v]) => LIV_HEX.test(v || ""));
@@ -118,34 +128,11 @@ function roomUps(room, noEd) {   // [{k, t, lo, hi}]: what's changed in a room (
       add(`d${k}=${S.decor[k]}`, `${PD.decor[k][0]}: ${PD.decor[k][1][S.decor[k]] || S.decor[k]}`, c); }
     picks().filter(i => !i.plan && i.kind !== "Decor").forEach(i => add("i=" + i.name, i.name, [i.lo, i.hi]));
     for (const it of Object.values(MOV)) if (it.swk && !(S.layout[it.id] || {}).off) add(it.id + "~s=" + it.swk, `${it.label.replace(/ \(suggested\)$/, "")}: ${HCAT[it.swk].n}`, upCat(it.swk, HCAT[it.swk]));   // N220: a swap
+    for (const n of [6, 8]) slotOf(n).ups(room, o, add);   // its bulbs and light fitting
   } else {
-    const ws = [0, 1, 2, 3].filter(s => o[s]);
-    if (ws.length) add("w=" + ws.map(s => o[s]).join(), "Walls: " + [...new Set(ws.map(s => finName(o[s])))].join(", "), ws.length > 1 ? UPC.walls : UPC.wall);
-    if (o[4]) add("4=" + o[4], "Ceiling: " + finName(o[4]), UPC.ceil);
-    if (o[17]) add("17=" + o[17], "Woodwork: " + finName(o[17]), UPC.skirt);   // N216
-    finWalls(room).forEach((w, k) => { const h = o[30 + k]; if (h) add(`${30 + k}=${h}`, `${finCap(finSlotName(room, 30 + k))}: ${finName(h)}`, UPC.wall); });   // N214: each wall's own, the slopes
-    if (o[29]) add("29=" + o[29], "Slopes: " + (o[29] === "walls" ? "with the walls" : finName(o[29])), UPC.ceil);
-    const fa = (H.finish_areas || {})[room] || {};   // N209: the floor laid now is no change; a new one by its area
-    if (o[5] && o[5] !== fa.fk) add("5=" + o[5], "Floor: " + upNm(FIN_FLOORS, o[5]), UPC.floor[o[5]] || [30, 60], fa.floor || m2);
-    if (o[18]) add("18=" + o[18], o[18] === "none" ? "Rug: none" : "Rug: " + upNm(FIN_RUGS, o[18]), o[18] === "none" ? [0, 0] : UPC.rug);
-    if (o[19]) add("19=" + o[19], "Curtains: " + upNm(FIN_CURT, o[19]), UPC.curt);
-    if (o[90] && TILE_ROOMS[room]) tileUps(room, add);   // N225: the tiles by their area
+    for (const d of SLOTS) if (d.ups) d.ups(room, o, add, m2);   // N253: each row's line, in the slots' order
     doorUps(room, add);   // N226: its doors her way
-    if (room === "kitchen") kitUps(add);
-    if (room === "bathroom") bathUps(add);   // N225: the taps and the bath panel   // N224: the units' fronts, handles, worktop
-    winsOf(room).forEach((w, j) => { const v = o[70 + j]; if (v) add(`${70 + j}=${v}`, `${w.n}: ${winSay(...v.split("."))}`, winCost(w, v)); });   // N227: each window's own
-    if (o[20]) add("20=" + o[20], "Bedding: " + upNm(FIN_BED, o[20]), UPC.bed);
-    if (o[21]) add("21=" + o[21], "Picture: " + upNm(FIN_PICS, o[21]), UPC.pic);
-    if (o[23] && HCAT[o[23]]) add("23=" + o[23], "Plant: " + HCAT[o[23]].n, UPC.plant[o[23]] || UPC.kind.plant);
-    for (const q of String(o[28] || "").split(",").filter(Boolean)) { const [id, key] = q.split(":"), I = IDEAS().find(i => i.id === id && i.room === room); if (!I) continue;   // N244: a storage idea shown: a shop's buy its price, the plan's its range
-      const hk = key && ideaOptKey(I, key); add("28=" + q, `${I.n}: ${hk ? HCAT[hk].n + " · " + HCAT[hk].shop : "made to the spot"}`, ideaCost(I, key)); }
-    const P = FIN_PAPERS.find(([q]) => q === o[24]), A = PAPER_AT[room];   // N40: the rolls as the 3D counted them (3 to 6 till it's laid)
-    if (P) add(`24=${P[0]}${o[25] || 0}`, `Wallpaper: ${P[1]}${A ? `, ${A.rolls} rolls` : ""}`, A ? [A.cost + UPC.paper[0], A.cost + UPC.paper[1]] : [P[5] * 3, P[5] * 6]);
-    const Q = FIN_PANELS.find(([q]) => q === o[26]), B = PANEL_AT[room];   // N57: the packs as the 3D counted them
-    if (Q) add(`26=${Q[0]}${o[27] || 0}`, `Panelling: ${Q[1]}${B ? `, ${B.packs} ${Q[0] === "slat" ? "panels" : "packs"}` : ""}`, B ? [B.cost + UPC.panel[0], B.cost + UPC.panel[1]] : [Q[2] * 2, Q[2] * 8]);
   }
-  if (o[6] || o[7]) add(`6=${o[6]}${o[7]}`, "Bulbs: " + [o[6] && upNm(FIN_BULBS, o[6]), o[7] && upNm(FIN_LUX, o[7])].filter(Boolean).join(", "), UPC.bulbs);
-  if (o[8]) add("8=" + o[8], "Light: " + upNm(FIN_FITS, o[8]), UPC.fit[o[8]]);
   if (DS() && !noEd) for (const [id, it] of Object.entries(H.items || {})) {   // Edit: the house's pieces in this room, moved, swapped, added or taken out
     if (it.r !== room || it.look || !(it.add || pieceDelta(id).some(Boolean))) continue; const c = pieceNow(id), C = HCAT[it.add || c.swap];
     if (c.removed) add(id + "~x", "Out: " + it.n);
@@ -218,11 +205,11 @@ function actItems(id) {     // [title, how it is now, buttons]
     if (ixMine(k)) return ixPieceCard(k);   // N244: an idea set-up's piece: ‹ › what fits its spot
     const sw = pieceNow(k).swap, SC = HCAT[sw || it.add], shop = SC && SC.url ? `<div class="r3d-fin"><a href="${SC.url}" target="_blank" rel="noopener" aria-label="See it at ${SC.shop} (a new tab)">${SC.shop} ↗</a></div>` : null;   // N232: a shop's piece, its page
     return [sw ? HCAT[sw].n : it.n, pieceLine(k), [btn(it.op ? "Change its size" : "Move or resize", { actopen: "hsize:" + k }), ...(it.add ? [btn(it.look ? "Change plant" : "Change piece", { actopen: "hadd:" + k })] : swapKind(k) ? [btn("Swap it", { actopen: "hswap:" + k })] : []),
-      ...(pieceDelta(k).some(Boolean) && !it.add ? [btn("As planned", { hreset: k })] : []), ...(it.op ? [] : [btn("Take it out", { hremove: k })]),
+      ...(pieceDelta(k).some(Boolean) && !it.add ? [btn("The plan's", { hreset: k })] : []), ...(it.op ? [] : [btn("Take it out", { hremove: k })]),
       ...(it.k === "window" || /^(back|garage)_door$/.test(k) ? [btn("Colour outside", { actopen: "fin:outside:9" })] : []), ...(it.k === "window" && winOf(k) ? [btn("Dress it", { actopen: winOf(k) })] : []), ...(/^kitchen[.](units|wall_units|worktop)$/.test(k) ? [btn("Fronts and worktop", { actopen: "fin:kitchen:92" })] : []), ...upsBtn(it.r)], null,   // N224   // V2.38 (F12): its frame's outside
       it.k === "light" && it.r ? `<div class="r3d-fin"><span class="r3d-finlab">The bulbs</span>${finBulbTray(it.r)}${finFitTray(it.r)}</div>` : /\.bed$/.test(k) && it.r ? finBedTray(it.r) + (shop || "") : shop]; }   // N5d: a bed's bedding   // V2.9: a light's bulbs; V2.15: its fitting
   if (id.startsWith("hsize:")) { const k = id.slice(6), it = HIT(k); if (!it) return null; const c = pieceNow(k), door = it.k === "door";
-    return [it.n, pieceLine(k), [btn("Done", { actopen: "hitem:" + k }), ...(canTurn(k) ? [btn("Turn", { hturn: k })] : []), ...(it.add ? [] : [btn("As planned", { hreset: k })])],
+    return [it.n, pieceLine(k), [btn("Done", { actopen: "hitem:" + k }), ...(canTurn(k) ? [btn("Turn", { hturn: k })] : []), ...(it.add ? [] : [btn("The plan's", { hreset: k })])],
       FIELDS.filter(([f]) => !(door && (f === "h" || f === "up")) && !(f === "out" && it.op)).map(([f, t]) => [f, t, cmR(c[f])])]; }
   if (id === "hblinds") return ["The blinds", S.blinds ? "Down" : "Rolled up", [btn(S.blinds ? "Roll them up" : "Pull them down", { tog: "blinds" })]];   // V1.47
   if (id.startsWith("hdoor:")) { const k = id.slice(6), P = HPARTS[k]; if (!P) return null; const op = doorOpen(P);   // V1.26: a door's card
@@ -230,7 +217,7 @@ function actItems(id) {     // [title, how it is now, buttons]
     return [P.label || "The door", [op ? (Math.abs(P.angle) < 89 ? "Open as far as it goes" : "Open") : "Shut", doorIds().includes(k) ? doorLine(k) : ""].filter(Boolean).join(" · "), [
       btn(op ? "Shut it" : "Open it", { hdoor: k }), ...(k === "door.hall_porch" ? [btn("Colour outside", { actopen: "fin:outside:10" })] : []),   // V2.38 (F12)
       btn(any ? "Shut all doors" : "Open all doors", { hdoors: any ? "shut" : "open" }), ...(DS() && HIT(k.slice(5)) ? [btn("Change its size", { actopen: "hsize:" + k.slice(5) })] : []),
-      ...(doorIds().includes(k) ? [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(doorNow(k).plan ? [] : [btn("The plan's", { doorplan: "1" })])] : [])],
+      ...(doorIds().includes(k) ? finButtons(!doorNow(k).plan && ["The plan's", { doorplan: "1" }]) : [])],
       null, doorIds().includes(k) ? doorTray(k) : null]; }   // N226: its leaf and handle
   if (id === "nowplay") return ["Now playing", `${NOWP[S.nowp % NOWP.length].name}`, [   // v39: which LP faces out
       btn("‹", { nowp: "-1" }, false, "q", "The one before"), btn("›", { nowp: "1" }, false, "q", "The next one"),
@@ -400,10 +387,10 @@ function renderAct() {
       + `<p class="note">${/^hsize:/.test(GS.actId) ? "Drag it on the floor to move it. " : ""}${DS() && DS().mode === "shared" ? "Saved for you both" : "Saved on this device"}</p>`;   // V3.91 (N150)
     box.before(w); }
   if (/^(hitem|hsize|hswap|hadd|ixp):/.test(GS.actId)) selOf(GS.actId.split(":")[1]); else clearSel();
-  // v39 (the approved redesign): a card shows its first three buttons; everything else sits under More
+  // v39 (the approved redesign): a card shows its first three buttons; everything else sits under More (N265: ⋯)
   let shownN = 0, more = null;
   const fold = () => { if (!more) { more = document.createElement("details"); more.className = "r3d-actmore"; more.open = actMoreOpen;
-    more.innerHTML = '<summary>More</summary><div class="acts"></div>'; more.addEventListener("toggle", () => { actMoreOpen = more.open; placeAct(); }); box.after(more); }
+    more.innerHTML = '<summary aria-label="More" title="More">⋯</summary><div class="acts"></div>'; more.addEventListener("toggle", () => { actMoreOpen = more.open; placeAct(); }); box.after(more); }
     return more.querySelector(".acts"); };
   if (extra) { const w = document.createElement("div"); w.innerHTML = extra; fold().before(w.firstElementChild); }
   for (const b of bs) {
