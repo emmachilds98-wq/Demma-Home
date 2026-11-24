@@ -68,7 +68,7 @@ FIN3 = """async () => { const sl = ms => new Promise(r => setTimeout(r, ms)), cv
   for (const [view, name] of [['bed2', 'Bedroom 2'], ['master', 'Master bedroom'], ['kitchen', 'Kitchen']]) {
     R3D.set({ view }); await settle(); let got = null;
     for (const fy of [0.3, 0.2, 0.4, 0.15]) { for (const fx of [0.15, 0.85, 0.3, 0.7, 0.5]) { tap(cv.clientWidth * fx, cv.clientHeight * fy); await sl(700);   // V2.42: a mouse click's card waits out a double-click (380 ms)
-      const h = card(); if (h && h.startsWith(name + ': the') && /wall/.test(h)) { got = h; break; }   // a wall's card, not the kitchen's splashback (main's run 923) const c = document.querySelector('#r3d-act button'); if (h && c) c.click(); await sl(150); } if (got) break; }
+      const h = card(); if (h && h.startsWith(name + ': the') && /wall/.test(h)) { got = h; break; }   /* a wall's card, not the kitchen's splashback (main's run 923) */ const c = document.querySelector('#r3d-act button'); if (h && c) c.click(); await sl(150); } if (got) break; }
     if (got) { const sw = document.querySelector('[data-finc="#899081"]'); if (sw) sw.click(); await sl(300);
       const kept = JSON.stringify((R3D._dbg.S.fin || {})); out[view] = [got, kept.includes('#899081')];
       const un = document.querySelector('[data-finundo]'); if (un) un.click(); await sl(200); const c = document.querySelector('#r3d-act button'); if (c) c.click(); await sl(150); }
@@ -825,5 +825,14 @@ if __name__ == "__main__":
     if "--dbg-names" in sys.argv:                                   # N257: python3 tools/check_site.py --dbg-names (no site, no browser)
         used, missing = dbg_names()
         print(f"dbg names: the checks use {len(used)} of R3D._dbg's names" + (f"; gone from 20_5_go.js: {', '.join(f'{n} ({used[n][0]})' for n in missing)}" if missing else ", every one still there"))
-        sys.exit(1 if missing else 0)
+        import ast, shutil, subprocess, tempfile                     # N258: and every scenario's JS parses (a // inside a one-line string ends it)
+        bad = []
+        if shutil.which("node"):
+            for n in ast.walk(ast.parse(pathlib.Path(__file__).read_text())):
+                if isinstance(n, ast.Assign) and isinstance(n.value, ast.Constant) and isinstance(n.value.value, str) and n.value.value.lstrip().startswith(("async", "() =>")):
+                    with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False) as f: f.write("(" + n.value.value + ");")
+                    r = subprocess.run(["node", "--check", f.name], capture_output=True, text=True); pathlib.Path(f.name).unlink()
+                    if r.returncode: bad.append(f"{n.targets[0].id}: {(r.stderr.strip().splitlines() or ['?'])[-1]}")
+        print("scenarios' JS: " + ("; ".join(bad) if bad else "each one parses"))
+        sys.exit(1 if missing or bad else 0)
     sys.exit(main())
