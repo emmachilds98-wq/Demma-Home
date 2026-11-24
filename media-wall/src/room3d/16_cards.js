@@ -75,7 +75,7 @@ const hcShopTray = (k, L, C, at) => { const shops = [...new Set(L.map(q => q && 
 const ownOf = v => { const q = String(v).split("|"); return { look: q[1], m: q[2], w: +q[3], d: +q[4], h: +q[5], n: q[6] || "" }; };
 function ownCard(k, C) {
   const o = ownOf(HIT(k).add), f = (x, t, v, a) => `<div class="fld"><span>${t}</span><span class="stp"><input ${a} value="${v}" data-hown="${x}" aria-label="${t}"></span></div>`;
-  return [C.n, hcLine(k, C), [btn("Keep it", { actopen: "hitem:" + k }, true), btn("Remove", { hremove: k })], null,
+  return [C.n, hcLine(k, C), [btn("Done", { actopen: "hitem:" + k }, true), btn("Take it out", { hremove: k })], null,
     `<div class="r3d-fin"><div class="r3d-actfields">${f("n", "Its name", o.n, 'type="text" maxlength="24" placeholder="Your own piece" style="width:150px"')}`
     + [["w", "Width"], ["d", "Depth"], ["h", "Height"]].map(([x, t]) => f(x, t + " (cm)", o[x], 'type="number" inputmode="decimal" step="1" min="1" max="400"')).join("") + `</div>`
     + `<span class="r3d-finlab">Its look</span><div class="r3d-finsc" role="group" aria-label="Its look">${OWN_LOOKS.map(q => `<button type="button" data-hownl="${q}" aria-pressed="${o.look === q}">${HCAT_KINDS[q]}</button>`).join("")}</div>`
@@ -85,7 +85,7 @@ function ownCard(k, C) {
 const hcNav = (k, i, at) => [btn("‹", { [at]: `${k}:${i - 1}` }, false, "q", "The one before"), btn("›", { [at]: `${k}:${i + 1}` }, false, "q", "The next one")];
 function swapCard(k, kind, cur, name, why, at, back) {
   const L = [null, ...hcOf(kind)], i = Math.max(0, L.indexOf(cur)), C = HCAT[L[i]];
-  return [C ? C.n : name, C ? hcLine(k, C, why()) : `${HCAT_KINDS[kind]} · as planned`, [...hcNav(k, i, at), btn("Keep it", { actopen: back }, true)], null, `<div class="r3d-fin">${hcShopTray(k, L, C, at)}</div>`];
+  return [C ? C.n : name, C ? hcLine(k, C, why()) : `${HCAT_KINDS[kind]} · as planned`, [...hcNav(k, i, at), btn("Done", { actopen: back }, true)], null, `<div class="r3d-fin">${hcShopTray(k, L, C, at)}</div>`];
 }
 const livCardOf = k => k.startsWith("sg_") ? "sg:" + k.slice(3) : "mov:" + k;
 function hcatCard(id) {
@@ -93,10 +93,10 @@ function hcatCard(id) {
   const nav = (i, at) => hcNav(k, i, at);
   if (id.startsWith("hswap:")) { const kind = swapKind(k); return kind ? swapCard(k, kind, pieceNow(k).swap, it.n + " (yours)", () => fitWhy(k), "hswapgo", "hitem:" + k) : null; }
   if (it.look) { const L = plantKeys(), i = Math.max(0, L.indexOf(it.add)), C = HCAT[it.add];   // N5: a room's plant, from Look
-    return [C.n, `${roomName(it.look)}'s plant · ${i + 1} of ${L.length} · ${C.src}`, [...nav(i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Remove", { hremove: k })]]; }
+    return [C.n, `${roomName(it.look)}'s plant · ${i + 1} of ${L.length} · ${C.src}`, [...nav(i, "haddgo"), btn("Done", { actopen: "hitem:" + k }, true), btn("Take it out", { hremove: k })]]; }
   const C = HCAT[it.add]; if (C.own) return ownCard(k, C);
   const L = hcAddOf(C.k), i = Math.max(0, L.indexOf(it.add));   // N218: its kind first (the chips), then ‹ › through that kind
-  return [C.n, hcLine(k, C), [...nav(i, "haddgo"), btn("Keep it", { actopen: "hitem:" + k }, true), btn("Remove", { hremove: k })], null,
+  return [C.n, hcLine(k, C), [...nav(i, "haddgo"), btn("Done", { actopen: "hitem:" + k }, true), btn("Take it out", { hremove: k })], null,
     `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Kinds">${Object.entries(HCAT_KINDS).map(([q, t]) => `<button type="button" data-hcatk="${k}:${q}" aria-pressed="${C.k === q}">${t}</button>`).join("")}</div>${hcShopTray(k, L, C, "haddgo")}</div>`];
 }
 /* N23: a room's card of its changes (Look's and Edit's), a tap each to tick done, with a rough cost; Plan has the house's total. Ticks in
@@ -205,11 +205,11 @@ function actItems(id) {     // [title, how it is now, buttons]
     if (ixMine(k)) return ixPieceCard(k);   // N244: an idea set-up's piece: ‹ › what fits its spot
     const sw = pieceNow(k).swap, SC = HCAT[sw || it.add], shop = SC && SC.url ? `<div class="r3d-fin"><a href="${SC.url}" target="_blank" rel="noopener" aria-label="See it at ${SC.shop} (a new tab)">${SC.shop} ↗</a></div>` : null;   // N232: a shop's piece, its page
     return [sw ? HCAT[sw].n : it.n, pieceLine(k), [btn(it.op ? "Change its size" : "Move or resize", { actopen: "hsize:" + k }), ...(it.add ? [btn(it.look ? "Change plant" : "Change piece", { actopen: "hadd:" + k })] : swapKind(k) ? [btn("Swap it", { actopen: "hswap:" + k })] : []),
-      ...(pieceDelta(k).some(Boolean) && !it.add ? [btn("As planned", { hreset: k })] : []), ...(it.op ? [] : [btn("Take it out", { hremove: k })]),
+      ...(pieceDelta(k).some(Boolean) && !it.add ? [btn("The plan's", { hreset: k })] : []), ...(it.op ? [] : [btn("Take it out", { hremove: k })]),
       ...(it.k === "window" || /^(back|garage)_door$/.test(k) ? [btn("Colour outside", { actopen: "fin:outside:9" })] : []), ...(it.k === "window" && winOf(k) ? [btn("Dress it", { actopen: winOf(k) })] : []), ...(/^kitchen[.](units|wall_units|worktop)$/.test(k) ? [btn("Fronts and worktop", { actopen: "fin:kitchen:92" })] : []), ...upsBtn(it.r)], null,   // N224   // V2.38 (F12): its frame's outside
       it.k === "light" && it.r ? `<div class="r3d-fin"><span class="r3d-finlab">The bulbs</span>${finBulbTray(it.r)}${finFitTray(it.r)}</div>` : /\.bed$/.test(k) && it.r ? finBedTray(it.r) + (shop || "") : shop]; }   // N5d: a bed's bedding   // V2.9: a light's bulbs; V2.15: its fitting
   if (id.startsWith("hsize:")) { const k = id.slice(6), it = HIT(k); if (!it) return null; const c = pieceNow(k), door = it.k === "door";
-    return [it.n, pieceLine(k), [btn("Done", { actopen: "hitem:" + k }), ...(canTurn(k) ? [btn("Turn", { hturn: k })] : []), ...(it.add ? [] : [btn("As planned", { hreset: k })])],
+    return [it.n, pieceLine(k), [btn("Done", { actopen: "hitem:" + k }), ...(canTurn(k) ? [btn("Turn", { hturn: k })] : []), ...(it.add ? [] : [btn("The plan's", { hreset: k })])],
       FIELDS.filter(([f]) => !(door && (f === "h" || f === "up")) && !(f === "out" && it.op)).map(([f, t]) => [f, t, cmR(c[f])])]; }
   if (id === "hblinds") return ["The blinds", S.blinds ? "Down" : "Rolled up", [btn(S.blinds ? "Roll them up" : "Pull them down", { tog: "blinds" })]];   // V1.47
   if (id.startsWith("hdoor:")) { const k = id.slice(6), P = HPARTS[k]; if (!P) return null; const op = doorOpen(P);   // V1.26: a door's card

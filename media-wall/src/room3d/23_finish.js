@@ -88,7 +88,7 @@ function finFitApply() {
 function finFitTray(room) {
   const now = finGet(room, 8) || "";
   return `<span class="r3d-finlab">Light fitting</span><div class="r3d-finsc" role="group" aria-label="Light fitting">`
-    + [["", "As planned"], ...FIN_FITS].map(([v, t]) => `<button type="button" data-finfit="${v}" aria-pressed="${now === v}">${t}</button>`).join("") + `</div>`;
+    + [["", "The plan's"], ...FIN_FITS].map(([v, t]) => `<button type="button" data-finfit="${v}" aria-pressed="${now === v}">${t}</button>`).join("") + `</div>`;
 }
 function finFloorApply() {   // every room with a floor chosen: a thin floor on its pieces, in that material (only then: nothing added otherwise)
   if (!finSetup() || !FIN.mat3 || !houseG) return;
@@ -191,7 +191,7 @@ function winPlanHide() {   // the plan's roller blinds where she's dressed the w
 const FIN_BED = [["#f4f1eb", "White"], ["#a3a29e", "Grey"], ["#8b9878", "Sage"], ["#34507f", "Deep blue"], ["#a65a38", "Rust"], ["#c9a03f", "Mustard"], ["#d9a9a0", "Blush"]];
 function finBedTray(room) {
   const now = finGet(room, 20) || "";
-  return `<div class="r3d-fin">${finTray("Bedding", [["", "As planned"], ...FIN_BED].map(([h, t]) => finSwatch("finbed", h, t, h || "#e9e5dc", now === h)).join(""))}</div>`;
+  return `<div class="r3d-fin">${finTray("Bedding", [["", "The plan's"], ...FIN_BED].map(([h, t]) => finSwatch("finbed", h, t, h || "#e9e5dc", now === h)).join(""))}</div>`;
 }
 const FIN_PICS = [["arches", "Arches"], ["sun", "Sunset"], ["leaves", "Leaves"], ["lines", "Lines"]];   // N5e: a print in a 52 × 72 frame (IKEA RIBBA: fit.SOURCES ribba), its middle 150 up, mid-wall, 2 off it; row [21] the print, [22] the wall
 let PIC_LAID = []; const PIC_MATS = {};
@@ -717,7 +717,7 @@ function finSet(room, slot, hex) {   // by the scope: this wall, this room's wal
   toast(`${finScope === "house" ? "Whole house" : roomName(room)}: ${ceil ? "ceiling" : wood ? "woodwork" : slope ? "the slopes" : finScope === "wall" ? `the ${finSlotName(room, slot)}` : "walls"} ${hex ? nm : slope ? "with the ceiling" : "as planned"}`);
 }
 function finBtns(changed, reset, room) {   // N68: a colour or floor card's buttons, the same on each: Undo, As planned, Hold to compare, then (under More) Copy, Paste
-  return finButtons(changed && ["As planned", reset], "the room as planned", finCopyBtns(room));
+  return finButtons(changed && ["The plan's", reset], "the room as planned", finCopyBtns(room));
 }
 function finStorey(room) {   // the rooms on the same floor as this one
   const P = R.HOUSE3.finish_pieces || {};
@@ -747,15 +747,15 @@ function finCard(id) {   // [title, now, buttons, -, the tray]
   if (slot === 90) return tileCard(room);   // N225
   if (slot === 92) return kitCard();   // N224
   if (slot === 95) return bathCard();   // N225: the taps and the bath panel
-  if (slot === 20) return [`${roomName(room)}: the bedding`, now ? (FIN_BED.find(([h]) => h === now) || [0, now])[1] : "As planned", finButtons(), null, finBedTray(room)];
+  if (slot === 20) return [`${roomName(room)}: the bedding`, now ? (FIN_BED.find(([h]) => h === now) || [0, now])[1] : "The plan's", finButtons(), null, finBedTray(room)];
   if (room === "outside") return [`Outside: ${slot === 9 ? "the window frames" : "the front door"}`, now ? finCap(finName(now)) : "White, as planned",
-    finButtons(now && ["As planned", { finc: "" }]), null,
+    finButtons(now && ["The plan's", { finc: "" }]), null,
     `<div class="r3d-fin"><div class="r3d-fintray" role="group" aria-label="Colours">${finSw([...FIN_OUT, ...finSwatches().slice(1)], now)}<label class="sw any" title="Any colour"><input type="color" data-finany="1" value="${now || "#f5f5f2"}" aria-label="Any colour"><span>Any</span></label></div></div>`];
   const liv = room === LIVR, named = liv && slot >= 11 && slot <= 16, drawn = liv ? (slot === 0 ? S.paint === DEF.paint && !Object.keys(S.walls).length : named ? !S.walls[LIV_W[slot - 11]] : !now) : slope ? !v : !now;
   if (finScope === "floor" || (liv && slot === 17) || slope) finScope = "room";
   const wood = slot === 17;   // N216: a room's skirting, door leaves, frames and radiators
   if ((ceil || wood || (liv && !named)) && finScope === "wall") finScope = "room";
-  const nm = slope && !now ? (v ? "With the walls" : "With the ceiling") : drawn ? "As planned" : finCap(finName(now)), mine = finMine();
+  const nm = slope && !now ? (v ? "With the walls" : "With the ceiling") : drawn ? "The plan's" : finCap(finName(now)), mine = finMine();
   const scopes = slope ? [["", "With the ceiling"], ["walls", "With the walls"]] : liv && slot === 17 ? [] : ceil || wood || (liv && !named) ? [["room", "This room"], ["house", "Whole house"]] : [["wall", "This wall"], ["room", "This room"], ["house", "Whole house"]];
   const tabs = ceil || wood || slope ? [] : [["paint", "Paint"], ...(liv ? [] : [["paper", "Paper"], ["panels", "Panels"], ["picture", "Picture"]]), ...(finCurtTray(room) ? [["curtains", "Curtains"]] : [])];
   if (!FIN_TAB || FIN_TAB.id !== id || !tabs.some(([k]) => k === FIN_TAB.k)) FIN_TAB = { id, k: "paint" };   // N265: a wall's card opens on its paint
