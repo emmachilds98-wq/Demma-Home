@@ -171,7 +171,7 @@ function livLookSet(o) {   // a look's living room part into S, each key checked
   if (Number.isFinite(+o.warm)) S.warm = Math.max(0, Math.min(100, +o.warm)); else S.warm = DEF.warm;   // v50
   const ID = /^[a-z0-9_:-]{1,40}$/i, lay = {}, add = [];   // v50: the furniture moved or added in Edit room (none: where the plan has it)
   if (o.layout && typeof o.layout === "object") for (const [id, L] of Object.entries(o.layout)) { if (!ID.test(id) || !L || typeof L !== "object") continue;
-    const c = {}; for (const f of ["x", "z", "rot"]) if (Number.isFinite(+L[f])) c[f] = +L[f]; if (HEX.test(L.col || "")) c.col = L.col; if (L.off) c.off = true; lay[id] = c; }
+    const c = {}; for (const f of ["x", "z", "rot"]) if (Number.isFinite(+L[f])) c[f] = +L[f]; if (HEX.test(L.col || "")) c.col = L.col; if (L.off) c.off = true; if (HCAT[L.swap]) c.swap = L.swap; lay[id] = c; }   // N220: a catalogue piece in its place
   if (Array.isArray(o.added)) for (const a of o.added.slice(0, 40)) if (a && CATALOGUE[a.type] && ID.test(a.id || "") && Number.isFinite(+a.x) && Number.isFinite(+a.z))
     add.push({ type: a.type, id: a.id, x: +a.x, z: +a.z, ...(Number.isFinite(+a.rot) ? { rot: +a.rot } : {}), ...(HEX.test(a.col || "") ? { col: a.col } : {}) });
   restoreLayout({ layout: lay, added: add });

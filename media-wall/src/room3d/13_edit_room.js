@@ -79,7 +79,8 @@ function placeAll() {
     if (it.lamp) continue;                                  // the lamp is rebuilt where it stands (buildLamp)
     const L = NOWV ? {} : S.layout[it.id] || {};   // V3.90 (N151): As it is: every piece where the plan has it, nothing added or taken out
     if (it.fixed) { it.pivot.visible = !L.off && (!it.when || it.when()); continue; }   // v27: built in where it stands
-    const p = NOWV ? Object.assign({ rot: 0 }, it.def()) : spotOf(it.id);
+    livSwapDraw(it); const p = NOWV ? Object.assign({ rot: 0 }, it.def()) : spotOf(it.id);
+    if (it.sw) Object.assign(p, clampItem(it, p.x, p.z, p.rot));   // N220: a piece swapped in kept in the room, flush where the old one was
     it.pivot.position.copy(v3(p.x, 0, p.z)); it.pivot.rotation.y = (p.rot || 0) * Math.PI / 180;
     it.pivot.visible = !(NOWV && it.added) && !L.off && (!it.when || it.when());
     const col = L.col || (it.follow && !NOWV && (S.layout[it.follow] || {}).col);   // V3.78 (N135): a piece can follow another's colour (the chaise, the sofa bed's)
@@ -337,8 +338,45 @@ function addThing(a, fresh = true) {
   const C = CATALOGUE[a.type]; if (!C) return;
   const m = reg(new THREE.MeshStandardMaterial(Object.assign({ color: C.col, roughness: 0.7 }, SURF_P[SURF[a.type]] || {}))), oak = reg(new THREE.MeshStandardMaterial({ color: "#c48c57", map: OAK_TEX, roughness: 0.55 }));
   const g = new THREE.Group(); C.build(g, m, oak);
-  movable(a.id, C.label, g, () => ({ x: a.x, z: a.z, rot: 0 }), C.w, C.d, [m], false, { added: true });
+  movable(a.id, C.label, g, () => ({ x: a.x, z: a.z, rot: 0 }), C.w, C.d, [m], false, { added: true, type: a.type });
   if (fresh) { S.added.push(a); placeAll(); store.set(KEY, S); }
+}
+/* N220: a living room piece swaps as the house's do: Swap it ‹ › its kind's catalogue pieces (HCAT), drawn from their own boxes in its
+   place (S.layout[id].swap), kept in the room, its card's line N217's. Only the plan's rug, the options and what she's added: never the
+   media wall or a piece they keep (docs/DECISIONS.md) */
+const LSWAP = { rug: "rug", sg_sidetable: "table", sg_floorplant: "plant", armchair: "seat", rattan: "seat", bench: "seat", sidetable: "table", bookcase: "shelves", plant: "plant", arclamp: "lamp" };
+const livKind = id => { const it = MOV[id]; return it && !it.fixed && !it.lamp ? LSWAP[it.added ? it.type : id] || null : null; };
+const livName = it => it.sw ? HCAT[it.sw].n : it.label.replace(/ \(suggested\)$/, "");
+const LSW_M = {}, lswMat = k => LSW_M[k] || (LSW_M[k] = (() => { const [c, r] = (R.HOUSE3.mats || {})[k] || ["#cccccc", 0.8];
+  const P = /oak|pine|timber|walnut|wood/.test(k) ? SURF_P.oak : /cloth|lycksele|sisal|rug|carpet|wool|jute|velvet/.test(k) ? SURF_P.cloth : k === "glass" ? { transparent: true, opacity: 0.35, roughness: 0.1 } : {};
+  return reg(new THREE.MeshStandardMaterial(Object.assign({ roughness: r ?? 0.8 }, P, { color: c }))); })());
+function livSwapDraw(it) {   // placeAll: the piece as planned, or the catalogue's in its place (a rug or a table its long side the old one's way)
+  const kind = livKind(it.id), key = NOWV ? null : (S.layout[it.id] || {}).swap, C = kind && HCAT[key] && HCAT[key].k === kind ? HCAT[key] : null;
+  if ((it.sw || null) === (C ? key : null)) return;
+  if (it.w0 == null) { it.w0 = it.w; it.d0 = it.d; }
+  if (it.swG) { it.pivot.remove(it.swG); it.swG.traverse(o => o.geometry && o.geometry.dispose()); it.swG = null; }
+  it.pivot.children[0].visible = !C; it.sw = C ? key : null; it.w = it.w0; it.d = it.d0; if (!C) return;
+  const g = it.swG = new THREE.Group(), turn = (kind === "rug" || kind === "table") && (it.w0 > it.d0) !== (C.w > C.d), W = C.w, D = C.d;
+  C.b(W, C.h, D, (m, u0, v0, t0, u1, v1, t1) => { const w = Math.abs(u1 - u0), h = Math.abs(v1 - v0), d = Math.abs(t1 - t0);
+      if (w > 0.05 && h > 0.05 && d > 0.05) lb(g, (u0 + u1) / 2 - W / 2, Math.min(v0, v1), (t0 + t1) / 2 - D / 2, w, h, d, lswMat(m)); },
+    (m, u, w, v, p) => { const me = new THREE.Mesh(new THREE.LatheGeometry(p.map(([r, h]) => new THREE.Vector2(r * M, h * M)), 20), lswMat(m)); me.position.copy(v3(u - W / 2, v, w - D / 2)); g.add(shadow(me)); });
+  mergeStatic(g); if (turn) g.rotation.y = Math.PI / 2; it.w = turn ? D : W; it.d = turn ? W : D; it.pivot.add(g);
+}
+function livSwapSet(id, key) { pushUndo(); const L = Object.assign({}, S.layout[id]); if (key) L.swap = key; else delete L.swap; S.layout[id] = L; placeAll(); store.set(KEY, S); dirty(); }
+/* N220: does it fit, in N217's words: past the room's walls or its ceiling, or in the way of another piece (not rugs, whose own is the walls) */
+function livWhy(id) {
+  const it = MOV[id], out = [], into = (v, w) => { if (v > 1) out.push(`${Math.round(v)} cm into ${w}`); }; if (!it || !shown(it.pivot)) return out;
+  const x = -it.pivot.position.x / M, z = it.pivot.position.z / M, { hx, hz } = halfOf(it, spotOf(id).rot);
+  into(Math.max(hx - x, x + hx - R.W, R.WINDOW_Z - z + hz, z + hz - zmaxAt(x, hx)), "the wall"); into(it.sw ? HCAT[it.sw].h - R.CEIL : 0, "the ceiling");
+  if (livKind(id) === "rug") return out;
+  const boxes = o => { const L = [], t = new THREE.Box3(); if (o && o.isObject3D && shown(o)) { o.updateWorldMatrix(true, true);
+    o.traverseVisible(c => { if (!c.isMesh || !c.geometry) return; if (!c.geometry.boundingBox) c.geometry.computeBoundingBox(); L.push(t.clone().copy(c.geometry.boundingBox).applyMatrix4(c.matrixWorld)); }); } return L; };
+  const me = boxes(it.pivot).map(b => b.expandByScalar(-0.01)), hit = o => boxes(o).some(b => me.some(q => q.intersectsBox(b)));
+  const the = n => /^(Your|The) /.test(n) ? n[0].toLowerCase() + n.slice(1) : /^[A-ZÅÄÖ]{3,}/.test(n) ? n : "the " + n[0].toLowerCase() + n.slice(1);
+  const way = [...Object.values(MOV).filter(o => o !== it && !o.lamp && livKind(o.id) !== "rug" && o.id !== "rug").map(o => [o.pivot, livName(o)]),
+    [S.drawers ? G.unit_out : G.unit_in, "The media wall"], [cab, "The dining cabinet"]].filter(([o]) => hit(o)).map(([, n]) => the(n));
+  if (way.length) out.push(`in the way of ${way.slice(0, 2).join(" and ")}`);
+  return out;
 }
 /* ---------------------------------------------------------------- edit mode: tap to pick, drag to move, the panel to turn, colour, remove */
 const ray = new THREE.Raycaster(), floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
@@ -487,7 +525,7 @@ function editPanel() {
   qsa("[data-sel=turn],[data-sel=turn45],[data-sel=turn15],[data-sel=wall]").forEach(b => b.hidden = !!it.lamp || !!it.fixed);
   qsa(".r3d-nudge").forEach(b => b.hidden = !!it.fixed);
   qsa("[data-sel=remove]").forEach(b => b.hidden = false);
-  qs("#r3d-selcol").parentElement.hidden = !it.mats.length;
+  qs("#r3d-selcol").parentElement.hidden = !it.mats.length || !!it.sw;   // N220: a piece swapped in keeps its own colours
   if (it.mats.length) qs("#r3d-selcol").value = L.col || (it.follow && (S.layout[it.follow] || {}).col) || it.base[0];
 }
 function setEdit(on) {

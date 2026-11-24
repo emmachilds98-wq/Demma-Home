@@ -117,6 +117,7 @@ function roomUps(room) {   // [{k, t, lo, hi}]: what's changed in a room
     for (const k of Object.keys(DEF.decor)) if (S.decor[k] !== DEF.decor[k] && PD.decor[k]) { const c = k === "rug" ? UPC.rug : k === "curtains" ? UPC.curt : k === "cushions" && PD.ideas.cushions ? PD.ideas.cushions.slice(1) : [0, 0];
       add(`d${k}=${S.decor[k]}`, `${PD.decor[k][0]}: ${PD.decor[k][1][S.decor[k]] || S.decor[k]}`, c); }
     picks().filter(i => !i.plan && i.kind !== "Decor").forEach(i => add("i=" + i.name, i.name, [i.lo, i.hi]));
+    for (const it of Object.values(MOV)) if (it.sw) add(`s${it.id}=${it.sw}`, `${it.label.replace(/ \(suggested\)$/, "")}: ${HCAT[it.sw].n}`, upCat(it.sw, HCAT[it.sw]));   // N220: a piece swapped
   } else {
     const ws = [0, 1, 2, 3].filter(s => o[s]);
     if (ws.length) add("w=" + ws.map(s => o[s]).join(), "Walls: " + [...new Set(ws.map(s => finName(o[s])))].join(", "), ws.length > 1 ? UPC.walls : UPC.wall);
@@ -274,7 +275,7 @@ function actItems(id) {     // [title, how it is now, buttons]
     const sg = id.startsWith("sg:"), k = id.slice(3), nm = ((sg ? PD.sugg : PD.ideas)[k] || [k])[0], it = sg && MOV["sg_" + k];
     if (!(sg ? S.sugg : S.ideas)[k]) return null;                        // taken away: the card closes
     const firm = R.FIRM && (sg ? R.FIRM.sugg : R.FIRM.ideas || []).includes(k);   // v38: the client's picks are the plan (v43: the C-table too)
-    return [nm, firm ? "In your plan" : sg ? "An option, not costed" : "An idea, not costed", [
+    return [it && it.sw ? livName(it) : nm, firm ? "In your plan" : sg ? "An option, not costed" : "An idea, not costed", [...(it ? livSwapBtn(it.id) : []),   // N220
       ...(firm && MAKE_CARD[k] ? [btn("How to make it", { actmk: MAKE_CARD[k] })] : []),   // v44: its card in Build
       ...(k === "blind" ? [btn(S.blind === "up" ? "Pull it down" : "Roll it up", { blind: S.blind === "up" ? "down" : "up" })] : []),
       ...(k === "barcase" || k === "barside" ? [btn(S.barflap ? "Close the bar" : "Open the bar", { barflap: S.barflap ? "shut" : "open" })] : []),
@@ -306,10 +307,19 @@ function actItems(id) {     // [title, how it is now, buttons]
       btn(S.lid ? "Shut the chaise" : "Open the chaise", { lid: S.lid ? "on" : "off" }), btn("Watch the bed open", { showopen: "bed" }),
       btn("Move it", { actedit: "sofa2" }), btn("Take it out", { takeout: id }), btn("Back to my sofa", { sofa: "mine" }),
       btn("The listing", { actlink: "https://www.amazon.co.uk/dp/B0HDC8WYBT" }), btn("From above", { view: "plan" })], null, heads]; }
+  if (id.startsWith("lswap:")) return livSwapCard(id.slice(6));   // N220
   if (id.startsWith("mov:")) { const it = MOV[id.slice(4)]; if (!it) return null;
-    return [it.label.replace(/ \(suggested\)$/, ""), it.fixed ? "Built in: it comes off, but doesn't move" : `${Math.round(it.w)} × ${Math.round(it.d)} cm`, [   // V3.75: its size; turn or take it out from here
-      btn(it.fixed ? "Take off or put back" : "Move it", { actedit: it.id }), ...(it.fixed || it.lamp ? [] : [btn("Turn it", { turnit: it.id })]), btn("Take it out", { takeout: "mov:" + it.id })]]; }
+    return [livName(it), it.fixed ? "Built in: it comes off, but doesn't move" : `${Math.round(it.w)} × ${Math.round(it.d)} cm${it.sw ? " · " + hcBuy(HCAT[it.sw]) : ""}`, [   // V3.75: its size; turn or take it out from here; N220: the house's words
+      btn(it.fixed ? "Take off or put back" : "Move", { actedit: it.id }), ...(it.fixed || it.lamp ? [] : [btn("Turn", { turnit: it.id })]), ...livSwapBtn(it.id), btn("Take it out", { takeout: "mov:" + it.id })]]; }
   return null;
+}
+/* N220: a living room piece's swap, as the house's (hcatCard): ‹ › its kind, its size and whether it fits, back to its card */
+const livSwapBtn = id => livKind(id) ? [btn("Swap it", { actopen: "lswap:" + id })] : [];
+function livSwapCard(id) {
+  const it = MOV[id], kind = livKind(id); if (!it || !kind) return null;
+  const L = [null, ...hcOf(kind)], i = Math.max(0, L.indexOf(it.sw || null)), C = HCAT[L[i]], why = livWhy(id), back = id.startsWith("sg_") ? "sg:" + id.slice(3) : "mov:" + id;
+  return [livName(it), C ? `${[C.w, C.d, C.h].map(hcCm).join(" × ")} cm · ${why.length ? why.slice(0, 2).join(" · ") : "Fits"} · ${hcBuy(C)}` : `${HCAT_KINDS[kind]} · as planned`,
+    [btn("‹", { lswapgo: `${id}:${i - 1}` }, false, "q", "The one before"), btn("›", { lswapgo: `${id}:${i + 1}` }, false, "q", "The next one"), btn("Keep it", { actopen: back }, true), ...hcSee(C)]];
 }
 /* v38: a fixture's card: on or off, turn it as a whole (15° a tap, 5° with Shift held), then one head at a time */
 const actHead = { bar1: 0, bar2: 0, lamp: 0 };
@@ -497,6 +507,8 @@ if (act) {
       const y = cmR(Math.max(r[4], Math.min(r[4] + 5, TAPAT[1]))), [x, z] = addSpot(d.hadd, HCAT_ADD[0], TAPAT[0], TAPAT[2], y);   // N218: back to a wall, where it fits
       ds.put("edits", id + "~add", { item: id, field: "add", value: HCAT_ADD[0], room: d.hadd, x: cmR(x), z: cmR(z), y }).catch(() => toast("That didn't save: try again"));
       GS.actId = "hadd:" + id; renderAct(); return; }
+    if (d.lswapgo) { const j = d.lswapgo.lastIndexOf(":"), id = d.lswapgo.slice(0, j), L = [null, ...hcOf(livKind(id))];   // N220: the living room's
+      livSwapSet(id, L[((+d.lswapgo.slice(j + 1) % L.length) + L.length) % L.length]); renderAct(); return; }
     if (d.hswapgo || d.haddgo || d.hcatk) { const [k, x] = (d.hswapgo || d.haddgo || d.hcatk).split(":"), it = HIT(k), ds = DS(); if (!it || !ds) return;
       if (d.hswapgo) { const L = [null, ...hcOf(swapKind(k))], v = L[((+x % L.length) + L.length) % L.length];   // N217: the new piece at its own size, where the old one stood
         Promise.all(["w", "h", "along"].filter(f => ds.rows("edits")[`${k}~${f}`]).map(f => ds.del("edits", `${k}~${f}`))).then(() => setPiece(k, "swap", v)).then(() => { if (GS.actId) renderAct(); }); return; }

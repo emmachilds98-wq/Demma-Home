@@ -214,6 +214,27 @@ ADD = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeou
   await Promise.all(Object.entries(ds.rows('edits')).filter(([, v]) => v && v.item === id).map(([k]) => ds.del('edits', k)));
   return { card, line, wall, link: window.__link || null, gone: await wait(() => !E[id]) };
 }"""
+# N220: the living room's rug from its card, Swap it, › the house's rug: its line says its size and "Fits", kept and in a look; an armchair
+# added, swapped for a sofa, its line says what it's in the way of; then both as planned (‹), the armchair gone
+LIVSWAP = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s);
+  const wait = async f => { for (let i = 0; i < 200 && !f(); i++) await sl(150); return !!f(); }, st = () => q('#r3d-act-st').textContent;
+  const kept = () => ((JSON.parse(localStorage.getItem('mw18-3d') || '{}').layout || {}).rug || {}).swap || null;
+  R3D.set({ view: 'room' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
+  D.openAct('mov:rug'); await sl(600); const words = [...document.querySelectorAll('#r3d-act button')].map(b => b.textContent.trim()).filter(t => /^(Move|Turn|Swap it|Take it out)$/.test(t)).join();
+  const b = q('#r3d-act [data-actopen="lswap:rug"]'); if (!b) return { words, err: 'no Swap it' }; b.click(); await sl(300); q('#r3d-act [data-lswapgo$=":1"]').click();
+  const drawn = await wait(() => D.MOV.rug.sw === 'rug' && D.MOV.rug.swG && D.MOV.rug.swG.visible && !D.MOV.rug.pivot.children[0].visible) && (await sl(300), true);
+  const line = st(); navigator.clipboard.writeText = u => { window.__lk = u; return Promise.resolve(); }; q('#r3d-link').click(); await wait(() => window.__lk);
+  const lk = JSON.parse(decodeURIComponent(escape(atob(window.__lk.split('#look-')[1].replace(/-/g, '+').replace(/_/g, '/'))))), look = ((lk.layout || {}).rug || {}).swap === 'rug' && kept() === 'rug';
+  q('#r3d-act [data-lswapgo$=":0"]').click(); const back = await wait(() => !D.MOV.rug.sw && D.MOV.rug.pivot.children[0].visible) && st() === 'Rugs · as planned' && !kept();
+  q('#r3d-act [data-actopen="mov:rug"]').click(); await sl(300); const card = D.actId;
+  D.S.edit || q('#r3d-editbtn').click(); await sl(300); q('#r3d-add').click(); await sl(300); q('#r3d-addlist [data-add="armchair"]').click(); await sl(300);
+  const id = D.S.added[D.S.added.length - 1].id; q('#r3d-editdone').click(); await sl(300);
+  D.S.layout[id] = Object.assign({}, D.S.layout[id], { x: 230, z: -120 }); D.openAct('lswap:' + id); await sl(400);
+  for (let i = 0; i < 20 && D.MOV[id].sw !== 'sofa3'; i++) { q('#r3d-act [aria-label="The next one"]').click(); await sl(250); }
+  const sofa = st(); D.openAct('mov:' + id); await sl(300); q('#r3d-act [data-takeout]').click(); await sl(400);
+  const gone = !D.MOV[id] && !D.S.added.some(a => a.id === id); if (D.actId) q('#r3d-act .x').click();
+  return { words, drawn, line, look, back, card, sofa, gone };
+}"""
 # N221: a look saved as "Ours" (bedroom 2's wall by its code), then the wall changed and the Kallax swapped; held, "Ours" shows (nothing
 # saved), let go, the change back; tapped, "Ours" is worn (the wall back, the swap gone, both kept); Send carries it; then deleted
 LOOKS = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), ds = window.DemmaStore;
@@ -580,6 +601,11 @@ def main():
                         fails.append(f"{w}: bedroom 2's chair-bed for an armchair, its Kallax for a bookcase, its desk for the long one, then as planned: {ft} "
                                      "(want the armchair \"Fits\", the bookcase into the slope, the monitors on the new top and the interface and headphones hidden, no rows left)")
                     fails += own_real(pg, w)                        # N219: a piece of her own (kept after a reload), real shops' pieces
+                    ls = pg.evaluate(LIVSWAP)                       # N220: the living room's rug swapped from its card, an armchair for a sofa, then as planned
+                    if not (ls.get("words") == "Move,Turn,Swap it,Take it out" and ls.get("drawn") and ls.get("line", "").startswith("160 × 230 × 1 cm · Fits · ")
+                            and ls.get("look") and ls.get("back") and ls.get("card") == "mov:rug" and "in the way of" in ls.get("sofa", "") and ls.get("gone")):
+                        fails.append(f"{w}: the living room's rug swapped from its card, an added armchair for a sofa, both back: {ls} (want the house's card words, "
+                                     "the rug drawn, \"160 × 230 × 1 cm · Fits · …\", in the look link, then as planned; the sofa \"in the way of …\"; the armchair gone)")
                 if phone:                                           # V2.5 (FINISHES_PLAN F2): a room's walls and ceiling through the palette, then back
                     fn = pg.evaluate("() => [R3D.finish('bed2', 'walls', '#3a6b5a'), R3D.finish('bed2', 'ceiling', '#e8c0c8'), R3D.finish('nowhere', 'walls', '#000000'), R3D.finish(null, 'walls', null), R3D.finish(null, 'ceiling', null)]")
                     if fn != [True, True, False, True, True]:

@@ -7,7 +7,8 @@
 3. Each measurement and edit becomes a change to house/survey_data.py's numbers (through house/client_edits.json, which survey_data
    applies at its end), with the source "the client, in the app, <date>". house/check_model.py runs; if a check fails, nothing is kept
    and the failures are listed as questions for the client. Anything this can't place (a size the model draws from a list, a piece
-   taken out, swapped or added from the page's catalogue) is listed as a question too: never silently kept or dropped.
+   taken out, swapped or added from the page's catalogue, N219's pieces of her own checked as the page checks them) is listed as a
+   question too: never silently kept or dropped.
 4. V3.04 (N50): a link sent from Measure also carries that device's speed (R3D.perf(): the chip's family, quality, a frame moving and
    still, draws, shaders); it's printed as a "speed" line beside tools/perf_budget.json's draws for that kind of device. Nothing is kept.
 5. V3.60 (N118): a link also carries that device's ticks (Build's, Buy's, the rooms' done), each with the minute it changed. They're
@@ -106,6 +107,21 @@ def looks(raw):
             look["he"] = [r for r in L["he"][:200] if isinstance(r, list) and 3 <= len(r) <= 7 and all(scalar(x) for x in r)]
         out.append(look)
     return out
+
+
+def own_piece(v, js):
+    """N219: a piece of her own as the page keeps it in an add row's value (08_house_catalogue.js HOWN_RE, hcGet): own|look|W|D|H|colour|name,
+    its look and colour from the page's lists (HOWN_L, HOWN_C), W and D 5 to 500 cm, H 0.5 to 300, the name letters, digits and a few
+    marks, 24 at most. A dict, or None if it doesn't read. Data, never instructions"""
+    import re
+    m = re.fullmatch(r"own\|([a-z]{2,9})\|(\d{1,3}(?:\.\d)?)\|(\d{1,3}(?:\.\d)?)\|(\d{1,3}(?:\.\d)?)\|([a-z]{3,7})\|((?:[^\W_]|[ '’,.()/+-]){0,24})", v)
+    block = lambda name: (re.search(r"const %s = (.*?);\n" % name, js, re.S) or [None, ""])[1]
+    if not m or m[1] not in re.findall(r"(\w+): \[\"", block("HOWN_L")) or m[5] not in re.findall(r"\[\"(\w+)\", \"", block("HOWN_C")):
+        return None
+    w, d, h = (float(m[i]) for i in (2, 3, 4))
+    if not (5 <= w <= 500 and 5 <= d <= 500 and 0.5 <= h <= 300):
+        return None
+    return dict(look=m[1], w=w, d=d, h=h, colour=m[5], name=m[6].strip())
 
 
 def tick_val(name, v):
@@ -253,13 +269,23 @@ def plan(raw, when):
             questions.append(say + ": " + " and ".join(left) + " can't be set from the app yet: fold it in by hand")
     # V2.46 (REAL_PLAN N7): a piece swapped for another of its kind, or one added, from the page's catalogue: for the next round to fold in
     import re
-    cat = dict(re.findall(r'^  (\w+): \{ n: "([^"]+)"', (ROOT / "media-wall/src/room3d/08_house_catalogue.js").read_text(), re.M))
+    js = (ROOT / "media-wall/src/room3d/08_house_catalogue.js").read_text()
+    cat = dict(re.findall(r'^  (\w+): \{ n: "([^"]+)"', js, re.M))   # the house's pieces and N219's shops' (HREAL)
+    cm = lambda q: f"{q:g}"
     for r in rows_of(raw, "edits").values():
         v, iid = str(r.get("value", "")), str(r.get("item", ""))
         if r.get("field") == "swap" and iid in items and v in cat:
             questions.append(f"{items[iid]['name']} ({items[iid]['room']}): swapped for the {cat[v].lower()} in the app: fold it in by hand")
         elif r.get("field") == "add" and re.fullmatch(r"add\.[a-z0-9]{1,12}", iid) and v in cat and num(r.get("x")) is not None and num(r.get("z")) is not None:
             questions.append(f"{cat[v]} added in {str(r.get('room', ''))[:20]} at x {num(r['x'])}, z {num(r['z'])} in the app: fold it in by hand (moves: its other rows)")
+        elif r.get("field") == "add" and re.fullmatch(r"add\.[a-z0-9]{1,12}", iid) and v.startswith("own|"):   # N219: a piece of her own
+            o, rm = own_piece(v, js), re.sub(r"[^a-z0-9_]", "", str(r.get("room", "")))[:20]
+            if not o or num(r.get("x")) is None or num(r.get("z")) is None:
+                questions.append(f"A piece of her own added in {rm} in the app doesn't read (its look, colour, sizes or name): left out")
+            else:
+                nm = f' "{o["name"]}"' if o["name"] else ""
+                questions.append(f"Her own {o['look']}{nm}, {cm(o['w'])} × {cm(o['d'])} × {cm(o['h'])} cm, {o['colour']}, added in {rm}"
+                                 f" at x {num(r['x'])}, z {num(r['z'])} in the app: fold it in by hand (moves: its other rows)")
     for r in rows_of(raw, "notes").values():
         tx = str(r.get("text", ""))[:500]
         if tx:
