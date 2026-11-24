@@ -44,20 +44,7 @@ html body :is(.r3d-floors, .r3d-fintray, .r3d-momrow, .r3d-addlist, .r3d-sel, #p
 .landing.done { opacity: 0; pointer-events: none; }
 .landing.done b { animation: none; transform: none; transition: transform .25s; }
 @keyframes landgo { to { transform: scaleX(.92); } }
-/* the section rail (laptop) and the bottom bar (phone) */
-.rail { position: fixed; left: 16px; top: 50%; transform: translateY(-50%); z-index: 45; display: grid; gap: 6px; padding: 8px; border-radius: var(--r-pill); background: var(--page); box-shadow: var(--shadow); }
-/* v32: the rail folds into its Menu button; open, the five sections show under it */
-.rail .rail-list { display: none; gap: 6px; }
-.rail.open .rail-list { display: grid; padding-top: 4px; border-top: 2px dashed #e5dccb; }
-.rail-tog[aria-expanded=true] i { background: oklch(0.8 0.11 var(--h)); }
-.rail button { position: relative; display: grid; justify-items: center; gap: 2px; border: 0; background: none; color: var(--ink); cursor: pointer; font: 600 11.5px var(--body); padding: 4px 2px; min-width: 60px; }
-.rail button i { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: oklch(0.92 0.06 var(--h)); font-style: normal; transition: transform .3s var(--spring), background .2s; }
-.rail button:hover i { transform: scale(1.1); }
-.rail button[aria-current=true] i { background: oklch(0.8 0.11 var(--h)); }
 @media (max-width: 899px) {
-  .rail { left: 12px; top: calc(max(12px, env(safe-area-inset-top)) + 62px); transform: none; padding: 6px; }
-  .rail button { min-width: 52px; }
-  body.sheet-open .rail { display: none; }
   .brand { left: 12px; top: max(12px, env(safe-area-inset-top)); padding: 6px 14px 6px 6px; }
   .brand .mark { width: 34px; height: 34px; padding: 8px; border-radius: var(--r-s); }
   .brand small { display: block; font-size: 11.5px; }   /* V1.2: on a phone the second line says where you are */
@@ -297,7 +284,6 @@ body.ov-open .r3d-dock { visibility: hidden; }
 
 /* v39 (the redesign the client approved, 23 Oct): Plan · Build · Buy at the top right instead of the Menu rail and the phone's bottom bar;
    the same three as tabs at the top of each sheet */
-.rail { display: none !important; }
 .hnav, .shnav { display: flex; gap: 4px; padding: 4px; border-radius: var(--r-pill); background: var(--page); box-shadow: var(--shadow); }
 .hnav { position: fixed; top: max(16px, env(safe-area-inset-top)); right: 16px; z-index: 36; }
 .hnav button, .shnav button { min-height: 44px; padding: 0 16px; border: 0; border-radius: var(--r-pill); background: none; color: var(--ink); font: 600 15px var(--body); cursor: pointer; }
@@ -476,3 +462,14 @@ figure.zoomable::after { content: "⤢"; position: absolute; right: 10px; top: 1
 summary .pf a { display: inline-block; padding: 6px 2px; margin: -6px 0; }
 @media (pointer: coarse) { .items .paid input { min-height: 40px; } .items li { padding-block: 10px; } }
 details.owned .notice { margin: 8px 0 0; }
+/* N264: Plan opens on one card: the house's total, a chip a room (tap: there, its Changes open), her House plan */
+.hcard { padding: 16px 18px; border-radius: var(--r-xl); background: var(--surface); margin: 0 0 14px; }
+.upchips { list-style: none; margin: 10px 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.upchips li { display: inline-flex; gap: 6px; align-items: center; min-height: 40px; padding: 0 14px; border-radius: var(--r-pill); background: var(--soft); font: 600 14px var(--body); cursor: pointer; }
+.upchips li:hover, .upchips li:focus-visible { background: var(--ink); color: var(--page); }
+.upchips .mb { display: none; } .upchips .mv { font-weight: 500; opacity: .75; }
+.hlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.hlist li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 8px 12px; border-radius: var(--r-m, 12px); background: var(--surface); font-size: 14px; }
+.hlist li.done .ht { text-decoration: line-through; opacity: .6; }
+.hlist .hr { color: var(--muted); font-size: 12px; } .hlist .hp { white-space: nowrap; }
+.hlist input { width: 20px; height: 20px; margin: 0; }

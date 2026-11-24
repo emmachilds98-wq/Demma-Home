@@ -214,11 +214,31 @@ function buildStreet(land) {
       if (hedge) box("hedge", w0 + 10, dr - 2, zp + 15, w1 - 10, dr + 95, zp + 70); else { box(brick, w0, dr - 2, zp, w1, dr + 55, zp + 23); box("kerb", w0 - 2, dr + 55, zp - 2, w1 + 2, dr + 61, zp + 25); }
     }
   }
+  /* N271 (the review: the street had no cars, markings, trees or bins): generic ones, nothing from the real street. The centre line's
+     dashes; cars parked along both kerbs (not across our drive), a body, its glass cabin and four wheels; trees in the far pavement
+     between the lamp posts; a wheelie bin in each front garden opposite */
+  const zc = (zr0 + zr1) / 2;
+  for (let x = X0; x < X1; x += 900) box("line", x, dr - 2, zc - 5, x + 400, dr - 1.4, zc + 5);
+  const car = (x, z, dir) => { const L = 400 + rnd() * 60, W = 176, c = "car" + Math.floor(rnd() * 4), y = dr - 2, z0 = z - W / 2, z1 = z + W / 2, xa = x, xb = x + L;
+    box(c, xa, y + 22, z0, xb, y + 82, z1);                                                         // the body, the bonnet and boot under the cabin
+    const f = dir > 0 ? [xa + 0.28 * L, xb - 0.38 * L] : [xa + 0.38 * L, xb - 0.28 * L];
+    box("glass", f[0], y + 82, z0 + 8, f[1], y + 136, z1 - 8); box(c, f[0] + 6, y + 136, z0 + 10, f[1] - 6, y + 141, z1 - 10);   // the cabin, its roof
+    for (const wx of [xa + 0.17 * L, xb - 0.17 * L]) for (const wz of [z0 + 2, z1 - 24]) box("tyre", wx - 32, y, wz, wx + 32, y + 62, wz + 22); };
+  for (let x = X0 + 300; x < X1 - 500; x += 700 + rnd() * 900) { if (x > -700 && x < 700) continue; car(x, zr0 + 110, 1); }
+  for (let x = X0 + 600; x < X1 - 500; x += 800 + rnd() * 1000) car(x, zr1 - 110, -1);
+  for (let x = X0 + 2400; x < X1; x += 3000) {                                                       // the street trees, a tree pit each
+    const h = 340 + rnd() * 120, r = 150 + rnd() * 60, t = new THREE.CylinderGeometry(11 * M, 15 * M, h * M, 8), c = v3(x, dr + h / 2, zr1 + 110);
+    t.translate(c.x, c.y, c.z); put("trunk", t); box("kerb", x - 50, dr + 1, zr1 + 60, x + 50, dr + 2.5, zr1 + 160);
+    for (let k = 0; k < 3; k++) { const g = new THREE.IcosahedronGeometry(r * (0.7 + rnd() * 0.3) * M, 1), q = v3(x + (rnd() - 0.5) * r, dr + h + r * (0.2 + rnd() * 0.5), zr1 + 110 + (rnd() - 0.5) * r); g.translate(q.x, q.y, q.z); put("crown", g); } }
+  for (let b0 = X0 + 200; b0 + 2000 <= X1; b0 += 2450) for (let i = 0; i < 4; i++) {               // the bins, by each house's path
+    const x = b0 + i * 500 + (i % 2 ? 140 : 300); box(rnd() < 0.6 ? "wbin" : "wbin2", x, dr, zF - 140, x + 58, dr + 107, zF - 66); }
   for (let x = X0 + 900; x < X1; x += 3000) {   // lamp posts on the far pavement
     box("post", x - 6, dr, zr1 + 45, x + 6, dr + 620, zr1 + 57); box("post", x - 5, dr + 608, zr1 - 60, x + 5, dr + 618, zr1 + 57); box("lamp", x - 14, dr + 596, zr1 - 75, x + 14, dr + 608, zr1 - 30); }
   /* each finish a copy of the house's own material (tinted where said, uncut): its program already built */
   const FIN_ = { road: ["road"], paving: ["paving"], kerb: ["concrete"], brick: ["brick"], brick2: ["brick_buff"], roof: ["tile"], frame: ["upvc"], pane: ["pane"], panelit: ["pane"],
-    door: ["door_out", "#3c4a5c"], door2: ["door_out", "#6b2a2a"], hedge: ["ivy"], post: ["steel_dark"], lamp: ["upvc", "#fff3dd"] };
+    door: ["door_out", "#3c4a5c"], door2: ["door_out", "#6b2a2a"], hedge: ["ivy"], post: ["steel_dark"], lamp: ["upvc", "#fff3dd"],
+    line: ["upvc", "#e9e7df"], car0: ["upvc", "#2d3e5c"], car1: ["upvc", "#9ea3a8"], car2: ["upvc", "#7a1f22"], car3: ["upvc", "#1e1f22"], glass: ["pane"], tyre: ["bin"],
+    trunk: ["timber", "#5e5246"], crown: ["ivy", "#4f6b3a"], wbin: ["bin"], wbin2: ["recycle"] };   // N271
   const g = new THREE.Group(); g.name = "street";
   for (const [k, L] of Object.entries(by)) {
     const [hk, col] = FIN_[k], src = FIN.mat3(hk), geo = mergeGeometries(L); L.forEach(q => q.dispose());

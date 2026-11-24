@@ -894,7 +894,7 @@ SHEETS_JS = r"""(() => { const D = document.getElementById("sheets-data"); let t
     W.done = true; dispatchEvent(new Event("demma-sheets")); return true; };
   W.load = () => built ? Promise.resolve() : fetchIt().then(build);
   /* a tap that needs the sheets: built there and then if fetched (the tap goes on to their own handlers), else after the fetch, tapped again */
-  const NEED = "[data-go], [data-nav], [data-mk], [data-step], [data-close], .g3d, .stk, #rail-tog, #r3d-menub";
+  const NEED = "[data-go], [data-nav], [data-mk], [data-step], [data-close], .g3d, .stk";
   addEventListener("click", e => { if (built) return; const a = e.target.closest && e.target.closest(NEED); if (!a || build()) return;
     e.preventDefault(); e.stopImmediatePropagation(); W.load().then(() => a.click(), () => {}); }, true);
   addEventListener("demma-open", e => { if (built) return; e.stopImmediatePropagation();   /* the 3D asks for a sheet: built, then asked again */
@@ -1050,14 +1050,6 @@ def _page(site=False):
                 f'<div class="chhead"><i class="ms" aria-hidden="true">{ic}</i><h2>{html.escape(t)}</h2></div>{facts[k]}{inner}</section>')
     more = lambda body, lab="Read the full chapter": f'<details class="readmore"><summary>{lab} <span class="ms" aria-hidden="true">expand_more</span></summary>{body}</details>'
     nav = [("plan", "Plan", "map", 300), ("build", "Build", "construction", 50), ("buy", "Buy", "shopping_bag", 165), ("ideas", "Ideas", "lightbulb", 95)]   # v30: no Ask sheet (every question answered or dropped)
-    # v32, client: "make tools always appear in 3D view and the other buttons on the left to be the expandable menu as these are the in
-    # depth plans used less": one Menu button opens the Room, Plan, Build, Buy and Ideas buttons (open by itself while a sheet is up)
-    rail = (f'<nav class="rail" aria-label="Sections"><button type="button" class="rail-tog" id="rail-tog" aria-expanded="false" aria-controls="rail-list" style="--h:280">'
-            f'<i class="ms" aria-hidden="true">menu</i><span>Menu</span></button><div class="rail-list" id="rail-list">'
-            f'<button type="button" id="tb-room" data-nav="room" aria-current="true" style="--h:25"><i class="ms" aria-hidden="true">view_in_ar</i>Room</button>'
-            + "".join(f'<button type="button" id="tb-{"overview" if k == "plan" else k}" data-nav="{k}" aria-current="false" style="--h:{h}"><i class="ms" aria-hidden="true">{ic}</i>{n}</button>' for k, n, ic, h in nav) + '</div></nav>')
-    bbar = (f'<nav class="bbar" aria-label="Sections"><button type="button" data-nav="room" aria-current="true" style="--h:25"><i class="ms" aria-hidden="true">view_in_ar</i>Room</button>'
-            + "".join(f'<button type="button" data-nav="{k}" aria-current="false" style="--h:{h}"><i class="ms" aria-hidden="true">{ic}</i>{n}</button>' for k, n, ic, h in nav) + '</nav>')
     def sheet(k, title, ic, h, body):   # N25: the body is packed out of the page (pack_sheets) and built the first time it's needed
         return (f'<div class="sheet shut" id="sh-{k}" role="dialog" aria-modal="true" aria-labelledby="sh-{k}-h" aria-hidden="true" inert style="--h:{h}">'
                 f'<div class="shd"><span class="grab" aria-hidden="true"></span><h2 id="sh-{k}-h" class="sr-only">{title}</h2>'
@@ -1068,12 +1060,18 @@ def _page(site=False):
     sugg_chips = ('<div class="seg" role="group" aria-label="Suggestions in the room">'
                   + "".join(f'<button type="button" data-sproxy="{k}" aria-pressed="false">{html.escape(room3d_page.SUGG_SHORT[k])}</button>' for k, *_ in __import__("ideas").SUGGEST)
                   + '<button type="button" class="chip" data-sproxyall="on">All on</button><button type="button" class="chip" data-sproxyall="off">All off</button></div>')
-    notice = ('<p class="notice">Measure\'s Send takes the ticks and amounts to your other devices.</p>' if site
+    notice = ('<p class="notice">Share, at the top of the 3D, takes the ticks and amounts to your other devices.</p>' if site
               else f'<p class="caption">Also on <a href="{PAGES}" target="_blank" rel="noopener">GitHub Pages</a>.</p>')
 
+    hbase = "house/out/" if site else PAGES + "house/out/"   # N264: her House plan (house/build_report.py client())
     plan_home = f"""<div class="plan-home" id="plan-home"><div class="panel" id="overview">
-      <div><p class="hello"><span id="hello">Evening, Emma &amp; Dave</span><button class="ver" type="button" title="Get the latest version">{LABEL}</button></p><p>The house's changes: <b id="d-house">none yet</b>. The media wall: about <b id="d-total">£{money(lo_tot, hi_tot)}</b>.</p>
-        <p class="row"><a class="btn" href="{base}Home_Plan_{LABEL}_Plan.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">download</span> The plan (PDF)</a><a class="btn" href="{base}Home_Plan_{LABEL}_Plan_phone.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">smartphone</span> Phone edition</a></p></div>
+      <div class="hcard"><p class="hello"><span id="hello">Evening, Emma &amp; Dave</span><button class="ver" type="button" title="Get the latest version">{LABEL}</button></p>
+        <p>The house's changes: <b id="ups-tot">none yet</b></p>
+        <ul class="upchips" id="ups-l" aria-label="Each room's changes: tap one to go there"></ul>
+        <p class="row"><a class="btn primary" href="{hbase}House_Plan.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">download</span> House plan (PDF)</a><button type="button" class="btn" data-nav="buy"><span class="ms" aria-hidden="true">shopping_bag</span> Shopping list</button></p></div>
+      <div class="next3" id="next3" aria-label="Your next three things"></div>
+      <details class="fold mwall"><summary>The media wall: about <b id="d-total">£{money(lo_tot, hi_tot)}</b></summary>
+        <p class="row"><a class="btn" href="{base}Home_Plan_{LABEL}_Plan.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">download</span> Its plan (PDF)</a><a class="btn" href="{base}Home_Plan_{LABEL}_Plan_phone.pdf" target="_blank" rel="noopener"><span class="ms" aria-hidden="true">smartphone</span> Phone edition</a></p>
       {PU.plan_home(ring, sum(1 for r in rows if r["kind"] == "buy"), len(steps())).replace("{MONEY}", PU.money_html(TRACK))}
       <div class="upnext" hidden><span class="n" id="d-nextn">1</span><div><span class="label">Up next</span><h3 id="d-next">Measure and count</h3></div>
         <button type="button" class="done-btn" id="d-nextdone" data-s="1"><span class="ms" aria-hidden="true">check_circle</span>Done</button>
@@ -1084,6 +1082,7 @@ def _page(site=False):
       <div class="tilegrid">{tiles}</div>
       <details class="fold"><summary>The plan on a page</summary><div class="doc">{s1}</div></details>
       <!--keep--><details class="fold changes"><summary>What changed in {LABEL}</summary><div class="doc"><p>{decision}</p></div></details><!--/keep-->
+      </details>
     </div></div>"""
     chapters = "".join([
         chapter("c-room", more(f'<div class="doc">{sec["2"]}</div>')),
@@ -1168,6 +1167,10 @@ def _page(site=False):
     <details class="fold" id="order"><summary>Every step in one list (<span id="s-count">0 of {len(steps())} steps done</span>)</summary><p class="caption">A step ticks itself when its tasks are done.</p><span class="bar sr-only"><i id="s-bar"></i></span><ol class="steps-list" id="steps-ol">{"".join(step_cards)}</ol></details>
   </section>"""
     buy_body = f"""<section class="panel" id="buy">
+    <details class="fold" id="buyhouse" open><summary>The house: <b id="bh-tot">nothing yet</b></summary>
+      <ul class="hlist" id="bh-l"></ul>
+      <div class="row"><button class="btn" id="bh-copy" type="button"><span class="ms" aria-hidden="true">content_copy</span> Copy as text</button><span class="caption" id="bh-st" aria-live="polite"></span></div></details>
+    <h3 class="ptitle">The media wall</h3>
     <div class="tiles">
       <div><strong id="t-plan">£{money(lo_tot, hi_tot)}</strong><span id="t-plans">the plan</span></div>
       <div><strong id="t-done">0 of {sum(1 for r in rows if r["kind"] == "buy")}</strong><span>bought <b id="t-left" hidden>nothing ticked yet</b></span></div>
@@ -1472,6 +1475,26 @@ def split_sheets(html_):
     return html_[:m.start()] + f'<script type="application/json" id="sheets-data" data-src="{name}"></script>' + html_[m.end():]
 
 
+def split_app(html_):
+    """N256 (C4): on Pages the 3D's script and its scene are files of their own, named by their contents (room3d.<hash>.js,
+    scene.<hash>.json, like three's), so a release whose 3D didn't change downloads only the page, and the service worker keeps them
+    (HASHED) till they change. The scene is fetched as the script starts (00_setup.js, its data-src), preloaded beside it."""
+    import hashlib
+    keep = set()
+    m = re.search(r'<script type="application/json" id="scene3d-data">(.*?)</script>', html_, re.S)
+    if m:
+        data = m.group(1).encode(); name = f"scene.{hashlib.sha256(data).hexdigest()[:10]}.json"; (SITE / name).write_bytes(data); keep.add(name)
+        html_ = (html_[:m.start()] + f'<link rel="preload" href="{name}" as="fetch" crossorigin="anonymous">'
+                 f'<script type="application/json" id="scene3d-data" data-src="{name}"></script>' + html_[m.end():])
+    m = next((x for x in re.finditer(r'<script type="module">(.*?)</script>', html_, re.S) if 'from "three"' in x.group(1) or "from'three'" in x.group(1) or 'from"three"' in x.group(1)), None)
+    if m:
+        data = m.group(1).encode(); name = f"room3d.{hashlib.sha256(data).hexdigest()[:10]}.js"; (SITE / name).write_bytes(data); keep.add(name)
+        html_ = html_[:m.start()] + f'<script type="module" src="{name}"></script>' + html_[m.end():]
+    for old in [*SITE.glob("scene.*.json"), *SITE.glob("room3d.*.js")]:
+        if old.name not in keep: old.unlink()
+    return html_
+
+
 # N25: plan.html was a second 2 MB copy of the page; now a step to it, the link's view (its query and hash) kept
 PLAN_REDIRECT = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>Home Plan</title><meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1499,6 +1522,7 @@ if __name__ == "__main__":
     html_ = split_sheets(split_photos(site()))                               # V1.2: the site's front door
     if vmap: html_ = html_.replace(room3d_page.IMPORTMAP, vmap, 1)
     html_ = vendor.minify(html_)                                              # V2.50 (speed): the 3D's script and the CSS minified
+    html_ = split_app(html_)                                                  # N256: the 3D's script and scene, files named by their contents
     (SITE / "index.html").write_text(html_)
     (SITE / "plan.html").write_text(PLAN_REDIRECT)                            # N25: old links, the view's query and hash kept
     pwa_files()

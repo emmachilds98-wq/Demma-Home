@@ -244,7 +244,7 @@ IDEAS = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTime
   R3D.set({ view: 'bed2' }); await sl(800); for (let i = 0; i < 300 && D.flying; i++) await sl(100); await sl(300);
   const pill = q('#r3d-ideas'); if (!pill || pill.hidden) return { err: 'no Ideas pill in bedroom 2' };
   const mine = () => Object.keys(H.items).filter(k => H.items[k].r === 'bed2' && (/^add[.]ix/.test(k) || /^idea[.]/.test(k)));
-  pill.click(); await wait(() => mine().length); await sl(300);
+  pill.click(); await wait(() => mine().length); await sl(600);   // past the card's 350 ms tap guard
   const card = String(D.actId).startsWith('ix:bed2'), line = q('#r3d-act-st').textContent, n0 = mine().length;
   const over = (p, k) => [0, 1, 2].every(j => p[j] < k[j + 3] - 1 && p[j + 3] > k[j] + 1), inway = mine().flatMap(k => (H.fit.keep || []).filter(([, c]) => over(H.items[k].b, c)).map(([w]) => k + ': ' + w));
   q('#r3d-act [aria-label="The next one"]').click(); await sl(600); const next = q('#r3d-act-st').textContent !== line;

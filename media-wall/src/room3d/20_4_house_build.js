@@ -210,6 +210,7 @@ function buildHouse() {
       }
       pickable(fk, F);   // V1.50: each piece's boxes, for a tap (the app's bridge too)
       hsolidSet(fk, F); if (HSOLID[fk]) HSOLID[fk].g = cur;   // V1.28: solid to the eye (shown with its floor)
+      if (!fresh) afterFloor(fk);   // N255: built again (a swap, an edit, an Ideas set-up): what's laid on it, then its bake
     };
     for (const [fk, F] of Object.entries(H3.floors)) HBUILD(fk, editedFloor(fk, F));
     houseShade(H3, m3); blindsApply();   // V1.47: the blinds' cloth exists now
@@ -283,6 +284,14 @@ function buildHouse() {
   finFloorApply();   // V2.7 (FINISHES F4): the floors chosen in the tray, on their rooms
   bakeApply();
 }
+/* N255: what's laid on a floor once it's built again (her mirror, her floors and curtains, her doors), each by its name, set once (22_bath,
+   23_finish): after a batch of rebuilds each runs once, in the order set, then N268's bake goes back on the floors rebuilt */
+const AFTER_FLOOR = new Map(); let AFTER_PEND = null;
+function afterFloor(fk) {
+  if (!AFTER_PEND) { AFTER_PEND = new Set(); Promise.resolve().then(() => { const fs = AFTER_PEND; AFTER_PEND = null;
+    for (const f of [...AFTER_FLOOR.values()]) f(fs); bakeFloors(fs); dirty(); }); }
+  AFTER_PEND.add(fk);
+}
 /* N195: the baked light (house/bake.py, data/bake.json): each shell (walls, floors, ceilings) gets its second UVs and the day's or the
    evening's map, its live direct light kept (the map holds what bounces round the room: colour bleed, soft corners, the shade under each piece).
    A mesh of a baked material the bake didn't see points at the atlas' corner texel, the house's mean light */
@@ -290,21 +299,33 @@ function bakeApply() {
   if (!BAKE.use || BAKE.done) return;   // in hand before the house is built (start), never applied after
   BAKE.done = true; const j = BAKE.use, ld = u => { const x = new THREE.TextureLoader().load("tex/" + u, () => (GS.need = true)); x.colorSpace = THREE.NoColorSpace; x.flipY = false; x.channel = 1; return x; };   // a fourth root of the light (bake.py write)
   BAKE.day = ld(j.day); BAKE.eve = ld(j.eve); BAKE.mats = new Set();
-  let off = 0; const at = {}, pre = new Set(), v = new THREE.Vector3(); for (const [k, n] of j.meshes) { at[k] = [off, n]; off += n * 2; pre.add(k.slice(0, k.lastIndexOf(":"))); }
-  houseG.updateMatrixWorld(true);   // each shell found by its material, its corners and where they are (bake.py's key), not by order
-  houseG.traverse(m => { if (!m.isMesh || m.isInstancedMesh || Array.isArray(m.material) || !m.material.userData) return;
-    const g = m.geometry, P = g.attributes.position, I = g.index, n = I ? I.count : P.count, k0 = (m.material.userData.hk || "") + ":" + n; if (!pre.has(k0)) return;
+  let off = 0; BAKE.at = {}; BAKE.pre = new Set(); for (const [k, n] of j.meshes) { BAKE.at[k] = [off, n]; off += n * 2; BAKE.pre.add(k.slice(0, k.lastIndexOf(":"))); }
+  houseG.updateMatrixWorld(true); bakeUV(houseG);
+  BAKE.gain = Math.PI * j.scale * (j.gain || 1) * (+(location.search.match(/[?&]bake=([\d.]+)/) || [])[1] || 1);   // ?bake=N to try a level
+  for (const mt of BAKE.mats) bakeMat(mt);
+}
+function bakeUV(root) {   // each shell under root found by its material, its corners and where they are (bake.py's key), not by order
+  const j = BAKE.use, v = new THREE.Vector3();
+  root.traverse(m => { if (!m.isMesh || m.isInstancedMesh || Array.isArray(m.material) || !m.material.userData) return;
+    const g = m.geometry, P = g.attributes.position, I = g.index, n = I ? I.count : P.count, k0 = (m.material.userData.hk || "") + ":" + n; if (!BAKE.pre.has(k0)) return;
     let sx = 0; for (let c = 0; c < n; c++) { v.fromBufferAttribute(P, I ? I.getX(c) : c).applyMatrix4(m.matrixWorld); sx += v.x + 2 * v.y + 3 * v.z; }
-    const e = at[k0 + ":" + Math.round(sx)]; if (!e) return;
+    const e = BAKE.at[k0 + ":" + Math.round(sx)]; if (!e) return;
     const src = j.buf.subarray(e[0], e[0] + e[1] * 2), uv = new Uint16Array(P.count * 2);   // each corner's UVs onto its vertex (the mesh keeps its index)
     for (let c = 0; c < n; c++) { const vi = I ? I.getX(c) : c; uv[vi * 2] = src[c * 2]; uv[vi * 2 + 1] = src[c * 2 + 1]; }
     g.setAttribute("uv1", new THREE.BufferAttribute(uv, 2, true)); BAKE.mats.add(m.material); });
   // the rest of a baked material's meshes (a part the bake didn't see) at the atlas' (0,0), the mean bounce; a piece laid later reads it too
-  houseG.traverse(m => { if (m.isMesh && BAKE.mats.has(m.material) && !m.geometry.attributes.uv1) m.geometry.setAttribute("uv1", new THREE.BufferAttribute(new Uint16Array(m.geometry.attributes.position.count * 2), 2, true)); });
-  const gain = Math.PI * j.scale * (j.gain || 1) * (+(location.search.match(/[?&]bake=([\d.]+)/) || [])[1] || 1);   // ?bake=N to try a level
-  for (const mt of BAKE.mats) { const pre = mt.onBeforeCompile, key = mt.customProgramCacheKey;
-    mt.lightMap = S.tod === "evening" ? BAKE.eve : BAKE.day; mt.lightMapIntensity = gain;
-    mt.onBeforeCompile = (sh, r) => { pre.call(mt, sh, r); sh.fragmentShader = sh.fragmentShader.replace("#include <lights_fragment_maps>", THREE.ShaderChunk.lights_fragment_maps.replace("lightMapTexel.rgb", "pow( lightMapTexel.rgb, vec3( 4.0 ) )")); };
-    mt.customProgramCacheKey = () => key.call(mt) + "baked"; mt.needsUpdate = true; }
+  root.traverse(m => { if (m.isMesh && BAKE.mats.has(m.material) && !m.geometry.attributes.uv1) m.geometry.setAttribute("uv1", new THREE.BufferAttribute(new Uint16Array(m.geometry.attributes.position.count * 2), 2, true)); });
+}
+function bakeMat(mt) {   // a baked material's map and its shader's fourth power, once
+  if (mt.userData.baked) return; mt.userData.baked = true; const pre = mt.onBeforeCompile, key = mt.customProgramCacheKey;
+  mt.lightMap = S.tod === "evening" ? BAKE.eve : BAKE.day; mt.lightMapIntensity = BAKE.gain;
+  mt.onBeforeCompile = (sh, r) => { pre.call(mt, sh, r); sh.fragmentShader = sh.fragmentShader.replace("#include <lights_fragment_maps>", THREE.ShaderChunk.lights_fragment_maps.replace("lightMapTexel.rgb", "pow( lightMapTexel.rgb, vec3( 4.0 ) )")); };
+  mt.customProgramCacheKey = () => key.call(mt) + "baked"; mt.needsUpdate = true;
+}
+/* N268: a floor built again (its shells new meshes) gets its bake back: matched as at the start, a new baked material set up once */
+function bakeFloors(fs) {
+  if (!BAKE.done || !BAKE.mats) return; houseG.updateMatrixWorld(true);
+  for (const fk of fs) if (HFLOOR[fk]) bakeUV(HFLOOR[fk]);
+  for (const mt of BAKE.mats) bakeMat(mt);
 }
 function bakeTod() { if (BAKE.mats) for (const mt of BAKE.mats) mt.lightMap = S.tod === "evening" ? BAKE.eve : BAKE.day; }

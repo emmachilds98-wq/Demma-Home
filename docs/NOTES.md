@@ -2,7 +2,7 @@
 
 What the agents learned while doing each task, so a new team doesn't find it again from zero. Until 8 Nov 2026 these lived only in
 the project's memory, outside GitHub. Facts about the house are in `house/HOUSE.md`, the client's choices in `docs/DECISIONS.md`,
-what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (the 6 Nov upgrade review and mobile audit, both at V2.44).
+what's true now in `docs/STATE.md`. Two older reviews are in `docs/archive/reviews/` (the 6 Nov upgrade review and mobile audit, both at V2.44).
 
 ## 1. Working in the sandbox
 - **three.js:** jsDelivr is blocked. `npm ci` gives the local bundle; for the browser checks set `THREE_LOCAL` to an unpacked
@@ -63,10 +63,14 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 
 ## 2. Merging when threads run side by side
 - **Push everything at once (22 Nov 2026):** three rounds lost work to usage limits (N219's shop pieces, N221's saved looks, an iPhone fix, V4.41 once), each committed or merged only on the machine that stopped. Every commit is pushed when made; helpers push their own branch after each step; a merge is pushed straight away. To keep a running PR's CI, push to another branch (your own, or the helper's) and fold it into the PR with the next push.
-- **Versions race.** Each PR takes `VERSION`, a line in `docs/HISTORY.md`, `docs/STATE.md` and its plan row, and main moves every few
-  minutes while CI runs about 20. Take the version **at merge time**: once the code is green, merge `main` in (a merge commit, not a
-  rebase), take the next free version, `checks.py --quick` and `build.py --fast`, push, merge straight away. Never take a version below
-  main's. A docs-only conflict needs no second full CI wait. Numbers lost in races (V2.81, V2.84–V2.86) were simply skipped.
+- **Versions at merge only (N248, N249).** If the PR's merge is refused because main moved, run `ship.py` again: a clash only in the version lines takes main's and the next number. Only the lead touches `VERSION`, `docs/HISTORY.md`, `docs/STATE.md`'s version line and
+  `docs/HANDOVER.md`'s headings, and only through `python3 tools/ship.py "words"` at merge: it merges main, takes the next free version,
+  writes those lines, runs the quick checks, pushes and merges. A row's own PR edits only its row's files and its plan row. STATE's
+  version line holds the current version only; what each version did is HISTORY's one line. Numbers lost in races are simply skipped.
+- **A helper's brief (A5),** pasted into every helper's prompt: "Work in your own worktree on your own branch `claude/<session>-n###`
+  (from `tools/claim.py N###`). Push after every commit. Touch only the row's files (its row names them); never VERSION, HISTORY, STATE
+  or HANDOVER. Per change: `python3 tools/checks.py --quick` and `python3 house/privacy_check.py`, nothing longer. Never write the
+  house's address. Hand back the branch name and the last pushed sha."
 - **A PR that conflicts with main gets no CI** (no merge ref): merge main first. A draft PR once got no runs until marked ready.
 - **Docs-only PRs** skip the browser jobs (the workflow's "Only documents changed?" step) and take no version.
 - **Flaky checks:** `browser (site)` "Measure didn't keep the number typed" was a fixed wait against Measure's 600 ms debounce;
@@ -258,11 +262,11 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   are bedroom 2's monitors, interface, 88-key, headphones and mic on the L desk and the office's two screen setups on its desk; not the
   office lamp (its light would stay behind). N230: two of a thing are two items (`kitchen.stool`, `kitchen.stool2`; a number on the id:
   `HSWAP_OF`, `hcSoft` and the walk's soft pieces allow it); a seat kind (`hcSeat`: chairs, stools) swaps centred, facing as before.
-  A kind with no house pieces (bar stools) gets real ones as rows in `docs/N219_catalogue.json` (read date, the listing's W × D × H).
+  A kind with no house pieces (bar stools) gets real ones as rows in `house/data/N219_catalogue.json` (read date, the listing's W × D × H).
   **Adding** (N218): the add card's kinds are chips, ‹ › goes through that kind (`hcAddOf`); `addSpot` puts a new piece (and each piece
   picked for it) back to the room's wall nearest the tap where `roomWhy` and the pieces find it clear, stored as the row's `x, z` on the
   wall line (0.5 in), which `syncAdds` reads back as against that wall. The space kept clear (`fit.keep`, from `reserves()`) names the
-  piece it's for (the Kallax's drawers), which that piece may take. **Real pieces and her own** (N219): `docs/N219_catalogue.json` (the
+  piece it's for (the Kallax's drawers), which that piece may take. **Real pieces and her own** (N219): `house/data/N219_catalogue.json` (the
   research, 142 pieces) is read by `fit.shop_pieces()`: each its own `fit.SOURCES` row under `fit.shop_key` (a hash of its page and name,
   so a row in Send or a link keeps meaning it; one page can sell two sizes), and by `export3d.shop_row` into `R.SHOP` (its kind, a look for
   the builder, its materials from the finish's words, a door or drawer count). `08_house_catalogue.js` puts them in `HCAT` (`shop`, `p`,
@@ -419,57 +423,11 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   same kind as the stock room's lights, so it builds no shader (check `gl.info.programs` at `r3d-first`).
 - **Drawing into a render target makes new shaders** unless the frame already goes through one (V3.57): three keys a program by its output (tone mapping, colour space), so a reflection drawn into a cube target compiles every visible material again when the page draws straight to the screen. The mirrors only run with `postLive()` (the composer draws the scene into a target already). Check with `gl.info.programs.length` before and after.
 
-## 6. Finishes and furniture (section 14, N56–N58; section 17 stream A)
-- **The walls' emulsion (N172):** `paintGrain` (`03_materials.js`) adds a world-position varying and value noise to a wall's shader (tone at `color_fragment`, sheen at `roughnessmap_fragment`). It runs on `paintMat`'s walls (key `paintwall`), the stair wall (`stairMat`: a `clone()` drops `onBeforeCompile`, so it's set again) and the house's `paint` (inside `finPatch`, `finish0`). A material's `clone()` never carries `onBeforeCompile` or `customProgramCacheKey`. HD shots in the rig sometimes catch the GTAO unsettled (a dark speckle by the landing's newel): shoot twice before blaming a change.
-- **One room's finish in a shared material (N172 garage):** the garage's floor is the drive's `concrete`; `garageFloor` (`20_go.js`) patches that material and acts only inside `H3.rooms.garage`'s outline (its slab lies 15 cm under the room's y). The walls' palette shader (`finPatch`) knows each pixel's room (`rm`): `finGar` holds the garage's number for its masonry look.
-- **New floors** are made, not downloaded: `build_textures.py --floors` cuts the oak veneer's own grain into blocks or planks (a block's
-  look keyed by its place in the repeat so the picture wraps: herringbone repeats every 2 × n × √2 × width); tiles by `tiles` (`TILED`,
-  looks `veins`, `stone`, `lime`). A floor key needs a `model.MATS` row, `FIN_FLOORS`, `UPC.floor` and a `fit.SOURCES` row.
-- **On a wall** (`23_finish.js`): `finWallRun(room, side)` gives the wall's face, ends, doors and windows and the ceiling over it; the
-  wallpaper and the panelling (`finPanelApply`: real boxes, one draw a kind a room) both build on it. Look's rows 24–27.
-- **Seeing a finish without tapping:** `R3D.setFinishes({room: {slot: value}})` then a screenshot (views: `bed3` is `office`, `bathroom` is `bath`).
-- **A made finish's grain runs up the picture's v** (`MADE` `joinery`, N111): on a house box that's up a door's leaf, but across a skirting or a rail, so those stay on `gloss` (strokes along u). `HTEX_AS` picks a key's map; `HTEX_TINT` keeps its own colour.
-- **A tiled panel's grid (N183):** a house material's UVs are world-sized from the house's origin (`worldUV`), so a tiled piece's grout falls wherever the world puts it; a small panel must be one box (not tiles as boxes with gaps, which double the grout off the grid) and take an offset from its own corner (`gridFrom`, as `tile_w`). Glaze is roughness alone (≤ 0.07, `finishEnv` gives it 0.9 of the room's reflection): no clearcoat, which would be a new shader.
-- **Whites (N184):** `capWhite` holds a house material's colour at #dc (sRGB, hue kept) and `finPatch` does the same to the palette's colour in linear before the corner shade (capping after it would flatten the shade). A photo map drawn untinted (`#ffffff`) isn't capped: its photo sets its own white. In software graphics the small rooms' whites sit at about 240, not 255: judge by the shading's spread, not clipping counts.
-- **A catalogue piece's own price:** `UPC.piece[key]` beats its kind's (`upCat`).
-- Don't rebuild `_site` while `checks.py` runs: a local site check once failed Edit's ottoman drag mid-rebuild; CI passed.
-- **Whites (N113):** a textured piece draws its map at full white and ignores its `model.MATS` colour unless its key is tinted (`HTEX_TINT`,
-  or `BED_TINT` for the bedding): change the colour of the duvet, pillows or anything else with a photo map there, or nothing moves. To
-  measure a material on screen, swap every mesh whose `material.userData.hk` is that key for a flat red `MeshBasicMaterial`, nudge the
-  controls (`dispatchEvent({type: 'change'})`), screenshot, swap back: the red pixels are its mask. In software graphics nothing reached
-  250 even before N113 (the master's bedding top 5% at 226–233): the glare the review saw was the near-white shoulder, not true clipping.
-- **A queue of stacked PRs** (each PR's head merging the one before, to land as V3.63, V3.64, ...): the last one carries all of them, so
-  merging it lands them all and a failure in an earlier one (#228's `draws_house 211`) holds every later one. When taking over one of
-  them, cherry-pick its own commit onto `main` instead.
-
-## Lessons of 22 Nov 2026 (V4.45–V4.48)
-- A material that newly reads the palette is a new program (its own `customProgramCacheKey`): the Fast paths' `shaders_first`
-  counts it (V4.45: +1, budget raised on purpose in `tools/perf_budget.json`). Adding columns or a data texture to an existing
-  program (N214's 32-column palette and wall table) costs no program.
-- Splitting a shared material (`upvc` → `woodwork` for frames and radiators) is how a few pieces take a room's colour without the
-  rest (the window frames); a model material name must be new (`trim` was taken by the dormer).
-- **Storage ideas** (N223): most are made to their spot (`storage_ideas.MADE`), so a size is the spot's and the cost is `oak(m²)`: the
-  oak at the Snowdon board's price (`fit.SOURCES` "snowdonoak", a quarter more for the cuts, then whole boards) plus what else it takes.
-  The 3D's pieces (`st_*` in `08_house_catalogue.js`) use the house's `artisan` (the media wall's and the office cubes' oak) and only
-  materials the house already has; `stLip` is the media wall's ledge and lip, `stTen` a bracket tenoned through its shelf. Photograph one
-  with `R3D._dbg.openAct('fin:<room>:5')`, wait 400 ms (a click under 350 ms after a card opens is ignored), click `[data-finidea="*"]`,
-  then `R3D.set({aim: {eye, at, fov}})` (house cm; the store isn't a view: the whole house, Lower, `above: true`).
-- CI cancels a branch's running workflow on each push: batch pushes, or a run never finishes.
-- Worktree agents: give each a task whose files don't overlap; merge with `git merge <their branch>`; `check_site.py`'s step
-  strings (`WOOD`, `EACH`, `FITS`, `ADD`, `SWAP`) can be run alone by a small Playwright script that pulls them out with a regex.
-
-## Lessons of 23 Nov 2026 (N230, N236, N232)
-- **A made piece's details** (N236): a catalogue builder gets a 6th argument, a number from where the piece stands (`hcBuild`), so
-  copies of one idea differ (the face-out ledges' sleeves). The house's boxes are rounded to 1 mm (`hcBuild`): a detail proud of a face
-  by less than that vanishes, so labels and bands stand 1 mm out. A material in `GRAIN_ALONG` (`artisan`) carries its boxes' sizes
-  into `worldUV`, which turns each face's picture so its grain (up the picture) runs the face's longer way; any other material keeps
-  the world's directions (up a wall, along z on a top).
-
-## N225, built 23 Nov 2026 (V4.52)
+### N225, built 23 Nov 2026 (V4.52)
 - **Where it is:** `room3d/22_bath.js` (the tiles: `TILE_ROOMS`, `tileTex`, `tileApply`, `tileCard`, `tileUps`), hooked in one line each
   in `23_finish.js` (`finAt`, `finCard`, `finClean`, `finApplyAll`, `finHold`) and `16_cards.js` (`roomUps`). Numbered 22, not 24 as
   first planned: `23_finish.js` runs code at load (`finSchDraw`) that reaches `finClean`, and a `const` of a later part is not yet made then.
-- **The suites:** shop pieces like N219's (`docs/N219_catalogue.json`, kinds `toilet` and `basin`), so their size, price, page and
+- **The suites:** shop pieces like N219's (`house/data/N219_catalogue.json`, kinds `toilet` and `basin`), so their size, price, page and
   `fit.SOURCES` row come for free; `HCAT_KINDS` names them non-enumerably (no chips in the add card: a suite is swapped, never added);
   `SUITE_OF` lets the four pieces swap though hung or lidded (`swapKind`'s first line), `swapBox` sets their height. `hcBuild` passes
   a 7th argument, `end` (the piece stands in its wall's far corner), and `L` an oval (`sc`, along its wall and out).
@@ -478,7 +436,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   `pointerup` on a card's button that a re-render has replaced never reaches the card: send it to `#r3d-act`. The view for the bathroom is
   `bath` (`ROOM_VIEW`).
 
-## Section 30, Emma's notes on V4.54 (V4.56)
+### Section 30, Emma's notes on V4.54 (V4.56)
 - **Seeing down a flight (N238):** a flight that "can't be seen" though its treads are drawn: check the sightline before the culling. With
   the eye on the line through the nosings every tread lines up edge-on. Raycast a pixel column from the eye (`intersectObjects` honours
   `roomCull`'s draw ranges) and list each hit's material and height. The lower flight's top step is at the hall's door down
@@ -494,7 +452,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   this session's `claude/n240-speed` (a 1× step and the house's shade off; Send's worst gap) stays on its branch, not merged. To count
   shadow redraws wrap `gl.shadowMap.render` and count only calls with `needsUpdate || autoUpdate`.
 
-## N224's units (V4.55)
+### N224's units (V4.55)
 - **Where:** `room3d/22_kitchen.js`; `house/model.py` draws the units, wall cupboards and their handles in `kunit` and `khandle` (the
   same colours as `gloss` and `handle_black`; `HTEX_AS.kunit = "gloss"`, `ROUND`), so the kitchen alone changes. Hooks: `finAt`
   (`kitAt`), `finCard` (slot 92), `finClean` (`kitOk`, before the tiles' 90), `finApplyAll` and `finHold` (`kitApply`), `roomUps`
@@ -502,7 +460,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Keys** in a look link must be 4–8 letters (`finLook`): "oakwood", not "oak". A photo texture swapped onto another material is a
   `texClone` with its own repeat (the material's UVs are in its own photo's metres), so the shared photo is left alone.
 
-## N226 (V4.54)
+### N226 (V4.54)
 - **Where:** `room3d/22_doors.js`; hooks in `23_finish.js` (`finClean`: `room === "doors"` first; `finApplyAll`, `finHold`, the N227 floor
   rebuild wrapper call `doorApply`) and `16_cards.js` (the door's card's tray and buttons; `roomUps` calls `doorUps`).
 - **How a door is redrawn:** a door is its own part (`HPARTS["door.<id>"]`, a group on its hinge) with a mesh a material: the leaf
@@ -514,7 +472,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **The rows** need the doors before the house is built (a look link or Send is cleaned before `HBUILD`): `doorIds` reads the house
   file's parts (a part with `door_leaf` boxes and no nested part: the office's bifold is left out), not `HPARTS`.
 
-## N224, N231, N232 (V4.53)
+### N224, N231, N232 (V4.53)
 - **The splashback** is `22_bath.js`'s tiles card with `TILE_ROOMS.kitchen = "metro"`; a style's 7th field 2 marks a glass panel (kitchen
   only, `tileStyles`): one flat gloss face a 60 cm panel wide, a seam at each panel's edge, no grout row, costed without a tiler.
 - **A look's cost** (`23_finish.js` `lookRows`): Changes' own `roomUps` run with `S.fin` set for a moment to the look's rows (the plan's
@@ -524,7 +482,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   piece card's tray); keeping both was right. The site's `PICK` is per floor (`lower`, `ground`, `first`): the WC and the kitchen are
   on the lower floor; a check that looks for a piece looks on every floor.
 
-### The design, as researched (kept for reference)
+#### The design, as researched (kept for reference)
 - **Found:** the bathroom's wall tiles are model material `stone` (60 × 30, `build_textures.TILED`, only the bathroom uses it), the WC's
   splashback `tile_w` (15 × 15, one panel, `gridFrom`). Both are items of kind `finish` (`bath.tiles`, `wc.tiles`), not in the house file's
   `items` (`export_house.EDITABLE`), so a tap on them opens no card today (`pickItem`: `HIT` misses, `finAt` skips non-palette keys).
@@ -548,7 +506,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   15 × 7.5 £21.33, zellige-look 10 × 10 £36.86; grout white, grey, charcoal; a tiler £20–50/m²) and `n225suites` (Portland, Cleveland,
   Nuie Bliss back-to-wall, Siena wall-hung on a Duplo One 82 frame; Emma pedestal, Galeria semi-pedestal, Newport corner, compact vanity).
 
-## N237 (23 Nov 2026): one palette program for the ceilings, bedding and woodwork
+### N237 (23 Nov 2026): one palette program for the ceilings, bedding and woodwork
 - Two materials share a program only if three's parameters match too, not just `customProgramCacheKey`: the ceilings and the bedding
   differed by a roughness map alone (`roughnessMapUv`), so the ceilings now take the same white 1 × 1 map (`FIN_RW`, roughness × 1).
   Keep the shader's text the same for every kind in a key: branch on the `finKind` uniform (vertex too), never on the JS kind.
@@ -556,7 +514,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   folder may hold an older session's `_site`: build the baseline into a fresh `DEMMA_SITE` (and `npm ci` first, or the page has no
   three bundle and no minify, and every number moves).
 
-## N243 (24 Nov 2026): the ideas data (spots, the catalogue, what fits where), for N244's Ideas pill
+### N243 (24 Nov 2026): the ideas data (spots, the catalogue, what fits where), for N244's Ideas pill
 - **Where:** `house/storage_ideas.py` (`spots()`, `spot_fits()`, `for_page()`, the shared fit test `_tester()`), `house/data/N243_catalogue.json`
   (188 pieces from 20 shops, each read on its own page 23–24 Nov), `media-wall/src/fit.py` (`cat_pieces()`, each a `SOURCES` row by
   `shop_key`, its own block after N242's), `media-wall/src/export3d.py` (`cat_row`; a row's `form` names its look; `side` and `console`
@@ -579,3 +537,52 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Lessons:** `room_sizes()` has no living room (its own scene): `_tester` takes `living_shell()`'s box. The landing's fanlights sit
   in the wall's thickness, so a shelf over a landing door starts 2 in from the wall. A web research job returns some wrong rows (a
   bad URL, sizes swapped, a set's price): read each before it goes in.
+
+## 6. Finishes and furniture (section 14, N56–N58; section 17 stream A)
+- **The walls' emulsion (N172):** `paintGrain` (`03_materials.js`) adds a world-position varying and value noise to a wall's shader (tone at `color_fragment`, sheen at `roughnessmap_fragment`). It runs on `paintMat`'s walls (key `paintwall`), the stair wall (`stairMat`: a `clone()` drops `onBeforeCompile`, so it's set again) and the house's `paint` (inside `finPatch`, `finish0`). A material's `clone()` never carries `onBeforeCompile` or `customProgramCacheKey`. HD shots in the rig sometimes catch the GTAO unsettled (a dark speckle by the landing's newel): shoot twice before blaming a change.
+- **One room's finish in a shared material (N172 garage):** the garage's floor is the drive's `concrete`; `garageFloor` (`20_go.js`) patches that material and acts only inside `H3.rooms.garage`'s outline (its slab lies 15 cm under the room's y). The walls' palette shader (`finPatch`) knows each pixel's room (`rm`): `finGar` holds the garage's number for its masonry look.
+- **New floors** are made, not downloaded: `build_textures.py --floors` cuts the oak veneer's own grain into blocks or planks (a block's
+  look keyed by its place in the repeat so the picture wraps: herringbone repeats every 2 × n × √2 × width); tiles by `tiles` (`TILED`,
+  looks `veins`, `stone`, `lime`). A floor key needs a `model.MATS` row, `FIN_FLOORS`, `UPC.floor` and a `fit.SOURCES` row.
+- **On a wall** (`23_finish.js`): `finWallRun(room, side)` gives the wall's face, ends, doors and windows and the ceiling over it; the
+  wallpaper and the panelling (`finPanelApply`: real boxes, one draw a kind a room) both build on it. Look's rows 24–27.
+- **Seeing a finish without tapping:** `R3D.setFinishes({room: {slot: value}})` then a screenshot (views: `bed3` is `office`, `bathroom` is `bath`).
+- **A made finish's grain runs up the picture's v** (`MADE` `joinery`, N111): on a house box that's up a door's leaf, but across a skirting or a rail, so those stay on `gloss` (strokes along u). `HTEX_AS` picks a key's map; `HTEX_TINT` keeps its own colour.
+- **A tiled panel's grid (N183):** a house material's UVs are world-sized from the house's origin (`worldUV`), so a tiled piece's grout falls wherever the world puts it; a small panel must be one box (not tiles as boxes with gaps, which double the grout off the grid) and take an offset from its own corner (`gridFrom`, as `tile_w`). Glaze is roughness alone (≤ 0.07, `finishEnv` gives it 0.9 of the room's reflection): no clearcoat, which would be a new shader.
+- **Whites (N184):** `capWhite` holds a house material's colour at #dc (sRGB, hue kept) and `finPatch` does the same to the palette's colour in linear before the corner shade (capping after it would flatten the shade). A photo map drawn untinted (`#ffffff`) isn't capped: its photo sets its own white. In software graphics the small rooms' whites sit at about 240, not 255: judge by the shading's spread, not clipping counts.
+- **A catalogue piece's own price:** `UPC.piece[key]` beats its kind's (`upCat`).
+- Don't rebuild `_site` while `checks.py` runs: a local site check once failed Edit's ottoman drag mid-rebuild; CI passed.
+- **Whites (N113):** a textured piece draws its map at full white and ignores its `model.MATS` colour unless its key is tinted (`HTEX_TINT`,
+  or `BED_TINT` for the bedding): change the colour of the duvet, pillows or anything else with a photo map there, or nothing moves. To
+  measure a material on screen, swap every mesh whose `material.userData.hk` is that key for a flat red `MeshBasicMaterial`, nudge the
+  controls (`dispatchEvent({type: 'change'})`), screenshot, swap back: the red pixels are its mask. In software graphics nothing reached
+  250 even before N113 (the master's bedding top 5% at 226–233): the glare the review saw was the near-white shoulder, not true clipping.
+- **A queue of stacked PRs** (each PR's head merging the one before, to land as V3.63, V3.64, ...): the last one carries all of them, so
+  merging it lands them all and a failure in an earlier one (#228's `draws_house 211`) holds every later one. When taking over one of
+  them, cherry-pick its own commit onto `main` instead.
+
+### Lessons of 22 Nov 2026 (V4.45–V4.48)
+- A material that newly reads the palette is a new program (its own `customProgramCacheKey`): the Fast paths' `shaders_first`
+  counts it (V4.45: +1, budget raised on purpose in `tools/perf_budget.json`). Adding columns or a data texture to an existing
+  program (N214's 32-column palette and wall table) costs no program.
+- Splitting a shared material (`upvc` → `woodwork` for frames and radiators) is how a few pieces take a room's colour without the
+  rest (the window frames); a model material name must be new (`trim` was taken by the dormer).
+- **Storage ideas** (N223): most are made to their spot (`storage_ideas.MADE`), so a size is the spot's and the cost is `oak(m²)`: the
+  oak at the Snowdon board's price (`fit.SOURCES` "snowdonoak", a quarter more for the cuts, then whole boards) plus what else it takes.
+  The 3D's pieces (`st_*` in `08_house_catalogue.js`) use the house's `artisan` (the media wall's and the office cubes' oak) and only
+  materials the house already has; `stLip` is the media wall's ledge and lip, `stTen` a bracket tenoned through its shelf. Photograph one
+  with `R3D._dbg.openAct('fin:<room>:5')`, wait 400 ms (a click under 350 ms after a card opens is ignored), click `[data-finidea="*"]`,
+  then `R3D.set({aim: {eye, at, fov}})` (house cm; the store isn't a view: the whole house, Lower, `above: true`).
+- CI cancels a branch's running workflow on each push: batch pushes, or a run never finishes.
+- Worktree agents: give each a task whose files don't overlap; merge with `git merge <their branch>`; `check_site.py`'s step
+  strings (`WOOD`, `EACH`, `FITS`, `ADD`, `SWAP`) can be run alone by a small Playwright script that pulls them out with a regex.
+
+### Lessons of 23 Nov 2026 (N230, N236, N232)
+- **A made piece's details** (N236): a catalogue builder gets a 6th argument, a number from where the piece stands (`hcBuild`), so
+  copies of one idea differ (the face-out ledges' sleeves). The house's boxes are rounded to 1 mm (`hcBuild`): a detail proud of a face
+  by less than that vanishes, so labels and bands stand 1 mm out. A material in `GRAIN_ALONG` (`artisan`) carries its boxes' sizes
+  into `worldUV`, which turns each face's picture so its grain (up the picture) runs the face's longer way; any other material keeps
+  the world's directions (up a wall, along z on a top).
+- **A walk kept clear has no piece (`of` null), and a new piece has no `self` (null):** `roomWhy` skipped each reserve with
+  `of !== self`, so `null !== null` let every added piece (Ideas' set-ups, + Add storage, a tapped add) stand in bedroom 2's walk to
+  the desk; it showed only in the fresh-page features job (24 Nov). Now `!of || of !== self`.

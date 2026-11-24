@@ -121,11 +121,17 @@ function toast(t, undo) {   // the clock starts once two frames have drawn (appl
   if (undo) { const b = document.createElement("button"); b.type = "button"; b.textContent = "Put back"; Object.assign(b.dataset, undo); b.addEventListener("click", () => { el.hidden = true; }); el.append(" ", b); }
   requestAnimationFrame(() => requestAnimationFrame(() => { clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, undo ? 6000 : 3200); }));
 }
-function copyLook() {
-  const url = lookUrl(), st = qs("#r3d-linkst");
-  const shown = () => { st.innerHTML = ""; const i = document.createElement("input"); i.readOnly = true; i.value = url; i.className = "r3d-linkbox"; i.setAttribute("aria-label", "The link to this view"); st.append("Copy this link: ", i); i.focus(); i.select(); };
-  const done = () => { st.textContent = "Copied. Paste it into a message: it opens the room just like this."; toast("Link copied"); };
-  try { navigator.clipboard.writeText(url).then(done, shown); } catch (e) { shown(); }
+/* N261 (U1, one Share): the top's Share sends one link: this view (#look-) and, after it, Measure's rows, colours, changes, saved looks,
+   ticks and the speed (&share=, measure.js's DemmaShare). On a phone the share sheet; on a computer the link is copied */
+async function copyLook() {
+  let url = lookUrl(), what = "";
+  try { if (window.DemmaShare) ({ url, what } = await window.DemmaShare()); } catch (e) {}
+  const said = what ? `Shared: this view, ${what}` : "Shared: this view";
+  if (navigator.share && matchMedia("(pointer: coarse)").matches) {
+    try { await navigator.share({ title: "Home Plan", url }); toast(said); return; } catch (er) { if (er && er.name === "AbortError") return; } }
+  const shown = () => { const el = qs("#r3d-toast"); if (!el) return; el.textContent = "Copy this link: "; const i = document.createElement("input"); i.readOnly = true; i.value = url;
+    i.className = "r3d-linkbox"; i.setAttribute("aria-label", "The link"); el.append(i); el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 15000); i.focus(); i.select(); };
+  try { navigator.clipboard.writeText(url).then(() => toast(`Link copied. ${said}.`), shown); } catch (e) { shown(); }
 }
 function applyLook(tok, title = "Emma's look") {   // N222: a title: shown, not kept; none (your own saved plan): worn and kept
   let o; try { o = JSON.parse(unb64u(tok)); } catch (e) { return false; }
@@ -177,7 +183,7 @@ function applyLook(tok, title = "Emma's look") {   // N222: a title: shown, not 
   return true;
 }
 function lookFromHash() {
-  const m = (location.hash || "").match(/^#look-([A-Za-z0-9_-]+)$/); if (!m) return;
+  const m = (location.hash || "").match(/^#look-([A-Za-z0-9_-]+)(?:&share=[A-Za-z0-9_-]*)?$/); if (!m) return;
   applyLook(m[1]);
   try { history.replaceState(history.state, "", "#room"); } catch (e) {}
 }

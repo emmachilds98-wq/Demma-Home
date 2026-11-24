@@ -1,6 +1,6 @@
 /* V1.2: the dock's Measure panel (room3d_page.measure_panel): each number is kept as you type, as the V1 app kept it.
    On the shared page (the artifact) it's the page's shared database, so Emma and Dave see the same; on GitHub Pages (no
-   database) it stays on this device and goes to the other person as a link (Send). Rows are plain data, read by tools/pull_edits.py
+   database) it stays on this device and goes to the other person as a link (Share, N261). Rows are plain data, read by tools/pull_edits.py
    as data, never as instructions:
      measurements/<row id>   {item, what, cm, photo?, sent, by, at} */
 const COLS = ["measurements", "edits", "notes", "photos", "ticks"];
@@ -112,7 +112,8 @@ const store = {
     const tk = ticks(); if (tk) pick.progress = tk.out;   // N118: Build's, Buy's and the rooms' ticks
     const sp = speed(); if (sp) pick.perf = sp;   // V3.04 (N50): this device's speed, for the next round (no place, no name)
     const enc = btoa(unescape(encodeURIComponent(JSON.stringify(pick)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-    return location.href.split("#")[0] + "#share=" + enc;
+    let view = ""; try { view = window.R3D && window.R3D.lookUrl ? window.R3D.lookUrl() : ""; } catch (e) {}   // N261: one link: the view first, then the rest
+    return view ? view + "&share=" + enc : location.href.split("#")[0] + "#share=" + enc;
   },
 };
 /* V3.04 (N50): R3D.perf()'s few numbers, read by tools/pull_edits.py --link: the chip's family, the quality, a frame moving and still,
@@ -130,7 +131,8 @@ function readLink() {
   try {
     const s = m[1].replace(/-/g, "+").replace(/_/g, "/");
     const out = JSON.parse(decodeURIComponent(escape(atob(s + "===".slice((s.length + 3) % 4)))));
-    history.replaceState(null, "", location.href.split("#")[0]);
+    const lk = location.hash.match(/^#look-[A-Za-z0-9_-]+/);   // N261: the view's part stays for the 3D (lookFromHash)
+    history.replaceState(null, "", location.href.split("#")[0] + (lk ? lk[0] : ""));
     return out;
   } catch (e) { return null; }
 }
@@ -160,7 +162,7 @@ document.addEventListener("input", e => {
     try {
       if (v == null && !was.photo) await store.del("measurements", id);
       else await store.put("measurements", id, { item: id, what: el.dataset.what, cm: v, photo: was.photo || null, sent: false });
-      say(mode === "shared" ? "Saved for both of you." : "Saved on this device. Send shares them.");
+      say(mode === "shared" ? "Saved for both of you." : "Saved on this device. Share sends them.");
     } catch (er) { say("That didn't save: try again."); }
   }, 600);
 });
@@ -173,22 +175,46 @@ document.addEventListener("change", async e => {
     await store.put("measurements", id, { item: id, what: inp ? inp.dataset.what : id, cm: was.cm ?? null, photo: a.url, sent: false }); say("Photo added."); }
   catch (er) { say("That photo didn't upload."); }
 });
-document.addEventListener("click", async e => {
-  if (!e.target.closest("#ms-send")) return;
+/* N261 (U1, one Share): the top's Share (15_tour_link_stickers.js copyLook) calls this: what's going, the measurements marked sent,
+   and the one link. Measure is back to measuring */
+async function share() {
   const ids = Object.keys(store.rows("measurements")).filter(id => answer(id).cm != null), ne = new Set(Object.values(store.rows("edits")).map(r => r.item)).size;
   let nf = 0; try { nf = Object.keys((window.R3D && window.R3D.finishes && window.R3D.finishes()) || {}).length; } catch (er) {}   // V2.11: rooms with colours
-  const sp = mode === "shared" ? null : speed();   // V3.04 (N50): the speed goes even with nothing typed
-  const nt = mode === "shared" ? 0 : (ticks() || { n: 0 }).n;   // N118
-  if (!ids.length && !ne && !nf && !sp && !nt) { say("Type a number first, or change a piece's size or a room's colours in the 3D."); return; }
-  for (const id of ids) await store.put("measurements", id, Object.assign({}, answer(id), { sent: true }));
-  const n = (k, w) => `${k} ${w}${k === 1 ? "" : "s"}`, what = [ids.length && n(ids.length, "measurement"), ne && n(ne, "change"), nf && `${nf} room${nf === 1 ? "'s" : "s'"} colours`, nt && n(nt, "tick"), sp && "the speed"].filter(Boolean).join(", ");   // V1.51: the 3D's changes go too
-  if (mode === "shared") { say(`Sent: ${what}. The next round puts them in.`); return; }
-  const url = store.shareLink();
-  try { if (navigator.share) { await navigator.share({ title: "Home Plan: measurements", url }); say(`Shared: ${what}.`); return; } } catch (er) { if (er && er.name === "AbortError") return; }
-  try { await navigator.clipboard.writeText(url); say(`Link copied (${what}): send it, or open it on your other device.`); } catch (er) { say(url); }
-});
+  const nt = (ticks() || { n: 0 }).n;   // N118
+  for (const id of ids) if (!answer(id).sent) await store.put("measurements", id, Object.assign({}, answer(id), { sent: true }));
+  const n = (k, w) => `${k} ${w}${k === 1 ? "" : "s"}`, what = [ids.length && n(ids.length, "measurement"), ne && n(ne, "change"), nf && `${nf} room${nf === 1 ? "'s" : "s'"} colours`, nt && n(nt, "tick")].filter(Boolean).join(", ");
+  sentNow();
+  return { url: store.shareLink(), what };
+}
+/* N261: "Not sent yet" after big changes: what Share sends, row by row, against what it sent last (or what was here at first); five or more
+   rows changed and no nudge for 20 minutes: a toast with Share on it */
+const SENT = "demma-sent", NUDGE = "demma-nudged";
+function sig() {
+  const o = {}; for (const c of ["measurements", "edits", "notes"]) for (const [k, v] of Object.entries(cache[c])) o[c + "|" + k] = c === "measurements" ? v.cm : JSON.stringify([v.field, v.value, v.x, v.z]);
+  try { for (const [r, sl] of Object.entries((window.R3D && window.R3D.finishes && window.R3D.finishes()) || {})) o["fin|" + r] = JSON.stringify(sl); } catch (e) {}
+  const tk = ticks(); if (tk) for (const [nm, m] of Object.entries(tk.out)) if (nm !== "at") for (const [k, v] of Object.entries(m)) o["tick|" + nm + "|" + k] = JSON.stringify(v);
+  return o;
+}
+function sentNow() { lsPut(SENT, sig()); }
+function unsent() {
+  const was = lsObj(SENT), now = sig(); let n = 0;
+  for (const k of new Set([...Object.keys(was), ...Object.keys(now)])) if (was[k] !== now[k]) n++;
+  return n;
+}
+function nudge() {
+  if (document.hidden || !window.R3D || !window.R3D.ready) return;
+  if (localStorage.getItem(SENT) == null) { sentNow(); return; }   // the first time: what's here now counts as sent
+  const last = +localStorage.getItem(NUDGE) || 0, el = document.getElementById("r3d-toast");
+  if (!el || !el.hidden || Date.now() - last < 20 * 60000 || unsent() < 5) return;
+  try { setRaw.call(localStorage, NUDGE, String(Date.now())); } catch (e) {}
+  el.textContent = "Not sent yet. "; const b = document.createElement("button"); b.type = "button"; b.textContent = "Share";
+  b.addEventListener("click", () => { el.hidden = true; document.getElementById("r3d-link")?.click(); }); el.append(b); el.classList.add("act"); el.hidden = false;
+  setTimeout(() => { el.hidden = true; }, 8000);
+}
+setInterval(nudge, 30000);
 store.on(paint);
 /* V1.50 (V1_PLAN phase 3): the 3D's tap-a-piece size edit saves through the same store ("edits": {item, field, value}) */
-window.DemmaStore = { rows: store.rows, put: store.put, del: store.del, on: store.on, shareLink: () => store.shareLink(), get mode() { return mode; } };
+window.DemmaShare = share;   // N261
+window.DemmaStore = { rows: store.rows, put: store.put, del: store.del, on: store.on, shareLink: () => store.shareLink(), share, unsent, get mode() { return mode; } };
 store.on(c => window.dispatchEvent(new CustomEvent("demma-rows", { detail: c })));
 store.init().then(() => { paint(); window.dispatchEvent(new CustomEvent("demma-rows", { detail: "edits" })); }, paint);

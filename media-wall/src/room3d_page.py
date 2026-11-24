@@ -216,7 +216,7 @@ details.r3d-more[open] > summary::before { content: "– "; }
 .r3d-edit button.primary { background: var(--ink); color: var(--cream); font-weight: 600; }
 .r3d-edit button:disabled { opacity: .5; cursor: default; }
 .r3d-editbar, .r3d-sel, .r3d-addlist { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; background: var(--cream); color: var(--ink); padding: 8px; border-radius: var(--r-xl); box-shadow: var(--shade); max-width: 100%; }
-.r3d-editbar[hidden], .r3d-sel[hidden], .r3d-addlist[hidden], .r3d-sel [hidden], .r3d-share[hidden] { display: none; }
+.r3d-editbar[hidden], .r3d-sel[hidden], .r3d-addlist[hidden], .r3d-sel [hidden] { display: none; }
 .r3d-hint { color: var(--mut); font-size: 12.5px; line-height: 1.3; max-width: 34em; }
 .r3d-sel b { font: 600 16px Fredoka, system-ui, sans-serif; margin: 0 4px 0 8px; }
 .r3d-sel label { font-size: 13px; display: inline-flex; gap: 6px; align-items: center; }
@@ -241,16 +241,10 @@ details.r3d-more[open] > summary::before { content: "– "; }
   .r3d-act .grab { display: block; width: 40px; height: 5px; border-radius: 3px; background: #0002; margin: -8px auto 8px; }   /* V3.88: a sheet: swipe down to close */
   body.sheet-open .r3d-stickers, body.tools-open .r3d-stickers { display: none; }
 }
-/* v33, the phone home ("On a phone the room is small and buried"): named pins, Menu in the dock */
-.r3d-menub { display: none !important; }
+/* v33, the phone home ("On a phone the room is small and buried"): named pins */
 @media (max-width: 599px) {
   .stk { padding: 8px 12px; gap: 6px; min-height: 40px; } .stk b { width: 9px; height: 9px; } .stk .t { display: inline; }   /* v39: three named places */
-  .r3d-menub:not([hidden]) { display: grid !important; }
   .r3d-pop { bottom: calc(max(8px, env(safe-area-inset-bottom)) + 76px) !important; z-index: 7; }
-  body:not(.sheet-open) .rail:not(.open) { display: none; }
-  body:not(.sheet-open) .rail.open { top: auto; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 80px); left: 8px; }
-  body:not(.sheet-open) .rail.open .rail-tog { display: none; }
-  body:not(.sheet-open) .rail.open .rail-list { border-top: 0; padding-top: 0; }
 }
 /* v28: the tour's card, the link's toast, the versions */
 .r3d-tour { position: fixed; left: 50%; bottom: 104px; transform: translateX(-50%); width: min(520px, calc(100vw - 24px)); z-index: 32; background: var(--cream); color: var(--ink);
@@ -433,7 +427,8 @@ body.bare .r3d-peg, .r3d.editing .r3d-peg { display: none; }
 .r3d-stick { opacity: .4; transition: background .15s, opacity .3s; } .r3d-stick.held { opacity: 1; } @media (hover: hover) { .r3d-stick:hover { opacity: 1; } }
 .r3d.keyed .r3d-stick:not(.held):not(:hover) { opacity: 0; } .r3d:has(.r3d-pop:not([hidden])) .r3d-stick, body.sheet-open .r3d-stick { display: none; }
 /* V1.30 (U3): only the tools that work where you are (room3d.js brandPlace) */
-body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-editbtn, body.hv #r3d-dp-look > :not(h2):not(#r3d-finsch), body.hroom .hnav { display: none !important; }
+body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-editbtn, body.hv #r3d-dp-look > :not(h2):not(#r3d-finsch) { display: none !important; }
+@media (max-width: 899px) { body.hroom .hnav { display: none !important; } }   /* N264: Plan, Build and Buy stay up in a room on a computer; a phone has the bottom bar */
 @media (max-width: 899px) { body.hv .r3d-bubbles { justify-content: center; gap: 28px; } body.hv .r3d-bub { flex: 0 0 auto; } }
 /* V1.30: on a phone the small buttons share a row (six rows were the top half of the screen); the floors and rooms a row each, a fade
    where there's more to slide to */
@@ -505,13 +500,15 @@ body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-ed
    and on a phone it sits up top while a card or a panel is open (it covered the card's last buttons). Details ▾ on one line */
 .r3d-finsc button { text-wrap: balance; }
 .r3d-toast { pointer-events: none; }
+.r3d-keysb { display: none; } @media (hover: hover) and (pointer: fine) { .r3d .r3d-mini .r3d-keysb { display: inline-flex; } }   /* N266: the keys, on a computer */
+.r3d-toast.tips { white-space: normal; max-width: min(560px, calc(100vw - 32px)); } .r3d-toast .tip { display: inline-block; margin: 2px 4px; padding: 4px 10px; border-radius: var(--r-pill); background: rgba(255,255,255,.14); }
 .r3d-toast.act { pointer-events: auto; display: flex; align-items: center; gap: 10px; padding: 6px 6px 6px 18px; }   /* V3.75: Put back on it */
 .r3d-toast.act[hidden] { display: none; }
-.r3d-toast button, .r3d-theirs button { font: 600 14px Fredoka, system-ui, sans-serif; background: var(--cream); color: var(--ink); border: 0; border-radius: var(--r-pill); padding: 8px 14px; min-height: 36px; cursor: pointer; }
+.r3d-toast button, .r3d-theirs button { font: 600 14px Fredoka, system-ui, sans-serif; background: var(--cream); color: var(--ink); border: 0; border-radius: var(--r-pill); padding: 8px 14px; min-height: 44px; cursor: pointer; }
 /* N222: a look shown over yours (a link, The plan): its name, Keep it · Back to mine; the toasts under it */
 .r3d-theirs { position: fixed; left: 50%; top: 18px; transform: translateX(-50%); z-index: 41; display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 18px;
   background: var(--ink); color: var(--cream); border-radius: var(--r-pill); font: 600 14px Fredoka, system-ui, sans-serif; box-shadow: var(--shade); max-width: calc(100vw - 32px); white-space: nowrap; }
-.r3d-theirs[hidden] { display: none; } .r3d-theirs b { font-weight: 600; margin-right: 4px; overflow: hidden; text-overflow: ellipsis; }
+.r3d-theirs[hidden] { display: none; } @media (min-width: 900px) { .r3d-theirs { top: 78px; } .r3d.theirs .r3d-toast { margin-top: 112px; } }   /* N266: under the view's rows */ .r3d-theirs b { font-weight: 600; margin-right: 4px; overflow: hidden; text-overflow: ellipsis; }
 .r3d.theirs .r3d-toast { margin-top: 54px; }
 @media (max-width: 899px) { .r3d-theirs { top: 132px; } }
 @media (max-width: 599px) { .r3d-theirs { top: 118px; } }   /* under the floors, clear of the stick and the toasts (at the foot on a phone) */
@@ -560,7 +557,8 @@ def measure_panel():
     h = export_house.house()
     names = {r["id"]: ROOM_NAMES.get(r["id"], r["name"]) for r in h["rooms"]}
     rows = h["measure"]
-    out = [f'<p class="caption"><b id="ms-count">0 of {len(rows)} measured</b></p>']
+    out = [f'<p class="caption"><b id="ms-count">0 of {len(rows)} measured</b></p>',   # N265: the tape measure lives here (it was in View)
+           '<div class="grp"><div class="seg"><button type="button" class="chip" id="r3d-measure"><span class="ms" aria-hidden="true">straighten</span> Tape measure</button></div></div>']
     for room in dict.fromkeys(m["room"] for m in rows):
         nm = html.escape(names.get(room, room.capitalize()))
         head = f'<button type="button" class="ms-go" data-hroom="{room}">{nm} <span class="ms" aria-hidden="true">arrow_forward</span></button>' if room in WALK_IN else nm
@@ -578,8 +576,7 @@ def measure_panel():
     out.append('<div class="grp" id="ms-edits" hidden><span class="label">Changed in the 3D</span><div class="ms-elist" id="ms-elist"></div></div>')   # V1.51: room3d.js fills it
     out.append('<div class="grp" id="ms-takes" hidden><span class="label">What your colours and floors take</span><div class="ms-elist" id="ms-tlist"></div>'
                '<p class="caption">Two coats, about 12 m² a litre (E); floors +10% for cuts. Rough until measured.</p></div>')   # V2.12 (F7): 23_finish.js fills it
-    out.append('<div class="grp"><div class="seg"><button type="button" class="btn primary" id="ms-send"><span class="ms" aria-hidden="true">send</span> Send to the plan</button></div>'
-               '<span class="caption" id="ms-st" aria-live="polite">Saved as you type.</span></div>')
+    out.append('<div class="grp"><span class="caption" id="ms-st" aria-live="polite">Saved as you type. Share, at the top, sends them.</span></div>')   # N261: one Share
     return "".join(out)
 # v39 (the redesign the client approved, 23 Oct): four dock buttons, View, Room, Look and Edit. Room holds Layout and Extras, grouped by
 # place; each panel opens on its main choices with everything else under a More fold
@@ -763,19 +760,14 @@ def controls(gallery=""):
         "views": '<div class="grp r3d-find r3d-findgrp"><label class="label" for="r3d-find">Find something in the room</label><div class="seg">'
                  '<input type="search" id="r3d-find" list="r3d-findlist" placeholder="The record table, the bar, the lamp…" autocomplete="off">'
                  '<button type="button" class="chip" id="r3d-findgo">Go</button></div><datalist id="r3d-findlist"></datalist></div>'
-                 # v39, item 13: measure in 3D
-                 + '<div class="grp"><div class="seg"><button type="button" class="chip" id="r3d-measure"><span class="ms" aria-hidden="true">straighten</span> Measure: tap two points</button></div></div>'
                  + f'<div class="grp r3d-tourgo"><div class="seg"><button class="chip" type="button" id="r3d-tourbtn" title="{len(tour())} stops, about a minute"><span class="ms" aria-hidden="true">play_circle</span> Take the tour</button>'
                  '<button type="button" class="chip" id="r3d-full"><span class="ms" aria-hidden="true">fullscreen</span> Full screen</button></div></div>'
                  + f'<div class="grp r3d-lviews"><span class="label">Where you look from</span><div class="r3d-views" role="group" aria-label="Camera">{views}</div></div>'
                  # v37: the lights live here now (they were their own tab): the presets, daytime, every light's slider and colour, the quality
                  + '<h3 class="r3d-sub" id="r3d-lightsh">Lights <span class="r3d-litst" id="r3d-litst"></span></h3>' + lights
-                 + '<details class="r3d-more r3d-fold"><summary>More: quality, moving round, sharing, pictures</summary>'
+                 + '<details class="r3d-more r3d-fold"><summary>More: quality, moving round, pictures</summary>'
                  + seg("quality", [("hd", "HD, with shadows"), ("fast", "Fast")], "Quality")
-                 # V2.2, the client: "make sure ceilings are all white with ability to customise other than our living room picks so far"
-                 + seg("hceil", [("white", "White")], "The house's ceilings (the living room's are in Look)",
-                       '<label class="chip r3d-anycol">Any colour <input type="color" id="r3d-hceil" value="#f4f3ef" aria-label="The house\'s ceilings: any colour"></label>')
-                 + '<h3 class="r3d-sub">Moving round and sharing</h3>'
+                 + '<h3 class="r3d-sub">Moving round</h3>'
                  # v31, client: "make camera movement easier within the 3d render. being able to adjust height would be good"
                  + '<div class="grp r3d-move"><span class="label">Move round</span>'
                  '<div class="r3d-eyerow"><label for="r3d-eye">Eye height</label><input type="range" id="r3d-eye" min="40" max="220" step="5" value="160">'
@@ -785,8 +777,6 @@ def controls(gallery=""):
                  + seg("cam", [("orbit", "Circle round a spot"), ("look", "Look round from here")], "Dragging the room")
                  + seg("pad", [("on", "Show"), ("off", "Hide")], "Move buttons on the room")
                  + seg("labels", [("on", "Show"), ("off", "Hide")], "The numbered labels on the room")
-                 + '<div class="grp r3d-sharegrp"><span class="label">Share this view</span><div class="seg"><button type="button" class="chip" id="r3d-link"><span class="ms" aria-hidden="true">link</span> Copy link to this view</button></div>'
-                 '<span class="caption" id="r3d-linkst" aria-live="polite">Opens this view with your choices.</span></div>'
                  + '<div class="grp r3d-save"><button class="btn primary" type="button" id="r3d-save">Save as HD picture</button>'
                  '<span class="caption" id="r3d-savest" aria-live="polite">3840 × 2160, with shadows</span></div>'
                  + (f'<div class="grp"><span class="label">HD pictures (tap one to see it big)</span>{gallery.replace(chr(34) + "gallery" + chr(34), chr(34) + "gallery r3d-gal" + chr(34), 1)}</div>' if gallery else "")
@@ -836,15 +826,17 @@ def controls(gallery=""):
                 ("moves", "Furniture moved or added"), ("link", "A link to the room")))
             + '<label><input type="checkbox" data-inc="changed"> Only what differs from the plan</label></fieldset>'
             '<textarea id="r3d-plantext" rows="9" readonly aria-label="What will be sent"></textarea>'
-            '<div class="seg"><button type="button" class="btn primary" id="r3d-planshare" hidden><span class="ms" aria-hidden="true">ios_share</span> Share</button>'
-            '<button type="button" class="btn" id="r3d-plancopy"><span class="ms" aria-hidden="true">content_copy</span> Copy</button>'
-            '<button type="button" class="btn" id="r3d-plansave" hidden><span class="ms" aria-hidden="true">cloud_upload</span> Save for us</button></div></div>']),
+            '<div class="seg"><button type="button" class="btn" id="r3d-plancopy"><span class="ms" aria-hidden="true">content_copy</span> Copy</button>'
+            '</div></div>']),
         "measure": measure_panel(),
         "look": ('<div class="grp" id="r3d-finsch"><span class="label">Your looks</span><div class="seg" id="r3d-finschl"></div>'   # N221: colours, floors and furniture
                  '<div class="seg r3d-find"><input type="text" id="r3d-finschname" placeholder="Our look" aria-label="Name for this look" maxlength="24">'
                  '<button type="button" class="chip" id="r3d-finschsave">Save this look</button></div></div>') + swatches + '<div class="grp"><span class="label">A feature wall</span><div class="seg" role="group" aria-label="A feature wall">'
                  '<button type="button" data-feature="breast">The breast in Green Smoke</button><button type="button" data-feature="media">The media wall in Green Smoke</button>'
-                 '<button type="button" data-feature="none">All one colour</button></div></div>' + decor_main + '<details class="r3d-more r3d-fold"><summary>More: the oak, the floor, cushions, curtains</summary>' + trims + decor_g + '</details>',
+                 '<button type="button" data-feature="none">All one colour</button></div></div>' + decor_main + '<details class="r3d-more r3d-fold"><summary>More: the oak, the floor, cushions, curtains</summary>' + trims + decor_g + '</details>'
+                 # V2.2: the house's ceilings, white or any colour (N265: here in Look, out of View)
+                 + seg("hceil", [("white", "White")], "The house's ceilings",
+                       '<label class="chip r3d-anycol">Any colour <input type="color" id="r3d-hceil" value="#f4f3ef" aria-label="The house\'s ceilings: any colour"></label>'),
     }
 
 
@@ -949,18 +941,13 @@ def section(gallery=""):
     drawers = "".join(f'<div class="r3d-ui r3d-dpanel" role="tabpanel" id="r3d-dp-{k}" aria-labelledby="r3d-dt-{k}" hidden><h2>{html.escape(n)}</h2>{panels[k]}</div>' for k, n, *_ in DRAWERS)
     stickers = "".join(f'<button type="button" class="stk" data-hot="{h["id"]}" style="--h:{h["hue"]};--tilt:0deg" aria-expanded="false" aria-controls="r3d-pop" aria-label="{html.escape(h["name"])}" hidden>'
                        f'<b aria-hidden="true"></b><span class="t">{html.escape(h["name"])}</span></button>' for h in hotspots())
-    # v33, the phone home: a strip of the places (tap one to fly there and open its card) and the set-ups as chips, under the room
-    places = "".join(f'<button type="button" data-place="{h["id"]}" style="--h:{h["hue"]}"><b>{h["n"]}</b>{html.escape(h.get("short", h["name"]))}</button>' for h in hotspots())
-    moments = "".join(f'<button type="button" data-moment="{k}"><span class="ms" aria-hidden="true">{ic}</span>{t}</button>'
-                      for k, ic, t in (("dinner", "dinner_dining", "Dinner for six"), ("four", "lunch_dining", "Lunch for four"), ("film", "movie", "Film night"), ("morning", "wb_sunny", "Morning"),
-                                     ("games", "casino", "Games night"), ("drinks", "local_bar", "Drinks")))   # v37
     sc = json.loads((HERE / "scene3d.json").read_text())
     photos = json.dumps((sc["room"].get("HOUSE3") or {}).pop("photo_tex", {}), separators=(",", ":"))   # V1.9: the photos after the first picture
     data = json.dumps(sc, separators=(",", ":"))
     return f"""<div class="r3d" id="r3d">
   <div class="r3d-stage">
     <!-- V2.97 (N42): the view's buttons first, in the order they read across the top, then the 3D (Tab goes as the eye does) -->
-    <div class="r3d-mini" role="group" aria-label="The view"><div class="r3d-floors r3d-rmode" id="r3d-rmode" role="group" aria-label="How to see the room" hidden><button type="button" data-rmode="stand" aria-pressed="false" title="Stand in it, first person: W S or the wheel walk, ← → turn, drag to look (a stick on a phone)"><span class="ms" aria-hidden="true">accessibility_new</span><span class="t">Be there</span></button><button type="button" data-rmode="in" aria-pressed="true" title="In the room, wide"><span class="ms" aria-hidden="true">visibility</span><span class="t">In it</span></button><button type="button" data-rmode="above" aria-pressed="false" title="From above, the ceiling off"><span class="ms" aria-hidden="true">map</span><span class="t">Above</span></button><button type="button" data-rmode="alone" aria-pressed="false" title="The room on its own, the rest of the house away"><span class="ms" aria-hidden="true">deployed_code</span><span class="t">On its own</span></button></div><div class="r3d-floors r3d-rmode" id="r3d-fview" role="group" aria-label="How to see the floor" hidden><button type="button" data-hfview="angle" aria-pressed="true" title="The whole floor from an angle"><span class="ms" aria-hidden="true">view_in_ar</span><span class="t">Angled</span></button><button type="button" data-hfview="top" aria-pressed="false" title="The whole floor from straight above"><span class="ms" aria-hidden="true">map</span><span class="t">Overhead</span></button></div><div class="r3d-floors" id="r3d-floors" role="group" aria-label="Floors" hidden><button type="button" data-hfloor="all" aria-pressed="true">Outside</button><button type="button" data-hfloor="first" aria-pressed="false">First</button><button type="button" data-hfloor="ground" aria-pressed="false">Ground</button><button type="button" data-hfloor="lower" aria-pressed="false">Lower</button><span class="sep" aria-hidden="true"></span><button type="button" class="tog" data-htog="hgarden" aria-pressed="false" title="Gardens"><span class="ms" aria-hidden="true">yard</span><span class="t">Gardens</span></button><button type="button" class="tog" data-htog="hstreet" aria-pressed="false" title="Next door"><span class="ms" aria-hidden="true">holiday_village</span><span class="t">Next door</span></button></div><button type="button" class="r3d-minib" id="r3d-ideas" aria-pressed="false" title="Ideas: set-ups for this room to look through, and more storage" hidden><span class="ms" aria-hidden="true">lightbulb</span><span class="t">Ideas</span></button><button type="button" class="r3d-minib" id="r3d-home" title="The whole house: pick a floor, then a room (H)"><span class="ms" aria-hidden="true">home</span><span class="t">Whole house</span></button><button type="button" class="r3d-minib" id="r3d-now" aria-pressed="false" title="As it is now, without your colours and changes (tap again for your plan)"><span class="ms" aria-hidden="true">history</span><span class="t">As it is</span></button><button type="button" class="r3d-minib r3d-bare" id="r3d-pick" aria-pressed="false" title="Hide labels"><span class="ms" aria-hidden="true">label_off</span><span class="t">Hide labels</span></button><button type="button" class="r3d-minib" id="r3d-more" aria-expanded="false" aria-controls="r3d-now r3d-pick" title="More: As it is, Hide labels"><span class="ms" aria-hidden="true">more_horiz</span><span class="t">More</span></button><span class="r3d-break" aria-hidden="true"></span><div class="r3d-floors r3d-hrooms" id="r3d-hrooms" role="group" aria-label="Rooms" hidden></div></div>
+    <div class="r3d-mini" role="group" aria-label="The view"><div class="r3d-floors r3d-rmode" id="r3d-rmode" role="group" aria-label="How to see the room" hidden><button type="button" data-rmode="stand" aria-pressed="false" title="Stand in it, first person: W S or the wheel walk, ← → turn, drag to look (a stick on a phone)"><span class="ms" aria-hidden="true">accessibility_new</span><span class="t">Be there</span></button><button type="button" data-rmode="in" aria-pressed="true" title="In the room, wide"><span class="ms" aria-hidden="true">visibility</span><span class="t">In it</span></button><button type="button" data-rmode="above" aria-pressed="false" title="From above, the ceiling off"><span class="ms" aria-hidden="true">map</span><span class="t">Above</span></button><button type="button" data-rmode="alone" aria-pressed="false" title="The room on its own, the rest of the house away"><span class="ms" aria-hidden="true">deployed_code</span><span class="t">On its own</span></button></div><div class="r3d-floors r3d-rmode" id="r3d-fview" role="group" aria-label="How to see the floor" hidden><button type="button" data-hfview="angle" aria-pressed="true" title="The whole floor from an angle"><span class="ms" aria-hidden="true">view_in_ar</span><span class="t">Angled</span></button><button type="button" data-hfview="top" aria-pressed="false" title="The whole floor from straight above"><span class="ms" aria-hidden="true">map</span><span class="t">Overhead</span></button></div><div class="r3d-floors" id="r3d-floors" role="group" aria-label="Floors" hidden><button type="button" data-hfloor="all" aria-pressed="true">Outside</button><button type="button" data-hfloor="first" aria-pressed="false">First</button><button type="button" data-hfloor="ground" aria-pressed="false">Ground</button><button type="button" data-hfloor="lower" aria-pressed="false">Lower</button><span class="sep" aria-hidden="true"></span><button type="button" class="tog" data-htog="hgarden" aria-pressed="false" title="Gardens"><span class="ms" aria-hidden="true">yard</span><span class="t">Gardens</span></button><button type="button" class="tog" data-htog="hstreet" aria-pressed="false" title="Next door"><span class="ms" aria-hidden="true">holiday_village</span><span class="t">Next door</span></button></div><button type="button" class="r3d-minib" id="r3d-ideas" aria-pressed="false" title="Ideas: set-ups for this room to look through, and more storage" hidden><span class="ms" aria-hidden="true">lightbulb</span><span class="t">Ideas</span></button><button type="button" class="r3d-minib" id="r3d-link" title="Share: one link with this view, your measurements, colours, changes and ticks"><span class="ms" aria-hidden="true">ios_share</span><span class="t">Share</span></button><button type="button" class="r3d-minib r3d-keysb" id="r3d-keys" title="Keys and mouse"><span class="ms" aria-hidden="true">help</span><span class="t">Keys</span></button><button type="button" class="r3d-minib" id="r3d-home" title="The whole house: pick a floor, then a room (H)"><span class="ms" aria-hidden="true">home</span><span class="t">Whole house</span></button><button type="button" class="r3d-minib" id="r3d-now" aria-pressed="false" title="As it is now, without your colours and changes (tap again for your plan)"><span class="ms" aria-hidden="true">history</span><span class="t">As it is</span></button><button type="button" class="r3d-minib r3d-bare" id="r3d-pick" aria-pressed="false" title="Hide labels"><span class="ms" aria-hidden="true">label_off</span><span class="t">Hide labels</span></button><button type="button" class="r3d-minib" id="r3d-more" aria-expanded="false" aria-controls="r3d-now r3d-pick" title="More: As it is, Hide labels"><span class="ms" aria-hidden="true">more_horiz</span><span class="t">More</span></button><span class="r3d-break" aria-hidden="true"></span><div class="r3d-floors r3d-hrooms" id="r3d-hrooms" role="group" aria-label="Rooms" hidden></div></div>
     <canvas tabindex="0" aria-label="The whole house in 3D: drag to look round, scroll or pinch to zoom"></canvas>
     <img class="r3d-poster" data-art="3d_room" alt="" aria-hidden="true">
     <div class="r3d-msg" id="r3d-msg">Loading the 3D room…</div>
@@ -984,7 +971,7 @@ def section(gallery=""):
       <h3 id="r3d-act-h"></h3><p class="st" id="r3d-act-st" aria-live="polite"></p><div class="acts" id="r3d-acts"></div></div>
     <div class="r3d-edit">
       <div class="r3d-editbar" id="r3d-editbar" hidden><button type="button" id="r3d-editdone" class="primary">✓ Done</button><button type="button" id="r3d-add">+ Add</button><button type="button" id="r3d-undo" disabled title="Undo (Ctrl+Z)">↶ Undo</button>
-        <details class="r3d-editmore"><summary aria-label="More">⋯</summary><div><button type="button" id="r3d-layreset">Reset layout</button><button type="button" class="r3d-share" id="r3d-share" hidden title="Save this layout so Emma and Dave both see it">Save for both of you</button><button type="button" class="r3d-share" id="r3d-useshared" hidden>Use the shared layout</button></div></details><span class="r3d-hint" id="r3d-sharest" aria-live="polite"></span>
+        <details class="r3d-editmore"><summary aria-label="More">⋯</summary><div><button type="button" id="r3d-layreset">Reset layout</button></div></details>
         <span class="r3d-hint r3d-hint1" id="r3d-edithint" hidden>Drag a thing to move it, its ⟳ to turn it. Tap a wall to paint it.</span></div>
       <button type="button" class="r3d-turnh" id="r3d-turnh" hidden aria-label="Turn it: drag round" title="Drag round to turn it (15° steps)"><span class="ms" aria-hidden="true">rotate_right</span></button><span class="r3d-selmeas" id="r3d-selmeas" hidden></span>
       <div class="r3d-addlist" id="r3d-addlist" hidden></div>
@@ -994,7 +981,7 @@ def section(gallery=""):
   </div>
   <div class="r3d-welcome" id="r3d-welcome" role="dialog" aria-labelledby="r3d-wh" hidden><h2 id="r3d-wh">Welcome home</h2><ol><li><span class="ms" aria-hidden="true">ads_click</span><span data-wk="in"></span></li><li><span class="ms" aria-hidden="true">360</span><span data-wk="look"></span></li><li><span class="ms" aria-hidden="true">touch_app</span><span data-wk="change"></span></li></ol><div class="r3d-wbtns"><button type="button" class="primary" data-wgo="in"><span class="ms" aria-hidden="true">door_front</span>Walk in</button><button type="button" data-wgo="look">Look round</button></div></div>
   <div class="r3d-dock"><button type="button" class="r3d-toolsbtn" data-tools-toggle aria-expanded="false" aria-controls="r3d-panel"><span class="ms" aria-hidden="true">tune</span>Tools</button>
-    <div class="r3d-bubbles" role="tablist" aria-label="3D room controls"><button type="button" class="r3d-bub r3d-menub" id="r3d-menub" aria-expanded="false" aria-controls="rail-list" style="--h:280" hidden><i class="ms" aria-hidden="true">menu</i>Menu</button>{bubbles}
+    <div class="r3d-bubbles" role="tablist" aria-label="3D room controls">{bubbles}
       <button type="button" class="r3d-bub" id="r3d-editbtn" aria-pressed="false" style="--h:25" title="Move, turn, recolour, remove and add things; tap a wall to paint it"><i class="ms" aria-hidden="true">edit</i>Edit</button></div></div>
   <div class="r3d-panel" id="r3d-panel" role="region" aria-label="3D room controls" hidden><button type="button" class="r3d-px" data-tools-toggle aria-label="Close the tools"><span class="ms" aria-hidden="true">close</span></button>
     <div class="r3d-pscroll">{drawers}</div>
