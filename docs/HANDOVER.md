@@ -1,6 +1,6 @@
-# Handover (24 Nov 2026, V4.68: start here)
+# Handover (24 Nov 2026, V4.69: start here)
 
-## Now (24 Nov 2026, V4.68: start here)
+## Now (24 Nov 2026, V4.69: start here)
 The client: "handover efficiently now so another team can finish and start upgrade. make sure none of your work is left behind".
 
 **Read first:** `CLAUDE.md` (the client's rules; **privacy first: the address is never written anywhere**), this block, then
