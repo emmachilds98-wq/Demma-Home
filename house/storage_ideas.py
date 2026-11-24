@@ -304,8 +304,8 @@ def _new_spots():
     sp("bath_overdoor", "bathroom", "Over the bathroom door", "over door", [bd["a"], hd("first"), bt["z1"] - 22, bd["b"], top("first"), bt["z1"] - 2], "z1",
        ["boxes", "display"])
     b1 = _room("bathroom_1")
-    sp("bath_tower", "bathroom", "Beside the vanity", "floor", [b1["x1"] - 30, y1, -82.0, b1["x1"], y1 + 180, b1["z1"] - 2], "x1", ["boxes", "laundry"])
-    sp("bath_slope", "bathroom", "Under the slope past the toilet", "slope", [412.0, y1, -250.0, b1["x1"], M.headroom(412.0, b1["x1"], -250.0) - 1, -195.0],
+    sp("bath_tower", "bathroom", "Beside the vanity", "floor", [b1["x1"] - 32, y1, -82.0, b1["x1"] - 2, y1 + 180, b1["z1"] - 2], "x1", ["boxes", "laundry"])
+    sp("bath_slope", "bathroom", "Under the slope past the toilet", "slope", [412.0, y1, -250.0, b1["x1"] - 2, M.headroom(412.0, b1["x1"] - 2, -250.0) - 1, -195.0],
        "x1", ["laundry", "boxes"])
     # ------------------------------------------------ the hall
     h, fd, ld = _room("hall"), _door("hall_porch"), _door("living_door")

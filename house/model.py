@@ -550,6 +550,13 @@ def outer_walls(o, floor):
                 if op["kind"] == "window":                       # the sill, proud of the wall
                     o.box("frame_out", op["x"][0] - 4, yb - 4, face - out * 6, op["x"][1] + 4, yb + 0.6, face + out * 4)
                 _door_leaf(o, op, side, face, yb, yt)
+            if op["side"] == side and axis == "x" and abs(line - (BACK if side == "n" else FRONT)) < 1 and op["design"] not in ("porch", "garage"):
+                o.end(); soldier(o, op["x"][0], op["x"][1], FLOOR_Y[floor] + op["head"], line + out * t_out, out)   # N271
+
+
+def soldier(o, x0, x1, head, face, s):
+    """N271 (the review: no soldier course over the windows): a course of bricks on end over an opening's head, a hair proud of the face."""
+    o.box("soldier", x0 - 10, head + 0.4, face - s * 0.5, x1 + 10, head + 22, face + s * 1.2)
 
 
 def living_window(o, op, face, y):
@@ -721,9 +728,22 @@ def stairs(o):
     for i in range(st["n"]):
         za = st["z0"] + i * st["going"]; top = y0 + (i + 1) * st["rise"]
         o.box("carpet_grey", st["x0"] + 1, top - st["rise"] - 14, za, st["x1"] - 1, top, min(za + st["going"] + 2, st["z1"]))   # v67: grey carpet (the photo)
+        if i:                                                     # N272: each tread's rounded nosing over its riser, a shadow line under it
+            o.box("carpet_grey", st["x0"] + 1, top - 3.2, za - 1.6, st["x1"] - 1, top - 0.6, za)
+            o.box("gap", st["x0"] + 1.5, top - 4.0, za - 0.4, st["x1"] - 1.5, top - 3.2, za)
+            o.box("gap", st["x0"] + 1.5, top - st["rise"], za - 0.4, st["x1"] - 1.5, top - st["rise"] + 0.5, za)   # the riser's foot
     yl = lambda z: y0 + (z - st["z0"]) / st["going"] * st["rise"]                        # v67: the handrail on the left going down
     za, zb = st["z0"] + st["going"], st["z1"] - st["going"]
-    o.prism("upvc", "x", WIDTH - 7, WIDTH - 2, [(za, yl(za) + 88), (zb, yl(zb) + 88), (zb, yl(zb) + 96), (za, yl(za) + 96)])
+    # N272: a rounded mopstick rail (4.4 across, three layers for its round) on brackets 4.5 off the wall, was a square bar
+    xr = WIDTH - 0.5 - 4.5 - 2.2                                                          # the rail's centre line
+    for dx, dy in ((2.2, 1.3), (1.6, 2.2), (0.9, 2.6)):
+        o.prism("rail_white", "x", xr - dx, xr + dx, [(za, yl(za) + 90 - dy), (zb, yl(zb) + 90 - dy), (zb, yl(zb) + 90 + dy), (za, yl(za) + 90 + dy)])
+    nb = max(2, round((zb - za) / 90))
+    for k in range(nb + 1):                                                               # the brackets: a rose on the wall, an arm under the rail
+        zk = za + 6 + (zb - za - 12) * k / nb; yk = yl(zk) + 90
+        o.box("steel", WIDTH - 0.9, yk - 9, zk - 2.5, WIDTH - 0.5, yk - 4, zk + 2.5)
+        o.box("steel", xr - 0.6, yk - 8, zk - 0.6, WIDTH - 0.9, yk - 6.8, zk + 0.6)
+        o.box("steel", xr - 0.6, yk - 8, zk - 0.6, xr + 0.6, yk - 2.6, zk + 0.6)
     # V1.59, the client: "lower cupboard needs to have a box on the side and underneath of the stairs": from the store under it the flight
     # showed each tread's block, stepped, underneath and up its open side; it's boxed in as an understairs cupboard is, a painted soffit
     # just under the treads' lowest corners and a panel up the open side to their fronts (the store keeps its room under them)
@@ -908,11 +928,13 @@ def porch(o):
         o.box("recycle", wst["x0"] + 2.5, y0_, FRONT - 0.5 - bb["w"], min(wst["x1"] - 0.5, wst["x0"] + 2.5 + bb["d"]), y0_ + bb["h"] - 0.5, FRONT - 0.5)
 
 
-def _house_shell(o, span, gcol):
+def _house_shell(o, span, gcol, var=None):
     """One house of the terrace in our own coordinates (its inside end wall at x 0, as ours), as a simple solid building: the brick
     cross-section, the roof, the dormer, the porch, every window and door from survey_data.OPENINGS, its front and back gardens.
-    span: its outside x range (an end house from its gable, -28; a middle one from the party wall's middle, -15; to the next, 482)."""
+    span: its outside x range (an end house from its gable, -28; a middle one from the party wall's middle, -15; to the next, 482).
+    var (N271: next door no longer our clones): its front door's colour, nets in its windows, its porch open or glazed in."""
     x0, x1 = span
+    var = var or {}
     t = D.ROOF["t"] / math.cos(math.radians(D.ROOF["pitch"]))
     tb = D.ROOF["t"] / math.cos(math.atan(KB))                    # v68: the steeper back slope
     prof = [(RO["n"], D.LEVELS["lawn"] - 15), (RO["n"], ROOF_B), (RIDGE_Z, RIDGE_Y), (RO["s"], ROOF_E), (RO["s"], D.LEVELS["drive"] - 6)]   # v65: into the ground
@@ -943,12 +965,21 @@ def _house_shell(o, span, gcol):
         elif op["design"] == "porch":                     # v65: the open porch as ours: dark inside, the door set back, a step
             dr = D.LEVELS["drive"]
             o.box("porch_in", xa, ya, pz, xb, min(yb, D.PORCH["surround"]["head"]), pz + s * 0.6)   # V2.75: to the frieze
-            o.box("upvc", xa + 14, ya, pz + s * 0.6, xb - 14, yb - 8, pz + s * 1.2)
+            o.box(var.get("door", "upvc"), xa + 14, ya, pz + s * 0.6, xb - 14, yb - 8, pz + s * 1.2)
             surround(o, xa, xb, pz, s, dr)
+            if var.get("porch") == "glazed":              # N271: its porch glazed in, a white frame and a door across the front
+                o.box("pane", xa + 2, ya + 2, pz + s * 1.8, xb - 2, min(yb, D.PORCH["surround"]["head"]) - 2, pz + s * 2.2)
+                for xx in (xa, (xa + xb) / 2 - 2, xb - 4):
+                    o.box("frame_out", xx, ya, pz + s * 1.6, xx + 4, min(yb, D.PORCH["surround"]["head"]), pz + s * 2.6)
+                o.box("frame_out", xa, ya, pz + s * 1.6, xb, ya + 30, pz + s * 2.6)
             o.box("quarry", xa - 22, dr - 5.5, pz + s * 0.3, xb + 22, ya, pz + s * 34)
         else:
-            o.box("pane", xa + 1, ya + 1, pz + s * 0.2, xb - 1, yb - 1, pz + s * 0.6)
+            nets = var.get("nets") and op["kind"] == "window"   # N271: nets over the lower part of its windows
+            o.box("pane", xa + 1, (ya + yb) / 2 if nets else ya + 1, pz + s * 0.2, xb - 1, yb - 1, pz + s * 0.6)
+            if nets:
+                o.box("curtain", xa + 1, ya + 1, pz + s * 0.2, xb - 1, (ya + yb) / 2, pz + s * 0.6)
             window(o, op["side"], xa, xb, ya, yb, "bars" if op["design"] in ("living", "glazed") else op["design"], face)
+            soldier(o, xa, xb, yb, pz, s)
     gx = (30.0, 270.0)                                            # its drive, front lawn, the pavement and road, its back lawn and fence
     dr = D.LEVELS["drive"]                                         # v65: every layer from one base, side by side (no shared planes)
     o.box("concrete", gx[0], dr - 6, RO["s"], gx[1], dr, RO["s"] + 550)
@@ -983,13 +1014,14 @@ def street(o):
     its end wall to the alley. Each with its gardens. Shown only when the client switches Next door on."""
     W = WIDTH + 2 * D.WALLS["party"]
     P = D.WALLS["party"]
+    VAR = (dict(door="door_navy", nets=True), dict(door="door_red", porch="glazed"), dict(door="door_sage", nets=True, porch="glazed"), dict())   # N271
     for k, gcol in ((1, "garage_blue"), (2, "garage_black")):           # west: shifted copies
-        h = Out(); _house_shell(h, (-P, RO["w"]), gcol)
+        h = Out(); _house_shell(h, (-P, RO["w"]), gcol, VAR[k - 1])
         dx = RO["w"] + (k - 1) * W + P
         _copy(h, o, lambda x, dx=dx: dx + x)
     ax = -125.0                                                           # the alley's far side (its fence at -121)
     for k, (span, gcol) in enumerate((((-T_OUT, RO["w"]), "garage_white"), ((-P, RO["w"]), "garage_blue"))):
-        h = Out(); _house_shell(h, span, gcol)
+        h = Out(); _house_shell(h, span, gcol, VAR[2 + k])
         base = ax - T_OUT if k == 0 else ax - (RO["w"] + T_OUT) - P - (k - 1) * W   # the first's gable at the alley; the next shares its party wall
         _copy(h, o, lambda x, base=base: base - x)                       # mirrored: its x runs east
 
@@ -1444,6 +1476,38 @@ def boiler(o):
     o.box("storebox", r["x0"] + 6, y + 32, r["z0"] + 8, r["x0"] + 40, y + 56, r["z0"] + 30)
 
 
+def master_dress(o):
+    """N269 (the review: the master's window bare, no decor): a pole and sill-length lined curtains drawn back each side of the window, a
+    rug by the bed, a throw over the duvet's foot (on the lid, so it lifts with it: master()), a framed print over the headboard."""
+    Dd, y = D.MASTER_DRESS, FLOOR_Y["first"]
+    c = Dd["curtains"]; zc = FRONT - 6
+    o.item("master.curtains", "The curtains", "master", kind="decor", src=Dd["src"], data=("MASTER_DRESS", "curtains"), axis="x")
+    o.lathe("chrome", c["pole"][0], y + c["y"][1] - 1.6, zc, [(0, 0), (1.6, 0), (1.6, 3.2), (0, 3.2)])   # the finials
+    o.lathe("chrome", c["pole"][1], y + c["y"][1] - 1.6, zc, [(0, 0), (1.6, 0), (1.6, 3.2), (0, 3.2)])
+    o.prism("steel_dark", "x", c["pole"][0], c["pole"][1], [(zc + 1.2 * math.cos(i * math.pi / 5), y + c["y"][1] + 1.2 * math.sin(i * math.pi / 5)) for i in range(10)])
+    for xb in (c["pole"][0] + 8, c["pole"][1] - 8):
+        o.box("steel_dark", xb - 0.8, y + c["y"][1] - 0.8, zc, xb + 0.8, y + c["y"][1] + 0.8, FRONT)
+    for xa, xb in c["x"]:                                            # each curtain in folds
+        n = int((xb - xa) / 3)
+        for k in range(n):
+            x_ = xa + k * (xb - xa) / n; dz = 1.6 * math.sin(k * 1.7)
+            o.box("cloth3", x_, y + c["y"][0], zc - 3.2 + dz, x_ + (xb - xa) / n + 0.4, y + c["y"][1] - 2, zc - 1.4 + dz)
+    r = Dd["rug"]
+    o.item("master.rug", "The rug", "master", kind="decor", src=Dd["src"], data=("MASTER_DRESS", "rug"), axis="z")
+    o.box("sisal", r["x"][0], y, r["z"][0], r["x"][1], y + 1, r["z"][1])
+    o.box("book2", r["x"][0] + 5, y + 1, r["z"][0] + 5, r["x"][1] - 5, y + 1.3, r["z"][0] + 8)   # its border bands
+    o.box("book2", r["x"][0] + 5, y + 1, r["z"][1] - 8, r["x"][1] - 5, y + 1.3, r["z"][1] - 5)
+    p = Dd["print"]
+    o.item("master.print", "The print", "master", kind="decor", src=Dd["src"], data=("MASTER_DRESS", "print"), axis="z")
+    (z0, z1), (y0, y1) = p["z"], p["y"]
+    o.box("oak", 0, y + y0, z0, 2.4, y + y1, z1)                    # the frame, a mount, the picture: a calm abstract in the room's colours
+    o.box("paper", 2.4, y + y0 + 2, z0 + 2, 2.7, y + y1 - 2, z1 - 2)
+    o.box("cloth3", 2.7, y + y0 + 8, z0 + 8, 2.9, y + (y0 + y1) / 2, z1 - 8)
+    o.box("book5", 2.7, y + (y0 + y1) / 2, z0 + 8, 2.9, y + y1 - 8, (z0 + z1) / 2 + 6)
+    o.box("check", 2.7, y + (y0 + y1) / 2, (z0 + z1) / 2 + 6, 2.9, y + y1 - 8, z1 - 8)
+    o.end()
+
+
 def master(o):
     """v63: the master bedroom: the pine ottoman bed in the middle facing the door (slatted headboard, panelled base, mattress, duvet);
     v68 storage for two: a pine bedside each side, the chest under the window, the ottoman's lid lifting on its struts over four boxes
@@ -1453,10 +1517,17 @@ def master(o):
     o.item("master.bed", "The pine ottoman bed", "master", src="E (king, 150 × 200)", data=("MASTER", "bed"), axis="z")
     o.box("pine", x0, y, z0, x0 + 6, y + b["head_h"], z0 + 6); o.box("pine", x0, y, z1 - 6, x0 + 6, y + b["head_h"], z1)      # headboard posts
     o.box("pine", x0, y + b["head_h"] - 8, z0, x0 + 5, y + b["head_h"], z1); o.box("pine", x0, y + 62, z0, x0 + 5, y + 70, z1)
+    # N273 ("still upgrade the furniture we have"): a moulded cap along the headboard's top rail, a bead under it, turned caps on the
+    # posts, and the slats round (oval spindles, were square boxes)
+    yh = y + b["head_h"]
+    o.box("pine", x0 - 0.8, yh, z0 + 6, x0 + 6.6, yh + 2.2, z1 - 6)
+    o.box("pine_dark", x0 - 0.3, yh - 9.2, z0 + 6, x0 + 5.6, yh - 8.4, z1 - 6)
+    for zc in (z0 + 3, z1 - 3):
+        o.lathe("pine", x0 + 3, yh, zc, [(0, 0), (3.6, 0), (3.6, 1.2), (2.2, 2.2), (2.8, 4.2), (1.8, 6), (0, 6.4)])
     n = 13
     for k in range(n):                                             # the slats
         zz = z0 + 10 + (z1 - z0 - 20) * (k + 0.5) / n
-        o.box("pine", x0 + 1, y + 70, zz - 2.5, x0 + 4, y + b["head_h"] - 8, zz + 2.5)
+        o.lathe("pine", x0 + 2.5, y + 70, zz, [(0, 0), (1, 0), (1, b["head_h"] - 78), (0, b["head_h"] - 78)], 1.5, 2.5)
     T = 2.0                                                        # the ottoman: a panelled pine box, open at the top
     o.box("pine", x0 + 6, y, z0, x1, y + 4, z1)
     o.box("pine", x0 + 6, y + 4, z0, x1, y + 36, z0 + T); o.box("pine", x0 + 6, y + 4, z1 - T, x1, y + 36, z1)
@@ -1471,6 +1542,13 @@ def master(o):
     lid = o.part("bed_lift", (hx, hy, (z0 + z1) / 2), "z", b["lift"])
     lid.box("pine", hx, hy, z0, x1, hy + 2, z1)                    # the slatted lid (the mattress's base)
     lid.box("mattress", x0 + 8, y + 38, z0 + 4, x1 - 3, y + 60, z1 - 4)  # mattress
+    for yy in (y + 38.6, y + 59.4):                                 # N273: its piping round the top and bottom edges, and its tick's border
+        lid.box("piping", x0 + 7.6, yy - 0.6, z0 + 3.6, x1 - 2.6, yy + 0.6, z0 + 4.4); lid.box("piping", x0 + 7.6, yy - 0.6, z1 - 4.4, x1 - 2.6, yy + 0.6, z1 - 3.6)
+        lid.box("piping", x1 - 3.4, yy - 0.6, z0 + 4.4, x1 - 2.6, yy + 0.6, z1 - 4.4); lid.box("piping", x0 + 7.6, yy - 0.6, z0 + 4.4, x0 + 8.4, yy + 0.6, z1 - 4.4)
+    for k in range(1, 4):                                           # the side's vents, as a pocket-sprung mattress's
+        for zz in (z0 + 3.9, z1 - 4.1):
+            xv = x0 + 8 + (x1 - x0 - 11) * k / 4
+            lid.box("gap", xv - 1, y + 48, zz - 0.2, xv + 1, y + 50, zz + 0.2)
     # V2.91 (N36, the client: the beds "read as flat grey slabs"): the duvet lofty (10 thick, drawn soft in 20_go.js clothBox), its edges
     # rolled over the mattress's, turned down at the pillows, its sides and foot hanging in soft ripples under the roll; two plump pillows
     lid.box("duvet", x0 + 56, y + 59, z0 + 0.5, x1 + 0.5, y + 69, z1 - 0.5)
@@ -1480,6 +1558,9 @@ def master(o):
     lid.box("duvet", x1 - 2.5, y + 41, z0 + 3, x1 - 0.5, y + 63, z1 - 3)
     for pz in (z0 + 8, (z0 + z1) / 2 + 2):
         lid.box("pillow", x0 + 7, y + 60, pz, x0 + 52, y + 76, pz + 70)   # 48 × 74 (a standard pillow, E), 16 plump
+    lid.box("cloth6", x1 - 48, y + 69, z0 - 0.5, x1 - 2, y + 71, z1 + 0.5)   # N269: a throw across the foot, hanging a little each side
+    for za, zb in ((z0 - 0.5, z0 + 0.5), (z1 - 0.5, z1 + 0.5)):
+        lid.box("cloth6", x1 - 48, y + 52, za, x1 - 2, y + 69, zb)
     for za, zb in M_["bedsides"]:                                  # pine bedside drawers, round knobs
         o.item(f"master.bedside{int(za)}", "A pine bedside", "master", src="E", data=("MASTER", "bedsides"), axis="z")
         # V2.44, the client: "blocky ... furniture looks more real": built as a real one is: the carcass, its sides framing the front, a top
@@ -1815,7 +1896,7 @@ def bathroom(o):
     o.box("led", xw - 4.6, y + my1 + 0.6, (m0 + m1) / 2 - 19, xw - 1.4, y + my1 + 1, (m0 + m1) / 2 + 19)   # V2.48 (R1): its lit strip underneath
 
 
-SKIRT_ROOMS = {"hall", "landing", "landing_top", "bed3", "master", "master_b", "master_1", "bed2", "kitchen", "kitchen_1", "kitchen_2", "wc", "lower_landing"}
+SKIRT_ROOMS = {"hall", "landing", "landing_top", "bed3", "master", "master_b", "master_1", "bed2", "bed2_1", "bathroom", "bathroom_1", "kitchen", "kitchen_1", "kitchen_2", "wc", "lower_landing"}
 SKIRT_H, SKIRT_T = 10.0, 1.5                                       # E: a 94 mm torus skirting
 DOOR_LEAF = {"wc_door": "door_leaf", "bath_door": "door_leaf", "bed2_door": "door_leaf",
              "master_door": "door_leaf", "bed3_door": "door_leaf"}   # v73, the client: the bathroom's is white too (the wood was an old photo)
@@ -2289,6 +2370,50 @@ def radiator(o, axis, wall, out, a0, a1, y0, y1):
         put("chrome", p, p + 3, 5.0, 8.0, y0 - 6, y0 + 2)
 
 
+def towel_rail(o, axis, wall, out, a0, a1, y0, y1):
+    """N272: a chrome towel ladder (the bathroom's radiator): two round uprights, round rungs between, a bracket to the wall at each
+    corner. axis, wall and out as radiator()."""
+    d = wall + out * 6.0                                           # the ladder's line, 6 off the wall
+    ring = lambda u, v, r, n=10: [(u + r * math.cos(i * 2 * math.pi / n), v + r * math.sin(i * 2 * math.pi / n)) for i in range(n)]
+    for p in (a0 + 1.5, a1 - 1.5):                                 # the uprights
+        cx, cz = (p, d) if axis == "x" else (d, p)
+        o.lathe("chrome", cx, y0, cz, [(0, 0), (1.6, 0), (1.6, y1 - y0), (0, y1 - y0)])
+        for yy in (y0 + 8, y1 - 8):                                # the brackets, a stem and a rose on the wall
+            if axis == "x":
+                o.box("chrome", p - 0.6, yy - 0.6, min(wall, d), p + 0.6, yy + 0.6, max(wall, d))
+                o.box("chrome", p - 2.2, yy - 2.2, wall + out * 0.6 - 0.3, p + 2.2, yy + 2.2, wall + out * 0.6 + 0.3)
+            else:
+                o.box("chrome", min(wall, d), yy - 0.6, p - 0.6, max(wall, d), yy + 0.6, p + 0.6)
+                o.box("chrome", wall + out * 0.6 - 0.3, yy - 2.2, p - 2.2, wall + out * 0.6 + 0.3, yy + 2.2, p + 2.2)
+    n = max(6, int((y1 - y0) / 8))
+    for k in range(n):                                             # the rungs, closer together at the top
+        yy = y0 + 4 + (y1 - y0 - 8) * (k / (n - 1)) ** 0.85
+        o.prism("chrome", axis, a0 + 3, a1 - 3, ring(d, yy, 1.1))
+    for p in (a0 + 1.5, a1 - 1.5):                                 # the valves under it
+        cx, cz = (p, d) if axis == "x" else (d, p)
+        o.lathe("chrome", cx, y0 - 9, cz, [(0, 0), (1.4, 0), (1.4, 5), (2.2, 5.5), (2.2, 9), (0, 9)])
+
+
+def radiators(o, floor):
+    """N272 (the upgrade review: no radiators in the master, bedroom 2, the bathroom, the landing or the WC): estimated, each a Measure row
+    (survey_data.RADIATORS)."""
+    R, y = D.RADIATORS, FLOOR_Y[floor]
+    rs = {r["id"]: r for r in rooms(floor)}
+    if floor == "lower":
+        want = (("wc", "The WC radiator", "wc", WIDTH - 0.5),)
+    elif floor == "first":
+        want = (("master", "The master's radiator", "master", FRONT - 3), ("bed2", "Bedroom 2's radiator", "bed2", rs["bed2"]["x1"]),
+                ("landing", "The landing radiator", "landing", rs["landing_top"]["z1"]),
+                ("bathroom", "The towel rail", "bathroom", rs["bathroom_1"]["z1"]))
+    else:
+        return
+    for key, name, room, wall in want:
+        r = R[key]; ax = r["axis"]; a0, a1 = r["x" if ax == "x" else "z"]
+        o.item(f"{room}.radiator", name, room, kind="radiator", src=R["src"], data=("RADIATORS", key), axis=ax)
+        (towel_rail if key == "bathroom" else radiator)(o, ax, wall, -1, a0, a1, y + r["y"][0], y + r["y"][1])
+        o.end()
+
+
 def secret(o):
     """V1.26, the client's photos down the hatch: the secret room square, solid to the front, a brick pier off the middle of its back
     wall (behind the kitchen), a drain in its floor (survey_data.SECRET)."""
@@ -2539,10 +2664,19 @@ def pendants(o, floor):
     for rid, (px, pz) in D.PENDANTS.items():
         if rid not in ids:
             continue
-        o.item("light." + rid, "The ceiling light", rid, kind="light", src="client's photos", data=("PENDANTS", rid), measure=False)
+        st = D.PENDANT_STYLE.get(rid)
+        o.item("light." + rid, "The ceiling light", rid, kind="light", src="E" if st else "client's photos", data=("PENDANTS", rid), measure=False)
         # V1.24 (Q6): turned, not boxes: a round ceiling rose, the flex, a lampholder and a pear-shaped bulb (E: a standard GLS, 60 dia.)
         o.lathe("upvc", px, y - 2, pz, [(0, 0), (4, 0), (5, 0.6), (5, 1.7), (0, 1.7)])
-        if rid == "wc":                                            # its yellow drum shade with the white band (the photo)
+        if st == "flush":                                          # N269: a flush glass dome on its white base
+            o.lathe("upvc", px, y - 3.5, pz, [(0, 0), (14, 0), (14, 1.5), (0, 1.5)])
+            o.lathe("glass_frost", px, y - 12, pz, [(0, 0), (6, 0.4), (10.5, 2.2), (13, 5.5), (13.5, 8.5), (0, 8.5)])
+        elif st == "drum":                                         # N269: a linen drum shade (35 across, 22 deep) on its flex
+            o.box("upvc", px - 0.35, y - 26, pz - 0.35, px + 0.35, y - 2, pz + 0.35)
+            o.lathe("shade", px, y - 48, pz, [(17, 0), (17.5, 0), (17.5, 22), (17, 22)])
+            o.lathe("chrome", px, y - 31, pz, [(0, 0), (16.8, 0), (16.8, 0.4), (0, 0.4)])
+            o.lathe("bulb", px, y - 40, pz, [(0, 0), (1.6, 0.3), (2.7, 1.4), (3.1, 3), (2.7, 4.8), (1.6, 6.6), (1.3, 8.5), (0, 8.5)])
+        elif rid == "wc":                                            # its yellow drum shade with the white band (the photo)
             # V3.10 (N49): 10 across and 22 down (the photo on its camera; was 15 and 28)
             o.lathe("primrose", px, y - 26, pz, [(0, 0), (5, 0), (5, 20), (1.5, 20), (1.5, 22), (0, 22)])
             o.lathe("upvc", px, y - 20, pz, [(0, 0), (5.2, 0), (5.2, 6), (0, 6)])
@@ -2620,8 +2754,8 @@ def build():
         if floor == "lower":
             steps += [lambda: secret(o)]
         if floor == "first":
-            steps += [lambda: office(o), lambda: bed2(o), lambda: master(o), lambda: boiler(o), lambda: bathroom(o), lambda: music(o), lambda: landing(o)]
-        steps += [lambda: chalk_doors(o, floor), lambda: pendants(o, floor), lambda: switches(o, floor), lambda: sockets(o, floor), lambda: contacts(o, floor)]
+            steps += [lambda: office(o), lambda: bed2(o), lambda: master(o), lambda: master_dress(o), lambda: boiler(o), lambda: bathroom(o), lambda: music(o), lambda: landing(o)]
+        steps += [lambda: radiators(o, floor), lambda: chalk_doors(o, floor), lambda: pendants(o, floor), lambda: switches(o, floor), lambda: sockets(o, floor), lambda: contacts(o, floor)]
         if floor == "first":
             steps += [lambda: first_floor_slopes(o), lambda: stair_wall(o), lambda: ground_ceilings(o)]
         if floor == "ground":
@@ -2650,8 +2784,8 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "eaves": ("#e7e1d6", 0.9), "garage_blue": ("#2c3b63", 0.45), "garage_white": ("#ecebe7", 0.4), "garage_black": ("#26282a", 0.45), "timber": ("#8a5a35", 0.8), "pane": ("#3a4550", 0.08),
     "gloss": ("#ebeae6", 0.16), "kunit": ("#ebeae6", 0.16), "khandle": ("#151517", 0.4), "bfit": ("#151517", 0.4), "bpanel": ("#e7e8e6", 0.05), "gap": ("#9b9a95", 0.6), "black": ("#1d1d1f", 0.5), "black_app": ("#1f2023", 0.35), "glass_dark": ("#17191c", 0.1),
     "ring": ("#2b2c2e", 0.6), "steel": ("#c8cacc", 0.25), "steel_dark": ("#8e9195", 0.35), "worktop": ("#26282a", 0.22), "metro": ("#111214", 0.1),
-    "chrome": ("#e4e6e9", 0.06), "sanitary": ("#e7e8e6", 0.05), "primrose": ("#e3cf5c", 0.06), "tile_w": ("#f2f2ef", 0.12), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_leaf": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "rug": ("#8e4a32", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
-    "cloth0": ("#3d4a5c", 0.95), "cloth1": ("#b9b2a6", 0.95), "cloth2": ("#7a2f2f", 0.95), "cloth3": ("#2f3b2f", 0.95), "cloth4": ("#d8d2c4", 0.95), "cloth5": ("#555555", 0.95), "cloth6": ("#9b8b6e", 0.95), "curtain": ("#f4f3ef", 0.9), "stone": ("#cbc6bd", 0.35), "marble": ("#141416", 0.1), "led": ("#ffffff", 0.3), "bulb": ("#fff3e2", 0.25), "lamp_purple": ("#c9a6ff", 0.3), "chalk": ("#222423", 0.85), "storebox": ("#c9c1b2", 0.95), "contact": ("#000000", 1.0), "mattress": ("#f0eee8", 0.9), "pillow": ("#f1efea", 0.95), "trim": ("#5a5d60", 0.5), "gutter": ("#f2f2ef", 0.4), "lead": ("#6c7072", 0.55), "birch": ("#dcc8a2", 0.7), "lycksele": ("#5b6b78", 0.95), "grille": ("#e8dcc4", 0.6), "ceiling": ("#f3f2ee", 0.95),
+    "chrome": ("#e4e6e9", 0.06), "sanitary": ("#e7e8e6", 0.05), "primrose": ("#e3cf5c", 0.06), "tile_w": ("#f2f2ef", 0.12), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_leaf": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "door_navy": ("#2c3a52", 0.35), "door_red": ("#7a2427", 0.35), "door_sage": ("#7d8c74", 0.4), "rug": ("#8e4a32", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
+    "cloth0": ("#3d4a5c", 0.95), "cloth1": ("#b9b2a6", 0.95), "cloth2": ("#7a2f2f", 0.95), "cloth3": ("#2f3b2f", 0.95), "cloth4": ("#d8d2c4", 0.95), "cloth5": ("#555555", 0.95), "cloth6": ("#9b8b6e", 0.95), "curtain": ("#f4f3ef", 0.9), "stone": ("#cbc6bd", 0.35), "marble": ("#141416", 0.1), "led": ("#ffffff", 0.3), "bulb": ("#fff3e2", 0.25), "lamp_purple": ("#c9a6ff", 0.3), "chalk": ("#222423", 0.85), "storebox": ("#c9c1b2", 0.95), "contact": ("#000000", 1.0), "mattress": ("#f0eee8", 0.9), "shade": ("#ece4d4", 0.95), "piping": ("#cfcbc2", 0.85), "pillow": ("#f1efea", 0.95), "trim": ("#5a5d60", 0.5), "gutter": ("#f2f2ef", 0.4), "lead": ("#6c7072", 0.55), "birch": ("#dcc8a2", 0.7), "lycksele": ("#5b6b78", 0.95), "grille": ("#e8dcc4", 0.6), "ceiling": ("#f3f2ee", 0.95),
     "laminate": ("#a9a39a", 0.5), "oak": ("#b8844f", 0.55), "artisan": ("#fff1df", 0.55),   # V4.3: artisan oak (bedroom 3's cube shelves): the oak's grain, a hair warmer
     "herring": ("#b48a5c", 0.6), "lvt_grey": ("#8e8b87", 0.5), "porcelain": ("#d6d0c4", 0.5),   # V3.14 (N56): the upgrade floors
     "screen": ("#0d0f12", 0.15), "pc_white": ("#eeeeec", 0.3), "pc_glow": ("#dfe6ff", 0.2),   # V3.32 (N82): a note mid-line (V3.14) had left these three out of the list: grey and matt since
