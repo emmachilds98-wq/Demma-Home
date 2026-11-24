@@ -9,7 +9,7 @@ const KIT_HANDLES = [["black", "Matt black", "#151517", 0.0, 0.4], ["brass", "Br
 const KIT_TOPS = [["black", "Black granite-effect", 95], ["oakwood", "Solid oak", 190], ["quartz", "White quartz-effect", 160], ["cement", "Cement-effect", 190]];   // £ a 3 m length
 const KIT_HANDLE_P = [4, 10], KIT0 = new WeakMap(), KIT_TEX = {};
 const kitOk = (room, k, v) => room === "bathroom" ? bathOk(room, k, v) : room === "kitchen" && ((k === 92 && KIT_FRONTS.some(([q]) => q === v)) || (k === 93 && KIT_HANDLES.some(([q]) => q === v)) || (k === 94 && KIT_TOPS.some(([q]) => q === v)));
-const kitNow = () => ({ f: finGet("kitchen", 92) || "white", h: finGet("kitchen", 93) || "black", t: finGet("kitchen", 94) || "black" });
+const kitNow = () => ({ f: finGet("kitchen", 92) || slotPlan(92), h: finGet("kitchen", 93) || slotPlan(93), t: finGet("kitchen", 94) || slotPlan(94) });   // the plan's: 23_finish.js SLOTS
 function kitAt(hit) { const m = hit && hit.object && hit.object.material, hk = m && !Array.isArray(m) && (m.userData || {}).hk; return hk === "kunit" || hk === "khandle" || hk === "worktop" ? { room: "kitchen", slot: 92 } : null; }
 function kitCount() {   // [fronts, handles, the worktop's run in m] from the house file's kitchen boxes
   const H = R.HOUSE3 || {}, r = (H.rooms || {}).kitchen, F = r && (H.floors || {})[HCFK[String(r[4])]], B = (F && F.boxes) || {}, dims = b => [b[3] - b[0], b[4] - b[1], b[5] - b[2]].sort((p, q) => p - q);
@@ -44,23 +44,18 @@ function kitApply() {   // the units' colour (an oak front its photo), the handl
   dirty();
 }
 function kitSet(slot, v) {   // her choice (the plan's: none kept)
-  finPush(); S.fin = S.fin || {}; const o = S.fin.kitchen = S.fin.kitchen || {}, plan = { 92: "white", 93: "black", 94: "black" }[slot];
-  if (v && v !== plan) o[slot] = v; else delete o[slot]; if (!Object.keys(o).length) delete S.fin.kitchen;
-  store.set(KEY, S); kitApply(); finSchDraw(); const q = kitNow();
+  finWrite("kitchen", { [slot]: v }); const q = kitNow();
   toast(`Kitchen: ${slot === 92 ? upNm(KIT_FRONTS, q.f).toLowerCase() + " fronts" : slot === 93 ? upNm(KIT_HANDLES, q.h).toLowerCase() + " handles" : upNm(KIT_TOPS, q.t).toLowerCase() + " worktop"}`);
 }
 function kitCard() {   // [title, now, buttons, -, the tray]: the fronts, the handles, the worktop; the splashback a tap away
   const q = kitNow(), plan = q.f === "white" && q.h === "black" && q.t === "black", L = roomUps("kitchen").filter(u => /^9[234]=/.test(u.k)), lo = L.reduce((a, u) => a + u.lo, 0), hi = L.reduce((a, u) => a + u.hi, 0);
   const st = plan ? "The plan's: white gloss, black handles, black worktop" : [`${upNm(KIT_FRONTS, q.f)}, ${upNm(KIT_HANDLES, q.h).toLowerCase()} handles, ${upNm(KIT_TOPS, q.t).toLowerCase()} worktop`, hi ? upRange(lo, hi) : ""].filter(Boolean).join(" · ");
-  const bs = [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(plan ? [] : [btn("The plan's", { kitplan: "1" })]), btn("Hold to compare", { finhold: "1" }, undefined, "", "Hold to compare: the units as planned till you let go"), btn("Splashback", { actopen: "fin:kitchen:90" })];
-  const sw = (at, k, t, c, now) => `<button type="button" class="sw" data-${at}="${k}" style="--c:${c}" aria-pressed="${now === k}" title="${t}" aria-label="${t}"><i></i><span>${t}</span></button>`;
+  const bs = finButtons(!plan && ["The plan's", { kitplan: "1" }], "the units as planned", [btn("Splashback", { actopen: "fin:kitchen:90" })]);
   const topCol = { black: "#26282a", oakwood: "#b8844f", quartz: "#eeece6", cement: "#9c9a95" };
-  return ["Kitchen: the units", st, bs, null, `<div class="r3d-fin"><span class="r3d-finlab">Fronts</span><div class="r3d-fintray" role="group" aria-label="Fronts">${KIT_FRONTS.map(([k, t, c]) => sw("kitf", k, t, c, q.f)).join("")}</div>`
-    + `<span class="r3d-finlab">Handles</span><div class="r3d-fintray" role="group" aria-label="Handles">${KIT_HANDLES.map(([k, t, c]) => sw("kith", k, t, c, q.h)).join("")}</div>`
-    + `<span class="r3d-finlab">Worktop</span><div class="r3d-fintray" role="group" aria-label="Worktop">${KIT_TOPS.map(([k, t]) => sw("kitt", k, t, topCol[k], q.t)).join("")}</div></div>`];
+  return ["Kitchen: the units", st, bs, null, `<div class="r3d-fin">${finTray("Fronts", KIT_FRONTS.map(([k, t, c]) => finSwatch("kitf", k, t, c, q.f === k)).join(""))}`
+    + finTray("Handles", KIT_HANDLES.map(([k, t, c]) => finSwatch("kith", k, t, c, q.h === k)).join(""))
+    + finTray("Worktop", KIT_TOPS.map(([k, t]) => finSwatch("kitt", k, t, topCol[k], q.t === k)).join("")) + `</div>`];
 }
-if (act) act.addEventListener("click", e => { const b = e.target.closest("[data-kitf],[data-kith],[data-kitt],[data-kitplan]");
-  if (!b || GS.actId !== "fin:kitchen:92") return; e.stopPropagation(); const d = b.dataset;
-  if (d.kitplan) { finPush(); const o = (S.fin || {}).kitchen || {}; delete o[92]; delete o[93]; delete o[94]; if (S.fin && S.fin.kitchen && !Object.keys(o).length) delete S.fin.kitchen; store.set(KEY, S); kitApply(); finSchDraw(); toast("Kitchen: the plan's units"); }
-  else if (d.kitf) kitSet(92, d.kitf); else if (d.kith) kitSet(93, d.kith); else kitSet(94, d.kitt);
-  renderAct(); }, true);
+cardOn("[data-kitf],[data-kith],[data-kitt],[data-kitplan]", id => id === "fin:kitchen:92", d => {   // N254: through the cards' router
+  if (d.kitplan) { finWrite("kitchen", { 92: null, 93: null, 94: null }); toast("Kitchen: the plan's units"); }
+  else if (d.kitf) kitSet(92, d.kitf); else if (d.kith) kitSet(93, d.kith); else kitSet(94, d.kitt); });

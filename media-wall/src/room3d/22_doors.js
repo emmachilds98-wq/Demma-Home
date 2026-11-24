@@ -87,16 +87,12 @@ function doorTray(pk) {   // the door's card: This door · All doors, its leaf, 
 }
 const doorLine = pk => { const q = doorNow(pk), c = q.plan ? null : doorCost(q); return q.plan ? "The plan's: cottage boards, chrome lever" : [doorSay(q), q.all ? "all doors" : "", c && c[1] ? upRange(...c) : ""].filter(Boolean).join(" · "); };
 function doorSet(pk, s, h) {   // her style on this door or all of them (null: the plan's)
-  const i = doorIds().indexOf(pk); if (i < 0) return; finPush(); S.fin = S.fin || {}; const o = S.fin.doors = S.fin.doors || {}, v = s ? `${s}.${h}` : null;
-  if (DOOR_SCOPE === "all") { for (const k of Object.keys(o)) delete o[k]; if (v && v !== "cottage.lever") o[70] = v; }
-  else if (v) o[71 + i] = v; else delete o[71 + i];
-  if (!Object.keys(o).length) delete S.fin.doors;
-  store.set(KEY, S); doorApply(); finSchDraw(); toast(`${DOOR_SCOPE === "all" ? "All doors" : (HPARTS[pk] || {}).label || "The door"}: ${v ? doorSay(doorNow(pk)).toLowerCase() : "the plan's"}`);
+  const i = doorIds().indexOf(pk); if (i < 0) return; const v = s ? `${s}.${h}` : null;
+  if (DOOR_SCOPE === "all") finWrite("doors", Object.assign(Object.fromEntries(Object.keys((S.fin || {}).doors || {}).map(k => [k, null])), { 70: v !== "cottage.lever" && v }));   // each door's own goes
+  else finWrite("doors", { [71 + i]: v });
+  toast(`${DOOR_SCOPE === "all" ? "All doors" : (HPARTS[pk] || {}).label || "The door"}: ${v ? doorSay(doorNow(pk)).toLowerCase() : "the plan's"}`);
 }
-if (act) act.addEventListener("click", e => { const b = e.target.closest("[data-doorst],[data-doorh],[data-doorsc],[data-doorplan],[data-finundo]");
-  if (!b || !GS.actId || !GS.actId.startsWith("hdoor:")) return; const pk = GS.actId.slice(6); if (!doorIds().includes(pk)) return; e.stopPropagation(); const d = b.dataset, q = doorNow(pk);
+cardOn("[data-doorst],[data-doorh],[data-doorsc],[data-doorplan]", id => id.startsWith("hdoor:") && doorIds().includes(id.slice(6)), (d, id) => { const pk = id.slice(6), q = doorNow(pk);   // N254: the cards' router
   if (d.doorsc) DOOR_SCOPE = d.doorsc;
-  else if (d.finundo) { const prev = FIN_UNDO.pop(); if (prev != null) { finRestore(JSON.parse(prev)); finApplyAll(); store.set(KEY, S); toast("Undone"); } }
   else if (d.doorplan) doorSet(pk, null);
-  else doorSet(pk, d.doorst || q.s, d.doorh || q.h);
-  renderAct(); }, true);
+  else doorSet(pk, d.doorst || q.s, d.doorh || q.h); });
