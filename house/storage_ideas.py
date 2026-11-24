@@ -387,7 +387,7 @@ def spots():
 KIND_USES = {"records": ["records", "toys", "media"], "shelves": ["books", "display", "games"], "display": ["display"], "shoes": ["shoes"],
              "chest": ["boxes", "chest"], "bedside": ["boxes", "side"], "tv": ["media", "games"], "sideboard": ["media", "boxes"],
              "lamp": ["lamp"], "coffee": ["coffee"], "side": ["side"], "console": ["side", "display"], "dining": ["dining"], "seat": ["armchair"],
-             "rug": ["rug"], "desk": ["desk"], "bed": ["bed"], "wardrobe": ["wardrobe"], "deskchair": [], "stool": [], "toilet": [], "basin": []}
+             "rug": ["rug"], "desk": ["desk"], "bed": ["bed"], "wardrobe": ["wardrobe"], "deskchair": [], "stool": [], "dchair": ["dining"], "trolley": ["boxes", "dining"], "toilet": [], "basin": []}
 AT_ON = {"floor": "floor", "slope": "floor", "alcove": "floor", "top": "floor", "wall": "wall", "over door": "wall", "ceiling": "ceil"}
 
 

@@ -325,7 +325,7 @@ def shop_row(q):
         m, m2 = "glass", (mat(other[0]) if other else None) or m2
     nf = n + " " + f
     words = " ".join([n, f, q.get("note") or ""]).lower()
-    if k in ("chair", "seat", "stool") and m in ("door_wood", "black") and re.search(r"leather|\btan\b|whisky", words):   # N232: leather, not timber or paint
+    if k in ("chair", "seat", "stool", "dchair") and m in ("door_wood", "black") and re.search(r"leather|\btan\b|whisky", words):   # N232: leather, not timber or paint
         m = "shoe_tan" if m == "door_wood" else "leather"
     if k in ("chair", "seat") and m == "door_wood":
         m = "shoe_tan"
@@ -342,6 +342,10 @@ def shop_row(q):
         look = "ladder" if re.search(r"ladder", n, re.I) else "glass" if q["kind"] == "display" else "cubes" if q["kind"] == "records" else "books"
     elif k == "seat":
         look = form or "arm"
+    elif k == "dchair":   # N279: a dining chair: padded, cane or timber spindles
+        look = "uph" if re.search(r"fabric|upholster|velvet|boucle|faux leather|padded", nf, re.I) else "cane" if re.search(r"cane|rattan|wicker", nf, re.I) else "wood"
+    elif k == "trolley":
+        look = "wood"
     elif k == "stool":   # N230: a bar stool on a chrome pedestal, upholstered on legs, wooden, or a metal frame
         look = "swivel" if re.search(r"swivel|chrome", nf, re.I) else "uph" if re.search(r"fabric|upholster", nf, re.I) else "wood" if re.search(r"wood", nf, re.I) else "metal"
     elif k == "table":
