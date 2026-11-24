@@ -669,6 +669,41 @@ def piece_cards(rows):
         B.DECK = was
 
 
+def project_places():
+    """N283: the room projects (design_check's, then projects/*/project.json) in Build as the media wall's pieces are: a place each, a card a
+    piece with Check, Buy, Cut and Build (a tick per task)."""
+    import json as _j, design_check
+    pjs = [design_check.project()] + [_j.loads(f.read_text()) for f in sorted((pathlib.Path(__file__).resolve().parents[2] / "projects").glob("*/project.json"))]
+    e, out = html.escape, []
+    for pj in pjs:
+        buy = {b["id"]: b for b in pj.get("buy", [])}
+        for pl in pj["places"]:
+            cards = []
+            for p in pl["pieces"]:
+                cid, br = "mk-" + p["key"], [buy[i] for i in p.get("buy", []) if i in buy]
+                chk = ("<ul class='mkchk'>" + "".join(f"<li><b>{e(r)}</b><span>{e(h)}</span><small>{e(ok)}</small></li>" for r, h, ok in p["checks"]) + "</ul>"
+                       if p.get("checks") else "<p class='caption'>Nothing to measure first.</p>")
+                by = ("<ul class='mkbuy'>" + "".join(f'<li><span><b>{e(str(b.get("qty", "")) + " × " if b.get("qty") else "")}'
+                      + (f'<a href="{e(b["url"])}" target="_blank" rel="noopener">{e(b["item"])}</a>' if b.get("url") else e(b["item"]))
+                      + f'</b><small>£{b["lo"]:g}{"" if b["hi"] == b["lo"] else "–" + format(b["hi"], "g")}</small></span></li>' for b in br) + "</ul>"
+                      if br else "<p class='caption'>Nothing to buy.</p>")
+                cut = ("<table class='tight'><tr><th>Part</th><th>Size (cm)</th></tr>" + "".join(f"<tr><td>{e(c['part'])}</td><td>{e(c['size'])}</td></tr>" for c in p["cut"]) + "</table>"
+                       if p.get("cut") else "")
+                tasks = "<ol class='mktasks'>" + "".join(
+                    f'<li data-task="{e(t["id"])}"><label class="tk"><input type="checkbox" data-task="{e(t["id"])}"><span>{e(t["title"])}</span></label>'
+                    f'<details class="how"><summary>How</summary><ol>{"".join(f"<li>{e(x)}</li>" for x in t["how"])}</ol></details></li>' for t in p["tasks"]) + "</ol>"
+                panes = [("Check", chk), ("Buy", by)] + ([("Cut", cut)] if cut else []) + [("Build", tasks)]
+                lo, hi = p.get("cost", [0, 0])
+                meta = " · ".join(x for x in (p.get("time"), p.get("who"), (f"£{lo:g}" + ("" if hi == lo else f"–{hi:g}")) if hi else "") if x)
+                cards.append(f'<details class="mk" name="mk" id="{cid}" data-piece="{e(p["key"])}"><summary><span class="mkpic mkic ms" aria-hidden="true">'
+                             f'{"checklist" if p.get("checks") else "construction" if p.get("cut") else "chair"}</span><span class="mkt"><b>{e(p["title"])}</b><small>{e(meta)}</small></span>'
+                             f'<span class="mkp" data-prog="{cid}" style="--p:0"><b>0</b>/{len(p["tasks"]) + len(br)}</span></summary>'
+                             f'<div class="mkb"><p class="lede">{e(p["what"])}</p>{_tabs(p["key"], panes)}</div></details>')
+            out.append(f'<section class="place" id="pl-{e(pl["id"])}"><div class="sec-h"><h2>{e(pl["name"])}</h2><span class="plp" data-plprog="{e(pl["id"])}"></span></div>'
+                       f'<div class="mks">{"".join(cards)}</div></section>')
+    return "".join(out)
+
+
 def _short_item(item):
     """A buy row's name: its own words up to the first colon or bracket."""
     t = _plain(item)
@@ -1030,6 +1065,7 @@ def _page(site=False):
         ph_html.append(f'<details class="phase" id="ph-{p["idx"]}" data-ph="{html.escape(p["name"])}"{" open" if p["idx"] == 0 else ""}><summary><span>{part_chip(PHASE_PART[p["name"]])} {html.escape(p["name"])}</span>'
                        f'<span class="pf"><span>{cost}{when}</span><span class="pd">0 of {len(items)} done</span></span></summary><ul class="items">{lis}</ul></details>')
     places_html, STEP_CARD = piece_cards(rows)   # v46: the room by place, a card per piece
+    places_html += project_places()   # N283: the room projects (the living room's design check first)
     step_cards = [
         f'<li class="step" id="step-{s["n"]}" data-s="{s["n"]}" data-parts="{html.escape("|".join(s["part"]))}"><div class="shead"><span class="sn">{s["n"]}</span>'
         f'<a class="sgo" href="#{STEP_CARD[s["n"]]}" data-mk="{STEP_CARD[s["n"]]}"><h3>{html.escape(s["title"])}</h3><span class="smeta">{html.escape(s["who"])} · {html.escape(s["time"])}</span></a>'
