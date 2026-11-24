@@ -894,7 +894,7 @@ SHEETS_JS = r"""(() => { const D = document.getElementById("sheets-data"); let t
     W.done = true; dispatchEvent(new Event("demma-sheets")); return true; };
   W.load = () => built ? Promise.resolve() : fetchIt().then(build);
   /* a tap that needs the sheets: built there and then if fetched (the tap goes on to their own handlers), else after the fetch, tapped again */
-  const NEED = "[data-go], [data-nav], [data-mk], [data-step], [data-close], .g3d, .stk, #rail-tog, #r3d-menub";
+  const NEED = "[data-go], [data-nav], [data-mk], [data-step], [data-close], .g3d, .stk";
   addEventListener("click", e => { if (built) return; const a = e.target.closest && e.target.closest(NEED); if (!a || build()) return;
     e.preventDefault(); e.stopImmediatePropagation(); W.load().then(() => a.click(), () => {}); }, true);
   addEventListener("demma-open", e => { if (built) return; e.stopImmediatePropagation();   /* the 3D asks for a sheet: built, then asked again */
@@ -1050,14 +1050,6 @@ def _page(site=False):
                 f'<div class="chhead"><i class="ms" aria-hidden="true">{ic}</i><h2>{html.escape(t)}</h2></div>{facts[k]}{inner}</section>')
     more = lambda body, lab="Read the full chapter": f'<details class="readmore"><summary>{lab} <span class="ms" aria-hidden="true">expand_more</span></summary>{body}</details>'
     nav = [("plan", "Plan", "map", 300), ("build", "Build", "construction", 50), ("buy", "Buy", "shopping_bag", 165), ("ideas", "Ideas", "lightbulb", 95)]   # v30: no Ask sheet (every question answered or dropped)
-    # v32, client: "make tools always appear in 3D view and the other buttons on the left to be the expandable menu as these are the in
-    # depth plans used less": one Menu button opens the Room, Plan, Build, Buy and Ideas buttons (open by itself while a sheet is up)
-    rail = (f'<nav class="rail" aria-label="Sections"><button type="button" class="rail-tog" id="rail-tog" aria-expanded="false" aria-controls="rail-list" style="--h:280">'
-            f'<i class="ms" aria-hidden="true">menu</i><span>Menu</span></button><div class="rail-list" id="rail-list">'
-            f'<button type="button" id="tb-room" data-nav="room" aria-current="true" style="--h:25"><i class="ms" aria-hidden="true">view_in_ar</i>Room</button>'
-            + "".join(f'<button type="button" id="tb-{"overview" if k == "plan" else k}" data-nav="{k}" aria-current="false" style="--h:{h}"><i class="ms" aria-hidden="true">{ic}</i>{n}</button>' for k, n, ic, h in nav) + '</div></nav>')
-    bbar = (f'<nav class="bbar" aria-label="Sections"><button type="button" data-nav="room" aria-current="true" style="--h:25"><i class="ms" aria-hidden="true">view_in_ar</i>Room</button>'
-            + "".join(f'<button type="button" data-nav="{k}" aria-current="false" style="--h:{h}"><i class="ms" aria-hidden="true">{ic}</i>{n}</button>' for k, n, ic, h in nav) + '</nav>')
     def sheet(k, title, ic, h, body):   # N25: the body is packed out of the page (pack_sheets) and built the first time it's needed
         return (f'<div class="sheet shut" id="sh-{k}" role="dialog" aria-modal="true" aria-labelledby="sh-{k}-h" aria-hidden="true" inert style="--h:{h}">'
                 f'<div class="shd"><span class="grab" aria-hidden="true"></span><h2 id="sh-{k}-h" class="sr-only">{title}</h2>'
