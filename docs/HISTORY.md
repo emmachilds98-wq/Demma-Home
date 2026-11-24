@@ -466,3 +466,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.66** (24 Nov 2026): N250: a start a new team can read (one Start pointer, one Now block, the old plans archived)
 - **V4.67** (24 Nov 2026): the finish code made simpler: one table for the slots, one card kit, a wall's card one chip row, plainer words
 - **V4.68** (24 Nov 2026): checks.py runs the customisation check and the test door's names (N257's hooks)
+- **V4.69** (24 Nov 2026): the house: radiators, skirting, the lower stairs, the outside weathered with a lived-in (made-up) street, the pine bed better made, the master dressed
