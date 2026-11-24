@@ -1481,6 +1481,17 @@ SOURCES["n225fittings"] = ("Taps and the bath's panel (read 23 Nov 2026): Wickes
                            "same finish about twice that again (E). Bath panels 1700: Wickes Standard Front Bath Panel 1700 × 510, white gloss, £32 "
                            "(wickes.co.uk, bath panels); Grey Gloss £129.99 and Oak Effect £149 (diy.com, gloss 1700 mm bath panels)")
 ORDER.extend(["n225tiles", "n225suites", "n225fittings"])
+# N224 (23 Nov 2026, read that day): the kitchen's splashback, fronts, handles and worktop to choose from (options only)
+SOURCES["n224"] = ("Kitchen: splashback tiles as n225tiles; B&Q toughened glass splashbacks 900 × 750 mm £74.99–99.99 (diy.com, glass kitchen "
+                   "splashbacks; cut to fit about twice, E); painted: a tin and the tiles off £25–250 (E). Fronts: Rust-Oleum Kitchen Cupboard Paint "
+                   "750 ml £25 (diy.com), a tin about 8 fronts at two coats (E); sprayed by a painter from £80 a door (checkatrade.com, kitchen "
+                   "cabinet spray painting costs). Handles (diy.com, cabinet handles): GoodHome Dizel T pull 136 mm matt black 6 for £14, 168 mm "
+                   "6 for £16 (satin nickel too); GoodHome Irus T 136 mm brass effect 2 for £14, 168 mm 2 for £17; GoodHome Chervil round knob "
+                   "32 mm (chrome, brass effect) 2 for £6; GoodHome Govlin cup pull 81 mm (satin nickel, antique brass) 6 for £22, Chervil cup 2 for "
+                   "£7; none: Hafele Push to Open Catch £4.99 each (screwfix.com). Worktops 3 m × 600 × 38: Wickes Natural Oak Solid Wood £471 "
+                   "(p/144256); White Quartz laminate 3 m × 900 × 38 £195, Ipanema Grey Stone (concrete-look) laminate £130 (worktop-express.co.uk); "
+                   "fitting about £350 (E)")
+ORDER.append("n224")
 # V4 (N152): will the sofa bed go in? Its biggest box (166 × 101 × 68, SOURCES "amelia") carried on its side, the 166 first: it needs
 # its 68 and 2 to spare (hands) across each opening on the way, the front door, the hall past the stair box and the living room door, in
 # line (no turn). A door left on its hinges, open flat, takes about its leaf's thickness (E: 4) more. The doors' widths are Measure's
