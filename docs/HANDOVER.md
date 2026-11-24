@@ -5,8 +5,8 @@ The client: "handover efficiently now so another team can finish and start upgra
 
 1. **Main's CI first.** Main is V4.62 (`2cd8257`). The runs for V4.60, V4.61 and V4.62 were cancelled by the next merge, so run 933 (on
    `2cd8257`) is the first CI over all three: read its result (Actions) and fix anything red from its log before new work.
-2. **Finish N245** (Ideas reading N243's 41 places and 188 pieces from `data/ideas.json`, plus an Ideas pill in the living room): branch
-   `claude/trusting-gauss-gra6z6-n245`, its REAL_PLAN row says what's done and left. Merge it, then ship.
+2. **Build N245** (Ideas reading N243's 41 places and 188 pieces from `data/ideas.json`, plus an Ideas pill in the living room): not
+   started in code; its row in REAL_PLAN section 31 gives the steps (a `syncAdds` hook, then `24_ideas.js`, then the living room).
 3. **Then the upgrade plan: `docs/REAL_PLAN.md` section 32** (N246–N275), its order and its side-by-side groups. Start with group G1 (N246
    the conflict-markers check: markers were committed three times; N247 claim a row; N248 `ship.py`).
 4. **Waiting on Emma:** her storage picks (Ideas and the storage options now show real shop pieces), `?perf` → Send from her PC (N240's
