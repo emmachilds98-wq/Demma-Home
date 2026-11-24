@@ -739,6 +739,7 @@ function finFloorCard(room) {   // V2.7 (F4): a room's floor: the carpets, lamin
   const more = `<div class="r3d-fin">${finRugTray(room)}${room !== LIVR && (R.HOUSE3.rooms || {})[room] ? plantTray(room) + ideaTray(room) : ""}</div>`;   // N5: the rug, a plant (N68: under More); N212: its storage ideas
   return [`${roomName(room)} · ${finFloorName(now || laid)}`, st, bs, null, tray, more];
 }
+let FIN_TAB = null;   // N265: the wall card's chip (Paint · Paper · Panels · Picture · Curtains) and the card it's on
 function finCard(id) {   // [title, now, buttons, -, the tray]
   const [, room, s] = id.split(":"), slot = +s, ceil = slot === 4, slope = slot === 29, v = finGet(room, slot);   // N214: a wall's own, else its side's; the slopes' own colour
   const now = slope ? (LIV_HEX.test(v || "") ? v : null) : v || (slot >= 30 ? finGet(room, finSide(room, slot)) : null);
@@ -756,7 +757,11 @@ function finCard(id) {   // [title, now, buttons, -, the tray]
   if ((ceil || wood || (liv && !named)) && finScope === "wall") finScope = "room";
   const nm = slope && !now ? (v ? "With the walls" : "With the ceiling") : drawn ? "As planned" : finCap(finName(now)), mine = finMine();
   const scopes = slope ? [["", "With the ceiling"], ["walls", "With the walls"]] : liv && slot === 17 ? [] : ceil || wood || (liv && !named) ? [["room", "This room"], ["house", "Whole house"]] : [["wall", "This wall"], ["room", "This room"], ["house", "Whole house"]];
-  const tray = `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="${slope ? "The slopes" : "Where it goes"}">${scopes.map(([k, t]) => `<button type="button" data-fin${slope ? "slope" : "sc"}="${k}" aria-pressed="${slope ? (v || "") === k : finScope === k}">${t}</button>`).join("")}</div>`
+  const tabs = ceil || wood || slope ? [] : [["paint", "Paint"], ...(liv ? [] : [["paper", "Paper"], ["panels", "Panels"], ["picture", "Picture"]]), ...(finCurtTray(room) ? [["curtains", "Curtains"]] : [])];
+  if (!FIN_TAB || FIN_TAB.id !== id || !tabs.some(([k]) => k === FIN_TAB.k)) FIN_TAB = { id, k: "paint" };   // N265: a wall's card opens on its paint
+  const chips = tabs.length ? `<div class="r3d-finsc" role="group" aria-label="What's on it">${tabs.map(([k, t]) => `<button type="button" data-fintab="${k}" aria-pressed="${FIN_TAB.k === k}">${t}</button>`).join("")}</div>` : "";
+  const side = finSide(room, slot), other = { paper: () => finPaperTray(room, side), panels: () => finPanelTray(room, side), picture: () => finPicTray(room, side), curtains: () => finCurtTray(room) }[FIN_TAB.k];
+  const tray = other ? `<div class="r3d-fin">${chips}${other()}</div>` : `<div class="r3d-fin">${chips}<div class="r3d-finsc" role="group" aria-label="${slope ? "The slopes" : "Where it goes"}">${scopes.map(([k, t]) => `<button type="button" data-fin${slope ? "slope" : "sc"}="${k}" aria-pressed="${slope ? (v || "") === k : finScope === k}">${t}</button>`).join("")}</div>`
     + `<div class="r3d-fintray" role="group" aria-label="Colours">${finSw(finSwatches(), now)}`
     + `<label class="sw any" title="Any colour"><input type="color" data-finany="1" value="${now || "#f4f3ef"}" aria-label="Any colour"><span>Any</span></label>`
     + `<label class="sw hex" title="A colour's code"><input type="text" data-finhex="1" value="${now ? now.toUpperCase() : ""}" placeholder="#hex" maxlength="7" spellcheck="false" autocomplete="off" autocapitalize="characters" enterkeyhint="done" aria-label="A colour's code, like #DBFFC8"><span>Code</span></label>`
@@ -766,7 +771,7 @@ function finCard(id) {   // [title, now, buttons, -, the tray]
     + (finPairs(now).length ? `<span class="r3d-finlab">Goes with it (its maker's pick)</span><div class="r3d-fintray" role="group" aria-label="Goes with it">${finSw(finPairs(now), null)}</div>` : "")
     + (FIN_PIC ? `<div class="r3d-finpic"><img src="${FIN_PIC.url}" data-finpicimg="1" alt="Your photo: tap a colour in it"><span class="r3d-finlab">Tap a colour in your photo</span></div>` : "")
     + `</div>`;
-  const more = (ceil && !liv ? `<span class="r3d-finlab">Bulbs</span>${finBulbTray(room)}${finFitTray(room)}` : "") + (ceil || wood || slope ? "" : finCurtTray(room) + (liv ? "" : finPicTray(room, finSide(room, slot)) + finPaperTray(room, finSide(room, slot)) + finPanelTray(room, finSide(room, slot))));   // N68: under More
+  const more = ceil && !liv ? `<span class="r3d-finlab">Bulbs</span>${finBulbTray(room)}${finFitTray(room)}` : "";   // N68: under More; N265: a wall's paper, panels, picture and curtains on its chips
   return [`${roomName(room)}: ${ceil ? "the ceiling" : wood ? (liv ? "skirting and door" : "the woodwork") : slope ? "the slopes" : finScope === "wall" ? `the ${finSlotName(room, slot)}` : "the walls"}`, nm,
     [...finBtns(!drawn && !slope, { finc: "" }, room), ...(!liv && !ceil && !wood && !slope ? [btn("Woodwork", { actopen: `fin:${room}:17` })] : []),   // N216: its skirting, doors, frames and radiators
       ...(ceil && ((R.HOUSE3.finish_areas || {})[room] || {}).slope ? [btn("Slopes", { actopen: `fin:${room}:29` })] : [])], null, tray, more && `<div class="r3d-fin">${more}</div>`];   // N214
@@ -839,6 +844,7 @@ cardOn("[data-finbulb],[data-finlux]", onFinItem, (d, id) => { const room = card
   finWrite(room, d.finbulb ? { 6: d.finbulb } : { 7: d.finlux });   // the plan's 2700 K, normal: nothing kept
   const fb = finBulb(room); toast(`${roomName(room)}: ${(FIN_BULBS.find(([v]) => v === (fb.k || "2700")) || [0, ""])[1].toLowerCase()} bulbs, ${(FIN_LUX.find(([v]) => +v === fb.lux) || [0, "normal"])[1].toLowerCase()}`); });
 cardOn("[data-finpicimg]", onFin, (d, id, b, e) => { const hex = finPicAt(b, e); if (!hex) return false; finSet(cardRoom(id), +id.split(":")[2], hex); });
+cardOn("[data-fintab]", onFin, (d, id) => { FIN_TAB = { id, k: d.fintab }; });   // N265: a wall card's chip
 cardOn("[data-finc],[data-finf],[data-finsc],[data-fincopy],[data-finpaste]", onFin, (d, id) => { const [, room, s] = id.split(":");
   if (d.finsc) finScope = d.finsc;
   else if (d.fincopy) { FIN_COPY = { room, sl: Object.assign({}, finAll()[room]) }; toast(`Copied ${roomName(room)}: tap another room, then Paste`); }

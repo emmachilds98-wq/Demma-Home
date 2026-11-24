@@ -387,10 +387,10 @@ function renderAct() {
       + `<p class="note">${/^hsize:/.test(GS.actId) ? "Drag it on the floor to move it. " : ""}${DS() && DS().mode === "shared" ? "Saved for you both" : "Saved on this device"}</p>`;   // V3.91 (N150)
     box.before(w); }
   if (/^(hitem|hsize|hswap|hadd|ixp):/.test(GS.actId)) selOf(GS.actId.split(":")[1]); else clearSel();
-  // v39 (the approved redesign): a card shows its first three buttons; everything else sits under More
+  // v39 (the approved redesign): a card shows its first three buttons; everything else sits under More (N265: ⋯)
   let shownN = 0, more = null;
   const fold = () => { if (!more) { more = document.createElement("details"); more.className = "r3d-actmore"; more.open = actMoreOpen;
-    more.innerHTML = '<summary>More</summary><div class="acts"></div>'; more.addEventListener("toggle", () => { actMoreOpen = more.open; placeAct(); }); box.after(more); }
+    more.innerHTML = '<summary aria-label="More" title="More">⋯</summary><div class="acts"></div>'; more.addEventListener("toggle", () => { actMoreOpen = more.open; placeAct(); }); box.after(more); }
     return more.querySelector(".acts"); };
   if (extra) { const w = document.createElement("div"); w.innerHTML = extra; fold().before(w.firstElementChild); }
   for (const b of bs) {
