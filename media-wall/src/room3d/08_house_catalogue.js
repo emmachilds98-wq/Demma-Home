@@ -575,13 +575,14 @@ function fitWhy(id) {
 function addSpot(rid, key, x, z, y, self) { const s = spotFor(rid, key, x, z, y, self); return s ? s.slice(0, 2) : [x, z]; }
 /* N244: the spot itself, [x, z, how far, its box] or null; also clear of boxes not drawn yet (more: a set-up's other pieces), past the
    pieces skip says (a set-up shown before), within maxD of the tap */
-function spotFor(rid, key, x, z, y, self, more = [], skip = null, maxD = Infinity) {
+function spotFor(rid, key, x, z, y, self, more = [], skip = null, maxD = Infinity, cl = 0) {   // N282: cl, the room kept clear in front of it (best[4] that box)
   const r = H3R(rid), C = HCAT[key], over = (p, q) => [0, 1, 2].every(j => p[j] < q[j + 3] - 1 && p[j + 3] > q[j] + 1); let best = null; if (!r || !C) return null;
   const busy = Object.keys(R.HOUSE3.items).filter(k => { const o = HIT(k); return k !== self && !(skip && skip(k)) && o.r === rid && !HCSKIP.has(o.k) && !hcSoft(k) && !pieceNow(k).removed; }).map(pieceBox).concat(more);
   for (const [o, hi] of [[2, 0], [2, 1], [0, 0], [0, 1]]) { const a = 2 - o, w = r[o + hi] + (hi ? -0.5 : 0.5);   // each wall, its back 0.5 off it
     for (let u = r[a]; u <= r[a + 1] - C.w; u += 5) { const b = [0, y, 0, 0, y + C.h, 0]; b[a] = u; b[a + 3] = u + C.w; b[o] = hi ? w - C.d : w; b[o + 3] = b[o] + C.d;
       const d = Math.hypot((b[0] + b[3]) / 2 - x, (b[2] + b[5]) / 2 - z); if (d > maxD || (best && d >= best[2])) continue;
-      if (!busy.some(q => over(b, q)) && !roomWhy(b, rid, self).length) best = [...(o ? [u + C.w / 2, w] : [w, u + C.w / 2]), d, b]; } }
+      const f = b.slice(); if (cl) { if (hi) f[o] -= cl; else f[o + 3] += cl; if (f[o] < r[o] - 1 || f[o + 3] > r[o + 1] + 1) continue; }
+      if (!busy.some(q => over(b, q) || (cl && over(f, q))) && !roomWhy(b, rid, self).length) best = [...(o ? [u + C.w / 2, w] : [w, u + C.w / 2]), d, b, f]; } }
   return best;
 }
 /* the pieces in its way: a moved, swapped or added piece against the others in the room it now stands in (not chairs and rugs) */

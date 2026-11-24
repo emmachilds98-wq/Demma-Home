@@ -1,0 +1,48 @@
+# Design rules (N282)
+
+The client, 24 Nov 2026: "i want a better ui for trying ideas and for them to fit and look better. can you review and really help design
+real home improvement with research and knowledge of design and decor and choose close items and fit them appropriately or even build
+them yourself and show me how in the build area like the living room."
+
+The rules Ideas and the room checks use. Common guidance from the sources below; where they differ, the middle figure.
+
+## Room to move (cm)
+
+| Where | Keep clear | Used in |
+|---|---|---|
+| A main walkway through a room | 90 (60 at the least, past a corner) | the living room's check |
+| In front of a wardrobe (doors open, stand to choose) | 90 | Ideas (`DZ` in `24_ideas.js`) |
+| In front of drawers, a sideboard (pull out, stand) | 75 | Ideas |
+| In front of shelves, a unit, a shoe rack | 60 | Ideas |
+| Behind a desk's or a dining table's chair (pull out, sit) | 90 | Ideas |
+| In front of a chair or sofa (legs) | 45 | Ideas |
+| Sofa front to coffee table | 40–45 (30 for a lift-top you reach) | the living room's check |
+| Beside a bed, at its foot | 60 | the bedrooms' check |
+
+## Scale and placing
+
+- **Rug:** big enough for at least the front legs of every seat round it; 20–45 cm of floor showing at the walls.
+- **Coffee table:** about two thirds the sofa's length; its top within a few cm of the seat's height.
+- **Side table:** its top within 5 cm of the sofa or chair arm.
+- **Lamp:** a floor or table lamp at each reading seat's shoulder, within an arm's reach (about 60–100 cm).
+- **TV:** sit about 1.2–1.6 × the screen's diagonal away for a 4K screen; the screen's middle near seated eye height (about 100–110).
+- **Pictures:** the middle about 145–150 up; over a piece, about two thirds its width.
+
+## Colour and light
+
+- **60-30-10:** the walls (60), the bigger fabrics and wood (30: rug, curtains, a piece), one accent (10).
+- **Dark walls** suit a screen room (less glare) and a small room you want cosy; pale walls a room short of daylight.
+- **Light:** warm 2700 K to relax, 3000 K in kitchens and bathrooms, 4000 K for a desk; three layers in a living room (ceiling, lamps,
+  an accent).
+- Each Ideas set-up carries its own scheme (walls, rug, curtains, bedding, bulbs); "Its colours" on its card turns it on or off. The paints
+  are Farrow & Ball's and Little Greene's (School House White, Skimming Stone, Setting Plaster, French Grey, Pigeon, Hague Blue, Slaked
+  Lime), shown as approximate screen colours: try a tester pot on the wall.
+
+## Sources (read 24 Nov 2026)
+
+- Homes & Gardens, a guide to living room clearances: https://www.homesandgardens.com/interior-design/living-rooms/a-guide-to-living-room-clearances-measurements-and-spacing
+- Livingetc, how much space between furniture for walking: https://livingetc.com/advice/how-much-space-between-furniture-for-walking
+- John Lewis, measuring up for furniture: https://johnlewis.com/buying-guides/measuring-up-for-furniture-guide
+- Houzz, measurements for furniture layout and ergonomics: https://www.houzz.com.sg/ideabooks/109239110
+- Houzz, key elements for a great living room layout: https://www.houzz.co.uk/ideabooks/77167148/thumbs/key-elements-for-a-great-living-room-layout
+- Designing Idea, bedroom layout clearances: https://designingidea.com/bedroom-layout/
