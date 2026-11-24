@@ -1,6 +1,6 @@
 # State: what's true now
 
-Rewritten (not appended) at the end of every PR, under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
+Rewritten (not appended) by the lead at merge (N249; a row's PR leaves it alone), under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
 **Version:** V4.63 (24 Nov 2026): N246–N248: a conflict-markers check, claim.py, ship.py
