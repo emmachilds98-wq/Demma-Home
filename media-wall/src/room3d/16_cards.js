@@ -419,7 +419,7 @@ function placeAct() {
   act.style.maxHeight = ""; act.style.overflowY = "";
   const sr = stage.getBoundingClientRect(), sw = stage.clientWidth, sh = stage.clientHeight, sheet = SHEET();
   let top0 = 12;   // clear of the brand, Plan · Build · Buy and the view's pills
-  for (const el of document.querySelectorAll(".brand, .hnav, .r3d-mini")) { const r = el.getBoundingClientRect(); if (r.height && r.top - sr.top < sh / 3) top0 = Math.max(top0, r.bottom - sr.top + 8); }
+  for (const el of document.querySelectorAll(".brand, .r3d-gear, .hnav, .r3d-mini")) { const r = el.getBoundingClientRect(); if (r.height && r.top - sr.top < sh / 3) top0 = Math.max(top0, r.bottom - sr.top + 8); }
   const fit = room => { if (act.offsetHeight > room) { const cs = getComputedStyle(act); act.style.maxHeight = Math.max(160, room - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)) + "px"; act.style.overflowY = "auto"; } };
   if (sheet) { const room = act.getBoundingClientRect().bottom - sr.top - top0;   // N285: peek (half the screen) till More or a drag up opens it full
     fit(actMoreOpen || act.classList.contains("full") ? room : Math.min(room, Math.round(sh * 0.5))); return; }

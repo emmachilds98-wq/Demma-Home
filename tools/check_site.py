@@ -381,6 +381,33 @@ LOOKS2 = """async link => { const D = R3D._dbg, sl = ms => new Promise(r => setT
   const kept = [nokeep, q('#r3d-theirs').hidden, bed()[0], JSON.stringify(ls()) === before];
   return { shown, mine, kept };
 }"""
+# N285 (Emma, 24 Nov: "the buttons on mobile are now really crowded"): at 375 × 812, on the house, in bedroom 2, with a wall's card and with
+# Settings: every control on the screen 44 × 44 at least, none over another (what a sliding row hides is cut off), the view's pills one
+# line, and Share in Settings
+PHONEUI = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTimeout(r, ms)), q = s => document.querySelector(s), out = [], W = innerWidth, H = innerHeight;
+  const settle = async () => { await sl(300); for (let i = 0; i < 150 && D.flying; i++) await sl(200); await sl(500); };
+  const sel = "button, a[href], [role=button], [role=tab], [role=switch], summary, input:not([type=hidden]), select, textarea";
+  const vis = el => { if (el.closest("[hidden], .sr-only")) return false; const d = el.closest("details:not([open])"); if (d && !d.querySelector(":scope > summary").contains(el)) return false; for (let p = el; p; p = p.parentElement) { const cs = getComputedStyle(p); if (cs.display === "none" || cs.visibility === "hidden" || +cs.opacity === 0) return false; }
+    const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+  const clip = el => { const r = el.getBoundingClientRect(); let b = [r.left, r.top, r.right, r.bottom];
+    for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) { const cs = getComputedStyle(p); if (cs.overflowX !== "visible" || cs.overflowY !== "visible") { const c = p.getBoundingClientRect(); b = [Math.max(b[0], c.left), Math.max(b[1], c.top), Math.min(b[2], c.right), Math.min(b[3], c.bottom)]; } }
+    return [Math.max(b[0], 0), Math.max(b[1], 0), Math.min(b[2], W), Math.min(b[3], H)]; };
+  const nm = el => (el.id ? "#" + el.id : el.tagName.toLowerCase() + "." + String(el.className).split(" ")[0]) + " " + (el.getAttribute("aria-label") || el.textContent || "").trim().slice(0, 18);
+  const look = when => { const L = [...document.querySelectorAll(sel)].filter(vis).map(el => ({ el, r: el.getBoundingClientRect(), c: clip(el) })).filter(o => o.c[2] - o.c[0] > 4 && o.c[3] - o.c[1] > 4);
+    for (const o of L) if (o.r.width < 43.5 || o.r.height < 43.5) out.push(`${when}: ${nm(o.el)} ${Math.round(o.r.width)}x${Math.round(o.r.height)}`);
+    const M = L.filter(o => !o.el.matches(".stk"));   // the labels on the 3D move with it
+    for (let i = 0; i < M.length; i++) for (let j = i + 1; j < M.length; j++) { const a = M[i], b = M[j]; if (a.el.contains(b.el) || b.el.contains(a.el)) continue;
+      const w = Math.min(a.c[2], b.c[2]) - Math.max(a.c[0], b.c[0]), h = Math.min(a.c[3], b.c[3]) - Math.max(a.c[1], b.c[1]); if (w > 1 && h > 1) out.push(`${when}: ${nm(a.el)} over ${nm(b.el)}`); }
+    const row = [...q(".r3d-mini").children].filter(e => vis(e) && !e.matches("#r3d-hrooms, .r3d-break") && getComputedStyle(e).position !== "absolute").map(e => e.getBoundingClientRect());
+    if (row.length && (Math.max(...row.map(r => r.top)) - Math.min(...row.map(r => r.top)) > 2 || Math.max(...row.map(r => r.right)) > W)) out.push(`${when}: the view's pills take more than one line`); };
+  if (window.DemmaTools && DemmaTools.isOpen()) DemmaTools.close(); if (D.actId) q('#r3d-act .x').click();
+  R3D.set({ view: 'house' }); await settle(); look("the house");
+  R3D.set({ view: 'bed2' }); await settle(); look("bedroom 2");
+  D.openAct('fin:bed2:0', [180, 400]); await sl(900); look("a wall's card"); q('#r3d-act .x').click(); await sl(300);
+  q('#r3d-gear').click(); await sl(800); look("Settings");
+  const s = q('#r3d-link'), share = !!s && vis(s) && (c => c[3] - c[1] > 40)(clip(s)); q('#r3d-gear').click(); await sl(300);
+  R3D.set({ view: 'house' }); await settle();
+  return { bad: [...new Set(out)].slice(0, 8), share }; }"""
 OFF = """() => { const W = document.documentElement.clientWidth, out = [];
   for (const el of document.querySelectorAll("body *")) { const r = el.getBoundingClientRect(), cs = getComputedStyle(el);
     if (!r.width || cs.display === "none" || cs.visibility === "hidden" || cs.position === "fixed" || el.closest("[hidden], .sheet, .r3d-panel, .r3d-floors, .lightbox, .r3d-stage")) continue;
@@ -779,6 +806,9 @@ def main():
                     tp = pg.evaluate(STOOD)
                     if tp.get("view") != "master" or tp.get("mode") != "stand" or tp.get("card") or abs(tp.get("eye", 0) - 420) > 15:
                         fails.append(f"{w}: a double-tap (touches) on the master bedroom from overhead: {tp} (want standing in it at 420, no card)")
+                if phone:                                           # N285: the phone's controls at 375 wide
+                    pg.set_viewport_size({"width": 375, "height": 812}); pu = pg.evaluate(PHONEUI); pg.set_viewport_size({"width": w, "height": h})
+                    if pu["bad"] or not pu["share"]: fails.append(f"375: the phone's controls: {pu['bad']}, Share in Settings {pu['share']} (want each 44 px, none over another, one row of pills)")
                 if phone:                                           # V1.38: walk into the living room, up to the landing and back out (the small screen: quicker frames)
                     wk = pg.evaluate(WALK)
                     want = ["hall", "livstand", "landing", "livstand", "hall", "kitchen", "hall"]

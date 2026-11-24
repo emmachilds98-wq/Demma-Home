@@ -448,7 +448,7 @@ figure.zoomable::after { content: "⤢"; position: absolute; right: 10px; top: 1
 /* V2.88 (N33): the brand and Plan · Build · Buy the same height side by side; a finger's 44 px on a touch screen */
 .brand { box-sizing: border-box; min-height: 52px; } .hnav button { min-width: 44px; }
 @media (min-width: 900px) { .hnav button { min-height: 48px; } }
-@media (pointer: coarse) { .seg button, .btn, .chip, a.btn, .hello .ver { min-height: 44px; } }
+@media (pointer: coarse), (max-width: 599px) { .seg button, .btn, .chip, a.btn, .hello .ver { min-height: 44px; } }
 /* N51 (look-over 2): a card's buttons scroll, so their ring is drawn inside (it was cut at the sides); Plan's house changes, a row a room, look and feel like the taps they are; 44 px on a touch screen */
 .money li[data-upsroom] { cursor: pointer; margin: 0 -8px; padding: 0 8px; border-radius: var(--r-s); } .money li[data-upsroom]:hover { background: var(--soft); }
 @media (pointer: coarse) { .money li[data-upsroom] { min-height: 44px; } }

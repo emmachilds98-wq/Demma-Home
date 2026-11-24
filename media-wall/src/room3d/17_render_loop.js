@@ -36,7 +36,7 @@ function measureShift(open) {
     if (innerWidth >= 900) shift.x = Math.round(Math.max(0, w - r.left - railR) / 2);
     else shift.y = Math.round(Math.max(0, h - r.top) / 4);
   } else if (S.view === "house" && w) {   // V1.30 (U3): on a phone the house sits in the middle of the space under the buttons; V3.27: on a computer too (the rows are along the top since V2.76)
-    let top = 0; for (const el of document.querySelectorAll(".r3d-mini > :not([hidden]), .brand")) { const r = el.getBoundingClientRect(); if (r.height) top = Math.max(top, r.bottom); }
+    let top = 0; for (const el of document.querySelectorAll(".r3d-mini > :not([hidden]), .brand, .r3d-gear")) { const r = el.getBoundingClientRect(); if (r.height) top = Math.max(top, r.bottom); }
     const dock = document.querySelector(".r3d-dock"), bot = dock ? dock.getBoundingClientRect().top : h;
     if (top > 0 && bot > top) shift.y = -Math.round(((top + bot) / 2 - h / 2) + (innerWidth >= 900 ? (bot - top) * 0.12 : 0));   // V3.27: a computer's house drawn above its aim (the roof under the rows): a little lower
   }

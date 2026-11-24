@@ -480,7 +480,7 @@ body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-ed
 .r3d.measuring canvas { cursor: crosshair; }
 /* V2.88 (N33, the phone and PC look-over): every tap a finger's 44 px on a touch screen; the small pills keep their look (a clear
    border round each) so the screen gets no busier. A card open on a phone puts the stick and the figure away (they sat over it) */
-@media (pointer: coarse) {
+@media (pointer: coarse), (max-width: 599px) {   /* N285: a phone by its width too */
   .r3d .r3d-mini .r3d-minib { min-height: 44px; min-width: 44px; }
   .r3d-floors { padding: 0 3px; }
   .r3d-floors button, .r3d-hrooms button { min-height: 44px; border-top: 6px solid transparent; border-bottom: 6px solid transparent; background-clip: padding-box; }
@@ -491,7 +491,7 @@ body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-ed
   .r3d-actfields .stp button, .r3d-actfields input { width: 44px; height: 44px; } .r3d-actfields input { width: 68px; }
   .r3d-theirs button { min-height: 44px; }   /* N222's Keep it · Back to mine */
 }
-@media (pointer: coarse) and (max-width: 899px) {
+@media (pointer: coarse) and (max-width: 899px), (max-width: 599px) {
   .r3d .r3d-mini .r3d-minib, body:not(.bare) .r3d .r3d-mini .r3d-minib.r3d-bare { width: 44px; height: 44px; }
   body.hv .r3d-bub { min-width: 64px; }
   .r3d-mini { gap: 4px; } .r3d-floors:not(.r3d-rmode) button { padding: 0 9px; }
@@ -516,7 +516,7 @@ body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-ed
 @media (max-width: 599px) { .r3d-theirs { top: 118px; } }   /* under the floors, clear of the stick and the toasts (at the foot on a phone) */
 .r3d-nudge { display: inline-flex; gap: 2px; } .r3d-nudge button { min-width: 36px; padding-left: 0; padding-right: 0; }
 .r3d-nudge[hidden] { display: none; }
-@media (pointer: coarse) {
+@media (pointer: coarse), (max-width: 599px) {   /* N285: a phone by its width too */
   .r3d-finsc { row-gap: 0; }
   .r3d-finsc button { min-height: 44px; border: solid transparent; border-width: 6px 0; background-clip: padding-box; box-shadow: inset 0 0 0 1px #d9d4ca; }
   .r3d-finsc button[aria-pressed="true"] { border-color: transparent; box-shadow: none; }
@@ -539,7 +539,7 @@ body.bare .r3d-gear { display: none !important; }
   .r3d-act { display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; padding: 8px 16px 14px; }
   .r3d-act > :not(.x) { flex: 0 0 100%; min-width: 0; }
   #r3d-acts { display: contents; }
-  .r3d-act .grab { flex: 0 0 40px; margin: 0 calc(50% - 20px) 2px; }
+  .r3d-act .grab { height: 5px; margin: 0 0 2px; border-radius: 0; background: linear-gradient(90deg, transparent calc(50% - 20px), #0002 0 calc(50% + 20px), transparent 0); }
   #r3d-act-h { margin: 6px 52px 0 0; font-size: 19px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #r3d-act-st { margin: -4px 52px 2px 0; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .r3d-act .acts button, .r3d-act .r3d-actmore > summary { min-height: 48px; font-size: 16px; }
@@ -549,20 +549,21 @@ body.bare .r3d-gear { display: none !important; }
   .r3d-finsc { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 8px; } .r3d-finsc::-webkit-scrollbar { display: none; }
   .r3d-finsc button { flex: none; font-size: 15px; padding: 0 14px; white-space: nowrap; }
   .r3d-fintray .sw { width: 66px; font-size: 13px; } .r3d-fintray .sw span { max-width: 66px; }
-  .r3d-fintray .sw i, .r3d-fintray .sw.any input { width: 44px; height: 44px; }
+  .r3d-fintray .sw i, .r3d-fintray .sw.any input { width: 44px; height: 44px; } .r3d-fintray .sw.hex input { height: 44px; }
   .r3d-finlab, .r3d-actsep, .r3d-actfields .note { font-size: 13px; } .r3d-ixwhy { font-size: 14px; }
 }
 @media (max-width: 599px) {
   .r3d-mini { top: calc(max(12px, env(safe-area-inset-top)) + 60px); left: 12px; right: 12px; max-width: none; justify-content: flex-start; gap: 8px; }
   #r3d-fview [aria-pressed=true] { display: none; }   /* Angled · Overhead as one button: the other way */
-  body.hv .r3d-mini > #r3d-home, body.hv .r3d-mini:not(.more) > #r3d-ideas:not([aria-pressed=true]) { display: none; }   /* the house: Outside is home; its Ideas under More */
-  body:not(.bare) .r3d .r3d-mini.more > #r3d-ideas { position: absolute; right: 0; top: calc(100% + 106px); z-index: 2; width: auto; padding: 0 14px 0 10px; }
-  body:not(.bare) .r3d .r3d-mini.more > #r3d-ideas .t { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
-  .r3d .r3d-mini .r3d-minib.r3d-bare .t, .r3d-floors button { font-size: 14px; } .r3d-floors:not(.r3d-rmode) button { padding: 0 8px; }
+  body.hv:not(.hroom) .r3d-mini > #r3d-home, body.hv:not(.hroom) .r3d-mini:not(.more) > #r3d-ideas:not([aria-pressed=true]) { display: none; }   /* the house: Outside is home; its Ideas under More */
+  body.hv:not(.hroom, .bare) .r3d .r3d-mini.more > #r3d-ideas { position: absolute; right: 0; top: calc(100% + 106px); z-index: 2; width: auto; padding: 0 14px 0 10px; }
+  body.hv:not(.hroom, .bare) .r3d .r3d-mini.more > #r3d-ideas .t { position: static; width: auto; height: auto; overflow: visible; clip: auto; }
+  .r3d .r3d-mini .r3d-minib.r3d-bare .t, .r3d-floors button { font-size: 14px; } .r3d-floors:not(.r3d-rmode) button { padding: 0 8px; } .r3d-floors .tog { min-width: 44px; }
   .stk { font-size: 14px; min-height: 44px; }
   .r3d-bub { font-size: 13px; } .r3d-bub i { width: 44px; height: 44px; } body.hv .r3d-bubbles { gap: 12px; }
   .r3d-tiles { display: flex; overflow-x: auto; scrollbar-width: none; } .r3d-tiles button { flex: 0 0 136px; min-height: 84px; font-size: 13px; }
   .r3d-ui .seg button, .r3d-ui .chip, .r3d-ui .btn { font-size: 15px; }
+  .r3d-toast.tips .tip { display: block; white-space: nowrap; }
 }
 """
 
@@ -824,13 +825,13 @@ def controls(gallery=""):
         # N285 (Emma, 24 Nov: "Share can be in settings"): the gear by the brand: Share, then what's rarely changed
         "settings": '<div class="grp"><button type="button" class="btn primary r3d-setshare" id="r3d-link"><span class="ms" aria-hidden="true">ios_share</span> Share</button>'
                     '<span class="caption">One link: this view, your sizes, colours, changes and ticks</span></div>'
-                    + seg("quality", [("hd", "HD, with shadows"), ("fast", "Fast")], "Quality")
-                    + seg("labels", [("on", "Show"), ("off", "Hide")], "Labels on the room")
-                    + seg("pad", [("on", "Show"), ("off", "Hide")], "Move buttons on the room")
                     + '<div class="grp"><div class="seg"><button type="button" class="chip" id="r3d-full"><span class="ms" aria-hidden="true">fullscreen</span> Full screen</button>'
                     '<button type="button" class="chip" id="r3d-help"><span class="ms" aria-hidden="true">help</span> Help</button>'
                     '<button type="button" class="chip r3d-keysb" id="r3d-keys"><span class="ms" aria-hidden="true">keyboard</span> Keys</button>'
-                    f'<button type="button" class="chip ver" data-v="{_label()}" title="Get the latest version">{_label()} · get the latest</button></div></div>',
+                    f'<button type="button" class="chip ver" data-v="{_label()}" title="Get the latest version">{_label()} · get the latest</button></div></div>'
+                    + seg("quality", [("hd", "HD, with shadows"), ("fast", "Fast")], "Quality")
+                    + seg("labels", [("on", "Show"), ("off", "Hide")], "Labels on the room")
+                    + seg("pad", [("on", "Show"), ("off", "Hide")], "Move buttons on the room"),
         # v31, client: "upgrade the views and layouts area of the site to ensure it reflects our recent upgrades": grouped, the compact cabinet
         # first, with what goes beside it, how it opens, the floor it needs, and ready-made set-ups to try
         # v39: Room, by place (the approved redesign): the set-ups, then one main choice for each place; the rest under More
@@ -1037,7 +1038,7 @@ def section(gallery=""):
   <div class="r3d-dock"><button type="button" class="r3d-toolsbtn" data-tools-toggle aria-expanded="false" aria-controls="r3d-panel"><span class="ms" aria-hidden="true">tune</span>Tools</button>
     <div class="r3d-bubbles" role="tablist" aria-label="3D room controls">{bubbles}
       <button type="button" class="r3d-bub" id="r3d-editbtn" aria-pressed="false" style="--h:25" title="Move, turn, recolour, remove and add things; tap a wall to paint it"><i class="ms" aria-hidden="true">edit</i>Edit</button>
-      <button type="button" class="r3d-bub r3d-planb" data-nav="plan" style="--h:300" title="Plan, Build and Buy"><i class="ms" aria-hidden="true">map</i>Plan</button></div></div>
+      <button type="button" class="r3d-bub r3d-planb" data-nav="plan" style="--h:300" title="Plan, Build and Buy"><i class="ms" aria-hidden="true">checklist</i>Plan</button></div></div>
   <div class="r3d-panel" id="r3d-panel" role="region" aria-label="3D room controls" hidden><button type="button" class="r3d-px" data-tools-toggle aria-label="Close the tools"><span class="ms" aria-hidden="true">close</span></button>
     <div class="r3d-pscroll">{drawers}</div>
     </div>
