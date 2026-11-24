@@ -1,5 +1,8 @@
 # Handover (23 Nov 2026, V4.62: start here)
 
+## Pick up here (24 Nov 2026, V4.62: the full upgrade plan)
+The client asked for a whole-repo review and a full upgrade plan (24 Nov): it is `docs/REAL_PLAN.md` **section 32** (N246–N275 in four streams: how agents work, the code, the app's layout and offer, the house model), with its order. Start with stream A. In progress: N245 (Ideas reading N243's places and pieces) on `claude/trusting-gauss-gra6z6-n245`.
+
 ## Pick up here (24 Nov 2026, V4.60)
 - **V4.60:** N244 Ideas (section 31) and N222 Dave only looks; merged without waiting for CI at the client's word ("Don't wait for CI"): read CI's result on main and fix what it finds.
 - **In progress (own branches):** N243 merged in V4.62 (Ideas still reads today's spots: wiring it to `data/ideas.json` is next); N225's rest merged in V4.61 (the plan's mirror, tapped, still opens its size card: a `16_cards.js` order fix). Ideas reads their data with no code change.
