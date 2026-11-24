@@ -24,7 +24,7 @@ CI); do everything that doesn't need her; options only until she picks. All in C
 - **In progress (own branches):** N243 merged in V4.62 (Ideas still reads today's spots: wiring it to `data/ideas.json` is next); N225's rest merged in V4.61 (the plan's mirror, tapped, still opens its size card: a `16_cards.js` order fix). Ideas reads their data with no code change.
 
 ## Pick up here (23 Nov 2026, V4.57)
-- **V4.57:** N239 (the same light from a distance), N242 (the client: "options that you pick from varying suppliers and I'm able to look at": each storage spot's idea card steps ‹ › through 3 real products from different shops; `docs/N242_options.json`). Left on N242: the living room's spots, a pick's price in Changes. N240 merged in V4.58 (the walk can't crawl; the real cause waits on Emma's `?perf` Send from her PC).
+- **V4.57:** N239 (the same light from a distance), N242 (the client: "options that you pick from varying suppliers and I'm able to look at": each storage spot's idea card steps ‹ › through 3 real products from different shops; `house/data/N242_options.json`). Left on N242: the living room's spots, a pick's price in Changes. N240 merged in V4.58 (the walk can't crawl; the real cause waits on Emma's `?perf` Send from her PC).
 - **Next:** the same shop options for other choices if Emma asks (lighting fittings, rugs, curtains); N237's rest; N228, N229, N234, N235 wait on Emma.
 
 ## Pick up here (23 Nov 2026, V4.56)
@@ -78,7 +78,7 @@ directly in GitHub to stop these losses" (CLAUDE.md: nothing stays local; push e
   Back to mine). The iPhone's first picture back inside 44 shaders (the woodwork shares the bedding's program; the skirting out of the
   bake). A review's seven findings fixed (see `docs/HISTORY.md` V4.49).
 - **Lost and rebuilt:** an earlier session's N219, N221, N222, N220 start and shader fix were only on its machine when it hit its usage
-  limit; they were rebuilt from the plan and `docs/N219_catalogue.json`. Hence the rule.
+  limit; they were rebuilt from the plan and `house/data/N219_catalogue.json`. Hence the rule.
 - **Next (23 Nov, at V4.50):** `docs/REAL_PLAN.md` section 29, N224–N237: more hers to change (the kitchen, the bathroom, each door, each window, lighting later, her storage picks, furniture's last gaps, a look's cost) and the whole house better made (shop pieces by form, every new step in the site check, her devices' check, the tape round, the made pieces' detail, the first picture back under budget); N233 first; its four questions for Emma.
 - **Storage to her brief (23 Nov, V4.50):** `docs/REAL_PLAN.md` section 28, N223 done: 12 ideas made for their spots in the living room's oak (`docs/STORAGE.md`); her pick next, then a build and a buy list.
 - **Open:** Emma's choices: which storage ideas (N212, now N223), whether Dave may Keep it (N222 keeps the button; one line to take it out); N201

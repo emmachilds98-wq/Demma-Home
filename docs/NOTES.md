@@ -262,11 +262,11 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
   are bedroom 2's monitors, interface, 88-key, headphones and mic on the L desk and the office's two screen setups on its desk; not the
   office lamp (its light would stay behind). N230: two of a thing are two items (`kitchen.stool`, `kitchen.stool2`; a number on the id:
   `HSWAP_OF`, `hcSoft` and the walk's soft pieces allow it); a seat kind (`hcSeat`: chairs, stools) swaps centred, facing as before.
-  A kind with no house pieces (bar stools) gets real ones as rows in `docs/N219_catalogue.json` (read date, the listing's W × D × H).
+  A kind with no house pieces (bar stools) gets real ones as rows in `house/data/N219_catalogue.json` (read date, the listing's W × D × H).
   **Adding** (N218): the add card's kinds are chips, ‹ › goes through that kind (`hcAddOf`); `addSpot` puts a new piece (and each piece
   picked for it) back to the room's wall nearest the tap where `roomWhy` and the pieces find it clear, stored as the row's `x, z` on the
   wall line (0.5 in), which `syncAdds` reads back as against that wall. The space kept clear (`fit.keep`, from `reserves()`) names the
-  piece it's for (the Kallax's drawers), which that piece may take. **Real pieces and her own** (N219): `docs/N219_catalogue.json` (the
+  piece it's for (the Kallax's drawers), which that piece may take. **Real pieces and her own** (N219): `house/data/N219_catalogue.json` (the
   research, 142 pieces) is read by `fit.shop_pieces()`: each its own `fit.SOURCES` row under `fit.shop_key` (a hash of its page and name,
   so a row in Send or a link keeps meaning it; one page can sell two sizes), and by `export3d.shop_row` into `R.SHOP` (its kind, a look for
   the builder, its materials from the finish's words, a door or drawer count). `08_house_catalogue.js` puts them in `HCAT` (`shop`, `p`,
@@ -473,7 +473,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/reviews/` (th
 - **Where it is:** `room3d/22_bath.js` (the tiles: `TILE_ROOMS`, `tileTex`, `tileApply`, `tileCard`, `tileUps`), hooked in one line each
   in `23_finish.js` (`finAt`, `finCard`, `finClean`, `finApplyAll`, `finHold`) and `16_cards.js` (`roomUps`). Numbered 22, not 24 as
   first planned: `23_finish.js` runs code at load (`finSchDraw`) that reaches `finClean`, and a `const` of a later part is not yet made then.
-- **The suites:** shop pieces like N219's (`docs/N219_catalogue.json`, kinds `toilet` and `basin`), so their size, price, page and
+- **The suites:** shop pieces like N219's (`house/data/N219_catalogue.json`, kinds `toilet` and `basin`), so their size, price, page and
   `fit.SOURCES` row come for free; `HCAT_KINDS` names them non-enumerably (no chips in the add card: a suite is swapped, never added);
   `SUITE_OF` lets the four pieces swap though hung or lidded (`swapKind`'s first line), `swapBox` sets their height. `hcBuild` passes
   a 7th argument, `end` (the piece stands in its wall's far corner), and `L` an oval (`sc`, along its wall and out).
