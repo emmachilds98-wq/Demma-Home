@@ -261,7 +261,7 @@ def reserves():
 # the model: survey_data, model, the living room's plan in media-wall/src/geometry.py), clear of the doors' swings, the walks and the windows
 # as an idea's piece is (checks); what kinds of thing suit it; the catalogue's pieces that fit it (spot_fits). Options to look at only.
 USES = ("records", "books", "games", "media", "shoes", "coats", "toys", "laundry", "display", "boxes", "plants",
-        "sofa", "armchair", "coffee", "side", "dining", "desk", "bed", "lamp", "rug", "chest", "wardrobe")
+        "sofa", "armchair", "coffee", "side", "dining", "desk", "bed", "lamp", "rug", "chest", "wardrobe", "garden")   # N280: the garden's pieces (no indoor spot takes them)
 # each idea's spot (its first piece's box): what suits it
 IDEA_USES = {"records": ["records", "media"], "faceout": ["records", "display"], "pegboard": ["media", "boxes"], "ledges": ["display", "plants"],
              "overdoor": ["boxes", "books"], "drawers": ["media", "boxes"], "airer": ["laundry"], "booktower": ["books", "games", "display"],
@@ -387,7 +387,7 @@ def spots():
 KIND_USES = {"records": ["records", "toys", "media"], "shelves": ["books", "display", "games"], "display": ["display"], "shoes": ["shoes"],
              "chest": ["boxes", "chest"], "bedside": ["boxes", "side"], "tv": ["media", "games"], "sideboard": ["media", "boxes"],
              "lamp": ["lamp"], "coffee": ["coffee"], "side": ["side"], "console": ["side", "display"], "dining": ["dining"], "seat": ["armchair"],
-             "rug": ["rug"], "desk": ["desk"], "bed": ["bed"], "wardrobe": ["wardrobe"], "deskchair": [], "stool": [], "dchair": ["dining"], "trolley": ["boxes", "dining"], "toilet": [], "basin": []}
+             "rug": ["rug"], "desk": ["desk"], "bed": ["bed"], "wardrobe": ["wardrobe"], "deskchair": [], "stool": [], "dchair": ["dining"], "gtable": [], "gchair": [], "gsofa": [], "trolley": ["boxes", "dining"], "toilet": [], "basin": []}
 AT_ON = {"floor": "floor", "slope": "floor", "alcove": "floor", "top": "floor", "wall": "wall", "over door": "wall", "ceiling": "ceil"}
 
 

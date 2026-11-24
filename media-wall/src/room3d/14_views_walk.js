@@ -440,7 +440,7 @@ function freeSpot(x, fy, z) {               // the nearest place a body fits on 
   }
   return [x, z];
 }
-const roomName = id => id === "living" ? "Living room" : ((Object.values(R.HOUSE3.floors).flatMap(F => F.labels || []).find(l => l.id === id) || {}).name || "");
+const roomName = id => id === "living" ? "Living room" : id === "garden" ? "Garden" : ((Object.values(R.HOUSE3.floors).flatMap(F => F.labels || []).find(l => l.id === id) || {}).name || "");
 function goStand(x, fy, z, look, dur) {      // Be there at (x, z) on the floor at fy, facing look ([dx, dz]) or on the way the eye came
   const r = standRoomAt(x, fy + 1, z); if (!r) return false;
   [x, z] = freeSpot(x, fy, z);

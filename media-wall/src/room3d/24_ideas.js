@@ -17,12 +17,16 @@ const IX_THEMES = [   // a set-up: the room's storage ideas whose words match re
   { n: "Bathroom shelves", re: /shelf|cabinet|box|basket|towel/i, only: /bath/, add: [["unit", /bathroom|single|double|zander|sonderborg/i], ["chest", /bamboo|bathroom/i], ["shelves", /tallboy|glass/i]] },   // N277
   { n: "Media and games", re: /media|tv|game|record|console/i, no: /bath|wc|kitchen|garage|store|hall|landing/, add: [["unit", /tv|media/i], ["seat", /armchair|chair/i], ["rug", /wool|jute/i]] },   // N277
   { n: "Dining corner", re: /dining|table|plate|glass|shelf/i, only: /kitchen|bed3/, add: [["table", /dining|seater|folding|extending/i], ["dchair", /oak|rattan/i], ["dchair", /oak|rattan/i], ["trolley", null], ["lamp", /floor/i]] },   // N278, N279
+  { n: "Garden dining", yard: true, re: /^$/, add: [["gtable", /patio|dining|seater/i], ["gchair", null], ["gchair", null], ["gchair", null]] },   // N280: the garden's
+  { n: "Garden lounge", yard: true, re: /^$/, add: [["gsofa", /sofa/i], ["gchair", null], ["gtable", /sofa|coffee|low/i]] },
+  { n: "Bistro for two", yard: true, re: /^$/, add: [["gtable", /bistro/i], ["gchair", /bistro/i], ["gchair", /bistro/i], ["gchair", /bench/i]] },
   { n: "Coats and shoes", re: /peg|hook|coat|hat|shoe/i, only: /hall|porch|landing/, add: [["shoes", null], ["seat", /bench/i]] },
 ];
-const IX_STORE = ["shelves", "chest", "shoes", "wardrobe", "unit"];   // + Add storage, a kind each press
+const IX_STORE = ["shelves", "chest", "shoes", "wardrobe", "unit"], IX_YARD = ["gsofa", "gtable", "gchair"];   // N280: + Add in the garden   // + Add storage, a kind each press
 const ixOn = () => !!(ASIDE && ASIDE.ix);
 const ixMine = k => ixOn() && String(k).startsWith("add." + IX.p);
 function ixRoom() {   // the house's room you're in (not the living room: its own pieces), or null
+  if (R.HOUSE3 && S.view === "house" && !INSIDE() && (R.HOUSE3.yard || {}).garden) return "garden";   // N280: the whole house from outside: the garden's
   if (!R.HOUSE3 || !ROOMV()) return null; const r = (GS.RMODE === "stand" && GS.hereRoom) || VIEW_ROOM[S.view];
   return r && r !== LIVR && (R.HOUSE3.rooms || {})[r] ? r : null;
 }
@@ -33,9 +37,9 @@ function ixPill() {
 const ixCands = (kind, re, used = new Set()) => { const sc = q => (re && re.test(HCAT[q].n) ? 0 : 2) + (used.has(q) ? 4 : 0) + (HCAT[q].shop ? 0 : 1);   // its words first, then not used yet, then a shop's
   return [...new Set(HCAT_ADD)].filter(q => HCAT[q] && HCAT[q].k === kind && !HCAT[q].own).sort((a, b) => sc(a) - sc(b)); };
 function ixSetups(room) {   // [{n, ideas: {id: shop key or ""}, adds: [[key, x, z]]}], the plan's first
-  const r = R.HOUSE3.rooms[room], m2 = (r[1] - r[0]) * (r[3] - r[2]) / 1e4, cap = Math.max(2, Math.min(5, Math.round(m2 / 2.5)));
+  const r = H3R(room), m2 = (r[1] - r[0]) * (r[3] - r[2]) / 1e4, cap = Math.max(2, Math.min(5, Math.round(m2 / 2.5)));
   const skip = k => String(k).startsWith("add." + IX.p) || !!(HIT(k) || {}).idea, out = [{ n: "The plan's", ideas: {}, adds: [] }], seen = new Set(), used = new Set();
-  for (const th of IX_THEMES) { if (out.length > 7) break; if ((th.only && !th.only.test(room)) || (th.no && th.no.test(room))) continue;
+  for (const th of IX_THEMES) { if (out.length > 7) break; if ((th.only && !th.only.test(room)) || (th.no && th.no.test(room)) || (room === "garden") !== !!th.yard) continue;
     const s = { n: th.n, ideas: {}, adds: [] }, more = []; let n = 0;
     for (const I of ideasIn(room)) { if (n >= cap) break; const O = I.o || [];
       if (!th.re.test(`${I.n} ${I.line}`) && !O.some(o => th.re.test(o[3]))) continue;
@@ -51,7 +55,7 @@ function ixSetups(room) {   // [{n, ideas: {id: shop key or ""}, adds: [[key, x,
 }
 const heArr = v => [v.item, v.field, v.value, ...(v.field === "add" ? [v.room, v.x, v.z, v.y] : [])];
 function ixShow(room, i) {   // set-up i over hers: her colours, edits and pieces, the room's storage ideas and the set-up's pieces its own
-  const s = IX.L[i], r = R.HOUSE3.rooms[room]; if (!s) return; IX.i = i;
+  const s = IX.L[i], r = H3R(room); if (!s) return; IX.i = i;
   if (!ASIDE) lookAside(s.n); if (!ASIDE || !ASIDE.real) return; ASIDE.ix = room; ASIDE.plan = false; ASIDE.title = `Ideas: ${s.n}`;
   S.fin = JSON.parse(JSON.stringify(JSON.parse(ASIDE.s).fin || {}));
   const o = S.fin[room] = S.fin[room] || {}, v = Object.entries(s.ideas).map(([id, k]) => k ? `${id}:${k}` : id).join(",");
@@ -98,10 +102,11 @@ function ixKeep(room) {   // Keep this: the set-up as one of Your looks (her col
   finSchDraw(); toast(`Kept in Your looks: ${name}`);
 }
 function ixAdd(room) {   // + Add storage: the room's nearest storage idea not shown (the plan's), else a storage piece in the nearest free spot
-  const r = R.HOUSE3.rooms[room], ds = DS(), cam = [-camera.position.x / M, camera.position.z / M], far = b => Math.hypot((b[0] + b[3]) / 2 - cam[0], (b[2] + b[5]) / 2 - cam[1]);
+  const r = H3R(room), ds = DS(), cam = [-camera.position.x / M, camera.position.z / M], far = b => Math.hypot((b[0] + b[3]) / 2 - cam[0], (b[2] + b[5]) / 2 - cam[1]);
   const vals = ideaVals(room).map(q => q.split(":")), off = ideasIn(room).filter(I => I.parts.length && !vals.some(([id]) => id === I.id)).sort((a, b) => far(a.parts[0].b) - far(b.parts[0].b));
   if (off.length) { const ids = Object.fromEntries(vals.map(([id, k]) => [id, k || ""])); ids[off[0].id] = ""; ideaKeep(room, ids); toast(`${off[0].n}: added`); return true; }
-  for (let n = 0; n < IX_STORE.length; n++) { const kind = IX_STORE[(IX.k + n) % IX_STORE.length];
+  const KS = room === "garden" ? IX_YARD : IX_STORE;
+  for (let n = 0; n < KS.length; n++) { const kind = KS[(IX.k + n) % KS.length];
     for (const q of ixCands(kind, null).slice(0, 8)) { const sp = spotFor(room, q, cam[0], cam[1], r[4], null); if (!sp) continue;
       const id = `add.${IX.p}${IX.n++}`; IX.k += n + 1; ds.put("edits", id + "~add", { item: id, field: "add", value: q, room, x: cmR(sp[0]), z: cmR(sp[1]), y: r[4] });
       toast(`${HCAT[q].n}${HCAT[q].shop ? " · " + HCAT[q].shop : ""}: added`); return true; } }

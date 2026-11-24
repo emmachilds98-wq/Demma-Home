@@ -151,7 +151,7 @@ function pieceBox(id) {
 }
 /* V2.36: a piece turned into a wall slides back into its room by as little as it takes */
 function turnFit(id, b, t) {
-  const r = HIT(id) && R.HOUSE3 && (R.HOUSE3.rooms || {})[HIT(id).r]; if (!r) return [0, 0];
+  const r = HIT(id) && R.HOUSE3 && H3R(HIT(id).r); if (!r) return [0, 0];
   const inside = b[0] >= r[0] - 1 && b[3] <= r[1] + 1 && b[2] >= r[2] - 1 && b[5] <= r[3] + 1; if (!inside) return [0, 0];
   const sh = (a0, a1, r0, r1) => a1 - a0 > r1 - r0 ? 0 : a0 < r0 ? r0 - a0 : a1 > r1 ? r1 - a1 : 0;
   return [sh(t[0], t[3], r[0], r[1]), sh(t[2], t[5], r[2], r[3])];
@@ -235,7 +235,7 @@ canvas.addEventListener("pointermove", e => {
   if (!D.moved && Math.hypot(e.clientX - D.x, e.clientY - D.y) < 4) return;
   const f = hfloorAt(e, D.b0[1] * M); if (!f) return; D.moved = true;
   const it = HIT(D.id), ko = 2 - D.k, d = [0, 0, 0]; d[D.k] = (D.k === 2 ? f.z - D.f.z : f.x - D.f.x); if (!it.op) d[ko] = (ko === 2 ? f.z - D.f.z : f.x - D.f.x);
-  const r = (R.HOUSE3.rooms || {})[it.r], b = D.b0.slice(); b[0] += d[0]; b[3] += d[0]; b[2] += d[2]; b[5] += d[2];
+  const r = H3R(it.r), b = D.b0.slice(); b[0] += d[0]; b[3] += d[0]; b[2] += d[2]; b[5] += d[2];
   if (r && !it.op) { const snap = (lo, hi, r0, r1) => Math.abs(lo - r0) < 15 ? r0 - lo : Math.abs(r1 - hi) < 15 ? r1 - hi : 0;   // against its room's wall within 15 cm
     const sx = snap(b[0], b[3], r[0], r[1]), sz = snap(b[2], b[5], r[2], r[3]); d[0] += sx; d[2] += sz; }
   D.dA = Math.round(d[D.k]); D.dO = it.op ? 0 : Math.round(d[ko]);
