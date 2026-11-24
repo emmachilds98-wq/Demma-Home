@@ -1,4 +1,8 @@
-# Handover (23 Nov 2026, V4.58: start here)
+# Handover (23 Nov 2026, V4.59: start here)
+
+## Pick up here (24 Nov 2026, V4.59)
+- **V4.59:** N244 Ideas (section 31) and N222 Dave only looks; merged without waiting for CI at the client's word ("Don't wait for CI"): read CI's result on main and fix what it finds.
+- **In progress (own branches):** N243 the bigger catalogue and spots in every room (`claude/trusting-gauss-gra6z6-n243`); N225's mirror and the bathroom's own toilet and vanity (`claude/trusting-gauss-gra6z6-left`). Ideas reads their data with no code change.
 
 ## Pick up here (23 Nov 2026, V4.57)
 - **V4.57:** N239 (the same light from a distance), N242 (the client: "options that you pick from varying suppliers and I'm able to look at": each storage spot's idea card steps ‹ › through 3 real products from different shops; `docs/N242_options.json`). Left on N242: the living room's spots, a pick's price in Changes. N240 merged in V4.58 (the walk can't crawl; the real cause waits on Emma's `?perf` Send from her PC).
