@@ -721,9 +721,22 @@ def stairs(o):
     for i in range(st["n"]):
         za = st["z0"] + i * st["going"]; top = y0 + (i + 1) * st["rise"]
         o.box("carpet_grey", st["x0"] + 1, top - st["rise"] - 14, za, st["x1"] - 1, top, min(za + st["going"] + 2, st["z1"]))   # v67: grey carpet (the photo)
+        if i:                                                     # N272: each tread's rounded nosing over its riser, a shadow line under it
+            o.box("carpet_grey", st["x0"] + 1, top - 3.2, za - 1.6, st["x1"] - 1, top - 0.6, za)
+            o.box("gap", st["x0"] + 1.5, top - 4.0, za - 0.4, st["x1"] - 1.5, top - 3.2, za)
+            o.box("gap", st["x0"] + 1.5, top - st["rise"], za - 0.4, st["x1"] - 1.5, top - st["rise"] + 0.5, za)   # the riser's foot
     yl = lambda z: y0 + (z - st["z0"]) / st["going"] * st["rise"]                        # v67: the handrail on the left going down
     za, zb = st["z0"] + st["going"], st["z1"] - st["going"]
-    o.prism("upvc", "x", WIDTH - 7, WIDTH - 2, [(za, yl(za) + 88), (zb, yl(zb) + 88), (zb, yl(zb) + 96), (za, yl(za) + 96)])
+    # N272: a rounded mopstick rail (4.4 across, three layers for its round) on brackets 4.5 off the wall, was a square bar
+    xr = WIDTH - 0.5 - 4.5 - 2.2                                                          # the rail's centre line
+    for dx, dy in ((2.2, 1.3), (1.6, 2.2), (0.9, 2.6)):
+        o.prism("rail_white", "x", xr - dx, xr + dx, [(za, yl(za) + 90 - dy), (zb, yl(zb) + 90 - dy), (zb, yl(zb) + 90 + dy), (za, yl(za) + 90 + dy)])
+    nb = max(2, round((zb - za) / 90))
+    for k in range(nb + 1):                                                               # the brackets: a rose on the wall, an arm under the rail
+        zk = za + 6 + (zb - za - 12) * k / nb; yk = yl(zk) + 90
+        o.box("steel", WIDTH - 0.9, yk - 9, zk - 2.5, WIDTH - 0.5, yk - 4, zk + 2.5)
+        o.box("steel", xr - 0.6, yk - 8, zk - 0.6, WIDTH - 0.9, yk - 6.8, zk + 0.6)
+        o.box("steel", xr - 0.6, yk - 8, zk - 0.6, xr + 0.6, yk - 2.6, zk + 0.6)
     # V1.59, the client: "lower cupboard needs to have a box on the side and underneath of the stairs": from the store under it the flight
     # showed each tread's block, stepped, underneath and up its open side; it's boxed in as an understairs cupboard is, a painted soffit
     # just under the treads' lowest corners and a panel up the open side to their fronts (the store keeps its room under them)
@@ -1815,7 +1828,7 @@ def bathroom(o):
     o.box("led", xw - 4.6, y + my1 + 0.6, (m0 + m1) / 2 - 19, xw - 1.4, y + my1 + 1, (m0 + m1) / 2 + 19)   # V2.48 (R1): its lit strip underneath
 
 
-SKIRT_ROOMS = {"hall", "landing", "landing_top", "bed3", "master", "master_b", "master_1", "bed2", "kitchen", "kitchen_1", "kitchen_2", "wc", "lower_landing"}
+SKIRT_ROOMS = {"hall", "landing", "landing_top", "bed3", "master", "master_b", "master_1", "bed2", "bed2_1", "bathroom", "bathroom_1", "kitchen", "kitchen_1", "kitchen_2", "wc", "lower_landing"}
 SKIRT_H, SKIRT_T = 10.0, 1.5                                       # E: a 94 mm torus skirting
 DOOR_LEAF = {"wc_door": "door_leaf", "bath_door": "door_leaf", "bed2_door": "door_leaf",
              "master_door": "door_leaf", "bed3_door": "door_leaf"}   # v73, the client: the bathroom's is white too (the wood was an old photo)
@@ -2289,6 +2302,50 @@ def radiator(o, axis, wall, out, a0, a1, y0, y1):
         put("chrome", p, p + 3, 5.0, 8.0, y0 - 6, y0 + 2)
 
 
+def towel_rail(o, axis, wall, out, a0, a1, y0, y1):
+    """N272: a chrome towel ladder (the bathroom's radiator): two round uprights, round rungs between, a bracket to the wall at each
+    corner. axis, wall and out as radiator()."""
+    d = wall + out * 6.0                                           # the ladder's line, 6 off the wall
+    ring = lambda u, v, r, n=10: [(u + r * math.cos(i * 2 * math.pi / n), v + r * math.sin(i * 2 * math.pi / n)) for i in range(n)]
+    for p in (a0 + 1.5, a1 - 1.5):                                 # the uprights
+        cx, cz = (p, d) if axis == "x" else (d, p)
+        o.lathe("chrome", cx, y0, cz, [(0, 0), (1.6, 0), (1.6, y1 - y0), (0, y1 - y0)])
+        for yy in (y0 + 8, y1 - 8):                                # the brackets, a stem and a rose on the wall
+            if axis == "x":
+                o.box("chrome", p - 0.6, yy - 0.6, min(wall, d), p + 0.6, yy + 0.6, max(wall, d))
+                o.box("chrome", p - 2.2, yy - 2.2, wall + out * 0.6 - 0.3, p + 2.2, yy + 2.2, wall + out * 0.6 + 0.3)
+            else:
+                o.box("chrome", min(wall, d), yy - 0.6, p - 0.6, max(wall, d), yy + 0.6, p + 0.6)
+                o.box("chrome", wall + out * 0.6 - 0.3, yy - 2.2, p - 2.2, wall + out * 0.6 + 0.3, yy + 2.2, p + 2.2)
+    n = max(6, int((y1 - y0) / 8))
+    for k in range(n):                                             # the rungs, closer together at the top
+        yy = y0 + 4 + (y1 - y0 - 8) * (k / (n - 1)) ** 0.85
+        o.prism("chrome", axis, a0 + 3, a1 - 3, ring(d, yy, 1.1))
+    for p in (a0 + 1.5, a1 - 1.5):                                 # the valves under it
+        cx, cz = (p, d) if axis == "x" else (d, p)
+        o.lathe("chrome", cx, y0 - 9, cz, [(0, 0), (1.4, 0), (1.4, 5), (2.2, 5.5), (2.2, 9), (0, 9)])
+
+
+def radiators(o, floor):
+    """N272 (the upgrade review: no radiators in the master, bedroom 2, the bathroom, the landing or the WC): estimated, each a Measure row
+    (survey_data.RADIATORS)."""
+    R, y = D.RADIATORS, FLOOR_Y[floor]
+    rs = {r["id"]: r for r in rooms(floor)}
+    if floor == "lower":
+        want = (("wc", "The WC radiator", "wc", WIDTH - 0.5),)
+    elif floor == "first":
+        want = (("master", "The master's radiator", "master", FRONT - 3), ("bed2", "Bedroom 2's radiator", "bed2", rs["bed2"]["x1"]),
+                ("landing", "The landing radiator", "landing", rs["landing_top"]["z1"]),
+                ("bathroom", "The towel rail", "bathroom", rs["bathroom_1"]["z1"]))
+    else:
+        return
+    for key, name, room, wall in want:
+        r = R[key]; ax = r["axis"]; a0, a1 = r["x" if ax == "x" else "z"]
+        o.item(f"{room}.radiator", name, room, kind="radiator", src=R["src"], data=("RADIATORS", key), axis=ax)
+        (towel_rail if key == "bathroom" else radiator)(o, ax, wall, -1, a0, a1, y + r["y"][0], y + r["y"][1])
+        o.end()
+
+
 def secret(o):
     """V1.26, the client's photos down the hatch: the secret room square, solid to the front, a brick pier off the middle of its back
     wall (behind the kitchen), a drain in its floor (survey_data.SECRET)."""
@@ -2621,7 +2678,7 @@ def build():
             steps += [lambda: secret(o)]
         if floor == "first":
             steps += [lambda: office(o), lambda: bed2(o), lambda: master(o), lambda: boiler(o), lambda: bathroom(o), lambda: music(o), lambda: landing(o)]
-        steps += [lambda: chalk_doors(o, floor), lambda: pendants(o, floor), lambda: switches(o, floor), lambda: sockets(o, floor), lambda: contacts(o, floor)]
+        steps += [lambda: radiators(o, floor), lambda: chalk_doors(o, floor), lambda: pendants(o, floor), lambda: switches(o, floor), lambda: sockets(o, floor), lambda: contacts(o, floor)]
         if floor == "first":
             steps += [lambda: first_floor_slopes(o), lambda: stair_wall(o), lambda: ground_ceilings(o)]
         if floor == "ground":
