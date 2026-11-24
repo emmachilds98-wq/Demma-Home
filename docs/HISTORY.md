@@ -477,3 +477,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.77** (24 Nov 2026): dining chairs and kitchen trolleys in Ideas
 - **V4.78** (24 Nov 2026): the garden in Ideas: garden tables, chairs and sofas
 - **V4.79** (24 Nov 2026): the shops' pieces load in Ideas
+- **V4.80** (24 Nov 2026): Ideas that fit and look better: room to use each piece, a colour scheme each set-up
