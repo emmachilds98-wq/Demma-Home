@@ -300,6 +300,13 @@ LANDING = dict(rail_x=(376.0, 381.0), rail_h=92.0, hatch=dict(x=(305.0, 360.0), 
 # (was 345, 120); the office's over the window's end of the room, the bulb in front of the window's head in the wide photo (was 375, 372);
 # the WC's 30 further in, about over the pan's front (was -215)
 PENDANTS = {"hall": (345.0, 355.0), "landing": (378.0, 138.0), "bed3": (372.0, 435.0), "wc": (420.0, -245.0)}
+# N269 (the review: the master, bedroom 2 and the lower landing had no light fitting): E, the room's middle clear of the furniture; a linen
+# drum shade in the bedrooms, a flush glass dome on the lower landing (PENDANT_STYLE); the master dressed (MASTER_DRESS: E, options later)
+PENDANTS.update({"master": (110.0, 300.0), "bed2": (175.0, -150.0), "lower_landing": (421.0, -84.0)})
+PENDANT_STYLE = {"master": "drum", "bed2": "drum", "lower_landing": "flush"}
+MASTER_DRESS = dict(curtains=dict(x=((48.0, 74.0), (217.0, 250.0)), pole=(48.5, 251.0), y=(78.0, 212.0)),   # sill-length, clear of the radiator
+                    rug=dict(x=(45.0, 185.0), z=(158.0, 238.0)), print=dict(z=(296.0, 356.0), y=(154.0, 210.0)),
+                    src="E (a 140 × 80 rug, a 60 × 56 framed print, a pole and lined curtains)")
 # V2.48 (REAL_PLAN R1, N8): each room lit by the lights it has. The kitchen's are its two LED battens on the ceiling (the photo; it has no
 # pendant), x along the window run, z each batten's middle. The lamps the client has, on by evening: the office's purple lamp at the desk's
 # window end (the photos of 25 Oct: its glow left of the screens; E: a 12 cm globe on a 9 cm foot) and the bathroom's light bar over the

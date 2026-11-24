@@ -1476,6 +1476,38 @@ def boiler(o):
     o.box("storebox", r["x0"] + 6, y + 32, r["z0"] + 8, r["x0"] + 40, y + 56, r["z0"] + 30)
 
 
+def master_dress(o):
+    """N269 (the review: the master's window bare, no decor): a pole and sill-length lined curtains drawn back each side of the window, a
+    rug by the bed, a throw over the duvet's foot (on the lid, so it lifts with it: master()), a framed print over the headboard."""
+    Dd, y = D.MASTER_DRESS, FLOOR_Y["first"]
+    c = Dd["curtains"]; zc = FRONT - 6
+    o.item("master.curtains", "The curtains", "master", kind="decor", src=Dd["src"], data=("MASTER_DRESS", "curtains"), axis="x")
+    o.lathe("chrome", c["pole"][0], y + c["y"][1] - 1.6, zc, [(0, 0), (1.6, 0), (1.6, 3.2), (0, 3.2)])   # the finials
+    o.lathe("chrome", c["pole"][1], y + c["y"][1] - 1.6, zc, [(0, 0), (1.6, 0), (1.6, 3.2), (0, 3.2)])
+    o.prism("steel_dark", "x", c["pole"][0], c["pole"][1], [(zc + 1.2 * math.cos(i * math.pi / 5), y + c["y"][1] + 1.2 * math.sin(i * math.pi / 5)) for i in range(10)])
+    for xb in (c["pole"][0] + 8, c["pole"][1] - 8):
+        o.box("steel_dark", xb - 0.8, y + c["y"][1] - 0.8, zc, xb + 0.8, y + c["y"][1] + 0.8, FRONT)
+    for xa, xb in c["x"]:                                            # each curtain in folds
+        n = int((xb - xa) / 3)
+        for k in range(n):
+            x_ = xa + k * (xb - xa) / n; dz = 1.6 * math.sin(k * 1.7)
+            o.box("cloth3", x_, y + c["y"][0], zc - 3.2 + dz, x_ + (xb - xa) / n + 0.4, y + c["y"][1] - 2, zc - 1.4 + dz)
+    r = Dd["rug"]
+    o.item("master.rug", "The rug", "master", kind="decor", src=Dd["src"], data=("MASTER_DRESS", "rug"), axis="z")
+    o.box("sisal", r["x"][0], y, r["z"][0], r["x"][1], y + 1, r["z"][1])
+    o.box("book2", r["x"][0] + 5, y + 1, r["z"][0] + 5, r["x"][1] - 5, y + 1.3, r["z"][0] + 8)   # its border bands
+    o.box("book2", r["x"][0] + 5, y + 1, r["z"][1] - 8, r["x"][1] - 5, y + 1.3, r["z"][1] - 5)
+    p = Dd["print"]
+    o.item("master.print", "The print", "master", kind="decor", src=Dd["src"], data=("MASTER_DRESS", "print"), axis="z")
+    (z0, z1), (y0, y1) = p["z"], p["y"]
+    o.box("oak", 0, y + y0, z0, 2.4, y + y1, z1)                    # the frame, a mount, the picture: a calm abstract in the room's colours
+    o.box("paper", 2.4, y + y0 + 2, z0 + 2, 2.7, y + y1 - 2, z1 - 2)
+    o.box("cloth3", 2.7, y + y0 + 8, z0 + 8, 2.9, y + (y0 + y1) / 2, z1 - 8)
+    o.box("book5", 2.7, y + (y0 + y1) / 2, z0 + 8, 2.9, y + y1 - 8, (z0 + z1) / 2 + 6)
+    o.box("check", 2.7, y + (y0 + y1) / 2, (z0 + z1) / 2 + 6, 2.9, y + y1 - 8, z1 - 8)
+    o.end()
+
+
 def master(o):
     """v63: the master bedroom: the pine ottoman bed in the middle facing the door (slatted headboard, panelled base, mattress, duvet);
     v68 storage for two: a pine bedside each side, the chest under the window, the ottoman's lid lifting on its struts over four boxes
@@ -1526,6 +1558,9 @@ def master(o):
     lid.box("duvet", x1 - 2.5, y + 41, z0 + 3, x1 - 0.5, y + 63, z1 - 3)
     for pz in (z0 + 8, (z0 + z1) / 2 + 2):
         lid.box("pillow", x0 + 7, y + 60, pz, x0 + 52, y + 76, pz + 70)   # 48 × 74 (a standard pillow, E), 16 plump
+    lid.box("cloth6", x1 - 48, y + 69, z0 - 0.5, x1 - 2, y + 71, z1 + 0.5)   # N269: a throw across the foot, hanging a little each side
+    for za, zb in ((z0 - 0.5, z0 + 0.5), (z1 - 0.5, z1 + 0.5)):
+        lid.box("cloth6", x1 - 48, y + 52, za, x1 - 2, y + 69, zb)
     for za, zb in M_["bedsides"]:                                  # pine bedside drawers, round knobs
         o.item(f"master.bedside{int(za)}", "A pine bedside", "master", src="E", data=("MASTER", "bedsides"), axis="z")
         # V2.44, the client: "blocky ... furniture looks more real": built as a real one is: the carcass, its sides framing the front, a top
@@ -2629,10 +2664,19 @@ def pendants(o, floor):
     for rid, (px, pz) in D.PENDANTS.items():
         if rid not in ids:
             continue
-        o.item("light." + rid, "The ceiling light", rid, kind="light", src="client's photos", data=("PENDANTS", rid), measure=False)
+        st = D.PENDANT_STYLE.get(rid)
+        o.item("light." + rid, "The ceiling light", rid, kind="light", src="E" if st else "client's photos", data=("PENDANTS", rid), measure=False)
         # V1.24 (Q6): turned, not boxes: a round ceiling rose, the flex, a lampholder and a pear-shaped bulb (E: a standard GLS, 60 dia.)
         o.lathe("upvc", px, y - 2, pz, [(0, 0), (4, 0), (5, 0.6), (5, 1.7), (0, 1.7)])
-        if rid == "wc":                                            # its yellow drum shade with the white band (the photo)
+        if st == "flush":                                          # N269: a flush glass dome on its white base
+            o.lathe("upvc", px, y - 3.5, pz, [(0, 0), (14, 0), (14, 1.5), (0, 1.5)])
+            o.lathe("glass_frost", px, y - 12, pz, [(0, 0), (6, 0.4), (10.5, 2.2), (13, 5.5), (13.5, 8.5), (0, 8.5)])
+        elif st == "drum":                                         # N269: a linen drum shade (35 across, 22 deep) on its flex
+            o.box("upvc", px - 0.35, y - 26, pz - 0.35, px + 0.35, y - 2, pz + 0.35)
+            o.lathe("shade", px, y - 48, pz, [(17, 0), (17.5, 0), (17.5, 22), (17, 22)])
+            o.lathe("chrome", px, y - 31, pz, [(0, 0), (16.8, 0), (16.8, 0.4), (0, 0.4)])
+            o.lathe("bulb", px, y - 40, pz, [(0, 0), (1.6, 0.3), (2.7, 1.4), (3.1, 3), (2.7, 4.8), (1.6, 6.6), (1.3, 8.5), (0, 8.5)])
+        elif rid == "wc":                                            # its yellow drum shade with the white band (the photo)
             # V3.10 (N49): 10 across and 22 down (the photo on its camera; was 15 and 28)
             o.lathe("primrose", px, y - 26, pz, [(0, 0), (5, 0), (5, 20), (1.5, 20), (1.5, 22), (0, 22)])
             o.lathe("upvc", px, y - 20, pz, [(0, 0), (5.2, 0), (5.2, 6), (0, 6)])
@@ -2710,7 +2754,7 @@ def build():
         if floor == "lower":
             steps += [lambda: secret(o)]
         if floor == "first":
-            steps += [lambda: office(o), lambda: bed2(o), lambda: master(o), lambda: boiler(o), lambda: bathroom(o), lambda: music(o), lambda: landing(o)]
+            steps += [lambda: office(o), lambda: bed2(o), lambda: master(o), lambda: master_dress(o), lambda: boiler(o), lambda: bathroom(o), lambda: music(o), lambda: landing(o)]
         steps += [lambda: radiators(o, floor), lambda: chalk_doors(o, floor), lambda: pendants(o, floor), lambda: switches(o, floor), lambda: sockets(o, floor), lambda: contacts(o, floor)]
         if floor == "first":
             steps += [lambda: first_floor_slopes(o), lambda: stair_wall(o), lambda: ground_ceilings(o)]
@@ -2741,7 +2785,7 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "gloss": ("#ebeae6", 0.16), "kunit": ("#ebeae6", 0.16), "khandle": ("#151517", 0.4), "bfit": ("#151517", 0.4), "bpanel": ("#e7e8e6", 0.05), "gap": ("#9b9a95", 0.6), "black": ("#1d1d1f", 0.5), "black_app": ("#1f2023", 0.35), "glass_dark": ("#17191c", 0.1),
     "ring": ("#2b2c2e", 0.6), "steel": ("#c8cacc", 0.25), "steel_dark": ("#8e9195", 0.35), "worktop": ("#26282a", 0.22), "metro": ("#111214", 0.1),
     "chrome": ("#e4e6e9", 0.06), "sanitary": ("#e7e8e6", 0.05), "primrose": ("#e3cf5c", 0.06), "tile_w": ("#f2f2ef", 0.12), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_leaf": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "door_navy": ("#2c3a52", 0.35), "door_red": ("#7a2427", 0.35), "door_sage": ("#7d8c74", 0.4), "rug": ("#8e4a32", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
-    "cloth0": ("#3d4a5c", 0.95), "cloth1": ("#b9b2a6", 0.95), "cloth2": ("#7a2f2f", 0.95), "cloth3": ("#2f3b2f", 0.95), "cloth4": ("#d8d2c4", 0.95), "cloth5": ("#555555", 0.95), "cloth6": ("#9b8b6e", 0.95), "curtain": ("#f4f3ef", 0.9), "stone": ("#cbc6bd", 0.35), "marble": ("#141416", 0.1), "led": ("#ffffff", 0.3), "bulb": ("#fff3e2", 0.25), "lamp_purple": ("#c9a6ff", 0.3), "chalk": ("#222423", 0.85), "storebox": ("#c9c1b2", 0.95), "contact": ("#000000", 1.0), "mattress": ("#f0eee8", 0.9), "piping": ("#cfcbc2", 0.85), "pillow": ("#f1efea", 0.95), "trim": ("#5a5d60", 0.5), "gutter": ("#f2f2ef", 0.4), "lead": ("#6c7072", 0.55), "birch": ("#dcc8a2", 0.7), "lycksele": ("#5b6b78", 0.95), "grille": ("#e8dcc4", 0.6), "ceiling": ("#f3f2ee", 0.95),
+    "cloth0": ("#3d4a5c", 0.95), "cloth1": ("#b9b2a6", 0.95), "cloth2": ("#7a2f2f", 0.95), "cloth3": ("#2f3b2f", 0.95), "cloth4": ("#d8d2c4", 0.95), "cloth5": ("#555555", 0.95), "cloth6": ("#9b8b6e", 0.95), "curtain": ("#f4f3ef", 0.9), "stone": ("#cbc6bd", 0.35), "marble": ("#141416", 0.1), "led": ("#ffffff", 0.3), "bulb": ("#fff3e2", 0.25), "lamp_purple": ("#c9a6ff", 0.3), "chalk": ("#222423", 0.85), "storebox": ("#c9c1b2", 0.95), "contact": ("#000000", 1.0), "mattress": ("#f0eee8", 0.9), "shade": ("#ece4d4", 0.95), "piping": ("#cfcbc2", 0.85), "pillow": ("#f1efea", 0.95), "trim": ("#5a5d60", 0.5), "gutter": ("#f2f2ef", 0.4), "lead": ("#6c7072", 0.55), "birch": ("#dcc8a2", 0.7), "lycksele": ("#5b6b78", 0.95), "grille": ("#e8dcc4", 0.6), "ceiling": ("#f3f2ee", 0.95),
     "laminate": ("#a9a39a", 0.5), "oak": ("#b8844f", 0.55), "artisan": ("#fff1df", 0.55),   # V4.3: artisan oak (bedroom 3's cube shelves): the oak's grain, a hair warmer
     "herring": ("#b48a5c", 0.6), "lvt_grey": ("#8e8b87", 0.5), "porcelain": ("#d6d0c4", 0.5),   # V3.14 (N56): the upgrade floors
     "screen": ("#0d0f12", 0.15), "pc_white": ("#eeeeec", 0.3), "pc_glow": ("#dfe6ff", 0.2),   # V3.32 (N82): a note mid-line (V3.14) had left these three out of the list: grey and matt since

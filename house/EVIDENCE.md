@@ -135,6 +135,7 @@ were kept here until V1.36 (5.9 MB); they're in git: `git show 7d8ec00:house/evi
 | A room's plant (V2.62, N5) | The catalogue's four plants (fig 45×140, snake 35×90, monstera 70×100, olive 55×150, E on each) | stood in the free corner farthest from the doors; the client moves it |
 | The catalogue's pieces (V2.55) | A typical size for each, its source on the piece (`media-wall/src/room3d/08_house_catalogue.js`, E): only what the client tries on the page | a swap fills the swapped piece's own box; an added piece stands at its catalogue size |
 | The radiators the review found missing (N272) | No photo shows the master's, bedroom 2's, the landing's, the WC's or the bathroom's; a house this age has one in each | a single panel in each (60–75 high, 15 up), a chrome towel ladder 42 × 100 in the bathroom (`survey_data.RADIATORS`, E); each in Measure ("end to end, or none") |
+| The rooms dressed (N269) | No photo of a fitting in the master, bedroom 2 or the lower landing; the master's window bare | a drum shade in each bedroom, a flush dome on the lower landing; the master's curtains, rug, throw and print (`survey_data.MASTER_DRESS`, E), each hers to change |
 | To measure | The living room's stairs (a stand-in) end ~60 past the first-floor plan's landing; the living room window's height (the photo reads it taller than 124) | |
 
 ## 7. What's still missing (ask for it: `SURVEY.md`)
