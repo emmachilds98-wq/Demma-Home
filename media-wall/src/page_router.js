@@ -23,7 +23,7 @@ function openSheet(name, opts) {
   document.body.classList.toggle("sheet-open", !!name);
   if (name && window.DemmaTools) DemmaTools.close();
   $$("[data-nav]").forEach(b => b.setAttribute("aria-current", String(b.dataset.nav === (name || "room"))));
-  railOpen(!!name);                                       // v32: the menu stays open while a sheet is up, folds away back in the room
+
   const was = curSheet; curSheet = name;
   if (!name) { if (was) { const back = document.querySelector('[data-nav="' + was + '"]:not([hidden])'); if (back && back.offsetParent) back.focus({ preventScroll: true }); } return; }
   const s = sheetEl(name); arts(s);
@@ -31,18 +31,6 @@ function openSheet(name, opts) {
   if (!opts.keepFocus) setTimeout(() => { const f = $(".close", s); if (f) f.focus({ preventScroll: true }); }, REDUCED ? 0 : 80);
 }
 function closeSheets() { openSheet(null); }
-/* v32: the Menu button (the rail folded) */
-function railOpen(on) {
-  const r = $(".rail"), t = $("#rail-tog"); if (!r || !t) return;
-  r.classList.toggle("open", on); t.setAttribute("aria-expanded", String(on));
-  const lab = $("span", t); if (lab) lab.textContent = on ? "Close" : "Menu"; const ic = $(".ms", t); if (ic) ic.textContent = on ? "close" : "menu";
-  const m = $("#r3d-menub"); if (m) { m.setAttribute("aria-expanded", String(on)); $(".ms", m).textContent = on ? "close" : "menu"; }   // v33: its twin in the phone's dock
-}
-/* v33, the phone home: Menu sits in the dock, and opens the same five sections above it */
-{ const m = $("#r3d-menub"); if (m && $(".rail")) m.hidden = false; }
-document.addEventListener("click", e => { if (e.target.closest("#r3d-menub")) railOpen(!$(".rail").classList.contains("open")); });
-document.addEventListener("click", e => { if (e.target.closest("#rail-tog")) { const on = !$(".rail").classList.contains("open"); railOpen(on); if (on) { const f = $("#rail-list button"); if (f) f.focus({ preventScroll: true }); } } });
-document.addEventListener("keydown", e => { if (e.key === "Escape" && !curSheet && $(".rail.open")) { railOpen(false); $("#rail-tog").focus(); } });
 function setHash(h, push) {
   try { if (location.hash === h) return; if (push) history.pushState({ demma: 1 }, "", h); else history.replaceState(history.state, "", h); } catch (e) {}
 }

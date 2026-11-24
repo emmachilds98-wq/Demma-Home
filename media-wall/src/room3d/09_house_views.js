@@ -527,6 +527,7 @@ function brandPlace() {
     t = HERE_NAME[GS.hereRoom] || roomName(GS.hereRoom) || t;   // V1.60: standing, the room you're in (the lower landing has the kitchen's view)
   else if (ROOMV()) { const id = VIEW_ROOM[S.view], L = id && id !== "living" && Object.values(R.HOUSE3.floors).flatMap(F => F.labels || []).find(l => l.id === id); t = (L && L.name) || (VIEWS[S.view] || {}).label || t; }
   el.textContent = t;
+  if (hr) firstRoom(VIEW_ROOM[S.view] || S.view);   // N266: three tips the first time in each room
   canvas.setAttribute("aria-label", `${t} in 3D: drag to look round; in a room, scroll or W and S walk, the left and right arrows or Q and E turn, A and D step aside, Ctrl + scroll the lens`);   // V1.43: says where you are (it always said the living room)
 }
 /* v64: on a floor, its rooms as buttons; a room with its own view goes into it, the others are seen from above */
@@ -638,3 +639,17 @@ function pcLit() {
   pcLight = new THREE.PointLight("#9d7bff", 3, 0.6, 2); pcLight.userData.accent = 3; pcLight.position.copy(v3(2.5 + cw / 2, st + ch / 2, (cz0 + cz1) / 2)); shell.add(pcLight);
 }
 // v17: "i also have deep window sills that allow for lots of plants there": a row of pots along the sill, upright and trailing
+
+/* N266 (U11): three chips the first time in a room (what to tap), once a room on this device; and on a computer a "Keys" button for the keys */
+function tipToast(tips, ms) {
+  const el = document.getElementById("r3d-toast"); if (!el) return;
+  el.textContent = ""; el.classList.remove("act"); el.classList.add("tips");
+  for (const t of tips) { const c = document.createElement("span"); c.className = "tip"; c.textContent = t; el.append(c); }
+  el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; el.classList.remove("tips"); }, ms);
+}
+function firstRoom(id) {
+  if (!id || document.body.classList.contains("sheet-open")) return;
+  const seen = store.get("dh-firstroom", {}); if (seen[id]) return; seen[id] = 1; store.set("dh-firstroom", seen);
+  setTimeout(() => tipToast(["Tap a wall to paint it", "Tap a piece to swap it", "Tap the floor for the room's card"], 6000), 900);
+}
+document.getElementById("r3d-keys")?.addEventListener("click", () => tipToast(["W S or the wheel: walk", "A D: step aside", "Q E or ← →: turn", "R F: up and down", "Drag: look round", "H: the whole house", "Esc: close"], 9000));
