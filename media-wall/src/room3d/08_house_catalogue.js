@@ -2,7 +2,7 @@
    moved and turned as the house's are. Rows are Measure's "edits": {item, field: "swap", value: key}; {item: "add.<n>", field: "add",
    value: key, room, x, z, y}. A piece's own frame: u along its wall (0..W), v up (0..H), t out from its back (0..D). */
 const HCAT_KINDS = { bed: "Beds", wardrobe: "Wardrobes", chest: "Chests", bedside: "Bedsides", desk: "Desks", shelves: "Shelves", seat: "Seats", chair: "Desk chairs",
-  table: "Tables", unit: "Units", shoes: "Shoe storage", stool: "Bar stools", lamp: "Lamps", rug: "Rugs", plant: "Plants", more: "More" };   // N219: tables, units (TV, sideboards) and lamps their own; N230: shoe storage, bar stools
+  table: "Tables", unit: "Units", shoes: "Shoe storage", stool: "Bar stools", dchair: "Dining chairs", trolley: "Trolleys", lamp: "Lamps", rug: "Rugs", plant: "Plants", more: "More" };   // N219: tables, units (TV, sideboards) and lamps their own; N230: shoe storage, bar stools
 Object.defineProperties(HCAT_KINDS, { toilet: { value: "Toilets" }, basin: { value: "Basins" } });   // N225: the WC's and bathroom's suite: swapped, never added (not enumerable: no chips)
 function hcChest(mat, cols, rows, knob = "knob") {   // drawers: a carcass, its fronts with a shadow gap, a knob each ("grip": MALM's grip along each front's top)
   return (W, H, D, B) => {
@@ -296,6 +296,8 @@ const hcMake = (k, look, m, m2, c) => {
     : look === "low" ? hcScoop(m, legm) : hcArmchair(m, m2);
   if (k === "chair") return hcSwivel(m, 46, true);
   if (k === "stool") return hcStool(look, m, m2);
+  if (k === "dchair") return hcDchair(look, m, m2);   // N279
+  if (k === "trolley") return hcTrolley(look, m, m2);
   if (k === "toilet") return hcToilet(look, m, m2);
   if (k === "basin") return hcBasin(look, m, m2);
   if (k === "rug") return (W, H, D, B, L) => look === "round" ? L(m, W / 2, D / 2, 0, [[0, 0], [W / 2, 0], [W / 2, H], [0, H]]) : B(m, 0, 0, 0, W, H, D);
@@ -375,6 +377,23 @@ function hcScoop(m, legs) { return (W, H, D, B, L) => { const s = Math.min(31, H
   hcLegs(legs, W, D, 10, 1.6, 7)(B, L); B(m, 0, 10, 4, W, s, D); B(m, 0, s, 0, W, H, 12); for (const u of [0, W - 8]) B(m, u, s, 12, u + 8, s + 14, D - 8); }; }
 /* N230: a bar stool (seat 62-63 high: the listings), its back at t 0, facing +t as the chairs do: on a chrome pedestal (a swivel), on thin
    legs with a padded seat and back, a wooden one with a spindle back, or a metal frame with a back band */
+/* N279: a dining chair: four legs, a seat at 46, its back as the listing's: spindles ("wood"), a padded seat and back ("uph"), a woven
+   seat and back in a timber frame ("cane"). A trolley: four posts on castors, two or three trays with a lip ("wood" trays in m on a frame in m2) */
+function hcDchair(look, m, m2) { return (W, H, D, B, L) => { const sh = Math.min(47, H - 30), lg = 3.2, fm = look === "uph" ? m2 : m, bk = 4.5;
+  for (const [u, t] of [[1, 1], [W - 1 - lg, 1], [1, D - 1 - lg], [W - 1 - lg, D - 1 - lg]]) B(fm, u, 0, t, u + lg, t < D / 2 ? H - 2 : sh - 4, t + lg);   // the back legs up into the back
+  for (const [u0, t0, u1, t1] of [[1, D - 5, W - 1, D - 3], [1, 2, 1 + lg, D - 2], [W - 1 - lg, 2, W - 1, D - 2]]) B(fm, u0, sh - 9, t0, u1, sh - 4, t1);   // the seat's apron
+  if (look === "uph") { B(m, 0, sh - 4, 0.5, W, sh + 2.5, D); B(m, 2, sh + 12, 1, W - 2, H, bk + 1);   // a padded seat and back
+    for (const u of [0.5, W - 0.5]) B("gap", u - 0.05, sh - 4, 0.5, u + 0.05, sh + 2.5, D); return; }
+  const seat = look === "cane" ? "rattan" : m; B(fm, 0, sh - 4, 0, W, sh - 2, D); B(seat, 2, sh - 2, 2, W - 2, sh, D - 2);   // a frame round its seat
+  B(fm, 1, H - 7, 1, W - 1, H - 2, bk);   // the top rail
+  if (look === "cane") { B("rattan", 1 + lg, sh + 14, 2, W - 1 - lg, H - 7, 3.5); B(fm, 1, sh + 12, 1, W - 1, sh + 14, bk); return; }
+  for (let u = 7; u < W - 8; u += (W - 14) / 4) B(fm, u, sh, 2, u + 1.6, H - 7, 3.6); }; }   // spindles
+function hcTrolley(look, m, m2) { return (W, H, D, B, L) => { const n = H > 85 ? 3 : 2, cs = 6, p = 2.2, fr = m2 === m && /^(door_white|pnt_\w+|black|steel)$/.test(m) ? m : m2;
+  for (const [u, t] of [[0.5, 0.5], [W - 0.5 - p, 0.5], [0.5, D - 0.5 - p], [W - 0.5 - p, D - 0.5 - p]]) { B(fr, u, cs, t, u + p, H, t + p);
+    L("black", u + p / 2, t + p / 2, 0, [[0, 0], [2.6, 0], [2.6, cs], [0, cs]]); }   // its posts on castors
+  for (let i = 0; i < n; i++) { const v = cs + 4 + i * (H - cs - 8) / (n - 1 || 1) - (i === n - 1 ? 2 : 0);   // its trays, each with a lip
+    B(m, 0, v, 0, W, v + 1.5, D); for (const [u0, t0, u1, t1] of [[0, 0, W, 0.8], [0, D - 0.8, W, D], [0, 0, 0.8, D], [W - 0.8, 0, W, D]]) B(m, u0, v + 1.5, t0, u1, v + 5, t1); }
+  B(fr, -3, H - 8, D / 2 - 0.8, 0.5, H - 6.4, D / 2 + 0.8); }; }   // a handle at one end
 function hcStool(look, m, m2) { return (W, H, D, B, L) => { const sh = Math.min(63, H - 24), c = W / 2, tc = D / 2;
   if (look === "swivel") { const r = Math.min(W, D) / 2 - 2;
     L(m2, c, tc, 0, [[0, 0], [r - 2, 0], [r - 2, 0.8], [r - 6, 2.2], [3, 3], [0, 3]]); L(m2, c, tc, 3, [[0, 0], [2.5, 0], [2.5, sh - 10], [0, sh - 10]]);

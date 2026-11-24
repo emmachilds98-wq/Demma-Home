@@ -474,3 +474,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.74** (24 Nov 2026): more shop pieces in Ideas, and cane and painted pieces in real textures
 - **V4.75** (24 Nov 2026): more ideas: TV units, hall, bathroom pieces and a wool rug
 - **V4.76** (24 Nov 2026): more ideas: floor lamps with linen shades, desks and dining tables
+- **V4.77** (24 Nov 2026): dining chairs and kitchen trolleys in Ideas
