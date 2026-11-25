@@ -557,7 +557,7 @@ function syncAdds() {
   for (const id of Object.keys(ADDED)) if (!rows[id]) { delete H3.items[id]; delete ADDED[id]; }
   for (const [id, v] of Object.entries(rows)) { if (ADDED[id] === `${v.value}@${v.x},${v.z}`) continue;   // N218: a new piece or a new spot
     const C = HCAT[v.value], r = H3R(v.room), x = +v.x, z = +v.z, y = isFinite(+v.y) ? +v.y : r[4]; if (!isFinite(x) || !isFinite(z)) continue;
-    const pl = placeAt(v.room, x, z, C.k), pw = pl && pl.at !== "open";   // N287: in a place, its back on the place's wall (an L-shaped room's inner wall too)
+    const pl = /^add\.ix/.test(id) && placeAt(v.room, x, z, C.k), pw = pl && pl.at !== "open";   // N287: in a place, its back on the place's wall (an L-shaped room's inner wall too)
     const dz = Math.min(z - r[2], r[3] - z), dx = Math.min(x - r[0], r[1] - x), ax = pw ? (pl.back[0] === "z" ? "x" : "z") : dz <= dx ? "x" : "z", a = ax === "z" ? 2 : 0, o = 2 - a;
     const c = [x, y, z], b = [0, y, 0, 0, y + C.h, 0], ro = pw ? [pl.b[o], pl.b[o + 3]] : o === 2 ? [r[2], r[3]] : [r[0], r[1]], ra = a === 2 ? [r[2], r[3]] : [r[0], r[1]];
     b[a] = Math.max(ra[0], Math.min(ra[1] - C.w, c[a] - C.w / 2)); b[a + 3] = b[a] + C.w;
