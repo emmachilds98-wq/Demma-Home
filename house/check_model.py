@@ -422,6 +422,10 @@ for _n, _ok, _note in _SI.checks():
 import places as _PL
 for _n, _ok, _note in _PL.checks():
     check(_n, _ok, _note)
+# N289: made to fit where the shops fall short, each in its place, drawn and costed
+import bespoke as _BS
+for _n, _ok, _note in _BS.checks():
+    check(_n, _ok, _note)
 
 w = max(len(r[1]) for r in rows)
 for st_, n, note in rows:

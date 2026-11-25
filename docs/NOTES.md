@@ -560,6 +560,9 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/archive/revie
 - **N288, the shops' best (done):** `places.best(pid)` and `places.gaps()`; the catalogue is `places._cat()` (N219, N242, N243, N288 rows by
   `fit.shop_key`, plus HCAT's own pieces read from `08_house_catalogue.js` by key, no price). A nook takes what `storage_ideas.spot_fits()`
   says; a wall place what its `kinds` take at its size. Shop rows of kind "plant" have no `hcMake` builder: plants come from HCAT's four.
+- **N289, made to fit (done):** `bespoke.pieces()`; each piece's `look` is an HCAT builder (`st_*` reused, `mf_*` new, all `k: "idea"`, the
+  artisan oak). `mf_slope` takes a 6th argument `lo`, its height at u = 0 (its top rises to H at u = W); `made` rows carry `ends` (the
+  roof's height at the wall's low and high coordinate) so the placer can turn it. Nothing shows them yet: N290/N291 put them on screen.
 
 ## 6. Finishes and furniture (section 14, N56–N58; section 17 stream A)
 - **The walls' emulsion (N172):** `paintGrain` (`03_materials.js`) adds a world-position varying and value noise to a wall's shader (tone at `color_fragment`, sheen at `roughnessmap_fragment`). It runs on `paintMat`'s walls (key `paintwall`), the stair wall (`stairMat`: a `clone()` drops `onBeforeCompile`, so it's set again) and the house's `paint` (inside `finPatch`, `finish0`). A material's `clone()` never carries `onBeforeCompile` or `customProgramCacheKey`. HD shots in the rig sometimes catch the GTAO unsettled (a dark speckle by the landing's newel): shoot twice before blaming a change.
