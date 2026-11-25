@@ -245,6 +245,16 @@ canvas.addEventListener("pointermove", e => {
 async function hdragEnd() {
   const D = hdrag; if (!D) return; hdrag = null;
   if (!D.moved || (!D.dA && !D.dO)) { if (SEL.g) SEL.g.position.set(0, 0, 0); dirty(); return; }
+  const it = HIT(D.id), ds = DS(), row = it && it.add && ds && ds.rows("edits")[D.id + "~add"];
+  if (row && HPL && HCAT[it.add]) {   // N287: an added piece snaps to a place in its room that takes it, or stays (and says why)
+    const q = [0, 0, 0]; q[D.k] = D.dA; q[2 - D.k] = D.dO; const b = D.b0.map((v, j) => v + (q[j % 3] || 0)), cx = (b[0] + b[3]) / 2, cz = (b[2] + b[5]) / 2;
+    const sp = placeSpot(it.r, it.add, cx, cz, D.b0[1], D.id, [], null, 90);
+    if (SEL.g) SEL.g.position.set(0, 0, 0); dirty();
+    if (!sp) { const w = roomWhy(b, it.r, D.id)[0]; toast(`That doesn't belong there${w ? ": " + w.replace(/^\d+ cm into /, "") : ""}`); return; }
+    await ds.put("edits", D.id + "~add", Object.assign({}, row, { x: cmR(sp[0]), z: cmR(sp[1]) }));
+    for (const f of ["along", "out"]) if (ds.rows("edits")[`${D.id}~${f}`]) await ds.del("edits", `${D.id}~${f}`);
+    toast(sp[5].n); if (GS.actId === "hsize:" + D.id) renderAct(); return;
+  }
   if (D.dA) await setPiece(D.id, "along", clampF("along", cmR(D.along + D.dA)));
   if (D.dO) await setPiece(D.id, "out", clampF("out", cmR(D.out + D.dO)));
   if (GS.actId === "hsize:" + D.id) renderAct();

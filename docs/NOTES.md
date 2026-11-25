@@ -557,6 +557,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/archive/revie
 - **Phones:** cards use N285's one structure (`renderAct` in `16_cards.js`: a bottom sheet, one sliding row of choices). Keep Ideas'
   card to it; `check_site.py`'s PHONEUI step fails a control under 44 px or overlapping.
 - **Checks:** `check_site.py`'s IDEAS step (N284 fixed it) opens Ideas in bedroom 2; N292 adds IDEAS2 for every room.
+- **N287 built:** `placeSpot(rid, key, ...)` (08_house_catalogue.js) is `spotFor` limited to `HPL` (N286's places, set by `ixLoad` from ideas.json v2); `syncAdds` backs a piece on its place's wall (`placeAt`), so an L-shaped room's inner wall works. The house's drag is in `08_house_edits.js` (`hdragEnd`), not 13_edit_room.js. `R3D._dbg` has `placeAt`, `roomWhy`, `HPL`, `HCAT`. Places are few in the full bedrooms (bed2, master: lamps and plants only): honest, they're furnished.
 - **N288, the shops' best (done):** `places.best(pid)` and `places.gaps()`; the catalogue is `places._cat()` (N219, N242, N243, N288 rows by
   `fit.shop_key`, plus HCAT's own pieces read from `08_house_catalogue.js` by key, no price). A nook takes what `storage_ideas.spot_fits()`
   says; a wall place what its `kinds` take at its size. Shop rows of kind "plant" have no `hcMake` builder: plants come from HCAT's four.
