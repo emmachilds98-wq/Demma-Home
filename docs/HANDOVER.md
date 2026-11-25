@@ -7,9 +7,8 @@ The client, 25 Nov: "another team is going to build it from another session so m
 `docs/REAL_PLAN.md` **section 34** (the next build), `docs/NOTES.md` section 5's "Section 34 ... where to start" (the code it changes),
 `docs/DESIGN.md` (the design rules, cited) and `docs/DECISIONS.md` ("Ideas that belong", her words). Older plans: `docs/archive/`.
 
-1. **Main's CI first** (N252: a red main is fixed first, from one log read). N284 (`claude/n284-main`) fixed main's red (the IDEAS step,
-   the phone's `first_visit_mb`, the `shaders_first` budgets) without raising a budget; if it isn't merged when you arrive
-   (`git log origin/main..origin/claude/n284-main`), merge it with `tools/ship.py`, then read main's next run.
+1. **Main's CI first** (N252: a red main is fixed first, from one log read). N284 (V4.83, merged 25 Nov) fixed main's red (the IDEAS
+   step, the phone's `first_visit_mb`, the `shaders_first` budgets) without raising a budget; read main's run for V4.83 and fix what's red.
 2. **Build section 34, "Ideas that belong" (N286–N292).** Emma: Ideas drops furniture into the wrong rooms; give each room places where
    furniture makes sense, the shops' best for each, made-to-measure pieces in the house's style where shops fall short, and better design
    and suggestions first. Order: N286 (every room's places, in `house/places.py`, checked) → N287 (Ideas places a piece only where it
