@@ -608,7 +608,7 @@ function fitWhy(id) {
 }
 /* N218: where an added piece stands: back to a wall of its room (as syncAdds puts it: the row's x, z on that wall), clear of the walls,
    the slope, the swings, the space kept clear and the pieces, nearest the tap; if nowhere, back to the nearest wall at the tap */
-function addSpot(rid, key, x, z, y, self) { const s = placeSpot(rid, key, x, z, y, self) || spotFor(rid, key, x, z, y, self); return s ? s.slice(0, 2) : [x, z]; }
+function addSpot(rid, key, x, z, y, self) { const s = spotFor(rid, key, x, z, y, self); return s ? s.slice(0, 2) : [x, z]; }   // her own tap: where she taps (Ideas uses placeSpot)
 /* N287 (Emma, 25 Nov 2026: "I can currently just drop furniture into the wrong rooms from the ideas area"): a piece goes only in one of its
    room's places (house/places.py, data/ideas.json v2: a named area inside the real walls, the kinds that belong) that takes its kind and
    that it fits, slid along that place's wall (or about its open floor); no place, no spot. [x, z, how far, box, box with room in front,
