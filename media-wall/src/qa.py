@@ -44,7 +44,7 @@ def run(p, w, h):
     fail = rep["fails"].append
     ver = pg.eval_on_selector(".ver", "e => e.textContent")
     rep["notes"].append(f"version label {ver!r}")
-    if ver != LABEL:
+    if not (ver or "").startswith(LABEL):   # N285: the Settings chip says "V4.84 · get the latest"
         fail(f"version label {ver!r}")
     sw, cw = pg.evaluate(OVER, None)
     if sw > cw:
