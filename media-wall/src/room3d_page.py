@@ -473,6 +473,9 @@ body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-ed
 .r3d-ui .r3d-momrow { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
 .r3d-momrow button { flex: none; }
 @media (max-width: 899px) { .r3d-planbar { bottom: calc(max(8px, env(safe-area-inset-bottom)) + 84px); } }
+/* N293: on a phone the view pills fill the top row (N285), so Back to my plan sits under them, not behind them */
+@media (max-width: 899px) { .r3d-back { top: max(124px, calc(env(safe-area-inset-top) + 112px)); }
+  body:has(.r3d-mini > #r3d-hrooms:not([hidden])) .r3d-back { top: max(170px, calc(env(safe-area-inset-top) + 158px)); } }
 @media (min-width: 900px) { .r3d-panel { top: 80px; } }   /* v39: under Plan · Build · Buy */
 .r3d-find .seg { flex-wrap: nowrap; } .r3d-find input { flex: 1; min-width: 0; min-height: 44px; border: 1.5px solid #e1d6c2; border-radius: var(--r-pill); padding: 0 16px; font: 500 16px Figtree, system-ui, sans-serif; background: #fff; color: var(--ink); }
 .r3d-mysc { display: inline-flex; } .r3d-mysc button:first-child { border-radius: var(--r-pill) 0 0 999px !important; } .r3d-myx { border-radius: 0 999px 999px 0 !important; padding: 0 12px !important; }
