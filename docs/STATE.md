@@ -52,6 +52,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
 - **Places (N286):** every room has its places (`house/places.py`: a named area inside its real walls, what belongs there, what never, why), in `data/ideas.json` v2. Ideas (N287) puts a piece only in a place that takes it; + Add names what it adds; a moved piece snaps to a place or says why.
 - **The shops' best (N288):** each place's best pieces from the catalogue, ranked by fit, style and price (`places.best()`), or its gap (`places.gaps()`: nothing fits well); in `data/ideas.json` (`best`, `gap`).
 - **Made to fit (N289):** `house/bespoke.py`, a piece drawn to each gap's place and the plan's named ones (over-door shelves, records unit, under-slope cupboard, pull-outs, hall bench, alcove units), costed; builders `mf_*` in `08_house_catalogue.js`; `data/ideas.json` `made`.
+- **Better set-ups, places on screen (N290, N291):** Ideas shows the plan's then the best three set-ups (scored on room to open, light, colours, the house's look; a "Made to fit" one); its places glow on the floor, Places on its card shows what fits each and puts it there.
 - Back, Esc and Tab each go one layer at a time; every tap is 44 px on a touch screen; the panels are cream.
 
 **Moving round:**

@@ -114,7 +114,7 @@ const UPC = { walls: [40, 80], wall: [15, 35], ceil: [20, 40], skirt: [15, 35], 
 const UPK = "dh-done";
 const upDone = () => { try { return JSON.parse(localStorage.getItem(UPK) || "{}") || {}; } catch (e) { return {}; } };
 const upNm = (L, k) => (L.find(r => r[0] === k) || [0, k])[1];
-const upCat = (key, C) => C.own ? [0, 0] : C.shop ? [C.p, C.p] : UPC.piece[key] || C.k === "plant" && UPC.plant[key] || UPC.kind[C.k];   // N219: a shop's own price; hers, none
+const upCat = (key, C) => C.own ? [0, 0] : C.pr ? C.pr : C.shop ? [C.p, C.p] : UPC.piece[key] || C.k === "plant" && UPC.plant[key] || UPC.kind[C.k];   // N219: a shop's own price; hers, none
 function roomUps(room, noEd) {   // [{k, t, lo, hi}]: what's changed in a room (N231 noEd: not the device's pieces)
   const H = R.HOUSE3 || {}, L = [], add = (k, t, c = [0, 0], n = 1) => L.push({ k, t, lo: Math.round(c[0] * n), hi: Math.round(c[1] * n) });
   if (room === "outside") { const o = (S.fin || {}).outside || {}; for (const n of [9, 10]) slotOf(n).ups(room, o, add); return L; }   // N253: each slot's line from its row (23_finish.js SLOTS)
@@ -195,6 +195,7 @@ function actItems(id) {     // [title, how it is now, buttons]
     return [`${roomName(rm)}: taken out`, outs.length === 1 ? "1 piece" : `${outs.length} pieces`, [...outs.map(k => btn("↩ " + HIT(k).n, { hputback: k })), ...(outs.length > 1 ? [btn("Put all back", { hputall: rm })] : [])]]; }
   if (id.startsWith("ups:")) return upsCard(id.slice(4));   // N23
   if (id.startsWith("ix:")) return ixCard(id.slice(3));   // N244: a room's ideas, a set-up at a time (24_ideas.js)
+  if (id.startsWith("ixpl:")) return ixPlaceCard(id.slice(5));   // N291: a place, what fits it
   if (id.startsWith("ixp:")) return ixPieceCard(id.slice(4));   // N244: a set-up's piece, swapped for one that fits its spot
   if (id.startsWith("win:")) return winCard(id);   // N227
   if (id.startsWith("lswap:")) { const k = id.slice(6), kind = livSwapKind(k);   // N220: a living-room piece, swapped as the house's are
@@ -386,7 +387,7 @@ function renderAct() {
       + `<input type="number" inputmode="decimal" step="1" value="${v}" data-hfield="${f}" aria-label="${t} in cm"><button type="button" data-hstep="${f}" data-by="1" aria-label="${t}: 1 cm more">+</button></span></div>`).join("")
       + `<p class="note">${/^hsize:/.test(GS.actId) ? "Drag it on the floor to move it. " : ""}${DS() && DS().mode === "shared" ? "Saved for you both" : "Saved on this device"}</p>`;   // V3.91 (N150)
     box.before(w); }
-  if (/^(hitem|hsize|hswap|hadd|ixp):/.test(GS.actId)) selOf(GS.actId.split(":")[1]); else clearSel();
+  if (/^(hitem|hsize|hswap|hadd|ixp):/.test(GS.actId)) selOf(GS.actId.split(":")[1]); else if (/^ixpl:/.test(GS.actId)) ixPlaceSel(); else clearSel();
   // v39 (the approved redesign): a card shows its first three buttons; everything else sits under More (N265: ⋯)
   let shownN = 0, more = null;
   const fold = () => { if (!more) { more = document.createElement("details"); more.className = "r3d-actmore"; more.open = actMoreOpen;

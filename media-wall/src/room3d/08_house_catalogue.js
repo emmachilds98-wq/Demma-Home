@@ -557,7 +557,7 @@ function syncAdds() {
   for (const id of Object.keys(ADDED)) if (!rows[id]) { delete H3.items[id]; delete ADDED[id]; }
   for (const [id, v] of Object.entries(rows)) { if (ADDED[id] === `${v.value}@${v.x},${v.z}`) continue;   // N218: a new piece or a new spot
     const C = HCAT[v.value], r = H3R(v.room), x = +v.x, z = +v.z, y = isFinite(+v.y) ? +v.y : r[4]; if (!isFinite(x) || !isFinite(z)) continue;
-    const pl = /^add\.ix/.test(id) && placeAt(v.room, x, z, C.k), pw = pl && pl.at !== "open";   // N287: in a place, its back on the place's wall (an L-shaped room's inner wall too)
+    const pl = /^add\.ix/.test(id) && placeAt(v.room, x, z, C.k), pw = pl && pl.at !== "open" && /^[xz][01]$/.test(pl.back || "");   // N287: in a place, its back on the place's wall (an L-shaped room's inner wall too)
     const dz = Math.min(z - r[2], r[3] - z), dx = Math.min(x - r[0], r[1] - x), ax = pw ? (pl.back[0] === "z" ? "x" : "z") : dz <= dx ? "x" : "z", a = ax === "z" ? 2 : 0, o = 2 - a;
     const c = [x, y, z], b = [0, y, 0, 0, y + C.h, 0], ro = pw ? [pl.b[o], pl.b[o + 3]] : o === 2 ? [r[2], r[3]] : [r[0], r[1]], ra = a === 2 ? [r[2], r[3]] : [r[0], r[1]];
     b[a] = Math.max(ra[0], Math.min(ra[1] - C.w, c[a] - C.w / 2)); b[a + 3] = b[a] + C.w;
@@ -618,8 +618,8 @@ const placesIn = rid => (HPL || []).filter(p => p.room === rid && p.at !== "wall
 function placesFor(rid, key) { const C = HCAT[key]; if (!C) return [];
   return placesIn(rid).filter(p => p.kinds.includes(C.k) && (p.at === "open" ? Math.min(C.w, C.d) <= Math.min(p.w, p.d) + 1 && Math.max(C.w, C.d) <= Math.max(p.w, p.d) + 1
     : C.w <= p.w + 1 && C.d <= p.d + 1 && C.h <= p.h + 1)); }
-function placeAt(rid, x, z, k) {   // the place an added piece stands in (its middle inside the place's box, 2 cm spare), that takes kind k
-  return placesIn(rid).find(p => (!k || p.kinds.includes(k)) && x > p.b[0] - 2 && x < p.b[3] + 2 && z > p.b[2] - 2 && z < p.b[5] + 2) || null; }
+function placeAt(rid, x, z, k) {   // the place an added piece stands in (its middle inside the place's box, 2 cm spare), that takes kind k (none or "idea": any, nooks too)
+  return (k && k !== "idea" ? placesIn(rid) : (HPL || []).filter(p => p.room === rid)).find(p => (!k || k === "idea" || p.kinds.includes(k)) && x > p.b[0] - 2 && x < p.b[3] + 2 && z > p.b[2] - 2 && z < p.b[5] + 2) || null; }
 function placeSpot(rid, key, x, z, y, self, more = [], skip = null, maxD = Infinity, cl = 0) {
   const C = HCAT[key], over = (p, q) => [0, 1, 2].every(j => p[j] < q[j + 3] - 1 && p[j + 3] > q[j] + 1); let best = null; if (!C || !HPL) return null;
   const busy = Object.keys(R.HOUSE3.items).filter(k => { const o = HIT(k); return k !== self && !(skip && skip(k)) && o.r === rid && !HCSKIP.has(o.k) && !hcSoft(k) && !pieceNow(k).removed; }).map(pieceBox).concat(more);

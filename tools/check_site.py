@@ -265,6 +265,7 @@ IDEAS2 = """async () => { const D = R3D._dbg, H = D.H3, bad = [], n = {};   // N
     for (const s of D.ixSetups(room).slice(1)) { const boxes = [];
       for (const [q, x, z] of s.adds) { const C = D.HCAT[q] || {}, tag = `${room} ${s.n}: ${C.n}`; n[room] = (n[room] || 0) + 1;
         if (!D.placeAt(room, x, z, C.k)) { bad.push(tag + ' in no place that takes it'); continue; }
+        if (C.made) continue;   // made to fit: drawn to its own place's size (house/bespoke.py checks it)
         const sp = D.placeSpot(room, q, x, z, r[4], null, [], k => /^add[.]/.test(k), 1); if (!sp) { bad.push(tag + ': no room there'); continue; }
         const hit = C.k === 'rug' ? [] : boxes.filter(b => over(sp[3], b)); if (hit.length) bad.push(tag + ' on another piece');
         if (C.k !== 'rug') boxes.push(sp[3]); } } }
