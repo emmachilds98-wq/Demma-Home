@@ -1543,6 +1543,16 @@ for _p in cat_pieces():
         ORDER.append(shop_key(_p))
     SOURCES[shop_key(_p)] = (f"{_p['retailer']}: {_p['name']}, {_p['finish']}, W {_p['w']:g} × D {_p['d']:g} × H {_p['h']:g} cm, £{_p['price']:g}"
                              + (f"; {_p['note']}" if _p.get("note") else "") + f" ({_p['url']}, read {_p['read']})")
+# N289: made to fit (house/bespoke.py): each piece's boards from snowdonoak (£85 a m² of 18 mm oak) and wickesply (£20 a m² of 12 mm
+# ply), a quarter more for the cuts, its fittings and a joiner's days; options only
+SOURCES["joinerday"] = ("A joiner's day rate: UK average £300 (checkatrade.com/blog/cost-guides/carpentry-prices-guide, 2026); £198, "
+                        "£135–318 by area (hamuch.com/rates/carpenter-joiner, 2026), read 25 Nov 2026")
+SOURCES["runners350"] = ("Toolstation: Ball Bearing Drawer Runner Soft Close 350mm, a pair, £9.49 (toolstation.com/ball-bearing-drawer-runner/"
+                         "p72362, read 25 Nov 2026)")
+SOURCES["madefit"] = ("Made to fit (house/bespoke.py): each piece's oak at £85 a m² (snowdonoak) and ply at £20 a m² (wickesply), a quarter more "
+                      "for the cuts (E), hinges about £3 and knobs £4 each (E), runners (runners350), oak pegs (pegrail), and a joiner's days at "
+                      "£198–300 (joinerday): a rough range, options only")
+ORDER.extend(["joinerday", "runners350", "madefit"])
 # N243: the Pulley Maid airer's own page (N242 cited the shop's home page)
 SOURCES["pulleyairer"] = SOURCES["pulleyairer"].replace("Pulley Maid wall radial airer, 120 × 60 open, 20 × 10 shut, £55.99 (pulleymaid.com)",
                                                         "Pulley Maid Modern Clothes Airer, rack ends 46 wide, 24 under the ceiling raised, from £129.99, "

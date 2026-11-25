@@ -565,8 +565,8 @@ def for_page():
         r = export3d.cat_row(q)
         rows.setdefault(r[0], r)
     used = {k for L in F.values() for k in L}
-    import places
-    return dict(v=2, places=places.for_page(), cols=["key", "kind", "look", "name", "shop", "w", "d", "h", "price", "url", "mat", "mat2", "count", "on", "uses"],
+    import places, bespoke
+    return dict(v=2, places=places.for_page(), made=bespoke.for_page(),   # N289: made to fit, [id, place, look, name, w, d, h, lo, hi, line, ends] cols=["key", "kind", "look", "name", "shop", "w", "d", "h", "price", "url", "mat", "mat2", "count", "on", "uses"],
                 spots=[dict(id=s["id"], room=s["room"], n=s["n"], at=s["at"], b=s["box"], back=s["back"], face=s["face"], w=s["w"], d=s["d"], h=s["h"],
                             uses=s["uses"], **({"idea": s["idea"]} if s.get("idea") else {})) for s in _spots()],
                 pieces=list(rows.values()), fits=F, rooms=ROOM_USES, n=dict(spots=len(_spots()), pieces=len(rows), placed=len(used)))   # N286: v2 adds places
