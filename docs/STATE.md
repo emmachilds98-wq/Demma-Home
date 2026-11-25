@@ -49,7 +49,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
 - The dock: View · Look · Measure (in the living room also Room and Edit); the figure drops you in where you let go.
 - On a phone the stick, bottom left, walks, moves the map or glides, by view; a card or panel puts it away.
 - A tap's card stands beside its piece on a PC; on a phone it's a sheet over the dock, a swipe down closes it (V3.88).
-- **Places (N286):** every room has its places (`house/places.py`: a named area inside its real walls, what belongs there, what never, why), in `data/ideas.json` v2; Ideas uses them from N287.
+- **Places (N286):** every room has its places (`house/places.py`: a named area inside its real walls, what belongs there, what never, why), in `data/ideas.json` v2. Ideas (N287) puts a piece only in a place that takes it; + Add names what it adds; a moved piece snaps to a place or says why.
 - Back, Esc and Tab each go one layer at a time; every tap is 44 px on a touch screen; the panels are cream.
 
 **Moving round:**
