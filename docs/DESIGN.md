@@ -38,6 +38,29 @@ The rules Ideas and the room checks use. Common guidance from the sources below;
   are Farrow & Ball's and Little Greene's (School House White, Skimming Stone, Setting Plaster, French Grey, Pigeon, Hague Blue, Slaked
   Lime), shown as approximate screen colours: try a tester pot on the wall.
 
+## Each room: what it's for, what belongs (N286)
+
+`house/places.py` (`ROOMS`, `KINDS`) holds these; Ideas puts a piece only in a place that takes it.
+
+| Room | For | Belongs |
+|---|---|---|
+| Living room | sitting, the screen, the records | shelves, units, seats, lamps, tables, plants, a rug |
+| Kitchen | cooking, the bar, the laundry | units, shelves, a trolley, a table and chairs (only with 90 round), plants |
+| WC | a small room | slim shelves and units only |
+| Hall | the way in | shoes, a bench, a console, shelves, a plant, a rug |
+| Store | kept things, the washer dryer | shelves, units, chests, shoes |
+| Landing | a way through | slim shelves and units, a plant, a rug |
+| Bathroom | towels and the bathroom's things | units, shelves, chests |
+| Bedroom 2 | the music room | shelves, units, a chair, a lamp, a rug, chests, a desk, plants |
+| Master bedroom | sleeping and clothes | wardrobes, chests, bedsides, a chair, a lamp, a rug, shelves, plants |
+| Office | work and drying | a desk, shelves, units, chests, a chair, a lamp, a rug, plants |
+| Garage | tools and boxes | shelves, units, chests, shoes |
+| Garden | eating and sitting out | garden tables, chairs, seats, plants |
+
+Rules on a place: a wardrobe never under a window; a desk under or beside a window, never its back to the door; shoes only by a door
+in; a bedside only at the bed; lamps and plants in corners; a table only on open floor with 90 round it, chairs only round a table.
+Never in a door's swing, a radiator's face, over a window's sill (a piece there kept under it) or across a walk.
+
 ## Sources (read 24 Nov 2026)
 
 - Homes & Gardens, a guide to living room clearances: https://www.homesandgardens.com/interior-design/living-rooms/a-guide-to-living-room-clearances-measurements-and-spacing
