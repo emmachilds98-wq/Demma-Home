@@ -1,0 +1,166 @@
+[
+ {
+  "kind": "shelves",
+  "use": [
+   "books",
+   "display"
+  ],
+  "retailer": "J&R Woodcraft",
+  "name": "Straight Edge Handmade Oak Floating Shelf 60 x 16 cm",
+  "finish": "solid oak",
+  "w": 60,
+  "d": 16,
+  "h": 4.5,
+  "price": 49.7,
+  "url": "https://jrwoodcraft.com/products/straight-edge-handmade-oak-floating-shelf",
+  "read": "2026-11-25",
+  "look": "st_float",
+  "on": "wall",
+  "note": "kiln-dried European oak, 43–45 mm thick, hidden brackets included; 20 and 30 deep too"
+ },
+ {
+  "kind": "shelves",
+  "use": [
+   "books",
+   "display"
+  ],
+  "retailer": "J&R Woodcraft",
+  "name": "Straight Edge Handmade Oak Floating Shelf 70 x 16 cm",
+  "finish": "solid oak",
+  "w": 70,
+  "d": 16,
+  "h": 4.5,
+  "price": 58.7,
+  "url": "https://jrwoodcraft.com/products/straight-edge-handmade-oak-floating-shelf",
+  "read": "2026-11-25",
+  "look": "st_float",
+  "on": "wall",
+  "note": "kiln-dried European oak, 43–45 mm thick, hidden brackets included; 20 and 30 deep too"
+ },
+ {
+  "kind": "shelves",
+  "use": [
+   "books",
+   "display"
+  ],
+  "retailer": "J&R Woodcraft",
+  "name": "Straight Edge Handmade Oak Floating Shelf 80 x 16 cm",
+  "finish": "solid oak",
+  "w": 80,
+  "d": 16,
+  "h": 4.5,
+  "price": 68.7,
+  "url": "https://jrwoodcraft.com/products/straight-edge-handmade-oak-floating-shelf",
+  "read": "2026-11-25",
+  "look": "st_float",
+  "on": "wall",
+  "note": "kiln-dried European oak, 43–45 mm thick, hidden brackets included; 20 and 30 deep too"
+ },
+ {
+  "kind": "shelves",
+  "use": [
+   "books",
+   "display"
+  ],
+  "retailer": "J&R Woodcraft",
+  "name": "Straight Edge Handmade Oak Floating Shelf 90 x 16 cm",
+  "finish": "solid oak",
+  "w": 90,
+  "d": 16,
+  "h": 4.5,
+  "price": 78.7,
+  "url": "https://jrwoodcraft.com/products/straight-edge-handmade-oak-floating-shelf",
+  "read": "2026-11-25",
+  "look": "st_float",
+  "on": "wall",
+  "note": "kiln-dried European oak, 43–45 mm thick, hidden brackets included; 20 and 30 deep too"
+ },
+ {
+  "kind": "shelves",
+  "use": [
+   "books",
+   "display"
+  ],
+  "retailer": "J&R Woodcraft",
+  "name": "Straight Edge Handmade Oak Floating Shelf 110 x 16 cm",
+  "finish": "solid oak",
+  "w": 110,
+  "d": 16,
+  "h": 4.5,
+  "price": 96.7,
+  "url": "https://jrwoodcraft.com/products/straight-edge-handmade-oak-floating-shelf",
+  "read": "2026-11-25",
+  "look": "st_float",
+  "on": "wall",
+  "note": "kiln-dried European oak, 43–45 mm thick, hidden brackets included; 20 and 30 deep too"
+ },
+ {
+  "kind": "shelves",
+  "use": [
+   "books",
+   "display"
+  ],
+  "retailer": "J&R Woodcraft",
+  "name": "Straight Edge Handmade Oak Floating Shelf 120 x 16 cm",
+  "finish": "solid oak",
+  "w": 120,
+  "d": 16,
+  "h": 4.5,
+  "price": 115.7,
+  "url": "https://jrwoodcraft.com/products/straight-edge-handmade-oak-floating-shelf",
+  "read": "2026-11-25",
+  "look": "st_float",
+  "on": "wall",
+  "note": "kiln-dried European oak, 43–45 mm thick, hidden brackets included; 20 and 30 deep too"
+ },
+ {
+  "kind": "rug",
+  "use": [
+   "rug"
+  ],
+  "retailer": "Habitat",
+  "name": "Habitat Braided Round Natural Jute Rug - 100cm",
+  "finish": "natural jute",
+  "w": 100,
+  "d": 100,
+  "h": 0.9,
+  "price": 35,
+  "url": "https://www.habitat.co.uk/product/1999598",
+  "read": "2026-11-25"
+ },
+ {
+  "kind": "records",
+  "use": [
+   "records",
+   "media"
+  ],
+  "retailer": "Chronology",
+  "name": "Solid Wood Record Cabinet 110 cm",
+  "finish": "solid wood",
+  "w": 110,
+  "d": 36,
+  "h": 65,
+  "price": 385,
+  "url": "https://chronologystore.co.uk/products/solid-wood-record-cabinet-vinyl-storage-tv-stand",
+  "read": "2026-11-25",
+  "note": "from £385; 100, 110 or 120 wide; 45 mm solid timber, handmade"
+ },
+ {
+  "kind": "chest",
+  "use": [
+   "boxes",
+   "toys"
+  ],
+  "retailer": "Marquis & Dawe",
+  "name": "Bibury Rectangle Seagrass Storage Basket, small",
+  "finish": "natural seagrass",
+  "w": 30,
+  "d": 25,
+  "h": 15,
+  "price": 14,
+  "url": "https://marquisanddawe.co.uk/products/bibury-rectangle-seagrass-storage-basket",
+  "read": "2026-11-25",
+  "form": "rattan",
+  "note": "medium 35 × 30 × 18, large 40 × 35 × 21"
+ }
+]

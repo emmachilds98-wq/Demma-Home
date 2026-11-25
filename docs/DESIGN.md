@@ -61,6 +61,10 @@ Rules on a place: a wardrobe never under a window; a desk under or beside a wind
 in; a bedside only at the bed; lamps and plants in corners; a table only on open floor with 90 round it, chairs only round a table.
 Never in a door's swing, a radiator's face, over a window's sill (a piece there kept under it) or across a walk.
 
+The shops' best for a place (N288): fit first (no more than 10 cm of its wall spare, a run of the same tall piece where it's modular),
+then style (artisan oak and warm wood, cane, sage and pale mint, linen; white and painted below; black, grey and gloss last; in the garage
+and store only the fit), then price. Where nothing fits well it's a gap, and N289 draws a piece to fit it.
+
 ## Sources (read 24 Nov 2026)
 
 - Homes & Gardens, a guide to living room clearances: https://www.homesandgardens.com/interior-design/living-rooms/a-guide-to-living-room-clearances-measurements-and-spacing

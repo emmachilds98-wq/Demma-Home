@@ -557,6 +557,9 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/archive/revie
 - **Phones:** cards use N285's one structure (`renderAct` in `16_cards.js`: a bottom sheet, one sliding row of choices). Keep Ideas'
   card to it; `check_site.py`'s PHONEUI step fails a control under 44 px or overlapping.
 - **Checks:** `check_site.py`'s IDEAS step (N284 fixed it) opens Ideas in bedroom 2; N292 adds IDEAS2 for every room.
+- **N288, the shops' best (done):** `places.best(pid)` and `places.gaps()`; the catalogue is `places._cat()` (N219, N242, N243, N288 rows by
+  `fit.shop_key`, plus HCAT's own pieces read from `08_house_catalogue.js` by key, no price). A nook takes what `storage_ideas.spot_fits()`
+  says; a wall place what its `kinds` take at its size. Shop rows of kind "plant" have no `hcMake` builder: plants come from HCAT's four.
 
 ## 6. Finishes and furniture (section 14, N56–N58; section 17 stream A)
 - **The walls' emulsion (N172):** `paintGrain` (`03_materials.js`) adds a world-position varying and value noise to a wall's shader (tone at `color_fragment`, sheen at `roughnessmap_fragment`). It runs on `paintMat`'s walls (key `paintwall`), the stair wall (`stairMat`: a `clone()` drops `onBeforeCompile`, so it's set again) and the house's `paint` (inside `finPatch`, `finish0`). A material's `clone()` never carries `onBeforeCompile` or `customProgramCacheKey`. HD shots in the rig sometimes catch the GTAO unsettled (a dark speckle by the landing's newel): shoot twice before blaming a change.

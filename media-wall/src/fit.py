@@ -1534,7 +1534,8 @@ for _p in opt_pieces():
 # spots, spot_fits): options to look at, nothing to buy until she picks
 def cat_pieces():
     import json, pathlib
-    return json.loads((pathlib.Path(__file__).resolve().parents[2] / "house/data/N243_catalogue.json").read_text())
+    d = pathlib.Path(__file__).resolve().parents[2] / "house/data"
+    return json.loads((d / "N243_catalogue.json").read_text()) + json.loads((d / "N288_catalogue.json").read_text())   # N288: more, for thin places
 
 
 for _p in cat_pieces():
