@@ -418,6 +418,10 @@ check("surfaces: each wall face on one wall of its room (N214)", not _bad and no
 import storage_ideas as _SI
 for _n, _ok, _note in _SI.checks():
     check(_n, _ok, _note)
+# N286: every room's places (where a piece belongs), each inside its room's real walls, clear of the house, the swings and the walks
+import places as _PL
+for _n, _ok, _note in _PL.checks():
+    check(_n, _ok, _note)
 
 w = max(len(r[1]) for r in rows)
 for st_, n, note in rows:

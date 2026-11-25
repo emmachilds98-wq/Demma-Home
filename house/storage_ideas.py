@@ -565,10 +565,11 @@ def for_page():
         r = export3d.cat_row(q)
         rows.setdefault(r[0], r)
     used = {k for L in F.values() for k in L}
-    return dict(v=1, cols=["key", "kind", "look", "name", "shop", "w", "d", "h", "price", "url", "mat", "mat2", "count", "on", "uses"],
+    import places
+    return dict(v=2, places=places.for_page(), cols=["key", "kind", "look", "name", "shop", "w", "d", "h", "price", "url", "mat", "mat2", "count", "on", "uses"],
                 spots=[dict(id=s["id"], room=s["room"], n=s["n"], at=s["at"], b=s["box"], back=s["back"], face=s["face"], w=s["w"], d=s["d"], h=s["h"],
                             uses=s["uses"], **({"idea": s["idea"]} if s.get("idea") else {})) for s in _spots()],
-                pieces=list(rows.values()), fits=F, rooms=ROOM_USES, n=dict(spots=len(_spots()), pieces=len(rows), placed=len(used)))
+                pieces=list(rows.values()), fits=F, rooms=ROOM_USES, n=dict(spots=len(_spots()), pieces=len(rows), placed=len(used)))   # N286: v2 adds places
 
 
 if __name__ == "__main__" and "--page" in sys.argv:          # N243: tools/build.py writes the page's ideas data (_site/data/ideas.json)

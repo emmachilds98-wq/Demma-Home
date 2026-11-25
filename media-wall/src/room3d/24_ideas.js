@@ -93,7 +93,7 @@ function ixShow(room, i) {   // set-up i over hers: her colours, edits and piece
    when Ideas first opens or a kept piece needs one, into HCAT and + Add's list: not in the page, so a first visit doesn't carry them */
 let IXD = null;
 function ixData() {
-  return IXD || (IXD = fetch("data/ideas.json").then(r => r.ok ? r.json() : null).then(j => { if (j && j.v === 1) ixLoad(j); return j && j.v === 1 ? j : null; }).catch(() => null));
+  return IXD || (IXD = fetch("data/ideas.json").then(r => r.ok ? r.json() : null).then(j => { if (j && j.v >= 1) ixLoad(j); return j && j.v >= 1 ? j : null; }).catch(() => null));
 }
 function ixLoad(j) {
   for (const [key, k, look, n, shop, w, d, h, p, url, m, m2, c] of j.pieces || []) { if (HCAT[key] || k === "idea" || !HCAT_KINDS[k] && !/^(gtable|gchair|gsofa)$/.test(k)) continue;
