@@ -257,6 +257,19 @@ IDEAS = """async () => { const D = R3D._dbg, sl = ms => new Promise(r => setTime
   try { localStorage.removeItem('dh-fin-schemes'); } catch (e) {}
   return { card, line: /^[^·]+ · \\d+ pieces? · £\\d/.test(line), drawn: n0 > 0, inway, next, more, kept, back };
 }"""
+IDEAS2 = """async () => { const D = R3D._dbg, H = D.H3, bad = [], n = {};   // N292: every room's set-ups, each piece in a place that takes it
+  await D.ixData(); if (!D.HPL) return { err: 'no places in data/ideas.json' };
+  const over = (p, k) => [0, 1, 2].every(j => p[j] < k[j + 3] - 1 && p[j + 3] > k[j] + 1);
+  for (const room of ['kitchen', 'bed3', 'bed2', 'master', 'bathroom', 'landing', 'hall', 'garage', 'wc', 'garden']) {
+    const r = (H.rooms || {})[room] || (H.yard || {})[room]; if (!r) { bad.push(room + ': no room'); continue; }
+    for (const s of D.ixSetups(room).slice(1)) { const boxes = [];
+      for (const [q, x, z] of s.adds) { const C = D.HCAT[q] || {}, tag = `${room} ${s.n}: ${C.n}`; n[room] = (n[room] || 0) + 1;
+        if (!D.placeAt(room, x, z, C.k)) { bad.push(tag + ' in no place that takes it'); continue; }
+        const sp = D.placeSpot(room, q, x, z, r[4], null, [], k => /^add[.]/.test(k), 1); if (!sp) { bad.push(tag + ': no room there'); continue; }
+        const hit = C.k === 'rug' ? [] : boxes.filter(b => over(sp[3], b)); if (hit.length) bad.push(tag + ' on another piece');
+        if (C.k !== 'rug') boxes.push(sp[3]); } } }
+  return { n, bad };
+}"""
 # N225: the WC's tiles from their card: zellige, then charcoal grout (the material's own map swapped, costed), held: the plan's, The
 # plan's, Undo, The plan's; then its toilet swapped for Wickes's first (a close coupled one from the floor) and its basin for the corner
 # one (hung at the old one's rim, in the nearer corner: by the door, so its card says the swing), then as planned
@@ -632,6 +645,8 @@ def features(pg, b, w, h, base):
     st = pg.evaluate(STORE)                         # N233 (N223): a room's storage ideas, all shown, each clear, then hidden
     want = {"n": IDEAS_BED2, "inway": [], "hidden": True}
     if st != want: fails.append(f"{w}: bedroom 2's storage ideas from its floor card's More, All, then None: {st} (want {want}: each piece drawn, none in a walk)")
+    i2 = pg.evaluate(IDEAS2)                        # N292: every room's set-ups: each piece in a place that takes it, clear of the rest
+    if i2.get("err") or i2.get("bad") or not i2.get("n"): fails.append(f"{w}: Ideas in every room (IDEAS2): {i2} (want each piece in a place that takes it)")
     ix = pg.evaluate(IDEAS)                         # N244: Ideas in bedroom 2: a set-up drawn at once, its line, ›, + Add storage, Keep this, Back to mine
     want = {"card": True, "line": True, "drawn": True, "inway": [], "next": True, "more": True, "kept": 1, "back": True}
     if ix != want: fails.append(f"{w}: bedroom 2's Ideas pill, a set-up, the next, + Add storage, Keep this, Back to mine: {ix} (want {want})")
