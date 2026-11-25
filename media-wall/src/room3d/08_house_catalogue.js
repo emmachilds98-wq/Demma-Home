@@ -522,11 +522,12 @@ function syncAdds() {
   for (const id of Object.keys(ADDED)) if (!rows[id]) { delete H3.items[id]; delete ADDED[id]; }
   for (const [id, v] of Object.entries(rows)) { if (ADDED[id] === `${v.value}@${v.x},${v.z}`) continue;   // N218: a new piece or a new spot
     const C = HCAT[v.value], r = H3R(v.room), x = +v.x, z = +v.z, y = isFinite(+v.y) ? +v.y : r[4]; if (!isFinite(x) || !isFinite(z)) continue;
-    const dz = Math.min(z - r[2], r[3] - z), dx = Math.min(x - r[0], r[1] - x), ax = dz <= dx ? "x" : "z", a = ax === "z" ? 2 : 0, o = 2 - a;
-    const c = [x, y, z], b = [0, y, 0, 0, y + C.h, 0], ro = o === 2 ? [r[2], r[3]] : [r[0], r[1]], ra = a === 2 ? [r[2], r[3]] : [r[0], r[1]];
+    const pl = placeAt(v.room, x, z, C.k), pw = pl && pl.at !== "open";   // N287: in a place, its back on the place's wall (an L-shaped room's inner wall too)
+    const dz = Math.min(z - r[2], r[3] - z), dx = Math.min(x - r[0], r[1] - x), ax = pw ? (pl.back[0] === "z" ? "x" : "z") : dz <= dx ? "x" : "z", a = ax === "z" ? 2 : 0, o = 2 - a;
+    const c = [x, y, z], b = [0, y, 0, 0, y + C.h, 0], ro = pw ? [pl.b[o], pl.b[o + 3]] : o === 2 ? [r[2], r[3]] : [r[0], r[1]], ra = a === 2 ? [r[2], r[3]] : [r[0], r[1]];
     b[a] = Math.max(ra[0], Math.min(ra[1] - C.w, c[a] - C.w / 2)); b[a + 3] = b[a] + C.w;
-    const near = c[o] - ro[0] < ro[1] - c[o], gap = near ? c[o] - C.d / 2 - ro[0] : ro[1] - c[o] - C.d / 2;   // within 30 of its wall: against it
-    b[o] = gap < 30 ? (near ? ro[0] + 0.5 : ro[1] - 0.5 - C.d) : c[o] - C.d / 2; b[o + 3] = b[o] + C.d;
+    const near = pw ? pl.back[1] === "0" : c[o] - ro[0] < ro[1] - c[o], gap = pw ? 0 : near ? c[o] - C.d / 2 - ro[0] : ro[1] - c[o] - C.d / 2;   // within 30 of its wall: against it
+    b[o] = gap < 30 ? (near ? ro[0] + (pw ? 0 : 0.5) : ro[1] - (pw ? 0 : 0.5) - C.d) : c[o] - C.d / 2; b[o + 3] = b[o] + C.d;
     ADDED[id] = `${v.value}@${v.x},${v.z}`; ADDFK[id] = HCFK[String(r[4])];
     H3.items[id] = { n: C.n, k: "furniture", r: v.room, ax, b: b.map(q => Math.round(q * 10) / 10), s: [C.w, C.h, 0], g: false, al: Math.round((b[a] - ra[0]) * 10) / 10, op: null, add: v.value, fk: HCFK[String(r[4])] };
   }
@@ -572,7 +573,34 @@ function fitWhy(id) {
 }
 /* N218: where an added piece stands: back to a wall of its room (as syncAdds puts it: the row's x, z on that wall), clear of the walls,
    the slope, the swings, the space kept clear and the pieces, nearest the tap; if nowhere, back to the nearest wall at the tap */
-function addSpot(rid, key, x, z, y, self) { const s = spotFor(rid, key, x, z, y, self); return s ? s.slice(0, 2) : [x, z]; }
+function addSpot(rid, key, x, z, y, self) { const s = placeSpot(rid, key, x, z, y, self) || spotFor(rid, key, x, z, y, self); return s ? s.slice(0, 2) : [x, z]; }
+/* N287 (Emma, 25 Nov 2026: "I can currently just drop furniture into the wrong rooms from the ideas area"): a piece goes only in one of its
+   room's places (house/places.py, data/ideas.json v2: a named area inside the real walls, the kinds that belong) that takes its kind and
+   that it fits, slid along that place's wall (or about its open floor); no place, no spot. [x, z, how far, box, box with room in front,
+   place] or null; HPL null (the ideas data not in yet, or v1) leaves it to spotFor */
+let HPL = null;
+const placesIn = rid => (HPL || []).filter(p => p.room === rid && p.at !== "wall" && p.at !== "over door" && p.at !== "ceiling");
+function placesFor(rid, key) { const C = HCAT[key]; if (!C) return [];
+  return placesIn(rid).filter(p => p.kinds.includes(C.k) && (p.at === "open" ? Math.min(C.w, C.d) <= Math.min(p.w, p.d) + 1 && Math.max(C.w, C.d) <= Math.max(p.w, p.d) + 1
+    : C.w <= p.w + 1 && C.d <= p.d + 1 && C.h <= p.h + 1)); }
+function placeAt(rid, x, z, k) {   // the place an added piece stands in (its middle inside the place's box, 2 cm spare), that takes kind k
+  return placesIn(rid).find(p => (!k || p.kinds.includes(k)) && x > p.b[0] - 2 && x < p.b[3] + 2 && z > p.b[2] - 2 && z < p.b[5] + 2) || null; }
+function placeSpot(rid, key, x, z, y, self, more = [], skip = null, maxD = Infinity, cl = 0) {
+  const C = HCAT[key], over = (p, q) => [0, 1, 2].every(j => p[j] < q[j + 3] - 1 && p[j + 3] > q[j] + 1); let best = null; if (!C || !HPL) return null;
+  const busy = Object.keys(R.HOUSE3.items).filter(k => { const o = HIT(k); return k !== self && !(skip && skip(k)) && o.r === rid && !HCSKIP.has(o.k) && !hcSoft(k) && !pieceNow(k).removed; }).map(pieceBox).concat(more);
+  const ok = (b, f) => C.k === "rug" || (!busy.some(q => over(b, q) || (f && over(f, q))) && !roomWhy(b, rid, self).length);
+  for (const p of placesFor(rid, key)) { const P = p.b;
+    if (p.at === "open") { const [w, d] = C.w <= P[3] - P[0] + 1 && C.d <= P[5] - P[2] + 1 ? [C.w, C.d] : [C.d, C.w];
+      for (let u = P[0] + w / 2; u <= P[3] - w / 2 + 0.01; u += 10) for (let v = P[2] + d / 2; v <= P[5] - d / 2 + 0.01; v += 10) {
+        const b = [u - w / 2, y, v - d / 2, u + w / 2, y + C.h, v + d / 2], dd = Math.hypot(u - x, v - z); if (dd > maxD || (best && dd >= best[2])) continue;
+        if (ok(b)) best = [u, v, dd, b, b, p]; } continue; }
+    const o = p.back[0] === "x" ? 0 : 2, hi = p.back[1] === "1", a = 2 - o, wl = hi ? P[o + 3] : P[o];   // its back on the place's wall
+    for (let u = P[a]; u <= P[a + 3] - C.w + 0.01; u += 5) { const b = [0, y, 0, 0, y + C.h, 0]; b[a] = u; b[a + 3] = u + C.w; b[o] = hi ? wl - C.d : wl; b[o + 3] = b[o] + C.d;
+      const c = [(b[0] + b[3]) / 2, (b[2] + b[5]) / 2], dd = Math.hypot(c[0] - x, c[1] - z); if (dd > maxD || (best && dd >= best[2])) continue;
+      const f = b.slice(); if (cl) { if (hi) f[o] -= cl; else f[o + 3] += cl; }
+      if (ok(b, cl && f)) best = [c[0], c[1], dd, b, f, p]; } }
+  return best;
+}
 /* N244: the spot itself, [x, z, how far, its box] or null; also clear of boxes not drawn yet (more: a set-up's other pieces), past the
    pieces skip says (a set-up shown before), within maxD of the tap */
 function spotFor(rid, key, x, z, y, self, more = [], skip = null, maxD = Infinity, cl = 0) {   // N282: cl, the room kept clear in front of it (best[4] that box)
