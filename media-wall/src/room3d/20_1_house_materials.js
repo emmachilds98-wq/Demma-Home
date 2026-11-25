@@ -106,31 +106,16 @@ function finPatch(m, k) {   // the walls' and ceilings' materials read the palet
 function garageAt() { const r = ((R.HOUSE3 || {}).rooms || {}).garage; return new THREE.Vector2(r ? FIN.rooms.indexOf("garage") + 1 : -1, r ? r[4] : 0); }
 /* the garage's slab, the concrete's own photo kept: a saw-cut joint across it towards the door (clear of the cover), the dust along the walls, the tyres' two tracks a
    shade darker and polished, an old oil mark where an engine stood, darker and glossier. Only inside the garage's outline (the drive
-   shares the concrete); one program ("garagefloor"), worked out from where the pixel is */
+   shares the concrete), worked out from where the pixel is; N284: in the outside's one program (03_materials outShade, "weather"), the
+   drive's tone off as before */
 function garageFloor(m) {
   const r = ((R.HOUSE3 || {}).rooms || {}).garage; if (!r) return m;
   /* in the living room's own view (its 2 planes, cut where both cut) the garage is never seen: there the concrete keeps the plain program
      the house's photos share, warmed with that view (its own was built mid-walk on a PC) */
   const plain = THREE.Material.prototype.onBeforeCompile.toString();
-  m.customProgramCacheKey = () => m.clipIntersection ? plain : "garagefloor";
-  m.onBeforeCompile = sh => { if (m.clipIntersection) return;
-    sh.uniforms.gR = { value: new THREE.Vector4(r[0], r[1], r[2], r[3]) }; sh.uniforms.gY = { value: r[4] };
-    sh.vertexShader = "varying vec3 vPgP;\n" + sh.vertexShader.replace("#include <begin_vertex>", "#include <begin_vertex>\n vPgP = (modelMatrix * vec4(transformed, 1.0)).xyz;");
-    sh.fragmentShader = PAINT_GRAIN + "uniform vec4 gR;\nuniform float gY;\n" + sh.fragmentShader.replace("#include <color_fragment>", `#include <color_fragment>
-  float gfR = 1.0;
-  { vec2 c = vec2(-vPgP.x * 100.0, vPgP.z * 100.0);
-    if (c.x > gR.x && c.x < gR.y && c.y > gR.z && c.y < gR.w && abs(vPgP.y * 100.0 - gY) < 20.0) {
-      float W = gR.y - gR.x, L = gR.w - gR.z, u = c.x - gR.x, v = c.y - gR.z, n = pgN(vPgP * 9.0), n2 = pgN(vPgP * 1.6 + 5.0), k = 1.0;
-      k *= mix(0.5, 1.0, smoothstep(0.2, 0.55, abs(v - L * 0.7) + (n - 0.5) * 0.25));
-      float e = min(min(u, W - u), min(v, L - v));
-      k *= 1.0 - 0.1 * exp(-e / 12.0) * (0.6 + 0.8 * n2);
-      float tr = 0.0; for (int s = -1; s <= 1; s += 2) tr = max(tr, 1.0 - smoothstep(5.0, 13.0, abs(u - W * 0.5 - float(s) * 76.0)));
-      tr *= smoothstep(L * 0.12, L * 0.3, v) * (0.5 + 0.5 * n2);
-      k *= 1.0 - 0.1 * tr; gfR *= 1.0 - 0.25 * tr;
-      float od = length(vec2(u - W * 0.5, (v - L * 0.27) * 0.8)) + (n2 - 0.5) * 24.0 + (n - 0.5) * 6.0, oil = 1.0 - smoothstep(14.0, 30.0, od);
-      k *= 1.0 - 0.3 * oil; gfR *= 1.0 - 0.45 * oil;
-      diffuseColor.rgb *= k; } }`).replace("#include <roughnessmap_fragment>", "#include <roughnessmap_fragment>\n  roughnessFactor *= gfR;");
-  };
+  outShade(m, { tone: 0, dirt: 0, gR: [r[0], r[1], r[2], r[3]], gY: r[4] }); const ob = m.onBeforeCompile;
+  m.customProgramCacheKey = () => m.clipIntersection ? plain : "weather";
+  m.onBeforeCompile = (sh, gl) => { if (!m.clipIntersection) ob(sh, gl); };
   return m;
 }
 const FIN_SLOT = { back: [0], front: [1], east: [2], west: [3], walls: [0, 1, 2, 3], ceiling: [4], bedding: [5], woodwork: [6], slopes: [7] };   // N216: skirting, doors, frames, radiators

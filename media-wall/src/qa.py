@@ -176,7 +176,7 @@ def no_assistant_names():
     from pypdf import PdfReader
     word = "cl" + "aude"
     hits = []
-    for f in ("index.html", *(p.name for p in ROOT.glob("sheets.*.json")), *(p.name for p in [*ROOT.glob("room3d.*.js"), *ROOT.glob("scene.*.json")]), f"media-wall/out/Home_Plan_{LABEL}_Plan.pdf", f"media-wall/out/Home_Plan_{LABEL}_Build_Guide.pdf",
+    for f in ("index.html", *(p.name for p in ROOT.glob("sheets.*.json")), *(p.name for p in ROOT.glob("sources.*.html")), *(p.name for p in [*ROOT.glob("room3d.*.js"), *ROOT.glob("scene.*.json")]), f"media-wall/out/Home_Plan_{LABEL}_Plan.pdf", f"media-wall/out/Home_Plan_{LABEL}_Build_Guide.pdf",
               f"media-wall/out/Home_Plan_{LABEL}_Plan_phone.pdf", f"media-wall/out/Home_Plan_{LABEL}_Build_Guide_phone.pdf"):
         path = ROOT / f
         if not path.exists():

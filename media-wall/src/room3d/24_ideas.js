@@ -117,8 +117,9 @@ function ixCard(room) {   // "Records wall · 4 pieces · £320–480": ‹ ›,
   if (!ixOn() || ASIDE.ix !== room || !IX.L) return null; const s = IX.L[IX.i], t = ixNow(room);
   const line = `${s.n} · ${t.n ? `${t.n} piece${t.n === 1 ? "" : "s"}${t.hi ? " · " + upRange(t.lo, t.hi) : ""}` : "as planned"}`;
   return [`Ideas · ${roomName(room)}`, line, [...hcNav(room, IX.i, "ixset"), btn("Keep this", { ixkeep: room }, true), btn("Back to mine", { lookmine: "1" })], null,
-    (s.why ? `<p class="r3d-ixwhy"><b>${s.why}.</b>${ixNotes(s).map(t => `<span>${t}</span>`).join("")}</p>` : "")
-    + `<div class="r3d-fin"><div class="r3d-finsc" role="group" aria-label="Set-ups">${IX.L.map((q, j) => `<button type="button" data-ixset="${room}:${j}" aria-pressed="${j === IX.i}">${q.n}</button>`).join("")}`
+    // N284: one element (renderAct puts in the tray's first and removes .r3d-fin): the why inside it, or the chips and + Add storage were lost
+    `<div class="r3d-fin">` + (s.why ? `<p class="r3d-ixwhy"><b>${s.why}.</b>${ixNotes(s).map(t => `<span>${t}</span>`).join("")}</p>` : "")
+    + `<div class="r3d-finsc" role="group" aria-label="Set-ups">${IX.L.map((q, j) => `<button type="button" data-ixset="${room}:${j}" aria-pressed="${j === IX.i}">${q.n}</button>`).join("")}`
     + `<button type="button" data-ixadd="${room}" aria-pressed="false">+ Add storage</button>`
     + (s.pal ? `<button type="button" data-ixcol="${room}" aria-pressed="${IX.col}">Its colours</button>` : "") + `</div></div>`];
 }
