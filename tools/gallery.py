@@ -53,7 +53,7 @@ def catalogue(only):
         b = pw.launch(p, pw.GL)
         pg = b.new_context(viewport={"width": 900, "height": 700}, service_workers="block").new_page(); pg.set_default_timeout(300000); localcdn.route(pg)
         pg.goto(f"http://127.0.0.1:{httpd.server_address[1]}/index.html"); pg.wait_for_function("window.R3D && window.R3D.ready", timeout=240000)
-        pg.add_style_tag(content=".r3d-dock, .r3d-mini, .r3d-planbar, .r3d-stickers, header, .brand, .topbar, #r3d-act, .r3d-me { visibility: hidden !important; }")
+        pg.add_style_tag(content=".r3d-dock, .r3d-mini, .r3d-planbar, .r3d-stickers, header, .brand, .r3d-gear, .topbar, #r3d-act, .r3d-me { visibility: hidden !important; }")
         pg.evaluate("() => R3D.set({ view: 'garage', tod: 'day', quality: 'hd' })"); pg.wait_for_timeout(6000)
         for k in keys:
             res = pg.evaluate(CAT, k); f = out / f"{k}.jpg"; pg.screenshot(path=str(f), type="jpeg", quality=88); shots.append((f, k)); print(k, res, flush=True)
@@ -84,7 +84,7 @@ def shoot(site, out, only=None):
           k = T.size === n ? k + 1 : 0; n = T.size; } }""")
         views = pg.evaluate("() => { const V = R3D._dbg.VIEWS; return [['house', 'The whole house'], ['room', 'The living room']]"
                             ".concat(Object.entries(V).filter(([k, v]) => v.box).map(([k, v]) => [k, v.label || k])); }")
-        pg.add_style_tag(content=".r3d-dock, .r3d-mini, .r3d-planbar, .r3d-stickers, header, .brand, .topbar { visibility: hidden !important; }")
+        pg.add_style_tag(content=".r3d-dock, .r3d-mini, .r3d-planbar, .r3d-stickers, header, .brand, .r3d-gear, .topbar { visibility: hidden !important; }")
         for k, name in views:
             if only and k not in only:
                 continue

@@ -392,6 +392,12 @@ function renderAct() {
   const fold = () => { if (!more) { more = document.createElement("details"); more.className = "r3d-actmore"; more.open = actMoreOpen;
     more.innerHTML = '<summary aria-label="More" title="More">⋯</summary><div class="acts"></div>'; more.addEventListener("toggle", () => { actMoreOpen = more.open; placeAct(); }); box.after(more); }
     return more.querySelector(".acts"); };
+  /* N285: on a phone a card is a sheet: its first row of choices stays (up to its first swatch tray, else two chip rows); the rest of
+     its tray goes under More, as do its buttons after three */
+  const fin = SHEET() && qs(".r3d-fin", act);
+  if (fin) { const kids = [...fin.children], sw = kids.findIndex(k => k.classList.contains("r3d-fintray")), chips = kids.map((k, i) => k.classList.contains("r3d-finsc") ? i : -1).filter(i => i >= 0);
+    const keep = sw >= 0 ? sw : chips.length > 1 ? chips[1] : kids.length, rest = kids.slice(keep + 1).filter(k => !k.classList.contains("r3d-finpic"));
+    if (rest.length) { const w = document.createElement("div"); w.className = "r3d-fin"; w.append(...rest); fold().before(w); } }
   if (extra) { const w = document.createElement("div"); w.innerHTML = extra; fold().before(w.firstElementChild); }
   for (const b of bs) {
     const into = shownN >= 3 ? fold() : box;
@@ -407,14 +413,16 @@ function renderAct() {
   qsa(".acts", act).forEach(a => { a.style.maxHeight = "none"; a.style.overflowY = "visible"; });   // the card scrolls as one, not a box in it
   placeAct();
 }
+const SHEET = () => matchMedia("(max-width: 899px)").matches;   // a phone's card is a sheet over the dock (room3d_page.py)
 function placeAct() {
   if (!actXY || act.hidden) return;
   act.style.maxHeight = ""; act.style.overflowY = "";
-  const sr = stage.getBoundingClientRect(), sw = stage.clientWidth, sh = stage.clientHeight, sheet = matchMedia("(max-width: 899px)").matches;   // a phone's card is a sheet over the dock (room3d_page.py)
+  const sr = stage.getBoundingClientRect(), sw = stage.clientWidth, sh = stage.clientHeight, sheet = SHEET();
   let top0 = 12;   // clear of the brand, Plan · Build · Buy and the view's pills
-  for (const el of document.querySelectorAll(".brand, .hnav, .r3d-mini")) { const r = el.getBoundingClientRect(); if (r.height && r.top - sr.top < sh / 3) top0 = Math.max(top0, r.bottom - sr.top + 8); }
+  for (const el of document.querySelectorAll(".brand, .r3d-gear, .hnav, .r3d-mini")) { const r = el.getBoundingClientRect(); if (r.height && r.top - sr.top < sh / 3) top0 = Math.max(top0, r.bottom - sr.top + 8); }
   const fit = room => { if (act.offsetHeight > room) { const cs = getComputedStyle(act); act.style.maxHeight = Math.max(160, room - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom)) + "px"; act.style.overflowY = "auto"; } };
-  if (sheet) { fit(act.getBoundingClientRect().bottom - sr.top - top0); return; }
+  if (sheet) { const room = act.getBoundingClientRect().bottom - sr.top - top0;   // N285: peek (half the screen) till More or a drag up opens it full
+    fit(actMoreOpen || act.classList.contains("full") ? room : Math.min(room, Math.round(sh * 0.5))); return; }
   fit(sh - 90 - top0);
   const pw = act.offsetWidth || 300, ph = act.offsetHeight || 200;
   act.classList.remove("beside", "onright");
@@ -450,18 +458,21 @@ function actTarget() {   // what the open card is for, as drawn (null: a wall, a
     sw0 = act.scrollTop <= 0 || e.touches[0].clientY - act.getBoundingClientRect().top < 48 ? { y: e.touches[0].clientY, dy: 0 } : null; }, { passive: true });
   act.addEventListener("touchmove", e => { if (!sw0) return; sw0.dy = e.touches[0].clientY - sw0.y;
     if (sw0.dy > 8) { act.style.transform = `translateY(${sw0.dy}px)`; act.style.transition = "none"; } }, { passive: true });
-  const end = () => { if (!sw0) return; const dy = sw0.dy; sw0 = null; act.style.transition = ""; act.style.transform = ""; if (dy > 70) closeAct(); };
+  const end = () => { if (!sw0) return; const dy = sw0.dy; sw0 = null; act.style.transition = ""; act.style.transform = "";
+    if (dy < -40 && !act.classList.contains("full")) { act.classList.add("full"); placeAct(); }   // N285: up, the whole card
+    else if (dy > 70 && act.classList.contains("full") && !actMoreOpen) { act.classList.remove("full"); placeAct(); }   // down, back to its peek
+    else if (dy > 70) closeAct(); };
   act.addEventListener("touchend", end); act.addEventListener("touchcancel", end); }
 let actMoreOpen = false;
 function openAct(id, xy) {
   if (popId) closePop(); clearAim();
-  if (String(id).split(":").slice(0, 2).join(":") !== String(GS.actId || "").split(":").slice(0, 2).join(":")) actMoreOpen = false;   // v39: a new card opens folded
+  if (String(id).split(":").slice(0, 2).join(":") !== String(GS.actId || "").split(":").slice(0, 2).join(":")) { actMoreOpen = false; act.classList.remove("full"); }   // v39: a new card opens folded (N285: at its peek)
   GS.actId = id; actXY = xy; act.hidden = false; actAt = performance.now(); root.classList.add("actopen"); renderAct();   // V2.6: (the figure steps aside on a phone)
   if (!act.hidden) { const f = qs("#r3d-acts button"); if (f) f.focus({ preventScroll: true }); }
 }
 const DBL_MS = +(window.__r3dDblMs || 380);   // a double-tap's two taps within this (a test rig whose touches wait on slow frames can widen it)
 let tapT = 0, actAt = 0;   // V2.42: tapT, a click's card waiting out a double-click; V1.54: when the card opened: a phone's click from the same tap lands on it (a sheet at the foot) and mustn't press its button
-function closeAct() { GS.actId = null; root.classList.remove("actopen"); if (act) act.hidden = true; clearAim(); clearSel(); }
+function closeAct() { GS.actId = null; root.classList.remove("actopen"); if (act) { act.hidden = true; act.classList.remove("full"); } clearAim(); clearSel(); }
 if (act) {
   act.addEventListener("pointerdown", e => {   // V1.54: the second tap of a double-tap that lands on the card the first one opened: still a double-tap
     // V2.42: a mouse's too (a double-click's second click pressed the card's button under it: the bed's "See it from above", a floor's colour)

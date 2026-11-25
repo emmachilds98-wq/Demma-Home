@@ -376,6 +376,7 @@ WEL?.addEventListener("click", e => { const b = e.target.closest("[data-wgo]"); 
 BRAND?.addEventListener("click", () => welcome(!!WEL && WEL.hidden));
 BRAND?.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); welcome(!!WEL && WEL.hidden); } });
 canvas.addEventListener("pointerdown", () => welcome(false));
+qs("#r3d-help")?.addEventListener("click", () => { window.DemmaTools?.close(); welcome(true); });   // N285: Settings → Help
 /* V2.97 (N42): Esc shuts the top card or panel, one a press, the focus back to what opened it; the sheets and lightbox keep their own */
 const escBack = (el, to) => { if (to && (!document.activeElement || document.activeElement === document.body || el?.contains(document.activeElement))) to.focus({ preventScroll: true }); };
 const ESC = [
@@ -385,7 +386,7 @@ const ESC = [
   [() => MEAS.on, endMeasure],
   [() => S.edit && !qs("#r3d-addlist").hidden, () => { qs("#r3d-addlist").hidden = true; escBack(qs("#r3d-addlist"), qs("#r3d-add")); }],
   [() => S.edit && selId, () => select(null)],
-  [() => window.DemmaTools?.isOpen(), () => { const b = qs("[data-drawer][aria-selected=true]") || qs("[data-tools-toggle]"); DemmaTools.close(); escBack(qs("#r3d-panel"), b); }],
+  [() => window.DemmaTools?.isOpen(), () => { const b = qs("[data-drawer][aria-selected=true]") || (qs("#r3d-gear[aria-expanded=true]")) || qs("[data-tools-toggle]"); DemmaTools.close(); escBack(qs("#r3d-panel"), b); }],
   [() => tourSt, tourEnd], [() => SH, () => showStop(true)],
   [() => S.edit, () => { setEdit(false); escBack(qs("#r3d-editbar"), qs("#r3d-editbtn")); }],
   [() => document.body.classList.contains("bare"), () => setBare(false)]];

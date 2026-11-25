@@ -454,8 +454,9 @@ window.PICKS = (() => {
 PICKS.paint();
 
 /* ---------- V2.83: the version in Plan is a button: the home-screen app has no reload, so this fetches the newest page past every cache */
-document.querySelector(".hello .ver")?.addEventListener("click", async e => {
-  const have = e.currentTarget.textContent;
+document.addEventListener("click", async e => {   // N285: Settings has one too
+  const v = e.target.closest(".ver"); if (!v) return;
+  const have = v.dataset.v || v.textContent;
   let now = ""; try { now = (await (await fetch("version.txt?t=" + Date.now(), { cache: "no-store" })).text()).trim(); } catch (_) {}
   if (!now && location.protocol !== "file:") return tell(`Offline: this is ${have}`);
   if (now === have) return tell(`Up to date: ${have}`);

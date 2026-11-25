@@ -231,7 +231,7 @@ let keepOut = null, keepT = 0;
 function keepOuts() {   // the overlays' boxes on the stage, read at most twice a second (not every frame: no layout per label)
   const now = performance.now(); if (keepOut && now - keepT < 500) return keepOut;
   const r = stage.getBoundingClientRect(); keepT = now; keepOut = [];
-  qsa(".brand, .hnav, .r3d-mini, .r3d-dock, .r3d-stick, .r3d-peg").forEach(e => { const q = e.getBoundingClientRect(); if (q.width && q.height) keepOut.push([q.left - r.left, q.top - r.top, q.right - r.left, q.bottom - r.top]); });
+  qsa(".brand, .r3d-gear, .hnav, .r3d-mini, .r3d-dock, .r3d-stick, .r3d-peg").forEach(e => { const q = e.getBoundingClientRect(); if (q.width && q.height) keepOut.push([q.left - r.left, q.top - r.top, q.right - r.left, q.bottom - r.top]); });
   return keepOut;
 }
 function placeStickers() {
