@@ -3,7 +3,7 @@
 Rewritten (not appended) by the lead at merge (N249; a row's PR leaves it alone), under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.84 (25 Nov 2026): Every room has its places: where a piece belongs, what never goes there and why (the base for Ideas that belong)
+**Version:** V4.86 (25 Nov 2026): Made-to-measure oak pieces drawn for the places the shops can't fill: over-door shelves, an under-slope cupboard, under-stairs pull-outs, a hall bench and more, each with a rough cost
 V4.11 (N170): the small rooms' In it views without bowed walls; the hall looks down the hall. V4.10 (N174, N175): fewer view pills (As it is and Hide labels behind ⋯; Gardens, Next door on Outside only); the walk stick faint until touched. V4.9 (N177): a hitch check for a PC's walk. V4.8 (N141): the sofa bed's chenille made at build; photos 7.7 to 7.5 MB. V4.7 (N176):
 leaner code. V4.6 (N169): the plot's edge soft, the sky hazy. Earlier: `docs/HISTORY.md`.
 The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.28 ↻"): on the
@@ -50,6 +50,8 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
 - On a phone the stick, bottom left, walks, moves the map or glides, by view; a card or panel puts it away.
 - A tap's card stands beside its piece on a PC; on a phone it's a sheet over the dock, a swipe down closes it (V3.88).
 - **Places (N286):** every room has its places (`house/places.py`: a named area inside its real walls, what belongs there, what never, why), in `data/ideas.json` v2. Ideas (N287) puts a piece only in a place that takes it; + Add names what it adds; a moved piece snaps to a place or says why.
+- **The shops' best (N288):** each place's best pieces from the catalogue, ranked by fit, style and price (`places.best()`), or its gap (`places.gaps()`: nothing fits well); in `data/ideas.json` (`best`, `gap`).
+- **Made to fit (N289):** `house/bespoke.py`, a piece drawn to each gap's place and the plan's named ones (over-door shelves, records unit, under-slope cupboard, pull-outs, hall bench, alcove units), costed; builders `mf_*` in `08_house_catalogue.js`; `data/ideas.json` `made`.
 - Back, Esc and Tab each go one layer at a time; every tap is 44 px on a touch screen; the panels are cream.
 
 **Moving round:**

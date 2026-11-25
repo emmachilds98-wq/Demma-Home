@@ -265,6 +265,41 @@ Object.assign(HCAT, {
         if (i < vs.length - 1) for (const u of [4, 48]) { const top = v + P + Math.min(15, vs[i + 1] - v - 6);
           B("storebox", u, v + P, 2, u + 35, top - 0.8, 28); B("birch", u - 0.2, top - 0.8, 1.8, u + 35.2, top, 28.2); } }); } },   // KUGGIS boxes, their lids
 });
+/* N289: made to fit where the shops fall short (house/bespoke.py: each at its place's size, costed, fit.SOURCES madefit), in the artisan oak;
+   options to look at. mf_slope's top follows the roof from lo (its u = 0 end) up to H (its u = W end) */
+Object.assign(HCAT, {
+  mf_slope: { n: "Under-slope cupboard", k: "idea", w: 55, d: 45, h: 177, ref: "madefit", src: "Made to fit, 18 mm oak, its top the roof's",
+    b: (W, H, D, B, L, lo = H * 0.64) => { const n = 6, sw = W / n, hu = i => lo + (H - lo) * (i + 0.5) / n;   // stepped strips under the slope
+      B(ST, 1, 0, 3, W - 1, 6, D - 4); for (let i = 0; i < n; i++) { const u = i * sw, h = hu(i);
+        B(ST, u, 6, 0, u + sw, h, D - 2); B(ST, u + (i % 3 ? 0 : 0.3), 6.3, D - 2, u + sw - (i === 2 || i === 5 ? 0.3 : 0), h - 0.3, D - 0.4); }
+      B("gap", W / 2 - 0.15, 6.3, D - 0.45, W / 2 + 0.15, hu(2) - 1, D - 0.35);   // the doors' meeting line, a knob each side
+      for (const u of [W / 2 - 4, W / 2 + 2.4]) B("knob", u, 50, D - 0.4, u + 1.6, 53, D); } },
+  mf_pullout: { n: "Under-stairs pull-outs", k: "idea", w: 89, d: 30, h: 179, ref: "madefit", src: "Made to fit, ply towers, oak fronts, on runners",
+    b: (W, H, D, B) => { const tw = W / 2; B("birch", 0, 0, 0, W, H, D - 2);
+      for (let i = 0; i < 2; i++) { const u0 = i * tw + 0.3, u1 = (i + 1) * tw - 0.3; B(ST, u0, 0.5, D - 2, u1, H - 0.3, D);
+        B("handle_black", i ? u0 + 3 : u1 - 4.5, H * 0.45, D, i ? u0 + 4.5 : u1 - 3, H * 0.45 + 30, D + 1.5); } } },
+  mf_bench: { n: "Hall bench, shoes under", k: "idea", w: 80, d: 35, h: 45, ref: "madefit", src: "Made to fit, 18 mm oak",
+    b: (W, H, D, B) => { const p = ["shoe_black", "shoe_tan", "shoe_white", "shoe_grey"]; B(ST, 0, H - 3, 0, W, H, D);
+      for (const u of [0, W - 1.8]) B(ST, u, 0, 0, u + 1.8, H - 3, D); B(ST, 1.8, 2, 0, W - 1.8, 3.8, D); B(ST, 1.8, 20, 0, W - 1.8, 21.8, D - 1);
+      for (const v of [3.8, 21.8]) for (let u = 4, k = 0; u + 9 < W - 2; u += 12, k++) B(p[(k + v) % 4 | 0], u, v, 4, u + 9, v + 9, D - 3); } },   // two shelves of shoes
+  mf_alcove: { n: "Alcove shelves over a cupboard", k: "idea", w: 80, d: 40, h: 200, ref: "madefit", src: "Made to fit, 18 mm oak",
+    b: (W, H, D, B) => { const T = 1.8, ch = 80, sd = 25; B(ST, 1, 0, 3, W - 1, 6, D - 4); B(ST, 0, 6, 0, W, ch, D - 2); B(ST, 0, ch, 0, W, ch + 2.5, D);
+      for (const [a, b] of [[0.3, W / 2 - 0.15], [W / 2 + 0.15, W - 0.3]]) B(ST, a, 6.3, D - 2, b, ch - 0.3, D - 0.4);
+      for (const u of [W / 2 - 4, W / 2 + 2.4]) B("knob", u, ch - 14, D - 0.4, u + 1.6, ch - 11, D);
+      for (const u of [0, W - T]) B(ST, u, ch + 2.5, 0, u + T, H, sd); B("birch", T, ch + 2.5, 0, W - T, H, 0.6); const n = Math.max(2, Math.round((H - ch) / 32)), g = (H - ch - 2.5) / n;
+      for (let i = 1; i <= n; i++) B(ST, T, ch + 2.5 + i * g - T, 0.6, W - T, ch + 2.5 + i * g, sd);
+      for (let i = 0; i < n - 1; i++) stBooks(B, T + 1, W - T - 1, ch + 2.5 + i * g + (i ? 0 : 0), Math.min(24, g - 6) / 0.95, 1, sd - 2, W * (i + 2)); } },
+  mf_wallcab: { n: "Shallow oak wall cabinet", k: "idea", w: 50, d: 15, h: 60, ref: "madefit", src: "Made to fit, 18 mm oak",
+    b: (W, H, D, B) => { B(ST, 0, 0, 0, W, H, D - 2); B("gap", 0.3, 0.3, D - 2.05, W - 0.3, H - 0.3, D - 2); B(ST, 0.4, 0.4, D - 2, W - 0.4, H - 0.4, D - 0.4);
+      B("knob", 3, H / 2 - 1.5, D - 0.4, 4.6, H / 2 + 1.5, D); } },
+  mf_sidetable: { n: "Slim oak side table", k: "idea", w: 42, d: 28, h: 60, ref: "madefit", src: "Made to fit, 18 mm oak",
+    b: (W, H, D, B) => { B(ST, 0, H - 2, 0, W, H, D); B(ST, 2.5, H * 0.35, 2.5, W - 2.5, H * 0.35 + 1.8, D - 2.5);
+      for (const [u, t] of [[1, 1], [W - 4, 1], [1, D - 4], [W - 4, D - 4]]) B(ST, u, 0, t, u + 3, H - 2, t + 3);
+      stBooks(B, 4, W * 0.55, H * 0.35 + 1.8, 14, 4, D - 4, 3); } },
+  mf_lamp: { n: "Slim oak floor lamp", k: "idea", w: 30, d: 30, h: 150, ref: "madefit", src: "Made to fit, oak stem, linen shade",
+    b: (W, H, D, B, L) => { const r = W / 2 - 1, c = W / 2; B(ST, c - 11, 0, c - 11, c + 11, 3, c + 11); B(ST, c - 1.5, 3, c - 1.5, c + 1.5, H - 26, c + 1.5);
+      L("paper", c, c, H - 28, [[0, 0], [r, 0], [r, 28], [0, 28]]); } },
+});
 /* N219: real pieces from four shops (R.SHOP, from house/data/N219_catalogue.json by export3d.shop_row; each its own fit.SOURCES row by its key)
    and her own (a size, a look, one of the house's materials, a name), drawn by the same builders at their own size. Built only when one is
    swapped in or added, from materials the house already has: no new shader at the first picture. Options to look at: nothing to buy */

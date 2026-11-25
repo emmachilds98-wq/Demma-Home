@@ -9,6 +9,7 @@ height changes and named from what's beside it; N243's nooks (storage_ideas.spot
 open floor (a rug's or a table's, the biggest clear rectangle). Each kind's rules are KINDS; each room's design ROOMS.
 python3 house/places.py prints them; check_model.py runs checks()."""
 import functools
+import re
 import sys
 import model as M
 import storage_ideas as SI
@@ -324,6 +325,131 @@ def _all():
     return out
 
 
+# N288 (Emma, 25 Nov 2026: "find available furniture"): the shops' best for each place. Every catalogue piece (N219, N242, N243, N288:
+# fit.shop_pieces, opt_pieces, cat_pieces) that fits a place, ranked by fit (how much of the place it uses, a run of the same piece side by
+# side where it's modular), style (the house's look: artisan oak and warm wood, cane, pale mint and sage, linen) and price. A place's gap is
+# written when nothing fits well: over 10 cm of its wall wasted, or the style off (garage and store: only the fit counts).
+GOOD, WASTE = 0.55, 10.0
+AS_KIND = {"records": "shelves", "display": "shelves", "tv": "unit", "sideboard": "unit", "console": "table", "side": "table",
+           "coffee": "table", "dining": "table"}                     # the catalogue's kinds as KINDS' (export3d.SHOP_KIND, and a console a table)
+RUN = {"shelves", "unit", "chest", "shoes", "wardrobe", "wall"}      # modular: a run of the same piece fills a wall
+STYLE = [(r"artisan|solid oak|oak veneer|natural oak|\boak\b(?! effect)", 1.0), (r"walnut|cane|rattan|wicker|jute|seagrass", 1.0),
+         (r"mint|sage|green|olive", 0.95), (r"bamboo|eucalyptus|ash|birch|beech|teak|acacia|mango|natural|wood", 0.85),
+         (r"oak effect|oak-effect|sonoma|pine", 0.7), (r"linen|cream|beige|oatmeal|ivory", 0.7), (r"white", 0.5),
+         (r"black|grey|gray|anthracite|graphite|chrome|steel|gloss|silver|concrete", 0.15)]
+PLAIN = {"garage", "lower_store"}                                    # rooms where only the fit counts
+
+
+def style(q):
+    """0..1: the piece's finish (then its name) against the house's look; the first word that matches. A plant is green."""
+    if q.get("kind") == "plant":
+        return 0.95
+    for t in (q.get("finish", ""), q.get("name", "")):
+        v = next((v for pat, v in STYLE if re.search(pat, t.lower())), None)
+        if v is not None:
+            return v
+    return 0.5
+
+
+def _pkind(q):
+    import storage_ideas as SI
+    return "wall" if SI.piece_on(q) == "wall" else AS_KIND.get(q["kind"], q["kind"])
+
+
+@functools.lru_cache(None)
+def _cat():
+    sys.path.insert(0, str(__import__("pathlib").Path(__file__).resolve().parents[1] / "media-wall/src"))
+    import fit
+    out = {}
+    for q in fit.shop_pieces() + fit.opt_pieces() + fit.cat_pieces():
+        out.setdefault(fit.shop_key(q), q)
+    js = (__import__("pathlib").Path(__file__).resolve().parents[1] / "media-wall/src/room3d/08_house_catalogue.js").read_text()
+    for k, n, kind, w, d, h, ref in re.findall(r'^  (\w+): \{ n: "([^"]+)", k: "(\w+)", w: ([\d.]+), d: ([\d.]+), h: ([\d.]+), ref: "(\w+)"', js, re.M):
+        if kind in KINDS:                                            # the 3D's own pieces (HCAT, each with its fit.SOURCES ref), no price
+            out.setdefault(k, dict(kind=kind, name=n, finish="", w=float(w), d=float(d), h=float(h), price=None, ref=ref, hcat=True))
+    return out
+
+
+def fits(q, p, key=None):
+    """(n, used along, waste) if catalogue piece q fits place p (n of it side by side where it's modular), else None."""
+    k, W, D, H = _pkind(q), p["w"], p["d"], p["h"]
+    w, d, h = q["w"], q["d"], q.get("h") or 1
+    if p["at"] == "open":
+        if k not in p["kinds"]:
+            return None
+        c = 2 * KINDS[k]["clr"] if k in ("table", "gtable") else 0
+        o = [(a, b) for a, b in ((w, d), (d, w)) if a + c <= W + 1 and b + c <= D + 1]
+        if not o:
+            return None
+        a, b = o[0]
+        return 1, round(100 * (a + c) * (b + c) / (W * D)), round(max(W - a - c, D - b - c), 1)
+    if p.get("nook"):
+        import storage_ideas as SI
+        if key not in SI.spot_fits().get(p["nook"], []):
+            return None
+    elif k not in p["kinds"] or d > D + 1 or h > H + 1:
+        return None
+    if w > W + 1 and not (p.get("nook") and d <= W + 1 and w <= D + 1):
+        return None
+    if KINDS.get(k, {}).get("on") == "corner":
+        return 1, 100, 0.0
+    w = min(w, W) if w <= W + 1 else d
+    run = k in RUN and (h >= 60 or k == "wall") or p.get("nook") and k in ("shelves", "unit", "chest", "wall")   # a floor run of tall pieces, not boxes
+    n = min(6, max(1, int((W + 1) // w))) if run else 1
+    return n, round(100 * min(1, n * w / W)), round(max(0, W - n * w), 1)
+
+
+@functools.lru_cache(None)
+def _ranked():
+    out = {}
+    for p in _all():
+        L = []
+        for key, q in _cat().items():
+            f = fits(q, p, key)
+            if not f:
+                continue
+            n, use, waste = f
+            st = 1.0 if p["room"] in PLAIN else style(q)
+            L.append(dict(key=key, n=n, use=use, waste=waste, style=round(st, 2), price=q["price"] and round(q["price"] * n, 2)))
+        if L:
+            P = [r["price"] for r in L if r["price"]] or [0]
+            lo, hi = min(P), max(P)
+            for r in L:
+                cheap = 0.5 if not r["price"] else 1 - (r["price"] - lo) / (hi - lo) if hi > lo else 1
+                r["score"] = round(0.5 * r["use"] / 100 + 0.3 * r["style"] + 0.2 * cheap, 3)
+                corner = KINDS.get(_pkind(_cat()[r["key"]]), {}).get("on") == "corner"
+                rug = _pkind(_cat()[r["key"]]) == "rug"
+                r["good"] = r["style"] >= GOOD and (corner or (r["use"] >= 50 or not rug if p["at"] == "open" else r["waste"] <= WASTE))
+        L.sort(key=lambda r: (-r["good"], -r["score"]))
+        out[p["id"]] = L
+    return out
+
+
+def best(pid, n=5):
+    """A place's best n pieces from the shops, best first: [dict(key, n (side by side), use %, waste cm, style, price £, score, good)]."""
+    return [dict(r) for r in _ranked().get(pid, [])[:n]]
+
+
+def gaps():
+    """{place id: why} for each place nothing in the shops fits well (N289 draws a piece to fit it)."""
+    out = {}
+    for p in _all():
+        L, G = _ranked()[p["id"]], [r for r in _ranked()[p["id"]] if r["good"]]
+        if G:
+            continue
+        if not L and set(p["kinds"]) <= {"plant", "lamp"}:
+            out[p["id"]] = f"only a small plant (under {p['w']:g} across, {p['h']:g} high): any pot that size"   # N289 leaves these
+        elif not L:
+            out[p["id"]] = "nothing in the shops fits it"
+        elif all(r["style"] < GOOD for r in L):
+            f = _cat()[L[0]["key"]].get("finish") or "white"
+            out[p["id"]] = f"only off-style pieces fit (the best: {f})"
+        else:
+            b = min((r for r in L if r["style"] >= GOOD), key=lambda r: r["waste"])
+            out[p["id"]] = f"the closest wastes {b['waste']:g} cm" if p["at"] != "open" else f"the closest uses {b['use']}% of it"
+    return out
+
+
 def places():
     """Every place: dict(id, room, n, at, back, box [x0, y0, z0, x1, y1, z1] house cm, w along its wall, d, h, clr in front, kinds,
     never, why)."""
@@ -332,8 +458,10 @@ def places():
 
 def for_page():
     """data/ideas.json v2's places (N287 reads them)."""
+    G = gaps()
     return [dict(id=p["id"], room=p["room"], n=p["n"], at=p["at"], back=p["back"], b=p["box"], w=p["w"], d=p["d"], h=p["h"], clr=p["clr"],
-                 kinds=p["kinds"], never=p["never"], why=p["why"]) for p in _all()]
+                 kinds=p["kinds"], never=p["never"], why=p["why"], best=[[r["key"], r["n"]] for r in best(p["id"]) if r["good"]],
+                 **({"gap": G[p["id"]]} if p["id"] in G else {})) for p in _all()]   # N288: its best from the shops [key, how many], or its gap
 
 
 def checks():
@@ -359,11 +487,28 @@ def checks():
     bad += [f"no place in {r}" for r in ROOMS if r not in rooms]
     ids = [p["id"] for p in P]
     bad += [f"{i} twice" for i in sorted({i for i in ids if ids.count(i) > 1})]
-    return [("places (N286): each inside its room, clear of the house, swings and walks; every room has some", not bad,
-             "; ".join(bad) or f"{len(P)} places in {len(rooms)} rooms")]
+    out = [("places (N286): each inside its room, clear of the house, swings and walks; every room has some", not bad,
+            "; ".join(bad) or f"{len(P)} places in {len(rooms)} rooms")]
+    bad, G = [], gaps()                                              # N288: each place's best pieces fit it; a place with none has its gap
+    for p in P:
+        B = [r for r in best(p["id"]) if r["good"]]
+        bad += [f"{p['id']}: {r['key']} doesn't fit" for r in B if not fits(_cat()[r["key"]], p, r["key"])]
+        bad += [f"{p['id']}: {r['key']} has no source" for r in B if not _cat()[r["key"]].get("url") and not _cat()[r["key"]].get("ref")]
+        if not B and p["id"] not in G:
+            bad.append(f"{p['id']}: no piece and no gap")
+    n = sum(1 for p in P if p["id"] not in G)
+    out.append(("the shops' best for each place (N288): each fits and is cited; the rest have their gap", not bad,
+                "; ".join(bad) or f"{n} places with a good piece, {len(G)} gaps"))
+    return out
 
 
-if __name__ == "__main__":
+if __name__ == "__main__" and "--shops" in sys.argv:          # N288: each place's best three, then the gaps
+    G = gaps()
+    for p in places():
+        B = best(p["id"], 3)
+        print(f"{p['room']:11} {p['id']:18} {p['n'][:34]:34} " + (f"GAP: {G[p['id']]}" if p["id"] in G else
+              " · ".join(f"{r['n']}× {_cat()[r['key']]['name'][:28]} (£{r['price'] or '?'}, {r['waste']:g} spare)" for r in B if r["good"])))
+elif __name__ == "__main__":
     for n, ok, note in checks():
         print("PASS" if ok else "FAIL", n, note)
     for p in places():
