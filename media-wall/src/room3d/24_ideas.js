@@ -56,7 +56,8 @@ function ixRoom() {   // the house's room you're in (not the living room: its ow
 }
 function ixPill() {
   const b = qs("#r3d-ideas"); if (!b) return; b.hidden = !ixRoom(); b.setAttribute("aria-pressed", String(ixOn()));
-  if (!ixOn() && /^ixp?:/.test(GS.actId || "")) closeAct();
+  if (!ixOn() && /^ix(p|pl)?:/.test(GS.actId || "")) closeAct();
+  ixGlow(ixOn() ? ASIDE.ix : null);
 }
 const ixTakes = (room, q) => !HPL || placesFor(room, q).length > 0;   // N287: a place in the room takes it and it fits
 const ixCands = (kind, re, used = new Set(), room = IX.room) => { const sc = q => (re && re.test(HCAT[q].n) ? 0 : 2) + (used.has(q) ? 4 : 0) + (HCAT[q].shop ? 0 : 1);   // its words first, then not used yet, then a shop's
@@ -77,9 +78,37 @@ function ixSetups(room) {   // [{n, ideas: {id: shop key or ""}, adds: [[key, x,
       for (const q of ixCands(kind, re, used, room).slice(0, 6)) { const sp = ixSpot(room, q, at[0], at[1], r[4], null, more, skip); if (!sp) continue;
         s.adds.push([q, sp[0], sp[1], sp.tight ? 1 : 0]); more.push(sp[4] || sp[3]); used.add(q); at = [(sp[3][0] + sp[3][3]) / 2, (sp[3][2] + sp[3][5]) / 2]; n++; break; }
       if (kind === th.add[0][0] && s.adds.length === before && HPL) { main = false; break; } }   // N287: its main piece has no place here: not shown
-    if (!main) continue;
+    if (!main || (HPL && s.adds.some(a => a[3]))) continue;   // N290: a set-up that breaks a rule (a piece without its room to open) isn't shown
     const sig = JSON.stringify([s.ideas, s.adds.map(a => a[0])]); if (!n || seen.has(sig)) continue; seen.add(sig); out.push(s); }
-  return out;
+  const mf = ixMadeSetup(room); if (mf) out.push(mf);
+  if (!HPL) return out;
+  out.slice(1).forEach(s => { s.score = ixScore(s); });   // N290: the best two or three, best first
+  return [out[0], ...out.slice(1).sort((a, b) => b.score - a.score).slice(0, 3)];
+}
+/* N290 (Emma, 25 Nov 2026: "make priority to make design and suggestion better"): a set-up's score: each piece with its room to open it,
+   a lamp at a seat, a desk by its window (its place takes it only there), the set-up's colours (60-30-10, her palette), the house's look
+   (artisan oak and warm wood, cane, pale mint and sage, linen) and the made-to-fit pieces drawn for the room's own places */
+const IX_LOOK = /oak|cane|rattan|pine|wood|walnut|mint|sage|linen|jute|wool/i;
+function ixScore(s) {
+  let v = Object.keys(s.ideas).length; const P = s.adds.map(([q]) => HCAT[q] || {});
+  for (const C of P) v += 2 + (IX_LOOK.test(C.n || "") || C.made ? 1 : 0);
+  const seat = s.adds.find(([q]) => /seat|gsofa/.test((HCAT[q] || {}).k)), lamp = s.adds.find(([q]) => (HCAT[q] || {}).k === "lamp");
+  if (seat) v += lamp && Math.hypot(seat[1] - lamp[1], seat[2] - lamp[2]) < 110 ? 2 : -1;
+  return v + (s.pal ? 1 : 0) + (s.made ? 2 : 0);
+}
+/* N289's made-to-fit pieces, each in its place (house/bespoke.py, data/ideas.json "made"): one set-up a room, "Made to fit" */
+let IXMADE = [];
+function madeSpot(m) {   // [x, z, y] for made row m in its place: its back on the place's wall, along its middle (an open place: its middle)
+  const p = (HPL || []).find(q => q.id === m[1]), C = HCAT[m[0]]; if (!p || !C) return null; const b = p.b;
+  if (!p.back || p.back === "y1") return [(b[0] + b[3]) / 2, (b[2] + b[5]) / 2, b[1]];
+  const o = p.back[0] === "x" ? 0 : 2, hi = p.back[1] === "1", a = 2 - o, c = [0, 0, 0];
+  c[a] = (b[a] + b[a + 3]) / 2; c[o] = hi ? b[o + 3] - C.d / 2 : b[o] + C.d / 2; return [c[0], c[2], b[1]];
+}
+function ixMadeSetup(room) {
+  const adds = [], used = [];
+  for (const m of IXMADE) { const p = (HPL || []).find(q => q.id === m[1]); if (!p || p.room !== room || used.includes(m[1]) || adds.length >= 4) continue;
+    const at = madeSpot(m); if (!at) continue; used.push(m[1]); adds.push([m[0], at[0], at[1], 0, at[2]]); }
+  return adds.length ? { n: "Made to fit", why: "Oak pieces drawn to the room's own places, where the shops fall short", pal: null, ideas: {}, adds, made: true } : null;
 }
 const heArr = v => [v.item, v.field, v.value, ...(v.field === "add" ? [v.room, v.x, v.z, v.y] : [])];
 function ixShow(room, i) {   // set-up i over hers: her colours, edits and pieces, the room's storage ideas and the set-up's pieces its own
@@ -91,7 +120,7 @@ function ixShow(room, i) {   // set-up i over hers: her colours, edits and piece
   const P = IX.col && s.pal; if (P) { [0, 1, 2, 3].forEach(j => { o[j] = IX_PAINTS[IX_PK[P.w]][0]; }); if (P.rug) o[18] = P.rug; if (P.cu) o[19] = P.cu; if (P.bed && /bed|master/.test(room)) o[20] = P.bed; if (P.k) o[6] = P.k; }   // N282: its colours
   if (!Object.keys(o).length) delete S.fin[room];
   const mine = Object.values(ASIDE.real.rows("edits") || {}).filter(heOk).map(heArr);
-  heWear([...mine, ...s.adds.map(([k, x, z], j) => [`add.${IX.p}${j}`, "add", k, room, cmR(x), cmR(z), r[4]])], DS()); IX.n = s.adds.length;
+  heWear([...mine, ...s.adds.map(([k, x, z, , y], j) => [`add.${IX.p}${j}`, "add", k, room, cmR(x), cmR(z), y ?? r[4]])], DS()); IX.n = s.adds.length;
   finApplyAll(); storeEdits(); lookPill();
 }
 /* N245 (its first part): the catalogue's pieces (N243's data, data/ideas.json: N219's, N242's and N243's shops, 230 and more) fetched once,
@@ -102,6 +131,9 @@ function ixData() {
 }
 function ixLoad(j) {
   if (Array.isArray(j.places)) HPL = j.places;   // N286's places (v2)
+  IXMADE = (j.made || []).filter(m => HCAT[m[2]]);   // N289: made to fit, drawn by its builder at its place's size
+  for (const [id, pid, look, n, w, d, h, lo, hi, line] of IXMADE) if (!HCAT[id]) { HCAT[id] = Object.assign({}, HCAT[look], { n, w, d, h, pr: [lo, hi], src: line, made: pid }); }
+  IXMADE = IXMADE.map(m => [m[0], m[1]]);
   for (const [key, k, look, n, shop, w, d, h, p, url, m, m2, c] of j.pieces || []) { if (HCAT[key] || k === "idea" || !HCAT_KINDS[k] && !/^(gtable|gchair|gsofa)$/.test(k)) continue;
     HCAT[key] = { n, k, w, d, h: Math.max(h, k === "rug" ? 0.6 : 1), ref: key, src: `${shop}, ${n}`, shop, p, url, b: hcMake(k, look, m, m2, c) }; HCAT_ADD.push(key); }
 }
@@ -127,7 +159,8 @@ function ixCard(room) {   // "Records wall · 4 pieces · £320–480": ‹ ›,
     `<div class="r3d-fin">` + (s.why ? `<p class="r3d-ixwhy"><b>${s.why}.</b>${ixNotes(s).map(t => `<span>${t}</span>`).join("")}</p>` : "")
     + `<div class="r3d-finsc" role="group" aria-label="Set-ups">${IX.L.map((q, j) => `<button type="button" data-ixset="${room}:${j}" aria-pressed="${j === IX.i}">${q.n}</button>`).join("")}`
     + (nx ? `<button type="button" data-ixadd="${room}" aria-pressed="false">+ Add ${nx}</button>` : "")
-    + (s.pal ? `<button type="button" data-ixcol="${room}" aria-pressed="${IX.col}">Its colours</button>` : "") + `</div></div>`];
+    + (s.pal ? `<button type="button" data-ixcol="${room}" aria-pressed="${IX.col}">Its colours</button>` : "")
+    + (ixPlaces(room).length ? `<button type="button" data-ixpl="${room}:0" aria-pressed="false">Places</button>` : "") + `</div></div>`];
 }
 function ixFits(k, row) {   // its kind's pieces that stand where it does (their middle within 60 cm), clear of the rest; kept while its card is
   const kind = HCAT[row.value].k; if (IX.fit && IX.fit.k === k && IX.fit.kind === kind && IX.fit.L.includes(row.value)) return IX.fit.L;
@@ -168,12 +201,48 @@ function ixNext(room) {   // N287: + Add's next piece, [key, spot, n] in a free 
 }
 qs("#r3d-ideas")?.addEventListener("click", () => { const rm = ixRoom(); if (rm) ixOpen(rm); });
 if (act) act.addEventListener("click", e => {   // the cards' own buttons (before 16_cards' handler)
-  const b = e.target.closest("[data-ixset],[data-ixadd],[data-ixkeep],[data-ixgo],[data-ixcol]"); if (!b || performance.now() - actAt < 350) return; e.stopPropagation(); const d = b.dataset;
+  const b = e.target.closest("[data-ixset],[data-ixadd],[data-ixkeep],[data-ixgo],[data-ixcol],[data-ixpl],[data-ixput]"); if (!b || performance.now() - actAt < 350) return; e.stopPropagation(); const d = b.dataset;
   if (d.ixset) { const [room, x] = d.ixset.split(":"), n = (IX.L || []).length; if (!n || !ixOn()) return; ixShow(room, ((+x % n) + n) % n); GS.actId = "ix:" + room; renderAct(); return; }
   if (d.ixadd) { if (ixOn()) ixAdd(d.ixadd); renderAct(); return; }
   if (d.ixcol) { if (!ixOn()) return; IX.col = !IX.col; ixShow(d.ixcol, IX.i); GS.actId = "ix:" + d.ixcol; renderAct(); return; }   // N282: its colours or hers
   if (d.ixkeep) { if (ixOn()) ixKeep(d.ixkeep); return; }
+  if (d.ixpl) { const [room, x] = d.ixpl.split(":"), n = ixPlaces(room).length; if (!n || !ixOn()) return; GS.actId = `ixpl:${room}:${((+x % n) + n) % n}`; renderAct(); return; }   // N291
+  if (d.ixput) { if (ixOn()) ixPut(...d.ixput.split(":")); renderAct(); return; }
   const [k, x] = d.ixgo.split(":"), ds = DS(), row = ds && ds.rows("edits")[k + "~add"]; if (!row) return;
   const L = ixFits(k, row), v = L[((+x % L.length) + L.length) % L.length], pb = pieceBox(k), sp = ixAt(row.room, v, (pb[0] + pb[3]) / 2, (pb[2] + pb[5]) / 2, +row.y, k, [], null, 60);
   ds.put("edits", k + "~add", Object.assign({}, row, { value: v }, sp ? { x: cmR(sp[0]), z: cmR(sp[1]) } : {})).then(() => { if (GS.actId) renderAct(); });
 }, true);
+/* N291: places on the screen. In Ideas the room's places glow faintly on the floor (one mesh, only while Ideas is open); Places on the card
+   steps through them ‹ ›, the one chosen outlined, and shows what fits it: the shops' best (N288) and the made to fit (N289); a tap puts it there */
+const IXG = { g: null, room: null };
+function ixGlow(room) {
+  if (IXG.room === room) return; if (IXG.g) { scene.remove(IXG.g); IXG.g.geometry.dispose(); IXG.g.material.dispose(); IXG.g = null; } IXG.room = room; if (!room || !HPL) { dirty(); return; }
+  const L = ixPlaces(room).filter(p => p.at === "floor" || p.at === "open"), pos = [];
+  for (const p of L) { const [x0, y, z0, x1, , z1] = p.b, yy = (y + 0.6) * M, q = [[x0, z0], [x1, z0], [x1, z1], [x0, z0], [x1, z1], [x0, z1]];
+    for (const [x, z] of q) pos.push(-x * M, yy, z * M); }
+  if (!pos.length) return; const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+  IXG.g = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: "#fff1bf", transparent: true, opacity: 0.16, depthWrite: false, side: THREE.DoubleSide, toneMapped: false }));
+  IXG.g.renderOrder = 996; IXG.g.raycast = () => {}; scene.add(IXG.g); dirty();
+}
+const ixOpts = p => [...new Set([...(p.best || []).map(r => r[0]).filter(k => HCAT[k]), ...IXMADE.filter(m => m[1] === p.id).map(m => m[0])])];
+const ixPlaces = room => (HPL || []).filter(p => p.room === room && ixOpts(p).length);
+function ixPlaceCard(arg) {
+  const [room, i] = arg.split(":"), L = ixPlaces(room), p = L[+i]; if (!p || !ixOn()) return null; const O = ixOpts(p);
+  const size = p.at === "open" ? `${Math.round(p.w)} × ${Math.round(p.d)} cm of floor` : `${Math.round(p.w)} wide, ${Math.round(p.d)} deep, ${Math.round(p.h)} high`;
+  const price = C => { const c = upCat(null, C) || [0, 0]; return c[1] ? ` · ${upRange(c[0], c[1])}` : ""; };
+  return [p.n, `${roomName(room)} · ${size}${p.gap ? " · " + p.gap : ""}`, [...hcNav(room, +i, "ixpl"), btn("Back to ideas", { actopen: "ix:" + room })], null,
+    `<div class="r3d-fin"><p class="r3d-ixwhy"><b>${p.why}.</b>${p.never.length ? `<span>Kept clear: ${p.never.join(", ")}</span>` : ""}</p>`
+    + `<div class="r3d-finsc" role="group" aria-label="What fits here">${O.map(k => `<button type="button" data-ixput="${room}:${p.id}:${k}" aria-pressed="false">${HCAT[k].made ? "Made to fit: " : ""}${HCAT[k].n}${price(HCAT[k])}</button>`).join("")}</div></div>`];
+}
+function ixPlaceSel() {   // the chosen place outlined, its name on a tag
+  const [, room, i] = String(GS.actId).split(":"), p = ixPlaces(room)[+i]; if (!p) { clearSel(); return; }
+  const b = p.b.slice(); if (b[4] - b[1] < 30) b[4] = b[1] + 30; selPiece({ box: b, label: p.n.length > 16 ? p.n.slice(0, 15) + "…" : p.n });
+}
+function ixPut(room, pid, key) {   // a piece put in the place: the shops' where it fits in that place, a made one at its own
+  const ds = DS(), C = HCAT[key], r = H3R(room), p = (HPL || []).find(q => q.id === pid); if (!ds || !C || !p) return;
+  let at = C.made ? madeSpot([key, pid]) : null;
+  if (!C.made) { const sp = placeSpot(room, key, (p.b[0] + p.b[3]) / 2, (p.b[2] + p.b[5]) / 2, r[4], null, [], null, Math.max(p.w, p.d)); if (sp && sp[5].id === pid) at = [sp[0], sp[1], r[4]]; }
+  if (!at) { toast(`No room for it there now: ${p.n.replace(/^The /, "the ")} has pieces in it`); return; }
+  const id = `add.${IX.p}${IX.n++}`; ds.put("edits", id + "~add", { item: id, field: "add", value: key, room, x: cmR(at[0]), z: cmR(at[1]), y: at[2] });
+  toast(`${C.n} · ${p.n}`);
+}
