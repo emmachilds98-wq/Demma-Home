@@ -538,6 +538,26 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/archive/revie
   in the wall's thickness, so a shelf over a landing door starts 2 in from the wall. A web research job returns some wrong rows (a
   bad URL, sizes swapped, a set's price): read each before it goes in.
 
+### Section 34 (N286–N292, 25 Nov 2026): where to start, for the team that builds it
+- **The cause of "furniture in the wrong rooms":** `ixSetups` and `ixAdd` (`media-wall/src/room3d/24_ideas.js`) pick a piece by kind
+  (`ixCands`: any `HCAT_ADD` piece of that `k`, its words first) and place it with `ixSpot` → `spotFor` (`08_house_catalogue.js` ~578):
+  every 5 cm along each of the four sides of `H3R(room)` (the room's box `[x0, x1, z0, z1, y]`, not its real outline), the first clear
+  of the room's pieces and `roomWhy` (walls, notches, eaves, roof). Nothing asks whether the piece suits that room or that wall. The only
+  guard is each `IX_THEMES` row's `only` / `no` regex on the room id; `+ Add storage` (`IX_STORE`: shelves, chest, shoes, wardrobe, unit)
+  has none. Rooms in two parts (`master` + `master_1`, `bathroom` + `bathroom_1`) and L shapes rest on `R.HOUSE3.fit.notch`.
+- **What to build on:** N243's spots (`house/storage_ideas.py`: `_spots()`, `fits_spot()`, `_tester()` the shared fit test, `reserves()`
+  the walks kept clear; `checks()` run by `check_model.py`) are storage nooks only; N286's places extend the same data (one list, one
+  tester), shipped in `data/ideas.json` (bump `v`, keep `ixLoad` reading v1 rows). The kinds' clearances are `DZ` (24_ideas.js) and
+  `docs/DESIGN.md` (cited): use one table for both, from Python into the JSON.
+- **Drawing a made-to-fit piece (N289):** `hcMake(kind, look, mat, mat2, count)` and the builders at the top of `08_house_catalogue.js`
+  (`hcChest` etc.) draw a box-built piece from W, H, D; the house's oak is the `woodwork` material (`house/model.py`, FIN kind 3). A
+  new builder that reuses existing materials adds no shader programs (`tools/perf_budget.json`'s `shaders_first`); a new material does.
+  Its cost rows and sources go in `media-wall/src/fit.py` (`SOURCES`), one line each, options only (no `UPC` build or buy rows).
+- **Moving a piece (N287):** the drag is in `13_edit_room.js`; `clashes(id)` and `roomWhy` say what it hits. Snap to a place there.
+- **Phones:** cards use N285's one structure (`renderAct` in `16_cards.js`: a bottom sheet, one sliding row of choices). Keep Ideas'
+  card to it; `check_site.py`'s PHONEUI step fails a control under 44 px or overlapping.
+- **Checks:** `check_site.py`'s IDEAS step (N284 fixed it) opens Ideas in bedroom 2; N292 adds IDEAS2 for every room.
+
 ## 6. Finishes and furniture (section 14, N56–N58; section 17 stream A)
 - **The walls' emulsion (N172):** `paintGrain` (`03_materials.js`) adds a world-position varying and value noise to a wall's shader (tone at `color_fragment`, sheen at `roughnessmap_fragment`). It runs on `paintMat`'s walls (key `paintwall`), the stair wall (`stairMat`: a `clone()` drops `onBeforeCompile`, so it's set again) and the house's `paint` (inside `finPatch`, `finish0`). A material's `clone()` never carries `onBeforeCompile` or `customProgramCacheKey`. HD shots in the rig sometimes catch the GTAO unsettled (a dark speckle by the landing's newel): shoot twice before blaming a change.
 - **One room's finish in a shared material (N172 garage):** the garage's floor is the drive's `concrete`; `garageFloor` (`20_go.js`) patches that material and acts only inside `H3.rooms.garage`'s outline (its slab lies 15 cm under the room's y). The walls' palette shader (`finPatch`) knows each pixel's room (`rm`): `finGar` holds the garage's number for its masonry look.
