@@ -49,6 +49,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
 - The dock: View · Look · Measure (in the living room also Room and Edit); the figure drops you in where you let go.
 - On a phone the stick, bottom left, walks, moves the map or glides, by view; a card or panel puts it away.
 - A tap's card stands beside its piece on a PC; on a phone it's a sheet over the dock, a swipe down closes it (V3.88).
+- Try options' Back to my plan sits top left; on a phone under the view pills, never behind them (N293).
 - **Places (N286):** every room has its places (`house/places.py`: a named area inside its real walls, what belongs there, what never, why), in `data/ideas.json` v2. Ideas (N287) puts a piece only in a place that takes it; + Add names what it adds; a moved piece snaps to a place or says why.
 - **The shops' best (N288):** each place's best pieces from the catalogue, ranked by fit, style and price (`places.best()`), or its gap (`places.gaps()`: nothing fits well); in `data/ideas.json` (`best`, `gap`).
 - **Made to fit (N289):** `house/bespoke.py`, a piece drawn to each gap's place and the plan's named ones (over-door shelves, records unit, under-slope cupboard, pull-outs, hall bench, alcove units), costed; builders `mf_*` in `08_house_catalogue.js`; `data/ideas.json` `made`.
