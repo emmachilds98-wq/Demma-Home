@@ -1,22 +1,25 @@
 # Handover (25 Nov 2026, V4.82: start here)
 
 ## Now (25 Nov 2026, V4.82: start here)
-The client: "handover efficiently now so another team can finish and start upgrade. make sure none of your work is left behind".
+The client, 25 Nov: "another team is going to build it from another session so make sure the repo has everything they will need".
 
 **Read first:** `CLAUDE.md` (the client's rules; **privacy first: the address is never written anywhere**), this block, then
-`docs/REAL_PLAN.md` section 32 (the open work) and `docs/NOTES.md` as needed. Older plans, handover blocks and full history lines are in
-`docs/archive/` (N250).
+`docs/REAL_PLAN.md` **section 34** (the next build), `docs/NOTES.md` section 5's "Section 34 ... where to start" (the code it changes),
+`docs/DESIGN.md` (the design rules, cited) and `docs/DECISIONS.md` ("Ideas that belong", her words). Older plans: `docs/archive/`.
 
-1. **Main's CI first** (N252: this line records main's last finished CI; a red main is fixed first, from one log read). Last finished:
-   run 923 (23 Nov) failed in `browser (site)`, the paint step ("Kitchen: the splashback", not the walls' card); G5 fixed the check and
-   stopped main's runs cancelling each other (#341), so the next main run is the first to finish since: read it.
-2. **Build N245** (Ideas reading N243's 41 places and 188 pieces from `data/ideas.json`, plus an Ideas pill in the living room): not
-   started in code; its row in REAL_PLAN section 31 gives the steps (a `syncAdds` hook, then `24_ideas.js`, then the living room).
-3. **The upgrade plan: `docs/REAL_PLAN.md` section 32** (N246–N275), its order and its side-by-side groups G1–G6. G1 (tools and docs)
-   done: N246 markers check, N247 `claim.py`, N248 `ship.py`, N249, N250 (this archive), N251, N252 (`branches.py`; deleting waits on the
-   owner). The other groups' rows: see each row's state.
-4. **Waiting on Emma:** her storage picks (Ideas and the storage options now show real shop pieces), `?perf` → Send from her PC (N240's
-   real cause), the tape round (N235, N275), the master's sliding-door gap, lighting "later" (N228, N270).
+1. **Main's CI first** (N252: a red main is fixed first, from one log read). N284 (`claude/n284-main`) fixed main's red (the IDEAS step,
+   the phone's `first_visit_mb`, the `shaders_first` budgets) without raising a budget; if it isn't merged when you arrive
+   (`git log origin/main..origin/claude/n284-main`), merge it with `tools/ship.py`, then read main's next run.
+2. **Build section 34, "Ideas that belong" (N286–N292).** Emma: Ideas drops furniture into the wrong rooms; give each room places where
+   furniture makes sense, the shops' best for each, made-to-measure pieces in the house's style where shops fall short, and better design
+   and suggestions first. Order: N286 (every room's places, in `house/places.py`, checked) → N287 (Ideas places a piece only where it
+   belongs: the wrong-room fix) with N292 (its check) → N288 (shops per place) and N289 (made to measure) side by side → N290 (fewer,
+   better set-ups) and N291 (places on screen). Claim each row first (`tools/claim.py N286`). Options only: no build steps or buy rows
+   till she picks.
+3. **Done lately:** N285 (V4.82) the phone's buttons and cards: Settings by the brand (Share, quality, labels, help), one row of pills,
+   Plan in the dock, a card a bottom sheet; the PHONEUI check. Section 32's rows: see each row's state.
+4. **Waiting on Emma:** her storage picks, `?perf` → Send from her PC (N240's real cause), the tape round (N235, N275), the master's
+   sliding-door gap, lighting "later" (N228, N270).
 
 **Superseded branches, kept only for reference (not to merge):** `claude/trusting-gauss-gra6z6-pr322`, `-n224`, `-n225`, `-n226`, `-n232`,
 `-win` (a parallel session's versions of the same rows are on main); `-n237` (its commit is on main under another id); `-old-n224-kitchen`, `-old-n220-living`, `-old-shaders` (earlier helpers' unfinished work, saved at handover; the same rows are on main). Every other

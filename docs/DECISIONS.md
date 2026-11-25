@@ -114,6 +114,14 @@ take one out (to `docs/HISTORY.md`) when they change their mind.
 - **Anything taken out can be put back from the menu** (12 Nov 2026, V3.75: "I also want ability to remove items from the room completely as well as move them. Make sure anything that I can remove can be re added via the ui menu"): every piece that stands in the living room has Take it out on its card and in Edit; Room → Taken out and Edit's + Add list what's out, a tap each to put it back; the toast's Put back undoes it. A new removable piece must show there.
 - **The sofa bed's headrests flip up on a hinge, five of them** (12 Nov 2026, V3.75: "The headrests look like they just flip upwards"; then "there are 5 from what i can see"): drawn as the listing's Clic-Clac pads, no stems or gap; three along the back, two down the side (the listing's text says three).
 
+## Ideas that belong (25 Nov 2026, V4.82)
+- "So I can currently just drop furniture into the wrong rooms from the ideas area. Make a plan to make specific fittings for areas that
+  you deem would fit and make sense to have furniture and design any bespoke furniture needed to fit our design if you can't find
+  available furniture. This upgrade should make priority to make design and suggestion better." → REAL_PLAN section 34 (N286–N292).
+- "another team is going to build it from another session so make sure the repo has everything they will need" → HANDOVER's Now,
+  NOTES section 5 ("Section 34 ... where to start").
+- The phone (24 Nov): "Share can be in settings and you should refurb the whole button and card structure" → N285, done V4.82.
+
 ## Where each round's plan was, in the client's words (moved from CLAUDE.md by N250)
 
 The sections up to 28 are now in `docs/archive/REAL_PLAN_1-28.md`; the old plans (`V1_PLAN`, `FINISHES_PLAN`, `UPGRADE_REVIEW`, `QUALITY_PLAN`) in `docs/archive/`.
