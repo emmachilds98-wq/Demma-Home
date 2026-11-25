@@ -485,3 +485,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.85** (25 Nov 2026): Every place in the house has the shops' best pieces for it, ranked by fit, style and price, and its gap where nothing fits
 - **V4.86** (25 Nov 2026): Made-to-measure oak pieces drawn for the places the shops can't fill: over-door shelves, an under-slope cupboard, under-stairs pull-outs, a hall bench and more, each with a rough cost
 - **V4.87** (25 Nov 2026): Ideas puts a piece only where it belongs: each set-up and + Add use the room's places, + Add says what it adds, a moved piece snaps to a place or says why; a check runs every room's set-ups
+- **V4.88** (25 Nov 2026): On a phone, Back to my plan in Try options sits under the view pills, so it can be tapped
