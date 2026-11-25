@@ -101,7 +101,7 @@ def main(only):
             for k in compare.OPEN.get(view, []):
                 pg.evaluate("k => R3D._dbg.swingDoor(k, true)", k); pg.wait_for_timeout(1500)
             pg.evaluate("document.querySelector('[data-rmode=\"stand\"]').click()"); pg.wait_for_timeout(2500)   # standing: nothing pulls the eye back into the room's box
-            pg.evaluate("document.body.classList.add('bare'); document.querySelectorAll('.r3d-mini, .brand, .r3d-toast, .r3d-stick').forEach(e => e.style.visibility = 'hidden')")
+            pg.evaluate("document.body.classList.add('bare'); document.querySelectorAll('.r3d-mini, .brand, .r3d-gear, .r3d-toast, .r3d-stick').forEach(e => e.style.visibility = 'hidden')")
             v = compare.CAMS.get(view) or START.get(view) or pg.evaluate(f"(() => {{ const V = R3D._dbg.VIEWS['{room}']; return {{ eye: V.eye, at: V.at, fov: 70 }}; }})()")
             c = start_of(v)
             bx = BOX.get(room) or pg.evaluate(f"R3D._dbg.VIEWS['{room}'].box")    # [x0, x1, y0, y1, z0, z1]: the eye stays in the room (or its doorway, 40 on) at a phone's height

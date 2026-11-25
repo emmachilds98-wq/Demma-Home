@@ -479,3 +479,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.79** (24 Nov 2026): the shops' pieces load in Ideas
 - **V4.80** (24 Nov 2026): Ideas that fit and look better: room to use each piece, a colour scheme each set-up
 - **V4.81** (24 Nov 2026): The living room's design check and an oak lamp table to make, in Build
+- **V4.82** (25 Nov 2026): The phone's buttons and cards refurbished: Settings by the brand holds Share; one row of pills; Plan in the dock; cards open as sheets

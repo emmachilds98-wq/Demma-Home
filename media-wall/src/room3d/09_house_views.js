@@ -538,7 +538,7 @@ const ROOM_VIEW = { living: "room", kitchen: "kitchen", bed3: "office", bed2: "b
 function freeFrame(any) {   // N186: any, a PC's screen too
   if ((camera.aspect >= 1 && !any) || typeof stage === "undefined" || !stage) return [1, 0];
   const st = stage.getBoundingClientRect(), H = st.height; let top = 0, bot = 0;
-  for (const el of document.querySelectorAll(".brand, .r3d-mini, #r3d-floors, #r3d-hrooms, #r3d-rmode, .hnav")) { const r = el.getBoundingClientRect();
+  for (const el of document.querySelectorAll(".brand, .r3d-gear, .r3d-mini, #r3d-floors, #r3d-hrooms, #r3d-rmode, .hnav")) { const r = el.getBoundingClientRect();
     if (r.width && r.height && r.bottom - st.top < H * 0.5) top = Math.max(top, r.bottom - st.top); }
   const dk = document.querySelector(".r3d-dock"); if (dk) { const r = dk.getBoundingClientRect(); if (r.height && r.top - st.top > H * 0.5) bot = st.bottom - r.top; }
   return [Math.max(0.4, (H - top - bot) / H), (top - bot) / 2];
