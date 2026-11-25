@@ -586,3 +586,18 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/archive/revie
 - **A walk kept clear has no piece (`of` null), and a new piece has no `self` (null):** `roomWhy` skipped each reserve with
   `of !== self`, so `null !== null` let every added piece (Ideas' set-ups, + Add storage, a tapped add) stand in bedroom 2's walk to
   the desk; it showed only in the fresh-page features job (24 Nov). Now `!of || of !== self`.
+
+### Lessons of 24 Nov 2026 (N284, main green again)
+- **A card's tray is one element:** `renderAct` (16) puts in only the tray's first element and removes `.r3d-fin` on each render, so
+  anything a card adds goes inside its `.r3d-fin` wrapper (N282's why line in front of it hid Ideas' chips and + Add storage, and
+  stacked a copy on each render; the features job died at IDEAS).
+- **A merge burst skips the browser jobs:** main's V4.60–V4.72 landed in 30 minutes with every run cancelled, so the first finished run
+  carried three regressions at once. To find what a burst added to the first picture, build the last green version beside main
+  (`git archive <sha> | tar -x -C <dir>`, `node_modules` linked in) and diff `gl.info.programs` at `r3d-first` with each program's
+  users (`gl.properties.get(m).currentProgram` over the scene) on each path: here N271's weathering, 3 programs (brick, roof, the
+  garage's slab; +1 baked roof on HD). Now one ("weather", 03 `outShade`): the outside's tone, the brick's dirt and the garage's slab
+  are uniforms, and each has a roughness map (white where it has none), so the brick's and the roof's feature sets match.
+- **`bake.py` `SHELL` matches a key by its start:** "tile" took the roof (outside) with the rooms' `tile_w`; now "tile_".
+- **The sheets' bytes:** the Plan's Sources list grows a line with every shop piece (121 KB at 593); it is now its own file
+  (`sources.<hash>.html`, `build_viewer.split_sources`), fetched when it comes into view, so the phone's first visit no longer grows
+  with the catalogue.
