@@ -120,13 +120,13 @@ function ixNow(room) {   // what the set-up shown has in the room now: its piece
   return { n, lo: Math.round(lo), hi: Math.round(hi) };
 }
 function ixCard(room) {   // "Records wall · 4 pieces · £320–480": ‹ ›, Keep this, a chip a set-up and + Add storage
-  if (!ixOn() || ASIDE.ix !== room || !IX.L) return null; const s = IX.L[IX.i], t = ixNow(room), nx = ixNext(room);
+  if (!ixOn() || ASIDE.ix !== room || !IX.L) return null; const s = IX.L[IX.i], t = ixNow(room), nx = ixAddWhat(room);
   const line = `${s.n} · ${t.n ? `${t.n} piece${t.n === 1 ? "" : "s"}${t.hi ? " · " + upRange(t.lo, t.hi) : ""}` : "as planned"}`;
   return [`Ideas · ${roomName(room)}`, line, [...hcNav(room, IX.i, "ixset"), btn("Keep this", { ixkeep: room }, true), btn("Back to mine", { lookmine: "1" })], null,
     // N284: one element (renderAct puts in the tray's first and removes .r3d-fin): the why inside it, or the chips and + Add storage were lost
     `<div class="r3d-fin">` + (s.why ? `<p class="r3d-ixwhy"><b>${s.why}.</b>${ixNotes(s).map(t => `<span>${t}</span>`).join("")}</p>` : "")
     + `<div class="r3d-finsc" role="group" aria-label="Set-ups">${IX.L.map((q, j) => `<button type="button" data-ixset="${room}:${j}" aria-pressed="${j === IX.i}">${q.n}</button>`).join("")}`
-    + (nx ? `<button type="button" data-ixadd="${room}" aria-pressed="false">+ Add ${IX_A[HCAT[nx[0]].k] || HCAT[nx[0]].n.toLowerCase()}</button>` : "")
+    + (nx ? `<button type="button" data-ixadd="${room}" aria-pressed="false">+ Add ${nx}</button>` : "")
     + (s.pal ? `<button type="button" data-ixcol="${room}" aria-pressed="${IX.col}">Its colours</button>` : "") + `</div></div>`];
 }
 function ixFits(k, row) {   // its kind's pieces that stand where it does (their middle within 60 cm), clear of the rest; kept while its card is
@@ -154,6 +154,10 @@ function ixAdd(room) {   // + Add storage: the room's nearest storage idea not s
   const nx = ixNext(room); if (!nx) { toast("Nothing more belongs here"); return false; }
   const [q, sp, n] = nx, id = `add.${IX.p}${IX.n++}`; IX.k += n + 1; ds.put("edits", id + "~add", { item: id, field: "add", value: q, room, x: cmR(sp[0]), z: cmR(sp[1]), y: r[4] });
   toast(`${HCAT[q].n}${HCAT[q].shop ? " · " + HCAT[q].shop : ""} · ${sp[5] ? sp[5].n.replace(/^The /, "the ") : "added"}`); return true;
+}
+function ixAddWhat(room) {   // what + Add adds next: the room's storage idea not shown, else a piece in a free place that takes it, else nothing
+  const vals = ideaVals(room).map(q => q.split(":")[0]), off = ideasIn(room).find(I => I.parts.length && !vals.includes(I.id));
+  if (off) return off.n.charAt(0).toLowerCase() + off.n.slice(1); const nx = ixNext(room); return nx ? IX_A[HCAT[nx[0]].k] || HCAT[nx[0]].n.toLowerCase() : "";
 }
 const IX_A = { shelves: "shelves", chest: "a chest of drawers", shoes: "a shoe rack", wardrobe: "a wardrobe", unit: "a unit", gsofa: "a garden seat", gtable: "a garden table", gchair: "a garden chair" };
 function ixNext(room) {   // N287: + Add's next piece, [key, spot, n] in a free place that takes it (the next kind each press), or null
