@@ -68,16 +68,31 @@ const LK = 0.65, WK = 40;   // V3.57: the ceiling lights and the windows with th
 function roomArea(id) { const r = R.HOUSE3.rooms && R.HOUSE3.rooms[id]; return r ? (r[1] - r[0]) * (r[3] - r[2]) / 1e4 : 10; }
 function roomReach(id) { const r = R.HOUSE3.rooms && R.HOUSE3.rooms[id]; return r ? Math.min(7, Math.max(3.6, Math.hypot(r[1] - r[0], r[3] - r[2]) * M * 1.1 + 1.2)) : 7; }
 /* N294: the living room seen from a house room (through its door, down the stairwell) has none of its own 36 lights (01 lightIn: not in
-   a house room's set, which would build every shader again): two of the pool's lights stand in for them, under its ceiling, at about
-   the light it has from inside (LIVK, matched by eye from the hall's doorway by day and by evening) */
-const LIVK = { day: 4.5, eve: 3.6 };
+   a house room's set, which would build every shader again). N295 (Emma, 26 Nov: "I want the light strips and spotlights on all the
+   time and to see them through the doorways from other rooms"): two of the pool's lights stand in for the two bars' spots, under each
+   bar, in its colour and at its level (LIVK matched by eye from the hall's doorway by day and by evening); in HD two of the windows'
+   area lights become the ceiling strip's two longest runs, exactly as the living room has them (livStrips). No light added */
+const LIVK = { day: 6, eve: 2.6 }, LIVBASE = 30 + 32;   // the Evening scene's bars (scenes.py): the stand-ins' calibrated level
 let LIVSTAND = null;
+const cmAt = o => { const p = new THREE.Vector3(); o.getWorldPosition(p); return [-p.x / M, p.y / M, p.z / M]; };
 function livStand() {
-  if (LIVSTAND) return LIVSTAND; const B = R.HOUSE3.living.box, x = (B[0] + B[1]) / 2, y = (R.HOUSE3.ceil || 235) - 90, d = (B[3] - B[2]) / 4;
-  return (LIVSTAND = [{ room: "living", liv: true, x, y, z: B[2] + d }, { room: "living", liv: true, x, y, z: B[3] - d }]);
+  if (LIVSTAND) return LIVSTAND; const B = R.HOUSE3.living.box, y = (R.HOUSE3.ceil || 235) - 90, d = (B[3] - B[2]) / 4;
+  LIVSTAND = ["bar1", "bar2"].map((k, i) => { const hs = lights[k] || [];
+    if (!hs.length) return { room: "living", liv: k, x: (B[0] + B[1]) / 2, y, z: i ? B[3] - d : B[2] + d };
+    const c = hs.map(cmAt).reduce((s, p) => s.map((v, j) => v + p[j] / hs.length), [0, 0, 0]);
+    return { room: "living", liv: k, x: c[0], y: Math.min(y, c[1] - 50), z: c[2] }; });
+  return LIVSTAND;
 }
+function livLevel(k) {   // a bar's level as the room has it: its slider, each head's own switch and level
+  return (lights[k] || []).reduce((s, l) => { const h = typeof headOf === "function" && l.userData.hk ? headOf(l.userData.hk) : {};
+    return s + (h.on === false ? 0 : Math.pow(lvl(k) / 100, 1.6) * (h.lv !== undefined ? Math.pow(Math.max(0, Math.min(100, h.lv)) / 100, 1.6) : 1)); }, 0) / Math.max(1, (lights[k] || []).length);
+}
+let LIVSTRIPS = null;
+function livStrips() { return LIVSTRIPS || (LIVSTRIPS = (lights.strip || []).slice().sort((p, q) => q.width - p.width).slice(0, 2)); }
 function lightAt(l, L, day, hd) {   // one light, as its own room has it
-  if (L.liv) { l.distance = 7; l.position.copy(v3(L.x, L.y, L.z)); l.intensity = (day ? 3 * LIVK.day : (hd ? 8.6 : 5.4) * LIVK.eve) * LK; l.color.copy(warmColour()); return; }   // N294
+  if (L.liv) { const c = S.col && S.col[L.liv], f = livLevel(L.liv) / Math.pow(LIVBASE / 200, 1.6);   // N294, N295: a bar's stand-in, at its level (1 at the Evening scene's)
+    l.distance = 7; l.position.copy(v3(L.x, L.y, L.z)); l.intensity = (day ? 3 * LIVK.day : (hd ? 8.6 : 5.4) * LIVK.eve) * LK * f;
+    if (c && c !== WARM) l.color.set(c); else l.color.copy(warmColour()); return; }
   const fb = typeof finBulb === "function" && L.room ? finBulb(L.room) : { k: null, lux: 1 };   // V2.9: the room's bulbs (23_finish.js)
   if (L.reach) { l.distance = L.reach * M; l.position.copy(v3(L.x, L.y, L.z)); l.intensity = day ? 0 : L.k * fb.lux; l.color.set(L.col); return; }   // V2.48: a lamp, by evening
   const ks = Math.min(1.3, Math.max(0.75, Math.sqrt(roomArea(L.room) / 10)));   // v72 (B2): a big room's light reaches its corners, a small one doesn't glare
@@ -190,10 +205,14 @@ function placeRoomLights() {
   if (rr) { const cx = (b[0] + b[1]) / 2, cz = (b[4] + b[5]) / 2, rc = r => [(r[0] + r[1]) / 2, (r[2] + r[3]) / 2];
     const dist = w => Math.min(...w.rooms.map(id => { const r = R.HOUSE3.rooms[id], [x, z] = rc(r); return tier(id) + Math.hypot(x - cx, z - cz) + Math.abs(r[4] - rr[4]) * 3; })) - w.sz / 1e3;
     const want = winPanels().slice().sort((p, q) => dist(p) - dist(q));
-    POOL.wins = poolPick(POOL.wins, want, want.filter(w => w.rooms.some(id => cost.has(id))), WINLIGHTS.length); }
+    POOL.wins = poolPick(POOL.wins, want, want.filter(w => w.rooms.some(id => cost.has(id))), WINLIGHTS.length - (GS.livSeen && !LV && hd ? livStrips().length : 0)); }
   else POOL.wins = [];
+  const strips = GS.livSeen && !LV && hd ? livStrips() : [], k0 = WINLIGHTS.length - strips.length;   // N295: the last window lights the living room's strip
   /* V3.30 (living room quality): by day 60, the living room's window's 70 for its size (10 left the rooms flat, lit by the even fill) */
-  WINLIGHTS.forEach((l, k) => { const o = POOL.wins[k]; l.visible = !!o; if (!o) return; const r = R.HOUSE3.rooms[o.rooms[0]];
+  WINLIGHTS.forEach((l, k) => { const sp = k >= k0 && strips[k - k0];
+    if (sp) { l.visible = true; l.width = sp.width; l.height = sp.height; sp.updateMatrixWorld(); sp.matrixWorld.decompose(l.position, l.quaternion, new THREE.Vector3());
+      l.intensity = (sp.userData.k || 520) * Math.pow(lvl("strip") / 100, 1.6); l.color.copy(warmColour()); return; }
+    const o = POOL.wins[k]; l.visible = !!o; if (!o) return; const r = R.HOUSE3.rooms[o.rooms[0]];
     const cx = (o.a + o.b) / 2, cy = (o.y0 + o.y1) / 2, d = Math.sign((r[2] + r[3]) / 2 - o.line) || 1;
     l.width = (o.b - o.a) * M; l.height = (o.y1 - o.y0) * M; l.position.copy(v3(cx, cy, o.line + d * 3)); l.lookAt(v3(cx, cy - 40, o.line + d * 100));
     l.intensity = (day ? WK : 3) * o.k; l.color.set(day ? "#eef0f2" : "#7d89b8"); });   // V3.57: WK, the neighbours' windows on too; N239: a shared light as bright as its windows
