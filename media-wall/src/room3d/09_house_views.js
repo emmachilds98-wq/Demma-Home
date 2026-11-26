@@ -67,7 +67,17 @@ const ROOMLIGHTS = [], WINLIGHTS = [];   // v69 (B3): warm ceiling lights round 
 const LK = 0.65, WK = 40;   // V3.57: the ceiling lights and the windows with the neighbours on: about as bright as before, one room lit alone
 function roomArea(id) { const r = R.HOUSE3.rooms && R.HOUSE3.rooms[id]; return r ? (r[1] - r[0]) * (r[3] - r[2]) / 1e4 : 10; }
 function roomReach(id) { const r = R.HOUSE3.rooms && R.HOUSE3.rooms[id]; return r ? Math.min(7, Math.max(3.6, Math.hypot(r[1] - r[0], r[3] - r[2]) * M * 1.1 + 1.2)) : 7; }
+/* N294: the living room seen from a house room (through its door, down the stairwell) has none of its own 36 lights (01 lightIn: not in
+   a house room's set, which would build every shader again): two of the pool's lights stand in for them, under its ceiling, at about
+   the light it has from inside (LIVK, matched by eye from the hall's doorway by day and by evening) */
+const LIVK = { day: 4.5, eve: 3.6 };
+let LIVSTAND = null;
+function livStand() {
+  if (LIVSTAND) return LIVSTAND; const B = R.HOUSE3.living.box, x = (B[0] + B[1]) / 2, y = (R.HOUSE3.ceil || 235) - 90, d = (B[3] - B[2]) / 4;
+  return (LIVSTAND = [{ room: "living", liv: true, x, y, z: B[2] + d }, { room: "living", liv: true, x, y, z: B[3] - d }]);
+}
 function lightAt(l, L, day, hd) {   // one light, as its own room has it
+  if (L.liv) { l.distance = 7; l.position.copy(v3(L.x, L.y, L.z)); l.intensity = (day ? 3 * LIVK.day : (hd ? 8.6 : 5.4) * LIVK.eve) * LK; l.color.copy(warmColour()); return; }   // N294
   const fb = typeof finBulb === "function" && L.room ? finBulb(L.room) : { k: null, lux: 1 };   // V2.9: the room's bulbs (23_finish.js)
   if (L.reach) { l.distance = L.reach * M; l.position.copy(v3(L.x, L.y, L.z)); l.intensity = day ? 0 : L.k * fb.lux; l.color.set(L.col); return; }   // V2.48: a lamp, by evening
   const ks = Math.min(1.3, Math.max(0.75, Math.sqrt(roomArea(L.room) / 10)));   // v72 (B2): a big room's light reaches its corners, a small one doesn't glare
@@ -149,16 +159,21 @@ function winPanels() {
 function placeRoomLights() {
   if (!ROOMLIGHTS.length || !sun) return;
   haloShow();   // V3.76 (N116)
-  const v = VIEWS[S.view] || {}, b = R.HOUSE3 && v.box, day = S.tod === "day", hd = S.quality === "hd";
-  const rid = b && VIEW_ROOM[S.view], rr = rid && R.HOUSE3.rooms && R.HOUSE3.rooms[rid];
+  const v = VIEWS[S.view] || {}, day = S.tod === "day", hd = S.quality === "hd";
+  /* N294 (Emma, 26 Nov: "I still can't see from room to another room accurately ie light and walls change as I walk in"): standing in
+     the living room the hall and the landing seen from it lit as from inside them (they had no ceiling light till you walked in) */
+  const LV = S.view === "livstand" && R.HOUSE3 && R.HOUSE3.living && R.HOUSE3.rooms && houseG && houseG.visible ? R.HOUSE3.living.box : null;
+  const b = LV ? [LV[0], LV[1], 0, R.HOUSE3.ceil || 235, LV[2], LV[3]] : R.HOUSE3 && v.box;
+  const rid = b && !LV && VIEW_ROOM[S.view], rr = LV ? [LV[0], LV[1], LV[2], LV[3], 0] : rid && R.HOUSE3.rooms && R.HOUSE3.rooms[rid];
   const n = hd ? ROOMLIGHTS.length : Math.min(4, ROOMLIGHTS.length);   // Fast: four (20_go.js: the last two are HD's)
   const pk = [day, n, !!b].join(); if (pk !== POOL.key) { POOL.key = pk; POOL.pts = []; POOL.wins = []; }   // evening's lamps, Fast's four: picked afresh
   /* the rooms seen from it (open doors, a flight's top or foot: the hall's lower flight and landing, the client's "Lit stairs and landing
      below"), as roomCull draws them, before the rest */
-  const cost = b ? roomCost([rid, GS.hereRoom, ...Object.keys(WALK_VIEW).filter(k => WALK_VIEW[k] === S.view)]) : new Map();
+  const cost = LV ? roomCost(["landing", doorOpen(HPARTS["door.living_door"]) && "hall"]) : b ? roomCost([rid, GS.hereRoom, ...Object.keys(WALK_VIEW).filter(k => WALK_VIEW[k] === S.view)]) : new Map();
   const tier = (rm, lamp) => (cost.has(rm) ? cost.get(rm) * 2 + (lamp ? 1 : 0) : 9) * 1e5;   // its own room's, its lamp, the rooms a door away, their lamps, two doors ...
   if (b) { const cx = (b[0] + b[1]) / 2, cy = (b[2] + b[3]) / 2, cz = (b[4] + b[5]) / 2, list = [];
     const near = L => Math.hypot(L.x - cx, L.z - cz) + Math.abs(L.y - cy) * 3;
+    if (GS.livSeen && !LV) { cost.set("living", 1); for (const L of livStand()) list.push([tier("living") + near(L), L]); }   // N294
     for (const F of Object.values(R.HOUSE3.floors)) { for (const L of F.lights || []) list.push([tier(L.room) + near(L), L]);
       if (!day) for (const L of F.lamps || []) list.push([tier(L.room, true) + near(L) + 400 - L.k * 100, L]); }   // a room's lamp after its ceiling light, the brighter first (upstairs by evening seven for six: the office's purple lamp kept from the landing, the bathroom's small one waits)
     const want = list.sort((p, q) => p[0] - q[0]).map(p => p[1]);
@@ -182,7 +197,7 @@ function placeRoomLights() {
     const cx = (o.a + o.b) / 2, cy = (o.y0 + o.y1) / 2, d = Math.sign((r[2] + r[3]) / 2 - o.line) || 1;
     l.width = (o.b - o.a) * M; l.height = (o.y1 - o.y0) * M; l.position.copy(v3(cx, cy, o.line + d * 3)); l.lookAt(v3(cx, cy - 40, o.line + d * 100));
     l.intensity = (day ? WK : 3) * o.k; l.color.set(day ? "#eef0f2" : "#7d89b8"); });   // V3.57: WK, the neighbours' windows on too; N239: a shared light as bright as its windows
-  const key = b ? "house" : "";
+  const key = b && !LV ? "house" : "";   // the living room keeps its own sun's box
   if (key === GS.roomKey || OUT.sunOut) return; GS.roomKey = key;   // N189: outside, the sun is the whole house's (outdoor())
   sunAt(!!b);
   reshadow();
@@ -338,6 +353,8 @@ function applyFloors() {
   }
   livClip(!!(houseG && houseG.visible && R.HOUSE3 && S.view === "livstand"));
   roomCull(false);
+  { let p = shell; while (p && p.visible) p = p.parent; const seen = !!(INSIDE() && R.HOUSE3 && !p);   // N294: the living room drawn from a house room: its own lights on
+    if (seen !== !!GS.livSeen) { GS.livSeen = seen; if (started) placeRoomLights(); } }
   drawRooms(); brandPlace(); outdoor();
   requestAnimationFrame(() => { measureShift(!!(window.DemmaTools && window.DemmaTools.isOpen())); fadeRows(true); });   // V1.30: the rows above may have changed
   dirty();

@@ -230,3 +230,12 @@ Options only, as ever: no build steps or buy rows till she picks one.
 | N292 | **A check that nothing lands in the wrong place.** Do: a check step (`IDEAS2`) that opens Ideas in every room and runs each set-up and + Add: every piece inside its room, in a place that takes it, clear of the house, the swings and each other, with its room to open. In `check_model.py` too, from the places' data. | `tools/check_site.py`, `house/check_model.py` | N287 | Done (with N287's PR): `check_site.py`'s IDEAS2 runs every room's set-ups (and the garden's) from the data, no flying: each piece in a place that takes its kind, room for it there, clear of the set-up's other pieces; `check_model.py` checks the places themselves (N286) |
 
 Order: N286 first (everything rests on it), then N287 (the wrong-room fix) with N292, then N288 and N289 side by side, then N290 and N291.
+
+## 35. Rooms seen as they are through a doorway (26 Nov 2026, V4.89)
+
+Emma, 26 Nov: "I'm looking at 4.89. I still can't see from room to another room accurately ie light and walls change as I walk in".
+
+| Row | What | Files | Needs | State |
+|---|---|---|---|---|
+| N294 | **The living room and the hall the same from either side of the door.** Found: standing in the living room the house's pool lit nothing (`placeRoomLights` needed a view box: the hall and landing dark till you walked in); from a house room the living room's own 36 lights aren't in the renderer's set (`01 lightIn`: adding them builds every shader again), so it showed unlit; and the fill (hemi, skyFill) was the living room's own inside it, the house's outside it. Do: from the living room the pool lights the landing and (door open) the hall as from inside; from a house room that sees the living room (hall, door open; the landing down the stairwell) two pool lights stand in for its own under its ceiling (`livStand`, `LIVK` matched by eye); one fill for every room stood in. No light added, no shader rebuilt | `room3d/09_house_views.js`, `room3d/12_furniture_options.js` | — | Done (`claude/project-thread-cjxb15`). Checked: from the hall's doorway the living room by day and evening within about a sixth of its brightness from inside (was dark, a third darker); `checks.py --quick` 10 passed. Left: the living room's strips and spots can't be shown exactly from the hall without its lights in every house shader; two doors in line still show the far room only once it's within two doors (`roomCost`) |
+
