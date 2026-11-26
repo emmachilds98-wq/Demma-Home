@@ -333,13 +333,18 @@ function applyLight() {
   envSoon();
   gl.toneMappingExposure = S.view === "house" && R.HOUSE3 ? 0.32 : day ? 0.4 : 0.58;   // V3.19, the client: "all lighting the same across the house": every room one exposure (the house's rooms had 0.32 by day), the outside a little lower
   const outside = HOUSEV(S.view);                                                    // v58: the built house in daylight
-  skyFill.intensity = outside ? (day ? (hd && ROOMV() && WINLIGHTS.some(l => l.visible) ? 1.4 : 2.6) : 0.5) : hd ? 0 : day ? 3.5 : 1;   // V3.30: a room with windows, by day in HD: less even fill, more from its windows and light (it read flat and grey)               // V3.19: Fast's living room (no window light) as bright as the other rooms
+  /* N294 (Emma, 26 Nov: "light and walls change as I walk in"): the living room stood in with the house drawn round it takes the house
+     rooms' fill, so a room looks the same through a doorway as from inside it (its own 36 lights aren't in a house room's set: 09
+     livStand stands in for them) */
+  const inLiv = S.view === "livstand" && !!(R.HOUSE3 && houseG), inAny = !!ROOMV() || inLiv;
+  skyFill.intensity = outside || inLiv ? (day ? (hd && inAny && WINLIGHTS.some(l => l.visible) ? 1.4 : 2.6) : 0.5) : hd ? 0 : day ? 3.5 : 1;   // V3.30: a room with windows, by day in HD: less even fill, more from its windows and light (it read flat and grey)               // V3.19: Fast's living room (no window light) as bright as the other rooms
   const inK = !!ROOMV();                                                                // v60: in a room of the house, light off its pale floor and walls,
   const sky = outside && !inK; skyFill.color.set(sky ? "#dfe8f1" : hemi.color); skyFill.groundColor.set(sky ? "#5d5446" : "#d9d3c9");   // V3.19: the rooms' fill the living room's tint (it was the sky's blue); the living room's own lights stay upstairs
-  if (inK) { scene.traverse(l => { if (l.isLight && l !== skyFill && l !== sun && !l.userData.houseLight) l.intensity = 0; }); hemi.intensity = day ? (hd && WINLIGHTS.length ? 0.38 : 0.5) : 0.2; }   // V2.39: by day in HD the window lights (less even fill); V3.30: the sun, the room's light and its windows' kept (a second change of a light, Warmth, put them out)   // every light of the living room's, the spots too
+  if (inK) scene.traverse(l => { if (l.isLight && l !== skyFill && l !== sun && !l.userData.houseLight) l.intensity = 0; });   // every light of the living room's, the spots too
+  if (inAny) { hemi.intensity = day ? (hd && WINLIGHTS.length ? 0.38 : 0.5) : 0.2; }   // V2.39: by day in HD the window lights (less even fill); V3.30: the sun, the room's light and its windows' kept (a second change of a light, Warmth, put them out)   // every light of the living room's, the spots too
   /* V2.21 (R1): by evening a house room is lit by its own ceiling light (placeRoomLights): the fill and studio down, a warm pool */
-  if (inK && !day && hd) { hemi.intensity = 0.08; skyFill.intensity = 0.2; }   // V3.34 (N86): an evening in HD lit by its own light (the 0.5 fill washed every wall alike)
-  houseEnvK(inK && !day ? (hd ? 0.25 : 0.35) : 1);
+  if (inAny && !day && hd) { hemi.intensity = 0.08; skyFill.intensity = 0.2; }   // V3.34 (N86): an evening in HD lit by its own light (the 0.5 fill washed every wall alike)
+  houseEnvK(inAny && !day ? (hd ? 0.25 : 0.35) : 1);
   scene.background.set(outside && R.HOUSE3 ? (day ? "#c6d6e3" : "#1b2233") : "#0d100e");             // and a sky behind it
   if (gl.shadowMap.enabled !== hd) { gl.shadowMap.enabled = hd; MATS.forEach(m => m.needsUpdate = true); sizeRenderer(); if (LIVE && started) precompile(); }
   if (started) { if (ROOMV() && S.tod !== lastTod) applyFloors(); else outdoor(); lastTod = S.tod; }   // V1.5: day or evening changes the living room's window; V1.15: and a room's (applyFloors ends in outdoor), only when it changes (not each slider move)
