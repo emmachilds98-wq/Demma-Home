@@ -1,6 +1,6 @@
-# Handover (26 Nov 2026, V4.90: start here)
+# Handover (26 Nov 2026, V4.91: start here)
 
-## Now (26 Nov 2026, V4.90: start here)
+## Now (26 Nov 2026, V4.91: start here)
 The client, 25 Nov: "another team is going to build it from another session so make sure the repo has everything they will need".
 
 **Read first:** `CLAUDE.md` (the client's rules; **privacy first: the address is never written anywhere**), this block, then
@@ -15,7 +15,7 @@ The client, 25 Nov: "another team is going to build it from another session so m
    belongs: the wrong-room fix) with N292 (its check) → N288 (shops per place) and N289 (made to measure) side by side → N290 (fewer,
    better set-ups) and N291 (places on screen). Claim each row first (`tools/claim.py N286`). Options only: no build steps or buy rows
    till she picks.
-3. **Done lately:** N294 (26 Nov) a room looks the same through a doorway as from inside it (the living room and the hall, the landing: REAL_PLAN section 35).  N285 (V4.82) the phone's buttons and cards: Settings by the brand (Share, quality, labels, help), one row of pills,
+3. **Done lately:** N295 (26 Nov) the living room's strip and spots seen lit from the hall and landing; N294 (26 Nov) a room looks the same through a doorway as from inside it (the living room and the hall, the landing: REAL_PLAN section 35).  N285 (V4.82) the phone's buttons and cards: Settings by the brand (Share, quality, labels, help), one row of pills,
    Plan in the dock, a card a bottom sheet; the PHONEUI check. Section 32's rows: see each row's state.
 4. **Waiting on Emma:** her storage picks, `?perf` → Send from her PC (N240's real cause), the tape round (N235, N275), the master's
    sliding-door gap, lighting "later" (N228, N270).
