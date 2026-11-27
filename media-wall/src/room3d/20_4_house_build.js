@@ -283,6 +283,7 @@ function buildHouse() {
     box(ax1 - 22, ax1 - 16, yTop + 100, yTop + 112, zg + 2.9, zg + 4.5, "#26282a");                                 // the latch
   }
   label(["The alley", "stairs down to the garden"], (ax0 + ax1) / 2, 120, -40);
+  joinStill(HFLOOR.out);   // N310: Gardens on by default drew ~90 pieces apart: the plain ones one draw a material
   cur = was; };
   finFloorApply();   // V2.7 (FINISHES F4): the floors chosen in the tray, on their rooms
   bakeApply();
@@ -298,6 +299,19 @@ function afterFloor(fk) {
 /* N195: the baked light (house/bake.py, data/bake.json): each shell (walls, floors, ceilings) gets its second UVs and the day's or the
    evening's map, its live direct light kept (the map holds what bounces round the room: colour bleed, soft corners, the shade under each piece).
    A mesh of a baked material the bake didn't see points at the atlas' corner texel, the house's mean light */
+/* N310 (Emma, 27 Nov: Gardens on by default): the gardens' plain pieces (boxes, trunks, slabs, cones) joined one mesh a material and
+   shadow setting, in the group's own frame; a piece with its own data, children, a hook, see-through or a list of materials stays as it is */
+function joinStill(root) {
+  if (!root) return; root.updateMatrixWorld(true); const inv = root.matrixWorld.clone().invert(), B = new Map(), hook = THREE.Object3D.prototype.onBeforeRender;
+  root.traverse(m => { if (!m.isMesh || m.isInstancedMesh || m.isSkinnedMesh || !m.visible || m.children.length || Array.isArray(m.material) || m.material.transparent
+      || Object.keys(m.userData).length || m.onBeforeRender !== hook || Object.keys(m.geometry.morphAttributes).length || m.parent.visible === false) return;
+    const g = m.geometry, k = [m.material.uuid, m.castShadow, m.receiveShadow, m.raycast === THREE.Mesh.prototype.raycast, !!g.index, Object.keys(g.attributes).sort().join()].join("|");
+    (B.get(k) || B.set(k, []).get(k)).push(m); });
+  for (const L of B.values()) { if (L.length < 2) continue;
+    const gs = L.map(m => m.geometry.clone().applyMatrix4(new THREE.Matrix4().multiplyMatrices(inv, m.matrixWorld))), geo = mergeGeometries(gs); gs.forEach(g => g.dispose()); if (!geo) continue;
+    const j = new THREE.Mesh(geo, L[0].material); j.castShadow = L[0].castShadow; j.receiveShadow = L[0].receiveShadow; j.raycast = L[0].raycast; j.name = "outJoin";
+    L.forEach(m => { m.parent.remove(m); m.geometry.dispose(); }); root.add(j); }
+}
 function bakeApply() {
   if (!BAKE.use || BAKE.done) return;   // in hand before the house is built (start), never applied after
   BAKE.done = true; const j = BAKE.use, ld = u => { const x = new THREE.TextureLoader().load("tex/" + u, () => (GS.need = true)); x.colorSpace = THREE.NoColorSpace; x.flipY = false; x.channel = 1; return x; };   // a fourth root of the light (bake.py write)
