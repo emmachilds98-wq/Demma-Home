@@ -494,3 +494,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.94** (27 Nov 2026): Lands at the front door and walks into the hall; fewer view buttons, the rest under ⋯
 - **V4.95** (27 Nov 2026): Lighting steady room to room on the PC: every light on and the whole house drawn at once
 - **V4.96** (27 Nov 2026): Whole house drawn faster inside on the PC
+- **V4.97** (27 Nov 2026): Stairs open both ways and the living room's light steady
