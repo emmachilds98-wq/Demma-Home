@@ -30,9 +30,15 @@ const reshadow = () => { gl.shadowMap.needsUpdate = true; };
 const lightRig = new THREE.Group(); lightRig.name = "lightRig";
 const RIGGED = [];
 function shownChain(o) { for (; o && o.parent; o = o.parent) if (!o.visible) return false; return true; }
+/* N298 (Emma, 27 Nov: "lighting shouldnt be changing as i walk and should be visible from other rooms including lamps and leds"): on a
+   real graphics card the whole house is lit and drawn at once: every room's ceiling light and lamp, every window, the living room's own
+   strips, spots and lamps in every room's set; nothing culled room by room, nothing swapped as you walk. Phones keep the pool (09). ?pool
+   for the old way */
+const WHOLE = BIG_GPU && !/[?&]pool\b/.test(location.search);
 function lightIn(l) {                 // in the renderer's set for this quality
+  if (WHOLE && LIVE && R.HOUSE3) { if (l.userData.houseLight) return !(l.userData.win || l.userData.hdOnly) || S.quality === "hd"; if (l.isHemisphereLight || l.userData.sun) return true; }   // N298: the same set in every view
   /* v73: in the house's views only the sky, the sun and the house's own lights are in the set (the living room's 36 are not) */
-  if (LIVE && R.HOUSE3 && HOUSEV(S.view)) return !!(l.isHemisphereLight || l.userData.sun || (l.userData.houseLight && (!(l.userData.win || l.userData.hdOnly) || S.quality === "hd")));   // V3.57: and the last two ceiling lights   // V2.39: a window's daylight in HD
+  else if (LIVE && R.HOUSE3 && HOUSEV(S.view)) return !!(l.isHemisphereLight || l.userData.sun || (l.userData.houseLight && (!(l.userData.win || l.userData.hdOnly) || S.quality === "hd")));   // V3.57: and the last two ceiling lights   // V2.39: a window's daylight in HD
   if (l.userData.win) return false;
   const hd = S.quality === "hd";
   if (l.userData.owner) return hd;     // an idea's or a suggestion's light: always in HD's set (at nothing while it's hidden), never in Fast's
