@@ -422,7 +422,7 @@ body.hv:not(.hroom) .r3d-mini > #r3d-home, body.hv:not(.hroom) .r3d-mini > #r3d-
 .r3d-pegghost.ok .ms { color: oklch(0.86 0.12 85); }
 .r3d-pegghost b { font: 600 13px Figtree, system-ui, sans-serif; color: var(--ink); background: var(--cream); border-radius: var(--r-pill); padding: 3px 10px; white-space: nowrap; box-shadow: var(--shade); }
 .r3d-pegghost b:empty { display: none; }
-@media (max-width: 899px) { .r3d-peg { right: 12px; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 84px); width: 48px; height: 48px; } .r3d.tools-open .r3d-peg { display: none; } }
+@media (max-width: 899px) { .r3d-peg { right: 12px; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 100px); width: 48px; height: 48px; } .r3d.tools-open .r3d-peg { display: none; } }
 body.bare .r3d-peg, .r3d.editing .r3d-peg { display: none; }
 /* V3.56 (N117): a thin ring, not a grey disc over the picture; the knob shows only while held, a small dot marks the middle */
 .r3d-stick { position: fixed; left: 16px; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 96px); z-index: 31; width: 112px; height: 112px; border-radius: 50%;
