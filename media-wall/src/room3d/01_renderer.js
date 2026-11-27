@@ -15,13 +15,32 @@ gl.toneMapping = THREE.AgXToneMapping;   // v44: AgX over ACES: the wall reads n
 const GPU = (() => { try { const c = gl.getContext(), e = c.getExtension("WEBGL_debug_renderer_info"); return String(e ? c.getParameter(e.UNMASKED_RENDERER_WEBGL) : c.getParameter(c.RENDERER)); } catch (e) { return ""; } })();
 /* N124: a desktop browser that hides the card's name (no maker, not software) is taken as one with a card; slowDev still decides */
 const MASKED = !SMALL && !matchMedia("(pointer: coarse)").matches && !/nvidia|geforce|rtx|gtx|quadro|amd|radeon|ati\b|intel|apple|adreno|mali|immortalis|xclipse|powervr|qualcomm|arm\b|swiftshader|llvmpipe|software|basic render|microsoft|vmware|virtualbox|parallels|mesa|google/i.test(GPU);
-const BIG_GPU = MASKED || !matchMedia("(pointer: coarse)").matches && /nvidia|geforce|rtx|gtx|quadro|radeon\s*(rx|pro|r9)|radeon\(tm\) rx|intel.*\barc\b|apple m\d/i.test(GPU) && !/swiftshader|llvmpipe|software|basic render/i.test(GPU);
-if (BIG_GPU) S.quality = "hd";   // V2.25: a real card opens in HD on every visit (a saved Fast too) and never steps itself down (17_render_loop, 13_edit_room)
-/* v39: a phone draws at its own sharpness; a capable chip (Apple GPU, Adreno 6xx+, Mali-G57+, Immortalis, Xclipse) goes on to HD */
-const GOOD_PHONE = SMALL && /apple gpu|adreno[^0-9]*([6-9]\d{2})|mali-g(5[7-9]|6\d|7\d|[1-9]\d{2})|immortalis|xclipse/i.test(GPU);
-if (GOOD_PHONE && !S.picked) S.quality = "hd";   // V1.11: a capable phone starts in HD with the shade, the glow and 2048 shadows; if slow it steps down (3× to 2×, the shade, Fast)
-const HI = BIG_GPU || GOOD_PHONE, LOWD = SMALL && !GOOD_PHONE;   // LOWD: a phone without a capable chip, the only one still drawn lighter
-const LIVE_SHADOW = THREE.PCFShadowMap, LIVE_MAP = HI ? 2048 : 1024;   // v44: a real graphics card gets the pictures' soft 2048 shadows live
+/* N320: one quality governor. The chip's name picks a tier once (a first guess; ?q=pc|phone|low|other forces one); each tier's
+   settings are a row of TIERS; Q holds what the speed checks have stepped since (17_render_loop.js qMove, qStill). The old names
+   (BIG_GPU, GOOD_PHONE, HI, LOWD, PHONE_HD, MOVE_LITE) are read from it */
+const TIERS = {   // hd: opens in HD · ratio: HD's sharpness cap · map: live shadow size · post: through the composer · ao: the shade from the start
+                  // moveLite: shade and glow off while moving · gap/slowGap: ms between pictures at least (fast screen / slow device) · msaa, aoN: samples
+  pc:    { hd: true,  ratio: 2,   map: 2048, post: true,  ao: true,  moveLite: false, gap: 12, slowGap: 30, msaa: 4, aoN: 16 },   // a real graphics card
+  phone: { hd: true,  ratio: 2,   map: 2048, post: true,  ao: true,  moveLite: true,  gap: 0,  slowGap: 0,  msaa: 4, aoN: 16 },   // an iPhone, a strong Android
+  low:   { hd: false, ratio: 1.5, map: 1024, post: false, ao: false, moveLite: false, gap: 0,  slowGap: 0,  msaa: 0, aoN: 8 },    // a phone without a strong chip
+  other: { hd: false, ratio: 1.5, map: 1024, post: false, ao: false, moveLite: false, gap: 0,  slowGap: 30, msaa: 4, aoN: 16 },   // a laptop's own chip, a tablet
+};
+/* the steps the speed checks take, in ms (a frame's middle while moving; a whole still picture at the start) */
+const STEP = { tooSlowMove: 50, slowMove: 28, quickMove: 14, capMove: 24, houseMove: 40, tooSlowStill: 100, aoOffStill: 30, aoOnStill: 14,
+  toHd: { phone: 18, desk: 20 }, toFast: { phone: 45, desk: 70 }, slowFast: 30, cap: 1.5 };
+const Q = (() => {
+  const big = MASKED || !matchMedia("(pointer: coarse)").matches && /nvidia|geforce|rtx|gtx|quadro|radeon\s*(rx|pro|r9)|radeon\(tm\) rx|intel.*\barc\b|apple m\d/i.test(GPU) && !/swiftshader|llvmpipe|software|basic render/i.test(GPU);
+  const strong = SMALL && /apple gpu|adreno[^0-9]*([6-9]\d{2})|mali-g(5[7-9]|6\d|7\d|[1-9]\d{2})|immortalis|xclipse/i.test(GPU);
+  const asked = (location.search.match(/[?&]q=(pc|phone|low|other)\b/) || [])[1];
+  const tier = asked || (big ? "pc" : strong ? "phone" : SMALL ? "low" : "other"), T = TIERS[tier];
+  /* the live state the speed checks step: houseLite, the house at 1x; ao: the phone's shade; cap: the phone's sharpness; slow: a slow device
+     (lower resolution while moving, the slow frame cap); low: drawing lower right now; moveLite: shade and glow off right now */
+  return { tier, T, asked, houseLite: /[?&]houselite\b/.test(location.search), ao: T.ao, aoOff: false, cap: 2, capDue: false, slow: !T.hd, low: false, moveLite: false };
+})();
+const BIG_GPU = Q.tier === "pc", GOOD_PHONE = Q.tier === "phone";
+if (Q.T.hd && (BIG_GPU || !S.picked)) S.quality = "hd";   // V2.25: a real card opens in HD on every visit (a saved Fast too) and never steps itself down; V1.11: a capable phone starts in HD unless you picked
+const HI = BIG_GPU || GOOD_PHONE, LOWD = Q.tier === "low";   // LOWD: a phone without a capable chip, the only one still drawn lighter
+const LIVE_SHADOW = THREE.PCFShadowMap, LIVE_MAP = Q.T.map;   // v44: a real graphics card gets the pictures' soft 2048 shadows live
 gl.shadowMap.type = LIVE_SHADOW;   // v14.1: PCF while you look round; the saved HD pictures use soft shadows
 gl.shadowMap.autoUpdate = false;          // v14.1: shadows don't move with the camera, so they're redrawn only when the room changes
 const reshadow = () => { gl.shadowMap.needsUpdate = true; };
@@ -223,21 +242,21 @@ function preDraw() {                  // the frame before the first: the shadows
 const AO = { c: null, g: null };
 /* V2.64: an iPhone starts at 2× (4× anti-aliasing) and in HD always draws through the composer, the shade on or off, so the speed
    check never rebuilds the shaders in sight */
-const PHONE_HD = GOOD_PHONE && !BIG_GPU, dragLite = () => PHONE_HD && postLive();
-/* V3.39 (N91): while you walk, look or drag, a PC skips the shade and the glow as the phone does (same shaders); they come back a
-   quarter of a second after you stop (moveLite). ?fullmove keeps them on */
-const MOVE_LITE = WHOLE ? /[?&]movelite\b/.test(location.search) : !/[?&]fullmove\b/.test(location.search);   // N303 (Emma, 27 Nov: "kind of bugs and flickers sometimes ... lighting should be smooth and natural"): a real card keeps them while moving (they went off and came back each step); ?movelite the old way
-const postLive = () => S.quality === "hd" && (BIG_GPU || GOOD_PHONE || /[?&]ao\b/.test(location.search)) && !/[?&]noao\b/.test(location.search);   // V2.64: drawn through the composer
-const aoLive = () => postLive() && (BIG_GPU || phoneAO || /[?&]ao\b/.test(location.search)) && !(houseLite && R.HOUSE3 && HOUSEV(S.view)) && !(dragLite() && lowRes) && !moveLite;   // ?ao tries it anywhere; V2.64: a slow phone leaves the shade out while you drag, not the sharpness (no new buffers)
+const PHONE_HD = GOOD_PHONE, dragLite = () => PHONE_HD && postLive();
+/* V3.39 (N91): while you walk, look or drag, the shade and the glow are left out (same shaders), back a quarter second after you stop
+   (Q.moveLite). N303: a real card keeps them (they went off and came back each step), unless ?pool or ?movelite; ?fullmove keeps them anywhere */
+const MOVE_LITE = !/[?&]fullmove\b/.test(location.search) && (Q.T.moveLite || /[?&]movelite\b/.test(location.search) || BIG_GPU && !WHOLE);
+const postLive = () => S.quality === "hd" && (Q.T.post || /[?&]ao\b/.test(location.search)) && !/[?&]noao\b/.test(location.search);   // V2.64: drawn through the composer
+const aoLive = () => postLive() && (Q.ao || /[?&]ao\b/.test(location.search)) && !(Q.houseLite && R.HOUSE3 && HOUSEV(S.view)) && !(dragLite() && Q.low) && !Q.moveLite;   // ?ao tries it anywhere; V2.64: a slow phone leaves the shade out while you drag, not the sharpness (no new buffers)
 function aoComposer(w, h, pr) {
   if (!AO.c) {
-    const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: SMALL ? (GOOD_PHONE ? 4 : 0) : 4, depthTexture: new THREE.DepthTexture(w, h) });   // anti-aliased, as on screen
+    const rt = new THREE.WebGLRenderTarget(w, h, { type: THREE.HalfFloatType, samples: Q.T.msaa, depthTexture: new THREE.DepthTexture(w, h) });   // anti-aliased, as on screen
     AO.c = new EffectComposer(gl, rt); AO.c.renderTarget2.depthTexture = new THREE.DepthTexture(w, h);   // a depth of its own (a clone shares the first's GL texture)
     AO.c.addPass(new RenderPass(scene, camera));
     AO.g = new GTAOPass(scene, camera, w, h); AO.g.blendIntensity = 0.9; AO.g.setGBuffer(rt.depthTexture);   // N46: shades from the picture's own depth (normals from it), no second pass
     { const gs = AO.g.setSize.bind(AO.g); AO.g.setSize = (w_, h_) => LIVE ? gs(Math.ceil(w_ / 2), Math.ceil(h_ / 2)) : gs(w_, h_); }   // V2.30: the soft shade at half size while you look round (a quarter of its cost); the saved pictures at full
-    AO.g.updateGtaoMaterial({ radius: 0.3, distanceExponent: 1.4, thickness: 1.2, scale: 1.1, samples: SMALL && !GOOD_PHONE ? 8 : 16, distanceFallOff: 1 });
-    AO.g.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: SMALL && !GOOD_PHONE ? 8 : 16 });
+    AO.g.updateGtaoMaterial({ radius: 0.3, distanceExponent: 1.4, thickness: 1.2, scale: 1.1, samples: Q.T.aoN, distanceFallOff: 1 });
+    AO.g.updatePdMaterial({ lumaPhi: 10, depthPhi: 2, normalPhi: 3, radius: 6, rings: 2, samples: Q.T.aoN });
     AO.c.addPass(AO.g);
     AO.b = new UnrealBloomPass(new THREE.Vector2(w, h), 0.2, 0.4, 2.2); AO.c.addPass(AO.b); bloomLevels(S.tod === "day");   // v48: a soft glow round what's brighter than white, in HD on a real card and in every saved picture
     AO.c.addPass(new OutputPass());
@@ -248,7 +267,7 @@ function aoComposer(w, h, pr) {
 function draw() {                     // a frame: through the composer with AO, or straight to the screen
   backdrop();   // V3.64 (N115): Above and On its own over the cream, not black (19_view_controls.js)
   if (postLive()) { const sz = gl.getSize(new THREE.Vector2()); if (!AO.c || AO.w !== sz.x || AO.h !== sz.y || AO.pr !== gl.getPixelRatio()) { aoComposer(sz.x, sz.y, gl.getPixelRatio()); AO.w = sz.x; AO.h = sz.y; AO.pr = gl.getPixelRatio(); }
-    const glow = AO.b.enabled; if ((dragLite() && lowRes) || moveLite) AO.b.enabled = false;   // V2.73 (N17): no glow on a phone while it moves (its 10 passes); back as it stops; V3.39: a PC's too (moveLite)
+    const glow = AO.b.enabled; if ((dragLite() && Q.low) || Q.moveLite) AO.b.enabled = false;   // V2.73 (N17): no glow on a phone while it moves (its 10 passes); back as it stops; V3.39: a PC's too (moveLite)
     AO.g.enabled = aoLive(); if (AO.g.depthTexture !== AO.c.readBuffer.depthTexture) AO.g.setGBuffer(AO.c.readBuffer.depthTexture);   // the target the scene draws into this frame
     gl.info.autoReset = false; gl.info.reset(); AO.c.render(); gl.info.autoReset = true; AO.b.enabled = glow; }   // the count covers every pass
   else gl.render(scene, camera);
