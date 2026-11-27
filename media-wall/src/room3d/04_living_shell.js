@@ -305,7 +305,10 @@ function buildStairs() {
   prof.push([zl, top - tb], [zl1, top - tb], [zl1, 0]);
   const RZ = R.RECESS_Z, steps = prof.slice(1, -1), yAt = z => { let y = 0; for (const [pz, py] of steps) if (pz <= z + 1e-6) y = py; return y; };   // V1.59: past the living room's back wall the flight is the hall's off-white, drawn behind the house's walls
   const inner = [[z0, 0], ...steps.filter(([pz]) => pz < RZ), [RZ, yAt(RZ)], [RZ, 0]];
-  const outer = [[RZ, 0], [RZ, yAt(RZ)], ...steps.filter(([pz]) => pz > RZ), [zl1, 0]];
+  /* N301 (Emma, 27 Nov: "the stairwell looking down to the kitchen still has a wall"): past the back wall the flight is only its waist
+     (13 under the treads' back corners, over the house's soffit), not solid to the hall's floor: the lower flight runs down under it */
+  const und = z => (z - z0) / gq * r - tb - 13, zu = Math.min(zl1, z0 + n * gq), ly = top - tb - 13;
+  const outer = [[RZ, Math.max(0, und(RZ))], [RZ, yAt(RZ)], ...steps.filter(([pz]) => pz > RZ), [zl1, ly], [zu, ly]];
   solid(inner, sx0 + 0.2, sx1 - 0.2, body);
   const hallSide = noClip(reg(new THREE.MeshStandardMaterial({ color: "#e9e5dd", roughness: 0.85, polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 4 })));
   solid(outer, sx0 + 0.6, sx1 - 0.6, hallSide);

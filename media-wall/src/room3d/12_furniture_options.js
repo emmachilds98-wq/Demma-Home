@@ -272,8 +272,15 @@ const BLOOM = [16, 0.3, 0.3];   // threshold (linear, before exposure), strength
 function bloomLevels(day) {   // only the light sources glow: by evening, above the brightest lit wall; never by day (the walls are brighter)
   if (AO.b) { const [th, st, rad] = AO.bt || BLOOM; AO.b.enabled = !day && AO.bloom !== false; AO.b.threshold = th; AO.b.strength = st; AO.b.radius = rad; }
 }
+/* N301 (Emma, 27 Nov: "the shading of the way the lights hit in the living room still changes as i walk in there"): with the whole house
+   lit (WHOLE) the evening's reflections are the living room's own capture in every room and while moving, made again only when the
+   lights change (they swapped to the studio's outside the living room and on each move, then back a second after you stopped) */
+const envKey = () => [S.tod, S.quality, S.warm, JSON.stringify(S.col || {}), ...LAYERS.map(lvl)].join();
 function envSoon() {
   clearTimeout(ENV.t);
+  if (WHOLE && started && S.tod !== "day" && S.quality === "hd") {
+    if (ENV.tex && ENV.key === envKey()) { if (scene.environment !== ENV.tex) { scene.environment = ENV.tex; envLevels(false); dirty(); } return; }
+    ENV.t = setTimeout(() => { ENV.key = envKey(); roomEnv(); }, 1200); return; }
   if (started && aoLive()) ENV.t = setTimeout(roomEnv, 1200);
   else if (ENV.studio && scene.environment !== ENV.studio) { scene.environment = ENV.studio; envLevels(S.tod === "day"); }
 }
@@ -345,7 +352,7 @@ function applyLight() {
   /* V2.21 (R1): by evening a house room is lit by its own ceiling light (placeRoomLights): the fill and studio down, a warm pool */
   if (inAny && !day && hd) { hemi.intensity = 0.08; skyFill.intensity = 0.2; }   // V3.34 (N86): an evening in HD lit by its own light (the 0.5 fill washed every wall alike)
   houseEnvK(inAny && !day ? (hd ? 0.25 : 0.35) : 1);
-  scene.background.set(outside && R.HOUSE3 ? (day ? "#c6d6e3" : "#1b2233") : "#0d100e");             // and a sky behind it
+  scene.background.set((outside || inLiv && WHOLE) && R.HOUSE3 ?   /* N301: the living room's night sky as the house's */ (day ? "#c6d6e3" : "#1b2233") : "#0d100e");             // and a sky behind it
   if (gl.shadowMap.enabled !== hd) { gl.shadowMap.enabled = hd; MATS.forEach(m => m.needsUpdate = true); sizeRenderer(); if (LIVE && started) precompile(); }
   if (started) { if (ROOMV() && S.tod !== lastTod) applyFloors(); else outdoor(); lastTod = S.tod; }   // V1.5: day or evening changes the living room's window; V1.15: and a room's (applyFloors ends in outdoor), only when it changes (not each slider move)
   reshadow();
