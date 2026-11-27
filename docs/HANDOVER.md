@@ -1,6 +1,6 @@
-# Handover (27 Nov 2026, V4.104: start here)
+# Handover (27 Nov 2026, V4.105: start here)
 
-## Now (27 Nov 2026, V4.104: start here)
+## Now (27 Nov 2026, V4.105: start here)
 The client, 25 Nov: "another team is going to build it from another session so make sure the repo has everything they will need".
 
 **Read first:** `CLAUDE.md` (the client's rules; **privacy first: the address is never written anywhere**), this block, then
