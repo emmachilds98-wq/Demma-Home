@@ -115,6 +115,8 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
 **Speed** (`tools/perf_budget.json`, in the checks; `docs/NOTES.md` section 3):
 - The first picture builds few shaders and fetches what it shows first; rooms are warmed before you reach them.
 - A phone and a PC leave out the shade and the glow while moving and bring them back 0.25 s after you stop.
+- How hard the 3D works is one table: `TIERS` and `STEP` at the top of `01_renderer.js`, the live state in `Q`; `?q=pc|phone|low|other` forces a tier (N320).
+- Still, the 3D rests: no frame asked 2 s after the last draw with nothing due; a touch, key, wheel or `dirty()` wakes it (N321, `17_render_loop.js` `LOOP`).
 - Offline: `sw.js` serves the kept copy after 2 s on a weak signal. Photos are a file each, kept across versions.
 - Standing in a room, a piece down the stairwell or out of doors is drawn only where an opening lets the eye see it, its shadow
   kept (V4.27, `09_house_views.js` `wellCull`).

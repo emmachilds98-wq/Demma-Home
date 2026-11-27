@@ -207,7 +207,7 @@ function texPut(tex, img) { const bmp = typeof ImageBitmap !== "undefined" && im
 /* V2.64, V2.67 (N15): a photo waits its turn, sent ahead of the frame that shows it (initTexture), the shadows redrawn once at the end;
    none while you move, as many as fit in 6 ms once still 0.2 s; on a walk over 3 s one a second */
 const UPQ = []; let upShade = false, upT = 0, upMv = 0, upGo = 0;
-function texSet(tex, img, shade) { UPQ.push({ tex, img, shade }); }
+function texSet(tex, img, shade) { UPQ.push({ tex, img, shade }); wake(); }   // N321: the loop may be resting
 function upStep(now, busy) {   // from the frame loop, every frame
   if (busy) { upGo = upGo || now; upMv = now; } else upGo = 0;
   if (!UPQ.length) { if (upShade && !busy) { upShade = false; reshadow(); dirty(); } return; }
