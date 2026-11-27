@@ -492,3 +492,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.92** (27 Nov 2026): The PC smoother and quieter: fewer pixels and pictures a second on a big screen
 - **V4.93** (27 Nov 2026): A slow browser steps down to Fast and says why; Copy in the speed numbers
 - **V4.94** (27 Nov 2026): Lands at the front door and walks into the hall; fewer view buttons, the rest under ⋯
+- **V4.95** (27 Nov 2026): Lighting steady room to room on the PC: every light on and the whole house drawn at once
