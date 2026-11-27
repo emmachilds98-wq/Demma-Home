@@ -518,3 +518,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.118** (27 Nov 2026): The lights show real glowing bulbs; shades and the glass dome glow softly
 - **V4.119** (27 Nov 2026): The page's look and Measure as their own files, kept between visits: the page itself 290 to 166 KB
 - **V4.120** (27 Nov 2026): Every room's light has a lit fitting, each bulb a soft glow
+- **V4.121** (27 Nov 2026): Top floor walls smooth: one wall between rooms, doorframes on both faces, each wall in its own room's paint
