@@ -315,7 +315,7 @@ root.addEventListener("click", e => {
     const [k, v] = d.decor.split(":"), was = caseOn(); S.decor = Object.assign({}, S.decor, { [k]: v });
     if ((k === "fill" || k === "frame") && S.site === "A") S.site = "C";                              // v27: the case needs the breast free (v34: it's the plan)
     applyState(); if ((k === "fill" || k === "frame") && !was) setView(caseBreast() ? "breast" : "corner"); }
-  else if (d.idea) S.ideas = Object.assign({}, S.ideas, { [d.idea]: !S.ideas[d.idea] }), applyLight(), placeAll(), updateCaption(), store.set(KEY, S);
+  else if (d.idea) histPush(), S.ideas = Object.assign({}, S.ideas, { [d.idea]: !S.ideas[d.idea] }), applyLight(), placeAll(), updateCaption(), store.set(KEY, S);
   else if (d.plants) {           // v18: the layout puts the stand and the shelf back on their spots for it
     S.plants = d.plants; for (const k of ["plants", "records"]) if (S.layout[k]) { delete S.layout[k].x; delete S.layout[k].z; delete S.layout[k].rot; }
     applyState(); }

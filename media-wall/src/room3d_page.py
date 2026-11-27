@@ -527,7 +527,9 @@ body:not(.dock-room) .r3d-here { display: none !important; }
 .r3d-theirs[hidden] { display: none; } @media (min-width: 900px) { .r3d-theirs { top: 78px; } .r3d.theirs .r3d-toast { margin-top: 112px; } }   /* N266: under the view's rows */ .r3d-theirs b { font-weight: 600; margin-right: 4px; overflow: hidden; text-overflow: ellipsis; }
 .r3d.theirs .r3d-toast { margin-top: 54px; }
 @media (max-width: 899px) { .r3d-theirs { top: 132px; } }
-@media (max-width: 599px) { .r3d-theirs { top: 118px; } }   /* under the floors, clear of the stick and the toasts (at the foot on a phone) */
+@media (max-width: 599px) { .r3d-theirs { top: 118px; } }
+.r3d-theirs.r3d-hist { top: auto; left: auto; right: 16px; transform: none; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 92px); padding: 6px; }   /* N263: Undo · Redo after a change, over the dock's right end */
+.r3d-hist button:disabled { opacity: .45; cursor: default; }   /* under the floors, clear of the stick and the toasts (at the foot on a phone) */
 .r3d-nudge { display: inline-flex; gap: 2px; } .r3d-nudge button { min-width: 36px; padding-left: 0; padding-right: 0; }
 .r3d-nudge[hidden] { display: none; }
 @media (pointer: coarse), (max-width: 599px) {   /* N285: a phone by its width too */
@@ -1035,6 +1037,7 @@ def section(gallery=""):
       <i class="r3d-tourbar"><b id="r3d-showbar"></b></i></div>
     <div class="r3d-toast" id="r3d-toast" role="status" hidden></div>
     <div class="r3d-theirs" id="r3d-theirs" role="status" hidden><b>Emma's look</b><button type="button" data-lookkeep="1">Keep it</button><button type="button" data-lookmine="1">Back to mine</button></div>
+    <div class="r3d-theirs r3d-hist" id="r3d-hist" role="group" aria-label="Undo and redo" hidden><button type="button" data-hist="undo" title="Undo (Ctrl+Z)">Undo</button><button type="button" data-hist="redo" title="Redo (Ctrl+Shift+Z)">Redo</button></div>
     <div class="r3d-pad" id="r3d-pad" role="group" aria-label="Move the camera (hold a button to keep moving)" hidden><button type="button" data-walk="tl" aria-label="Turn left" title="Turn left"><span class="ms" aria-hidden="true">rotate_left</span></button><button type="button" data-walk="f" aria-label="Walk forward" title="Walk forward"><span class="ms" aria-hidden="true">arrow_upward</span></button><button type="button" data-walk="tr" aria-label="Turn right" title="Turn right"><span class="ms" aria-hidden="true">rotate_right</span></button><button type="button" data-walk="u" aria-label="Up" title="Up"><span class="ms" aria-hidden="true">keyboard_arrow_up</span></button><button type="button" data-walk="l" aria-label="Step left" title="Step left"><span class="ms" aria-hidden="true">arrow_back</span></button><button type="button" data-walk="b" aria-label="Walk back" title="Walk back"><span class="ms" aria-hidden="true">arrow_downward</span></button><button type="button" data-walk="r" aria-label="Step right" title="Step right"><span class="ms" aria-hidden="true">arrow_forward</span></button><button type="button" data-walk="dn" aria-label="Down" title="Down"><span class="ms" aria-hidden="true">keyboard_arrow_down</span></button></div>
     <div class="r3d-pop" id="r3d-pop" role="dialog" aria-modal="false" aria-labelledby="r3d-pop-h" hidden><button type="button" class="x" aria-label="Close"><span class="ms" aria-hidden="true">close</span></button>
       <h3 id="r3d-pop-h"></h3><ul class="facts"></ul><ul class="r3d-pcs" aria-label="Its pieces"></ul><div class="acts"><button type="button" data-popgo="fly">Fly here</button><button type="button" data-popgo="plan">Read about it</button></div></div>
