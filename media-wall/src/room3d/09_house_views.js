@@ -586,7 +586,8 @@ function brandPlace() {
     t = HERE_NAME[GS.hereRoom] || roomName(GS.hereRoom) || t;   // V1.60: standing, the room you're in (the lower landing has the kitchen's view)
   else if (ROOMV()) { const id = VIEW_ROOM[S.view], L = id && id !== "living" && Object.values(R.HOUSE3.floors).flatMap(F => F.labels || []).find(l => l.id === id); t = (L && L.name) || (VIEWS[S.view] || {}).label || t; }
   el.textContent = t;
-  if (hr) firstRoom(VIEW_ROOM[S.view] || S.view);   // N266: three tips the first time in each room
+  if (hr) firstRoom(VIEW_ROOM[S.view] || S.view);
+  dockSync();   // N304: the dock follows the room (25_dock.js)   // N266: three tips the first time in each room
   canvas.setAttribute("aria-label", `${t} in 3D: drag to look round; in a room, scroll or W and S walk, the left and right arrows or Q and E turn, A and D step aside, Ctrl + scroll the lens`);   // V1.43: says where you are (it always said the living room)
 }
 /* v64: on a floor, its rooms as buttons; a room with its own view goes into it, the others are seen from above */

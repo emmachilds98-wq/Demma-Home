@@ -194,6 +194,8 @@ function actItems(id) {     // [title, how it is now, buttons]
   if (id.startsWith("hout:")) { const rm = id.slice(5), outs = roomOuts(rm); if (!outs.length) return null;   // V3.80 (N149): a room's taken-out pieces, a tap each to put back
     return [`${roomName(rm)}: taken out`, outs.length === 1 ? "1 piece" : `${outs.length} pieces`, [...outs.map(k => btn("↩ " + HIT(k).n, { hputback: k })), ...(outs.length > 1 ? [btn("Put all back", { hputall: rm })] : [])]]; }
   if (id.startsWith("ups:")) return upsCard(id.slice(4));   // N23
+  if (id.startsWith("here:")) return hereCard(id.slice(5));   // N304: a room's card from the dock (25_dock.js)
+  if (id.startsWith("hlit:")) return litCard(id.slice(5));   // N304: its lights
   if (id.startsWith("ix:")) return ixCard(id.slice(3));   // N244: a room's ideas, a set-up at a time (24_ideas.js)
   if (id.startsWith("ixpl:")) return ixPlaceCard(id.slice(5));   // N291: a place, what fits it
   if (id.startsWith("ixp:")) return ixPieceCard(id.slice(4));   // N244: a set-up's piece, swapped for one that fits its spot

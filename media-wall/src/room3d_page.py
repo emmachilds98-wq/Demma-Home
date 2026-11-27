@@ -437,7 +437,13 @@ body.bare .r3d-peg, .r3d.editing .r3d-peg { display: none; }
 .r3d-stick { opacity: .4; transition: background .15s, opacity .3s; } .r3d-stick.held { opacity: 1; } @media (hover: hover) { .r3d-stick:hover { opacity: 1; } }
 .r3d.keyed .r3d-stick:not(.held):not(:hover) { opacity: 0; } .r3d:has(.r3d-pop:not([hidden])) .r3d-stick, body.sheet-open .r3d-stick { display: none; }
 /* V1.30 (U3): only the tools that work where you are (room3d.js brandPlace) */
-body.hv .r3d-lviews, body.hv .r3d-findgrp, body.hv #r3d-dt-room, body.hv #r3d-editbtn, body.hv #r3d-dp-look > :not(h2):not(#r3d-finsch) { display: none !important; }
+body.hv .r3d-lviews, body.hv .r3d-findgrp, body.dock-none #r3d-dt-room, body.hv #r3d-editbtn, body.hv #r3d-dp-look > :not(h2):not(#r3d-finsch):not(#r3d-lookhere) { display: none !important; }
+/* N304 (Emma, 27 Nov 2026: the bottom buttons "for every room and not just for the living room"): the dock follows where you are. In a
+   house room Room opens that room's card (ideas, add, taken out, changes, colours, lights), View its lights, Look its walls, Measure its
+   sizes first; outside Room is the garden's; the living room's own tools (its tour, its lights, its Room panel) only in the living room */
+body.hv .r3d-livlights, body.hv .r3d-tourgo { display: none !important; }
+body:not(.dock-room) .r3d-here { display: none !important; }
+.ms-here > .label { color: var(--ink); } .ms-here > .label::after { content: " · you're here"; font-weight: 500; color: var(--mut); }
 @media (max-width: 899px) { body.hv .r3d-bubbles { justify-content: center; gap: 28px; } body.hv .r3d-bub { flex: 0 0 auto; } }
 /* V1.30: on a phone the small buttons share a row (six rows were the top half of the screen); the floors and rooms a row each, a fade
    where there's more to slide to */
@@ -607,7 +613,7 @@ def measure_panel():
     for room in dict.fromkeys(m["room"] for m in rows):
         nm = html.escape(names.get(room, room.capitalize()))
         head = f'<button type="button" class="ms-go" data-hroom="{room}">{nm} <span class="ms" aria-hidden="true">arrow_forward</span></button>' if room in WALK_IN else nm
-        out.append(f'<div class="grp"><span class="label">{head}</span>')
+        out.append(f'<div class="grp" data-mroom="{room}"><span class="label">{head}</span>')
         for m in rows:
             if m["room"] != room:
                 continue
@@ -733,7 +739,7 @@ def controls(gallery=""):
     icons = {"evening": "wb_twilight", "bright": "light_mode", "cosy": "local_fire_department", "film": "movie"}
     tiles = "".join(f'<button type="button" data-scene="{k}" aria-pressed="false"><span class="ms" aria-hidden="true">{icons.get(k, "lightbulb")}</span><b>{html.escape(n)}</b>'
                     f'<span>{html.escape(TILE_SUB.get(k, d.split(":")[0].split(",")[0]))}</span></button>' for k, n, d, *_ in scenes.SCENES)
-    lights = (f'<div class="grp"><span class="label">Presets (tap again to undo your changes)</span><div class="r3d-tiles" role="group" aria-label="Lighting presets">{tiles}</div></div>'
+    lights = (f'<div class="r3d-livlights"><div class="grp"><span class="label">Presets (tap again to undo your changes)</span><div class="r3d-tiles" role="group" aria-label="Lighting presets">{tiles}</div></div>'
               # v46: the whole room in two moves, before the light-by-light sliders
               '<div class="r3d-lvs r3d-top"><div class="r3d-lv r3d-master"><label for="lv-master">Brightness</label><input type="range" id="lv-master" min="0" max="100" step="1" data-lv="master"><output data-lvout="master">100%</output><span></span></div>'
               '<div class="r3d-lv r3d-master"><label for="lv-warm">Warmth</label><input type="range" id="lv-warm" min="0" max="100" step="1" data-lv="warm" class="r3d-warm"><output data-lvout="warm">warm white</output><span></span></div></div>'
@@ -742,13 +748,15 @@ def controls(gallery=""):
               '<div class="seg r3d-find"><input type="text" id="r3d-myname" placeholder="Our evening" aria-label="Name for these lights" maxlength="24">'
               '<button type="button" class="chip" id="r3d-mysave">Save these lights</button></div></div>'
               f'<p class="r3d-boost" id="r3d-boost" hidden><span class="ms" aria-hidden="true">restaurant</span> The table\'s open, so bar 2 lights it.</p>'
+              + '</div>'   # N304: the living room's own lights, then the time of day (every room's), then its fine-tuning
+              + '<div class="grp r3d-here" id="r3d-viewhere"><div class="seg"><button type="button" class="chip" data-herecard="lit"><span class="ms" aria-hidden="true">lightbulb</span> <span id="r3d-viewhereh">The lights here</span></button></div></div>'
               + seg("tod", scenes.TOD, "Time of day")
-              + '<details class="r3d-more"><summary>Fine-tune each light</summary>'
+              + '<div class="r3d-livlights"><details class="r3d-more"><summary>Fine-tune each light</summary>'
               '<div class="r3d-lvs">' + "".join(rows) + '</div></details>'
               '<div class="grp"><span class="label">Switch on or off</span><div class="seg" role="group" aria-label="Light box, laser, PC and curtains"><button type="button" data-tog="lbox" aria-pressed="false">IKEA light box</button>'
               '<button type="button" data-tog="laser" aria-pressed="false">Laser</button>'
               '<button type="button" data-tog="pc" aria-pressed="false">PC lit</button>'
-              '<button type="button" data-tog="curtains" aria-pressed="false">Curtains drawn</button></div></div>')
+              '<button type="button" data-tog="curtains" aria-pressed="false">Curtains drawn</button></div></div></div>')
     ideas_g = ('<div class="grp"><span class="label">Ideas (not in the plan)</span>'
                '<div class="seg r3d-grid" role="group" aria-label="Ideas, not in the plan">'
                + "".join(f'<button type="button" data-idea="{k}" aria-pressed="false" title="{html.escape(size)}">{html.escape(IDEA_SHORT[k])}</button>'
@@ -883,7 +891,11 @@ def controls(gallery=""):
             '<div class="seg"><button type="button" class="btn" id="r3d-plancopy"><span class="ms" aria-hidden="true">content_copy</span> Copy</button>'
             '</div></div>']),
         "measure": measure_panel(),
-        "look": ('<div class="grp" id="r3d-finsch"><span class="label">Your looks</span><div class="seg" id="r3d-finschl"></div>'   # N221: colours, floors and furniture
+        "look": ('<div class="grp r3d-here" id="r3d-lookhere"><span class="label" id="r3d-lookhereh">This room</span><div class="seg" role="group" aria-label="This room\'s colours">'   # N304
+                 + "".join(f'<button type="button" class="chip" data-herecard="{k}"><span class="ms" aria-hidden="true">{ic}</span> {t}</button>' for k, t, ic in (
+                     ("0", "Walls", "format_paint"), ("4", "Ceiling", "roofing"), ("5", "Floor", "grid_on")))
+                 + '</div><span class="caption">Or tap a wall, the ceiling or the floor.</span></div>'
+                 '<div class="grp" id="r3d-finsch"><span class="label">Your looks</span><div class="seg" id="r3d-finschl"></div>'   # N221: colours, floors and furniture
                  '<div class="seg r3d-find"><input type="text" id="r3d-finschname" placeholder="Our look" aria-label="Name for this look" maxlength="24">'
                  '<button type="button" class="chip" id="r3d-finschsave">Save this look</button></div></div>') + swatches + '<div class="grp"><span class="label">A feature wall</span><div class="seg" role="group" aria-label="A feature wall">'
                  '<button type="button" data-feature="breast">The breast in Green Smoke</button><button type="button" data-feature="media">The media wall in Green Smoke</button>'
