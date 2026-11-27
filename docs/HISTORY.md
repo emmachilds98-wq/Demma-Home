@@ -502,3 +502,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.102** (27 Nov 2026): Walk out onto the drive and into the back garden; neighbours off by default
 - **V4.103** (27 Nov 2026): The mint stair walls really gone, neutral reflections
 - **V4.104** (27 Nov 2026): The hall tapestry's print drawn sharp across the whole cloth
+- **V4.105** (27 Nov 2026): the stairwells' walls smooth, the office's wall one face

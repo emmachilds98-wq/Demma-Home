@@ -383,7 +383,8 @@ def walls_for(o, floor, rs, ds, y0, y1):
             # (the bathroom's wall over the stairs stood 10.6 into the bathroom by the sink)
             e0_, e1_ = ext, ext
             for q in rs:
-                if q is not r and q["room"] == r["room"] and axis == "x" and q["z0"] < l1 and q["z1"] > l0:
+                # N306: or flush on the same line (the landing's two pieces each drew the office's wall past 382, two faces in one place)
+                if q is not r and q["room"] == r["room"] and axis == "x" and (q["z0"] < l1 and q["z1"] > l0 or abs((q["z1"] if out_dir > 0 else q["z0"]) - line) < 0.5):
                     if abs(q["x1"] - a0) < 1: e0_ = 0
                     if abs(q["x0"] - a1) < 1: e1_ = 0
             # v78: an opening that reaches the edge's end runs on past it, so no stub of wall stands loose in the room beyond (a
@@ -662,7 +663,11 @@ def floors_and_fittings(o, floor, rs):
             o.box(FLOOR_FINISH.get(r["id"], "carpet"), x0, yy - 1.5, z0, x1, yy, z1)
     if floor == "first":                                               # V3.35: the stairwell's edges plastered, the slab's ends (living room ceiling to landing floor)
         fs = next(q for q in rs if q["room"] in VOID)
-        o.box("paint", fs["x0"], y - SLAB + 1, fs["z0"], fs["x0"] + 0.6, y - 1.5, fs["z1"])          # under the landing's balustrade
+        # N306, the client: "do the same for the stairs to the top floor too": under the landing's balustrade one face up to the landing's
+        # floor (its carpet's edge showed, and over the hall's box the box's top stood 1 behind), from the flight's underside
+        zb = 38.0; fl = living_shell()["flight"]; ys = lambda z: FLOOR_Y["ground"] + fl["r"] * ((z - fl["z0"]) / fl["g"]) - 26   # just over the hall's soffit (stair_soffit)
+        o.box("paint", fs["x0"], y - SLAB + 1, fs["z0"], fs["x0"] + 0.6, y, zb)
+        o.prism("paint", "x", Gm.STAIR_X[0] - 0.4, fs["x0"] + 0.6, [(zb, ys(zb)), (fs["z1"], ys(fs["z1"])), (fs["z1"], y), (zb, y)])
         o.box("paint", fs["x0"], y - SLAB + 1, fs["z0"], fs["x1"], y - 1.5, fs["z0"] + 0.6)          # over the flight's foot
         o.box("paint", fs["x0"], y - SLAB + 1, fs["z1"] - 0.6, fs["x1"], y - 1.5, fs["z1"])          # under the top step's nosing
         # over the living room, from its ceiling's opening (the door's side + 1.5) to the flight, the stair wall on up to the landing's floor
@@ -709,8 +714,13 @@ def stair_soffit(o, st, zl1):
     o.prism("ceiling", "x", xa, WIDTH, [(st["z0"], lo), (zs, lo), (ze, top), (ze, top + 2), (zs, lo + 2), (st["z0"], lo + 2)])
     lst = next(r for r in rooms("lower") if r["id"] == "lower_stairs")
     o.box("ceiling", lst["x0"], lo, st["z0"], xa, lo + 2, 38.0)            # beside the flight under the living room's floor
-    zw = 38.0                                                               # the hall's own walls from here on (the living room's to here)
-    side = [(st["z0"], lo - 1), (zw, lo - 1), (zw, lo + (zw - zs) / G * R + 1), (zs, lo + 1)]
+    # N306, the client: "fix the wall on the stairs going down to the kitchen where the floor meets the walls of each floor, it should be
+    # smooth wall with no box on top or showing the floor line": each side one painted face from the lower flight's boxed underside up to
+    # this flight's underside, the foot to the hall's door (the hall's slab showed its end between the floors' walls, 1 apart)
+    y0, rise, going = FLOOR_Y["lower"], st["rise"], st["going"]
+    sof = lambda z: y0 + (z - st["z0"]) / going * rise - rise - 14 - 3   # the lower flight's boxed underside (stairs())
+    zf = st["z0"] + (rise + 17) / rise * going
+    side = [(st["z0"], y0), (zf, y0), (zl1, sof(zl1)), (zl1, top + 1), (ze, top + 1), (zs, lo + 1), (st["z0"], lo + 1)]
     o.prism("paint", "x", WIDTH - 0.6, WIDTH, side)                          # the party wall's face
     o.prism("paint", "x", xa, xa + 0.6, side)                                # and the store's side
 
