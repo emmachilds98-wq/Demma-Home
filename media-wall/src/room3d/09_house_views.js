@@ -491,7 +491,7 @@ function houseJoin(on) {   // V2.98 (N37): not culling by room (the house from o
 function roomCull(again) {   // again: a door swung (only this part of applyFloors)
   if (again) { if (!houseG) return; roomUncull(); }
   const liv = S.view === "livstand" && houseG && houseG.visible && R.HOUSE3 && R.HOUSE3.rooms;
-  houseJoin(!liv && !(INSIDE() && houseG && R.HOUSE3 && R.HOUSE3.rooms));
+  houseJoin(!liv && (WHOLE || !(INSIDE() && houseG && R.HOUSE3 && R.HOUSE3.rooms)));   // N300: the whole house lit inside too: a material one draw (moving parts leave it, joinOut)
   if (WHOLE || !liv && !(INSIDE() && houseG && R.HOUSE3 && R.HOUSE3.rooms)) { if (again) dirty(); if (cullKey) { cullKey = ""; reshadow(); } return; }
   const seeds = liv ? ["landing", doorOpen(HPARTS["door.living_door"]) && "hall"]   // from the living room: up its stairs, and the hall through its door
     : [VIEW_ROOM[S.view], GS.hereRoom, ...Object.keys(WALK_VIEW).filter(k => WALK_VIEW[k] === S.view)];
