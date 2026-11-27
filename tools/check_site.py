@@ -851,7 +851,7 @@ def main():
             ctx = b.new_context(viewport={"width": 1280, "height": 800}, device_scale_factor=1, service_workers="block")   # N177: the hitch walk
             ctx.add_init_script(PERF_INIT % (json.dumps(HD_PATHS[1][4]), "true") + HITCH_INIT); pg = ctx.new_page(); pg.set_default_timeout(900000); localcdn.route(pg); errs = []
             pg.on("pageerror", lambda e: errs.append("pageerror: " + str(e)[:300]))
-            pg.goto(base + "index.html?hd"); pg.wait_for_function("window.R3D && window.R3D.ready && window.__first", timeout=600000)   # N300: ?hd, software graphics is slow (N297 would drop to Fast)
+            pg.goto(base + "index.html?hd&pool"); pg.wait_for_function("window.R3D && window.R3D.ready && window.__first", timeout=600000)   # N300: ?hd, software graphics is slow (N297 would drop to Fast); N302: ?pool, every light on (WHOLE) walked in software graphics outran the job's 40 minutes
             pg.evaluate(HITCH_WARM); hw = pg.evaluate(HITCH_WALK)
             perf.setdefault("rtx", {})["hitches"] = hw["hitches"]; fails += over_budget("rtx", perf["rtx"])
             if hw["seen"][-1:] != ["hall"] or "kitchen" not in hw["seen"] or "landing" not in hw["seen"]: fails.append(f"rtx: the hitch walk went {hw['seen']} (legs {hw['legs']})")
