@@ -1552,7 +1552,17 @@ def split_app(html_):
     if m:
         data = m.group(1).encode(); name = f"room3d.{hashlib.sha256(data).hexdigest()[:10]}.js"; (SITE / name).write_bytes(data); keep.add(name)
         html_ = html_[:m.start()] + f'<script type="module" src="{name}"></script>' + html_[m.end():]
-    for old in [*SITE.glob("scene.*.json"), *SITE.glob("room3d.*.js")]:
+    # N325: the page's CSS (about 110 KB) and its Measure module files of their own too, named by their contents, so a release that
+    # didn't change them downloads only the page's markup and the service worker keeps them (HASHED)
+    m = max(re.finditer(r"<style>(.*?)</style>", html_, re.S), key=lambda x: len(x.group(1)), default=None)
+    if m and len(m.group(1)) > 20000:
+        data = m.group(1).encode(); name = f"page.{hashlib.sha256(data).hexdigest()[:10]}.css"; (SITE / name).write_bytes(data); keep.add(name)
+        html_ = html_[:m.start()] + f'<link rel="stylesheet" href="{name}">' + html_[m.end():]
+    mods = [x for x in re.finditer(r'<script type="module">(.*?)</script>', html_, re.S) if len(x.group(1)) > 4000]
+    if len(mods) == 1:
+        m = mods[0]; data = m.group(1).encode(); name = f"page.{hashlib.sha256(data).hexdigest()[:10]}.js"; (SITE / name).write_bytes(data); keep.add(name)
+        html_ = html_[:m.start()] + f'<script type="module" src="{name}"></script>' + html_[m.end():]
+    for old in [*SITE.glob("scene.*.json"), *SITE.glob("room3d.*.js"), *SITE.glob("page.*.css"), *SITE.glob("page.*.js")]:
         if old.name not in keep: old.unlink()
     return html_
 
