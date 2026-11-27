@@ -172,7 +172,7 @@ function ixPieceCard(k) {   // the house piece's card for a set-up's piece: ‹ 
   const ds = DS(), row = ds && ds.rows("edits")[k + "~add"], C = row && HCAT[row.value]; if (!C) return null;
   const L = ixFits(k, row), i = Math.max(0, L.indexOf(row.value));
   const pb = pieceBox(k), pl = placeAt(row.room, (pb[0] + pb[3]) / 2, (pb[2] + pb[5]) / 2, C.k), cl = (DZ[C.k] || [0])[0];   // N287: the place it's in
-  return [C.n, (pl ? `${pl.n}${cl && pl.clr ? ` · ${Math.min(pl.clr, cl)} cm to open it` : ""} · ` : "") + hcLine(k, C), [...hcNav(k, i, "ixgo"), btn("Keep it", { actopen: "ix:" + row.room }, true), btn("Move or resize", { actopen: "hsize:" + k }), btn("Remove", { hremove: k })], null,
+  return [C.n, (pl ? `${pl.n}${cl && pl.clr ? ` · ${Math.min(pl.clr, cl)} cm to open it` : ""} · ` : "") + hcLine(k, C), [...hcNav(k, i, "ixgo"), btn("Keep it", { actopen: "ix:" + row.room }, true), btn("Move or resize", { actopen: "hsize:" + k }), btn("Take it out", { hremove: k })], null,
     `<div class="r3d-fin">${hcShopTray(k, L, C, "ixgo")}</div>`];
 }
 function ixKeep(room) {   // Keep this: the set-up as one of Your looks (her colours and pieces with it), to hold and compare from hers
