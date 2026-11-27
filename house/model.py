@@ -2731,10 +2731,10 @@ def pendants(o, floor):
         o.lathe("upvc", px, y - 2, pz, [(0, 0), (4, 0), (5, 0.6), (5, 1.7), (0, 1.7)])
         if st == "flush":                                          # N269: a flush glass dome on its white base
             o.lathe("upvc", px, y - 3.5, pz, [(0, 0), (14, 0), (14, 1.5), (0, 1.5)])
-            o.lathe("glass_frost", px, y - 12, pz, [(0, 0), (6, 0.4), (10.5, 2.2), (13, 5.5), (13.5, 8.5), (0, 8.5)])
+            o.lathe("dome_lit", px, y - 12, pz, [(0, 0), (6, 0.4), (10.5, 2.2), (13, 5.5), (13.5, 8.5), (0, 8.5)])   # N345: the dome lit from inside
         elif st == "drum":                                         # N269: a linen drum shade (35 across, 22 deep) on its flex
             o.box("upvc", px - 0.35, y - 26, pz - 0.35, px + 0.35, y - 2, pz + 0.35)
-            o.lathe("paper", px, y - 48, pz, [(17, 0), (17.5, 0), (17.5, 22), (17, 22)])
+            o.lathe("shade_lit", px, y - 48, pz, [(17, 0), (17.5, 0), (17.5, 22), (17, 22)])   # N345: the linen lit by its bulb
             o.lathe("chrome", px, y - 31, pz, [(0, 0), (16.8, 0), (16.8, 0.4), (0, 0.4)])
             o.lathe("bulb", px, y - 40, pz, [(0, 0), (1.6, 0.3), (2.7, 1.4), (3.1, 3), (2.7, 4.8), (1.6, 6.6), (1.3, 8.5), (0, 8.5)])
         elif rid == "wc":                                            # its yellow drum shade with the white band (the photo)
@@ -2838,7 +2838,7 @@ def build():
 
 MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textures)
     "brick": ("#9a4b36", 0.92), "party": ("#9a4b36", 0.92), "soldier": ("#83402e", 0.9), "paint": ("#f1ede5", 0.85), "stairpaint": ("#2d5a46", 0.92),
-    "upvc": ("#f5f5f2", 0.35), "woodwork": ("#f5f5f2", 0.35), "frame_out": ("#f5f5f2", 0.35), "door_out": ("#f5f5f2", 0.35), "glass": ("#dfe9ee", 0.03), "glass_frost": ("#e8edef", 0.5), "artex": ("#f3f2ee", 0.97), "door_cream": ("#e8ddc2", 0.4), "mirror": ("#eef2f3", 0.04), "brass": ("#c9b58a", 0.3), "rib": ("#e2e2de", 0.5),
+    "upvc": ("#f5f5f2", 0.35), "woodwork": ("#f5f5f2", 0.35), "frame_out": ("#f5f5f2", 0.35), "door_out": ("#f5f5f2", 0.35), "glass": ("#dfe9ee", 0.03), "glass_frost": ("#e8edef", 0.5), "dome_lit": ("#f8f1e6", 0.4), "shade_lit": ("#ece3d3", 0.95), "artex": ("#f3f2ee", 0.97), "door_cream": ("#e8ddc2", 0.4), "mirror": ("#eef2f3", 0.04), "brass": ("#c9b58a", 0.3), "rib": ("#e2e2de", 0.5),
     "tile": ("#7b5a4b", 0.85), "ridge": ("#6d4c3f", 0.85), "hung": ("#6f4636", 0.85), "felt": ("#3d3b3a", 0.9),
     "slab": ("#cfc8bb", 0.95), "carpet": ("#cdbfa6", 1.0), "tile_f": ("#d9d4cb", 0.6), "vinyl": ("#cdd8da", 0.6), "concrete": ("#b1afaa", 0.85),
     "earth": ("#8a8173", 1.0), "brick_buff": ("#d6c7a3", 0.92), "chipboard": ("#c8ad80", 0.85), "porch_in": ("#a7a49c", 0.9), "bin": ("#2f3236", 0.6), "recycle": ("#2b5d9a", 0.6), "quarry": ("#b25a43", 0.7), "board": ("#c4b79f", 0.9), "fitting": ("#ecedea", 0.07),
