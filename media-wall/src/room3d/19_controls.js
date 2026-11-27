@@ -395,7 +395,25 @@ addEventListener("keydown", e => {
   const top = ESC.find(([open]) => open()); if (!top) return;
   e.preventDefault(); e.stopImmediatePropagation(); top[1]();
 }, true);
-const welOnce = () => setTimeout(() => { try {   // automated browsers (the checks) go straight to work, unless ?welcome
-  if (S.view !== "house" || (navigator.webdriver && !/[?&]welcome\b/.test(location.search)) || localStorage.getItem("demma-welcome")) return;
+/* N298, the client: "land at the first person view coming through the front door": the page opens on the doorstep, the front door
+   swings open, you walk into the hall at your eyes and it shuts behind you. ?house (and a #look- link, ?room) opens as before; automated
+   browsers (the checks) stay on the house unless ?door. Help still brings the welcome */
+function arrive() {
+  const RM = R.HOUSE3 && R.HOUSE3.rooms, P = RM && RM.porch, H = RM && RM.hall, k = "door.hall_porch";
+  if (!P || !H || S.view !== "house") return false;
+  const x = (P[0] + P[1]) / 2, fy = H[4], y = fy + STAND_EYE, z0 = P[2] + 40, z1 = H[3] - 40;   // the porch's middle; a step inside the hall
+  readyThen("hall", () => {
+    if (S.view !== "house") return;   // they went somewhere meanwhile
+    if (HPARTS[k]) swingDoor(k, true);
+    flyTo([x, y, z0], [x, y - 10, z0 - 100], STAND_FOV, false, true);
+    GS.standSpot = [x, z1, 0, -1, REDUCE ? 0 : 1800]; setView("hall"); setRmode("stand");
+    setTimeout(() => { if (HPARTS[k] && doorOpen(HPARTS[k])) swingDoor(k, false); }, REDUCE ? 50 : 2300);
+  });
+  return true;
+}
+const welOnce = () => setTimeout(() => { try {
+  if (S.view !== "house" || (navigator.webdriver && !/[?&](welcome|door)\b/.test(location.search))) return;
+  if (!/[?&]house\b/.test(location.search) && arrive()) return;
+  if (localStorage.getItem("demma-welcome")) return;   // ?house: the welcome, once a device, as before
   localStorage.setItem("demma-welcome", "1"); welcome(true); } catch (e) {} }, 300);
 if (document.getElementById("landing")) addEventListener("demma-landed", welOnce, { once: true }); else welOnce();
