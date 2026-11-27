@@ -1,6 +1,16 @@
-# Handover (27 Nov 2026, V4.108: start here)
+# Handover (27 Nov 2026, V4.123: start here)
 
-## Now (27 Nov 2026, V4.108: start here)
+## Next team: the plan to finish (27 Nov 2026, evening; usage ran out)
+**Main's CI is red; fix it first, then merge the open streams one at a time.**
+1. **Tap check (fixed on `claude/project-thread-6gdwva`):** N333 renamed the fixture card's "Reset" to "The plan's"; `media-wall/src/taptest.py` now presses "The plan's". Merge that PR first.
+2. **Over the speed budget (site and hitch): not the hall furniture.** It started with #389 (N310: Gardens on by default, Emma's ask). Measured locally: the whole house draws 250 with Gardens on, 160 off (budget 161); the computer path builds 30 shaders first (budget 21). Tried: adding `"out"` to `JOIN_FL` (20_3_house_shade.js): no change (the 90 draws are not the out floor's joinable meshes: look at `garden3d` in 04_living_shell.js, `OUT.ground`/`OUT.plants` in 11_lights.js, `buildThings("ours")`). Do: either merge those garden meshes a material one draw, or raise `draws_house` (phone and computer 161 to about 275, iPhone and RTX likewise) and `shaders_first` (computer 21 to 31) in `tools/perf_budget.json`, saying why (Emma's N310). RTX `draws_landing` (450 over 249) was already over before #389 (473 at #387): its own row.
+3. **Open PRs, merge in this order once main is green** (each: merge main in, `tools/checks.py --quick`, `tools/ship.py`): #397 N324 three.js names; #403 N326 a sheet a file; #396 N263 one undo; #400 N321 rest when idle; #401 N322 per-frame lists; #404 N320 one quality governor; #405 N323 tier by speed (needs #404). All carried the same red budget checks; nothing else known wrong.
+4. **The stairs walk:** `docs/STAIRS_WALK_PLAN.md` (PR 415) is the plan for it.
+5. **Then the leftovers:** N327's last 8 empty catches and N328's last 6 store uses (after S5 merges), N329 version tags out of comments, N330 design tokens, N339 lighter docs. S7 options (N340–N344) wait for Emma.
+
+**Prompt for the next team:** "Read CLAUDE.md, then docs/HANDOVER.md 'Next team: the plan to finish'. Fix main's red speed budget first (step 2), then merge the open PRs one at a time in step 3's order, then docs/STAIRS_WALK_PLAN.md. Work lean: quick checks only, one task per PR, ship.py at merge, lessons in docs/NOTES.md."
+
+## Now (27 Nov 2026, V4.123: start here)
 The client, 25 Nov: "another team is going to build it from another session so make sure the repo has everything they will need".
 
 **Read first:** `CLAUDE.md` (the client's rules; **privacy first: the address is never written anywhere**), this block, then

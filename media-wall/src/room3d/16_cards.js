@@ -349,7 +349,7 @@ function fixCard(id, on) {
     btn(on ? "Turn it off" : "Turn it on", { layer: id + ":" + (on ? "off" : "on") }),
     { sep: "Turn the whole fixture" },
     btn("⟲ 15°", { fixturn: `${id}:-15` }, undefined, "sm", "Turn it 15° anticlockwise (Shift: 5°)"), btn("⟳ 15°", { fixturn: `${id}:15` }, undefined, "sm", "Turn it 15° clockwise (Shift: 5°)"),
-    ...(d || Object.keys(S.head).some(x => x.startsWith(id + ":")) ? [btn("Reset", { fixreset: id }, undefined, "sm", "Back to the plan's angle and aims")] : []),
+    ...(d || Object.keys(S.head).some(x => x.startsWith(id + ":")) ? [btn("The plan's", { fixreset: id }, undefined, "sm", "Back to the plan's angle and aims")] : []),
     { sep: "Each head" },
     ...names.map((n, j) => btn(n, { headsel: `${id}:${j}` }, j === i)),
     { sep: names[i] },

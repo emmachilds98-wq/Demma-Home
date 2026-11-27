@@ -3,7 +3,7 @@
 Rewritten (not appended) by the lead at merge (N249; a row's PR leaves it alone), under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.108 (27 Nov 2026): No silent failures: a caught error is counted and named in ?perf
+**Version:** V4.123 (27 Nov 2026): Only the three.js the first picture needs
 V4.11 (N170): the small rooms' In it views without bowed walls; the hall looks down the hall. V4.10 (N174, N175): fewer view pills (As it is and Hide labels behind ⋯; Gardens, Next door on Outside only); the walk stick faint until touched. V4.9 (N177): a hitch check for a PC's walk. V4.8 (N141): the sofa bed's chenille made at build; photos 7.7 to 7.5 MB. V4.7 (N176):
 leaner code. V4.6 (N169): the plot's edge soft, the sky hazy. Earlier: `docs/HISTORY.md`.
 The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.28 ↻"): on the
@@ -39,7 +39,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
 | `media-wall/inputs/` | The client's photos and plans (EXIF stripped) |
 | `tools/` | `build.py`, `checks.py`, `check_site.py`, `gallery.py` (every room's shot), `compare.py` and `camfit.py` (photos beside the 3D), `pull_edits.py`, `round.py` |
 | `docs/` | `HANDOVER.md` (start here), `REAL_PLAN.md` (the plan; section 22 now), this file, `NOTES.md`, `DECISIONS.md`, `HISTORY.md` |
-| `_site/` (built, never committed) | `index.html`, `sheet.<plan|build|buy|ideas>.<hash>.html` and `sheetjs.<hash>.json` (N326), `sw.js`, `version.txt`, `three.<hash>.js`, `tex/` (a photo a file), `data/`, the PDFs |
+| `_site/` (built, never committed) | `index.html`, `sheet.<plan|build|buy|ideas>.<hash>.html` and `sheetjs.<hash>.json` (N326), `sw.js`, `version.txt`, `three.<hash>.js`, `addon.<name>.<hash>.js` (KTX2 loader, the area lights' tables: fetched only when used), `tex/` (a photo a file), `data/`, the PDFs |
 
 ## The site now
 **The frame (the old design):**
@@ -47,7 +47,10 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
 - Pills over the 3D: the brand, Plan · Build · Buy; two rows at most under them (views, floors, Whole house, Hide); a floor's rooms.
   A row with more to slide to fades at that end; the chosen floor slides into view (V3.79).
 - The dock: View · Look · Measure (in the living room also Room and Edit); the figure drops you in where you let go.
-- On a phone the stick, bottom left, walks, moves the map or glides, by view; a card or panel puts it away.
+- On a touch screen the stick, bottom left, walks, moves the map or glides, by view; on a computer it shows only once you walk (N331); a card or panel puts it away. The figure says "Be there" under it; "Building the house…" shows until the first picture; a touch computer's pills are 40 px high.
+- Screen readers (N332): one hidden h1; the 3D's name says where you are; a polite line (`#r3d-where`) says the new place when it changes.
+- The page's words (N333): one word each (The plan's, Take it out, Done ...), the list in `docs/DESIGN.md`; `checks.py`'s `words` check fails on a retired one.
+- The page's CSS and its Measure module are files named by their contents (`page.<hash>.css`, `page.<hash>.js`, N325), kept by the service worker till they change; `index.html` is about 166 KB.
 - A tap's card stands beside its piece on a PC; on a phone it's a sheet over the dock, a swipe down closes it (V3.88).
 - Try options' Back to my plan sits top left; on a phone under the view pills, never behind them (N293).
 - **Places (N286):** every room has its places (`house/places.py`: a named area inside its real walls, what belongs there, what never, why), in `data/ideas.json` v2. Ideas (N287) puts a piece only in a place that takes it; + Add names what it adds; a moved piece snaps to a place or says why.
@@ -69,6 +72,8 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
 
 **Light and looks:**
 - One exposure a time of day for the whole house. Every room's lights are always on, each set by its own room.
+- Every light shows its bulb lit (N345): the living room's spot heads and lamp a lit bulb face with a soft glow in its own colour; the bedrooms' drum shades and the lower landing's glass dome glow from inside; Ideas' paper lamp shades lit. No light level changed.
+- Every room's ceiling light has a lit fitting (N346): the bathroom, the garage and the stores a flush dome; the WC's bulb under its shade; each house bulb and dome a soft glow round it (stronger by evening, faint by day); Look's globe and dome softly lit. No light level changed.
 - HD on a real graphics card and the iPhones: soft shadows, GTAO, glow and windows' daylight. Fast keeps the rest.
 - Shade bands where walls meet floors, ceilings and corners on every path, and shade round each piece's foot.
 - The ceiling bulbs lit and warm, with a faint glow on the ceiling round each pendant, seen from in a room (V3.76).
@@ -122,7 +127,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
   they rest (`restMerge`, V3.77).
 
 ## Numbers (CI's software graphics: relative, not a real card's)
-- `sizes`: page 1.1 MB, photos 7.5 MB in 96 files (budget 8.7), three.js 0.95 MB (0.187).
+- `sizes`: page 1.1 MB, photos 7.5 MB in 96 files (budget 8.7), three.js 0.71 MB (0.187; the area lights' 0.25 MB fetched only in HD, N324).
 - From `_shots/perf.json` (V4.27, a local run), budget in brackets:
 
   | Path | Draws, house | Draws, living room | Draws, landing (V4.27) | Shaders, first picture |
