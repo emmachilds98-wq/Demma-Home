@@ -317,9 +317,9 @@ const HPARTS = {};     // v68: the house's moving pieces (the master bedroom's o
    the house drawn they're the house's own (its paint), so these are left out */
 let PASTB = null;
 function pastBack() {
-  if (PASTB) return PASTB; PASTB = []; if (!R.HOUSE3) return PASTB;
-  const bb = new THREE.Box3(), RZ = R.RECESS_Z; shell.updateMatrixWorld(true);
-  shell.traverse(m => { if (!m.isMesh) return; for (let p = m; p; p = p.parent) if (p.name === "stairs") return;
+  if (PASTB) return PASTB; const fixed = scene.getObjectByName("fixed"); if (!R.HOUSE3 || !fixed) return [];   // N305: the walls are in "fixed" (03 buildGroup), a group of the scene's own, not the shell's
+  PASTB = []; const bb = new THREE.Box3(), RZ = R.RECESS_Z; scene.updateMatrixWorld(true);
+  for (const g of [shell, fixed]) g.traverse(m => { if (!m.isMesh) return; for (let p = m; p; p = p.parent) if (p.name === "stairs" || p.name === "above") return;
     bb.setFromObject(m); if (bb.min.z / M >= RZ - 1 && bb.max.z / M > RZ + 100) PASTB.push(m); });
   return PASTB;
 }
