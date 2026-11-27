@@ -3,7 +3,7 @@
 Rewritten (not appended) by the lead at merge (N249; a row's PR leaves it alone), under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.130 (27 Nov 2026): State and handover brought to now
+**Version:** V4.131 (27 Nov 2026): Walking the stairs: up from the kitchen without hitting a wall, and running up never falls through them
 Earlier versions: `docs/HISTORY.md`. The version shows faintly by "Home Plan" top left and in Plan as a refresh button ("V4.129 ↻"): on the home-screen app, tap it to get the newest.
 
 **Work from:** `docs/HANDOVER.md` "Next team: the plan to finish". Done on 27 Nov: main's speed budget (V4.122, Gardens' pieces joined) and the seven S1/S2/S5 stream PRs (V4.123–V4.129: N324, N326, N263, N321, N322, N320, N323). The stairs walk fixed (N347). Next: the leftovers (N327's last empty catches, N328's last store uses, N329, N330, N339). S7 options (N340–N344) wait for Emma.

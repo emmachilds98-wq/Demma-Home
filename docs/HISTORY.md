@@ -528,3 +528,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.128** (27 Nov 2026): One quality governor
 - **V4.129** (27 Nov 2026): The tier by speed, not by name
 - **V4.130** (27 Nov 2026): State and handover brought to now
+- **V4.131** (27 Nov 2026): Walking the stairs: up from the kitchen without hitting a wall, and running up never falls through them
