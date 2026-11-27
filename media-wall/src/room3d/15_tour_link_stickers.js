@@ -214,9 +214,9 @@ const stickEls = {}; qsa(".stk").forEach(b => { stickEls[b.dataset.hot] = b; });
 const pop = qs("#r3d-pop"), stage = qs(".r3d-stage");
 let popId = null;
 const _p = new THREE.Vector3();
-let labelsOn = true; try { labelsOn = localStorage.getItem("mw26-labels") !== "off"; } catch (e) { /* private mode or full: not kept */ }
+let labelsOn = store.raw("mw26-labels") !== "off";
 function setLabels(on) {
-  labelsOn = on; try { localStorage.setItem("mw26-labels", on ? "on" : "off"); } catch (e) { /* private mode or full: not kept */ }
+  labelsOn = on; store.put("mw26-labels", on ? "on" : "off");
   if (!on) { closePop(); Object.values(stickEls).forEach(el => { el.hidden = true; }); }
   document.getElementById("r3d")?.classList.toggle("nolabels", !on);
   applyFloors();
