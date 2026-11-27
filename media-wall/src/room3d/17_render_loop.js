@@ -189,7 +189,7 @@ function perfInfo() {   // v35: the counts to watch each round (R3D.perf())
   scene.traverseVisible(o => { if (o.isLight) ls.push(o); });
   return { calls: FT.calls, triangles: FT.tris, geometries: i.memory.geometries, textures: i.memory.textures, programs: i.programs.length,
     lights: ls.length, shadows: ls.filter(l => l.castShadow).length, quality: S.quality, ratio: gl.getPixelRatio(), frameMs: med(FT),
-    warm: PRE.queue.length, errors: store.get("r3d-errors", []).length, gpu: GPU.slice(0, 80), bigGpu: BIG_GPU, ao: aoLive(), goodPhone: GOOD_PHONE, slowDev,   // v39: which graphics card, and whether it starts in HD
+    warm: PRE.queue.length, errors: store.get("r3d-errors", []).length, caught: CAUGHT.n, caughtAt: CAUGHT.at.join(" "), gpu: GPU.slice(0, 80), bigGpu: BIG_GPU, ao: aoLive(), goodPhone: GOOD_PHONE, slowDev,   // v39: which graphics card, and whether it starts in HD
     gpuClass: gpuClass(), phone: SMALL, version: R.VERSION || "", moveMs: FT.mv ? +FT.mv.toFixed(1) : null, worstMs: FT.worst ? Math.round(FT.worst) : null, stillMs: med(probeT), view: S.view };   // V3.04 (N50): a frame while moving (24 frames' middle), a whole still frame (the start's check), for Send
 }
 if (/[?&]perf\b/.test(location.search)) {   // v35: ?perf shows the counts in a corner   // V3.04 (N50): in fewer words; Measure's Send carries them too
@@ -198,7 +198,7 @@ if (/[?&]perf\b/.test(location.search)) {   // v35: ?perf shows the counts in a 
   const txt = document.createElement("div"), cp = document.createElement("button");   // N296 (Emma, 27 Nov: "make this copy pastable"): Copy, one line to paste
   cp.type = "button"; cp.textContent = "Copy"; cp.style.cssText = "pointer-events:auto;margin-top:4px;font:inherit;padding:2px 10px;border-radius:8px;border:0;background:#fff;color:#000;cursor:pointer";
   cp.addEventListener("click", () => { const p = perfInfo(), e = store.get("r3d-errors", []).slice(-3).map(x => String(x && (x.msg || x.message || x)).slice(0, 120));
-    const line = `${p.version} ${p.quality} ${p.view} · moving ${p.moveMs ?? "-"} ms · worst ${p.worstMs ?? "-"} ms · still ${p.stillMs ?? "-"} ms · ${p.calls} draws · ${p.programs} shaders · ${p.lights} lights · ratio ${+p.ratio.toFixed(2)} · ${canvas.clientWidth}x${canvas.clientHeight} @${window.devicePixelRatio || 1} · slow ${p.slowDev} · ${GPU.slice(0, 120)}${e.length ? " · errors: " + e.join(" | ") : ""}`;
+    const line = `${p.version} ${p.quality} ${p.view} · moving ${p.moveMs ?? "-"} ms · worst ${p.worstMs ?? "-"} ms · still ${p.stillMs ?? "-"} ms · ${p.calls} draws · ${p.programs} shaders · ${p.lights} lights · ratio ${+p.ratio.toFixed(2)} · ${canvas.clientWidth}x${canvas.clientHeight} @${window.devicePixelRatio || 1} · slow ${p.slowDev} · ${GPU.slice(0, 120)}${p.caught ? ` · caught ${p.caught} (${p.caughtAt})` : ""}${e.length ? " · errors: " + e.join(" | ") : ""}`;
     const done = () => { cp.textContent = "Copied"; setTimeout(() => (cp.textContent = "Copy"), 1500); };
     (navigator.clipboard ? navigator.clipboard.writeText(line) : Promise.reject()).then(done, () => { prompt("Copy this", line); }); });
   box.append(txt, cp); root.append(box);
