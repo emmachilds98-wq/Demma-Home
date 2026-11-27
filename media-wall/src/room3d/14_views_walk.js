@@ -362,7 +362,7 @@ if (!COARSE) { addEventListener("keydown", e => { if (/^(Key[WASDQE]|Arrow)/.tes
 function syncStick() {
   const on = GS.RMODE === "stand" && !!ROOMV() || S.view === "livstand"; STICK.hidden = false; root.classList.toggle("walking", on && COARSE);   // V3.15: the stick in every view; V3.28: on a computer too (the mouse drags it), as on the phone
   if (on && !WALK.hinted) { WALK.hinted = true;   // V3.56 (N117): once on a device again, and short (V2.42 had it each visit)
-    let seen = false; try { seen = localStorage.getItem("demma-walkhint") === "1"; localStorage.setItem("demma-walkhint", "1"); } catch (e) { /* private mode or full: not kept */ }
+    const seen = store.raw("demma-walkhint") === "1"; store.put("demma-walkhint", "1");
     if (!seen) setTimeout(() => toast(COARSE ? "Stick to walk, drag to look" : "W A S D to walk, drag to look"), 700); }
 }
 function collide(p = camera.position) {    // true if it moved the eye
