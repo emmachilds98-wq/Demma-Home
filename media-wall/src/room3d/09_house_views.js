@@ -351,13 +351,13 @@ function applyFloors() {
   qsa("[data-hfloor]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.hfloor === GS.hfloor)));
   const fl = qs("#r3d-floors"); if (fl) fl.hidden = !on;
   // v64: in The whole house the gardens and next door only when switched on; inside a room they show through its windows
-  const showG = !on || !!S.hgarden;
+  const showG = !!S.hgarden;   // N310: our drive, paths, fences and gardens with Gardens (on unless she turns it off), inside too
   if (HFLOOR.out) HFLOOR.out.visible = showG;
   if (garden3d && houseG.visible) garden3d.visible = showG;
   if (HFLOOR.street) HFLOOR.street.visible = !!S.hstreet;
   if (HFLOOR.nextThings) HFLOOR.nextThings.visible = !!S.hstreet;
   qsa("[data-htog]").forEach(b => b.setAttribute("aria-pressed", String(!!S[b.dataset.htog])));
-  const ht = qs("#r3d-htogs"); if (ht) ht.hidden = !on || GS.hfloor !== "all";   // N298: Gardens and Next door under ⋯, on Outside
+  const ht = qs("#r3d-htogs"); if (ht) ht.hidden = !(on && GS.hfloor === "all") && !INSIDE();   // N310: and standing in a room or outside   // N298: Gardens and Next door under ⋯, on Outside
   const fv = qs("#r3d-fview"); if (fv) { fv.hidden = !on; qsa("[data-hfview]", fv).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.hfview === GS.hfview))); }   // v74
   syncRmode();   // v71
   /* v73: standing in a room, only what can be seen from it is drawn: its floor, the group with its ceiling, the floor its stairs lead to,
@@ -367,7 +367,7 @@ function applyFloors() {
     if (rr) {
       const fk = { "-260": "lower", "0": "ground", "260": "first" }[String(rr[4])];
       const see = new Set([fk, { lower: "ground", ground: "first", first: "roof" }[fk], "out", "street", "nextThings"]);   // V1.47: the outside by evening too, in the evening's light (V1.15 hid it: it stayed in daylight)
-      for (const k of ["street", "nextThings"]) if (HFLOOR[k]) HFLOOR[k].visible = true;   // V1.10: next door and the street through the windows
+      for (const k of ["street", "nextThings"]) if (HFLOOR[k]) HFLOOR[k].visible = !!S.hstreet;   // N310, the client: "remove neighbours by default": through the windows too only with Next door
       /* V3.49 (N101): a first-floor room with its door open onto the landing sees down the stairwell too, so it draws what the landing does */
       const well = rid === "landing" || (fk === "first" && roomSees([rid]).has("landing"));
       if (well) see.add("ground");
@@ -504,8 +504,9 @@ function houseJoin(on) {   // V2.98 (N37): not culling by room (the house from o
 function roomCull(again) {   // again: a door swung (only this part of applyFloors)
   if (again) { if (!houseG) return; roomUncull(); }
   const liv = S.view === "livstand" && houseG && houseG.visible && R.HOUSE3 && R.HOUSE3.rooms;
-  houseJoin(!liv && (WHOLE || !(INSIDE() && houseG && R.HOUSE3 && R.HOUSE3.rooms)));   // N300: the whole house lit inside too: a material one draw (moving parts leave it, joinOut)
-  if (WHOLE || !liv && !(INSIDE() && houseG && R.HOUSE3 && R.HOUSE3.rooms)) { if (again) dirty(); if (cullKey) { cullKey = ""; reshadow(); } return; }
+  const ov = S.view === OUTSIDE_V;   // N310: outside, the whole house round you
+  houseJoin(!liv && (WHOLE || ov || !(INSIDE() && houseG && R.HOUSE3 && R.HOUSE3.rooms)));   // N300: the whole house lit inside too: a material one draw (moving parts leave it, joinOut)
+  if (WHOLE || ov || !liv && !(INSIDE() && houseG && R.HOUSE3 && R.HOUSE3.rooms)) { if (again) dirty(); if (cullKey) { cullKey = ""; reshadow(); } return; }
   const seeds = liv ? ["landing", doorOpen(HPARTS["door.living_door"]) && "hall"]   // from the living room: up its stairs, and the hall through its door
     : [VIEW_ROOM[S.view], GS.hereRoom, ...Object.keys(WALK_VIEW).filter(k => WALK_VIEW[k] === S.view)];
   const see = roomSees(seeds), { out } = roomDoors();

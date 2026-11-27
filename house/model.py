@@ -275,15 +275,21 @@ def wall(o, m, axis, line0, line1, a0, a1, y0, y1, holes=()):
                 put(a, b, ya, yb)
 
 
-def window(o, side, x0, x1, y0, y1, design, face, ours=False, glass="glass"):
+def window(o, side, x0, x1, y0, y1, design, face, ours=False, glass="glass", leaf=None):
     """A white uPVC window or door in an outside wall: frame, glass, glazing bars; set 4 in from the outside face `face` (z). ours: our
-    own house's, the frame's outer centimetre its own (frame_out: V2.38, FINISHES F12, their colour outside; white inside as foiled frames)."""
+    own house's, the frame's outer centimetre its own (frame_out: V2.38, FINISHES F12, their colour outside; white inside as foiled frames).
+    N310: leaf, a door's own part: its glass, rails and bars swing on it (the frame stays), so a walk goes through."""
     if design == "porch":                    # v65: the open porch: no frame in the outside wall
         return
     s = 1 if side == "s" else -1
     zo = face - s * 4                        # the frame's outer plane
     zi = zo - s * 7
     W, fr = "upvc", 6.0
+    if leaf is not None:                     # N310: the frame here, the rest on the leaf
+        fr0 = 6.0
+        for xa, ya, xb, yb in ((x0, y0, x0 + fr0, y1), (x1 - fr0, y0, x1, y1), (x0, y1 - fr0, x1, y1)):
+            o.box(W, xa, ya, min(zo, zi), xb, yb, max(zo, zi))
+        o = leaf; x0 += fr0; x1 -= fr0; y1 -= fr0; fr = 4.0
 
     def fb(xa, ya, xb, yb):                  # a piece of the frame, through its depth
         a = zo
@@ -537,7 +543,11 @@ def outer_walls(o, floor):
                 face = line + out * t_out
                 yb = FLOOR_Y[floor] + op["sill"]; yt = FLOOR_Y[floor] + op["head"]
                 o.item(op["id"], *WINDOW_NAMES.get(op["id"], (op["id"], "")), kind="window" if op["kind"] == "window" else "door", src=op["src"], data=("OPENINGS", op["id"]), axis="x")
-                window(o, side, op["x"][0], op["x"][1], yb, yt, op["design"], face, True, "glass_frost" if op.get("frosted") else "glass")
+                leaf = None
+                if op["id"] == "back_door":                  # N310: the back door opens (into the garden) as a walk comes up to it
+                    sgn = 1 if side == "s" else -1; zo_ = face - sgn * 4
+                    leaf = o.part("door.back_door", (op["x"][0] + 6, yb, zo_), "y", -sgn * 90.0, label="The back door")
+                window(o, side, op["x"][0], op["x"][1], yb, yt, op["design"], face, True, "glass_frost" if op.get("frosted") else "glass", leaf)
                 if op["design"] not in ("porch", "garage"):   # v66: the reveal plastered inside (it showed brick), a window board
                     zfr = face - out * 11                                # the frame's inner plane
                     za_, zb_ = sorted((line, zfr))

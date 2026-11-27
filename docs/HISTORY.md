@@ -499,3 +499,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.99** (27 Nov 2026): Stairwell in its own paint, lighting smooth on the PC
 - **V4.100** (27 Nov 2026): doorway thresholds; the top-floor radiator in the boiler cupboard
 - **V4.101** (27 Nov 2026): The bottom buttons work in every room: Room opens the room you're in, View its lights, Look its walls, Measure its sizes first
+- **V4.102** (27 Nov 2026): Walk out onto the drive and into the back garden; neighbours off by default

@@ -235,6 +235,7 @@ function walkRoom(x, feet, z) {             // walked into another room with its
     const v = ROOM_VIEW[id] || WALK_VIEW[id]; if (v && v !== S.view && VIEWS[v] && VIEWS[v].box) enterRoom(v);
     return;
   }
+  if (S.view !== OUTSIDE_V && outHere(x, feet, z)) { GS.hereRoom = null; enterRoom(OUTSIDE_V); }   // N310: out of the front or back door
 }
 function enterRoom(name, warm) {   // V2.42: warm, the warm-up's visit there and back: no card shut, nothing resized, saved or shown
   if (!warm && GS.actId && typeof closeAct === "function") closeAct();
@@ -328,7 +329,8 @@ function walkDoors(x, feet, z) {            // a shut door opens as you come up 
 }
 function walkTick(dt) {
   if (!walking()) { WALK.feet = null; WALK.v.set(0, 0); return false; }
-  if (!houseG && R.HOUSE && (WALK.keys.size || WALK.stick[0] || WALK.stick[1])) { buildHouse(); reshadow(); applyFloors(); }   // V1.38: the living room opened on its own: the house to walk out into
+  if (!houseG && R.HOUSE && (WALK.keys.size || WALK.stick[0] || WALK.stick[1])) { buildHouse(); reshadow(); applyFloors(); }
+  outWalkSet();   // N310: the drive, the alley and the back garden to walk on   // V1.38: the living room opened on its own: the house to walk out into
   const k = WALK.keys, f = (k.has("f") ? 1 : 0) - (k.has("b") ? 1 : 0) + WALK.stick[1], sd = (k.has("r") ? 1 : 0) - (k.has("l") ? 1 : 0) + WALK.stick[0];
   const want = new THREE.Vector2(sd, f); if (want.lengthSq() > 1) want.normalize();
   WALK.v.lerp(want, Math.min(1, dt * 12));   // eases in and out (V2.30: snappier, as a game's walk: was 8)
@@ -662,7 +664,7 @@ function setView(name, instant, dur) {
   if (houseG) { houseG.visible = HOUSEV(name); view.visible = !v.above; applyFloors(); setAbove(!v.above); }   // v56: the sky only from inside
   if (wasHouse !== HOUSEV(name) && started) { applyLight(); sizeRenderer(); }   // V1: in the app the house is by day, its rooms as they are   // v58: the outside's daylight on or off; v73: and the house's resolution
   placeRoomLights();                                                        // v69: the room's own lights, the sun's shadows over it
-  if (garden3d) garden3d.visible = HOUSEV(name) && (name !== "house" || !!S.hgarden);   // v64: in The whole house only when Gardens is on                             // v56: the garden ground only with the whole house (in the room's own views it read as a room clipped on) // v54: the whole house, a draft (the garden photo steps aside: the lawn and fences show it)
+  if (garden3d) garden3d.visible = HOUSEV(name) && !!S.hgarden;   // N310: in a room too, Gardens   // v64: in The whole house only when Gardens is on                             // v56: the garden ground only with the whole house (in the room's own views it read as a room clipped on) // v54: the whole house, a draft (the garden photo steps aside: the lawn and fences show it)
   qsa("[data-view]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.view === name)));
   syncRmode();                                                              // v78b: the living room's three too
   store.set(KEY, S); updateCaption(); brandPlace();
