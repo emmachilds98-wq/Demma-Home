@@ -489,3 +489,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.89** (25 Nov 2026): Ideas: fewer, better set-ups (the best three, Made to fit); each room's places glow, Places shows what fits each
 - **V4.90** (26 Nov 2026): Rooms look the same through a doorway: the living room, hall and landing lit as from inside
 - **V4.91** (26 Nov 2026): The living room's strip and spotlights seen lit through the doorways
+- **V4.92** (27 Nov 2026): The PC smoother and quieter: fewer pixels and pictures a second on a big screen
