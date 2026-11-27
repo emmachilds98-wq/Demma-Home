@@ -100,6 +100,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
   Its cushions carry their own shade where they meet (V3.81), piping in their edges and buttons in dimples (V3.85). Pulled out,
   Make up the bed lays a duvet and pillows on it; the chaise's storage holds the bedding (V3.82).
 - The lift-top coffee table is the plan's, in oak, on four legs, its top's shadow line (V3.83); the record table is an option.
+- One undo (N263): every change (colours, floors, moves, adds, swaps, Ideas) on one history; an Undo · Redo pill after a change; Ctrl+Z / Ctrl+Shift+Z anywhere.
 - Edit: one bar (Done · + Add · Undo, ⋯); drag a piece, turn it by its ⟳ handle (its size shows over it), nudge, recolour,
   Take it out from its sheet over the dock (V3.87); + Add has the catalogue and what's out at its head.
 - Any piece standing in the room has Take it out on its card. Room → Taken out lists what's out, a tap each to put it back.
