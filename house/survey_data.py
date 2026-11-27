@@ -285,8 +285,13 @@ ARTEX = ["kitchen", "kitchen_1", "kitchen_2", "lower_landing"]
 # V2.93: the door down across the wider flight (x 386, was 410). V3.03 (N44, both hall photos on their fitted cameras): the door down
 # 66 inside its frame (was 79, the box's whole end), by the box's corner; the mirror and the bench along the party wall from near the
 # box's end to the rack (were by the front door), the mirror on the bench's back (E: 36 × 135; the bench a storage bench and a cube, 90)
-HALL = dict(door=(386.0, 452.0), door_leaf=False, mirror=dict(z=(302.0, 338.0), y=(55.0, 190.0)), bench=dict(x=(433.0, 467.0), z=(305.0, 395.4), h=45.0),
-            racks=[dict(x=(306.0, 340.0), z=(396.4, 419.4), h=180.0), dict(x=(424.0, 462.0), z=(396.4, 419.4), h=120.0)],
+# 27 Nov 2026, the client, looking at the front door from the living room: "the tall wooden shoe case on the left side, a plastic larger
+# shoe rack going sideways on the wall to the right ... and the sittable shoe rack next to that on the right with a mirror"
+# (photo_hall_racks_frame_30oct): on the left of the door a tall wooden shoe cabinet (E: 42 × 26 × 170, tip-out doors); on the party
+# wall from the front corner the black plastic rack, its long side along the wall (E: 63 × 31 × 130, seven tiers); then the shoe bench
+# (E: a 27 cube, a 34 padded seat with a back cushion, a taller 30 cube under the mirror: 91, from the stair box's end), the mirror over its far cube.
+HALL = dict(door=(386.0, 452.0), door_leaf=False, mirror=dict(z=(264.0, 298.0), y=(60.0, 195.0)), bench=dict(x=(437.0, 467.0), z=(264.0, 355.0), h=45.0),
+            racks=[dict(x=(306.0, 348.0), z=(394.0, 420.0), h=170.0, kind="cabinet"), dict(x=(435.0, 466.0), z=(356.0, 419.0), h=130.0, kind="rack")],
             radiator=dict(z=(276.4, 364.4), y=(15.0, 72.0)), switch_z=368.0, tapestry=dict(z=None, y=(3.0, 233.0)),
             src="client's photos (what goes where) + standard sizes (E)")
 # the landing: a white post-and-rail balustrade along the stairwell, the loft hatch, a pendant and a smoke alarm, the bathroom door's fanlight.

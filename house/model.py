@@ -2523,13 +2523,13 @@ def hall(o):
     t = Hh["tapestry"]                                                         # v69: on the box's side, from the corner by the door down
     ze = Gm.ALC_D - Gm.STAIR_D + 6 + (Gm.STAIR_N - 1) * Gm.STAIR_GOING + Gm.LANDING_D - 1.5   # the box's end (floors_and_fittings' zl1)
     hz0 = next(r["z0"] for r in rooms("ground") if r["id"] == "hall")
-    zt0, ze = t["z"] if t["z"] else (hz0 + 0.5, ze)                            # v81: the whole wall, the hall's back corner to the end
+    zt0, ze = t["z"] if t["z"] else (hz0 + 2.5, ze)                            # v81: the whole wall, the hall's back corner to the end (27 Nov: clear of the living door's architrave)
     tw, ya, yb = ze - zt0, y + t["y"][0], y + t["y"][1]
-    o.box("chrome", xs - 1.2, yb, zt0 + 0.5, xs - 0.2, yb + 1, ze + 1)     # the hanging wire's clips
+    o.box("chrome", xs - 2.0, yb, zt0 + 0.5, xs - 0.2, yb + 1, ze + 1)     # the hanging wire's clips
     n = max(10, round(tw / 15))
-    for k in range(n):                                                         # soft folds: strips a little in and out
+    for k in range(n):                                                         # soft folds: strips a little in and out, 1.5 off the wall (27 Nov, the client: the wall showed through)
         za, zb = zt0 + tw * k / n, zt0 + tw * (k + 1) / n
-        dx = 0.4 + 0.9 * (k % 2)
+        dx = 1.5 + 0.9 * (k % 2)
         o.box("tapestry", xs - dx - 0.5, ya + (k % 3) * 0.8, za, xs - dx, yb, zb)
     # the print (its border, the black tree, roots, leaves and birds on the mottled orange) is the cloth's own picture, stretched across
     # the folds once (20_1_house_materials tapestryArt, 20_2 worldUV): one draw, no ink pieces
@@ -2537,29 +2537,56 @@ def hall(o):
     m = Hh["mirror"]; xw = WIDTH + 1                                           # the party wall's plaster face (the hall's side)
     o.box("steel", xw - 2.4, y + m["y"][0], m["z"][0], xw, y + m["y"][1], m["z"][1])
     o.box("mirror", xw - 2.6, y + m["y"][0] + 3, m["z"][0] + 3, xw - 2.4, y + m["y"][1] - 3, m["z"][1] - 3)   # V1.17: was clear glass
-    o.item("hall.bench", "The bench", "hall", src="client's photo + E", data=("HALL", "bench"), axis="z")
-    b = Hh["bench"]
-    bx0, bx1, bz0, bz1 = b["x"][0], b["x"][1] - 1.5, b["z"][0], b["z"][1]   # N198: a top on four legs with a low shelf (a solid block before)
-    o.box("black", bx0, y + b["h"] - 3, bz0, bx1, y + b["h"], bz1)
-    for lx in (bx0, bx1 - 3):
-        for lz in (bz0, bz1 - 3):
-            o.box("black", lx, y, lz, lx + 3, y + b["h"] - 3, lz + 3)
-    o.box("black", bx0 + 3, y + 10, bz0 + 1, bx1 - 3, y + 12, bz1 - 1)
-    o.box("check", b["x"][0] + 2, y + b["h"], b["z"][0] + 6, b["x"][1] - 3, y + b["h"] + 4, b["z"][1] - 6)
-    for r in Hh["racks"]:                                                      # black shoe racks, shoes on the shelves
-        o.item(f"hall.rack{Hh['racks'].index(r) + 1}", "Shoe rack " + str(Hh["racks"].index(r) + 1), "hall", src="client's photo + E", data=("HALL", "racks"), axis="x")   # N230: along the front wall
+    o.item("hall.bench", "The shoe bench", "hall", src="client's photo + E", data=("HALL", "bench"), axis="z")
+    b = Hh["bench"]                                                            # 27 Nov: a low cube, a padded seat with a back cushion, a taller cube under the mirror
+    bx0, bx1, bz0, bz1 = b["x"][0], b["x"][1] - 1.0, b["z"][0], b["z"][1]
+    zc1, zc2 = bz0 + 30, bz1 - 27                                              # the far cube to zc1, the seat to zc2, the near cube on to the rack
+
+    def cube(z0, z1, h):                                                       # an open black cube: top, sides, back, bottom
+        o.box("black", bx0, y, z0, bx1, y + 1.6, z1); o.box("black", bx0, y + h - 1.6, z0, bx1, y + h, z1)
+        o.box("black", bx0, y, z0, bx1, y + h, z0 + 1.6); o.box("black", bx0, y, z1 - 1.6, bx1, y + h, z1)
+        o.box("black", bx1 - 1.2, y, z0, bx1, y + h, z1)
+    cube(bz0, zc1, 55.0)
+    cube(zc2, bz1, 38.0)
+    o.box("black", bx0 + 2, y, zc1, bx1, y + b["h"] - 6, zc1 + 1.6); o.box("black", bx0 + 2, y, zc2 - 1.6, bx1, y + b["h"] - 6, zc2)   # the seat's frame
+    o.box("black", bx0 + 2, y + 8, zc1 + 1.6, bx1, y + 10, zc2 - 1.6)                # its shoe shelf
+    o.box("black", bx0 + 2, y + b["h"] - 8, zc1, bx1, y + b["h"] - 6, zc2)
+    o.box("check", bx0 + 1, y + b["h"] - 6, zc1 + 0.5, bx1 - 4, y + b["h"], zc2 - 0.5)   # the grey padded seat
+    o.box("check", bx1 - 7, y + b["h"], zc1 + 1.5, bx1 - 0.5, y + b["h"] + 26, zc2 - 1.5)   # its back cushion
+    for sz_, sm in ((zc1 + 11, "shoe_white"), (zc1 + 27, "shoe_black")):
+        o.lathe(sm, (bx0 + bx1) / 2 - 2, y + 10, sz_, [(0, 0), (4.4, 0), (4.6, 1.2), (4.4, 3.4), (3.4, 5.6), (1.8, 6.6), (0, 6.8)], 2.3, 1.0)
+    for r in Hh["racks"]:
+        i_ = Hh["racks"].index(r) + 1
         x0, x1, z0, z1, h = r["x"][0], r["x"][1], r["z"][0], r["z"][1], r["h"]
-        for xx in (x0, x1 - 1.5):
-            for zz in (z0, z1 - 1.5):
-                o.box("black", xx, y, zz, xx + 1.5, y + h, zz + 1.5)
-        n = int(h // 22)
+        if r.get("kind") == "cabinet":                                         # 27 Nov: the tall wooden shoe cabinet left of the door, its tip-out doors to the hall
+            o.item(f"hall.rack{i_}", "The wooden shoe cabinet", "hall", src="client + E (42 × 26 × 170)", data=("HALL", "racks"), axis="x")
+            t_ = 1.8
+            o.box("oak", x0, y, z0 + 1, x0 + t_, y + h, z1); o.box("oak", x1 - t_, y, z0 + 1, x1, y + h, z1)     # its sides
+            o.box("oak", x0, y + h - t_, z0, x1, y + h, z1); o.box("oak", x0 + t_, y, z1 - 1, x1 - t_, y + h, z1)  # the top, the back
+            o.box("oak", x0 + t_, y, z0 + 2.5, x1 - t_, y + 8, z0 + 4)                                          # the plinth, set back
+            nd = 4
+            for k in range(nd):                                                # the doors, a hair apart, each with its knob
+                ya_, yb_ = y + 8.3 + k * (h - 8.3 - t_) / nd, y + 8.3 + (k + 1) * (h - 8.3 - t_) / nd - 0.4
+                o.box("oak", x0 + t_ + 0.2, ya_, z0 + 0.2, x1 - t_ - 0.2, yb_, z0 + 2.0)
+                o.box("chrome", (x0 + x1) / 2 - 1.5, yb_ - 5, z0 - 1.2, (x0 + x1) / 2 + 1.5, yb_ - 3.5, z0 + 0.2)
+            continue
+        o.item(f"hall.rack{i_}", "The shoe rack", "hall", src="client's photo + E (63 × 31 × 130)", data=("HALL", "racks"), axis="z")   # 27 Nov: the plastic rack, along the party wall
+        for xx in (x0, x1 - 1.6):
+            for zz in (z0, z1 - 1.6):
+                o.box("black", xx, y, zz, xx + 1.6, y + h, zz + 1.6)
+        n = 7
         for k in range(n):
-            yy = y + 6 + k * (h - 8) / n
-            o.box("black", x0 + 1.5, yy, z0 + 1.5, x1 - 1.5, yy + 1, z1 - 1.5)
-            sm = ("shoe_black", "shoe_white", "shoe_tan", "shoe_grey")[(k + int(x0)) % 4]   # V2.22 (REAL_PLAN R4): a pair of shoes, not a bundle
-            zc_ = (z0 + z1) / 2; sl = min(2.3, (z1 - z0 - 3) / 9.2)
-            for sx_ in ((x0 + x1) / 2 - 5.2, (x0 + x1) / 2 + 5.2):
-                o.lathe(sm, sx_, yy + 1, zc_, [(0, 0), (4.4, 0), (4.6, 1.2), (4.4, 3.4), (3.4, 5.6), (1.8, 6.6), (0, 6.8)], 1.0, sl)
+            yy = y + 4 + k * (h - 6) / n
+            for xr in (x0 + 1.6, x1 - 3.0):                                    # each tier: a rail front and back, three rods between
+                o.box("black", xr, yy, z0 + 1.6, xr + 1.4, yy + 1.4, z1 - 1.6)
+            for q in range(1, 4):
+                xq = x0 + 1.6 + q * (x1 - x0 - 4.6) / 4
+                o.box("black", xq, yy + 0.3, z0 + 1.6, xq + 0.9, yy + 1.2, z1 - 1.6)
+            for p_ in range(2):                                                # two pairs a tier, toes out
+                sm = ("shoe_black", "shoe_white", "shoe_tan", "shoe_grey")[(k + p_) % 4]
+                zc_ = z0 + (z1 - z0) * (0.27 + 0.46 * p_)
+                for dz in (-4.8, 4.8):
+                    o.lathe(sm, (x0 + x1) / 2, yy + 1.4, zc_ + dz, [(0, 0), (4.4, 0), (4.6, 1.2), (4.4, 3.4), (3.4, 5.6), (1.8, 6.6), (0, 6.8)], min(2.3, (x1 - x0 - 3) / 9.2), 1.0)
     o.item("hall.radiator", "The hall radiator", "hall", kind="radiator", src="client's photo + E", data=("HALL", "radiator"), axis="z")
     r = Hh["radiator"]
     radiator(o, "z", D.WALL_HALL, 1, r["z"][0], r["z"][1], y + r["y"][0], y + r["y"][1])   # v69: on the moved wall
