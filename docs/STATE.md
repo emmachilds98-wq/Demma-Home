@@ -3,15 +3,10 @@
 Rewritten (not appended) by the lead at merge (N249; a row's PR leaves it alone), under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.129 (27 Nov 2026): The tier by speed, not by name
-V4.11 (N170): the small rooms' In it views without bowed walls; the hall looks down the hall. V4.10 (N174, N175): fewer view pills (As it is and Hide labels behind ⋯; Gardens, Next door on Outside only); the walk stick faint until touched. V4.9 (N177): a hitch check for a PC's walk. V4.8 (N141): the sofa bed's chenille made at build; photos 7.7 to 7.5 MB. V4.7 (N176):
-leaner code. V4.6 (N169): the plot's edge soft, the sky hazy. Earlier: `docs/HISTORY.md`.
-The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.28 ↻"): on the
-home-screen app, tap it to get the newest.
+**Version:** V4.130 (27 Nov 2026): State and handover brought to now
+Earlier versions: `docs/HISTORY.md`. The version shows faintly by "Home Plan" top left and in Plan as a refresh button ("V4.129 ↻"): on the home-screen app, tap it to get the newest.
 
-**Work from:** `docs/HANDOVER.md` "Pick up here", then `docs/REAL_PLAN.md` section 29 (N224–N237: N233, N227, N230, N236, N225, N231, N232 done, N224's splashback done; N226 and N224 done; next N237, then N225's taps and N228, N229, N234, N235 as Emma says). Earlier sections' rows: section 9.
-outside, fewer pills, leaner code, a hitch check; N178 done: `docs/HANDOVER.md` brought to now). Section 21's open rows carry on (N160, N161 on the client's screenshots; N163 on hold:
-the outside by day, as the client asked). A new team starts with `docs/HANDOVER.md`. Section 9 has every earlier task's state.
+**Work from:** `docs/HANDOVER.md` "Next team: the plan to finish". Done on 27 Nov: main's speed budget (V4.122, Gardens' pieces joined) and the seven S1/S2/S5 stream PRs (V4.123–V4.129: N324, N326, N263, N321, N322, N320, N323). Next: the stairs walk (`docs/STAIRS_WALK_PLAN.md`, its own thread), then the leftovers (N327's last empty catches, N328's last store uses, N329, N330, N339). S7 options (N340–N344) wait for Emma.
 
 ## Where it lives
 - **The site:** https://emmachilds98-wq.github.io/Demma-Home/, built and published by `.github/workflows/build.yml` on every push to
@@ -64,7 +59,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
   The living room's Above is fitted to the screen (`fitRoomView`, V4.23): on a phone along the room from over the PC wall, a longer lens.
 - Walking: WASD, the arrows, the wheel, a double-tap walks you to a spot; on a PC hold a mouse button and move to look (the way you move, V4.42). You pass over low furniture, not wardrobes,
   and doors open as you reach them.
-- The house from outside, on its own (Gardens and Next door bring the rest and stand back for it, V4.1, V4.13; both off at every open and built the first time they show, V4.16; a phone opens on it at about 70% of the width; framed by `fitHouseView` the same on every way in, V4.25): a PC's left-drag swings the view round the
+- The house from outside, on its own (Gardens, on at every open since N310, brings our drive, paths, fences and gardens, its plain pieces one draw a material (V4.122); Next door, off at every open, brings the neighbours; both built the first time they show and stand back for it; a phone opens on it at about 70% of the width; framed by `fitHouseView` the same on every way in, V4.25): a PC's left-drag swings the view round the
   spot grabbed, the way you drag (V4.1), and a right-drag pans; a double-click on its outside centres there, one on a room's floor
   stands you in it (V4.5); a phone drags, pinches and twists. A floor on its own is cut a
   metre under the eye.
@@ -132,14 +127,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
 
 ## Numbers (CI's software graphics: relative, not a real card's)
 - `sizes`: page 1.1 MB, photos 7.5 MB in 96 files (budget 8.7), three.js 0.71 MB (0.187; the area lights' 0.25 MB fetched only in HD, N324).
-- From `_shots/perf.json` (V4.27, a local run), budget in brackets:
-
-  | Path | Draws, house | Draws, living room | Draws, landing (V4.27) | Shaders, first picture |
-  |---|---|---|---|---|
-  | Phone | 188 (205) | 182 (258) | 229 (252) | 20 (20) |
-  | PC (Fast) | 188 (205) | 295 (385) | 232 (255) | 21 (21) |
-  | iPhone | 189 (205) | 196 (273) | 244 (268) | 39 (44) |
-  | RTX | 187 (205) | 299 (410) | 250 (275) | 39 (44) |
+- Draws while moving, the whole house as it opens (budget in brackets, `tools/perf_budget.json`): phone and PC (Fast) 201 (222) with Gardens on, about 160 off; the PC's first picture builds 30 shaders on CI (31). The HD paths' and the living room's and landing's numbers: CI's hitch and site jobs (`_shots/perf.json` in their artifacts).
 - The repo: 395 files, 57 MB tracked (31 MB the client's photos); the repo check fails on a build output or a file over 1.5 MB.
 
 ## Each round
