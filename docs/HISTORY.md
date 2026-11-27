@@ -523,3 +523,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.123** (27 Nov 2026): Only the three.js the first picture needs
 - **V4.124** (27 Nov 2026): Plan, Build, Buy and Ideas each their own file
 - **V4.125** (27 Nov 2026): One undo for every change
+- **V4.126** (27 Nov 2026): The 3D rests when nothing moves

@@ -84,8 +84,27 @@ function declutter() {
 /* V3.41 (N93): the welcome card's slow turn draws at most 60 times a second at its 60 Hz speed, waits while the window is hidden and
    rests after a minute (on a 155 Hz screen it drew every frame through the composer) */
 const SPIN = { t0: 0, at: 0 };
+/* N321: the loop rests when nothing is due (no draw asked, no move, glide, walk, warm-up, upload or mirror step) and 2 s have passed:
+   no frame asked each vsync for ever (battery, fans). dirty(), GS.need, a press, a key or the wheel wake it */
+const LOOP = { raf: 0, busyT: 0, asleep: false, t: -1, on: false };   // on: from the first frame (20_5_go.js starts it)
+function wake() { if (LOOP.raf || !LOOP.on) return; if (LOOP.asleep) { LOOP.asleep = false; frame.last = 0; mvLast = 0; } LOOP.raf = requestAnimationFrame(frame); }
+{ let n = GS.need; Object.defineProperty(GS, "need", { get: () => n, set: v => { n = v; if (v > 0) wake(); } }); }
+["pointerdown", "pointermove", "keydown", "keyup", "wheel", "touchstart"].forEach(t => addEventListener(t, e => { if (t !== "pointermove" || e.buttons) wake(); }, { passive: true, capture: true }));
+addEventListener("visibilitychange", wake); addEventListener("focus", wake);
+function busy(now) {   // something still due: keep asking for frames
+  const shut = glLost || (document.body.classList.contains("sheet-open") && !SH && !GS.tween);
+  if (GS.need > 0 && !shut || GS.tween || GS.moving || SH || controls.autoRotate || probe > 0 || lowRes || moveLite || shStag.left) return true;
+  if (walking() && (WALK.v.lengthSq() > 1e-5 || WALK.keys.size)) return true;
+  if (PRE.queue.length && LIVE || PRE.busy || WARMB || UPQ.length || upShade) return true;
+  return now - LOOP.busyT < 2000;   // the pause the warm-up, the mirrors and the sharpness wait for
+}
 function frame(now) {
-  requestAnimationFrame(frame);
+  if (now === LOOP.t) return; LOOP.t = now; LOOP.raf = 0; LOOP.on = true;   // one frame a vsync, whoever asked
+  tick(now); if (frame.drawn === now) LOOP.busyT = now;
+  if (!canvas.clientWidth) { LOOP.asleep = true; return; }   // the ResizeObserver wakes it
+  if (busy(now)) wake(); else LOOP.asleep = !LOOP.raf;
+}
+function tick(now) {
   if (livingFromOutside()) GS.need = 2;
   if (!canvas.clientWidth) return;
   if (controls.autoRotate && (now - SPIN.t0 > 60000 || !document.hasFocus())) controls.autoRotate = false;   // at rest after a minute, or with the window behind another
@@ -109,6 +128,7 @@ function frame(now) {
   const walked = walkSteps(Math.min(0.25, gap)) | lookTick(dt); if (walked) { GS.need = 2; syncEye(); }   // V3.28: and a mouse's look round, let out frame by frame   // V1.32 (U7)   // V2.30: dt to 100 ms (it held each step to 50: a slow frame slowed the walk)
   if (!GS.tween && !freeAbove() && !walking() && (clampRoom(camera.position) | clampRoom(controls.target, true) | collide())) GS.need = 2;   // v17: never outside the room; v41: nor in the furniture
   const active = GS.moving || changed || !!GS.tween || walked;   // V2.73 (N17): a walk too
+  if (active) LOOP.busyT = now;
   if (active && mvLast && now - mvLast < 1000) { const g_ = now - mvLast; if (now - (FT.worstT || 0) > 3000 || g_ >= (FT.worst || 0)) { FT.worst = g_; FT.worstT = now; } }   // V3.29: the longest gap while moving (the last 3 s), for ?perf
   if (active && mvLast && now - mvLast < 250) { MV.push(now - mvLast); if (MV.length >= 24) { const m = MV.sort((a, b) => a - b)[12]; MV.length = 0; FT.mv = m;
     if (m > 50 && !SMALL) tooSlow();   // N296: a PC walking at under 20 a second in HD: Fast
