@@ -31,7 +31,7 @@ if (!Sky.SkyShader.fragmentShader.includes("hazeColor")) Sky.SkyShader.fragmentS
 Sky.SkyShader.uniforms.hazeColor = { value: new THREE.Color() };   // V4.6 (N169): the fog's colour, in the space three gives the fog
 function skyHaze(sk) { sk.onBeforeRender = r => scene.fog.color.getRGB(sk.material.uniforms.hazeColor.value, r.getRenderTarget() ? THREE.LinearSRGBColorSpace : r.outputColorSpace); }   // as three's refreshFogUniforms: the screen's space straight to it, linear into the HD composer
 function outdoor() {
-  const house = !!(R.HOUSE3 && S.view === "house" && GS.hfloor === "all"), room = roomOut(), on = house || room;
+  const ov = S.view === OUTSIDE_V, house = !!(R.HOUSE3 && (S.view === "house" && GS.hfloor === "all" || ov)), room = roomOut(), on = house || room;   // N310: outside, lit as the whole house
   if (on && !OUT.sky) {
     const sky = OUT.sky = new Sky(); sky.scale.setScalar(3000); sky.name = "sky";   // V1.4: past the hill (it was 100 m: anything further was behind it)
     const u = sky.material.uniforms; u.turbidity.value = 3.5; u.rayleigh.value = 1.1; u.mieCoefficient.value = 0.004; u.mieDirectionalG.value = 0.8;
@@ -55,8 +55,8 @@ function outdoor() {
     m.receiveShadow = true; m.raycast = () => {}; m.userData.quads = Q.map(q => q.slice(1)); m.userData.idx = lg.index.array.slice(); g.add(m);
     scene.add(g);
   }
-  if (OUT.ground && !OUT.hill && (room || S.hgarden)) { OUT.hill = true; buildBeyond(null, OUT.ground); }   // V1.4: the hill opposite and the valley's trees; N181: built the first time they show (Gardens, or a room's windows)
-  if (OUT.ground && !OUT.street && (room || S.hstreet)) OUT.street = buildStreet(OUT.ground);   // V3.44 (N81): the street out front (with the house's materials, once they're made); N181: the first time it shows (Next door, or a room's windows)
+  if (OUT.ground && !OUT.hill && (room || S.hstreet)) { OUT.hill = true; buildBeyond(null, OUT.ground); }   // V1.4: the hill opposite and the valley's trees; N181: built the first time they show (Gardens, or a room's windows)
+  if (OUT.ground && !OUT.street && S.hstreet) OUT.street = buildStreet(OUT.ground);   // V3.44 (N81): the street out front (with the house's materials, once they're made); N181: the first time it shows (Next door, or a room's windows)
   if (house && !OUT.skyEnv) {   // V1.13 (QUALITY_PLAN Q3): outside, the house reflects its own sky: an environment made from a sky like the
     // one shown, at the room reflection's size (so swapping them rebuilds no shaders), once
     const pm = new THREE.PMREMGenerator(gl), sk = new Sky(), sc = new THREE.Scene(), u = sk.material.uniforms, u0 = OUT.sky.material.uniforms;
@@ -68,20 +68,20 @@ function outdoor() {
   if (HMATS && OUT.skyEnv) { const e = house ? OUT.skyEnv : houseEnv(); for (const m of Object.values(HMATS)) if (m.envMap && m.envMap !== e && !m.userData.real) m.envMap = e; }   // V3.53: a mirror keeps its room
   const liv = room && !HOUSEV(S.view);   // the living room is drawn on its own: its outside brings the gardens; a house room has the house's
   if (liv && !OUT.plants) { OUT.plants = new THREE.Group(); buildPlants(OUT.plants); buildBeyond(OUT.plants, null);   // V1.6: and the gardens round ours
-    buildThings(OUT.plants, "ours"); buildThings(OUT.plants, "next"); buildNextGardens(OUT.plants); scene.add(OUT.plants); }   // the house's own are in its outside, built with it
-  if (OUT.plants) OUT.plants.visible = liv;
+    buildThings(OUT.plants, "ours"); OUT.next = new THREE.Group(); buildThings(OUT.next, "next"); buildNextGardens(OUT.next); OUT.plants.add(OUT.next); scene.add(OUT.plants); }   // the house's own are in its outside, built with it
+  if (OUT.plants) { OUT.plants.visible = liv; OUT.next.visible = !!S.hstreet; }   // N310: next door's gardens with Next door
   if (garden3d && !HOUSEV(S.view)) garden3d.visible = room;                     // the house's views set it by Gardens
   if (view) view.visible = !room && !(VIEWS[S.view] || {}).above;
   if (OUT.sky) { OUT.sky.visible = on; OUT.ground.visible = on; const low = INSIDE() && ((R.HOUSE3.rooms || {})[VIEW_ROOM[S.view]] || [])[4] < 0;   // V1.10: the slope runs through the lower floor's rooms
-    OUT.ground.children.forEach(m => { m.visible = !(house && !S.hgarden && (m.name === "hill" || m.isInstancedMesh)); });   // V4.1 (N157): the house on its own: the hill and the trees come with Gardens
+    OUT.ground.children.forEach(m => { m.visible = !(house && !ov && !S.hstreet && (m.name === "hill" || m.isInstancedMesh)); });   // N310: the hill and the valley's trees with Next door (from a room or outside always)   // V4.1 (N157): the house on its own: the hill and the trees come with Gardens
     { const L = OUT.lawn, u = L.userData, A = L.geometry.index, keep = [];   // the slope runs through the lower floor's rooms; with Gardens on the alley steps down there
       u.quads.forEach(([al, sl], i) => { if (!(low && sl) && (!al || room || !S.hgarden)) keep.push(i); });
       if (keep.join() !== u.k) { u.k = keep.join(); A.array.set(keep.flatMap(i => [...u.idx.subarray(6 * i, 6 * i + 6)])); A.needsUpdate = true; L.geometry.setDrawRange(0, 6 * keep.length); } L.visible = keep.length > 0; }
-    { const st = OUT.ground.getObjectByName("street"); if (st) st.visible = !house || !!S.hstreet; }   // and the street with Next door (from a room's window it's always there)
+    { const st = OUT.ground.getObjectByName("street"); if (st) st.visible = !!S.hstreet; }   // N310: the street's houses only with Next door   // and the street with Next door (from a room's window it's always there)
     const d = house || !sun ? dayLight.position.clone().sub(dayLight.target.position) : sun.position.clone().sub(sun.target.position);   // the sun the sky shows: the one lighting it (N239: a house room's too, the living room's sun)
     OUT.sky.material.uniforms.sunPosition.value.copy(d.normalize());
     if (S.tod !== "day" && !house) OUT.sky.material.uniforms.sunPosition.value.set(-0.6, -0.04, -0.8).normalize(); }   // V1.47: by evening from inside, the sun just down: a dusk sky
-  duskVeil(INSIDE() && S.tod !== "day");
+  duskVeil(INSIDE() && !ov && S.tod !== "day");
   scene.fog.near = on ? 40 : 1e4; scene.fog.far = on ? 700 : 2e4;   // V1.4: the hill at 330 m about half hazed, as the view photos (was 30–110: nothing past 110 m)
   if (camera.far !== (on ? 3000 : 120)) { camera.far = on ? 3000 : 120; camera.updateProjectionMatrix(); }   // and seen out to the sky
   if (sun && house !== OUT.sunOut) {   // outside, the sun where the sky shows it (the living room's sits low by its window), its shadows over house and garden
