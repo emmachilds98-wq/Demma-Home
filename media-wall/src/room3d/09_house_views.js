@@ -312,6 +312,17 @@ const FIN_PEND = {};   // V2.15 (FINISHES F5): each room's own ceiling light, it
 const HPARTS = {};     // v68: the house's moving pieces (the master bedroom's ottoman lid), each its own group on its hinge
 /* v55: the floor picker. All lifts the floors apart; First, Ground and Lower show the house up to that floor (Lower takes the living
    room off too); only the top floor's labels show, or every floor's in All */
+/* N303 (Emma, 27 Nov: "you have a mixture of wall colours here that have come through staircase. the staircase has its own walls with
+   own colours"): the living room's stair walls run on past its back wall over the lower stairs (V1.59: behind the house's walls); with
+   the house drawn they're the house's own (its paint), so these are left out */
+let PASTB = null;
+function pastBack() {
+  if (PASTB) return PASTB; PASTB = []; if (!R.HOUSE3) return PASTB;
+  const bb = new THREE.Box3(), RZ = R.RECESS_Z; shell.updateMatrixWorld(true);
+  shell.traverse(m => { if (!m.isMesh) return; for (let p = m; p; p = p.parent) if (p.name === "stairs") return;
+    bb.setFromObject(m); if (bb.min.z / M >= RZ - 1 && bb.max.z / M > RZ + 100) PASTB.push(m); });
+  return PASTB;
+}
 function applyFloors() {
   if (!houseG) return;
   const on = S.view === "house", sel = on ? GS.hfloor : "all", ex = sel === "all" && !R.HOUSE3 ? 330 : 0;   // v58: Outside, the house closed (no lifting)
@@ -381,6 +392,8 @@ function applyFloors() {
     for (const [k, g] of Object.entries(HFLOOR)) if (!(k === "first" || k === "roof" || (open && k === "ground")) && g.visible) { g.visible = false; hidReal.push(g); }
   }
   livClip(!!(houseG && houseG.visible && R.HOUSE3 && S.view === "livstand"));
+  { const on = !!(houseG && houseG.visible && R.HOUSE3); for (const m of pastBack()) m.visible = !on; }   // N303
+  if (WHOLE && houseG) houseG.traverse(m => { if (m.isMesh) (Array.isArray(m.material) ? m.material : [m.material]).forEach(ownLights); });   // N303 (01 ownLights)
   roomCull(false);
   { let p = shell; while (p && p.visible) p = p.parent; const seen = !!(INSIDE() && R.HOUSE3 && !p);   // N294: the living room drawn from a house room: its own lights on
     if (seen !== !!GS.livSeen) { GS.livSeen = seen; if (started) placeRoomLights(); } }

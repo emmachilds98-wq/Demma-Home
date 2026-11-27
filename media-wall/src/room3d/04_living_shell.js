@@ -312,6 +312,7 @@ function buildStairs() {
   solid(inner, sx0 + 0.2, sx1 - 0.2, body);
   const hallSide = noClip(reg(new THREE.MeshStandardMaterial({ color: "#e9e5dd", roughness: 0.85, polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 4 })));
   solid(outer, sx0 + 0.6, sx1 - 0.6, hallSide);
+  solid([[RZ, 0], [RZ, yAt(RZ)], [RZ + 0.4, yAt(RZ)], [RZ + 0.4, 0]], sx0 + 0.2, sx1 - 0.2, hallSide);   // N303: the flight's end over the lower stairs in the stairwell's paint (its mint showed down them)
   for (let i = 1; i < n; i++) solid([[z0 + (i - 1) * gq - nose, i * r - tb], [z0 + i * gq, i * r - tb], [z0 + i * gq, i * r], [z0 + (i - 1) * gq - nose, i * r]], sx0, sx1, oak);
   solid([[zl - nose, top - tb], [zl1, top - tb], [zl1, top], [zl - nose, top]], sx0, sx1, oak);   // the landing's boards
   const pitch = z => r + (z - z0) / gq * r, zf = z0 + (21 - r) / r * gq;   // the string: 24 deep along the pitch line, capped 3 over it
