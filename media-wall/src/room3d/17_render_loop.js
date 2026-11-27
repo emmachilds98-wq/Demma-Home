@@ -7,7 +7,12 @@ let still_t = 0, lowRes = false, dragT = 0, slowDev = !HI, capDue = false;   // 
 const MV = []; let mvLast = 0;   // v39: the gaps between frames while the room moves: slow ones turn on the lower resolution while you drag
 function dirty() { GS.need = Math.max(GS.need, 2); }
 function fullRatio() { const d = window.devicePixelRatio || 1; if (SMALL && !BIG_GPU) return Math.min(d, GOOD_PHONE ? phoneCap : 1.5); if (S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view) && !BIG_GPU) return houseLite ? 1 : Math.min(d, 1.5);   // V2.25: a real card draws the house as sharp as a room   // V1.11: a real graphics card draws the house at 2× too   // v73: the house at the screen's own sharpness (no supersampling: it's many times the living room's drawing)
-  return S.quality === "hd" ? (BIG_GPU ? Math.min(d, 2) : Math.min(d, 1.5)) : Math.min(d, 1); }   // V2.30: a real card at the screen's own sharpness, as a game (4× anti-aliasing smooths the edges; it drew 1.5× on top: 2.25 times the pixels)   // v39: phones at their own sharpness; v44: a real graphics card draws HD at 1.5–2×; v50: Fast on a PC at full size (was 0.85×)
+  return S.quality === "hd" ? (BIG_GPU ? Math.min(d, 2, pxCap()) : Math.min(d, 1.5)) : Math.min(d, 1); }
+/* N296 (Emma, 27 Nov: "pc is slow, makes fan speed high and then is slow to walk and seems not smooth"): a real card draws HD at most
+   about 4.2 million pixels (2560 x 1600; a 4K screen at 1.5x was 8.3 million: twice the shading of every light, the shade and the
+   glow), never under 0.75x; ?px=N for another budget (millions) */
+const PX_BUDGET = (+(location.search.match(/[?&]px=([\d.]+)/) || [])[1] || 4.2) * 1e6;
+function pxCap() { const a = Math.max(1, canvas.clientWidth * canvas.clientHeight); return Math.max(0.75, Math.sqrt(PX_BUDGET / a)); }   // V2.30: a real card at the screen's own sharpness, as a game (4× anti-aliasing smooths the edges; it drew 1.5× on top: 2.25 times the pixels)   // v39: phones at their own sharpness; v44: a real graphics card draws HD at 1.5–2×; v50: Fast on a PC at full size (was 0.85×)
 const fitFov = (fov, asp = camera.aspect) => asp >= 16 / 9 ? fov : Math.min(95, 2 * Math.atan(Math.tan(fov * Math.PI / 360) * (asp < 0.8 ? 1.45 : 16 / 9) / asp) * 180 / Math.PI);   // v21: narrower screens widen the field of view to take in as much of the room as at 16:9 (v33: portrait, tighter)
 function sizeRenderer(sharp) {   // sharp: only the sharpness changed (N240: a lens you set stays)
   const w = canvas.clientWidth, h = canvas.clientHeight;
@@ -125,7 +130,9 @@ function frame(now) {
     else { const t0 = performance.now(); while (precompileStep() && performance.now() - t0 < 10) {} if (!PRE.queue.length && now - PRE.idleT > 1500) warmSwitch(); }
     preT = now; }   // V2.42: a room's visit only after a real pause   // v39: as many as fit in 10 ms, sooner
   if (glLost || (document.body.classList.contains("sheet-open") && !SH && !GS.tween)) return;   // v35: nothing drawn behind the Plan's sheets (the last picture stays)
+  if (GS.need > 0 && BIG_GPU && !(probe > 0) && now - (frame.drawn || 0) < 12) return;   // N296: at most about 72 pictures a second on a fast screen (144 Hz drew 144, the card flat out)
   if (GS.need > 0) {
+    frame.drawn = now;
     const t = probe > 0 && !lowRes ? performance.now() : 0;
     const f0 = performance.now(); syncRig(); declutter(); const shq = shStag(active || walking() && (WALK.v.lengthSq() > 1e-5 || WALK.keys.size > 0)); try { draw(); } finally { shStagEnd(shq); } if (!START_MS.firstAt) { START_MS.firstAt = Math.round(performance.now()); START_MS.firstMs = Math.round(performance.now() - f0); dispatchEvent(new Event("r3d-first")); } FT.calls = gl.info.render.calls; FT.tris = gl.info.render.triangles; GS.need--; placeStickers(); FT[FT.n++ % 60] = performance.now() - f0;   // V2.66 (N13): r3d-first, the first picture (the landing's first screen goes)
     if (t) { const c = gl.getContext(); c.readPixels(0, 0, 1, 1, c.RGBA, c.UNSIGNED_BYTE, PX); probeT.push(performance.now() - t); probe--; if (!probe) autoQuality(); }
