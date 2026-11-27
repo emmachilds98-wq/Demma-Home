@@ -1252,8 +1252,9 @@ def _page(site=False):
 <button type="button" class="skip" data-tools-toggle>Open the room's controls</button>
 <div class="landing" id="landing" aria-hidden="true">{LANDING_SVG}<i><b></b></i></div>
 <script>{LANDING_JS}</script>
+<h1 class="sr-only">Home Plan: the house in 3D</h1><p class="sr-only" id="r3d-where" role="status" aria-live="polite"></p>
 <div class="brandrow"><div class="brand" role="button" tabindex="0" title="Welcome" aria-controls="r3d-welcome"><span class="mark" aria-hidden="true"><i style="background:var(--peach)"></i><i style="background:var(--mint)"></i><i style="background:var(--lilac)"></i><i style="background:var(--butter)"></i></span>
-  <span><b>Home Plan <span class="bver">{LABEL}</span></b><small id="brand-place" aria-live="polite">The whole house</small></span></div>
+  <span><b>Home Plan <span class="bver">{LABEL}</span></b><small id="brand-place">The whole house</small></span></div>
   <button type="button" class="r3d-gear" id="r3d-gear" aria-label="Settings" title="Settings: Share, quality, labels, help" aria-controls="r3d-panel" aria-expanded="false"><span class="ms" aria-hidden="true">settings</span></button></div>
 <nav class="hnav" aria-label="The plan">{"".join(f'<button type="button" data-nav="{k}" aria-current="false">{n}</button>' for k, n in (("plan", "Plan"), ("build", "Build"), ("buy", "Buy")))}</nav>
 <div class="scrim" data-close aria-hidden="true"></div>

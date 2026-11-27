@@ -48,6 +48,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
   A row with more to slide to fades at that end; the chosen floor slides into view (V3.79).
 - The dock: View · Look · Measure (in the living room also Room and Edit); the figure drops you in where you let go.
 - On a touch screen the stick, bottom left, walks, moves the map or glides, by view; on a computer it shows only once you walk (N331); a card or panel puts it away. The figure says "Be there" under it; "Building the house…" shows until the first picture; a touch computer's pills are 40 px high.
+- Screen readers (N332): one hidden h1; the 3D's name says where you are; a polite line (`#r3d-where`) says the new place when it changes.
 - A tap's card stands beside its piece on a PC; on a phone it's a sheet over the dock, a swipe down closes it (V3.88).
 - Try options' Back to my plan sits top left; on a phone under the view pills, never behind them (N293).
 - **Places (N286):** every room has its places (`house/places.py`: a named area inside its real walls, what belongs there, what never, why), in `data/ideas.json` v2. Ideas (N287) puts a piece only in a place that takes it; + Add names what it adds; a moved piece snaps to a place or says why.

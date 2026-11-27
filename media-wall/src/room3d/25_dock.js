@@ -10,6 +10,8 @@ function dockRoom() {   // the house's room you're in (the living room too), or 
 const dockYard = () => typeof ixRoom === "function" && ixRoom() === "garden";
 function dockSync() { try { dockSync1(); } catch (e) { /* called while the page's parts still load: the last line here runs it */ } }
 function dockSync1() {
+  const wp = qs("#brand-place"), wl = qs("#r3d-where");   // N332: a polite line for a screen reader when the place changes (not at the start)
+  if (wp && wl && wl.dataset.t !== wp.textContent) { if (wl.dataset.t) wl.textContent = wp.textContent; wl.dataset.t = wp.textContent; }
   const hv = document.body.classList.contains("hv"), room = hv ? dockRoom() : LIVR, house = !!room && room !== LIVR, yard = hv && !room && dockYard();
   document.body.classList.toggle("dock-room", house); document.body.classList.toggle("dock-none", hv && !room && !yard);
   const b = qs("#r3d-dt-room"); if (b) { const i = b.querySelector(".ms"), t = [...b.childNodes].find(n => n.nodeType === 3);
