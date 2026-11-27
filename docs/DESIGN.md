@@ -65,6 +65,23 @@ The shops' best for a place (N288): fit first (no more than 10 cm of its wall sp
 then style (artisan oak and warm wood, cane, sage and pale mint, linen; white and painted below; black, grey and gloss last; in the garage
 and store only the fit), then price. Where nothing fits well it's a gap, and N289 draws a piece to fit it.
 
+## The page's words (N333)
+One word for each thing, everywhere on the page (cards, the dock, panels, toasts). `tools/checks.py`'s `words` check fails on a
+button or label that says a word from the right-hand column (the client's words: "say less", N266).
+
+| Say | Not |
+|---|---|
+| The plan's | As planned |
+| Take it out | Remove |
+| The plan's | Reset |
+| Done | OK |
+| Garden | Yard |
+| Be there | Walk mode |
+| As it is | Before |
+
+Done closes a card that finished a job (a swap, a shop piece); Close is only the × of a card or picture. Tape measure is the tool
+inside Measure.
+
 ## Sources (read 24 Nov 2026)
 
 - Homes & Gardens, a guide to living room clearances: https://www.homesandgardens.com/interior-design/living-rooms/a-guide-to-living-room-clearances-measurements-and-spacing

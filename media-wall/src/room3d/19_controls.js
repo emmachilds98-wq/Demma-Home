@@ -414,6 +414,6 @@ function arrive() {
 const welOnce = () => setTimeout(() => { try {
   if (S.view !== "house" || (navigator.webdriver && !/[?&](welcome|door)\b/.test(location.search))) return;
   if (!/[?&]house\b/.test(location.search) && arrive()) return;
-  if (localStorage.getItem("demma-welcome")) return;   // ?house: the welcome, once a device, as before
-  localStorage.setItem("demma-welcome", "1"); welcome(true); } catch (e) {} }, 300);
+  if (store.raw("demma-welcome")) return;   // ?house: the welcome, once a device, as before
+  store.put("demma-welcome", "1"); welcome(true); } catch (e) { caught(e, "welcome"); } }, 300);
 if (document.getElementById("landing")) addEventListener("demma-landed", welOnce, { once: true }); else welOnce();

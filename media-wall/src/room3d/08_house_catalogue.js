@@ -161,7 +161,7 @@ const HCAT = {
     b: (W, H, D, B) => { B("rug", 0, 0, 0, W, Math.max(0.6, H), D); B("rattan", 4, Math.max(0.6, H), 4, W - 4, Math.max(0.6, H) + 0.2, 8); B("rattan", 4, Math.max(0.6, H), D - 8, W - 4, Math.max(0.6, H) + 0.2, D - 4); } },
   floorlamp: { n: "Floor lamp, linen shade", k: "lamp", w: 45, d: 45, h: 155, ref: "hcmore", src: "Dunelm Marin, 155 tall, 45 shade",
     b: (W, H, D, B, L) => { L("black", W / 2, D / 2, 0, [[0, 0], [13, 0], [13, 2.5], [10, 4], [3, 5], [0, 5]]); L("black", W / 2, D / 2, 5, [[0, 0], [1.4, 0], [1, H - 30], [0, H - 30]]);
-      L("paper", W / 2, D / 2, H - 28, [[0, 0], [W / 2 - 0.5, 0], [W / 2 - 0.5, 28], [0, 28]]); } },
+      L("shade_lit", W / 2, D / 2, H - 28, [[0, 0], [W / 2 - 0.5, 0], [W / 2 - 0.5, 28], [0, 28]]); } },
   sidetable: { n: "Round side table, oak", k: "table", w: 50, d: 50, h: 56, ref: "hcikea", src: "IKEA LISTERBY, 50 across, 56 high",
     b: (W, H, D, B, L) => { L("oak", W / 2, D / 2, H - 3, [[0, 0], [W / 2, 0], [W / 2, 3], [0, 3]]); hcLegs("oak", W, D, H - 3, 1.8, 11)(B, L);
       for (const [u0, t0, u1, t1] of [[11, 10, W - 11, 12], [11, D - 12, W - 11, D - 10], [10, 11, 12, D - 11], [W - 12, 11, W - 10, D - 11]]) B("oak", u0, H - 9, t0, u1, H - 3, t1); } },
@@ -298,7 +298,7 @@ Object.assign(HCAT, {
       stBooks(B, 4, W * 0.55, H * 0.35 + 1.8, 14, 4, D - 4, 3); } },
   mf_lamp: { n: "Slim oak floor lamp", k: "idea", w: 30, d: 30, h: 150, ref: "madefit", src: "Made to fit, oak stem, linen shade",
     b: (W, H, D, B, L) => { const r = W / 2 - 1, c = W / 2; B(ST, c - 11, 0, c - 11, c + 11, 3, c + 11); B(ST, c - 1.5, 3, c - 1.5, c + 1.5, H - 26, c + 1.5);
-      L("paper", c, c, H - 28, [[0, 0], [r, 0], [r, 28], [0, 28]]); } },
+      L("shade_lit", c, c, H - 28, [[0, 0], [r, 0], [r, 28], [0, 28]]); } },
 });
 /* N219: real pieces from four shops (R.SHOP, from house/data/N219_catalogue.json by export3d.shop_row; each its own fit.SOURCES row by its key)
    and her own (a size, a look, one of the house's materials, a name), drawn by the same builders at their own size. Built only when one is
@@ -338,7 +338,7 @@ const hcMake = (k, look, m, m2, c) => {
   if (k === "toilet") return hcToilet(look, m, m2);
   if (k === "basin") return hcBasin(look, m, m2);
   if (k === "rug") return (W, H, D, B, L) => look === "round" ? L(m, W / 2, D / 2, 0, [[0, 0], [W / 2, 0], [W / 2, H], [0, H]]) : B(m, 0, 0, 0, W, H, D);
-  if (k === "lamp") return (W, H, D, B, L) => { const r = Math.min(W, D) / 2 - 0.5, sh = m === "rattan" ? "rattan" : /^cloth/.test(m2) ? m2 : "paper";   // N278: a linen or cloth shade in its weave
+  if (k === "lamp") return (W, H, D, B, L) => { const r = Math.min(W, D) / 2 - 0.5, sh = m === "rattan" ? "rattan" : /^cloth/.test(m2) ? m2 : "shade_lit";   // N278: linen or cloth in its weave
     if (look === "tripod") { const ap = H - 34, r0 = r - 1.5, rs = Math.min(19, r);   // three legs splayed from under the shade, each in eight steps
       for (let j = 0; j < 3; j++) { const a = j * 2.094 + 0.5; for (let q = 0; q < 8; q++) { const rr = r0 * (1 - (q + 0.5) / 8), cu = W / 2 + Math.cos(a) * rr, ct = D / 2 + Math.sin(a) * rr;
         B(m, cu - 1, ap * q / 8, ct - 1, cu + 1, ap * (q + 1) / 8, ct + 1); } }

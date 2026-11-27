@@ -125,7 +125,7 @@ function toast(t, undo) {   // the clock starts once two frames have drawn (appl
    ticks and the speed (&share=, measure.js's DemmaShare). On a phone the share sheet; on a computer the link is copied */
 async function copyLook() {
   let url = lookUrl(), what = "";
-  try { if (window.DemmaShare) ({ url, what } = await window.DemmaShare()); } catch (e) {}
+  try { if (window.DemmaShare) ({ url, what } = await window.DemmaShare()); } catch (e) { caught(e, "share"); }
   const said = what ? `Shared: this view, ${what}` : "Shared: this view";
   if (navigator.share && matchMedia("(pointer: coarse)").matches) {
     try { await navigator.share({ title: "Home Plan", url }); toast(said); return; } catch (er) { if (er && er.name === "AbortError") return; } }
@@ -185,7 +185,7 @@ function applyLook(tok, title = "Emma's look") {   // N222: a title: shown, not 
 function lookFromHash() {
   const m = (location.hash || "").match(/^#look-([A-Za-z0-9_-]+)(?:&share=[A-Za-z0-9_-]*)?$/); if (!m) return;
   applyLook(m[1]);
-  try { history.replaceState(history.state, "", "#room"); } catch (e) {}
+  try { history.replaceState(history.state, "", "#room"); } catch (e) { caught(e, "history"); }
 }
 addEventListener("hashchange", () => { if (started) lookFromHash(); });
 document.querySelector("#r3d-theirs [data-lookkeep]")?.remove();   // N222 (Emma: "Dave only looks"): a look shown is never kept: its pill says Back to mine only
@@ -214,9 +214,9 @@ const stickEls = {}; qsa(".stk").forEach(b => { stickEls[b.dataset.hot] = b; });
 const pop = qs("#r3d-pop"), stage = qs(".r3d-stage");
 let popId = null;
 const _p = new THREE.Vector3();
-let labelsOn = true; try { labelsOn = localStorage.getItem("mw26-labels") !== "off"; } catch (e) {}
+let labelsOn = store.raw("mw26-labels") !== "off";
 function setLabels(on) {
-  labelsOn = on; try { localStorage.setItem("mw26-labels", on ? "on" : "off"); } catch (e) {}
+  labelsOn = on; store.put("mw26-labels", on ? "on" : "off");
   if (!on) { closePop(); Object.values(stickEls).forEach(el => { el.hidden = true; }); }
   document.getElementById("r3d")?.classList.toggle("nolabels", !on);
   applyFloors();
@@ -286,7 +286,7 @@ function openPop(id) {
     li.appendChild(b); pcs.appendChild(li); });
   pop.hidden = false; placePop(el); (qs(".r3d-pcs button", pop) || qs(".acts button", pop)).focus({ preventScroll: true }); syncPlaces();
 }
-function closePop() { if (popId && stickEls[popId]) stickEls[popId].setAttribute("aria-expanded", "false"); popId = null; if (pop) pop.hidden = true; try { syncPlaces(); } catch (e) {} }
+function closePop() { if (popId && stickEls[popId]) stickEls[popId].setAttribute("aria-expanded", "false"); popId = null; if (pop) pop.hidden = true; try { syncPlaces(); } catch (e) { caught(e, "syncPlaces"); } }
 qsa(".stk").forEach(b => b.addEventListener("click", e => { e.stopPropagation();
   if (tryOpts && placeOpts(b.dataset.hot).length) { const r = stage.getBoundingClientRect(), q = b.getBoundingClientRect(); openAct(`opt:${b.dataset.hot}:${placeIx(b.dataset.hot)}`, [q.left + q.width / 2 - r.left, q.bottom - r.top]); return; }   // v39
   popId === b.dataset.hot ? closePop() : openPop(b.dataset.hot); }));
