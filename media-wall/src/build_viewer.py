@@ -20,6 +20,7 @@ SINGLES = 2 * G.TRAY_SINGLES
 
 import room3d_page                 # v14: the room in 3D
 from shot3d import SHOTS as SHOTS3D
+HAVE_ART = lambda k: (HERE / "art" / f"{k}.webp").exists()   # N336: the old stills kept are only those the PDFs use; a card without one shows its "in my room" button
 
 
 def _plain(s):
@@ -542,7 +543,8 @@ def item_card(stem, kind, k, title, size, cost, why, where):
     addp = (f' <button type="button" class="btn addplan" data-short="{kind}:{k}" aria-pressed="false"><span class="ms" aria-hidden="true">add</span><span class="t">Add to plan</span></button>'
             if kind in ("idea", "sugg") and cost else "")   # v33: the ideas shortlist
     meta = " · ".join(x for x in (html.escape(size), f"about £{cost[0]}–{cost[1]}" if cost else "") if x)
-    return (f'<article class="opt" id="it-{kind}-{k}"><button type="button" class="g3d" data-full="{stem}"><img data-art="{stem}" alt="{html.escape(CAP3D[stem])}" loading="lazy"></button>'
+    pic = f'<button type="button" class="g3d" data-full="{stem}"><img data-art="{stem}" alt="{html.escape(CAP3D[stem])}" loading="lazy"></button>' if HAVE_ART(stem) else ""
+    return (f'<article class="opt" id="it-{kind}-{k}">{pic}'
             f'<div class="ob"><span class="label">{meta}</span><h3>{html.escape(title)}</h3>'
             + (f'<p>{html.escape(why)}</p>' if why else "") + (f'<p class="caption">{html.escape(where)}</p>' if where else "")
             + f"<button type='button' class='btn' data-r3d='{json.dumps(o)}'><span class='ms' aria-hidden='true'>view_in_ar</span> {lab}</button>{addp}</div></article>")
@@ -774,7 +776,7 @@ def options_card():
 
 def gallery3d():
     figs = "".join(f'<figure><button type="button" class="g3d" data-full="{k}"><img data-art="{k}" alt="{html.escape(CAP3D[k])}" loading="lazy"></button>'
-                   f'<figcaption>{html.escape(CAP3D[k])}</figcaption></figure>' for k, *_ in SHOTS3D if not k.startswith(("3d_ideas_", "3d_case_", "3d_decor", "3d_suggest", "3d_seat", "3d_id_", "3d_sg_", "3d_add_")))
+                   f'<figcaption>{html.escape(CAP3D[k])}</figcaption></figure>' for k, *_ in SHOTS3D if HAVE_ART(k) and not k.startswith(("3d_ideas_", "3d_case_", "3d_decor", "3d_suggest", "3d_seat", "3d_id_", "3d_sg_", "3d_add_")))
     return f'<div class="gallery">{figs}</div>'
 
 SEC_TAB = {"1": "overview", "2": "overview", "3": "wall", "4": "wall", "5": "dining", "6": "wall", "7": "wall", "8": "paint",
@@ -920,10 +922,14 @@ def pack_sheets(html_):
 
 SHEETS_JS = r"""(() => { const D = document.getElementById("sheets-data"); let text = null, want = null, built = false;
   const W = window.DemmaSheets = { done: false };
-  const fetchIt = () => want || (want = (D.dataset.src ? fetch(D.dataset.src).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
-    : Promise.resolve(D.textContent)).then(t => { text = t; return t; }, e => { want = null; throw e; }));
+  /* N326: on Pages a file a sheet and one for their scripts (data-parts), fetched side by side: a round that changes one sheet leaves the others kept */
+  const get = (u, json) => fetch(u).then(r => { if (!r.ok) throw new Error(r.status); return json ? r.json() : r.text(); });
+  const parts = () => { const P = JSON.parse(D.dataset.parts), ks = Object.keys(P.html);
+    return Promise.all([get(P.js, true), ...ks.map(k => get(P.html[k]))]).then(([js, ...hs]) => ({ js, html: Object.fromEntries(ks.map((k, i) => [k, hs[i]])) })); };
+  const fetchIt = () => want || (want = (D.dataset.parts ? parts() : D.dataset.src ? get(D.dataset.src, true) : Promise.resolve(D.textContent).then(JSON.parse))
+    .then(t => { text = t; return t; }, e => { want = null; throw e; }));
   const build = () => { if (built) return true; if (text == null) return false; built = true;
-    const S = JSON.parse(text); text = null;
+    const S = text; text = null;
     for (const [k, h] of Object.entries(S.html)) { const b = document.querySelector("#sh-" + k + " .sbd"); if (b) b.innerHTML = h; }
     for (const js of S.js) { const s = document.createElement("script"); s.textContent = js; document.body.appendChild(s); }   // in order, as before
     for (const o of document.querySelectorAll("ol.sources[data-src]")) {   /* N284: the Sources list fetched when it first comes into view (or to print) */
@@ -1042,7 +1048,7 @@ def _page(site=False):
     prefix = "media-wall/src/" if site else ""
     imgs = {k: f"{prefix}art/{k}.webp" for k in [f"art_{s}_{p}" for s in ("join", "four", "six", "side", "drawers") for p in ("mint", "card_room", "deep", "sage", "treron")] + ["key_join", "doc_paint", "doc_skirt"]}
     imgs.update({f"dims_{v}": f"{prefix}art/dims_{v}.webp" for v in ("join", "four", "six", "drawers", "side")})
-    imgs.update({k: f"{prefix}art/{k}.webp" for k, *_ in SHOTS3D})
+    imgs.update({k: f"{prefix}art/{k}.webp" for k, *_ in SHOTS3D if HAVE_ART(k)})
     rows = track_rows()
     phases = phase_data(rows)
     _, lo_tot, hi_tot = phase_totals()
@@ -1250,8 +1256,9 @@ def _page(site=False):
 <button type="button" class="skip" data-tools-toggle>Open the room's controls</button>
 <div class="landing" id="landing" aria-hidden="true">{LANDING_SVG}<i><b></b></i></div>
 <script>{LANDING_JS}</script>
+<h1 class="sr-only">Home Plan: the house in 3D</h1><p class="sr-only" id="r3d-where" role="status" aria-live="polite"></p>
 <div class="brandrow"><div class="brand" role="button" tabindex="0" title="Welcome" aria-controls="r3d-welcome"><span class="mark" aria-hidden="true"><i style="background:var(--peach)"></i><i style="background:var(--mint)"></i><i style="background:var(--lilac)"></i><i style="background:var(--butter)"></i></span>
-  <span><b>Home Plan <span class="bver">{LABEL}</span></b><small id="brand-place" aria-live="polite">The whole house</small></span></div>
+  <span><b>Home Plan <span class="bver">{LABEL}</span></b><small id="brand-place">The whole house</small></span></div>
   <button type="button" class="r3d-gear" id="r3d-gear" aria-label="Settings" title="Settings: Share, quality, labels, help" aria-controls="r3d-panel" aria-expanded="false"><span class="ms" aria-hidden="true">settings</span></button></div>
 <nav class="hnav" aria-label="The plan">{"".join(f'<button type="button" data-nav="{k}" aria-current="false">{n}</button>' for k, n in (("plan", "Plan"), ("build", "Build"), ("buy", "Buy")))}</nav>
 <div class="scrim" data-close aria-hidden="true"></div>
@@ -1503,18 +1510,21 @@ def split_photos(html_):
 
 
 def split_sheets(html_):
-    """N25: on Pages the sheets' JSON (pack_sheets) is a file of its own, named by its contents (the service worker keeps it till it
-    changes); the page keeps only its name."""
+    """N25: on Pages the sheets' JSON (pack_sheets) is files of their own, named by their contents (the service worker keeps them till
+    they change); the page keeps only their names."""
     import hashlib
     m = re.search(r'<script type="application/json" id="sheets-data">(.*?)</script>', html_, re.S)
     if not m:
         return html_
-    data = split_sources(m.group(1)).encode()
-    name = f"sheets.{hashlib.sha256(data).hexdigest()[:10]}.json"
-    for old in SITE.glob("sheets.*.json"):
-        if old.name != name: old.unlink()
-    (SITE / name).write_bytes(data)
-    return html_[:m.start()] + f'<script type="application/json" id="sheets-data" data-src="{name}"></script>' + html_[m.end():]
+    S, keep = json.loads(split_sources(m.group(1))), set()
+    def put(stem, ext, body):
+        name = f"{stem}.{hashlib.sha256(body).hexdigest()[:10]}.{ext}"; (SITE / name).write_bytes(body); keep.add(name); return name
+    # N326: a file a sheet (sheet.<k>.<hash>.html) and one for their scripts (sheetjs.<hash>.json): a round that changes Plan leaves Buy's kept
+    parts = {"html": {k: put(f"sheet.{k}", "html", h.encode()) for k, h in S["html"].items()},
+             "js": put("sheetjs", "json", json.dumps(S["js"], separators=(",", ":")).encode())}
+    for old in [*SITE.glob("sheets.*.json"), *SITE.glob("sheet.*.html"), *SITE.glob("sheetjs.*.json")]:
+        if old.name not in keep: old.unlink()
+    return html_[:m.start()] + f'<script type="application/json" id="sheets-data" data-parts=\'{json.dumps(parts, separators=(",", ":"))}\'></script>' + html_[m.end():]
 
 
 def split_sources(data):
@@ -1549,7 +1559,17 @@ def split_app(html_):
     if m:
         data = m.group(1).encode(); name = f"room3d.{hashlib.sha256(data).hexdigest()[:10]}.js"; (SITE / name).write_bytes(data); keep.add(name)
         html_ = html_[:m.start()] + f'<script type="module" src="{name}"></script>' + html_[m.end():]
-    for old in [*SITE.glob("scene.*.json"), *SITE.glob("room3d.*.js")]:
+    # N325: the page's CSS (about 110 KB) and its Measure module files of their own too, named by their contents, so a release that
+    # didn't change them downloads only the page's markup and the service worker keeps them (HASHED)
+    m = max(re.finditer(r"<style>(.*?)</style>", html_, re.S), key=lambda x: len(x.group(1)), default=None)
+    if m and len(m.group(1)) > 20000:
+        data = m.group(1).encode(); name = f"page.{hashlib.sha256(data).hexdigest()[:10]}.css"; (SITE / name).write_bytes(data); keep.add(name)
+        html_ = html_[:m.start()] + f'<link rel="stylesheet" href="{name}">' + html_[m.end():]
+    mods = [x for x in re.finditer(r'<script type="module">(.*?)</script>', html_, re.S) if len(x.group(1)) > 4000]
+    if len(mods) == 1:
+        m = mods[0]; data = m.group(1).encode(); name = f"page.{hashlib.sha256(data).hexdigest()[:10]}.js"; (SITE / name).write_bytes(data); keep.add(name)
+        html_ = html_[:m.start()] + f'<script type="module" src="{name}"></script>' + html_[m.end():]
+    for old in [*SITE.glob("scene.*.json"), *SITE.glob("room3d.*.js"), *SITE.glob("page.*.css"), *SITE.glob("page.*.js")]:
         if old.name not in keep: old.unlink()
     return html_
 

@@ -213,6 +213,11 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/archive/revie
   the picture; the first floor's sills and heads (0.71 / 0.96) are the ruler.
 - The kitchen-from-the-landing photo couldn't be fitted and was dropped. Bedroom 2 is the music room: no bed there.
 
+- **The top floor's inner walls (27 Nov):** `model.first_walls` draws them as whatever lies between the rooms (every bit inside the
+  outline in no room is wall; rooms that touch get 4 cm from the smaller room), so each face sits on its own room's edge and takes that
+  room's paint (Look, Room → Walls). Don't go back to each room drawing half of each gap: where an edge faced two rooms the halves
+  missed or ran past each other (slots, other rooms' colours). The other floors still use `walls_for`'s halves.
+
 ## 5. The site's features: where they live
 - **The dock follows the room** (N304, `25_dock.js`, `dockSync` from `brandPlace`): body `dock-room` in a house room (Room opens its card `here:<room>`, View's `#r3d-viewhere` its lights card `hlit:<room>`, Look's `#r3d-lookhere` its walls, ceiling, floor, Measure its `data-mroom` group first), `dock-none` over a floor (Room hidden); outside Room is the garden's Ideas. The living room's own lights and tour are `.r3d-livlights`, `.r3d-tourgo` (hidden in `hv`). A new room tool: a button on `hereCard`.
 - **Look's rows** (`23_finish.js`, `S.fin[room]`): 0–3 walls, 4 ceiling, 5 floor, 6 bulb, 7 lux, 8 fitting, 9–10 outside, 11–16 the

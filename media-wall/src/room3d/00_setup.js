@@ -3,7 +3,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
-import { RectAreaLightUniformsLib } from "three/addons/lights/RectAreaLightUniformsLib.js";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
@@ -27,7 +26,9 @@ const qs = s => root.querySelector(s), qsa = s => [...root.querySelectorAll(s)];
 const msg = qs("#r3d-msg");
 
 const store = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
-                set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode or full: not kept */ } } };
+                set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode or full: not kept */ } },
+                raw(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },   // N328: a plain string kept as it is ("1", "on", a picture)
+                put(k, s) { try { localStorage.setItem(k, s); } catch (e) { /* private mode or full: not kept */ } } };   // the one way the 3D keeps anything on this device
 const CAUGHT = { n: 0, at: [] };   // N327: a caught error that needn't stop the page is counted here (?perf, Send), listed in the console under ?debug
 function caught(e, where) { CAUGHT.n++; CAUGHT.at.push(where); if (CAUGHT.at.length > 8) CAUGHT.at.shift(); if (/[?&]debug\b/.test(location.search)) console.warn("soft:", where, e); }
 const ERRS = { t: 0, busy: false, db: null };   // v35: an error trap: any error shows a note and is kept (the last 20 here, R3D.errors(); the deck's "errors" database)
