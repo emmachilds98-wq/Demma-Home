@@ -3,7 +3,7 @@
 Rewritten (not appended) by the lead at merge (N249; a row's PR leaves it alone), under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.108 (27 Nov 2026): No silent failures: a caught error is counted and named in ?perf
+**Version:** V4.115 (27 Nov 2026): Faster checks: a newer push stops the older browser checks
 V4.11 (N170): the small rooms' In it views without bowed walls; the hall looks down the hall. V4.10 (N174, N175): fewer view pills (As it is and Hide labels behind ⋯; Gardens, Next door on Outside only); the walk stick faint until touched. V4.9 (N177): a hitch check for a PC's walk. V4.8 (N141): the sofa bed's chenille made at build; photos 7.7 to 7.5 MB. V4.7 (N176):
 leaner code. V4.6 (N169): the plot's edge soft, the sky hazy. Earlier: `docs/HISTORY.md`.
 The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.28 ↻"): on the
@@ -47,7 +47,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
 - Pills over the 3D: the brand, Plan · Build · Buy; two rows at most under them (views, floors, Whole house, Hide); a floor's rooms.
   A row with more to slide to fades at that end; the chosen floor slides into view (V3.79).
 - The dock: View · Look · Measure (in the living room also Room and Edit); the figure drops you in where you let go.
-- On a phone the stick, bottom left, walks, moves the map or glides, by view; a card or panel puts it away.
+- On a touch screen the stick, bottom left, walks, moves the map or glides, by view; on a computer it shows only once you walk (N331); a card or panel puts it away. The figure says "Be there" under it; "Building the house…" shows until the first picture; a touch computer's pills are 40 px high.
 - A tap's card stands beside its piece on a PC; on a phone it's a sheet over the dock, a swipe down closes it (V3.88).
 - Try options' Back to my plan sits top left; on a phone under the view pills, never behind them (N293).
 - **Places (N286):** every room has its places (`house/places.py`: a named area inside its real walls, what belongs there, what never, why), in `data/ideas.json` v2. Ideas (N287) puts a piece only in a place that takes it; + Add names what it adds; a moved piece snaps to a place or says why.

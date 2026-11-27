@@ -156,7 +156,16 @@ def lean():
     unused += [f"MATS {k}" for k in re.findall(r'"(\w+)":\s*\(', mp[i:j]) if not re.search(r"\b" + k + r"\b", rest)]
     lines = sum(t.count("\n") for t in js)
     com = sum(1 for t in js for l in t.splitlines() if l.lstrip().startswith(("//", "/*", "*")))
-    msg = f"the 3D {lines} lines, {com} of them comment ({100 * com / lines:.0f}%); {len(cls)} page.css classes"
+    tail = sum(1 for t in js for l in t.splitlines() if re.search(r"[;{})\]]\s+//", l))   # N329: comments after code, the share whole lines miss
+    tags = sum(len(re.findall(r"//[^\n]*?\b(?:V\d+\.\d+|v\d{1,3})\b", t)) for t in js)
+    long_ = sum(1 for t in js for l in t.splitlines() if len(l) > 200)
+    r = subprocess.run(["git", "diff", "-U0", "origin/main", "--", "media-wall/src/room3d/"], cwd=ROOT, capture_output=True, text=True)
+    d = r.stdout.splitlines() if r.returncode == 0 else []
+    add = [l[1:80] for l in d if l.startswith("+") and not l.startswith("+++") and len(l) > 201]
+    if len(add) > sum(1 for l in d if l.startswith("-") and not l.startswith("---") and len(l) > 201):   # N329: no more long lines than main has
+        unused += [f"more lines over 200 characters than main: {x}…" for x in add[:2]]
+    msg = (f"the 3D {lines} lines, {com} of them comment ({100 * com / lines:.0f}%), {tail} with a comment after code, {tags} version tags,"
+           f" {long_} over 200 characters; {len(cls)} page.css classes")
     return not unused, msg + (f"; nothing uses: {', '.join(unused[:12])}" if unused else ": every name, class and material used")
 
 
@@ -213,8 +222,9 @@ def taps():
     code, out = sh(["taptest.py", SHOTS], SRC, timeout=2400)
     errs = re.findall(r"errors: (\[.*\])", out)
     bad = [e for e in errs if e != "[]"]
-    if len(errs) < 2:   # a run stopped before its end: say where (the script's last lines)
-        return False, f"taps: {len(errs)} of 2 runs finished: " + " / ".join(out.strip().splitlines()[-6:])[-600:]
+    want = 1 if os.environ.get("TAPS_W") else 2   # N338: one width a CI job
+    if len(errs) < want:   # a run stopped before its end: say where (the script's last lines)
+        return False, f"taps: {len(errs)} of {want} runs finished: " + " / ".join(out.strip().splitlines()[-6:])[-600:]
     return code == 0 and not bad, ("taps: " + "; ".join(bad)[:300]) if bad else f"taps on the media wall's pieces: {len(errs)} runs, no errors"
 
 

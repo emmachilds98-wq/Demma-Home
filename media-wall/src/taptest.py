@@ -136,4 +136,6 @@ def run(w, h):
         pg.evaluate("() => R3D.set({site: 'C', dining: 'folded', sugg: {}, lid: false, view: 'room'})")
         print("  errors:", errs[:5])
         b.close()
-run(1280, 800); run(390, 844)
+W = __import__("os").environ.get("TAPS_W")   # N338: CI runs the computer's and the phone's taps on machines of their own (TAPS_W=1280 or 390)
+for w, h in ((1280, 800), (390, 844)):
+    if not W or W == str(w): run(w, h)
