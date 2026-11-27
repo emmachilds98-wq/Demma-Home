@@ -313,9 +313,8 @@ def _new_spots():
        ["boxes", "books", "display"])
     sp("hall_overliving", "hall", "Over the living room door", "over door", [h["x0"] + 2, hd("ground"), h["z0"], 376.0, top("ground"), h["z0"] + 20], "z0",
        ["books", "display", "boxes"])
-    sp("hall_bymirror", "hall", "Past the mirror, by the stairs", "floor", [h["x1"] - 29, yg, 264.0, h["x1"] - 2, yg + 90, 291.0], "x1",
-       ["shoes", "side", "boxes", "plants"])
-    sp("hall_stairside", "hall", "High along the stairs' side", "wall", [360.0, hd("ground"), 70.0, 378.0, top("ground"), 250.0], "x1", ["books", "display"])
+    # 27 Nov: the shoe bench now runs from the stair box's end (the spot past the mirror is its far cube)
+    sp("hall_stairside", "hall", "High along the stairs' side", "wall", [358.0, hd("ground"), 70.0, 376.0, top("ground"), 250.0], "x1", ["books", "display"])
     # ------------------------------------------------ the landing
     la, b3 = _room("landing"), _door("bed3_door")
     sp("land_overbath", "landing", "Over the bathroom door", "over door", [bd["a"], hd("first"), la["z0"] + 2, bd["b"], top("first"), la["z0"] + 22], "z0",
