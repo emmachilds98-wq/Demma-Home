@@ -47,7 +47,7 @@ function histPut(snap) {
   const o = JSON.parse(snap); nowOff(); UNDO_H.want = JSON.stringify(o.he); UNDO_H.wantT = Date.now();
   for (const k of HIST_KEYS) if (o.s[k] !== undefined) S[k] = o.s[k];
   finRestore(o.fin); restoreLayout(o.lay); if (DS()) heWear(o.he, DS());
-  applyLight(); placeAll(); finApplyAll(); updateCaption(); store.set(KEY, S);
+  applyLight(); placeAll(); finApplyAll(); updateCaption(); store.set(KEY, S); dirty();
 }
 function histStep(back) {
   const from = back ? UNDO_H.past : UNDO_H.future, to = back ? UNDO_H.future : UNDO_H.past; if (!from.length) return;
