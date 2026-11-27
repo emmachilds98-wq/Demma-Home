@@ -156,8 +156,32 @@ def lean():
     unused += [f"MATS {k}" for k in re.findall(r'"(\w+)":\s*\(', mp[i:j]) if not re.search(r"\b" + k + r"\b", rest)]
     lines = sum(t.count("\n") for t in js)
     com = sum(1 for t in js for l in t.splitlines() if l.lstrip().startswith(("//", "/*", "*")))
-    msg = f"the 3D {lines} lines, {com} of them comment ({100 * com / lines:.0f}%); {len(cls)} page.css classes"
+    tail = sum(1 for t in js for l in t.splitlines() if re.search(r"[;{})\]]\s+//", l))   # N329: comments after code, the share whole lines miss
+    tags = sum(len(re.findall(r"//[^\n]*?\b(?:V\d+\.\d+|v\d{1,3})\b", t)) for t in js)
+    long_ = sum(1 for t in js for l in t.splitlines() if len(l) > 200)
+    r = subprocess.run(["git", "diff", "-U0", "origin/main", "--", "media-wall/src/room3d/"], cwd=ROOT, capture_output=True, text=True)
+    d = r.stdout.splitlines() if r.returncode == 0 else []
+    add = [l[1:80] for l in d if l.startswith("+") and not l.startswith("+++") and len(l) > 201]
+    if len(add) > sum(1 for l in d if l.startswith("-") and not l.startswith("---") and len(l) > 201):   # N329: no more long lines than main has
+        unused += [f"more lines over 200 characters than main: {x}…" for x in add[:2]]
+    msg = (f"the 3D {lines} lines, {com} of them comment ({100 * com / lines:.0f}%), {tail} with a comment after code, {tags} version tags,"
+           f" {long_} over 200 characters; {len(cls)} page.css classes")
     return not unused, msg + (f"; nothing uses: {', '.join(unused[:12])}" if unused else ": every name, class and material used")
+
+
+def words():
+    """N333: the page says one word for each thing: a button or label (a whole string, or a tag's whole text) that says a word from
+    DESIGN.md's "Not" column fails"""
+    import re as _re
+    table = (ROOT / "docs/DESIGN.md").read_text().split("## The page's words", 1)[1].split("\n## ", 1)[0]
+    bad = {r.split("|")[2].strip() for r in table.splitlines() if r.startswith("| ") and not r.startswith("| Say")}
+    pat = _re.compile(r"""[>"'`](%s)[<"'`]""" % "|".join(map(_re.escape, sorted(bad))))
+    hits = []
+    for f in sorted((SRC / "room3d").glob("*.js")) + [SRC / "room3d_page.py", SRC / "build_viewer.py", SRC / "page.js"]:
+        for n, l in enumerate(f.read_text().splitlines(), 1):
+            code = _re.sub(r"\s//\s.*$|/\*.*?\*/", "", l) if f.suffix == ".js" else l.split("   # ")[0]
+            hits += [f"{f.name}:{n} {m.group(1)!r}" for m in pat.finditer(code)]
+    return not hits, f"{len(bad)} retired words, {len(hits)} on the page" + (": " + "; ".join(hits[:6]) if hits else "")
 
 
 def names():
@@ -213,18 +237,19 @@ def taps():
     code, out = sh(["taptest.py", SHOTS], SRC, timeout=2400)
     errs = re.findall(r"errors: (\[.*\])", out)
     bad = [e for e in errs if e != "[]"]
-    if len(errs) < 2:   # a run stopped before its end: say where (the script's last lines)
-        return False, f"taps: {len(errs)} of 2 runs finished: " + " / ".join(out.strip().splitlines()[-6:])[-600:]
+    want = 1 if os.environ.get("TAPS_W") else 2   # N338: one width a CI job
+    if len(errs) < want:   # a run stopped before its end: say where (the script's last lines)
+        return False, f"taps: {len(errs)} of {want} runs finished: " + " / ".join(out.strip().splitlines()[-6:])[-600:]
     return code == 0 and not bad, ("taps: " + "; ".join(bad)[:300]) if bad else f"taps on the media wall's pieces: {len(errs)} runs, no errors"
 
 
 def main(argv):
     """python3 tools/checks.py [--quick | --only site,page,taps]"""
     quick = "--quick" in argv
-    checks = [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("markers", markers), ("repo", repo), ("sizes", sizes), ("lean", lean), ("names", names), ("dbgnames", dbgnames)] + ([] if quick else [("site", site), ("features", features), ("hitch", hitch), ("page", qa), ("taps", taps)])
+    checks = [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("markers", markers), ("repo", repo), ("sizes", sizes), ("lean", lean), ("words", words), ("names", names), ("dbgnames", dbgnames)] + ([] if quick else [("site", site), ("features", features), ("hitch", hitch), ("page", qa), ("taps", taps)])
     if "--only" in argv:                                         # V1.35 (U10): one or more by name (the workflow runs the browser checks side by side)
         want = argv[argv.index("--only") + 1].split(",")
-        checks = [c for c in [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("markers", markers), ("repo", repo), ("sizes", sizes), ("lean", lean), ("names", names), ("dbgnames", dbgnames), ("site", site), ("features", features), ("hitch", hitch), ("page", qa), ("taps", taps)] if c[0] in want]
+        checks = [c for c in [("model", model), ("flicker", zfight), ("clashes", clash), ("privacy", privacy), ("markers", markers), ("repo", repo), ("sizes", sizes), ("lean", lean), ("words", words), ("names", names), ("dbgnames", dbgnames), ("site", site), ("features", features), ("hitch", hitch), ("page", qa), ("taps", taps)] if c[0] in want]
     fails = 0
     for name, fn in checks:
         t = time.time()

@@ -42,8 +42,8 @@ function start() {
   root.classList.add("ready");
   /* V1.31 (U4): the shaders built first with compileAsync (in parallel where KHR_parallel_shader_compile is), then the first frame; after
      the cutaway's clipping is set and into the composer's kind of target when it's on. Never more than 8 s */
-  const first = () => { if (first.done) return; first.done = true; START_MS.compiled = Math.round(performance.now() - t0); msg.hidden = true;
-    requestAnimationFrame(() => { preDraw(); requestAnimationFrame(frame); requestAnimationFrame(() => setTimeout(loadPhotos, 30)); });   // V2.66 (N13): the shadows a frame ahead   // V1.9: the photos once the first picture is up
+  const first = () => { if (first.done) return; first.done = true; START_MS.compiled = Math.round(performance.now() - t0);
+    requestAnimationFrame(() => { preDraw(); requestAnimationFrame(frame); requestAnimationFrame(() => { msg.hidden = true; setTimeout(loadPhotos, 30); }); });   // N331: "Building the house" until the first picture is drawn   // V2.66 (N13): the shadows a frame ahead   // V1.9: the photos once the first picture is up
     if (!/[?&]nocompile\b/.test(location.search)) setTimeout(() => (window.requestIdleCallback || (f => f()))(warmRest, { timeout: 4000 }), 1500); };   // V2.72 (N14): the rest after
   /* V2.72 (N14): only what the landing shows is built first (the living room put away), the rest after the first picture, in parallel */
   const warmRest = () => { const was = gl.getRenderTarget(); try { if (postLive() && PRE.rtAO) gl.setRenderTarget(PRE.rtAO); compileClipped(camera); } catch (e) {} finally { gl.setRenderTarget(was); } };

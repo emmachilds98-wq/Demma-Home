@@ -105,23 +105,39 @@ function lightAt(l, L, day, hd) {   // one light, as its own room has it
 /* V3.76 (N116): a lit bulb's faint warm glow on the ceiling round it: one shared additive disc a pendant, in the room's pendant group;
    shown in a room only (no shader in the first picture) */
 let HALO = null;
+/* N346 (Emma, 27 Nov: "bulbs emitting light ... soft and natural but not too bright"): a lit bulb's soft glow round it, a card that
+   turns to face you, a little toward you so the bulb sits in it; walls hide it as anything else (the halos' one program) */
+const GLOWQ = new THREE.Quaternion(), GLOWV = new THREE.Vector3();
+function glowCard(mat, cm, at) {
+  const me = new THREE.Mesh(new THREE.PlaneGeometry(cm * M, cm * M), mat);
+  me.position.copy(at); me.renderOrder = 5; me.userData.at = at.clone();
+  me.onBeforeRender = (r, sc, cam) => { const p = me.parent; if (!p) return;
+    p.getWorldQuaternion(GLOWQ).invert().multiply(cam.quaternion); me.quaternion.copy(GLOWQ);
+    GLOWV.setFromMatrixPosition(cam.matrixWorld); p.worldToLocal(GLOWV); GLOWV.sub(me.userData.at);
+    me.position.copy(me.userData.at).addScaledVector(GLOWV.normalize(), cm * M * 0.3); me.updateMatrixWorld(); };
+  return me;
+}
 function bulbHalos() {
   if (HALO || !R.HOUSE3 || !Object.keys(FIN_PEND).length) return HALO;
   const tex = canvasTex(64, 64, (g, w, h) => { const r = g.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
     r.addColorStop(0, "rgba(255,255,255,1)"); r.addColorStop(0.3, "rgba(255,255,255,0.42)"); r.addColorStop(0.65, "rgba(255,255,255,0.1)"); r.addColorStop(1, "rgba(255,255,255,0)");
     g.fillStyle = r; g.fillRect(0, 0, w, h); });
   const mat = new THREE.MeshBasicMaterial({ map: tex, color: "#ffcf98", transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false });
-  HALO = { mat, ms: [] };   // V3.77: the meshes hidden, not the material: a hidden material's shader was still built for the first picture (21 to 22); hidden meshes wait for the idle warm-up (precompile)
+  HALO = { mat, ms: [], glow: mat.clone(), gs: [] };   // V3.77: the meshes hidden, not the material: a hidden material's shader was still built for the first picture (21 to 22); hidden meshes wait for the idle warm-up (precompile)
   const geo = new THREE.CircleGeometry(48 * M, 28); geo.rotateX(Math.PI / 2);   // facing down
   for (const F of Object.values(R.HOUSE3.floors)) for (const L of F.lights || []) { const g = FIN_PEND[L.room]; if (!g || L.drop != null) continue;
     const me = new THREE.Mesh(geo, mat); me.position.copy(v3(L.x, L.y + 1.6, L.z)); me.renderOrder = 4; me.userData.halo = true; me.visible = false; g.add(me); HALO.ms.push(me); }
+  for (const g of Object.values(FIN_PEND)) for (const c of [...g.children]) {   // N346: each fitting's lit bulb or dome (its own mesh in the light's group)
+    const k = c.isMesh && c.material && c.material.userData.hk; if (k !== "bulb" && k !== "dome_lit") continue;
+    c.geometry.computeBoundingSphere(); const me = glowCard(HALO.glow, k === "bulb" ? 24 : 44, c.geometry.boundingSphere.center);
+    me.userData.halo = true; me.visible = false; g.add(me); HALO.gs.push(me); }
   return HALO;
 }
 function haloShow() {
   const h = bulbHalos(); if (!h) return;
   const on = (!!ROOMV() && (GS.RMODE === "in" || GS.RMODE === "stand") || WHOLE && S.view === "livstand") && !(HMATS && HMATS.ceiling && !HMATS.ceiling.visible), day = S.tod === "day";
-  for (const me of h.ms) me.visible = on; if (!on) return;
-  h.mat.color.copy(warmColour()); h.mat.opacity = day ? 0.1 : 0.26;
+  for (const me of [...h.ms, ...h.gs]) me.visible = on; if (!on) return;
+  h.mat.color.copy(warmColour()); h.mat.opacity = day ? 0.1 : 0.26; h.glow.color.copy(h.mat.color); h.glow.opacity = day ? 0.12 : 0.42;   // N346: soft, never a glare
 }
 /* N239 (the client, 23 Nov: "all lights should appear as they do in the room even from a distance ... im not changing lights"): the set
    holds the lights of the rooms seen first (the room's own, then those seen from it), then their neighbours'; walking into a room whose
