@@ -84,6 +84,9 @@ function buildShell() {
   });
   ceilGlow.wrapS = ceilGlow.wrapT = THREE.ClampToEdgeWrapping;
   ceilMat = ceilP.clone(); ceilMat.emissiveMap = ceilGlow; ceilMat.emissive = new THREE.Color("#ffe2c0"); ceilMat.userData = { ratio: ceilP.userData.ratio, ch: "ceil" };
+  /* N307 (Emma: "when standing in the hallway entrance looking in the living room ... it glitches the ceiling"): the first floor's walls
+     and the stairwell's paint stand on its plane from above (seen from the hall, the house drawn too): it wins */
+  Object.assign(ceilMat, { polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -4 });
   paintMats.set("ceilglow", reg(ceilMat));
   for (const [xa, xb, za, zb] of LS.ceiling) {   // V3.04 (N47): its pieces one draw
     const q = v3((xa + xb) / 2, C, (za + zb) / 2);
@@ -313,7 +316,10 @@ function buildStairs() {
   const hallSide = noClip(reg(new THREE.MeshStandardMaterial({ color: "#e9e5dd", roughness: 0.85, polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 4 })));
   ownLights(hallSide);   // N306: the house's lights only, as the stairwell's walls (it showed mint from the living room's)
   solid(outer, sx0 + 0.6, sx1 - 0.6, hallSide);
-  solid([[RZ, 0], [RZ, yAt(RZ)], [RZ + 0.4, yAt(RZ)], [RZ + 0.4, 0]], sx0 + 0.2, sx1 - 0.2, hallSide);   // N303: the flight's end over the lower stairs in the stairwell's paint (its mint showed down them)
+  /* N303: the flight's end over the lower stairs in the stairwell's paint (its mint showed down them); N307 (Emma: "coloured box is now
+     sticking through the floor still on the downstairs staircase"): 1 proud of the mint, with no offset (hallSide's pushed it behind) */
+  const endSide = noClip(reg(new THREE.MeshStandardMaterial({ color: "#e9e5dd", roughness: 0.85 }))); ownLights(endSide);
+  solid([[RZ + 0.2, 0], [RZ + 0.2, yAt(RZ)], [RZ + 1, yAt(RZ)], [RZ + 1, 0]], sx0 + 0.2, sx1 - 0.2, endSide);
   for (let i = 1; i < n; i++) solid([[z0 + (i - 1) * gq - nose, i * r - tb], [z0 + i * gq, i * r - tb], [z0 + i * gq, i * r], [z0 + (i - 1) * gq - nose, i * r]], sx0, sx1, oak);
   solid([[zl - nose, top - tb], [zl1, top - tb], [zl1, top], [zl - nose, top]], sx0, sx1, oak);   // the landing's boards
   const pitch = z => r + (z - z0) / gq * r, zf = z0 + (21 - r) / r * gq;   // the string: 24 deep along the pitch line, capped 3 over it
