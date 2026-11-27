@@ -574,6 +574,16 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/archive/revie
   artisan oak). `mf_slope` takes a 6th argument `lo`, its height at u = 0 (its top rises to H at u = W); `made` rows carry `ends` (the
   roof's height at the wall's low and high coordinate) so the placer can turn it. Nothing shows them yet: N290/N291 put them on screen.
 
+### N347 (27 Nov 2026): walking the stairs
+- **Reproduce a walk bug with `walkMove` in the page, not with keys.** Headless frames take seconds, so held keys say little. Put the eye with
+  `R3D._dbg.camera.position` (metres, x flipped), set `WALK.feet`, aim `controls.target`, call `_dbg.walkMove(side, fwd, 0, 1/hz)` in a loop at
+  120, 60 and 30 Hz, log x, z, feet. `bodyBlocked`, `floorAtCm` and `HSOLID` (its `wb`/`pb` for the body, `w`/`pw` for the head) say what stops you.
+- **The two flights share a plan:** the kitchen's runs right under the living room's (x 382–467). A rule that tests only x and z for one
+  (the living room flight's "face down it", `onFlight`) catches the other: give it a height too.
+- **A step's reach (24) must beat the feet's lag:** easing the feet at 12 a second left them 20–30 behind when running up, more so at 120 Hz;
+  the body then met the next tread or lost the floor. A rule tied to speed needs testing at a phone's 120 Hz, not only CI's slow frames.
+- **Skirting runs round a room's every open edge:** `skirting()` cuts only for the same room or a void; open pairs (`OPEN_PAIRS`) need cutting too.
+
 ## 6. Finishes and furniture (section 14, N56–N58; section 17 stream A)
 - **The walls' emulsion (N172):** `paintGrain` (`03_materials.js`) adds a world-position varying and value noise to a wall's shader (tone at `color_fragment`, sheen at `roughnessmap_fragment`). It runs on `paintMat`'s walls (key `paintwall`), the stair wall (`stairMat`: a `clone()` drops `onBeforeCompile`, so it's set again) and the house's `paint` (inside `finPatch`, `finish0`). A material's `clone()` never carries `onBeforeCompile` or `customProgramCacheKey`. HD shots in the rig sometimes catch the GTAO unsettled (a dark speckle by the landing's newel): shoot twice before blaming a change.
 - **One room's finish in a shared material (N172 garage):** the garage's floor is the drive's `concrete`; `garageFloor` (`20_go.js`) patches that material and acts only inside `H3.rooms.garage`'s outline (its slab lies 15 cm under the room's y). The walls' palette shader (`finPatch`) knows each pixel's room (`rm`): `finGar` holds the garage's number for its masonry look.

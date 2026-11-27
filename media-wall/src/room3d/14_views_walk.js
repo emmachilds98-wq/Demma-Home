@@ -87,7 +87,8 @@ function hsolidSet(fk, F) {
   (F.lathes || []).forEach((L, j) => { const f = furn(L.t); bfu.push(f); if (!soft(L.t)) (f ? wh : wb).push(b[b.length - nl + j]); });
   const fl = b.filter((q, i) => !bfu[i] || q[4] - q[1] < 3);   // underfoot: not the furnishings (a rug stays)
   const p = (F.prisms || []).filter(P => !NOSOLID.has(P.m)), pw = p.filter(P => !soft(P.t));
-  HSOLID[fk] = { b, w: wb.concat(wh), p, pw, wb, fl, pb: pw.filter(P => !furn(P.t)) };
+  // 27 Nov: nor a wall's handrail (the hand goes over it; at the hip it narrowed the kitchen's flight to 40 cm and stopped a walk on its steps)
+  HSOLID[fk] = { b, w: wb.concat(wh), p, pw, wb, fl, pb: pw.filter(P => !furn(P.t) && P.m !== "rail_white") };
   hLast = null;
 }
 function polyNear(pts, u, w, r) {          // inside the outline, or within r of its edge
@@ -187,7 +188,8 @@ function walkMove(side, fwd, turn, dt) {    // -1..1 each; true if the eye moved
   /* V1.55: a step down only on purpose: never by a slide along a wall, the living room's flight only facing down it, never off an edge
      (more than two treads, or no floor) */
   const L = FLIGHT(), here = floorAtCm(x0, z0, WALK.feet), ref = here > -Infinity ? here : WALK.feet;
-  const onFlight = (x_, z_) => x_ > L.x0 - 4 && x_ < L.x1 && z_ > L.z0 - 12 && z_ < L.zl1;
+  // the living room's flight, not the kitchen's under it on the same plan (its foot's rule stopped a walk up from the kitchen, 27 Nov)
+  const onFlight = (x_, z_) => WALK.feet > -40 && x_ > L.x0 - 4 && x_ < L.x1 && z_ > L.z0 - 12 && z_ < L.zl1;
   const badDown = (x_, z_, slid) => {
     const f = floorAtCm(x_, z_, WALK.feet); if (!(f < ref - 6)) return false;    // level, or up a step: fine
     if (f < ref - 45 || slid) return true;
@@ -211,7 +213,9 @@ function walkMove(side, fwd, turn, dt) {    // -1..1 each; true if the eye moved
     }
   }
   const fl = floorAtCm(x, z, WALK.feet);
-  if (fl > -Infinity && fl > WALK.feet - 400) WALK.feet += (fl - WALK.feet) * Math.min(1, dt * 12);
+  /* 27 Nov: up a step the feet follow quicker, never more than 10 behind: running up (more so at 120 frames a second) they trailed the
+     treads by 20 to 30, past the 24 a step can reach, so the body met the next tread as a wall or lost the floor and fell to the hall */
+  if (fl > -Infinity && fl > WALK.feet - 400) { WALK.feet += (fl - WALK.feet) * Math.min(1, dt * (fl > WALK.feet ? 30 : 12)); WALK.feet = Math.max(WALK.feet, fl - 10); }
   const ny = (WALK.feet + STAND_EYE) * M, moved = Math.abs(x - x0) + Math.abs(z - z0) > 1e-4 || Math.abs(ny - cam.y) > 1e-5 || !!turn;
   if (!moved) { walkDoors(x0, WALK.feet, z0); return false; }   // V1.57: a shut door you're stopped against opens too (it opened only once a step had gone)
   const delta = v3(x, 0, z).sub(v3(x0, 0, z0)); delta.y = ny - cam.y;

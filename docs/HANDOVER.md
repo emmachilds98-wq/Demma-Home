@@ -2,7 +2,7 @@
 
 ## Next team: the plan to finish (27 Nov 2026, late evening)
 **Done:** main's speed budget (V4.122: the gardens' plain pieces joined, 250 to 201 draws, budget 222 and the PC's first shaders 31, why in `tools/perf_budget.json`) and the seven stream PRs merged in order (V4.123–V4.129: #397 N324, #403 N326, #396 N263, #400 N321, #401 N322, #404 N320, #405 N323). Read main's CI once and fix a red from its log.
-1. **The stairs walk:** `docs/STAIRS_WALK_PLAN.md` (its own thread).
+1. **The stairs walk:** done (N347): the kitchen flight's foot and the run up it. If Emma still falls by the office wall, ask where she starts and on what device.
 2. **Then the leftovers:** N327's last 8 empty catches and N328's last 6 store uses, N329 version tags out of comments, N330 design tokens, N339 lighter docs. RTX `draws_landing` (over before #389) its own row. S7 options (N340–N344) wait for Emma.
 3. A stray branch `s397` (the same commits as #397, merged) can be deleted.
 
