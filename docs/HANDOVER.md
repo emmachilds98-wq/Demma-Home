@@ -1,4 +1,4 @@
-# Handover (27 Nov 2026, V4.129: start here)
+# Handover (27 Nov 2026, V4.130: start here)
 
 ## Next team: the plan to finish (27 Nov 2026, late evening)
 **Done:** main's speed budget (V4.122: the gardens' plain pieces joined, 250 to 201 draws, budget 222 and the PC's first shaders 31, why in `tools/perf_budget.json`) and the seven stream PRs merged in order (V4.123–V4.129: #397 N324, #403 N326, #396 N263, #400 N321, #401 N322, #404 N320, #405 N323). Read main's CI once and fix a red from its log.
@@ -6,7 +6,7 @@
 2. **Then the leftovers:** N327's last 8 empty catches and N328's last 6 store uses, N329 version tags out of comments, N330 design tokens, N339 lighter docs. RTX `draws_landing` (over before #389) its own row. S7 options (N340–N344) wait for Emma.
 3. A stray branch `s397` (the same commits as #397, merged) can be deleted.
 
-## Now (27 Nov 2026, V4.129: start here)
+## Now (27 Nov 2026, V4.130: start here)
 The client, 25 Nov: "another team is going to build it from another session so make sure the repo has everything they will need".
 
 **Read first:** `CLAUDE.md` (the client's rules; **privacy first: the address is never written anywhere**), this block, then
