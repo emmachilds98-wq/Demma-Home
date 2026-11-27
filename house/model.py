@@ -2741,10 +2741,19 @@ def pendants(o, floor):
             # V3.10 (N49): 10 across and 22 down (the photo on its camera; was 15 and 28)
             o.lathe("primrose", px, y - 26, pz, [(0, 0), (5, 0), (5, 20), (1.5, 20), (1.5, 22), (0, 22)])
             o.lathe("upvc", px, y - 20, pz, [(0, 0), (5.2, 0), (5.2, 6), (0, 6)])
+            o.lathe("bulb", px, y - 28, pz, [(0, 0), (1.6, 0.3), (2.7, 1.4), (3.1, 3), (2.7, 4.8), (1.6, 6.6), (1.3, 8.5), (0, 8.5)])   # N346: its lit bulb under the shade
         else:
             o.box("upvc", px - 0.35, y - 33, pz - 0.35, px + 0.35, y - 2, pz + 0.35)
             o.lathe("upvc", px, y - 37, pz, [(0, 0), (1.7, 0), (1.7, 4), (1.2, 4.6), (0, 4.6)])
             o.lathe("bulb", px, y - 45.5, pz, [(0, 0), (1.6, 0.3), (2.7, 1.4), (3.1, 3), (2.7, 4.8), (1.6, 6.6), (1.3, 8.5), (0, 8.5)])
+    # N346 (Emma, 27 Nov: "... and anywhere else it does not emit properly"): a room lit with no fitting drawn (the bathroom, the garage,
+    # the stores) gets a flush dome, lit, where its ceiling light already is (room_lights: the room's middle; E: 27 across, 8.5 deep)
+    for L in room_lights(floor):
+        if L["room"] in D.PENDANTS or L.get("drop") is not None:
+            continue
+        o.item("light." + L["room"], "The ceiling light", L["room"], kind="light", src="E", measure=False)
+        o.lathe("upvc", L["x"], y - 3.5, L["z"], [(0, 0), (14, 0), (14, 1.5), (0, 1.5)])
+        o.lathe("dome_lit", L["x"], y - 12, L["z"], [(0, 0), (6, 0.4), (10.5, 2.2), (13, 5.5), (13.5, 8.5), (0, 8.5)])
 
 
 def upper_ceilings(o):
