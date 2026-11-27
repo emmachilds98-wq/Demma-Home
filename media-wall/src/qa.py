@@ -176,7 +176,7 @@ def no_assistant_names():
     from pypdf import PdfReader
     word = "cl" + "aude"
     hits = []
-    for f in ("index.html", *(p.name for p in ROOT.glob("sheets.*.json")), *(p.name for p in ROOT.glob("sources.*.html")), *(p.name for p in [*ROOT.glob("room3d.*.js"), *ROOT.glob("scene.*.json")]), f"media-wall/out/Home_Plan_{LABEL}_Plan.pdf", f"media-wall/out/Home_Plan_{LABEL}_Build_Guide.pdf",
+    for f in ("index.html", *(p.name for p in [*ROOT.glob("sheet.*.html"), *ROOT.glob("sheetjs.*.json")]), *(p.name for p in ROOT.glob("sources.*.html")), *(p.name for p in [*ROOT.glob("room3d.*.js"), *ROOT.glob("scene.*.json")]), f"media-wall/out/Home_Plan_{LABEL}_Plan.pdf", f"media-wall/out/Home_Plan_{LABEL}_Build_Guide.pdf",
               f"media-wall/out/Home_Plan_{LABEL}_Plan_phone.pdf", f"media-wall/out/Home_Plan_{LABEL}_Build_Guide_phone.pdf"):
         path = ROOT / f
         if not path.exists():
@@ -194,7 +194,7 @@ BUDGET = {"caption": 20, "figcaption": 20, "note": 30, "p": 80, "toast": 10}
 
 def sheet_markup():
     """N25: the Plan, Build, Buy and Ideas sheets' markup (packed out of the page, built on first use)."""
-    return [h for p in ROOT.glob("sheets.*.json") for h in json.loads(p.read_text())["html"].values()]
+    return [p.read_text() for p in sorted(ROOT.glob("sheet.*.html"))]   # N326: a file a sheet
 
 
 def text_budget():
