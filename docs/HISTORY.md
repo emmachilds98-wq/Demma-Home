@@ -510,3 +510,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.110** (27 Nov 2026): Lighter phone PDFs: the Plan's phone copy 7.9 to 4.1 MB
 - **V4.111** (27 Nov 2026): Faster checks: the taps run a width a machine
 - **V4.112** (27 Nov 2026): One store for what the 3D keeps on a device
+- **V4.113** (27 Nov 2026): Fits every device: the walking stick on touch screens only (a computer once you walk), Be there under the figure, Building the house till the first picture
