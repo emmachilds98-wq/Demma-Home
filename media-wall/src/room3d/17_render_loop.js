@@ -111,6 +111,7 @@ function frame(now) {
   const active = GS.moving || changed || !!GS.tween || walked;   // V2.73 (N17): a walk too
   if (active && mvLast && now - mvLast < 1000) { const g_ = now - mvLast; if (now - (FT.worstT || 0) > 3000 || g_ >= (FT.worst || 0)) { FT.worst = g_; FT.worstT = now; } }   // V3.29: the longest gap while moving (the last 3 s), for ?perf
   if (active && mvLast && now - mvLast < 250) { MV.push(now - mvLast); if (MV.length >= 24) { const m = MV.sort((a, b) => a - b)[12]; MV.length = 0; FT.mv = m;
+    if (m > 50 && !SMALL) tooSlow();   // N296: a PC walking at under 20 a second in HD: Fast
     if (m > 28) slowDev = true; else if (m < 14 && !lowRes && HI) slowDev = false;   // N240: a real card too (it never stepped down: a slow frame stayed slow)
     if (PHONE_HD && lowRes && m > 24 && phoneCap > 1.5) capDue = true;   // V2.73 (N17): still slow with the lighter drawing
     if (m > 40 && !BIG_GPU && !houseLite && S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view)) { houseLite = true; sizeRenderer(); toast("A lighter drawing for the house on this computer"); } } }
@@ -130,7 +131,7 @@ function frame(now) {
     else { const t0 = performance.now(); while (precompileStep() && performance.now() - t0 < 10) {} if (!PRE.queue.length && now - PRE.idleT > 1500) warmSwitch(); }
     preT = now; }   // V2.42: a room's visit only after a real pause   // v39: as many as fit in 10 ms, sooner
   if (glLost || (document.body.classList.contains("sheet-open") && !SH && !GS.tween)) return;   // v35: nothing drawn behind the Plan's sheets (the last picture stays)
-  if (GS.need > 0 && BIG_GPU && !(probe > 0) && now - (frame.drawn || 0) < 12) return;   // N296: at most about 72 pictures a second on a fast screen (144 Hz drew 144, the card flat out)
+  if (GS.need > 0 && !(probe > 0) && now - (frame.drawn || 0) < (slowDev && !SMALL ? 30 : BIG_GPU ? 12 : 0)) return;   // N296: a slow computer at most about 33 a second (it ran flat out, fans loud)   // N296: at most about 72 pictures a second on a fast screen (144 Hz drew 144, the card flat out)
   if (GS.need > 0) {
     frame.drawn = now;
     const t = probe > 0 && !lowRes ? performance.now() : 0;
@@ -174,9 +175,23 @@ function perfInfo() {   // v35: the counts to watch each round (R3D.perf())
 if (/[?&]perf\b/.test(location.search)) {   // v35: ?perf shows the counts in a corner   // V3.04 (N50): in fewer words; Measure's Send carries them too
   const box = document.createElement("div"); box.className = "r3d-perf";
   box.style.cssText = "position:absolute;left:8px;bottom:calc(92px + env(safe-area-inset-bottom));z-index:30;padding:6px 9px;border-radius:10px;background:rgba(0,0,0,.72);color:#fff;font:12px/1.35 ui-monospace,monospace;pointer-events:none;white-space:pre";
-  root.append(box);
+  const txt = document.createElement("div"), cp = document.createElement("button");   // N296 (Emma, 27 Nov: "make this copy pastable"): Copy, one line to paste
+  cp.type = "button"; cp.textContent = "Copy"; cp.style.cssText = "pointer-events:auto;margin-top:4px;font:inherit;padding:2px 10px;border-radius:8px;border:0;background:#fff;color:#000;cursor:pointer";
+  cp.addEventListener("click", () => { const p = perfInfo(), e = store.get("r3d-errors", []).slice(-3).map(x => String(x && (x.msg || x.message || x)).slice(0, 120));
+    const line = `${p.version} ${p.quality} ${p.view} · moving ${p.moveMs ?? "-"} ms · worst ${p.worstMs ?? "-"} ms · still ${p.stillMs ?? "-"} ms · ${p.calls} draws · ${p.programs} shaders · ${p.lights} lights · ratio ${+p.ratio.toFixed(2)} · ${canvas.clientWidth}x${canvas.clientHeight} @${window.devicePixelRatio || 1} · slow ${p.slowDev} · ${GPU.slice(0, 120)}${e.length ? " · errors: " + e.join(" | ") : ""}`;
+    const done = () => { cp.textContent = "Copied"; setTimeout(() => (cp.textContent = "Copy"), 1500); };
+    (navigator.clipboard ? navigator.clipboard.writeText(line) : Promise.reject()).then(done, () => { prompt("Copy this", line); }); });
+  box.append(txt, cp); root.append(box);
   setInterval(() => { if (!gl || !started) return; const p = perfInfo(), ms = v => v == null ? "–" : v + " ms";
-    box.textContent = `${p.quality.toUpperCase()} · moving ${ms(p.moveMs)} · worst ${ms(p.worstMs)} · still ${ms(p.stillMs)}\n${p.gpuClass} · ${+p.ratio.toFixed(2)}×${lowRes ? " (lower while moving)" : ""} · ${p.calls} draws · ${p.programs} shaders${p.errors ? " · " + p.errors + " errors" : ""}`; }, 1000);   // V3.29: the chip, the sharpness, the worst gap
+    txt.textContent = `${p.quality.toUpperCase()} · moving ${ms(p.moveMs)} · worst ${ms(p.worstMs)} · still ${ms(p.stillMs)}\n${p.gpuClass} · ${+p.ratio.toFixed(2)}×${lowRes ? " (lower while moving)" : ""} · ${p.calls} draws · ${p.programs} shaders${p.errors ? " · " + p.errors + " errors" : ""}`; }, 1000);   // V3.29: the chip, the sharpness, the worst gap
+}
+let hdNo = false;
+function tooSlow() {   // N296: HD stepped down to Fast for this visit, with why
+  if (S.quality !== "hd" || hdNo || /[?&]hd\b/.test(location.search)) return false;
+  hdNo = true; S.quality = "fast"; S.picked = false; applyLight(); syncButtons(); probe = 3; probeT.length = 0;
+  const soft = /swiftshader|llvmpipe|software|basic render|microsoft/i.test(GPU);
+  toast(soft || !BIG_GPU ? "Fast on this computer: the browser isn't using the graphics card (turn on graphics acceleration in its settings)" : "Fast on this computer: HD drew too slowly");
+  return true;
 }
 function autoQuality() {
   const ms = probeT.sort((a, b) => a - b)[1];
@@ -186,8 +201,11 @@ function autoQuality() {
     if (phoneAO && ms > 30) { phoneAO = false; phoneAOoff = true; dirty(); return; }
     if (!phoneAO && !phoneAOoff && ms < 14) { phoneAO = true; dirty(); probe = 3; probeT.length = 0; return; }
   }
+  /* N296 (Emma, 27 Nov: the PC "still 218.7 ms", the fans loud): a whole still picture over 100 ms is Fast on any device, HD picked or not
+     (a real card at that speed is the browser drawing without it); ?hd keeps HD */
+  if (ms > 100 && tooSlow()) return;
   if (S.picked) return;
-  if (S.quality === "fast" && (!SMALL || GOOD_PHONE) && ms < (SMALL ? 18 : 20)) {   // v35: quick in Fast: on to HD, once, while the room is still (v39: capable phones too)
+  if (S.quality === "fast" && !hdNo && (!SMALL || GOOD_PHONE) && ms < (SMALL ? 18 : 20)) {   // v35: quick in Fast: on to HD, once, while the room is still (v39: capable phones too)
     S.quality = "hd"; applyLight(); syncButtons(); probe = 3; probeT.length = 0;
   } else if (ms > (SMALL ? 45 : 70) && S.quality === "hd" && !BIG_GPU) {   // v39: a phone goes back sooner
     S.quality = "fast"; applyLight(); syncButtons();
