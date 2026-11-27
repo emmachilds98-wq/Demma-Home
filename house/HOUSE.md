@@ -429,7 +429,8 @@ the door. Also room for improvement." The gap: "Left wall behind airing cupboard
   covering the air vents that built the old blow air heating from downstairs. it now is pretty vacant with possible pipe or two": a
   chipboard box floor to ceiling, from the chimney breast's line to the hall wall (its depth to measure).
 - The hall's tapestry (v69): an orange tree-of-life hanging on the stairs' box from the corner by the door down. **v81, the client:** it
-  covers the whole of that wall (the size to come). The radiator is about half a metre nearer the living room than drawn, its light
+  covers the whole of that wall (the size to come). Its print is drawn as one picture across the cloth from the two angled photos
+  (mottled orange, black tree of life, roots, birds); a straight-on photo of it would make it exact. The radiator is about half a metre nearer the living room than drawn, its light
   switch above it and slightly right, between it and the shoe rack.
 - **The stair curtain (v81, the client):** a dual curtain round the foot of the living room's stairs, the bottom step and the open side
   (an option in the 3D room) Hung clear of the banister, which stays (30 Oct).

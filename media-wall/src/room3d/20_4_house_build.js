@@ -80,7 +80,7 @@ function buildHouse() {
       primrose: 4, duvet: 3, pot: 4, lycksele: 5, storebox: 1.5, leather: 2, check: 1, curtain: 1, mattress: 4, pillow: 6,
       /* V2.44: every piece's edges catch the light (a bevel to its size); the worktop a little */
       black: 0.6, black_app: 1.2, worktop: 0.4, steel: 0.5, steel_dark: 0.5, chrome: 0.4, screen: 0.4, glass_dark: 0.3, pc_white: 0.8, panel: 0.5,
-      rug: 0.8, bathmat: 0.8, recycle: 1, bin: 1, bin_white: 1, tapestry: 0.6, tapestry_dark: 0.6, chalk: 0.3, mirror: 0.3, blind_cloth: 0.3 };
+      rug: 0.8, bathmat: 0.8, recycle: 1, bin: 1, bin_white: 1, tapestry: 0.6, chalk: 0.3, mirror: 0.3, blind_cloth: 0.3 };
     const SOFT = { pillow: 4, mattress: 3, duvet: 3 };
     const CLOTH = { lycksele: 1, leather: 1, pillow: 1, mattress: 1, duvet: 1, cloth0: 1, cloth1: 1, cloth2: 1, cloth3: 1, cloth4: 1, cloth5: 1, cloth6: 1 };   // V2.17: drawn as cloth (clothBox)   // V1.20: the soft things' edges round in steps (one step read as a chamfer: slabs)
     /* v78: a face exactly meeting a neighbour's showed edge-on as a bright hairline; the faces two square pieces share, from opposite sides: */

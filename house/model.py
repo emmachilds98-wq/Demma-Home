@@ -2505,7 +2505,7 @@ def garage_box(o):
 
 
 def hall(o):
-    """v67: the hall as the photos show it: the orange tapestry on the stairs' box (v69: hung, folds, its border and tree), the mirror over the bench on the party wall, a shoe rack
+    """v67: the hall as the photos show it: the orange tapestry on the stairs' box (v69: hung, folds; its print a drawn picture), the mirror over the bench on the party wall, a shoe rack
     each side of the front door, the radiator opposite."""
     Hh, y = D.HALL, FLOOR_Y["ground"]
     xs = Gm.STAIR_X[0] - 2.2
@@ -2521,25 +2521,8 @@ def hall(o):
         za, zb = zt0 + tw * k / n, zt0 + tw * (k + 1) / n
         dx = 0.4 + 0.9 * (k % 2)
         o.box("tapestry", xs - dx - 0.5, ya + (k % 3) * 0.8, za, xs - dx, yb, zb)
-    xf = xs - 1.9                                                              # the print, on the front of the folds
-    for za, zb, y0_, y1_ in ((zt0, zt0 + 7, ya, yb), (ze - 7, ze, ya, yb), (zt0, ze, yb - 9, yb), (zt0, ze, ya + 2, ya + 10)):
-        o.box("tapestry_dark", xf, y0_, za, xf + 0.3, y1_, zb)                 # the darker border
-    zc_ = (zt0 + ze) / 2
-    kz, ky = min(1.4, tw / 150), (yb - ya) / 218                                # v81: the tree drawn for 150 × 218, grown with the cloth
-    o.box("ink", xf - 0.3, ya + 18 * ky, zc_ - 2.5, xf, ya + 120 * ky, zc_ + 2.5)   # the tree: its trunk, roots, branches, leaves
-    for dz, dy, w_, h_ in ((-14, 14, 28, 2), (-9, 10, 18, 2)):
-        o.box("ink", xf - 0.3, ya + dy * ky, zc_ + dz * kz, xf, ya + dy * ky + h_, zc_ + (dz + w_) * kz)
-    for lvl, span in ((120, 26), (140, 38), (160, 46), (180, 40), (198, 28)):
-        ly_, sp_ = ya + lvl * ky, span * kz
-        o.box("ink", xf - 0.3, ly_ - 22 * ky, zc_ - 1.5, xf, ly_, zc_ + 1.5) if lvl > 120 else None
-        o.box("ink", xf - 0.3, ly_ - 1, zc_ - sp_, xf, ly_ + 1, zc_ + sp_)
-        for e in (-1, 1):
-            o.box("ink", xf - 0.3, ly_ + 1, zc_ + e * sp_ - 1, xf, ly_ + 9, zc_ + e * sp_ + 1)
-    for i_ in range(26):                                                       # leaves round the crown
-        a_ = i_ / 26 * 2 * math.pi
-        lz, ly = zc_ + 52 * kz * math.cos(a_), ya + 165 * ky + 42 * ky * math.sin(a_)
-        if ya + 20 < ly < yb - 12:
-            o.box("ink", xf - 0.3, ly - 2, lz - 2, xf, ly + 2, lz + 2)
+    # the print (its border, the black tree, roots, leaves and birds on the mottled orange) is the cloth's own picture, stretched across
+    # the folds once (20_1_house_materials tapestryArt, 20_2 worldUV): one draw, no ink pieces
     o.item("hall.mirror", "The hall mirror", "hall", src="client's photo + E", data=("HALL", "mirror"), axis="z")
     m = Hh["mirror"]; xw = WIDTH + 1                                           # the party wall's plaster face (the hall's side)
     o.box("steel", xw - 2.4, y + m["y"][0], m["z"][0], xw, y + m["y"][1], m["z"][1])
@@ -2825,7 +2808,7 @@ MATS = {   # colour, roughness (the 3D room's materials; phase 3 swaps in textur
     "eaves": ("#e7e1d6", 0.9), "garage_blue": ("#2c3b63", 0.45), "garage_white": ("#ecebe7", 0.4), "garage_black": ("#26282a", 0.45), "timber": ("#8a5a35", 0.8), "pane": ("#3a4550", 0.08),
     "gloss": ("#ebeae6", 0.16), "kunit": ("#ebeae6", 0.16), "khandle": ("#151517", 0.4), "bfit": ("#151517", 0.4), "bpanel": ("#e7e8e6", 0.05), "gap": ("#9b9a95", 0.6), "black": ("#1d1d1f", 0.5), "black_app": ("#1f2023", 0.35), "glass_dark": ("#17191c", 0.1),
     "ring": ("#2b2c2e", 0.6), "steel": ("#c8cacc", 0.25), "steel_dark": ("#8e9195", 0.35), "worktop": ("#26282a", 0.22), "metro": ("#111214", 0.1),
-    "chrome": ("#e4e6e9", 0.06), "sanitary": ("#e7e8e6", 0.05), "primrose": ("#e3cf5c", 0.06), "tile_w": ("#f2f2ef", 0.12), "tapestry": ("#d9892a", 0.95), "tapestry_dark": ("#a85a14", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_leaf": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "door_navy": ("#2c3a52", 0.35), "door_red": ("#7a2427", 0.35), "door_sage": ("#7d8c74", 0.4), "rug": ("#8e4a32", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
+    "chrome": ("#e4e6e9", 0.06), "sanitary": ("#e7e8e6", 0.05), "primrose": ("#e3cf5c", 0.06), "tile_w": ("#f2f2ef", 0.12), "tapestry": ("#d9892a", 0.95), "ink": ("#22180f", 0.9), "skirting": ("#f3f1eb", 0.4), "sill_board": ("#f5f4f0", 0.35), "door_white": ("#efece5", 0.35), "door_leaf": ("#efece5", 0.35), "door_wood": ("#b0713f", 0.5), "door_navy": ("#2c3a52", 0.35), "door_red": ("#7a2427", 0.35), "door_sage": ("#7d8c74", 0.4), "rug": ("#8e4a32", 1.0), "guitar_red": ("#9b1c1c", 0.25), "amp_grille": ("#2a2a2c", 0.95), "panel": ("#3b4250", 1.0), "wardrobe_back": ("#e8e6df", 0.6),
     "cloth0": ("#3d4a5c", 0.95), "cloth1": ("#b9b2a6", 0.95), "cloth2": ("#7a2f2f", 0.95), "cloth3": ("#2f3b2f", 0.95), "cloth4": ("#d8d2c4", 0.95), "cloth5": ("#555555", 0.95), "cloth6": ("#9b8b6e", 0.95), "curtain": ("#f4f3ef", 0.9), "stone": ("#cbc6bd", 0.35), "marble": ("#141416", 0.1), "led": ("#ffffff", 0.3), "bulb": ("#fff3e2", 0.25), "lamp_purple": ("#c9a6ff", 0.3), "chalk": ("#222423", 0.85), "storebox": ("#c9c1b2", 0.95), "contact": ("#000000", 1.0), "mattress": ("#f0eee8", 0.9), "pillow": ("#f1efea", 0.95), "trim": ("#5a5d60", 0.5), "gutter": ("#f2f2ef", 0.4), "lead": ("#6c7072", 0.55), "birch": ("#dcc8a2", 0.7), "lycksele": ("#5b6b78", 0.95), "grille": ("#e8dcc4", 0.6), "ceiling": ("#f3f2ee", 0.95),
     "laminate": ("#a9a39a", 0.5), "oak": ("#b8844f", 0.55), "artisan": ("#fff1df", 0.55),   # V4.3: artisan oak (bedroom 3's cube shelves): the oak's grain, a hair warmer
     "herring": ("#b48a5c", 0.6), "lvt_grey": ("#8e8b87", 0.5), "porcelain": ("#d6d0c4", 0.5),   # V3.14 (N56): the upgrade floors
@@ -2962,7 +2945,7 @@ def export():
 # polygon offset, constant: no bleed at a slant). The structure under the finishes under everything fitted; a few pairs by name
 STRUCTURE = {"brick", "brick_buff", "party", "slab", "eaves", "felt", "hung", "lead", "earth", "concrete", "timber", "chipboard", "soldier", "quarry"}
 FINISH = {"paint", "ceiling", "artex", "porch_in"}
-RANK_BY_NAME = {"party": -1, "stairpaint": 2, "newel": 1, "ceiling": 1.5, "artex": 1.5, "wardrobe_back": 2, "tapestry_dark": 2, "gap": 4, "skirting": 4, "metro": 4, "stone": 4,
+RANK_BY_NAME = {"party": -1, "stairpaint": 2, "newel": 1, "ceiling": 1.5, "artex": 1.5, "wardrobe_back": 2, "gap": 4, "skirting": 4, "metro": 4, "stone": 4,
                 "contact": 6, "blind_cloth": 2}   # V1.47: the roller over its cloth
 
 

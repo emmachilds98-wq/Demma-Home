@@ -324,6 +324,9 @@ const GRAIN_ALONG = new Set(["artisan"]);
 function worldUV(geo, k, off) {
   const T = houseTex(k), G = geo.attributes.grain; if (!T) { if (G) geo.deleteAttribute("grain"); return geo; }
   const P = geo.attributes.position, N = geo.attributes.normal, uv = new Float32Array(P.count * 2), [sw, sh] = T.size, ox = off ? off.x : 0, oy = off ? off.y : 0, oz = off ? off.z : 0;
+  if (T.whole) { geo.computeBoundingBox(); const b = geo.boundingBox, sz = b.max.z - b.min.z || 1, sy = b.max.y - b.min.y || 1;   // the hall's tapestry: its picture once across the cloth, seen from the hall (+x here), the right way round
+    for (let i = 0; i < P.count; i++) { uv[2 * i] = (b.max.z - P.getZ(i)) / sz; uv[2 * i + 1] = (P.getY(i) - b.min.y) / sy; }
+    if (G) geo.deleteAttribute("grain"); geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2)); return geo; }
   for (let i = 0; i < P.count; i++) {
     const x = P.getX(i) + ox, y = P.getY(i) + oy, z = P.getZ(i) + oz, nx = Math.abs(N.getX(i)), ny = Math.abs(N.getY(i)), nz = Math.abs(N.getZ(i));
     let u, v;
