@@ -198,7 +198,7 @@ function paintEdits() {   // V1.51: Measure's list of the sizes changed in the 3
   const W = { w: "wide", h: "high", up: "up", along: "along", out: "out", turn: "quarter turns" };
   box.innerHTML = ids.map(id => { const it = HIT(id), c = pieceNow(id), P = pieceBase(id, c.swap), was = { w: P.s[0], h: P.s[1], up: P.s[2], along: P.al, out: 0, turn: 0 };
     const ch = c.removed ? "taken out" : [it.add && !it.look ? "added" : "", c.swap ? "now " + HCAT[c.swap].n : ""].concat(Object.keys(W).filter(k => Math.abs(c[k] - was[k]) > 0.05).map(k => `${cmR(c[k])} ${W[k]}, was ${cmR(was[k])}`)).filter(Boolean).join(" · ");
-    return `<div class="ms-row ms-erow"><button type="button" class="t ms-ego" data-epiece="${id}">${it.n}<small>${ch}</small></button><button type="button" class="btn" data-ereset="${id}">${it.add && !it.look ? "Take it out" : "As planned"}</button></div>`; }).join("");
+    return `<div class="ms-row ms-erow"><button type="button" class="t ms-ego" data-epiece="${id}">${it.n}<small>${ch}</small></button><button type="button" class="btn" data-ereset="${id}">${it.add && !it.look ? "Take it out" : "The plan's"}</button></div>`; }).join("");
 }
 document.addEventListener("click", e => {
   const g = e.target.closest("[data-epiece]"), x = e.target.closest("[data-ereset]"); if (!g && !x) return;
