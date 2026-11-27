@@ -3,7 +3,7 @@
 Rewritten (not appended) by the lead at merge (N249; a row's PR leaves it alone), under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.122 (27 Nov 2026): Gardens drawn in fewer pieces; the speed budget set for the rest
+**Version:** V4.123 (27 Nov 2026): Only the three.js the first picture needs
 V4.11 (N170): the small rooms' In it views without bowed walls; the hall looks down the hall. V4.10 (N174, N175): fewer view pills (As it is and Hide labels behind ⋯; Gardens, Next door on Outside only); the walk stick faint until touched. V4.9 (N177): a hitch check for a PC's walk. V4.8 (N141): the sofa bed's chenille made at build; photos 7.7 to 7.5 MB. V4.7 (N176):
 leaner code. V4.6 (N169): the plot's edge soft, the sky hazy. Earlier: `docs/HISTORY.md`.
 The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.28 ↻"): on the
@@ -39,7 +39,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
 | `media-wall/inputs/` | The client's photos and plans (EXIF stripped) |
 | `tools/` | `build.py`, `checks.py`, `check_site.py`, `gallery.py` (every room's shot), `compare.py` and `camfit.py` (photos beside the 3D), `pull_edits.py`, `round.py` |
 | `docs/` | `HANDOVER.md` (start here), `REAL_PLAN.md` (the plan; section 22 now), this file, `NOTES.md`, `DECISIONS.md`, `HISTORY.md` |
-| `_site/` (built, never committed) | `index.html`, `sheets.<hash>.json`, `sw.js`, `version.txt`, `three.<hash>.js`, `tex/` (a photo a file), `data/`, the PDFs |
+| `_site/` (built, never committed) | `index.html`, `sheets.<hash>.json`, `sw.js`, `version.txt`, `three.<hash>.js`, `addon.<name>.<hash>.js` (KTX2 loader, the area lights' tables: fetched only when used), `tex/` (a photo a file), `data/`, the PDFs |
 
 ## The site now
 **The frame (the old design):**
@@ -127,7 +127,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
   they rest (`restMerge`, V3.77).
 
 ## Numbers (CI's software graphics: relative, not a real card's)
-- `sizes`: page 1.1 MB, photos 7.5 MB in 96 files (budget 8.7), three.js 0.95 MB (0.187).
+- `sizes`: page 1.1 MB, photos 7.5 MB in 96 files (budget 8.7), three.js 0.71 MB (0.187; the area lights' 0.25 MB fetched only in HD, N324).
 - From `_shots/perf.json` (V4.27, a local run), budget in brackets:
 
   | Path | Draws, house | Draws, living room | Draws, landing (V4.27) | Shaders, first picture |
