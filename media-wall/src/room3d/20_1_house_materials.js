@@ -14,7 +14,7 @@ const HTEX_TINT = new Set(["upvc", "gloss", "brushed", "joinery", "melamine"]); 
 const BED_TINT = new Set(["duvet", "pillow", "artisan"]);   // V4.3: and artisan oak, a hair warmer than the oak it shares   // V3.66 (N113): the bedding's own colour over its cotton photo, a hair below white (it drew the photo at full white: clipped on a phone)
 /* V3.36 (N87): the soft things in their own colours over the cotton's white, each with a relief of its kind (blinds woven, felt knitted,
    mats' pile); the rug, fabric boxes and tapestry keep their drawn weaves */
-const SOFT_REL = { tapestry_dark: "lycksele", blind_cloth: "lycksele", panel: "check", bathmat: "carpet_grey" };
+const SOFT_REL = { blind_cloth: "lycksele", panel: "check", bathmat: "carpet_grey" };
 /* V2.2: the house's ceilings white, or the colour picked in View (the living room's keeps Look's) */
 function hceilApply() {
   if (!HMATS) return; const hex = /^#[0-9a-f]{6}$/i.test(S.hceil || "") ? S.hceil : null;
@@ -193,12 +193,69 @@ function houseTex(k) {
   T.door_white = [0.8, 0.8, (g, w, h) => { g.fillStyle = "#efece5"; g.fillRect(0, 0, w, h); noise(g, w, h, 6000, 0.05, ["#d8d4cb"]); }];
   T.rug = [0.25, 0.25, (g, w, h) => weave(g, w, h, "#8e4a32", ["#7a3d28", "#a35a3e", "#86452e"], 8, 0.5)];   // V3.73: the music room's rug, rust
   T.storebox = [0.3, 0.3, (g, w, h) => weave(g, w, h, "#c9c1b2", ["#b9b1a2", "#d6cfc1"], 8, 0.4)];
-  T.tapestry = [0.4, 0.4, (g, w, h) => weave(g, w, h, "#d9892a", ["#c97a20", "#e39a3c", "#d08327"], 6, 0.35)];
   T.tile_w = [0.3, 0.3, (g, w, h) => { g.fillStyle = "#c9c7c0"; g.fillRect(0, 0, w, h);   // the WC's 15 × 15 white tiles, grey grout
     for (let r = 0; r < 2; r++) for (let c = 0; c < 2; c++) { g.fillStyle = "#f2f2ef"; g.fillRect(c * w / 2 + 3, r * h / 2 + 3, w / 2 - 6, h / 2 - 6);
       g.fillStyle = "rgba(255,255,255,0.35)"; g.fillRect(c * w / 2 + 3, r * h / 2 + 3, w / 2 - 6, 6); } }];
+  if (k === "tapestry") {   // the hall's tree-of-life: one picture across the whole cloth (worldUV maps it once), 2k on a computer, 1k on a phone
+    const px = SMALL ? 1024 : 2048, tex = canvasTex(px, px, (g, w, h) => tapestryArt(g, w, h, rnd, noise));
+    tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+    return (HTEX[k] = { map: tex, size: [1, 1], bump: 0.35, whole: true });
+  }
   if (!T[k]) return (HTEX[k] = null);
   const [sw, sh, draw] = T[k], px = !SMALL && HI_T.has(k) ? 1024 : 512, tex = canvasTex(px, px, (g, w, h) => { g.scale(w / 512, h / 512); draw(g, 512, 512); });   // v72 (B3): the surfaces seen close drawn at 1k on a computer (the same drawing, crisper), 512 on a phone
-  const BUMP = { door_wood: 0.4, rug: 1.5, storebox: 1.0, tapestry: 0.9, tile_w: 0.8 };   // v69
+  const BUMP = { door_wood: 0.4, rug: 1.5, storebox: 1.0, tile_w: 0.8 };   // v69
   return (HTEX[k] = { map: tex, size: [sw, sh], bump: BUMP[k] || 0 });
+}
+
+/* The hall's tapestry, from the client's photos (hall to living room, living room door to hall): a mottled, tie-dyed orange, glowing
+   yellow round the tree and deeper at the edges; a fine black tree of life, its knotted trunk, a round crown of twigs and leaves, roots
+   spreading at the foot and small birds in the branches. Drawn on a 1000 square (the cloth is 214 wide, 230 drop) */
+function tapestryArt(g, W, H, rnd, noise) {
+  g.save(); g.scale(W / 1000, H / 1000); const w = 1000, h = 1000, INK = "#1b120a", TAU = Math.PI * 2;
+  g.fillStyle = "#c4601b"; g.fillRect(0, 0, w, h);
+  const glow = g.createRadialGradient(500, 440, 30, 500, 480, 640);
+  glow.addColorStop(0, "#f7c95e"); glow.addColorStop(0.4, "#eda23a"); glow.addColorStop(0.75, "#d9822a"); glow.addColorStop(1, "rgba(196,96,27,0)");
+  g.fillStyle = glow; g.fillRect(0, 0, w, h);
+  for (let i = 0; i < 320; i++) {   // the dye: soft upright blotches, lighter and darker
+    const x = rnd() * w, y = rnd() * h, r = 15 + rnd() * 80, c = rnd() < 0.5 ? "250,205,100," : "160,70,18,", gr = g.createRadialGradient(x, y, 0, x, y, r);
+    gr.addColorStop(0, `rgba(${c}${0.05 + rnd() * 0.12})`); gr.addColorStop(1, `rgba(${c}0)`);
+    g.save(); g.translate(x, y); g.scale(0.55, 1.7); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, r, 0, TAU); g.fill(); g.restore(); }
+  for (let i = 0; i < 14000; i++) { g.fillStyle = rnd() < 0.5 ? "rgba(255,225,160,0.07)" : "rgba(110,45,10,0.07)"; g.fillRect(rnd() * w, rnd() * h, 1, 2 + rnd() * 5); }   // the cotton's threads
+  const edge = (a, b, c) => { const e = g.createLinearGradient(...a); e.addColorStop(0, `rgba(120,48,12,${c})`); e.addColorStop(1, "rgba(120,48,12,0)"); g.fillStyle = e; g.fillRect(...b); };
+  edge([0, 0, 70, 0], [0, 0, 70, h], 0.55); edge([w, 0, w - 70, 0], [w - 70, 0, 70, h], 0.55); edge([0, 0, 0, 60], [0, 0, w, 60], 0.45); edge([0, h, 0, h - 70], [0, h - 70, w, 70], 0.55);
+  g.strokeStyle = INK; g.lineWidth = 2.4; g.strokeRect(30, 26, w - 60, h - 52); g.lineWidth = 1.1; g.strokeRect(40, 36, w - 80, h - 72);   // the printed border: two lines, dots between
+  g.fillStyle = INK; for (let x = 44; x < w - 40; x += 12) { g.beginPath(); g.arc(x, 31, 1.6, 0, TAU); g.arc(x, h - 31, 1.6, 0, TAU); g.fill(); }
+  for (let y = 40; y < h - 36; y += 12) { g.beginPath(); g.arc(35, y, 1.6, 0, TAU); g.arc(w - 35, y, 1.6, 0, TAU); g.fill(); }
+  g.lineCap = g.lineJoin = "round";
+  const leaf = (x, y, a, s) => { g.save(); g.translate(x, y); g.rotate(a); g.fillStyle = INK; g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(s * 0.5, -s * 0.38, s, 0); g.quadraticCurveTo(s * 0.5, s * 0.38, 0, 0); g.fill(); g.restore(); };
+  const bird = (x, y, f) => { g.save(); g.translate(x, y); g.scale(f, 1); g.fillStyle = INK; g.beginPath(); g.ellipse(0, -7, 9, 5.5, -0.2, 0, TAU); g.fill();
+    g.beginPath(); g.arc(8, -12, 4, 0, TAU); g.fill(); g.beginPath(); g.moveTo(11, -13); g.lineTo(16, -11.5); g.lineTo(11, -10.5); g.fill();
+    g.beginPath(); g.moveTo(-7, -6); g.lineTo(-19, -1); g.lineTo(-17, -9); g.fill(); g.restore(); };
+  const CX = 500, CY = 330, CR = 335, birds = [];
+  const limb = (x, y, a, len, wd, d, up) => {   // a branch (or a root, up false): bends a little, splits in two or three, tapers to twigs
+    let x2 = x + Math.cos(a) * len, y2 = y + Math.sin(a) * len;
+    if (up && Math.hypot(x2 - CX, (y2 - CY) * 1.05) > CR) { const k = 0.55; x2 = x + (x2 - x) * k; y2 = y + (y2 - y) * k; d = 0; }
+    if (!up && (y2 > 935 || x2 < 70 || x2 > 930)) { x2 = Math.min(930, Math.max(70, x2)); y2 = Math.min(935, y2); d = 0; }
+    const cx = (x + x2) / 2 + (rnd() - 0.5) * len * 0.35, cy = (y + y2) / 2 + (rnd() - 0.5) * len * 0.35;
+    g.strokeStyle = INK; g.lineWidth = wd; g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(cx, cy, x2, y2); g.stroke();
+    if (up && d <= 1) for (let i = 0; i < 2; i++) { const t = 0.3 + rnd() * 0.7, lx = (1 - t) * (1 - t) * x + 2 * (1 - t) * t * cx + t * t * x2, ly = (1 - t) * (1 - t) * y + 2 * (1 - t) * t * cy + t * t * y2;
+      leaf(lx, ly, a + (rnd() < 0.5 ? -1 : 1) * (0.7 + rnd() * 0.5), 5 + rnd() * 4); }
+    if (d <= 0 || wd < 0.6) { if (up) { leaf(x2, y2, a + (rnd() - 0.5) * 0.6, 6 + rnd() * 5); if (wd > 0.9 && rnd() < 0.08) birds.push([x2, y2]); } return; }
+    const n = rnd() < (up ? 0.45 : 0.3) ? 3 : 2;
+    for (let i = 0; i < n; i++) limb(x2, y2, a + (i - (n - 1) / 2) * (0.42 + rnd() * 0.3) + (rnd() - 0.5) * 0.2, len * (0.7 + rnd() * 0.12), wd * 0.64, d - 1, up);
+  };
+  const top = 500, foot = 800;   // the trunk: a knotted column, wider at the foot
+  g.fillStyle = INK; g.beginPath(); g.moveTo(CX - 46, foot + 10);
+  for (let y = foot; y >= top; y -= 20) { const t = (foot - y) / (foot - top); g.lineTo(CX - 46 + 26 * t + Math.sin(y * 0.05) * 4, y); }
+  for (let y = top; y <= foot; y += 20) { const t = (foot - y) / (foot - top); g.lineTo(CX + 46 - 26 * t + Math.sin(y * 0.045 + 1) * 4, y); }
+  g.lineTo(CX + 46, foot + 10); g.closePath(); g.fill();
+  g.strokeStyle = "rgba(238,160,62,0.9)"; g.lineWidth = 1.6;   // its bark: the print's fine lines and knots, in the cloth's orange
+  for (let j = -2; j <= 2; j++) { g.beginPath(); for (let y = foot - 6; y >= top + 8; y -= 6) { const t = (foot - y) / (foot - top), half = 40 - 24 * t; g.lineTo(CX + j * half * 0.38 + Math.sin(y * 0.09 + j) * 3, y); } g.stroke(); }
+  for (let i = 0; i < 7; i++) { const y = top + 30 + rnd() * (foot - top - 60), x = CX + (rnd() - 0.5) * 30; g.beginPath(); g.ellipse(x, y, 4 + rnd() * 3, 7 + rnd() * 4, 0, 0, TAU); g.stroke(); }
+  [-2.75, -2.3, -1.9, -1.57, -1.24, -0.84, -0.4].forEach((a, i) => limb(CX + (a + 1.57) * 9, top + 6 + Math.abs(a + 1.57) * 14, a, i % 3 === 0 ? 105 : 125, 15, 7, true));
+  [2.95, 2.5, 2.0, 1.57, 1.14, 0.64, 0.2].forEach(a => limb(CX + (a - 1.57) * 22, foot + 4, a, 62, 12, 4, false));
+  g.lineWidth = 2; g.strokeStyle = INK; g.beginPath(); g.moveTo(120, 905); g.bezierCurveTo(350, 890, 650, 920, 880, 902); g.stroke();   // the ground line under the roots
+  birds.slice(0, 6).forEach(([x, y], i) => bird(x, y, x < CX ? -1 : 1));
+  if (birds.length < 4) [[300, 360], [262, 470], [700, 300], [735, 430]].forEach(([x, y]) => bird(x, y, x < CX ? -1 : 1));
+  noise(g, w, h, 5000, 0.08, ["#ffe0a0", "#7a3410"]); g.restore();
 }
