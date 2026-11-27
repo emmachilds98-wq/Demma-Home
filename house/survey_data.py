@@ -527,7 +527,9 @@ GARAGE_BOX = dict(x0=186.0, d=39.0, t=1.8, src="client + the chimney breast's li
 # runs along x or z; each a Measure row (house/measure.py)
 RADIATORS = dict(master=dict(axis="x", x=(193.0, 243.0), y=(15.0, 75.0)),     # the front wall, right of the chest under the window
                  bed2=dict(axis="z", z=(-110.0, -40.0), y=(15.0, 65.0)),      # the landing's wall, between the desk's return and the door
-                 landing=dict(axis="x", x=(390.0, 450.0), y=(15.0, 65.0)),    # the top of the stairs, on the office's wall
+                 # 27 Nov 2026, the client: "no top floor radiator at the top of the stairs either. there is one like this in the top floor
+                 # boiler towel cupboard at the bottom back of the cupboard": the landing's out, a low panel on the cupboard's back wall
+                 airing=dict(axis="z", z=(70.0, 130.0), y=(10.0, 60.0)),
                  wc=dict(axis="z", z=(-190.0, -150.0), y=(15.0, 55.0)),       # the party wall, between the corner and the door
                  bathroom=dict(axis="x", x=(386.0, 428.0), y=(20.0, 120.0)),  # a chrome towel ladder on the stairs' wall, past the vanity
                  src="E (standard panel and towel-rail sizes; where: the upgrade review's guess)")

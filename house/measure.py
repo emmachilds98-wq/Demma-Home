@@ -47,7 +47,7 @@ ROWS = [
     ("hall_radiator", "hall", "The hall radiator's width", "end to end", lambda: round(D.HALL["radiator"]["z"][1] - D.HALL["radiator"]["z"][0], 1), ("length", ("HALL", "radiator", "z"))),
     ("master_radiator", "master", "The master's radiator's width", "end to end, or none", lambda: round(D.RADIATORS["master"]["x"][1] - D.RADIATORS["master"]["x"][0], 1), ("length", ("RADIATORS", "master", "x"))),   # N272: E, where too
     ("bed2_radiator", "bed2", "Bedroom 2's radiator's width", "end to end, or none", lambda: round(D.RADIATORS["bed2"]["z"][1] - D.RADIATORS["bed2"]["z"][0], 1), ("length", ("RADIATORS", "bed2", "z"))),   # N272: E, where too
-    ("landing_radiator", "landing", "The landing radiator's width", "end to end, or none", lambda: round(D.RADIATORS["landing"]["x"][1] - D.RADIATORS["landing"]["x"][0], 1), ("length", ("RADIATORS", "landing", "x"))),   # N272: E, where too
+    ("airing_radiator", "airing", "The boiler cupboard radiator's width", "end to end, or none", lambda: round(D.RADIATORS["airing"]["z"][1] - D.RADIATORS["airing"]["z"][0], 1), ("length", ("RADIATORS", "airing", "z"))),   # N272: E, where too
     ("wc_radiator", "wc", "The WC radiator's width", "end to end, or none", lambda: round(D.RADIATORS["wc"]["z"][1] - D.RADIATORS["wc"]["z"][0], 1), ("length", ("RADIATORS", "wc", "z"))),   # N272: E, where too
     ("bathroom_radiator", "bathroom", "The towel rail's width", "end to end, or none", lambda: round(D.RADIATORS["bathroom"]["x"][1] - D.RADIATORS["bathroom"]["x"][0], 1), ("length", ("RADIATORS", "bathroom", "x"))),   # N272: E, where too
     ("master_bedside", "master", "A bedside's width", "across its top", lambda: round(D.MASTER["bedsides"][0][1] - D.MASTER["bedsides"][0][0], 1), None),   # V2.90 (N34)

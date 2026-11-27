@@ -497,3 +497,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.97** (27 Nov 2026): Stairs open both ways and the living room's light steady
 - **V4.98** (27 Nov 2026): CI's hitch walk in the pool
 - **V4.99** (27 Nov 2026): Stairwell in its own paint, lighting smooth on the PC
+- **V4.100** (27 Nov 2026): doorway thresholds; the top-floor radiator in the boiler cupboard
