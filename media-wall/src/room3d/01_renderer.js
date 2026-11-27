@@ -264,7 +264,8 @@ function syncRig() {                  // each frame: a rigged light follows its 
 /* N324: the area lights' tables (241 KB of three's 933) a file of their own, fetched only where an area light shows (HD); till then
    those lights stay out of the set. A device that opens in HD waits for them here, so its first shaders are its last */
 const LTC = { ok: false, p: null };
-const ltc = () => LTC.p || (LTC.p = import("three/addons/lights/RectAreaLightUniformsLib.js").then(m => { m.RectAreaLightUniformsLib.init(); LTC.ok = true; GS.need = Math.max(GS.need, 2); }).catch(e => console.warn("area lights:", e)));
+const ltc = () => LTC.p || (LTC.p = import("three/addons/lights/RectAreaLightUniformsLib.js")
+  .then(m => { m.RectAreaLightUniformsLib.init(); LTC.ok = true; GS.need = Math.max(GS.need, 2); }).catch(e => console.warn("area lights:", e)));
 if (S.quality === "hd") await ltc();
 
 const scene = new THREE.Scene();
