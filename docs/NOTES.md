@@ -214,6 +214,7 @@ what's true now in `docs/STATE.md`. Two older reviews are in `docs/archive/revie
 - The kitchen-from-the-landing photo couldn't be fitted and was dropped. Bedroom 2 is the music room: no bed there.
 
 ## 5. The site's features: where they live
+- **The dock follows the room** (N304, `25_dock.js`, `dockSync` from `brandPlace`): body `dock-room` in a house room (Room opens its card `here:<room>`, View's `#r3d-viewhere` its lights card `hlit:<room>`, Look's `#r3d-lookhere` its walls, ceiling, floor, Measure its `data-mroom` group first), `dock-none` over a floor (Room hidden); outside Room is the garden's Ideas. The living room's own lights and tour are `.r3d-livlights`, `.r3d-tourgo` (hidden in `hv`). A new room tool: a button on `hereCard`.
 - **Look's rows** (`23_finish.js`, `S.fin[room]`): 0–3 walls, 4 ceiling, 5 floor, 6 bulb, 7 lux, 8 fitting, 9–10 outside, 11–16 the
   living room's walls by name, 17 the woodwork (the living room's skirting and door in its Look; any other room's through the palette, N216), 18 rug, 19 curtains, 20 bedding, 21 picture, 22 picture's wall, 23 plant,
   24–25 wallpaper, 26–27 panelling (N57; `finWallRun` gives any wall its face, openings and ceiling line), 28 storage ideas, 29 the slopes

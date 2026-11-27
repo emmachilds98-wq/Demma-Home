@@ -818,8 +818,8 @@ document.addEventListener("click", e => { const b = e.target.closest("[data-look
 document.addEventListener("keydown", e => { if (e.key === "Escape" && ASIDE && !e.defaultPrevented && !/^(INPUT|TEXTAREA|SELECT)$/.test((e.target || {}).tagName || "")) { e.preventDefault(); lookMine(); } });
 finSchDraw();
 /* N254 (C2): the finish cards' buttons through the one click router (16_cards.js cardOn): a selector, which cards, what it does */
-const cardRoom = id => id === "hbed" ? "master" : id.startsWith("fin:") ? id.split(":")[1] : id.startsWith("hitem:") ? (HIT(id.slice(6)) || {}).r : null;
-const onFin = id => id.startsWith("fin:"), onFinItem = id => onFin(id) || id.startsWith("hitem:");
+const cardRoom = id => id === "hbed" ? "master" : id.startsWith("fin:") ? id.split(":")[1] : id.startsWith("hlit:") ? id.slice(5) : id.startsWith("hitem:") ? (HIT(id.slice(6)) || {}).r : null;
+const onFin = id => id.startsWith("fin:"), onFinItem = id => onFin(id) || id.startsWith("hitem:") || id.startsWith("hlit:");   // N304: the dock's lights card
 const finSaid = (L, v, what, none) => v ? (L.find(([k]) => k === v) || [0, v])[1].toLowerCase() + what : none;
 cardOn("[data-winkind],[data-winfab],[data-winplan]", id => id.startsWith("win:"), (d, id) => { const [, room, j] = id.split(":"), q = winNow(room, +j);   // N227: a window's card
   winSet(room, +j, d.winplan ? null : d.winkind === "none" ? "none" : d.winkind ? `${d.winkind}.${q.k === d.winkind && q.c ? q.c : winFabs(d.winkind).some(([k]) => k === q.c) ? q.c : winFabs(d.winkind)[0][0]}` : `${q.k}.${d.winfab}`); });
