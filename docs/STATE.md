@@ -39,7 +39,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
 | `media-wall/inputs/` | The client's photos and plans (EXIF stripped) |
 | `tools/` | `build.py`, `checks.py`, `check_site.py`, `gallery.py` (every room's shot), `compare.py` and `camfit.py` (photos beside the 3D), `pull_edits.py`, `round.py` |
 | `docs/` | `HANDOVER.md` (start here), `REAL_PLAN.md` (the plan; section 22 now), this file, `NOTES.md`, `DECISIONS.md`, `HISTORY.md` |
-| `_site/` (built, never committed) | `index.html`, `sheets.<hash>.json`, `sw.js`, `version.txt`, `three.<hash>.js`, `tex/` (a photo a file), `data/`, the PDFs |
+| `_site/` (built, never committed) | `index.html`, `sheet.<plan|build|buy|ideas>.<hash>.html` and `sheetjs.<hash>.json` (N326), `sw.js`, `version.txt`, `three.<hash>.js`, `tex/` (a photo a file), `data/`, the PDFs |
 
 ## The site now
 **The frame (the old design):**

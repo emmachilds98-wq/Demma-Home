@@ -920,10 +920,14 @@ def pack_sheets(html_):
 
 SHEETS_JS = r"""(() => { const D = document.getElementById("sheets-data"); let text = null, want = null, built = false;
   const W = window.DemmaSheets = { done: false };
-  const fetchIt = () => want || (want = (D.dataset.src ? fetch(D.dataset.src).then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
-    : Promise.resolve(D.textContent)).then(t => { text = t; return t; }, e => { want = null; throw e; }));
+  /* N326: on Pages a file a sheet and one for their scripts (data-parts), fetched side by side: a round that changes one sheet leaves the others kept */
+  const get = (u, json) => fetch(u).then(r => { if (!r.ok) throw new Error(r.status); return json ? r.json() : r.text(); });
+  const parts = () => { const P = JSON.parse(D.dataset.parts), ks = Object.keys(P.html);
+    return Promise.all([get(P.js, true), ...ks.map(k => get(P.html[k]))]).then(([js, ...hs]) => ({ js, html: Object.fromEntries(ks.map((k, i) => [k, hs[i]])) })); };
+  const fetchIt = () => want || (want = (D.dataset.parts ? parts() : D.dataset.src ? get(D.dataset.src, true) : Promise.resolve(D.textContent).then(JSON.parse))
+    .then(t => { text = t; return t; }, e => { want = null; throw e; }));
   const build = () => { if (built) return true; if (text == null) return false; built = true;
-    const S = JSON.parse(text); text = null;
+    const S = text; text = null;
     for (const [k, h] of Object.entries(S.html)) { const b = document.querySelector("#sh-" + k + " .sbd"); if (b) b.innerHTML = h; }
     for (const js of S.js) { const s = document.createElement("script"); s.textContent = js; document.body.appendChild(s); }   // in order, as before
     for (const o of document.querySelectorAll("ol.sources[data-src]")) {   /* N284: the Sources list fetched when it first comes into view (or to print) */
@@ -1503,18 +1507,21 @@ def split_photos(html_):
 
 
 def split_sheets(html_):
-    """N25: on Pages the sheets' JSON (pack_sheets) is a file of its own, named by its contents (the service worker keeps it till it
-    changes); the page keeps only its name."""
+    """N25: on Pages the sheets' JSON (pack_sheets) is files of their own, named by their contents (the service worker keeps them till
+    they change); the page keeps only their names."""
     import hashlib
     m = re.search(r'<script type="application/json" id="sheets-data">(.*?)</script>', html_, re.S)
     if not m:
         return html_
-    data = split_sources(m.group(1)).encode()
-    name = f"sheets.{hashlib.sha256(data).hexdigest()[:10]}.json"
-    for old in SITE.glob("sheets.*.json"):
-        if old.name != name: old.unlink()
-    (SITE / name).write_bytes(data)
-    return html_[:m.start()] + f'<script type="application/json" id="sheets-data" data-src="{name}"></script>' + html_[m.end():]
+    S, keep = json.loads(split_sources(m.group(1))), set()
+    def put(stem, ext, body):
+        name = f"{stem}.{hashlib.sha256(body).hexdigest()[:10]}.{ext}"; (SITE / name).write_bytes(body); keep.add(name); return name
+    # N326: a file a sheet (sheet.<k>.<hash>.html) and one for their scripts (sheetjs.<hash>.json): a round that changes Plan leaves Buy's kept
+    parts = {"html": {k: put(f"sheet.{k}", "html", h.encode()) for k, h in S["html"].items()},
+             "js": put("sheetjs", "json", json.dumps(S["js"], separators=(",", ":")).encode())}
+    for old in [*SITE.glob("sheets.*.json"), *SITE.glob("sheet.*.html"), *SITE.glob("sheetjs.*.json")]:
+        if old.name not in keep: old.unlink()
+    return html_[:m.start()] + f'<script type="application/json" id="sheets-data" data-parts=\'{json.dumps(parts, separators=(",", ":"))}\'></script>' + html_[m.end():]
 
 
 def split_sources(data):
