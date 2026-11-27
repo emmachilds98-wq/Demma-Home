@@ -20,6 +20,7 @@ SINGLES = 2 * G.TRAY_SINGLES
 
 import room3d_page                 # v14: the room in 3D
 from shot3d import SHOTS as SHOTS3D
+HAVE_ART = lambda k: (HERE / "art" / f"{k}.webp").exists()   # N336: the old stills kept are only those the PDFs use; a card without one shows its "in my room" button
 
 
 def _plain(s):
@@ -542,7 +543,8 @@ def item_card(stem, kind, k, title, size, cost, why, where):
     addp = (f' <button type="button" class="btn addplan" data-short="{kind}:{k}" aria-pressed="false"><span class="ms" aria-hidden="true">add</span><span class="t">Add to plan</span></button>'
             if kind in ("idea", "sugg") and cost else "")   # v33: the ideas shortlist
     meta = " · ".join(x for x in (html.escape(size), f"about £{cost[0]}–{cost[1]}" if cost else "") if x)
-    return (f'<article class="opt" id="it-{kind}-{k}"><button type="button" class="g3d" data-full="{stem}"><img data-art="{stem}" alt="{html.escape(CAP3D[stem])}" loading="lazy"></button>'
+    pic = f'<button type="button" class="g3d" data-full="{stem}"><img data-art="{stem}" alt="{html.escape(CAP3D[stem])}" loading="lazy"></button>' if HAVE_ART(stem) else ""
+    return (f'<article class="opt" id="it-{kind}-{k}">{pic}'
             f'<div class="ob"><span class="label">{meta}</span><h3>{html.escape(title)}</h3>'
             + (f'<p>{html.escape(why)}</p>' if why else "") + (f'<p class="caption">{html.escape(where)}</p>' if where else "")
             + f"<button type='button' class='btn' data-r3d='{json.dumps(o)}'><span class='ms' aria-hidden='true'>view_in_ar</span> {lab}</button>{addp}</div></article>")
@@ -774,7 +776,7 @@ def options_card():
 
 def gallery3d():
     figs = "".join(f'<figure><button type="button" class="g3d" data-full="{k}"><img data-art="{k}" alt="{html.escape(CAP3D[k])}" loading="lazy"></button>'
-                   f'<figcaption>{html.escape(CAP3D[k])}</figcaption></figure>' for k, *_ in SHOTS3D if not k.startswith(("3d_ideas_", "3d_case_", "3d_decor", "3d_suggest", "3d_seat", "3d_id_", "3d_sg_", "3d_add_")))
+                   f'<figcaption>{html.escape(CAP3D[k])}</figcaption></figure>' for k, *_ in SHOTS3D if HAVE_ART(k) and not k.startswith(("3d_ideas_", "3d_case_", "3d_decor", "3d_suggest", "3d_seat", "3d_id_", "3d_sg_", "3d_add_")))
     return f'<div class="gallery">{figs}</div>'
 
 SEC_TAB = {"1": "overview", "2": "overview", "3": "wall", "4": "wall", "5": "dining", "6": "wall", "7": "wall", "8": "paint",
@@ -1042,7 +1044,7 @@ def _page(site=False):
     prefix = "media-wall/src/" if site else ""
     imgs = {k: f"{prefix}art/{k}.webp" for k in [f"art_{s}_{p}" for s in ("join", "four", "six", "side", "drawers") for p in ("mint", "card_room", "deep", "sage", "treron")] + ["key_join", "doc_paint", "doc_skirt"]}
     imgs.update({f"dims_{v}": f"{prefix}art/dims_{v}.webp" for v in ("join", "four", "six", "drawers", "side")})
-    imgs.update({k: f"{prefix}art/{k}.webp" for k, *_ in SHOTS3D})
+    imgs.update({k: f"{prefix}art/{k}.webp" for k, *_ in SHOTS3D if HAVE_ART(k)})
     rows = track_rows()
     phases = phase_data(rows)
     _, lo_tot, hi_tot = phase_totals()
