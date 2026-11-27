@@ -55,7 +55,8 @@ controls.addEventListener("start", () => { GS.moving = true; });
 controls.addEventListener("end", () => { GS.moving = false; });
 const LIVING = [];   // V1.31 (U4): from outside, the living room's furniture, lights and fittings are left out unless the eye is near its window
 function livingFromOutside() {
-  const k = camera.position.x + "," + camera.position.z + S.view + GS.hfloor + !GS.tween + !!R.HOUSE3; if (k === livingFromOutside.k) return false; livingFromOutside.k = k;   // N322: only when the eye or the view moved
+  const k = camera.position.x + "," + camera.position.z + S.view + GS.hfloor + !GS.tween + !!R.HOUSE3;   // N322: only when the eye or the view moved
+  if (k === livingFromOutside.k) return false; livingFromOutside.k = k;
   const x = -camera.position.x / M, z = camera.position.z / M, wx = (R.WINDOW_X[0] + R.WINDOW_X[1]) / 2;
   const want = !!R.HOUSE3 && S.view === "house" && GS.hfloor === "all" && !GS.tween && !(z < R.WINDOW_Z - 20 && Math.hypot(x - wx, z - R.WINDOW_Z) < 4000);   // V1.47, the client: "see in and out of the windows at all times": from anywhere behind the house (the garden is 25 m; was 14)
   if (want === GS.livOut) return false;

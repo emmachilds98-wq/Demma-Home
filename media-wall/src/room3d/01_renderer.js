@@ -94,7 +94,7 @@ function adoptLight(l, scn) {
   const owner = l.parent && l.parent !== scn && l.parent !== fixtures ? l.parent : null;
   if (owner) { l.userData.owner = owner; l.userData.lp = l.position.clone(); lightRig.add(l); RIGGED.push(l); }
   const on = () => v && (!owner || shownChain(owner));
-  Object.defineProperty(l, "visible", { configurable: true, get: () => (LIVE ? lightIn(l) : on()), set: x => { v = x; } });
+  Object.defineProperty(l, "visible", { configurable: true, get: () => { const s = LIVE ? lightIn(l) : on(); return s && l.isRectAreaLight && !LTC.ok ? (ltc(), false) : s; }, set: x => { v = x; } });
   Object.defineProperty(l, "intensity", { configurable: true, get: () => (on() ? i : 0), set: x => { i = x; } });
   Object.defineProperty(l, "castShadow", { configurable: true, set: x => { cs = x; },
     get: () => (LIVE ? S.quality === "hd" && ((l.isSpotLight && (l === lights.bar1[0] || l === lights.bar2[0])) || !!l.userData.sun) : cs) });   // v48: and the sun
@@ -285,7 +285,12 @@ function syncRig() {                  // each frame: a rigged light follows its 
     o.updateWorldMatrix(true, false); l.position.copy(l.userData.lp).applyMatrix4(o.matrixWorld);
   }
 }
-RectAreaLightUniformsLib.init();
+/* N324: the area lights' tables (241 KB of three's 933) a file of their own, fetched only where an area light shows (HD); till then
+   those lights stay out of the set. A device that opens in HD waits for them here, so its first shaders are its last */
+const LTC = { ok: false, p: null };
+const ltc = () => LTC.p || (LTC.p = import("three/addons/lights/RectAreaLightUniformsLib.js")
+  .then(m => { m.RectAreaLightUniformsLib.init(); LTC.ok = true; GS.need = Math.max(GS.need, 2); }).catch(e => console.warn("area lights:", e)));
+if (S.quality === "hd") await ltc();
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color("#0d100e");

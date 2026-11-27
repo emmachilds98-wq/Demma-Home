@@ -423,7 +423,7 @@ window.PICKS = (() => {
   function openDay(n) { back = document.activeElement; cur = BD.find(s => s.n === +n); if (!cur) return; renderDay(); show(bd, true); $(".bdtasks button", bd)?.focus(); }
   function renderDay() {
     const s = cur, t = tasks[s.n] || [], done = !!$("#step-" + s.n + ".done");
-    const im = $("#bd-img"); im.src = DATA.img[s.art] || ""; im.alt = "The room for step " + s.n;
+    const im = $("#bd-img"); im.hidden = !DATA.img[s.art]; if (DATA.img[s.art]) im.src = DATA.img[s.art]; im.alt = "The room for step " + s.n;
     txt("#bd-n", `Step ${s.n} of ${BD.length} · ${s.who} · ${s.time}`); txt("#bd-h", s.title); txt("#bd-watcht", s.watch);
     $("#bd-bar").innerHTML = BD.map(x => `<i class="${$("#step-" + x.n + ".done") ? "on" : x.n === s.n ? "cur" : ""}"></i>`).join("");
     $("#bd-tasks").innerHTML = s.do.map((d, i) => `<li><button type="button" aria-pressed="${!!t[i]}" data-task="${i}"><span class="bx" aria-hidden="true">${t[i] ? "✓" : ""}</span><span class="tx">${d}</span></button></li>`).join("");

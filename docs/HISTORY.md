@@ -506,3 +506,23 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.106** (27 Nov 2026): no box down the lower stairs, the living room's ceiling steady from the hall
 - **V4.107** (27 Nov 2026): The hall: the tapestry off the wall; the wooden shoe cabinet, the plastic rack and the shoe bench as they are
 - **V4.108** (27 Nov 2026): No silent failures: a caught error is counted and named in ?perf
+- **V4.109** (27 Nov 2026): The old living-room stills only the page used are gone (9 MB); the PDFs keep theirs
+- **V4.110** (27 Nov 2026): Lighter phone PDFs: the Plan's phone copy 7.9 to 4.1 MB
+- **V4.111** (27 Nov 2026): Faster checks: the taps run a width a machine
+- **V4.112** (27 Nov 2026): One store for what the 3D keeps on a device
+- **V4.113** (27 Nov 2026): Fits every device: the walking stick on touch screens only (a computer once you walk), Be there under the figure, Building the house till the first picture
+- **V4.114** (27 Nov 2026): Safer code: the checks stop new over-long lines
+- **V4.115** (27 Nov 2026): Faster checks: a newer push stops the older browser checks
+- **V4.116** (27 Nov 2026): Screen readers: a hidden heading and a polite line when the place changes
+- **V4.117** (27 Nov 2026): The same words everywhere: The plan's, Take it out, and a word list the page is checked against
+- **V4.118** (27 Nov 2026): The lights show real glowing bulbs; shades and the glass dome glow softly
+- **V4.119** (27 Nov 2026): The page's look and Measure as their own files, kept between visits: the page itself 290 to 166 KB
+- **V4.120** (27 Nov 2026): Every room's light has a lit fitting, each bulb a soft glow
+- **V4.121** (27 Nov 2026): Top floor walls smooth: one wall between rooms, doorframes on both faces, each wall in its own room's paint
+- **V4.122** (27 Nov 2026): Gardens drawn in fewer pieces; the speed budget set for the rest
+- **V4.123** (27 Nov 2026): Only the three.js the first picture needs
+- **V4.124** (27 Nov 2026): Plan, Build, Buy and Ideas each their own file
+- **V4.125** (27 Nov 2026): One undo for every change
+- **V4.126** (27 Nov 2026): The 3D rests when nothing moves
+- **V4.127** (27 Nov 2026): Per-frame lists cached
+- **V4.128** (27 Nov 2026): One quality governor
