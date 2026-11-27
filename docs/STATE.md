@@ -3,10 +3,10 @@
 Rewritten (not appended) by the lead at merge (N249; a row's PR leaves it alone), under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.130 (27 Nov 2026): State and handover brought to now
+**Version:** V4.131 (27 Nov 2026): Walking the stairs: up from the kitchen without hitting a wall, and running up never falls through them
 Earlier versions: `docs/HISTORY.md`. The version shows faintly by "Home Plan" top left and in Plan as a refresh button ("V4.129 ↻"): on the home-screen app, tap it to get the newest.
 
-**Work from:** `docs/HANDOVER.md` "Next team: the plan to finish". Done on 27 Nov: main's speed budget (V4.122, Gardens' pieces joined) and the seven S1/S2/S5 stream PRs (V4.123–V4.129: N324, N326, N263, N321, N322, N320, N323). Next: the stairs walk (`docs/STAIRS_WALK_PLAN.md`, its own thread), then the leftovers (N327's last empty catches, N328's last store uses, N329, N330, N339). S7 options (N340–N344) wait for Emma.
+**Work from:** `docs/HANDOVER.md` "Next team: the plan to finish". Done on 27 Nov: main's speed budget (V4.122, Gardens' pieces joined) and the seven S1/S2/S5 stream PRs (V4.123–V4.129: N324, N326, N263, N321, N322, N320, N323). The stairs walk fixed (N347). Next: the leftovers (N327's last empty catches, N328's last store uses, N329, N330, N339). S7 options (N340–N344) wait for Emma.
 
 ## Where it lives
 - **The site:** https://emmachilds98-wq.github.io/Demma-Home/, built and published by `.github/workflows/build.yml` on every push to
@@ -58,7 +58,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
 - A room: Be there · In it · Above · On its own. In it uses each view's own lens (`VIEWS`): the small rooms 68–70° from a corner (V4.11).
   The living room's Above is fitted to the screen (`fitRoomView`, V4.23): on a phone along the room from over the PC wall, a longer lens.
 - Walking: WASD, the arrows, the wheel, a double-tap walks you to a spot; on a PC hold a mouse button and move to look (the way you move, V4.42). You pass over low furniture, not wardrobes,
-  and doors open as you reach them.
+  and doors open as you reach them. Both flights walk and run up and down (N347: no skirting across the kitchen flight's foot, the feet keep up with the treads, a wall's handrail never stops the hip).
 - The house from outside, on its own (Gardens, on at every open since N310, brings our drive, paths, fences and gardens, its plain pieces one draw a material (V4.122); Next door, off at every open, brings the neighbours; both built the first time they show and stand back for it; a phone opens on it at about 70% of the width; framed by `fitHouseView` the same on every way in, V4.25): a PC's left-drag swings the view round the
   spot grabbed, the way you drag (V4.1), and a right-drag pans; a double-click on its outside centres there, one on a room's floor
   stands you in it (V4.5); a phone drags, pinches and twists. A floor on its own is cut a

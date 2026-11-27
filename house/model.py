@@ -2059,7 +2059,8 @@ def skirting(o, floor, rs):
                     continue
                 qa0, qa1 = (q["x0"], q["x1"]) if axis == "x" else (q["z0"], q["z1"])
                 qline = (q["z1"] if inward > 0 else q["z0"]) if axis == "x" else (q["x1"] if inward > 0 else q["x0"])
-                if abs(qline - line) < 1 and (q["room"] == r["room"] or q["room"] in VOID):
+                # the stairs' foot (OPEN_PAIRS) too: a skirting ran across it, a 10 cm step the walk climbed and couldn't step off (27 Nov)
+                if abs(qline - line) < 1 and (q["room"] == r["room"] or q["room"] in VOID or frozenset((q["room"], r["room"])) in OPEN_PAIRS):
                     cuts.append((qa0, qa1)); continue
                 g = (line - qline) * inward                              # the gap to the room across
                 if -1 <= g <= 30 and qa1 > a0 + 1 and qa0 < a1 - 1 and q["id"] not in NO_WALLS:
