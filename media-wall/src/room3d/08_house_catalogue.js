@@ -338,7 +338,7 @@ const hcMake = (k, look, m, m2, c) => {
   if (k === "toilet") return hcToilet(look, m, m2);
   if (k === "basin") return hcBasin(look, m, m2);
   if (k === "rug") return (W, H, D, B, L) => look === "round" ? L(m, W / 2, D / 2, 0, [[0, 0], [W / 2, 0], [W / 2, H], [0, H]]) : B(m, 0, 0, 0, W, H, D);
-  if (k === "lamp") return (W, H, D, B, L) => { const r = Math.min(W, D) / 2 - 0.5, sh = m === "rattan" ? "rattan" : /^cloth/.test(m2) ? m2 : "shade_lit";   // N345: a paper shade lit; N278: a linen or cloth shade in its weave
+  if (k === "lamp") return (W, H, D, B, L) => { const r = Math.min(W, D) / 2 - 0.5, sh = m === "rattan" ? "rattan" : /^cloth/.test(m2) ? m2 : "shade_lit";   // N278: linen or cloth in its weave
     if (look === "tripod") { const ap = H - 34, r0 = r - 1.5, rs = Math.min(19, r);   // three legs splayed from under the shade, each in eight steps
       for (let j = 0; j < 3; j++) { const a = j * 2.094 + 0.5; for (let q = 0; q < 8; q++) { const rr = r0 * (1 - (q + 0.5) / 8), cu = W / 2 + Math.cos(a) * rr, ct = D / 2 + Math.sin(a) * rr;
         B(m, cu - 1, ap * q / 8, ct - 1, cu + 1, ap * (q + 1) / 8, ct + 1); } }

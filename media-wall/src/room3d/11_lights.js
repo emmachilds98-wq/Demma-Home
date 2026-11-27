@@ -148,7 +148,8 @@ function spotHead(group, apex, dir, col, lightList, kSpot, colKey, shadeMat, bar
   const glow = new THREE.Mesh(new THREE.SphereGeometry(0.052, 24, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshBasicMaterial({ color: "#fff3dc", toneMapped: false }));
   const head = new THREE.Group();
   shade.position.y = -0.065 - 0.038; cap.position.y = -0.019; glow.position.y = -0.152; glow.rotation.x = Math.PI; glow.scale.y = 0.38;
-  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: bulbGlowTex(), color: "#fff3dc", transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }));
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: bulbGlowTex(), color: "#fff3dc", transparent: true, opacity: 0.55,
+    blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }));
   halo.scale.set(0.2, 0.2, 1); halo.position.y = -0.17; halo.raycast = () => {}; halo.renderOrder = 4;
   halo.onBeforeRender = () => halo.material.color.copy(glow.material.color);   // N345: the soft light round the bulb, its colour (off: dark, so none)
   head.add(shade, cap, glow, halo); shadow(shade); shadow(cap, true);
