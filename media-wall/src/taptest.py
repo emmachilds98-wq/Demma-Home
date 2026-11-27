@@ -75,7 +75,7 @@ def run(w, h):
         if tap(hxy, "spot bar 1"):
             press("⟳ 15°"); press("⟳ 15°"); print("   bar1 turned:", S("fix"), before, "->", pos())
             press("Blue"); press_aria("Aim it up"); pg.wait_for_timeout(900); press_aria("Dim this head"); pg.wait_for_timeout(900); press("Colour"); print("   heads:", S("head"))
-            press("Reset"); print("   reset:", S("fix"), S("head"), pos() == before)
+            press("The plan's"); print("   reset:", S("fix"), S("head"), pos() == before)
         pg.screenshot(path=f"{OUT}/tap_{w}_bar.png")
         pg.evaluate("() => R3D.set({view: 'door'})"); pg.wait_for_timeout(600)
         cxy = pg.evaluate("() => { const { scene, THREE } = R3D._dbg; let best = null; scene.traverse(o => { if (o.isMesh && o.visible && o.parent && o.parent.visible && o.material && o.material.color && o.material.color.getHexString() === 'b9a47f' && !best) best = o; }); if (!best) return null; const c = new THREE.Box3().setFromObject(best).getCenter(new THREE.Vector3()); return [-c.x * 100, c.y * 100, c.z * 100]; }")
