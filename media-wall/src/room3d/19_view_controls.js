@@ -118,7 +118,7 @@ canvas.addEventListener("pointerdown", () => mapConf(mapMode()), true);   // aft
 canvas.addEventListener("pointerdown", e => {   // a piece grabbed in Edit never gets here (13 stops its press on the root)
   if (!mapMode() || GS.tween) { MAPPT.clear(); MAPD = null; return; }
   mapConf(mapMode()); MAPPT.set(e.pointerId, [e.clientX, e.clientY]); if (MAPPT.size > 2) return;
-  try { canvas.setPointerCapture(e.pointerId); } catch (_) {}
+  try { canvas.setPointerCapture(e.pointerId); } catch (_) { /* the pointer already gone */ }
   mapStart(e); GS.moving = true; if (typeof PRE !== "undefined") PRE.idleT = performance.now(); dirty();
 });
 root.addEventListener("pointerdown", e => {   // a finger on a sticker still drags and pinches (the living room's are over the middle); a tap still opens it

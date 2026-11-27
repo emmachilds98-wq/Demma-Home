@@ -41,7 +41,7 @@ function roomHist() {
     if (S.view !== "house") { if (st.r3d) history.replaceState({ ...st, r3d: S.view }, ""); else history.pushState({ r3d: S.view, k: HIST }, ""); }
     else if (st.r3d && st.k === HIST) { histBack = true; history.back(); }
     else if (st.r3d) history.replaceState(null, "");
-  } catch (e) {}
+  } catch (e) { caught(e, "history"); }
 }
 addEventListener("popstate", e => {
   if (!started || !R.HOUSE) return;
@@ -51,8 +51,8 @@ addEventListener("popstate", e => {
   histPop = true; try { if (v === "house") wholeRoom(); else goRoom(v, true); } finally { histPop = false; }
 });
 function syncRmode() {
-  if (typeof syncStick === "function") try { syncStick(); } catch (e) {}   // V1.32: the walk's stick
-  try { ixPill(); } catch (e) {}   // N244: the Ideas pill, in a room of the house
+  if (typeof syncStick === "function") try { syncStick(); } catch (e) { caught(e, "syncStick"); }   // V1.32: the walk's stick
+  try { ixPill(); } catch (e) { caught(e, "ixPill"); }   // N244: the Ideas pill, in a room of the house
   const rm = qs("#r3d-rmode"); if (!rm) return;
   const liv = LIVV(), cur = liv ? (S.view === "room" ? "above" : S.view === "livalone" ? "alone" : S.view === "livstand" ? "stand" : "in") : GS.RMODE;
   rm.hidden = !(ROOMV() || liv); const rm2 = qs("#r3d-rmode2"); if (rm2) rm2.hidden = rm.hidden;   // N298: Wide view and On its own under ⋯
