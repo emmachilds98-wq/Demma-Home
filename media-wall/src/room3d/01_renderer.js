@@ -47,6 +47,22 @@ function lightIn(l) {                 // in the renderer's set for this quality
   if (!hd && l.userData.barIx !== undefined) return l.userData.barIx % 2 === 0;
   return true;
 }
+/* N303 (Emma, 27 Nov: "the lighting is very bright by default"): with every light on (WHOLE) the living room's strips, spots and lamps
+   lit the hall, the stairwell and the rooms round it through their walls (only two spots cast shadows): the house's own pieces take
+   only the house's lights. The renderer lists the lights in the scene's order, the house's (20_go) before the living room's, so a
+   house material's shader stops its point and area loops after the house's own and leaves the spots (all the living room's) out */
+const OWNL = { chunk: null };
+const ownCount = () => { let p = 0, r = 0; for (const l of ROOMLIGHTS) if (l.visible) p++; for (const l of WINLIGHTS) if (l.visible) r++; return p + "," + r; };
+function ownLights(m) {
+  if (!WHOLE || !m || m.userData.ownL || !m.isMeshStandardMaterial) return;
+  m.userData.ownL = true; const before = m.onBeforeCompile, key = m.customProgramCacheKey;
+  if (!OWNL.chunk) OWNL.chunk = THREE.ShaderChunk.lights_fragment_begin;
+  m.onBeforeCompile = (sh, r) => { if (before) before.call(m, sh, r); const [p, a] = ownCount().split(",").map(Number);
+    sh.fragmentShader = sh.fragmentShader.replace("#include <lights_fragment_begin>", OWNL.chunk.replace("i < NUM_POINT_LIGHTS;", `i < ${Math.min(p, sh.numPointLights)};`)
+      .replace("i < NUM_SPOT_LIGHTS;", "i < 0;").replace("i < NUM_RECT_AREA_LIGHTS;", `i < ${Math.min(a, sh.numRectAreaLights)};`)); };
+  m.customProgramCacheKey = () => key.call(m) + "|own" + ownCount();
+  m.needsUpdate = true;
+}
 function adoptLight(l, scn) {
   if (l.userData.adopted) return;
   l.userData.adopted = true;
@@ -210,7 +226,7 @@ const AO = { c: null, g: null };
 const PHONE_HD = GOOD_PHONE && !BIG_GPU, dragLite = () => PHONE_HD && postLive();
 /* V3.39 (N91): while you walk, look or drag, a PC skips the shade and the glow as the phone does (same shaders); they come back a
    quarter of a second after you stop (moveLite). ?fullmove keeps them on */
-const MOVE_LITE = !/[?&]fullmove\b/.test(location.search);
+const MOVE_LITE = WHOLE ? /[?&]movelite\b/.test(location.search) : !/[?&]fullmove\b/.test(location.search);   // N303 (Emma, 27 Nov: "kind of bugs and flickers sometimes ... lighting should be smooth and natural"): a real card keeps them while moving (they went off and came back each step); ?movelite the old way
 const postLive = () => S.quality === "hd" && (BIG_GPU || GOOD_PHONE || /[?&]ao\b/.test(location.search)) && !/[?&]noao\b/.test(location.search);   // V2.64: drawn through the composer
 const aoLive = () => postLive() && (BIG_GPU || phoneAO || /[?&]ao\b/.test(location.search)) && !(houseLite && R.HOUSE3 && HOUSEV(S.view)) && !(dragLite() && lowRes) && !moveLite;   // ?ao tries it anywhere; V2.64: a slow phone leaves the shade out while you drag, not the sharpness (no new buffers)
 function aoComposer(w, h, pr) {
