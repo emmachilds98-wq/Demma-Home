@@ -55,7 +55,8 @@ function syncRmode() {
   try { ixPill(); } catch (e) {}   // N244: the Ideas pill, in a room of the house
   const rm = qs("#r3d-rmode"); if (!rm) return;
   const liv = LIVV(), cur = liv ? (S.view === "room" ? "above" : S.view === "livalone" ? "alone" : S.view === "livstand" ? "stand" : "in") : GS.RMODE;
-  rm.hidden = !(ROOMV() || liv); qsa("[data-rmode]", rm).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.rmode === cur)));
+  rm.hidden = !(ROOMV() || liv); const rm2 = qs("#r3d-rmode2"); if (rm2) rm2.hidden = rm.hidden;   // N298: Wide view and On its own under ⋯
+  qsa("[data-rmode]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.rmode === cur)));
 }
 const HFLOOR = {};     // v55: its floors (lower, ground, first) and the outside (gardens, the alley), for the floor picker
 const OUTLAZY = {};   // N181: what's built the first time it shows (20_go buildHouse: the gardens, next door's things)
@@ -337,6 +338,7 @@ function applyFloors() {
   if (HFLOOR.street) HFLOOR.street.visible = !!S.hstreet;
   if (HFLOOR.nextThings) HFLOOR.nextThings.visible = !!S.hstreet;
   qsa("[data-htog]").forEach(b => b.setAttribute("aria-pressed", String(!!S[b.dataset.htog])));
+  const ht = qs("#r3d-htogs"); if (ht) ht.hidden = !on || GS.hfloor !== "all";   // N298: Gardens and Next door under ⋯, on Outside
   const fv = qs("#r3d-fview"); if (fv) { fv.hidden = !on; qsa("[data-hfview]", fv).forEach(b => b.setAttribute("aria-pressed", String(b.dataset.hfview === GS.hfview))); }   // v74
   syncRmode();   // v71
   /* v73: standing in a room, only what can be seen from it is drawn: its floor, the group with its ceiling, the floor its stairs lead to,
