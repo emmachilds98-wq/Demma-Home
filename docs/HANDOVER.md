@@ -1,4 +1,4 @@
-# Handover (27 Nov 2026, V4.127: start here)
+# Handover (27 Nov 2026, V4.128: start here)
 
 ## Next team: the plan to finish (27 Nov 2026, evening; usage ran out)
 **Main's CI is red; fix it first, then merge the open streams one at a time.**
@@ -10,7 +10,7 @@
 
 **Prompt for the next team:** "Read CLAUDE.md, then docs/HANDOVER.md 'Next team: the plan to finish'. Fix main's red speed budget first (step 2), then merge the open PRs one at a time in step 3's order, then docs/STAIRS_WALK_PLAN.md. Work lean: quick checks only, one task per PR, ship.py at merge, lessons in docs/NOTES.md."
 
-## Now (27 Nov 2026, V4.127: start here)
+## Now (27 Nov 2026, V4.128: start here)
 The client, 25 Nov: "another team is going to build it from another session so make sure the repo has everything they will need".
 
 **Read first:** `CLAUDE.md` (the client's rules; **privacy first: the address is never written anywhere**), this block, then
