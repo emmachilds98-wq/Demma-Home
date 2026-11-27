@@ -1380,6 +1380,12 @@ table.tstack td::before, table.tstack tr > th::before { content: attr(data-label
 table.tstack td:not([data-label]), table.tstack td[data-label=""] { padding-left: 0 !important; }
 table.tstack tr.sec td, table.tstack tr.ph td { padding-left: 0 !important; font-weight: 650; }
 """
+PHONE_SHRINK_JS = """async () => { for (const im of [...document.images]) {   // N337: the phone copy's pictures at 1200 wide at most (the A4 copy keeps them full size)
+  if (!im.src.startsWith("data:") || im.naturalWidth <= 1200) continue;
+  const png = im.src.startsWith("data:image/png"), c = document.createElement("canvas"), x = c.getContext("2d");
+  c.width = 1200; c.height = Math.round(im.naturalHeight * 1200 / im.naturalWidth);
+  if (!png) { x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); }
+  x.drawImage(im, 0, 0, c.width, c.height); im.src = c.toDataURL(png ? "image/png" : "image/jpeg", 0.85); await im.decode().catch(() => {}); } }"""
 PHONE_LABEL_JS = """() => document.querySelectorAll("table:not(.contents)").forEach(t => {
   const rows = [...t.rows], hdr = rows.find(r => r.cells.length && [...r.cells].every(c => c.tagName === "TH")); if (!hdr) return;
   const names = []; [...hdr.cells].forEach(c => { for (let i = 0; i < (c.colSpan || 1); i++) names.push(c.textContent.trim()); });
@@ -1410,6 +1416,7 @@ def pdf():
                    margin={"top": "16mm", "bottom": "18mm", "left": "18mm", "right": "18mm"},
                    display_header_footer=True, header_template="<div></div>", footer_template=footer(name))
             # v46, client: "more optimised for viewing in mobile and pc": the same document on a phone-shaped page
+            pg.evaluate(PHONE_SHRINK_JS)
             pg.evaluate(PHONE_LABEL_JS)      # v46.1: a wide table becomes a card per row, each value under its column's name
             pg.add_style_tag(content="@page { size: 110mm 196mm; }" + PHONE_CSS)
             pg.wait_for_timeout(300)
