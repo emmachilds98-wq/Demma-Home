@@ -573,7 +573,7 @@ async function ownPut(k, patch) {
   try { await ds.put("edits", k + "~add", Object.assign({}, row, { value: v, x: cmR(x), z: cmR(z) })); } catch (e) { toast("That didn't save: try again"); }
 }
 function setAbove(show) {   // the floor above (the stairwell's upper walls) hides in the views from above
-  const hs = houseG && houseG.visible;                                         // v72: in the house the house's own stairwell stands there (the
+  const hs = houseG && (houseG.visible || !!R.HOUSE3 && S.view === "livstand");   // N301: in the living room the house is drawn round it (applyFloors), so its own stairwell, not the green box at the top of the flight                                         // v72: in the house the house's own stairwell stands there (the
   scene.traverse(o => { if (o.name === "above") o.visible = show && !hs; });   // living room's green upper wall showed through the landing)
   if (view) view.visible = show;                                               // v56: the plain sky only from inside (from above it read as a pale slab)
 }

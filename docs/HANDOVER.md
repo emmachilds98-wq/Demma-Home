@@ -1,6 +1,6 @@
-# Handover (27 Nov 2026, V4.96: start here)
+# Handover (27 Nov 2026, V4.97: start here)
 
-## Now (27 Nov 2026, V4.96: start here)
+## Now (27 Nov 2026, V4.97: start here)
 The client, 25 Nov: "another team is going to build it from another session so make sure the repo has everything they will need".
 
 **Read first:** `CLAUDE.md` (the client's rules; **privacy first: the address is never written anywhere**), this block, then
@@ -15,7 +15,7 @@ The client, 25 Nov: "another team is going to build it from another session so m
    belongs: the wrong-room fix) with N292 (its check) → N288 (shops per place) and N289 (made to measure) side by side → N290 (fewer,
    better set-ups) and N291 (places on screen). Claim each row first (`tools/claim.py N286`). Options only: no build steps or buy rows
    till she picks.
-3. **Done lately:** N300 (27 Nov) the house's join inside on the PC too, CI's HD paths on `?hd`; N299 (27 Nov) a real card lights and draws the whole house at once (`WHOLE`, `?pool` the old way); N298 (27 Nov) the page lands at the front door and walks into the hall (`?house` for the old start), the view buttons cut to one row and a ⋯ list; N297 (27 Nov) a slow browser steps HD down and says why, `?perf` Copy; N296 (27 Nov) the PC: a pixel budget and about 72 pictures a second at most (fan, walk); N295 (26 Nov) the living room's strip and spots seen lit from the hall and landing; N294 (26 Nov) a room looks the same through a doorway as from inside it (the living room and the hall, the landing: REAL_PLAN section 35).  N285 (V4.82) the phone's buttons and cards: Settings by the brand (Share, quality, labels, help), one row of pills,
+3. **Done lately:** N301 (27 Nov) the lower flight open under the living room's stairs, no green box at the top of its flight, one evening reflection everywhere on a real card; N300 (27 Nov) the house's join inside on the PC too, CI's HD paths on `?hd`; N299 (27 Nov) a real card lights and draws the whole house at once (`WHOLE`, `?pool` the old way); N298 (27 Nov) the page lands at the front door and walks into the hall (`?house` for the old start), the view buttons cut to one row and a ⋯ list; N297 (27 Nov) a slow browser steps HD down and says why, `?perf` Copy; N296 (27 Nov) the PC: a pixel budget and about 72 pictures a second at most (fan, walk); N295 (26 Nov) the living room's strip and spots seen lit from the hall and landing; N294 (26 Nov) a room looks the same through a doorway as from inside it (the living room and the hall, the landing: REAL_PLAN section 35).  N285 (V4.82) the phone's buttons and cards: Settings by the brand (Share, quality, labels, help), one row of pills,
    Plan in the dock, a card a bottom sheet; the PHONEUI check. Section 32's rows: see each row's state.
 4. **Waiting on Emma:** her storage picks, `?perf` → Send from her PC (N240's real cause), the tape round (N235, N275), the master's
    sliding-door gap, lighting "later" (N228, N270).
