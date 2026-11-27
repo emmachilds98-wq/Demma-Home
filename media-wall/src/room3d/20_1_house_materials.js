@@ -136,7 +136,7 @@ function liftBlack(c) { const t = {}; c.getRGB(t, THREE.SRGBColorSpace); const m
   const f = BLACK_MIN / mx; return c.setRGB(t.r * f, t.g * f, t.b * f, THREE.SRGBColorSpace); }
 /* N184: the other end: a white over #dc is held to it, its hue kept, so the small rooms' baths, units, walls and ceilings keep their
    shading under the clip as the living room's do (the light the same; only how much a white sends back) */
-const WHITE_MAX = 0xdc / 255, WHITE_KEEP = new Set(["led", "bulb", "pc_glow", "mirror", "glass", "glass_frost", "contact"]);
+const WHITE_MAX = 0xdc / 255, WHITE_KEEP = new Set(["led", "bulb", "dome_lit", "shade_lit", "pc_glow", "mirror", "glass", "glass_frost", "contact"]);
 function capWhite(c) { const t = {}; c.getRGB(t, THREE.SRGBColorSpace); const mx = Math.max(t.r, t.g, t.b); if (mx <= WHITE_MAX) return c;
   const f = WHITE_MAX / mx; return c.setRGB(t.r * f, t.g * f, t.b * f, THREE.SRGBColorSpace); }
 function houseTex(k) {
