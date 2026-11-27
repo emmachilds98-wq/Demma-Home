@@ -8,7 +8,7 @@
 #            them), and hands the site on. On main Pages publishes straight after: minutes, not half an hour. What's merged has
 #            already passed every check on its pull request.
 #   browser  the front door (site), the customisation (features, N257), the PC's walk (hitch), the media wall's page (page) and the
-#            taps (taps), side by side, each on a machine of its own; skipped when only documents changed (docs/, *.md); hitch only when
+#            taps (taps-1280, taps-390: a width a machine, N338), side by side, each on a machine of its own; skipped when only documents changed (docs/, *.md); hitch only when
 #            the 3D, the house or the speed budget changed (N258).
 # N258: one setup for every job (.github/actions/setup); the build fails if three.js fell back to the CDN; the bake is keyed on the
 # code without its comments.
@@ -127,7 +127,7 @@ jobs:
           if [ -n "$range" ] && ! git diff --name-only $range | grep -qvE '^docs/|\.md$'; then echo "heavy=false"; else echo "heavy=true"; fi >> "$GITHUB_OUTPUT"
           # N258: the PC's walk (hitch, the longest) only when the 3D, the house, the speed budget, the packages or CI changed
           if [ -n "$range" ] && ! git diff --name-only $range | grep -qE '^media-wall/src/[^/]*\.(py|js|css)$|^media-wall/src/room3d/|^house/|^tools/(check_site\.py|perf_budget\.json)$|^package|^\.github/'; then
-            echo 'checks=["site","features","page","taps"]'; else echo 'checks=["site","features","hitch","page","taps"]'; fi >> "$GITHUB_OUTPUT"
+            echo 'checks=["site","features","page","taps-1280","taps-390"]'; else echo 'checks=["site","features","hitch","page","taps-1280","taps-390"]'; fi >> "$GITHUB_OUTPUT"
           cat "$GITHUB_OUTPUT"
       - name: Hand the site to the browser checks
         uses: actions/upload-artifact@v7
@@ -167,7 +167,11 @@ jobs:
           path: _site
       - name: The ${{ matrix.check }} check
         run: |
-          if [ "${{ matrix.check }}" = features ]; then python tools/check_site.py _site --features; else python tools/checks.py --only ${{ matrix.check }}; fi
+          case "${{ matrix.check }}" in   # N338: the taps (20 min) split by width, a machine each
+            features) python tools/check_site.py _site --features ;;
+            taps-*) TAPS_W="${{ matrix.check }}"; TAPS_W="${TAPS_W#taps-}" python tools/checks.py --only taps ;;
+            *) python tools/checks.py --only ${{ matrix.check }} ;;
+          esac
       - name: Keep the screenshots
         if: always()
         uses: actions/upload-artifact@v7
