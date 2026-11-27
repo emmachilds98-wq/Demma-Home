@@ -35,7 +35,7 @@ const dockMid = () => [stage.clientWidth / 2, stage.clientHeight * 0.3];
 function dockOpen(id) { if (window.DemmaTools && DemmaTools.isOpen()) DemmaTools.close(); if (GS.actId === id) { closeAct(); return; } openAct(id, dockMid()); }
 function hereCard(room) {   // [title, how it is now, buttons]: a room's card from the dock
   if (!R.HOUSE3 || !H3R(room)) return null; const s = upSum(roomUps(room)), outs = roomOuts(room), ds = DS();
-  return [roomName(room), s.n ? `${s.n} ${s.n === 1 ? "change" : "changes"}${s.hi ? " · " + upRange(s.lo, s.hi) : ""}` : "As planned", [
+  return [roomName(room), s.n ? `${s.n} ${s.n === 1 ? "change" : "changes"}${s.hi ? " · " + upRange(s.lo, s.hi) : ""}` : "The plan's", [
     ...(typeof ixRoom === "function" && ixRoom() === room ? [btn("Ideas", { hereix: room })] : []),
     ...(ds ? [btn("Add a piece", { hadd: room }), btn("Your own piece", { hownadd: room })] : []),
     ...(outs.length ? [btn(`Taken out (${outs.length})`, { actopen: "hout:" + room })] : []), ...upsBtn(room),
