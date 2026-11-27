@@ -335,6 +335,8 @@ FLOOR_FINISH = {"bed3": "carpet_grey", "bed2": "carpet_grey", "master": "carpet_
 def walls_for(o, floor, rs, ds, y0, y1):
     """Inner walls: on every room edge that isn't the outside wall, out to the next room (half the gap, or all of it next to the measured
     living room, which draws its own wall face), with the doors cut through."""
+    if floor == "first":
+        return first_walls(o, rs, ds, y0, y1)
     fp = footprint(floor)
     outer_x = {p[0] for p in fp}; outer_z = {p[1] for p in fp}
 
@@ -411,22 +413,140 @@ def walls_for(o, floor, rs, ds, y0, y1):
                 if d["axis"] == axis and l0 - 16 <= d["line"] <= l1 + 16 and a0 - 1 <= d["a"] and d["b"] <= a1 + 1:
                     # v65: on this room's own face only (the next room's wall carries the other), lapping 0.8 into the opening
                     o.item(d["id"], *DOOR_NAMES.get(d["id"], (d["id"], r["room"])), kind="door", src=door_src(d["id"]), data=door_data(d["id"]), axis=axis)
-                    for zf in ((l0 - 1.2,) if out_dir > 0 else (l1,)):
-                        put = (lambda xa, ya, xb, yb: o.box("woodwork", xa, ya, zf, xb, yb, zf + 1.2)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("woodwork", zf, ya, xa, zf + 1.2, yb, xb))
-                        put(d["a"] - 6, y0, d["a"] + 0.8, y0 + D.DOOR_H + 6); put(d["b"] - 0.8, y0, d["b"] + 6, y0 + D.DOOR_H + 6)
-                        put(d["a"] - 6, y0 + D.DOOR_H - 0.8, d["b"] + 6, y0 + D.DOOR_H + 6)
-                        # v72 (B4): a torus profile: a raised round by the opening, 3 wide, 0.8 proud (E: a 69 × 18 torus architrave)
-                        r0, r1 = (zf - 0.75, zf) if out_dir > 0 else (zf + 1.2, zf + 1.95)   # (its face 0.05 off any wall's end)
-                        rid = (lambda xa, ya, xb, yb: o.box("woodwork", xa, ya, r0, xb, yb, r1)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("woodwork", r0, ya, xa, r1, yb, xb))
-                        rid(d["a"] - 3.2, y0, d["a"] - 0.2, y0 + D.DOOR_H + 2.8); rid(d["b"] + 0.2, y0, d["b"] + 3.2, y0 + D.DOOR_H + 2.8)
-                        rid(d["a"] - 0.2, y0 + D.DOOR_H - 0.2, d["b"] + 0.2, y0 + D.DOOR_H + 2.8)
-                        if D.HEAD_CAP.get(d["id"]) == r["id"]:   # V1.25: a moulded cap over the head, past the legs (survey_data.HEAD_CAP)
-                            c0, c1 = (zf - 2.2, zf + 1.2) if out_dir > 0 else (zf, zf + 3.4)
-                            cap = (lambda xa, ya, xb, yb: o.box("woodwork", xa, ya, c0, xb, yb, c1)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("woodwork", c0, ya, xa, c1, yb, xb))
-                            cap(d["a"] - 8.5, y0 + D.DOOR_H + 6, d["b"] + 8.5, y0 + D.DOOR_H + 9.5)
-                    # V4.46: the lining through the wall's thickness, the jambs and the head (woodwork, as the frame: the opening drew in wall paint)
-                    lin = (lambda xa, ya, xb, yb: o.box("woodwork", xa, ya, l0, xb, yb, l1)) if axis == "x" else (lambda xa, ya, xb, yb: o.box("woodwork", l0, ya, xa, l1, yb, xb))
-                    lin(d["a"], y0, d["a"] + 0.6, y0 + D.DOOR_H); lin(d["b"] - 0.6, y0, d["b"], y0 + D.DOOR_H); lin(d["a"] + 0.6, y0 + D.DOOR_H - 0.6, d["b"] - 0.6, y0 + D.DOOR_H)
+                    _door_face(o, d, axis, l0, l1, out_dir > 0, y0, D.HEAD_CAP.get(d["id"]) == r["id"])
+                    _door_lining(o, d, axis, l0, l1, y0)
+
+
+def _door_face(o, d, axis, l0, l1, low, y0, cap):
+    """A door's frame (architrave) on one face of its wall: low, the face at l0 (its room on the low side), else at l1; lapping 0.8 into
+    the opening; cap: the moulded cap over the head (survey_data.HEAD_CAP)."""
+    zf = l0 - 1.2 if low else l1
+    put = (lambda xa, ya, xb, yb: o.box("woodwork", xa, ya, zf, xb, yb, zf + 1.2)) if axis == "x" else \
+        (lambda xa, ya, xb, yb: o.box("woodwork", zf, ya, xa, zf + 1.2, yb, xb))
+    put(d["a"] - 6, y0, d["a"] + 0.8, y0 + D.DOOR_H + 6); put(d["b"] - 0.8, y0, d["b"] + 6, y0 + D.DOOR_H + 6)
+    put(d["a"] - 6, y0 + D.DOOR_H - 0.8, d["b"] + 6, y0 + D.DOOR_H + 6)
+    # v72 (B4): a torus profile: a raised round by the opening, 3 wide, 0.8 proud (E: a 69 × 18 torus architrave)
+    r0, r1 = (zf - 0.75, zf) if low else (zf + 1.2, zf + 1.95)   # (its face 0.05 off any wall's end)
+    rid = (lambda xa, ya, xb, yb: o.box("woodwork", xa, ya, r0, xb, yb, r1)) if axis == "x" else \
+        (lambda xa, ya, xb, yb: o.box("woodwork", r0, ya, xa, r1, yb, xb))
+    rid(d["a"] - 3.2, y0, d["a"] - 0.2, y0 + D.DOOR_H + 2.8); rid(d["b"] + 0.2, y0, d["b"] + 3.2, y0 + D.DOOR_H + 2.8)
+    rid(d["a"] - 0.2, y0 + D.DOOR_H - 0.2, d["b"] + 0.2, y0 + D.DOOR_H + 2.8)
+    if cap:                                          # V1.25: a moulded cap over the head, past the legs
+        c0, c1 = (zf - 2.2, zf + 1.2) if low else (zf, zf + 3.4)
+        cp = (lambda xa, ya, xb, yb: o.box("woodwork", xa, ya, c0, xb, yb, c1)) if axis == "x" else \
+            (lambda xa, ya, xb, yb: o.box("woodwork", c0, ya, xa, c1, yb, xb))
+        cp(d["a"] - 8.5, y0 + D.DOOR_H + 6, d["b"] + 8.5, y0 + D.DOOR_H + 9.5)
+
+
+def _door_lining(o, d, axis, l0, l1, y0):
+    """V4.46: the lining through the wall's thickness, the jambs and the head (woodwork, as the frame: the opening drew in wall paint)."""
+    lin = (lambda xa, ya, xb, yb: o.box("woodwork", xa, ya, l0, xb, yb, l1)) if axis == "x" else \
+        (lambda xa, ya, xb, yb: o.box("woodwork", l0, ya, xa, l1, yb, xb))
+    lin(d["a"], y0, d["a"] + 0.6, y0 + D.DOOR_H); lin(d["b"] - 0.6, y0, d["b"], y0 + D.DOOR_H)
+    lin(d["a"] + 0.6, y0 + D.DOOR_H - 0.6, d["b"] - 0.6, y0 + D.DOOR_H)
+
+
+def first_walls(o, rs, ds, y0, y1):
+    """The client (27 Nov): "top floor walls, doorframes and ceiling still has various clipping ... make it look as it should, smooth
+    walls and boundaries between doors with the proper doorframes". Each room drew half of each gap as its own wall, sized by its nearest
+    neighbour, so where an edge faced two rooms the halves missed (a slot by the boiler cupboard, by bedroom 3's door), ran past each
+    other or into the next room. Now the walls are what lies between the rooms: every bit of the floor inside the outline that is in no
+    room is wall, in as few boxes as it takes, so each face sits on its own room's edge (its paint the room's, as Look and Room set it),
+    with one wall a door, its frame on both faces. Rooms that touch with no gap (the boiler cupboard's side) get 4 cm from the smaller."""
+    fl = "first"
+    fp = footprint(fl)
+    X0, X1 = min(p[0] for p in fp), max(p[0] for p in fp); Z0, Z1 = min(p[1] for p in fp), max(p[1] for p in fp)
+    dz = DM["face"] + DM["t"]                                    # inside the dormer's face, not through it
+    area = lambda q: sum((p["x1"] - p["x0"]) * (p["z1"] - p["z0"]) for p in rs if p["room"] == q["room"])   # the whole room's
+    carve = []                                                   # (x0, x1, z0, z1): touching rooms' shared wall
+    for i, r in enumerate(rs):
+        for q in rs[i + 1:]:
+            if r["room"] == q["room"] or r["room"] in VOID or q["room"] in VOID or frozenset((r["room"], q["room"])) in OPEN_PAIRS:
+                continue
+            s = min(r, q, key=area)
+            for ax in ("x", "z"):
+                o_ = "z" if ax == "x" else "x"
+                a0, a1 = max(r[o_ + "0"], q[o_ + "0"]), min(r[o_ + "1"], q[o_ + "1"])
+                if a1 - a0 < 1:
+                    continue
+                for la, lb in ((r[ax + "1"], q[ax + "0"]), (q[ax + "1"], r[ax + "0"])):
+                    if abs(la - lb) < 1:
+                        c0, c1 = (lb, lb + 4) if s[ax + "0"] == lb or abs(s[ax + "0"] - lb) < 1 else (la - 4, la)
+                        a0, a1 = s[o_ + "0"], s[o_ + "1"]   # along its whole side (no step where the far room changes)
+                        carve.append((c0, c1, a0, a1) if ax == "x" else (a0, a1, c0, c1))
+    xs = {X0, X1, *DM["x"]}; zs = {Z0, Z1, dz}
+    for r in rs:
+        xs |= {r["x0"], r["x1"]}; zs |= {r["z0"], r["z1"]}
+    for c in carve:
+        xs |= {c[0], c[1]}; zs |= {c[2], c[3]}
+    for d in ds:
+        (xs if d["axis"] == "x" else zs).update((d["a"], d["b"]))
+    xs = sorted(v for v in xs if X0 <= v <= X1); zs = sorted(v for v in zs if Z0 <= v <= Z1)
+    xs = [v for k, v in enumerate(xs) if k == 0 or v - xs[k - 1] > 0.05]; zs = [v for k, v in enumerate(zs) if k == 0 or v - zs[k - 1] > 0.05]
+
+    def kind(i, j):                                              # 0 a room or the dormer, 1 wall, 2 wall over a door
+        cx, cz = (xs[i] + xs[i + 1]) / 2, (zs[j] + zs[j + 1]) / 2
+        if DM["x"][0] < cx < DM["x"][1] and cz < dz:
+            return 0
+        if not any(c[0] < cx < c[1] and c[2] < cz < c[3] for c in carve) and \
+                any(r["x0"] < cx < r["x1"] and r["z0"] < cz < r["z1"] for r in rs):
+            return 0
+        for d in ds:
+            ln, al = (cz, cx) if d["axis"] == "x" else (cx, cz)
+            if d["a"] < al < d["b"] and abs(ln - d["line"]) < 16:
+                return 2
+        return 1
+    nx, nz = len(xs) - 1, len(zs) - 1
+    K = [[kind(i, j) for j in range(nz)] for i in range(nx)]
+    used = [[False] * nz for _ in range(nx)]
+    rects = []
+    for i in range(nx):
+        for j in range(nz):
+            k = K[i][j]
+            if not k or used[i][j]:
+                continue
+            best = None
+            for first in ("x", "z"):                             # grow along one axis, then the other; the larger wins
+                i1, j1 = i, j
+                if first == "x":
+                    while i1 + 1 < nx and K[i1 + 1][j] == k and not used[i1 + 1][j]: i1 += 1
+                    while j1 + 1 < nz and all(K[a][j1 + 1] == k and not used[a][j1 + 1] for a in range(i, i1 + 1)): j1 += 1
+                else:
+                    while j1 + 1 < nz and K[i][j1 + 1] == k and not used[i][j1 + 1]: j1 += 1
+                    while i1 + 1 < nx and all(K[i1 + 1][b] == k and not used[i1 + 1][b] for b in range(j, j1 + 1)): i1 += 1
+                ar = (xs[i1 + 1] - xs[i]) * (zs[j1 + 1] - zs[j])
+                if not best or ar > best[0]:
+                    best = (ar, i1, j1)
+            _, i1, j1 = best
+            for a in range(i, i1 + 1):
+                for b in range(j, j1 + 1):
+                    used[a][b] = True
+            rects.append((k, xs[i], xs[i1 + 1], zs[j], zs[j1 + 1]))
+    head = y0 + D.DOOR_H
+    o.end()
+    for k, x0, x1, z0, z1 in rects:
+        axis = "x" if x1 - x0 >= z1 - z0 else "z"
+        l0, l1, a0, a1 = (z0, z1, x0, x1) if axis == "x" else (x0, x1, z0, z1)
+        for seg in _split_dormer(fl, axis, a0, a1):
+            top = min(y1, _wall_top(axis, seg, l0, l1))
+            for ya, yb in ((y0 - SLAB, head), (head, top)) if k == 1 else ((head, top),):
+                if yb - ya > 0.2:
+                    wall(o, "paint", axis, l0, l1, seg[0], seg[1], ya, yb)
+    for d in ds:                                                 # the doors' frames on both faces, the lining through
+        mid = (d["a"] + d["b"]) / 2
+        hit = [(x0, x1, z0, z1) for k, x0, x1, z0, z1 in rects if k == 2 and
+               ((x0 <= mid <= x1 and z0 - 0.1 <= d["line"] <= z1 + 0.1) if d["axis"] == "x" else (z0 <= mid <= z1 and x0 - 0.1 <= d["line"] <= x1 + 0.1))]
+        if not hit:
+            continue
+        l0 = min(h[2] if d["axis"] == "x" else h[0] for h in hit); l1 = max(h[3] if d["axis"] == "x" else h[1] for h in hit)
+        def rid(u, d=d, mid=mid):
+            px, pz = (mid, u) if d["axis"] == "x" else (u, mid)
+            return next((r["id"] for r in rs if r["x0"] < px < r["x1"] and r["z0"] < pz < r["z1"]), None)
+        o.item(d["id"], *DOOR_NAMES.get(d["id"], (d["id"], rid(l0 - 5))), kind="door", src=door_src(d["id"]), data=door_data(d["id"]), axis=d["axis"])
+        for low, u in ((True, l0 - 5), (False, l1 + 5)):
+            _door_face(o, d, d["axis"], l0, l1, low, y0, D.HEAD_CAP.get(d["id"]) == rid(u))
+        _door_lining(o, d, d["axis"], l0, l1, y0)
+    o.end()
 
 
 def _covers(spans, a0, a1):
@@ -2699,7 +2819,7 @@ def landing(o):
     # over the stairs (the stairwell opens a little further back than the landing, for the headroom)
     o.end()
     bt = next(r for r in rooms("first") if r["id"] == "bathroom")
-    o.box("paint", bt["x1"], y - SLAB, fs["z0"], bt["x1"] + (za - bt["z1"]) / 2, y + CEIL, bt["z1"])
+    o.box("paint", bt["x1"], y - SLAB, fs["z0"], bt["x1"] + (za - bt["z1"]) / 2, y + CEIL, za)   # 27 Nov: its whole depth (one face)
     o.item("landing.hatch", "The loft hatch", "landing", kind="fitting", src="client's photos + E", data=("LANDING", "hatch"), axis="x")
     hx, hz = L["hatch"]["x"], L["hatch"]["z"]; yc = y + CEIL                                  # the loft hatch
     o.box("upvc", hx[0] - 4, yc - 1.5, hz[0] - 4, hx[1] + 4, yc - 0.3, hz[1] + 4)
