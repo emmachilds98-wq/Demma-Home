@@ -55,6 +55,7 @@ controls.addEventListener("start", () => { GS.moving = true; });
 controls.addEventListener("end", () => { GS.moving = false; });
 const LIVING = [];   // V1.31 (U4): from outside, the living room's furniture, lights and fittings are left out unless the eye is near its window
 function livingFromOutside() {
+  const k = camera.position.x + "," + camera.position.z + S.view + GS.hfloor + !GS.tween + !!R.HOUSE3; if (k === livingFromOutside.k) return false; livingFromOutside.k = k;   // N322: only when the eye or the view moved
   const x = -camera.position.x / M, z = camera.position.z / M, wx = (R.WINDOW_X[0] + R.WINDOW_X[1]) / 2;
   const want = !!R.HOUSE3 && S.view === "house" && GS.hfloor === "all" && !GS.tween && !(z < R.WINDOW_Z - 20 && Math.hypot(x - wx, z - R.WINDOW_Z) < 4000);   // V1.47, the client: "see in and out of the windows at all times": from anywhere behind the house (the garden is 25 m; was 14)
   if (want === GS.livOut) return false;
@@ -64,17 +65,22 @@ function livingFromOutside() {
   reshadow(); return true;
 }
 function livShow() {   // V2.98 (N37): what's put away shown again for a moment (applyState sets what shows), then put back by livingFromOutside
-  if (!GS.livOut) return false; GS.livOut = false;
+  if (!GS.livOut) return false; GS.livOut = false; livingFromOutside.k = "";
   for (const o of LIVING) if (o.userData.livWas !== undefined) { o.visible = o.userData.livWas; delete o.userData.livWas; }
   return true;
 }
 /* V1.35: where two room names would overlap on a phone, the smaller room's steps aside */
+/* N322: the labels listed once a floor and view (not each frame), decluttered only when the camera or the screen changed */
+const DCL = { key: "", L: [], cam: new THREE.Matrix4(), proj: new THREE.Matrix4(), wh: "" };
 function declutter() {
   if (!houseG || !houseG.visible || !canvas.clientWidth) return;
-  const L = []; houseG.traverseVisible(o => { if (o.isSprite && o.userData.hlabel && o.userData.px) L.push(o); });
-  if (L.length < 2) return;
+  const key = S.view + GS.hfloor + GS.roomKey + GS.RMODE + labelsOn + houseG.children.length, wh = canvas.clientWidth + "x" + canvas.clientHeight;
+  if (key !== DCL.key) { DCL.key = key; DCL.wh = ""; DCL.L = []; houseG.traverseVisible(o => { if (o.isSprite && o.userData.hlabel && o.userData.px) DCL.L.push(o); });
+    DCL.L.sort((a, b) => (b.userData.area || 1e9) - (a.userData.area || 1e9)); }
+  else if (wh === DCL.wh && DCL.cam.equals(camera.matrixWorld) && DCL.proj.equals(camera.projectionMatrix)) return;
+  DCL.wh = wh; DCL.cam.copy(camera.matrixWorld); DCL.proj.copy(camera.projectionMatrix);
+  const L = DCL.L; if (L.length < 2) return;
   const W = canvas.clientWidth, H = canvas.clientHeight, v = new THREE.Vector3(), kept = [];
-  L.sort((a, b) => (b.userData.area || 1e9) - (a.userData.area || 1e9));
   for (const s_ of L) {
     s_.getWorldPosition(v).project(camera); const [w, h] = s_.userData.px, x = (v.x + 1) / 2 * W, y = (1 - v.y) / 2 * H;
     const r = [x - w / 2, y - h / 2, x + w / 2, y + h / 2], hit = v.z > 1 || kept.some(q => r[0] < q[2] && r[2] > q[0] && r[1] < q[3] && r[3] > q[1]);
@@ -166,7 +172,9 @@ const SH_STAG = SMALL && !BIG_GPU && !/[?&]fullmove\b/.test(location.search);   
 function shStag(moving_) {   // the lights left out this frame (their autoUpdate off for the one draw), or null
   const sm = gl.shadowMap, req = sm.needsUpdate; if (!SH_STAG || !sm.enabled) return null;
   if (!moving_ || !(req || shStag.left)) { if (shStag.left) { shStag.left = null; sm.needsUpdate = true; } return null; }   // still: the rest at once
-  const ls = []; scene.traverseVisible(o => { if (o.isLight && o.castShadow && o.shadow && o.shadow.autoUpdate) ls.push(o); });
+  const vk = S.view + GS.hfloor + GS.hereRoom + S.quality;   // N322: the shadow lights listed once a view, again when a redraw is asked (a door, a light)
+  if (req || vk !== shStag.vk || !shStag.ls) { shStag.vk = vk; shStag.ls = []; scene.traverseVisible(o => { if (o.isLight && o.castShadow && o.shadow && o.shadow.autoUpdate) shStag.ls.push(o); }); }
+  const ls = shStag.ls.filter(l => l.parent && l.visible);
   if (ls.length < 2) { shStag.left = null; return null; }
   if (req || !shStag.left) shStag.left = new Set(ls);   // a new redraw asked (a door, a light): every light again
   const pick = ls.find(l => shStag.left.has(l)) || ls[0]; shStag.left.delete(pick); if (!shStag.left.size) shStag.left = null;
