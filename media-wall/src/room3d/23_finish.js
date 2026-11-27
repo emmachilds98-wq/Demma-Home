@@ -25,7 +25,7 @@ function livFin(slot, hex, one) {   // one surface of the living room to a colou
 }
 const finAll = (all = true) => Object.assign({}, S.fin || {}, all || livChanged() ? { [LIVR]: livRow() } : {});   // every room's row, the living room's too
 function finRestore(o) { const c = finClean(o), L = c[LIVR]; delete c[LIVR]; S.fin = c; livSet(L); }
-const finPush = () => { if (NOWV) nowMode(false); FIN_UNDO.push(JSON.stringify(finAll())); if (FIN_UNDO.length > 20) FIN_UNDO.shift(); };   // V3.90: a colour picked works on your plan
+const finPush = () => { if (NOWV) nowMode(false); histPush(); };   // V3.90: a colour picked works on your plan
 const finSlotName = (room, slot) => room === LIVR && slot >= 11 && slot <= 16 ? WALLS[slot - 11][1].toLowerCase() : slot === 17 ? (room === LIVR ? "skirting and door" : "woodwork") : slot === 29 ? "slopes" : slot >= 30 ? finWallName(room, slot) : `${FIN_NAMES[slot]} wall`;
 /* N214: each wall as built (the house file's finish_walls: [side, line from, to, along from, to, m²]) its own colour in slot 30 + its
    number; This wall means it; a side with more than one says which, "the west wall (2 of 3)", counted along it */
@@ -35,8 +35,43 @@ function finWallName(room, slot) { const L = finWalls(room), w = L[slot - 30] ||
   return `${FIN_NAMES[w[0]]} wall${on.length > 1 ? ` (${on.indexOf(w) + 1} of ${on.length})` : ""}`; }
 const finSlopeHex = (room, v) => v === "walls" ? [0, 1, 2, 3].map(s => finGet(room, s)).find(Boolean) || R.HOUSE3.mats.paint[0] : v;   // the slopes with the walls: the back wall's, they rise from it
 const finLook = (s, v) => (s <= 4 || s === 9 || s === 10 || s === 17 || (s >= 29 && s < 70)) && LIV_HEX.test(v || "") || (s === 29 && v === "walls") || (s >= 70 && /^[a-z]{4,8}(\.[a-z]{3,8})?$/.test(v || ""));   // the look link's colour rows; N227: a window's dressing
-const FIN_UNDO = [];
-function finUndo() { const prev = FIN_UNDO.pop(); if (prev == null) return; finRestore(JSON.parse(prev)); finApplyAll(); store.set(KEY, S); toast("Undone"); }   // N254: every card's Undo
+/* N263: one history for every change: colours, floors, the living room's moves, the house's moves, adds, swaps and Ideas (its edits
+   rows, seen as they change: a burst of rows is one step). Undo · Redo on a pill after a change, Ctrl+Z / Ctrl+Shift+Z anywhere */
+const UNDO_H = { past: [], future: [], he: null, want: null, wantT: 0, burst: 0, quiet: 0, t: 0 }, HIST_KEYS = ["ideas", "sugg", "svar", "gone", "beside"];
+const histNow = he => JSON.stringify({ fin: finClean(finAll()), he: he || heOf(), lay: layNow(), s: Object.fromEntries(HIST_KEYS.map(k => [k, S[k]])) });
+function histPush(snap) {
+  const s = snap || histNow(); if (UNDO_H.past[UNDO_H.past.length - 1] !== s) UNDO_H.past.push(s);
+  if (UNDO_H.past.length > 30) UNDO_H.past.shift(); UNDO_H.future = []; UNDO_H.burst = Date.now() + 500; histPill();
+}
+function histPut(snap) {
+  const o = JSON.parse(snap); nowOff(); UNDO_H.want = JSON.stringify(o.he); UNDO_H.wantT = Date.now();
+  for (const k of HIST_KEYS) if (o.s[k] !== undefined) S[k] = o.s[k];
+  finRestore(o.fin); restoreLayout(o.lay); if (DS()) heWear(o.he, DS());
+  applyLight(); placeAll(); finApplyAll(); updateCaption(); store.set(KEY, S); dirty();
+}
+function histStep(back) {
+  const from = back ? UNDO_H.past : UNDO_H.future, to = back ? UNDO_H.future : UNDO_H.past; if (!from.length) return;
+  to.push(histNow()); histPut(from.pop()); toast(back ? "Undone" : "Redone"); histPill(); if (GS.actId) renderAct();
+}
+const histUndo = () => histStep(true), histRedo = () => histStep(false);
+function histReset() { UNDO_H.past = []; UNDO_H.future = []; UNDO_H.quiet = Date.now() + 1500; histPill(); }   // a look shown or put away starts afresh
+function histSeen() {   // the house's edits rows changed: a step, unless Undo, Redo or a burst made it
+  const now = JSON.stringify(heOf()), was = UNDO_H.he, t = Date.now(); UNDO_H.he = now; if (was == null || now === was) return;
+  if (UNDO_H.want != null && t - UNDO_H.wantT < 3000) { if (now === UNDO_H.want) UNDO_H.want = null; return; }
+  UNDO_H.want = null; if (t < UNDO_H.quiet) return; if (t < UNDO_H.burst) { UNDO_H.burst = t + 500; return; }
+  histPush(histNow(JSON.parse(was)));
+}
+function histPill() {
+  const p = document.getElementById("r3d-hist"); undoBtn(); if (!p) return;
+  p.querySelector("[data-hist=undo]").disabled = !UNDO_H.past.length; p.querySelector("[data-hist=redo]").disabled = !UNDO_H.future.length;
+  p.hidden = !UNDO_H.past.length && !UNDO_H.future.length; clearTimeout(UNDO_H.t); UNDO_H.t = setTimeout(() => { p.hidden = true; }, 8000);
+}
+addEventListener("demma-rows", e => { if (e.detail === "edits" && DS()) histSeen(); });
+document.getElementById("r3d-hist")?.addEventListener("click", e => { const b = e.target.closest("[data-hist]"); if (b) b.dataset.hist === "undo" ? histUndo() : histRedo(); });
+document.addEventListener("keydown", e => {
+  if (!(e.ctrlKey || e.metaKey) || e.altKey || e.target.closest?.("input, textarea, select, [contenteditable]")) return;
+  const k = e.key.toLowerCase(); if (k !== "z" && k !== "y") return; e.preventDefault(); (k === "y" || e.shiftKey) ? histRedo() : histUndo();
+});
 const FIN_NAMES = ["back", "front", "east", "west", "ceiling", "floor"];
 /* V2.7 (F4): the floors: the house's own floor photos; each swatch the photo's mean colour */
 const FIN_FLOORS = [["carpet_grey", "Grey carpet"], ["carpet", "Oatmeal carpet"], ["laminate", "Laminate"], ["oak", "Oak boards"], ["pine", "Pine boards"],
@@ -575,7 +610,7 @@ function lookPut(L) {   // a look onto the page: its colours and floors, the liv
 }
 function lookAside(title, plan) {   // N222: the device's own set aside, once, before a look is shown over it
   nowOff();
-  if (!ASIDE) { ASIDE = { s: JSON.stringify(S), fin: JSON.parse(JSON.stringify(finAll(false))) }; lookMem(); }
+  if (!ASIDE) { ASIDE = { s: JSON.stringify(S), fin: JSON.parse(JSON.stringify(finAll(false))) }; lookMem(); histReset(); }
   ASIDE.title = title; ASIDE.plan = !!plan;
 }
 function lookPill() {
@@ -587,7 +622,7 @@ function lookMine() {   // Back to mine: the device's own as it was (its S, its 
   restoreLayout({ layout: s.layout || {}, added: s.added || [] });
   for (const [k, v] of Object.entries(s)) if (k !== "view" && k !== "layout" && k !== "added") S[k] = v;
   applyDecor(); repaint(); applyState(); syncButtons(); updateCaption(); finApplyAll();
-  dispatchEvent(new CustomEvent("demma-rows", { detail: "edits" })); lookPill(); toast("Yours");
+  histReset(); dispatchEvent(new CustomEvent("demma-rows", { detail: "edits" })); lookPill(); toast("Yours");
 }
 function lookKeep() {   // Keep it: the shown look becomes this device's own
   if (!ASIDE) return; const A = ASIDE, he = heOf(); ASIDE = null;

@@ -3,7 +3,7 @@
 Rewritten (not appended) by the lead at merge (N249; a row's PR leaves it alone), under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.124 (27 Nov 2026): Plan, Build, Buy and Ideas each their own file
+**Version:** V4.125 (27 Nov 2026): One undo for every change
 V4.11 (N170): the small rooms' In it views without bowed walls; the hall looks down the hall. V4.10 (N174, N175): fewer view pills (As it is and Hide labels behind ⋯; Gardens, Next door on Outside only); the walk stick faint until touched. V4.9 (N177): a hitch check for a PC's walk. V4.8 (N141): the sofa bed's chenille made at build; photos 7.7 to 7.5 MB. V4.7 (N176):
 leaner code. V4.6 (N169): the plot's edge soft, the sky hazy. Earlier: `docs/HISTORY.md`.
 The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.28 ↻"): on the
@@ -105,6 +105,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
   Its cushions carry their own shade where they meet (V3.81), piping in their edges and buttons in dimples (V3.85). Pulled out,
   Make up the bed lays a duvet and pillows on it; the chaise's storage holds the bedding (V3.82).
 - The lift-top coffee table is the plan's, in oak, on four legs, its top's shadow line (V3.83); the record table is an option.
+- One undo (N263): every change (colours, floors, moves, adds, swaps, Ideas) on one history; an Undo · Redo pill after a change; Ctrl+Z / Ctrl+Shift+Z anywhere.
 - Edit: one bar (Done · + Add · Undo, ⋯); drag a piece, turn it by its ⟳ handle (its size shows over it), nudge, recolour,
   Take it out from its sheet over the dock (V3.87); + Add has the catalogue and what's out at its head.
 - Any piece standing in the room has Take it out on its card. Room → Taken out lists what's out, a tap each to put it back.
