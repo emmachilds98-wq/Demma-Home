@@ -27,15 +27,20 @@ const TIERS = {   // hd: opens in HD · ratio: HD's sharpness cap · map: live s
 };
 /* the steps the speed checks take, in ms (a frame's middle while moving; a whole still picture at the start) */
 const STEP = { tooSlowMove: 50, slowMove: 28, quickMove: 14, capMove: 24, houseMove: 40, tooSlowStill: 100, aoOffStill: 30, aoOnStill: 14,
-  toHd: { phone: 18, desk: 20 }, toFast: { phone: 45, desk: 70 }, slowFast: 30, cap: 1.5 };
+  toHd: { phone: 18, desk: 20 }, toFast: { phone: 45, desk: 70 }, slowFast: 30, cap: 1.5,
+  pcStill: 12, phoneFast: 10 };   // N323: an HD still picture under pcStill on a computer: the pc row next visit; a Fast one under phoneFast on a phone: the phone row
 const Q = (() => {
   const big = MASKED || !matchMedia("(pointer: coarse)").matches && /nvidia|geforce|rtx|gtx|quadro|radeon\s*(rx|pro|r9)|radeon\(tm\) rx|intel.*\barc\b|apple m\d/i.test(GPU) && !/swiftshader|llvmpipe|software|basic render/i.test(GPU);
   const strong = SMALL && /apple gpu|adreno[^0-9]*([6-9]\d{2})|mali-g(5[7-9]|6\d|7\d|[1-9]\d{2})|immortalis|xclipse/i.test(GPU);
   const asked = (location.search.match(/[?&]q=(pc|phone|low|other)\b/) || [])[1];
-  const tier = asked || (big ? "pc" : strong ? "phone" : SMALL ? "low" : "other"), T = TIERS[tier];
+  /* N323: the name is only a first guess; the speed check's verdict on this chip is kept (qSave) and used from the next visit (an Intel
+     Iris/UHD, an AMD "Radeon Graphics", a Snapdragon X or an Apple M that draws HD quickly gets the pc row; a card drawing slowly, other) */
+  const guess = big ? "pc" : strong ? "phone" : SMALL ? "low" : "other", seen = store.get("r3d-tier", null);
+  const kept = seen && seen.gpu === GPU.slice(0, 120) && TIERS[seen.tier] && (seen.tier === "pc" || seen.tier === "other") === (guess === "pc" || guess === "other") ? seen.tier : null;
+  const tier = asked || kept || guess, T = TIERS[tier];
   /* the live state the speed checks step: houseLite, the house at 1x; ao: the phone's shade; cap: the phone's sharpness; slow: a slow device
      (lower resolution while moving, the slow frame cap); low: drawing lower right now; moveLite: shade and glow off right now */
-  return { tier, T, asked, houseLite: /[?&]houselite\b/.test(location.search), ao: T.ao, aoOff: false, cap: 2, capDue: false, slow: !T.hd, low: false, moveLite: false };
+  return { tier, T, asked, guess, kept, houseLite: /[?&]houselite\b/.test(location.search), ao: T.ao, aoOff: false, cap: 2, capDue: false, slow: !T.hd, low: false, moveLite: false };
 })();
 const BIG_GPU = Q.tier === "pc", GOOD_PHONE = Q.tier === "phone";
 if (Q.T.hd && (BIG_GPU || !S.picked)) S.quality = "hd";   // V2.25: a real card opens in HD on every visit (a saved Fast too) and never steps itself down; V1.11: a capable phone starts in HD unless you picked

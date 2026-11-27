@@ -195,7 +195,7 @@ function perfInfo() {   // v35: the counts to watch each round (R3D.perf())
   scene.traverseVisible(o => { if (o.isLight) ls.push(o); });
   return { calls: FT.calls, triangles: FT.tris, geometries: i.memory.geometries, textures: i.memory.textures, programs: i.programs.length,
     lights: ls.length, shadows: ls.filter(l => l.castShadow).length, quality: S.quality, ratio: gl.getPixelRatio(), frameMs: med(FT),
-    warm: PRE.queue.length, errors: store.get("r3d-errors", []).length, caught: CAUGHT.n, caughtAt: CAUGHT.at.join(" "), gpu: GPU.slice(0, 80), bigGpu: BIG_GPU, ao: aoLive(), goodPhone: GOOD_PHONE, slow: Q.slow, tier: Q.tier,   // v39: which graphics card, and whether it starts in HD
+    warm: PRE.queue.length, errors: store.get("r3d-errors", []).length, caught: CAUGHT.n, caughtAt: CAUGHT.at.join(" "), gpu: GPU.slice(0, 80), bigGpu: BIG_GPU, ao: aoLive(), goodPhone: GOOD_PHONE, slow: Q.slow, tier: Q.tier + (Q.asked ? " (asked)" : Q.kept ? " (measured)" : ""),   // v39: which graphics card, and whether it starts in HD
     gpuClass: gpuClass(), phone: SMALL, version: R.VERSION || "", moveMs: FT.mv ? +FT.mv.toFixed(1) : null, worstMs: FT.worst ? Math.round(FT.worst) : null, stillMs: med(probeT), view: S.view };   // V3.04 (N50): a frame while moving (24 frames' middle), a whole still frame (the start's check), for Send
 }
 if (/[?&]perf\b/.test(location.search)) {   // v35: ?perf shows the counts in a corner   // V3.04 (N50): in fewer words; Measure's Send carries them too
@@ -221,15 +221,22 @@ function tooSlow() {   // N296: HD stepped down to Fast for this visit, with why
 }
 /* N320: the one rule. A frame's middle while moving (qMove) and a whole still picture at the start (autoQuality) step Q, at STEP's
    numbers: first the sharpness while moving, then the phone's sharpness and shade, the house at 1x, last HD to Fast */
-const DESK = Q.tier === "pc" || Q.tier === "other";
+const DESK = Q.tier === "pc" || Q.tier === "other", hdOk = () => !/swiftshader|llvmpipe|software|basic render/i.test(GPU);   // software drawing never earns the pc row
 function qMove(m) {
-  if (m > STEP.tooSlowMove && DESK) tooSlow();   // N296: a PC walking at under 20 a second in HD: Fast
+  if (m > STEP.tooSlowMove && DESK) { tooSlow(); if (Q.tier === "pc") qSave("other"); }   // N296: a PC walking at under 20 a second in HD: Fast
   if (m > STEP.slowMove) Q.slow = true; else if (m < STEP.quickMove && !Q.low && HI) Q.slow = false;   // N240: a real card too (it never stepped down: a slow frame stayed slow)
   if (PHONE_HD && Q.low && m > STEP.capMove && Q.cap > STEP.cap) Q.capDue = true;   // V2.73 (N17): still slow with the lighter drawing
   if (m > STEP.houseMove && !BIG_GPU && !Q.houseLite && S.quality === "hd" && R.HOUSE3 && HOUSEV(S.view)) { Q.houseLite = true; sizeRenderer(); toast("A lighter drawing for the house on this computer"); }
 }
+function qSave(t) {   // N323: this chip's measured row, for the next visit (never with ?q= or ?hd)
+  if (Q.asked || navigator.webdriver || /[?&]hd\b/.test(location.search) || !TIERS[t] || t === store.get("r3d-tier", {}).tier) return;   // nor in the checks (a spoofed card at software speed)
+  store.set("r3d-tier", { gpu: GPU.slice(0, 120), tier: t });
+}
 function autoQuality() {
   const ms = probeT.sort((a, b) => a - b)[1];
+  if (DESK) { if (S.quality === "hd" && ms < STEP.pcStill && hdOk()) qSave("pc"); else if (Q.tier === "pc" && ms > STEP.tooSlowStill) qSave("other"); }
+  else if (Q.tier === "low" && S.quality === "fast" && ms < STEP.phoneFast) qSave("phone");
+  else if (Q.tier === "phone" && S.quality === "hd" && ms > STEP.toFast.phone && !Q.ao) qSave("low");
   if (S.quality === "fast") Q.slow = ms > STEP.slowFast;
   if (S.quality === "hd" && GOOD_PHONE) {   // V1.1: the shade and glow on a quick phone (also when you picked HD), measured again with them on
     if (Q.ao && ms > STEP.aoOffStill) { Q.ao = false; Q.aoOff = true; dirty(); return; }

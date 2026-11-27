@@ -526,3 +526,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.126** (27 Nov 2026): The 3D rests when nothing moves
 - **V4.127** (27 Nov 2026): Per-frame lists cached
 - **V4.128** (27 Nov 2026): One quality governor
+- **V4.129** (27 Nov 2026): The tier by speed, not by name
