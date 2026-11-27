@@ -69,6 +69,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
 
 **Light and looks:**
 - One exposure a time of day for the whole house. Every room's lights are always on, each set by its own room.
+- Every light shows its bulb lit (N345): the living room's spot heads and lamp a lit bulb face with a soft glow in its own colour; the bedrooms' drum shades and the lower landing's glass dome glow from inside; Ideas' paper lamp shades lit. No light level changed.
 - HD on a real graphics card and the iPhones: soft shadows, GTAO, glow and windows' daylight. Fast keeps the rest.
 - Shade bands where walls meet floors, ceilings and corners on every path, and shade round each piece's foot.
 - The ceiling bulbs lit and warm, with a faint glow on the ceiling round each pendant, seen from in a room (V3.76).

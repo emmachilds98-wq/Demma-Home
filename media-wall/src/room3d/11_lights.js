@@ -136,13 +136,22 @@ const white = new THREE.MeshStandardMaterial({ color: "#f2f0eb", roughness: 0.4 
 const toppers = new THREE.MeshStandardMaterial({ color: "#d6a873", roughness: 0.5, map: OAK_TEX });
 const HEADS = {};
 function headMat(col) { return HEADS[col] || (HEADS[col] = reg(new THREE.MeshStandardMaterial({ color: col, roughness: 0.5, side: THREE.DoubleSide }))); }
+let BULB_GLOW = null;   // N345: one soft round glow, shared by every head's halo
+const bulbGlowTex = () => BULB_GLOW || (BULB_GLOW = canvasTex(64, 64, (g, w, h) => { const r = g.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
+  r.addColorStop(0, "rgba(255,255,255,0.9)"); r.addColorStop(0.25, "rgba(255,255,255,0.35)"); r.addColorStop(0.6, "rgba(255,255,255,0.08)"); r.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = r; g.fillRect(0, 0, w, h); }));
 function spotHead(group, apex, dir, col, lightList, kSpot, colKey, shadeMat, barIx) {
   const shade = new THREE.Mesh(new THREE.CylinderGeometry(0.019, 0.075, 0.13, 28, 1, true), shadeMat || headMat(col));
   const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.019, 0.038, 16), shadeMat || toppers);
-  const glow = new THREE.Mesh(new THREE.CircleGeometry(0.06, 24), new THREE.MeshBasicMaterial({ color: "#fff3dc", toneMapped: false }));   // one each: it dims with its own light
+  /* N345: a lit bulb's face, domed a little proud of the shade's mouth, so it reads as a bulb giving light from the side too (it was a flat
+     disc inside the shade, seen only from under it); one each: it dims with its own light */
+  const glow = new THREE.Mesh(new THREE.SphereGeometry(0.052, 24, 8, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshBasicMaterial({ color: "#fff3dc", toneMapped: false }));
   const head = new THREE.Group();
-  shade.position.y = -0.065 - 0.038; cap.position.y = -0.019; glow.position.y = -0.155; glow.rotation.x = Math.PI / 2;
-  head.add(shade, cap, glow); shadow(shade); shadow(cap, true);
+  shade.position.y = -0.065 - 0.038; cap.position.y = -0.019; glow.position.y = -0.152; glow.rotation.x = Math.PI; glow.scale.y = 0.38;
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: bulbGlowTex(), color: "#fff3dc", transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }));
+  halo.scale.set(0.2, 0.2, 1); halo.position.y = -0.17; halo.raycast = () => {}; halo.renderOrder = 4;
+  halo.onBeforeRender = () => halo.material.color.copy(glow.material.color);   // N345: the soft light round the bulb, its colour (off: dark, so none)
+  head.add(shade, cap, glow, halo); shadow(shade); shadow(cap, true);
   head.position.copy(apex);
   head.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), dir);
   group.add(head);
