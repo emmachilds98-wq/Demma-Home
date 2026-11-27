@@ -27,7 +27,9 @@ const qs = s => root.querySelector(s), qsa = s => [...root.querySelectorAll(s)];
 const msg = qs("#r3d-msg");
 
 const store = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
-                set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+                set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode or full: not kept */ } } };
+const CAUGHT = { n: 0, at: [] };   // N327: a caught error that needn't stop the page is counted here (?perf, Send), listed in the console under ?debug
+function caught(e, where) { CAUGHT.n++; CAUGHT.at.push(where); if (CAUGHT.at.length > 8) CAUGHT.at.shift(); if (/[?&]debug\b/.test(location.search)) console.warn("soft:", where, e); }
 const ERRS = { t: 0, busy: false, db: null };   // v35: an error trap: any error shows a note and is kept (the last 20 here, R3D.errors(); the deck's "errors" database)
 function noteError(kind, m, stack) {
   if (ERRS.busy) return; ERRS.busy = true;
@@ -39,7 +41,7 @@ function noteError(kind, m, stack) {
     const log = store.get("r3d-errors", []); log.push(e); store.set("r3d-errors", log.slice(-20));
     if (window.sharedStore && window.sharedStore.use) (ERRS.db || (ERRS.db = window.sharedStore.use("db"))).then(db => db && db.doc("errors/" + e.at.replace(/[^0-9]/g, "")).set(e)).catch(() => {});
     if (performance.now() - ERRS.t > 10000) { ERRS.t = performance.now(); toast("Something went wrong in the 3D room: it's been noted. " + e.msg.slice(0, 90)); }
-  } catch (x) {} finally { ERRS.busy = false; }
+  } catch (x) { /* the trap itself must never throw */ } finally { ERRS.busy = false; }
 }
 addEventListener("error", e => { if (e.error || e.message) noteError("error", e.message, e.error && e.error.stack); });
 addEventListener("unhandledrejection", e => { const r = e.reason || {}; noteError("promise", r.message || r, r.stack); });

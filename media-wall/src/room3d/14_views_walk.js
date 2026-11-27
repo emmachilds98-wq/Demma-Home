@@ -351,7 +351,7 @@ let stickId = null, stickC = [0, 0];
 function stickMove(e) { let dx = e.clientX - stickC[0], dy = e.clientY - stickC[1]; const RR = 44, l = Math.hypot(dx, dy); if (l > RR) { dx *= RR / l; dy *= RR / l; }
   STICK.style.setProperty("--x", dx + "px"); STICK.style.setProperty("--y", dy + "px"); WALK.stick = [dx / RR, -dy / RR];
   if (!walking() && Math.hypot(dx, dy) > RR * 0.35) startWalk(); dirty(); }
-STICK.addEventListener("pointerdown", e => { stickId = e.pointerId; STICK.classList.add("held"); try { STICK.setPointerCapture(e.pointerId); } catch (err) {} const r = STICK.getBoundingClientRect(); stickC = [r.left + r.width / 2, r.top + r.height / 2]; stickMove(e); e.preventDefault(); });
+STICK.addEventListener("pointerdown", e => { stickId = e.pointerId; STICK.classList.add("held"); try { STICK.setPointerCapture(e.pointerId); } catch (err) { /* the pointer already gone */ } const r = STICK.getBoundingClientRect(); stickC = [r.left + r.width / 2, r.top + r.height / 2]; stickMove(e); e.preventDefault(); });
 STICK.addEventListener("pointermove", e => { if (e.pointerId === stickId) stickMove(e); });
 const stickEnd = e => { if (e.pointerId !== stickId) return; stickId = null; STICK.classList.remove("held"); WALK.stick = [0, 0]; STICK.style.setProperty("--x", "0px"); STICK.style.setProperty("--y", "0px"); };
 STICK.addEventListener("pointerup", stickEnd); STICK.addEventListener("pointercancel", stickEnd);
@@ -362,7 +362,7 @@ if (!COARSE) { addEventListener("keydown", e => { if (/^(Key[WASDQE]|Arrow)/.tes
 function syncStick() {
   const on = GS.RMODE === "stand" && !!ROOMV() || S.view === "livstand"; STICK.hidden = !(COARSE || on); root.classList.toggle("walking", on && COARSE);   // V3.15: the stick in every view on touch; N331: on a computer only once you walk
   if (on && !WALK.hinted) { WALK.hinted = true;   // V3.56 (N117): once on a device again, and short (V2.42 had it each visit)
-    let seen = false; try { seen = localStorage.getItem("demma-walkhint") === "1"; localStorage.setItem("demma-walkhint", "1"); } catch (e) {}
+    let seen = false; try { seen = localStorage.getItem("demma-walkhint") === "1"; localStorage.setItem("demma-walkhint", "1"); } catch (e) { /* private mode or full: not kept */ }
     if (!seen) setTimeout(() => toast(COARSE ? "Stick to walk, drag to look" : "W A S D to walk, drag to look"), 700); }
 }
 function collide(p = camera.position) {    // true if it moved the eye
@@ -487,7 +487,7 @@ function pegShow(e, now) {                  // the ghost follows at once; where 
 }
 function pegEnd() { if (PEGM.ghost) PEGM.ghost.remove(); PEGM.ghost = null; if (PEGM.ring) PEGM.ring.visible = false; root.classList.remove("pegging"); dirty(); }
 PEG.addEventListener("pointerdown", e => { if (e.button > 0) return; PEGM.id = e.pointerId; PEGM.x0 = e.clientX; PEGM.y0 = e.clientY; PEGM.moved = false;
-  try { PEG.setPointerCapture(e.pointerId); } catch (er) {} e.preventDefault(); });
+  try { PEG.setPointerCapture(e.pointerId); } catch (er) { /* the pointer already gone */ } e.preventDefault(); });
 PEG.addEventListener("pointermove", e => {
   if (e.pointerId !== PEGM.id || (!PEGM.moved && Math.hypot(e.clientX - PEGM.x0, e.clientY - PEGM.y0) < 6)) return;
   if (!PEGM.moved) { PEGM.moved = true; root.classList.add("pegging"); if (GS.actId) closeAct();
@@ -649,7 +649,7 @@ function setView(name, instant, dur) {
   const fitted = name === "house" && typeof fitHouseView === "function" && fitHouseView();   // V4.2 (N159): the house framed to the screen (N171: a phone's too)
   if (name === "room" && typeof fitRoomView === "function") fitRoomView();   // N186: the living room's Above too
   const v = VIEWS[name] || VIEWS.window, wasHouse = HOUSEV(S.view);
-  if (name !== "house" && typeof welcome === "function") try { welcome(false); } catch (e) {}   // V2.43: going in puts the welcome away
+  if (name !== "house" && typeof welcome === "function") try { welcome(false); } catch (e) { caught(e, "welcome"); }   // V2.43: going in puts the welcome away
   if (name !== S.view && GS.actId && typeof closeAct === "function") closeAct();   // V1.28: a piece's card doesn't follow you to another room
   S.view = name;
   if (GS.RMODE !== "in") setRmode("in", true);                               // v71: a new view starts in the room

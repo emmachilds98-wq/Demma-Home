@@ -236,7 +236,7 @@ function setState() {
   adoptLights(scene);                                                              // v35: new lights (a rebuilt bar or lamp) join the fixed set
   updateCaption();
   store.set(KEY, S);
-  try { applyNow(); } catch (e) {}                                       // v39: the ledge's LP
+  try { applyNow(); } catch (e) { caught(e, "applyNow"); }                                       // v39: the ledge's LP
   dirty();
 }
 /* v46: Warmth, one setting for every warm-white light (candle to neutral; the middle the bulbs' own), unless a light has its own colour */

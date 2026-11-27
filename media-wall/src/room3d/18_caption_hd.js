@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------- caption and HD save */
 let LIVE = true;   // v35: false while still() draws a picture (01_renderer.js's lights)
 function updateCaption() {
-  try { updatePicks(); } catch (e) {}   // v22
+  try { updatePicks(); } catch (e) { caught(e, "updatePicks"); }   // v22
   const sc = SCENES[S.scene];
   const site = S.cabw === "80" ? "The compact dining cabinet, its 80-wide table" : "The compact dining cabinet";   // v33: the only table
   const cl = (cabC().len_open || cabC().len);
@@ -107,11 +107,11 @@ function pickNowPic() {                 // a photo of one of your records: scale
   inp.onchange = () => { const f = inp.files && inp.files[0]; if (!f) return; const img = new Image(); img.onload = () => {
     const c = document.createElement("canvas"); c.width = c.height = 512; const g = c.getContext("2d"), s0 = Math.min(img.width, img.height);
     g.drawImage(img, (img.width - s0) / 2, (img.height - s0) / 2, s0, s0, 0, 0, 512, 512);
-    try { localStorage.setItem("mw39-nowpic", c.toDataURL("image/jpeg", 0.85)); } catch (e) {}
+    try { localStorage.setItem("mw39-nowpic", c.toDataURL("image/jpeg", 0.85)); } catch (e) { /* private mode or full: not kept */ }
     nowPic = new THREE.CanvasTexture(c); nowPic.colorSpace = THREE.SRGBColorSpace; S.nowp = NOWP.length - 1; applyNow(); store.set(KEY, S); renderAct(); };
     img.src = URL.createObjectURL(f); }; inp.click();
 }
-try { const u = localStorage.getItem("mw39-nowpic"); if (u) { const img = new Image(); img.onload = () => { nowPic = new THREE.Texture(img); nowPic.colorSpace = THREE.SRGBColorSpace; nowPic.needsUpdate = true; applyNow(); }; img.src = u; } } catch (e) {}
+try { const u = localStorage.getItem("mw39-nowpic"); if (u) { const img = new Image(); img.onload = () => { nowPic = new THREE.Texture(img); nowPic.colorSpace = THREE.SRGBColorSpace; nowPic.needsUpdate = true; applyNow(); }; img.src = u; } } catch (e) { caught(e, "nowpic"); }
 const MYK = "mw39-scenes";   // v39: your own light scenes, kept on this device; and "Save my plan": your picks and a link to this room
 function myScenes() { try { return JSON.parse(localStorage.getItem(MYK) || "[]"); } catch (e) { return []; } }
 function drawMyScenes() {
@@ -122,7 +122,7 @@ function drawMyScenes() {
 function saveMyScene() {
   const inp = qs("#r3d-myname"), name = (inp && inp.value.trim()) || `Scene ${myScenes().length + 1}`;
   const L = myScenes().filter(x => x.name !== name); L.push({ name, scene: S.scene, tod: S.tod, lv: S.lv, master: S.master, col: S.col, fix: S.fix, head: S.head });
-  try { localStorage.setItem(MYK, JSON.stringify(L.slice(-12))); } catch (e) {} if (inp) inp.value = ""; drawMyScenes(); toast(`Saved: ${name}`);
+  try { localStorage.setItem(MYK, JSON.stringify(L.slice(-12))); } catch (e) { /* private mode or full: not kept */ } if (inp) inp.value = ""; drawMyScenes(); toast(`Saved: ${name}`);
 }
 function useMyScene(i) {
   const x = myScenes()[i]; if (!x) return;
@@ -212,7 +212,7 @@ qs("#r3d-plansave")?.addEventListener("click", () => { if (!ldb) return;
 qs("#r3d-mysave")?.addEventListener("click", saveMyScene);
 qs("#r3d-myname")?.addEventListener("keydown", e => { if (e.key === "Enter") saveMyScene(); });
 qs("#r3d-myscl")?.addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return;
-  if (b.dataset.mydel) { const L = myScenes(); L.splice(+b.dataset.mydel, 1); try { localStorage.setItem(MYK, JSON.stringify(L)); } catch (er) {} drawMyScenes(); }
+  if (b.dataset.mydel) { const L = myScenes(); L.splice(+b.dataset.mydel, 1); try { localStorage.setItem(MYK, JSON.stringify(L)); } catch (er) { /* private mode or full: not kept */ } drawMyScenes(); }
   else if (b.dataset.myscene) useMyScene(+b.dataset.myscene); });
 qsa("[data-myplan]").forEach(b => b.addEventListener("click", saveMyPlan));
 qs("#r3d-measure")?.addEventListener("click", startMeasure);
@@ -265,7 +265,7 @@ function buyHouse() {
 }
 document.addEventListener("change", e => { const cb = e.target.closest && e.target.closest("[data-hdone]"); if (!cb) return;
   const D = upDone(), k = cb.dataset.hdone; if (cb.checked) D[k] = 1; else delete D[k];
-  try { localStorage.setItem(UPK, JSON.stringify(D)); } catch (er) {} buyHouse(); upsPlan(); });
+  try { localStorage.setItem(UPK, JSON.stringify(D)); } catch (er) { /* private mode or full: not kept */ } buyHouse(); upsPlan(); });
 document.addEventListener("click", e => { if (!e.target.closest || !e.target.closest("#bh-copy")) return; const L = houseList(), st = document.getElementById("bh-st");
   const text = ["THE HOUSE: SHOPPING LIST", ...L.map(u => `${u.done ? "[x]" : "[ ]"} ${u.rn}: ${u.t}${u.hi ? " · " + upRange(u.lo, u.hi) : ""}${u.url ? " · " + u.url : ""}`)].join("\n");
   const shown = () => { if (st) st.textContent = text; };
