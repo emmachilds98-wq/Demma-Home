@@ -153,6 +153,9 @@ jobs:
     needs: build
     if: needs.build.outputs.heavy == 'true'
     runs-on: ubuntu-24.04
+    concurrency:   # N338: a newer push's browser checks stop the older ones on the same branch (merges come minutes apart; the runners queued)
+      group: browser-${{ github.ref }}-${{ matrix.check }}
+      cancel-in-progress: true
     timeout-minutes: 45
     strategy:
       fail-fast: false
