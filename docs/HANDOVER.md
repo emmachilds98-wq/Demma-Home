@@ -9,7 +9,11 @@ The client, 25 Nov: "another team is going to build it from another session so m
 
 1. **Main's CI first** (N252: a red main is fixed first, from one log read). N284 (V4.83, merged 25 Nov) fixed main's red (the IDEAS
    step, the phone's `first_visit_mb`, the `shaders_first` budgets) without raising a budget; read main's run for V4.83 and fix what's red.
-2. **Build section 34, "Ideas that belong" (N286–N292).** Emma: Ideas drops furniture into the wrong rooms; give each room places where
+2. **The full product review (27 Nov): `docs/REVIEW.md` and `docs/REAL_PLAN.md` section 36 (N320–N344).** Seven streams, each a
+   thread side by side: S1 smooth on every device, S2 a lighter first visit, S3 leaner code, S4 design system and access, S5 one way to
+   change things (N263 undo first), S6 build, CI and repo, S7 Ideas (options: Emma picks). Each stream owns its files (REVIEW §3).
+   Section 34 below is built (N286–N292 done).
+2b. **Build section 34, "Ideas that belong" (N286–N292).** Emma: Ideas drops furniture into the wrong rooms; give each room places where
    furniture makes sense, the shops' best for each, made-to-measure pieces in the house's style where shops fall short, and better design
    and suggestions first. Order: N286 (every room's places, in `house/places.py`, checked) → N287 (Ideas places a piece only where it
    belongs: the wrong-room fix) with N292 (its check) → N288 (shops per place) and N289 (made to measure) side by side → N290 (fewer,
