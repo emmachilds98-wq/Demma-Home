@@ -3,7 +3,7 @@
 Emma: "i cant seem to walk up the stairs from the kitchen like im hitting a wall" and "when running up the stairs sometimes i fall in the wall or into the entrance hall, i think im falling in between the office wall and stairwell floor on first floor". She wants the cause **confirmed in a real walk** before a fix ("make sure this is the issue").
 
 ## Status
-Not reproduced yet (the session ran out of usage while the first probe walk was running). Nothing in the code changed yet. Branch `claude/project-thread-fdzb26`.
+Not reproduced yet: the first probe run timed out waiting for `R3D.ready` (240 s) with a bare Chromium launch; the probe now uses `pw.launch(p, pw.GL)` like `check_site.py`, untested. Nothing in the code changed yet. Branch `claude/project-thread-fdzb26`.
 
 ## Suspects (from reading the code, not yet confirmed)
 Both bugs appeared on 27 Nov, right after N306 (V4.105, `1d0c804`) and N307 (V4.106, PR #394, `b35abea`).
