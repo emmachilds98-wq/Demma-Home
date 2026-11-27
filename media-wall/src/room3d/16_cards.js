@@ -55,12 +55,12 @@ const btn = (label, attrs, on, cls, aria) => ({ label, attrs, on, cls, aria });
    it does with the button's data; false: nothing to draw again). Undo is one route for every finish card */
 const finSwatch = (at, k, t, c, on, short) => `<button type="button" class="sw" data-${at}="${k}" style="--c:${c}" aria-pressed="${!!on}" title="${t}" aria-label="${t}"><i></i><span>${short == null ? t : short}</span></button>`;
 const finTray = (label, inner, lab = true) => `${lab ? `<span class="r3d-finlab">${label}</span>` : ""}<div class="r3d-fintray" role="group" aria-label="${label}">${inner}</div>`;
-const finButtons = (plan, hold, more = []) => [...(FIN_UNDO.length ? [btn("Undo", { finundo: "1" })] : []), ...(plan ? [btn(plan[0], plan[1])] : []),
+const finButtons = (plan, hold, more = []) => [...(UNDO_H.past.length ? [btn("Undo", { finundo: "1" })] : []), ...(plan ? [btn(plan[0], plan[1])] : []),
   ...(hold ? [btn("Hold to compare", { finhold: "1" }, undefined, "", `Hold to compare: ${hold} till you let go`)] : []), ...more];
 const CARD_ON = [], cardOn = (sel, test, fn) => { CARD_ON.push([sel, test, fn]); };
 if (act) act.addEventListener("click", e => { if (!GS.actId) return;
   for (const [sel, test, fn] of CARD_ON) { const b = e.target.closest(sel); if (!b || !test(GS.actId)) continue; e.stopPropagation(); if (fn(b.dataset, GS.actId, b, e) !== false) renderAct(); return; } }, true);
-cardOn("[data-finundo]", id => /^(fin|win|hdoor):/.test(id), () => finUndo());
+cardOn("[data-finundo]", id => /^(fin|win|hdoor):/.test(id), () => histUndo());
 /* V2.46 (N7): a swap's card (‹ › its kind's pieces) and an added piece's (‹ › the catalogue, its kinds to jump to); shown at once */
 const HCAT_ADD = ["plant", "snake", "monstera", "olive", "armchair", "sidetable", "floorlamp", "rug", "bookcase", "cubes", "ladder", "chest3", "chest6", "tallboy", "bsdrawer", "bswhite", "bslegs",
   "desklegs", "deskdrawers", "trestle", "bench", "pouffe", "wardrobe2", "sliding", "openrail", "divan", "oakbed", "metalbed", "markus", "langfjall", "stoense", "lohals", "desklong"];
@@ -349,7 +349,7 @@ function fixCard(id, on) {
     btn(on ? "Turn it off" : "Turn it on", { layer: id + ":" + (on ? "off" : "on") }),
     { sep: "Turn the whole fixture" },
     btn("⟲ 15°", { fixturn: `${id}:-15` }, undefined, "sm", "Turn it 15° anticlockwise (Shift: 5°)"), btn("⟳ 15°", { fixturn: `${id}:15` }, undefined, "sm", "Turn it 15° clockwise (Shift: 5°)"),
-    ...(d || Object.keys(S.head).some(x => x.startsWith(id + ":")) ? [btn("Reset", { fixreset: id }, undefined, "sm", "Back to the plan's angle and aims")] : []),
+    ...(d || Object.keys(S.head).some(x => x.startsWith(id + ":")) ? [btn("The plan's", { fixreset: id }, undefined, "sm", "Back to the plan's angle and aims")] : []),
     { sep: "Each head" },
     ...names.map((n, j) => btn(n, { headsel: `${id}:${j}` }, j === i)),
     { sep: names[i] },

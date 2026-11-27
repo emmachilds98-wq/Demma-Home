@@ -315,7 +315,7 @@ root.addEventListener("click", e => {
     const [k, v] = d.decor.split(":"), was = caseOn(); S.decor = Object.assign({}, S.decor, { [k]: v });
     if ((k === "fill" || k === "frame") && S.site === "A") S.site = "C";                              // v27: the case needs the breast free (v34: it's the plan)
     applyState(); if ((k === "fill" || k === "frame") && !was) setView(caseBreast() ? "breast" : "corner"); }
-  else if (d.idea) S.ideas = Object.assign({}, S.ideas, { [d.idea]: !S.ideas[d.idea] }), applyLight(), placeAll(), updateCaption(), store.set(KEY, S);
+  else if (d.idea) histPush(), S.ideas = Object.assign({}, S.ideas, { [d.idea]: !S.ideas[d.idea] }), applyLight(), placeAll(), updateCaption(), store.set(KEY, S);
   else if (d.plants) {           // v18: the layout puts the stand and the shelf back on their spots for it
     S.plants = d.plants; for (const k of ["plants", "records"]) if (S.layout[k]) { delete S.layout[k].x; delete S.layout[k].z; delete S.layout[k].rot; }
     applyState(); }
@@ -414,6 +414,6 @@ function arrive() {
 const welOnce = () => setTimeout(() => { try {
   if (S.view !== "house" || (navigator.webdriver && !/[?&](welcome|door)\b/.test(location.search))) return;
   if (!/[?&]house\b/.test(location.search) && arrive()) return;
-  if (localStorage.getItem("demma-welcome")) return;   // ?house: the welcome, once a device, as before
-  localStorage.setItem("demma-welcome", "1"); welcome(true); } catch (e) { caught(e, "welcome"); } }, 300);
+  if (store.raw("demma-welcome")) return;   // ?house: the welcome, once a device, as before
+  store.put("demma-welcome", "1"); welcome(true); } catch (e) { caught(e, "welcome"); } }, 300);
 if (document.getElementById("landing")) addEventListener("demma-landed", welOnce, { once: true }); else welOnce();

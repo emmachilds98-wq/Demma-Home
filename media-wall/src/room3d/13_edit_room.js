@@ -448,10 +448,8 @@ function backToWall(id) {       // v27: to the nearest wall, its back to it (a p
   if (w.k === "x0") x = hx; else if (w.k === "xW") x = R.W - hx; else if (w.k === "zmin") z = R.WINDOW_Z + hz; else z = zmaxAt(x, hx) - hz;
   const c = clampItem(it, x, z, w.rot); setLayout(id, { rot: w.rot, x: c.x, z: c.z });
 }
-const UNDO = [];   // v19: undo, the last ten changes to the layout (moves, turns, colours, removals, additions)
-function snapshot() { return JSON.stringify({ layout: S.layout, added: S.added }); }
-function pushUndo() { UNDO.push(snapshot()); if (UNDO.length > 10) UNDO.shift(); undoBtn(); }
-function undoBtn() { const b = qs("#r3d-undo"); if (b) b.disabled = !UNDO.length; }
+function pushUndo() { histPush(); }   // N263: the one history (23_finish.js)
+function undoBtn() { const b = qs("#r3d-undo"); if (b) b.disabled = !UNDO_H.past.length; }
 function restoreLayout(o) {
   S.added.forEach(a => { const it = MOV[a.id]; if (it) { movers.remove(it.pivot); delete MOV[a.id]; } });
   S.added = []; S.layout = JSON.parse(JSON.stringify(o.layout || {}));
@@ -459,7 +457,6 @@ function restoreLayout(o) {
   if (o.plants && R.PLANT_LAYOUTS[o.plants]) S.plants = o.plants;
   select(null); built.lamp = null; applyState(); syncButtons();
 }
-function undo() { const prev = UNDO.pop(); if (!prev) return; restoreLayout(JSON.parse(prev)); undoBtn(); }
 function setLayout(id, patch) { S.layout[id] = Object.assign({}, S.layout[id], patch); if (MOV[id] && MOV[id].added) { const a = S.added.find(a => a.id === id); if (a) Object.assign(a, patch); } }
 function select(id) {
   selId = id; selSurf = null;
@@ -492,7 +489,7 @@ if (TH) {
     const c = scrOf(w, r), p = spotOf(id), th = p.rot * Math.PI / 180;
     const at = t => { const q = scrOf(w.clone().add(new THREE.Vector3(Math.sin(t), 0, Math.cos(t)).multiplyScalar(0.5)), r); return Math.atan2(q[1] - c[1], q[0] - c[0]); };
     const dA = Math.atan2(Math.sin(at(th + 0.1) - at(th)), Math.cos(at(th + 0.1) - at(th)));   // which way it turns on screen as its angle grows
-    turnDrag = { id, c, last: angAt(e, c), sum: 0, rot0: p.rot, rot: p.rot, sg: dA >= 0 ? 1 : -1, before: snapshot() };
+    turnDrag = { id, c, last: angAt(e, c), sum: 0, rot0: p.rot, rot: p.rot, sg: dA >= 0 ? 1 : -1, before: histNow() };
     TH.setPointerCapture(e.pointerId); TH.style.cursor = "grabbing";
   });
   TH.addEventListener("pointermove", e => {
@@ -504,7 +501,7 @@ if (TH) {
   const endTurn = () => {
     const T = turnDrag; if (!T) return; turnDrag = null; TH.style.cursor = "";
     if (T.rot === T.rot0) return;
-    UNDO.push(T.before); if (UNDO.length > 10) UNDO.shift(); undoBtn();
+    histPush(T.before);
     const it = MOV[T.id], p = spotOf(T.id), on = wallsTouched(it, p), { hx, hz } = halfOf(it, T.rot);   // as turnItem: it keeps to the walls it was against
     let x = p.x, z = p.z; if (on.x0) x = hx; if (on.xW) x = R.W - hx; if (on.zmin) z = R.WINDOW_Z + hz; if (on.zmax) z = zmaxAt(x, hx) - hz;
     const c = clampItem(it, x, z, T.rot); setLayout(T.id, { rot: T.rot, x: c.x, z: c.z }); placeAll(); store.set(KEY, S);
@@ -623,7 +620,7 @@ root.addEventListener("pointerdown", e => {
   if (id !== selId) select(id);
   const it = MOV[id], p = spotOf(id), f = floorAt(e);
   if (!f || it.fixed) { downXY = null; return; }        // v27: built-in pieces are selected, not dragged (and the tap isn't a wall's)
-  drag = { id, dx: p.x - f.x, dz: p.z - f.z, x0: p.x, z0: p.z, moved: false, before: snapshot() };
+  drag = { id, dx: p.x - f.x, dz: p.z - f.z, x0: p.x, z0: p.z, moved: false, before: histNow() };
   e.stopPropagation(); canvas.setPointerCapture(e.pointerId);
 }, true);
 canvas.addEventListener("pointermove", e => {
@@ -638,7 +635,7 @@ canvas.addEventListener("pointermove", e => {
 function endDrag(e) {
   if (drag) {
     const d = drag; drag = null;
-    if (d.moved) { UNDO.push(d.before); if (UNDO.length > 10) UNDO.shift(); undoBtn(); setLayout(d.id, { x: d.x, z: d.z }); if (MOV[d.id].lamp) { lamp.position.set(0, 0, 0); built.lamp = null; applyState(); select(d.id); } else { placeAll(); store.set(KEY, S); } }
+    if (d.moved) { histPush(d.before); setLayout(d.id, { x: d.x, z: d.z }); if (MOV[d.id].lamp) { lamp.position.set(0, 0, 0); built.lamp = null; applyState(); select(d.id); } else { placeAll(); store.set(KEY, S); } }
     return;
   }
   if (S.edit && downXY && Math.hypot(e.clientX - downXY[0], e.clientY - downXY[1]) < 6) {   // a tap on nothing movable: a surface to paint?
@@ -656,7 +653,7 @@ qs("#r3d-addfrom")?.addEventListener("click", () => {   // v26: Extras' "Add a p
 qs(".r3d-edit").addEventListener("click", e => {
   const b = e.target.closest("button"); if (!b || b.closest("#r3d-sel") || b.id === "r3d-editbtn") return;
   if (b.id === "r3d-add") { addList(); const l = qs("#r3d-addlist"); l.hidden = !l.hidden; return; }
-  if (b.id === "r3d-undo") { undo(); return; }
+  if (b.id === "r3d-undo") { histUndo(); return; }
   if (b.id === "r3d-share") { shareLayout(); return; }
   if (b.id === "r3d-useshared") { if (sharedDoc) { pushUndo(); restoreLayout(sharedDoc); qs("#r3d-sharest").textContent = "Using the shared layout (↶ Undo goes back)."; } return; }
   if (b.id === "r3d-layreset") { if (!confirm("Put everything back where the plan has it, and take out what you've added?")) return;
@@ -703,7 +700,6 @@ qs("#r3d-selcol").addEventListener("input", e => {
   else if (selId) { setLayout(selId, { col: v }); placeAll(); }
   store.set(KEY, S); dirty();
 });
-document.addEventListener("keydown", e => { if (S.edit && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && !e.shiftKey) { e.preventDefault(); undo(); } });
 let ldb = null, sharedDoc = null, sharing = Promise.resolve();   // v19: one layout for both of you, kept in the plan page's shared database (only where the page has one)
 (async () => {
   try { ldb = (window.sharedStore && window.sharedStore.use) ? await window.sharedStore.use("db") : null; } catch (e) { ldb = null; }
