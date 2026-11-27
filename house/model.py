@@ -1472,8 +1472,8 @@ def boiler(o):
     o.item("airing.boxes", "The storage boxes", "airing", src="E", measure=False)
     for i in range(2):                                                                            # boxes for stuff on the floor
         za = r["z0"] + 3 + i * ((r["z1"] - r["z0"] - 6) / 2)
-        o.box("storebox", r["x0"] + 4, y, za, r["x0"] + 46, y + 32, za + (r["z1"] - r["z0"] - 6) / 2 - 2)
-    o.box("storebox", r["x0"] + 6, y + 32, r["z0"] + 8, r["x0"] + 40, y + 56, r["z0"] + 30)
+        o.box("storebox", r["x0"] + 16, y, za, r["x0"] + 58, y + 32, za + (r["z1"] - r["z0"] - 6) / 2 - 2)   # 27 Nov: clear of the radiator
+    o.box("storebox", r["x0"] + 18, y + 32, r["z0"] + 8, r["x0"] + 52, y + 56, r["z0"] + 30)
 
 
 def master_dress(o):
@@ -2394,23 +2394,54 @@ def towel_rail(o, axis, wall, out, a0, a1, y0, y1):
         o.lathe("chrome", cx, y0 - 9, cz, [(0, 0), (1.4, 0), (1.4, 5), (2.2, 5.5), (2.2, 9), (0, 9)])
 
 
+def thresholds(o, floor):
+    """27 Nov 2026, the client: "also add boundaries to doorways to avoid the weird gaps in the floor": each room's floor stops at its
+    own edge, so a doorway showed the slab between them. An oak bar across each inside doorway, one room's floor edge to the next."""
+    y, rs = FLOOR_Y[floor], [r for r in rooms(floor) if r["room"] not in VOID]
+    for d in doors(floor):
+        if d["id"] in ("hall_porch", "store_w", "store_e"):             # the front door and the bin cupboards open outside
+            continue
+        a, b, L = d["a"], d["b"], d["line"]
+        lo, hi = L - 6.0, L + 6.0                                    # E: half a wall each side where no room is near
+        below = [] ; above = []
+        for r in rs:
+            p0, p1, q0, q1 = (r["z0"], r["z1"], r["x0"], r["x1"]) if d["axis"] == "x" else (r["x0"], r["x1"], r["z0"], r["z1"])
+            if q1 <= a + 1 or q0 >= b - 1:
+                continue
+            if L - 20 <= p1 <= L + 1:
+                below.append(p1)
+            if L - 1 <= p0 <= L + 20:
+                above.append(p0)
+        if below:
+            lo = min(lo, max(below))
+        if above:
+            hi = max(hi, min(above))
+        name, room = DOOR_NAMES.get(d["id"], (d["id"], room_at(floor, (a + b) / 2, L) if d["axis"] == "x" else room_at(floor, L, (a + b) / 2)))
+        o.item(f"{d['id']}.threshold", f"{name}'s threshold", room, kind="finish", src="E (a standard oak door bar)", measure=False)
+        if d["axis"] == "x":
+            o.box("oak", a, y - 1.5, lo - 0.5, b, y + 0.4, hi + 0.5)
+        else:
+            o.box("oak", lo - 0.5, y - 1.5, a, hi + 0.5, y + 0.4, b)
+        o.end()
+
+
 def radiators(o, floor):
     """N272 (the upgrade review: no radiators in the master, bedroom 2, the bathroom, the landing or the WC): estimated, each a Measure row
     (survey_data.RADIATORS)."""
     R, y = D.RADIATORS, FLOOR_Y[floor]
     rs = {r["id"]: r for r in rooms(floor)}
     if floor == "lower":
-        want = (("wc", "The WC radiator", "wc", WIDTH - 0.5),)
-    elif floor == "first":
-        want = (("master", "The master's radiator", "master", FRONT - 3), ("bed2", "Bedroom 2's radiator", "bed2", rs["bed2"]["x1"]),
-                ("landing", "The landing radiator", "landing", rs["landing_top"]["z1"]),
-                ("bathroom", "The towel rail", "bathroom", rs["bathroom_1"]["z1"]))
+        want = (("wc", "The WC radiator", "wc", WIDTH - 0.5, -1),)
+    elif floor == "first":   # 27 Nov: none at the top of the stairs; one low at the back of the boiler cupboard
+        want = (("master", "The master's radiator", "master", FRONT - 3, -1), ("bed2", "Bedroom 2's radiator", "bed2", rs["bed2"]["x1"], -1),
+                ("airing", "The boiler cupboard radiator", "airing", rs["airing"]["x0"], 1),
+                ("bathroom", "The towel rail", "bathroom", rs["bathroom_1"]["z1"], -1))
     else:
         return
-    for key, name, room, wall in want:
+    for key, name, room, wall, out in want:
         r = R[key]; ax = r["axis"]; a0, a1 = r["x" if ax == "x" else "z"]
         o.item(f"{room}.radiator", name, room, kind="radiator", src=R["src"], data=("RADIATORS", key), axis=ax)
-        (towel_rail if key == "bathroom" else radiator)(o, ax, wall, -1, a0, a1, y + r["y"][0], y + r["y"][1])
+        (towel_rail if key == "bathroom" else radiator)(o, ax, wall, out, a0, a1, y + r["y"][0], y + r["y"][1])
         o.end()
 
 
@@ -2755,7 +2786,7 @@ def build():
             steps += [lambda: secret(o)]
         if floor == "first":
             steps += [lambda: office(o), lambda: bed2(o), lambda: master(o), lambda: master_dress(o), lambda: boiler(o), lambda: bathroom(o), lambda: music(o), lambda: landing(o)]
-        steps += [lambda: radiators(o, floor), lambda: chalk_doors(o, floor), lambda: pendants(o, floor), lambda: switches(o, floor), lambda: sockets(o, floor), lambda: contacts(o, floor)]
+        steps += [lambda: thresholds(o, floor), lambda: radiators(o, floor), lambda: chalk_doors(o, floor), lambda: pendants(o, floor), lambda: switches(o, floor), lambda: sockets(o, floor), lambda: contacts(o, floor)]
         if floor == "first":
             steps += [lambda: first_floor_slopes(o), lambda: stair_wall(o), lambda: ground_ceilings(o)]
         if floor == "ground":
