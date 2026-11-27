@@ -843,7 +843,7 @@ def main():
                 ctx = b.new_context(viewport={"width": w, "height": h}, device_scale_factor=1, is_mobile=phone, has_touch=phone, service_workers="block")
                 ctx.add_init_script(PERF_INIT % (json.dumps(gpu), "true")); pg = ctx.new_page(); pg.set_default_timeout(600000); localcdn.route(pg); errs = []
                 pg.on("pageerror", lambda e: errs.append("pageerror: " + str(e)[:300]))
-                pg.goto(base + "index.html"); pg.wait_for_function("window.R3D && window.R3D.ready && window.__first", timeout=600000)
+                pg.goto(base + "index.html?hd"); pg.wait_for_function("window.R3D && window.R3D.ready && window.__first", timeout=600000)   # N300: ?hd, software graphics is slow (N297 would drop to Fast)
                 perf[name] = pg.evaluate(PERF); perf[name]["shaders_spot"] = pg.evaluate(SPOT); fails += over_budget(name, perf[name])
                 if perf[name]["quality"] != "hd": fails.append(f"{name}: drawn in {perf[name]['quality']}, not HD")
                 if errs: fails.append(f"{name}: errors: {errs[:4]}")
@@ -851,7 +851,7 @@ def main():
             ctx = b.new_context(viewport={"width": 1280, "height": 800}, device_scale_factor=1, service_workers="block")   # N177: the hitch walk
             ctx.add_init_script(PERF_INIT % (json.dumps(HD_PATHS[1][4]), "true") + HITCH_INIT); pg = ctx.new_page(); pg.set_default_timeout(900000); localcdn.route(pg); errs = []
             pg.on("pageerror", lambda e: errs.append("pageerror: " + str(e)[:300]))
-            pg.goto(base + "index.html"); pg.wait_for_function("window.R3D && window.R3D.ready && window.__first", timeout=600000)
+            pg.goto(base + "index.html?hd"); pg.wait_for_function("window.R3D && window.R3D.ready && window.__first", timeout=600000)   # N300: ?hd, software graphics is slow (N297 would drop to Fast)
             pg.evaluate(HITCH_WARM); hw = pg.evaluate(HITCH_WALK)
             perf.setdefault("rtx", {})["hitches"] = hw["hitches"]; fails += over_budget("rtx", perf["rtx"])
             if hw["seen"][-1:] != ["hall"] or "kitchen" not in hw["seen"] or "landing" not in hw["seen"]: fails.append(f"rtx: the hitch walk went {hw['seen']} (legs {hw['legs']})")
