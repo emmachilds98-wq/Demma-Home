@@ -521,3 +521,4 @@ The old rounds, one line each, oldest first (they were the repo `DIY`; every com
 - **V4.121** (27 Nov 2026): Top floor walls smooth: one wall between rooms, doorframes on both faces, each wall in its own room's paint
 - **V4.122** (27 Nov 2026): Gardens drawn in fewer pieces; the speed budget set for the rest
 - **V4.123** (27 Nov 2026): Only the three.js the first picture needs
+- **V4.124** (27 Nov 2026): Plan, Build, Buy and Ideas each their own file
