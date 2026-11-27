@@ -275,12 +275,10 @@ function bloomLevels(day) {   // only the light sources glow: by evening, above 
 /* N301 (Emma, 27 Nov: "the shading of the way the lights hit in the living room still changes as i walk in there"): with the whole house
    lit (WHOLE) the evening's reflections are the living room's own capture in every room and while moving, made again only when the
    lights change (they swapped to the studio's outside the living room and on each move, then back a second after you stopped) */
-const envKey = () => [S.tod, S.quality, S.warm, JSON.stringify(S.col || {}), ...LAYERS.map(lvl)].join();
 function envSoon() {
   clearTimeout(ENV.t);
-  if (WHOLE && started && S.tod !== "day" && S.quality === "hd") {
-    if (ENV.tex && ENV.key === envKey()) { if (scene.environment !== ENV.tex) { scene.environment = ENV.tex; envLevels(false); dirty(); } return; }
-    ENV.t = setTimeout(() => { ENV.key = envKey(); roomEnv(); }, 1200); return; }
+  if (WHOLE && started) {   // N305: the neutral studio in every room (the living room's capture tinted the whole house its mint)
+    if (ENV.studio && scene.environment !== ENV.studio) { scene.environment = ENV.studio; envLevels(S.tod === "day"); dirty(); } return; }
   if (started && aoLive()) ENV.t = setTimeout(roomEnv, 1200);
   else if (ENV.studio && scene.environment !== ENV.studio) { scene.environment = ENV.studio; envLevels(S.tod === "day"); }
 }
