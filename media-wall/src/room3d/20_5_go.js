@@ -9,8 +9,9 @@ function buildSun() {
   sun.castShadow = true; const sm = BIG_GPU ? 4096 : HI || !SMALL ? 2048 : 1024; sun.shadow.mapSize.set(sm, sm); sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02; sun.shadow.radius = 3;   // V1.11: the sun's 4096 on a real graphics card (BUILD_SPEC phase 7)
   const c = sun.shadow.camera; c.left = -5.5; c.right = 5.5; c.top = 5.5; c.bottom = -5.5; c.near = 0.5; c.far = 16; c.updateProjectionMatrix();   // the whole room: outside it the sun shone through walls
   scene.add(sun, sun.target);
-  if (R.HOUSE3) for (let k = 0; k < 6; k++) { const l = new THREE.PointLight("#ffcf98", 0, 7, 2); l.visible = false; l.userData.houseLight = true; if (k >= 4) l.userData.hdOnly = true; scene.add(l); ROOMLIGHTS.push(l);   // v69 (B3): at the start, so the set never changes; V3.57 (N108): six (Fast four), every nearby room's on
-    if (k < 3) { const w = new THREE.RectAreaLight("#eef0f2", 0, 1, 1); w.visible = false; w.userData.houseLight = w.userData.win = true; scene.add(w); WINLIGHTS.push(w); }   // V2.39: a window's daylight; V3.57: three
+  if (R.HOUSE3) for (let k = 0, N = WHOLE ? Math.max(6, Object.values(R.HOUSE3.floors).reduce((a, F) => a + (F.lights || []).length + (F.lamps || []).length, 0)) : 6; k < N; k++) {   // N299: a real card, one a light
+    const l = new THREE.PointLight("#ffcf98", 0, 7, 2); l.visible = false; l.userData.houseLight = true; if (k >= 4) l.userData.hdOnly = true; scene.add(l); ROOMLIGHTS.push(l);   // v69 (B3): at the start, so the set never changes; V3.57 (N108): six (Fast four), every nearby room's on
+    if (k < (WHOLE ? Math.max(3, winPanels().length) : 3)) { const w = new THREE.RectAreaLight("#eef0f2", 0, 1, 1); w.visible = false; w.userData.houseLight = w.userData.win = true; scene.add(w); WINLIGHTS.push(w); }   // V2.39: a window's daylight; V3.57: three
     /* V2.17 (R1): the room's own light casts its shadows in HD, drawn only when the room changes (autoUpdate off), from the start */
     if (k === 0) { l.castShadow = true; const ms = BIG_GPU ? 1024 : 512; l.shadow.mapSize.set(ms, ms); l.shadow.bias = -0.002; l.shadow.normalBias = 0.03; l.shadow.radius = 4;
       l.shadow.camera.near = 0.05; l.shadow.camera.far = 7; } }

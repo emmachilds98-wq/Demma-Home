@@ -119,7 +119,7 @@ function bulbHalos() {
 }
 function haloShow() {
   const h = bulbHalos(); if (!h) return;
-  const on = !!ROOMV() && (GS.RMODE === "in" || GS.RMODE === "stand") && !(HMATS && HMATS.ceiling && !HMATS.ceiling.visible), day = S.tod === "day";
+  const on = (!!ROOMV() && (GS.RMODE === "in" || GS.RMODE === "stand") || WHOLE && S.view === "livstand") && !(HMATS && HMATS.ceiling && !HMATS.ceiling.visible), day = S.tod === "day";
   for (const me of h.ms) me.visible = on; if (!on) return;
   h.mat.color.copy(warmColour()); h.mat.opacity = day ? 0.1 : 0.26;
 }
@@ -181,6 +181,14 @@ function placeRoomLights() {
   const LV = S.view === "livstand" && R.HOUSE3 && R.HOUSE3.living && R.HOUSE3.rooms && houseG && houseG.visible ? R.HOUSE3.living.box : null;
   const b = LV ? [LV[0], LV[1], 0, R.HOUSE3.ceil || 235, LV[2], LV[3]] : R.HOUSE3 && v.box;
   const rid = b && !LV && VIEW_ROOM[S.view], rr = LV ? [LV[0], LV[1], LV[2], LV[3], 0] : rid && R.HOUSE3.rooms && R.HOUSE3.rooms[rid];
+  if (WHOLE && hd && R.HOUSE3) {   // N299: a real card in HD: every light and window at its own room's level, always, whatever you're in
+    if (POOL.key !== "whole") { POOL.key = "whole"; POOL.pts = Object.values(R.HOUSE3.floors).flatMap(F => [...(F.lights || []), ...(F.lamps || [])]); POOL.wins = winPanels().slice(); }
+    ROOMLIGHTS.forEach((l, k) => { const L = POOL.pts[k]; l.visible = !!L; if (L) lightAt(l, L, day, hd); });
+    WINLIGHTS.forEach((l, k) => { const o = POOL.wins[k]; l.visible = !!o; if (!o) return; const r = R.HOUSE3.rooms[o.rooms[0]];
+      const cx = (o.a + o.b) / 2, cy = (o.y0 + o.y1) / 2, d = Math.sign((r[2] + r[3]) / 2 - o.line) || 1;
+      l.width = (o.b - o.a) * M; l.height = (o.y1 - o.y0) * M; l.position.copy(v3(cx, cy, o.line + d * 3)); l.lookAt(v3(cx, cy - 40, o.line + d * 100));
+      l.intensity = (day ? WK : 3) * o.k; l.color.set(day ? "#eef0f2" : "#7d89b8"); });
+    if (GS.roomKey === "house" || OUT.sunOut) return; GS.roomKey = "house"; sunAt(true); reshadow(); return; }
   const n = hd ? ROOMLIGHTS.length : Math.min(4, ROOMLIGHTS.length);   // Fast: four (20_go.js: the last two are HD's)
   const pk = [day, n, !!b].join(); if (pk !== POOL.key) { POOL.key = pk; POOL.pts = []; POOL.wins = []; }   // evening's lamps, Fast's four: picked afresh
   /* the rooms seen from it (open doors, a flight's top or foot: the hall's lower flight and landing, the client's "Lit stairs and landing
@@ -343,7 +351,7 @@ function applyFloors() {
   syncRmode();   // v71
   /* v73: standing in a room, only what can be seen from it is drawn: its floor, the group with its ceiling, the floor its stairs lead to,
      the outside through its windows; the living room only from the landing (v81: down the stairwell) */
-  if (INSIDE() && R.HOUSE3.rooms) {   // V1.10: Be there too (it drew the whole house)
+  if (INSIDE() && R.HOUSE3.rooms && !WHOLE) {   // V1.10: Be there too (it drew the whole house); N299: a real card draws it all
     const rid = VIEW_ROOM[S.view], rr = R.HOUSE3.rooms[rid];
     if (rr) {
       const fk = { "-260": "lower", "0": "ground", "260": "first" }[String(rr[4])];
@@ -484,7 +492,7 @@ function roomCull(again) {   // again: a door swung (only this part of applyFloo
   if (again) { if (!houseG) return; roomUncull(); }
   const liv = S.view === "livstand" && houseG && houseG.visible && R.HOUSE3 && R.HOUSE3.rooms;
   houseJoin(!liv && !(INSIDE() && houseG && R.HOUSE3 && R.HOUSE3.rooms));
-  if (!liv && !(INSIDE() && houseG && R.HOUSE3 && R.HOUSE3.rooms)) { if (again) dirty(); if (cullKey) { cullKey = ""; reshadow(); } return; }
+  if (WHOLE || !liv && !(INSIDE() && houseG && R.HOUSE3 && R.HOUSE3.rooms)) { if (again) dirty(); if (cullKey) { cullKey = ""; reshadow(); } return; }
   const seeds = liv ? ["landing", doorOpen(HPARTS["door.living_door"]) && "hall"]   // from the living room: up its stairs, and the hall through its door
     : [VIEW_ROOM[S.view], GS.hereRoom, ...Object.keys(WALK_VIEW).filter(k => WALK_VIEW[k] === S.view)];
   const see = roomSees(seeds), { out } = roomDoors();

@@ -340,7 +340,7 @@ function applyLight() {
   skyFill.intensity = outside || inLiv ? (day ? (hd && inAny && WINLIGHTS.some(l => l.visible) ? 1.4 : 2.6) : 0.5) : hd ? 0 : day ? 3.5 : 1;   // V3.30: a room with windows, by day in HD: less even fill, more from its windows and light (it read flat and grey)               // V3.19: Fast's living room (no window light) as bright as the other rooms
   const inK = !!ROOMV();                                                                // v60: in a room of the house, light off its pale floor and walls,
   const sky = outside && !inK; skyFill.color.set(sky ? "#dfe8f1" : hemi.color); skyFill.groundColor.set(sky ? "#5d5446" : "#d9d3c9");   // V3.19: the rooms' fill the living room's tint (it was the sky's blue); the living room's own lights stay upstairs
-  if (inK) scene.traverse(l => { if (l.isLight && l !== skyFill && l !== sun && !l.userData.houseLight) l.intensity = 0; });   // every light of the living room's, the spots too
+  if (inK && !WHOLE) scene.traverse(l => { if (l.isLight && l !== skyFill && l !== sun && !l.userData.houseLight) l.intensity = 0; });   // every light of the living room's, the spots too
   if (inAny) { hemi.intensity = day ? (hd && WINLIGHTS.length ? 0.38 : 0.5) : 0.2; }   // V2.39: by day in HD the window lights (less even fill); V3.30: the sun, the room's light and its windows' kept (a second change of a light, Warmth, put them out)   // every light of the living room's, the spots too
   /* V2.21 (R1): by evening a house room is lit by its own ceiling light (placeRoomLights): the fill and studio down, a warm pool */
   if (inAny && !day && hd) { hemi.intensity = 0.08; skyFill.intensity = 0.2; }   // V3.34 (N86): an evening in HD lit by its own light (the 0.5 fill washed every wall alike)
