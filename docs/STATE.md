@@ -3,7 +3,7 @@
 Rewritten (not appended) by the lead at merge (N249; a row's PR leaves it alone), under 150 lines, a line a feature. What happened when is in `docs/HISTORY.md`;
 where each feature's code lives and what the threads learned is in `docs/NOTES.md`. The client's rules: `CLAUDE.md`.
 
-**Version:** V4.127 (27 Nov 2026): Per-frame lists cached
+**Version:** V4.128 (27 Nov 2026): One quality governor
 V4.11 (N170): the small rooms' In it views without bowed walls; the hall looks down the hall. V4.10 (N174, N175): fewer view pills (As it is and Hide labels behind ⋯; Gardens, Next door on Outside only); the walk stick faint until touched. V4.9 (N177): a hitch check for a PC's walk. V4.8 (N141): the sofa bed's chenille made at build; photos 7.7 to 7.5 MB. V4.7 (N176):
 leaner code. V4.6 (N169): the plot's edge soft, the sky hazy. Earlier: `docs/HISTORY.md`.
 The version shows faintly by "Home Plan" top left (not on an iPhone SE) and in Plan as a refresh button ("V4.28 ↻"): on the
@@ -121,6 +121,7 @@ In a sandbox that can't reach jsDelivr set `THREE_LOCAL` to `node_modules/three`
 **Speed** (`tools/perf_budget.json`, in the checks; `docs/NOTES.md` section 3):
 - The first picture builds few shaders and fetches what it shows first; rooms are warmed before you reach them.
 - A phone and a PC leave out the shade and the glow while moving and bring them back 0.25 s after you stop.
+- How hard the 3D works is one table: `TIERS` and `STEP` at the top of `01_renderer.js`, the live state in `Q`; `?q=pc|phone|low|other` forces a tier (N320).
 - Still, the 3D rests: no frame asked 2 s after the last draw with nothing due; a touch, key, wheel or `dirty()` wakes it (N321, `17_render_loop.js` `LOOP`).
 - Offline: `sw.js` serves the kept copy after 2 s on a weak signal. Photos are a file each, kept across versions.
 - Standing in a room, a piece down the stairwell or out of doors is drawn only where an opening lets the eye see it, its shadow
